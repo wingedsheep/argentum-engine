@@ -3509,6 +3509,74 @@
     }
 }
 
+// Containment Construct
+{
+    "name": "Containment Construct",
+    "manaCost": "{2}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Whenever you discard a card, you may exile that card from your graveyard. If you do, you may play that card this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Containment Construct:1",
+                "trigger": "DiscardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Exile the discarded card? You may play it this turn."
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": "TriggeringEntity",
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                },
+                                "storeMovedAs": "moved1",
+                                "filter": {
+                                    "statePredicates": [
+                                        {
+                                            "type": "InZone",
+                                            "zone": "Graveyard"
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "GrantMayPlayFromExile",
+                                "from": "moved1"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever you discard a card, you may exile that card from your graveyard. If you do, you may play that card this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "243",
+        "rarity": "UNCOMMON",
+        "artist": "Julian Kok Joon Wen",
+        "flavorText": "Automated units are deployed to stabilize merge sites deemed too dangerous even for trained intercessors.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/520e5505-429b-4da0-b25e-14b8d4e81ce3.jpg?1783923826"
+    },
+    "colorIdentityOverride": []
+}
+
 // Covert Technician
 {
     "name": "Covert Technician",
@@ -7917,6 +7985,58 @@
     ]
 }
 
+// Iron Apprentice
+{
+    "name": "Iron Apprentice",
+    "manaCost": "{1}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "This creature enters with a +1/+1 counter on it.\nWhen this creature dies, if it had counters on it, put those counters on target creature you control.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Iron Apprentice:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "MoveAllLastKnownCounters",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": "TriggeringEntityHadCounters"
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "248",
+        "artist": "Kekai Kotaki",
+        "flavorText": "\"I needed an extra set of hands, so I built one.\"\n—Kenji, Sokenzan artisan",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/13d6d9fc-509b-42db-8ac1-85066eb6e9c4.jpg?1783923825"
+    }
+}
+
 // Ironhoof Boar
 {
     "name": "Ironhoof Boar",
@@ -10572,6 +10692,103 @@
     ]
 }
 
+// Mech Hangar
+{
+    "name": "Mech Hangar",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{T}: Add one mana of any color. Spend this mana only to cast a Pilot or Vehicle spell.\n{3}, {T}: Target Vehicle becomes an artifact creature until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mech Hangar:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Mech Hangar:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "restriction": {
+                        "type": "SubtypeSpellsOnly",
+                        "subtypes": [
+                            "Pilot",
+                            "Vehicle"
+                        ]
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Mech Hangar:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCardType",
+                            "cardType": "Artifact",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "EndOfTurn"
+                        },
+                        {
+                            "type": "AddCardType",
+                            "cardType": "Creature",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "EndOfTurn"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent Vehicle"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Target Vehicle becomes an artifact creature until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "270",
+        "rarity": "UNCOMMON",
+        "artist": "Julian Kok Joon Wen",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c093984d-38cd-4b49-b179-1e289ab442d1.jpg?1783923817"
+    },
+    "colorIdentityOverride": []
+}
+
 // Mechtitan Core
 {
     "name": "Mechtitan Core",
@@ -10935,6 +11152,109 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Mirror Box
+{
+    "name": "Mirror Box",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "The \"legend rule\" doesn't apply to permanents you control.\nEach legendary creature you control gets +1/+1.\nEach nontoken creature you control gets +1/+1 for each other creature you control with the same name as that creature.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "LegendRuleDoesNotApplyTo",
+                "filter": "permanent"
+            },
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsLegendary"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            },
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsNontoken"
+                        ],
+                        "statePredicates": [
+                            "IsFaceUp"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "SharesNameWith",
+                                "entity": "AffectedEntity"
+                            }
+                        ],
+                        "statePredicates": [
+                            "IsFaceUp"
+                        ]
+                    },
+                    "excludeSelf": true
+                },
+                "toughnessBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "SharesNameWith",
+                                "entity": "AffectedEntity"
+                            }
+                        ],
+                        "statePredicates": [
+                            "IsFaceUp"
+                        ]
+                    },
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "250",
+        "rarity": "RARE",
+        "artist": "Néstor Ossandón Leal",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d507daa3-3f16-4ab1-81ea-794e5bb488fc.jpg?1783923824",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "A face-down creature has no name, so it doesn't have the same name as anything else."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "Although token creatures won't get a bonus from Mirror Box's last ability, tokens that are copies of nontoken creatures improve the bonus those creatures get."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "While the \"legend rule\" doesn't apply to permanents you control, you can control any number of legendary permanents with the same name and none of them will be put into the graveyard."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "If you control more than one legendary permanent with the same name and the \"legend rule\" begins applying again (perhaps because Mirror Box leaves the battlefield), you'll immediately have to comply with the rule and put all but one of those permanents into the graveyard."
+            }
+        ]
+    }
 }
 
 // Mirrorshell Crab
@@ -12336,6 +12656,101 @@
     ]
 }
 
+// Ninja's Kunai
+{
+    "name": "Ninja's Kunai",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature has \"{1}, {T}, Sacrifice Ninja's Kunai: Ninja's Kunai deals 3 damage to any target.\"\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ninja's Kunai:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Ninja's Kunai:1",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{1}"
+                                }
+                            },
+                            "CostTap",
+                            "CostSacrificeGrantingPermanent"
+                        ]
+                    },
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "damageSource": "GrantingSource"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "AnyTarget",
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "{1}, {T}, Sacrifice Ninja's Kunai: Ninja's Kunai deals 3 damage to any target."
+                }
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "252",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "A point to pierce flesh and spirit alike.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/af6ae567-c77a-416a-b609-4df3d0dd2e18.jpg?1783923824",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "If a player gains control of a creature equipped with an opponent's Ninja's Kunai without also gaining control of the Equipment, they cannot activate the ability it grants the equipped creature because you cannot sacrifice permanents you don't control."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Norika Yamazaki, the Poet
 {
     "name": "Norika Yamazaki, the Poet",
@@ -13535,6 +13950,133 @@
     ]
 }
 
+// Reckoner Bankbuster
+{
+    "name": "Reckoner Bankbuster",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "This Vehicle enters with three charge counters on it.\n{2}, {T}, Remove a charge counter from this Vehicle: Draw a card. Then if there are no charge counters on this Vehicle, create a Treasure token and a 1/1 colorless Pilot creature token with \"This token crews Vehicles as though its power were 2 greater.\"\nCrew 3 (Tap any number of creatures you control with total power 3 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 3
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Reckoner Bankbuster:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "CHARGE",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "CHARGE"
+                                        }
+                                    },
+                                    "operator": "LTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "CreatePredefinedToken",
+                                        "tokenType": "Treasure"
+                                    },
+                                    {
+                                        "type": "CreateToken",
+                                        "power": 1,
+                                        "toughness": 1,
+                                        "colors": [],
+                                        "creatureTypes": [
+                                            "Pilot"
+                                        ],
+                                        "imageUri": "https://cards.scryfall.io/normal/front/b/e/be84f259-2809-48c9-9c70-861437f08c23.jpg?1783923717",
+                                        "staticAbilities": [
+                                            {
+                                                "type": "CrewSaddleContribution",
+                                                "modifier": 2,
+                                                "costs": [
+                                                    "CREW"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{2}, {T}, Remove a charge counter: Draw a card. Then if there are no charge counters on this Vehicle, create a Treasure and a 1/1 Pilot token."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "CHARGE",
+                "count": 3,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "255",
+        "rarity": "RARE",
+        "artist": "Steve Prescott",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/279acd17-6c17-427b-a69d-fc02442ff4a3.jpg?1783923822"
+    }
+}
+
 // Reckoner Shakedown
 {
     "name": "Reckoner Shakedown",
@@ -13878,6 +14420,106 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Reito Sentinel
+{
+    "name": "Reito Sentinel",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Defender\nWhen this creature enters, target player mills three cards. (They put the top three cards of their library into their graveyard.)\n{3}: Put target card from a graveyard on the bottom of its owner's library.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Reito Sentinel:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Reito Sentinel:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Library",
+                    "placement": "Bottom"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {},
+                            "zone": "Graveyard"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "256",
+        "rarity": "UNCOMMON",
+        "artist": "David Auden Nash",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/0218923a-b685-4492-8fdd-2d2d22ef532e.jpg?1783923821"
+    }
 }
 
 // Repel the Vile
@@ -14311,6 +14953,55 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Runaway Trash-Bot
+{
+    "name": "Runaway Trash-Bot",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Trample\nThis creature gets +1/+0 for each artifact and/or enchantment card in your graveyard.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "AggregateZone",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "artifact|enchantment"
+                },
+                "toughnessBonus": {
+                    "type": "Fixed",
+                    "amount": 0
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "257",
+        "rarity": "UNCOMMON",
+        "artist": "Nicholas Gregory",
+        "flavorText": "One day it might roll over your foot, the next day your entire house.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3eebf6a6-f1fd-40a1-ac27-367deafa6f2a.jpg?1783923822",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "A card in your graveyard that is both an artifact and an enchantment is only counted once."
+            }
+        ]
+    }
 }
 
 // Saiba Trespassers
@@ -15251,6 +15942,79 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Shrine Steward
+{
+    "name": "Shrine Steward",
+    "manaCost": "{5}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "When this creature enters, you may search your library for an Aura or Shrine card, reveal it, put it into your hand, then shuffle.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shrine Steward:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "Aura|Shrine"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for an Aura or Shrine card to put into your hand",
+                                "selectedLabel": "Put into your hand"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "259",
+        "artist": "kleinerHai",
+        "flavorText": "From broken swords, the first Imperials forged a peaceful servant to tend the shrines of Eiganjo.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/75e8d71c-3a0b-4042-a0f7-e99e92a79dc2.jpg?1783923820"
+    }
 }
 
 // Silver-Fur Master
@@ -16328,6 +17092,70 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Surgehacker Mech
+{
+    "name": "Surgehacker Mech",
+    "manaCost": "{4}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Menace\nWhen this Vehicle enters, it deals damage equal to twice the number of Vehicles you control to target creature or planeswalker an opponent controls.\nCrew 4 (Tap any number of creatures you control with total power 4 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "MENACE",
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 4
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Surgehacker Mech:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "permanent Vehicle"
+                        },
+                        "multiplier": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|planeswalker ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this Vehicle enters, it deals damage equal to twice the number of Vehicles you control to target creature or planeswalker an opponent controls."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "260",
+        "rarity": "RARE",
+        "artist": "Wisnu Tan",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c4bf679-01cc-4786-a3bd-89c8ae70fdfa.jpg?1783923820"
+    }
 }
 
 // Takenuma, Abandoned Mire
@@ -17983,6 +18811,94 @@
     ]
 }
 
+// Thundering Raiju
+{
+    "name": "Thundering Raiju",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Haste\nWhenever this creature attacks, put a +1/+1 counter on target creature you control. Then this creature deals X damage to each opponent, where X is the number of modified creatures you control other than this creature. (Equipment, Auras you control, and counters are modifications.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thundering Raiju:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        "IsModified"
+                                    ]
+                                },
+                                "excludeSelf": true
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature attacks, put a +1/+1 counter on target creature you control. Then this creature deals X damage to each opponent, where X is the number of modified creatures you control other than this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "166",
+        "rarity": "RARE",
+        "artist": "Xavier Ribeiro",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ec1a2920-6d39-4276-921c-65cc16a45f17.jpg?1783923858",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "An Aura controlled by an opponent does not cause a creature you control to be modified."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "A creature with a counter on it is considered modified no matter what kind of counter it is or which player put it on that creature."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "A creature that is equipped is considered modified no matter who controls the Equipment that's attached to it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Thundersteel Colossus
 {
     "name": "Thundersteel Colossus",
@@ -18153,6 +19069,102 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Towashi Guide-Bot
+{
+    "name": "Towashi Guide-Bot",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "When this creature enters, put a +1/+1 counter on target creature you control.\n{4}, {T}: Draw a card. This ability costs {1} less to activate for each modified creature you control. (Equipment, Auras you control, and counters are modifications.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Towashi Guide-Bot:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Towashi Guide-Bot:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "genericCostReduction": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsModified"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "262",
+        "rarity": "UNCOMMON",
+        "artist": "Jinho Bae",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/da4ccf70-b661-46ea-bea9-4466a3a35562.jpg?1783923819",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "An Aura controlled by an opponent does not cause a creature you control to be modified."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "A creature with a counter on it is considered modified no matter what kind of counter it is or which player put it on that creature."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "A creature that is equipped is considered modified no matter who controls the Equipment that's attached to it."
+            }
+        ]
+    }
 }
 
 // Towashi Songshaper
@@ -18339,6 +19351,105 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Twinshot Sniper
+{
+    "name": "Twinshot Sniper",
+    "manaCost": "{3}{R}",
+    "typeLine": "Artifact Creature — Goblin Archer",
+    "oracleText": "Reach\nWhen this creature enters, it deals 2 damage to any target.\nChannel — {1}{R}, Discard this card: It deals 2 damage to any target.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Twinshot Sniper:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, it deals 2 damage to any target."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Twinshot Sniper:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{R}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t1"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Channel — {1}{R}, Discard this card: It deals 2 damage to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "rarity": "UNCOMMON",
+        "artist": "Brent Hollowell",
+        "flavorText": "\"Pierce the heart and pierce the head, even the mightiest fall down dead.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/08a86009-4637-4b6c-9d36-367151583668.jpg?1783923857",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "Discarding the card is part of the cost to activate a channel ability."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "If a channel ability requires a target, you may not activate it without a target just to discard the card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -18617,6 +19728,60 @@
     ]
 }
 
+// Upriser Renegade
+{
+    "name": "Upriser Renegade",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Samurai",
+    "oracleText": "This creature gets +2/+0 for each other modified creature you control. (Equipment, Auras you control, and counters are modifications.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                "IsModified"
+                            ]
+                        },
+                        "excludeSelf": true
+                    },
+                    "multiplier": 2
+                },
+                "toughnessBonus": {
+                    "type": "Fixed",
+                    "amount": 0
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "rarity": "UNCOMMON",
+        "artist": "David Auden Nash",
+        "flavorText": "\"My streets, my rules. You picked the wrong neighborhood for a fight.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/62d878c2-a340-4751-adaa-e50b0bb85423.jpg?1783923855"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Virus Beetle
 {
     "name": "Virus Beetle",
@@ -18689,6 +19854,66 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Walking Skyscraper
+{
+    "name": "Walking Skyscraper",
+    "manaCost": "{8}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "This spell costs {1} less to cast for each modified creature you control. (Equipment, Auras you control, and counters are modifications.)\nTrample\nThis creature has hexproof as long as it's untapped. (It can't be the target of spells or abilities your opponents control.)",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 8
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "PermanentsYouControlMatching",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                "IsModified"
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "untapped"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "263",
+        "rarity": "UNCOMMON",
+        "artist": "David Auden Nash",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/958af4ba-f29e-47ef-995e-3985982c75ad.jpg?1783923819"
+    },
+    "colorIdentityOverride": []
 }
 
 // Wanderer's Intervention
