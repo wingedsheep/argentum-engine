@@ -15,7 +15,6 @@ object NeonDynastySet : MtgSet {
     override val code = "NEO"
     override val displayName = "Kamigawa: Neon Dynasty"
     override val releaseDate = "2022-02-18"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
