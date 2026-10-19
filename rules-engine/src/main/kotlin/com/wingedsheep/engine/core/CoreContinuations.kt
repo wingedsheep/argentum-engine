@@ -293,8 +293,17 @@ sealed interface ForEachItem {
     @Serializable
     data class OfTarget(val target: ChosenTarget) : ForEachItem
 
+    /**
+     * [boundNumbers] and [keepCollections] carry a captured-controller pass's per-player binding
+     * (`ForEachCapturedControllerEffect`: its count variable, and the outer pipeline collections it
+     * keeps) across a pause — the plain player space binds neither.
+     */
     @Serializable
-    data class OfPlayer(val playerId: EntityId) : ForEachItem
+    data class OfPlayer(
+        val playerId: EntityId,
+        val boundNumbers: Map<String, Int> = emptyMap(),
+        val keepCollections: Boolean = false
+    ) : ForEachItem
 
     @Serializable
     data class OfEntity(val entityId: EntityId) : ForEachItem

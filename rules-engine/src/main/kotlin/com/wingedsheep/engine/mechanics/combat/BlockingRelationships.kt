@@ -23,8 +23,15 @@ internal object BlockingRelationships {
                     val blockers = c.get<BlockedComponent>()?.blockerIds.orEmpty()
                     val history = c.get<BlockersThisCombatComponent>()?.blockers.orEmpty()
                     val partners = c.get<CombatPartnersThisTurnComponent>() ?: CombatPartnersThisTurnComponent()
+                    val controller = projected.getController(attacker)
                     var updated = c.with(BlockedComponent((blockers + blocker).distinct()))
-                        .with(partners.copy(blockedByIds = partners.blockedByIds + blocker))
+                        .with(
+                            partners.copy(
+                                blockedByIds = partners.blockedByIds + blocker,
+                                controllerWhenBlockedBy = if (controller == null) partners.controllerWhenBlockedBy
+                                else partners.controllerWhenBlockedBy + (blocker to controller)
+                            )
+                        )
                     if (blockerRef != null) updated = updated.with(BlockersThisCombatComponent(history + blockerRef))
                     if (projected.isLegendary(blocker)) updated = updated.with(BlockedOrWasBlockedByLegendaryThisTurnComponent)
                     updated

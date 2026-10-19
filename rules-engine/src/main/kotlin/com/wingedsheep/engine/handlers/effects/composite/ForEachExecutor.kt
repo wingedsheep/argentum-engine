@@ -294,7 +294,10 @@ class ForEachExecutor(
             // carry it through nested player loops, so sub-effects that need the original effect
             // controller (e.g. an activating-player-relative duration) can read it.
             effectControllerId = outerContext.effectControllerId ?: outerContext.controllerId,
-            pipeline = outerContext.pipeline.copy(storedCollections = emptyMap())
+            pipeline = outerContext.pipeline.copy(
+                storedCollections = if (item.keepCollections) outerContext.pipeline.storedCollections else emptyMap(),
+                storedNumbers = outerContext.pipeline.storedNumbers + item.boundNumbers
+            )
         )
 
         is ForEachItem.OfEntity -> outerContext.copy(

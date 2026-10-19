@@ -344,6 +344,7 @@ Families:
 ## Condition
 
 - `APlayerControlsMostOfSubtype(subtype: Subtype)` — Condition: "If a player controls more subtype creatures than each other player" Used by Thoughtbound Primoc and similar Onslaught "tribal war" cards.
+- `AfterCombatThisTurn` — Condition: "after combat" this turn — a combat phase has ended this turn and the game is not currently in a combat phase.
 - `AllConditions(conditions: List<Condition>)` — Condition: All of the sub-conditions must be met (AND)
 - `AnotherPermanentWithSameNameAsTarget(targetIndex: Int)` — Condition: "if another permanent with the same name as target is on the battlefield".
 - `AnyCondition(conditions: List<Condition>)` — Condition: Any of the sub-conditions must be met (OR)
@@ -748,7 +749,7 @@ Families:
 - `CantCastSpellsFromNonHandZonesEffect(target: EffectTarget, duration: Duration)` — Target player can't cast spells from anywhere other than their **hand** for the specified duration — casts from graveyard (flashback, escape, disturb), exile (foretell, plot, a may-play permission)…
 - `CantPlayCardsFromHandEffect(target: EffectTarget, duration: Duration)` — Cards in a hand can't be played for the specified duration — the target is either a **player** (none of the cards in their hand) or a single **card in a hand** (just that card).
 - `CantSearchLibrariesEffect(target: EffectTarget, duration: Duration)` — The target player(s) can't search libraries for the specified duration — "Players can't search libraries this turn" (Shadow of Doubt).
-- `CaptureControllersEffect(from: String, storeAs: String)` — Snapshot the current controller of each entity in a stored collection, writing the controller ids to `storedCollectionsstoreAs` as a parallel list (entry _i_ in `storeAs` is the controller of entry…
+- `CaptureControllersEffect(from: String, storeAs: String, asLastBlockedBy: EffectTarget?)` — Snapshot the current controller of each entity in a stored collection, writing the controller ids to `storedCollectionsstoreAs` as a parallel list (entry _i_ in `storeAs` is the controller of entry…
 - `CascadeEffect`
 - `CastAnyNumberFromCollectionWithoutPayingCostEffect(from: String, payManaCost: Boolean, maxCasts: Int?, maxTotalManaValue: Int?, playLands: Boolean, insteadOfGraveyard: AfterResolveDestination?)` — Cast ANY NUMBER of cards from a named pipeline collection **during this effect's resolution**, each without paying its mana cost, with timing restrictions based on card type ignored (Rule 608.2 / "…
 - `CastFromCollectionWithoutPayingCostEffect(from: String, payManaCost: Boolean, storeCastTo: String?, castTransformed: Boolean, insteadOfGraveyard: AfterResolveDestination?, caster: Chooser, alternativeCost: AdditionalCost?, additionalManaCost: ManaCost?, castFaceDown: Boolean, turnsFaceUpInstead: Boolean)` — Atomic "cast a card from a pipeline collection without paying its mana cost".

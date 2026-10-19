@@ -787,9 +787,13 @@ class PipelineBuilder private constructor(private val shared: Shared) {
     // =========================================================================
 
     /** Snapshot the controller of each card in [from] as a parallel list ([CaptureControllersEffect]). */
-    fun captureControllers(from: CollectionSlot, name: String? = null): CollectionSlot {
+    fun captureControllers(
+        from: CollectionSlot,
+        name: String? = null,
+        asLastBlockedBy: EffectTarget? = null
+    ): CollectionSlot {
         val slot = CollectionSlot(slotKey("controllers", nextIndex(), name))
-        steps += CaptureControllersEffect(from = from.key, storeAs = slot.key)
+        steps += CaptureControllersEffect(from = from.key, storeAs = slot.key, asLastBlockedBy = asLastBlockedBy)
         return slot
     }
 

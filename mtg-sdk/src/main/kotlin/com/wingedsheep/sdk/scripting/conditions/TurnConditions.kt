@@ -177,6 +177,22 @@ data object BeforeAttackersDeclaredThisTurn : Condition {
 }
 
 /**
+ * Condition: "after combat" this turn — a combat phase has ended this turn and the game is not
+ * currently in a combat phase. False during every step of a combat phase (its end of combat step
+ * included, which is still combat) and in a turn whose combat phase hasn't happened or was skipped;
+ * true in the postcombat main phase and end phase, and in a main phase between two combat phases.
+ * The mirror of [BeforeAttackersDeclaredThisTurn]: Glyph of Reincarnation's "Cast this spell only
+ * after combat."
+ *
+ * Board-derived (reads `state.phase` and the active player's "a combat phase ended this turn" marker).
+ */
+@SerialName("AfterCombatThisTurn")
+@Serializable
+data object AfterCombatThisTurn : Condition {
+    override val description: String = "after combat"
+}
+
+/**
  * Condition: "If you've been attacked this step"
  * Used for cards like Defiant Stand and Harsh Justice that can only be cast
  * during the declare attackers step if you've been attacked.

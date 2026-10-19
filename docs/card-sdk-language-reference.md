@@ -14585,6 +14585,10 @@ that works in both resolution and static-ability (projection) contexts.
   step on, through every later phase of the turn — an extra combat inserted *before* the natural one
   is the first combat). Master Warcraft's timing line:
   `castOnlyIf(Conditions.BeforeAttackersDeclared)`.
+- `Conditions.AfterCombat` (`AfterCombatThisTurn`) — "after combat": a combat phase has ended this
+  turn and the game isn't in a combat phase now (the end of combat step is still combat; a main
+  phase between two combats counts; a turn whose combat was skipped never qualifies). Glyph of
+  Reincarnation's timing line: `castOnlyIf(Conditions.AfterCombat)`.
 - `IsFirstCombatPhaseOfTurn` — the combat analog of `IsFirstEndStepOfTurn`: it's the turn's first
   combat phase, i.e. no combat phase has ended yet this turn — an extra combat inserted *before* the
   natural one (Grim Reaper's Sprint cast precombat) is the first, and the natural one after it is not.
@@ -17898,6 +17902,10 @@ Counter effects live in §4 (`AddCounters`, `RemoveCounters`, `Proliferate`, `Mo
   (Broken Ambitions). Battlefield permanents use projected control. Pair `captureControllers` with
   `forEachCaptured` over the original collection when the rider applies regardless of whether a move
   succeeded; retain the snapshot through intervening decisions such as counter payments and clashes.
+  `asLastBlockedBy = <creature>` (`captureControllers(from, asLastBlockedBy = wall)`) captures instead
+  the player who controlled each entity the last time that creature blocked it this turn — read off
+  the turn-scoped block record, so a later control change doesn't move it; entries it never blocked
+  fall back to the current controller (Glyph of Reincarnation).
 - `ForEachCapturedControllerEffect(collection, originalCollection, controllerSnapshot, countVariable?, effects)` *(SDK-internal step; cards use `Effects.Pipeline { forEachCaptured }` — §5.5.)* —
   cross-references a post-move `collection` against an `originalCollection` + parallel `controllerSnapshot` to
   build per-controller tallies, then runs `effects` once per controller (turn order from the active player). Each

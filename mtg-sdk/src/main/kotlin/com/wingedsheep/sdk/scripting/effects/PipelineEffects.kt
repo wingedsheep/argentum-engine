@@ -1048,16 +1048,25 @@ data class GatherCardsEffect(
  * fall back to the card's owner; permanents always have an owner, so the captured
  * list is the same length as [from] and indices line up 1:1.
  *
+ * [asLastBlockedBy] swaps "its controller now" for "the player who controlled it the last time it
+ * became blocked by [asLastBlockedBy] this turn" (Glyph of Reincarnation) — read off the creature's
+ * turn-scoped block record, so a later control change doesn't move it. An entry that creature
+ * never blocked this turn falls back to the current-controller ladder.
+ *
  * @property from Stored collection whose entities' controllers to capture.
  * @property storeAs Stored collection key under which the parallel controller list lives.
+ * @property asLastBlockedBy When set, capture each entity's controller as of its last block by this creature.
  */
 @SerialName("CaptureControllers")
 @Serializable
 data class CaptureControllersEffect(
     val from: String,
-    val storeAs: String
+    val storeAs: String,
+    val asLastBlockedBy: EffectTarget? = null
 ) : Effect {
-    override val description: String = "Capture the controllers of those cards"
+    override val description: String =
+        if (asLastBlockedBy == null) "Capture the controllers of those cards"
+        else "Capture who controlled each of those cards the last time ${asLastBlockedBy.description} blocked it"
 }
 
 /**

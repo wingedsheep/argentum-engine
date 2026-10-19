@@ -2286,6 +2286,127 @@
     ]
 }
 
+// Glyph of Reincarnation
+{
+    "name": "Glyph of Reincarnation",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Cast this spell only after combat.\nDestroy all creatures that were blocked by target Wall this turn. They can't be regenerated. For each creature that died this way, put a creature card from the graveyard of the player who controlled that creature the last time it became blocked by that Wall onto the battlefield under its owner's control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "BlockPairedWithEntityThisTurn",
+                                    "reference": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "direction": "BLOCKED_BY"
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "CaptureControllers",
+                    "from": "gathered0",
+                    "storeAs": "controllers1",
+                    "asLastBlockedBy": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy",
+                    "noRegenerate": true,
+                    "storeMovedAs": "moved2"
+                },
+                {
+                    "type": "ForEachCapturedController",
+                    "collection": "moved2",
+                    "originalCollection": "gathered0",
+                    "controllerSnapshot": "controllers1",
+                    "countVariable": "count3",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "creature"
+                            },
+                            "storeAs": "gathered4"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered4",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "VariableReference",
+                                    "variableName": "count3"
+                                }
+                            },
+                            "chooser": "SourceController",
+                            "storeSelected": "selected5",
+                            "prompt": "Choose creature cards to put onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected5",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature Wall"
+                },
+                "id": "t0"
+            }
+        ],
+        "castRestrictions": [
+            {
+                "type": "CastOnlyIfCondition",
+                "condition": "AfterCombatThisTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "artist": "Susan Van Camp",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a67e8214-a192-4143-9d5e-d0e254e1bf6e.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Gravity Sphere
 {
     "name": "Gravity Sphere",

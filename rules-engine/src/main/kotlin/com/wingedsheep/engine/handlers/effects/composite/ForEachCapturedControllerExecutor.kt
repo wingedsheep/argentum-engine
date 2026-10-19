@@ -30,8 +30,9 @@ import com.wingedsheep.engine.core.Outcome
  * drove the tally.
  *
  * Sub-effect pauses re-enter via a player-space [ForEachContinuation] over the
- * remaining controllers, resumed by [ForEachExecutor.processItems] with the standard
- * player binding (the per-controller `countVariable` is not re-bound on that path).
+ * remaining controllers, resumed by [ForEachExecutor.processItems]; each remaining item
+ * carries its controller's `countVariable` tally and keeps the outer collections, so a
+ * resumed pass binds exactly what an unpaused one does.
  */
 class ForEachCapturedControllerExecutor(
     /** The registry's plain entry point, for the effect program each controller's sub-effects run as. */
@@ -96,10 +97,13 @@ class ForEachCapturedControllerExecutor(
 
         for ((index, entry) in controllerTallies.withIndex()) {
             val (playerId, count) = entry
-            val remaining = controllerTallies.drop(index + 1).map { it.first }
+            val remaining = controllerTallies.drop(index + 1)
 
             val perIterationContext = outerContext.copy(
                 controllerId = playerId,
+                // Keep the spell's controller reachable (Chooser.SourceController), as the player
+                // iteration space does: the caster still makes the choices inside each pass.
+                effectControllerId = outerContext.effectControllerId ?: outerContext.controllerId,
                 pipeline = outerContext.pipeline.copy(
                     // Preserve outer storedCollections (unlike the player iteration space) so the
                     // sub-effects can still see the dead pile, original list, and snapshot.
@@ -109,7 +113,9 @@ class ForEachCapturedControllerExecutor(
 
             val stateForExecution = if (remaining.isNotEmpty()) {
                 val continuation = ForEachContinuation(
-                    remainingItems = remaining.map { ForEachItem.OfPlayer(it) },
+                    remainingItems = remaining.map { (id, n) ->
+                        ForEachItem.OfPlayer(id, boundNumbers = mapOf(effect.countVariable to n), keepCollections = true)
+                    },
                     effect = ForEachEffect(
                         // Resume-only carrier: the items are already enumerated, so the
                         // Players selector is never consulted — only the per-player binding.

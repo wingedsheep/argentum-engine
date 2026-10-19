@@ -227,6 +227,7 @@ CollectionFilter.LeastToughness — CollectionFilter
 CollectionFilter.SharesSubtypeWithSacrificed — CollectionFilter
 APlayerControlsMostOfSubtype — Condition
 AllConditions — Condition
+AfterCombatThisTurn — Condition
 AnotherPermanentWithSameNameAsTarget — Condition
 AnyCondition — Condition
 AnyEnteredOrWasCastFromExile — Condition

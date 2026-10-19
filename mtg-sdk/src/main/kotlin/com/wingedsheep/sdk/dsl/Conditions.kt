@@ -2394,6 +2394,14 @@ object Conditions {
         com.wingedsheep.sdk.scripting.conditions.BeforeAttackersDeclaredThisTurn
 
     /**
+     * "After combat" this turn — a combat phase has ended this turn and the game isn't in a combat
+     * phase now. Glyph of Reincarnation's "Cast this spell only after combat" is
+     * `castOnlyIf(Conditions.AfterCombat)` in its `spell { }` block.
+     */
+    val AfterCombat: ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.AfterCombatThisTurn
+
+    /**
      * If it's your turn.
      */
     val IsYourTurn: ConditionInterface =

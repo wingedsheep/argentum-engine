@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.combat.CombatPartnersThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
@@ -21,6 +22,9 @@ import kotlin.reflect.KClass
  *   3. Else its raw `ControllerComponent.playerId`.
  *   4. Else `OwnerComponent.playerId` / `CardComponent.ownerId` as a last-resort fallback.
  *
+ * With `asLastBlockedBy` set, an entity's block record (`CombatPartnersThisTurnComponent
+ * .controllerWhenBlockedBy`) for that blocker answers first; the ladder above is the fallback.
+ *
  * Permanents on the battlefield always satisfy (1) or (2). Cards live somewhere with at
  * least an owner, so the captured list is the same length and order as [from].
  */
@@ -36,8 +40,13 @@ class CaptureControllersExecutor : EffectExecutor<CaptureControllersEffect> {
         val cards = context.pipeline.storedCollections[effect.from]
             ?: return EffectResult.error(state, "No collection named '${effect.from}' in storedCollections")
 
+        val blockerId = effect.asLastBlockedBy?.let { context.resolveTarget(it, state) }
         val controllers = cards.map { entityId ->
             val entity = state.getEntity(entityId) ?: return@map context.controllerId
+            if (blockerId != null) {
+                entity.get<CombatPartnersThisTurnComponent>()?.controllerWhenBlockedBy?.get(blockerId)
+                    ?.let { return@map it }
+            }
             if (entityId in state.stack) {
                 entity.get<SpellOnStackComponent>()?.casterId?.let { return@map it }
             }

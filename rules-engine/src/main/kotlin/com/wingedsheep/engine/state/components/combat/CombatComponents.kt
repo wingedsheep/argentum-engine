@@ -73,11 +73,17 @@ data object BlockedOrWasBlockedByLegendaryThisTurnComponent : Component
  * combat in the same turn adds to it. Backs
  * [com.wingedsheep.sdk.scripting.predicates.StatePredicate.BlockPairedWithEntityThisTurn]
  * (Gaze of the Gorgon, Glyph of Doom).
+ *
+ * [controllerWhenBlockedBy] maps each blocker in [blockedByIds] to the player who controlled this
+ * creature the last time that blocker blocked it — overwritten on every new block, so it answers
+ * "the player who controlled that creature the last time it became blocked by that Wall" (Glyph of
+ * Reincarnation, via `CaptureControllersEffect.asLastBlockedBy`) even after control has changed.
  */
 @Serializable
 data class CombatPartnersThisTurnComponent(
     val blockedIds: Set<EntityId> = emptySet(),
-    val blockedByIds: Set<EntityId> = emptySet()
+    val blockedByIds: Set<EntityId> = emptySet(),
+    val controllerWhenBlockedBy: Map<EntityId, EntityId> = emptyMap()
 ) : Component {
     /** Every creature this one was paired with in a block this turn, either way round. */
     val partnerIds: Set<EntityId> get() = blockedIds + blockedByIds

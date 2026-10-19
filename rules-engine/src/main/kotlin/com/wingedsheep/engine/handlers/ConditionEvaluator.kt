@@ -308,6 +308,7 @@ class ConditionEvaluator(
             is ExiledAsCostHadSubtype,
             IsDay,
             com.wingedsheep.sdk.scripting.conditions.BeforeAttackersDeclaredThisTurn,
+            com.wingedsheep.sdk.scripting.conditions.AfterCombatThisTurn,
             IsFirstCombatPhaseOfTurn,
             IsFirstEndStepOfTurn,
             IsFirstSpellPaidWithTreasureManaCastThisTurn,
@@ -473,6 +474,13 @@ class ConditionEvaluator(
             // been declared — whether that combat was natural or inserted.
             is com.wingedsheep.sdk.scripting.conditions.BeforeAttackersDeclaredThisTurn -> {
                 state.step.ordinal < Step.DECLARE_ATTACKERS.ordinal && !combatPhaseEndedThisTurn(state)
+            }
+
+            // "After combat" (Glyph of Reincarnation): a combat phase has ended this turn and we're
+            // not inside one — so a main phase between two combats counts, the end of combat step
+            // (still part of combat) doesn't, and a turn whose combat was skipped never gets there.
+            is com.wingedsheep.sdk.scripting.conditions.AfterCombatThisTurn -> {
+                state.phase != Phase.COMBAT && combatPhaseEndedThisTurn(state)
             }
 
             // True during the turn's first combat phase — no combat phase has ended yet this turn.
