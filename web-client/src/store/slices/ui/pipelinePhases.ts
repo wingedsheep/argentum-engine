@@ -934,8 +934,9 @@ export function enterPhase(
           // non-creature sacrifice cost (Castle Doom's artifact, a land, an enchantment).
           flags.targetDescription = costInfo.description
           // Emerge (CR 702.119) is the one sacrifice cost where the choice changes the mana owed.
-          // Forward the server's per-candidate costs so the overlay can price each pick.
-          if (costInfo.costAfterSacrifice) {
+          // Forward the server's per-candidate costs so the overlay can price each pick. Every other
+          // sacrifice cost arrives with an empty map, which must not switch the emerge pricing on.
+          if (costInfo.costAfterSacrifice && Object.keys(costInfo.costAfterSacrifice).length > 0) {
             flags.costAfterSacrifice = costInfo.costAfterSacrifice
             if (actionInfo.manaCostString) flags.costBeforeSacrifice = actionInfo.manaCostString
           }
