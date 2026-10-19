@@ -182,6 +182,7 @@ class TurnManager(
             lastCastSpellColors = null,
             lastCardDrawnThisTurnByPlayer = emptyMap(),
             drawStepStartDrawCountByPlayer = emptyMap(),
+            departedSpells = emptyMap(),
             // Safety net mirroring CleanupPhaseManager.cleanupEndOfTurn: any end-of-turn /
             // end-of-combat counter-placement modifier still lingering at a turn boundary is
             // dropped. Longer-lived durations (UntilYourNextTurn, Permanent) survive.

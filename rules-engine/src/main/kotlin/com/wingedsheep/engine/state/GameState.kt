@@ -462,6 +462,16 @@ data class GameState(
     val drawStepStartDrawCountByPlayer: Map<EntityId, Int> = emptyMap(),
 
     /**
+     * Last-known information of spells that left the stack without resolving — countered, bounced,
+     * exiled — as each object last existed on the stack (CR 608.2h), captured by [removeFromStack].
+     * An effect that still refers to such a spell reads it through [spellOrLastKnown]: "copy that
+     * spell" makes its copy even after the spell was countered (Jin-Gitaxias, Progress Tyrant's
+     * ruling). Cleared at every turn boundary; the stack is empty by then, so nothing can still
+     * refer to one of these spells.
+     */
+    val departedSpells: Map<EntityId, DepartedSpell> = emptyMap(),
+
+    /**
      * Game-mode configuration the engine reads for format-dependent behaviour (commander damage
      * threshold, command-zone redirect, etc.). Defaults to [Format.Standard] so existing
      * persisted states / tests need no migration.
@@ -1340,7 +1350,11 @@ data class GameState(
     fun pushToStack(entityId: EntityId): GameState {
         if (entityId in stack) return this
         requireDetachedForInsertion(entityId)
-        return enterObjectZone(ZoneKey(entityId, Zone.STACK), entityId).copy(stack = stack + entityId)
+        return enterObjectZone(ZoneKey(entityId, Zone.STACK), entityId).copy(
+            stack = stack + entityId,
+            // A spell cast again is a new object (CR 400.7); its old departure no longer applies.
+            departedSpells = if (entityId in departedSpells) departedSpells - entityId else departedSpells,
+        )
     }
 
     /**
@@ -1367,6 +1381,21 @@ data class GameState(
         getEntity(entityId)?.has<SpellOnStackComponent>() == true
 
     /**
+     * The spell [entityId] as it is on the stack, or — once it left the stack without resolving —
+     * as it last existed there ([departedSpells], CR 608.2h). Null when it is neither.
+     */
+    fun spellOrLastKnown(entityId: EntityId): ComponentContainer? =
+        getEntity(entityId)?.takeIf { it.has<SpellOnStackComponent>() } ?: departedSpells[entityId]?.spell
+
+    /**
+     * The entity of the spell [ref] named while it was on the stack, once that spell has left the
+     * stack without resolving — the last-known half of [spellOrLastKnown]. Null when [ref] names
+     * no departed spell, including a later object of the same card.
+     */
+    fun departedSpellEntity(ref: ObjectRef): EntityId? =
+        departedSpells[ref.entityId]?.takeIf { it.objectRef == ref }?.let { ref.entityId }
+
+    /**
      * Take an object off the stack without it resolving — countered, bounced, exiled, or moved by
      * any other zone change. The object it becomes is new (CR 400.7), so abilities granted to the
      * stack object (CR 400.7a — Thief of Existence's cast trigger) end here. A *resolving* permanent
@@ -1375,6 +1404,8 @@ data class GameState(
     fun removeFromStack(entityId: EntityId): GameState =
         copy(
             stack = stack - entityId,
+            departedSpells = getEntity(entityId)?.takeIf { entityId in stack && it.has<SpellOnStackComponent>() }
+                ?.let { departedSpells + (entityId to DepartedSpell(objectRef(entityId), it)) } ?: departedSpells,
             resolutionControls = resolutionControls.filterNot {
                 it.resolvingObject.entityId == entityId && !isResolving(it.resolvingObject)
             },
@@ -1502,16 +1533,13 @@ data class GameState(
      * Remove an entity completely from the game (from all zones).
      */
     fun removeEntity(entityId: EntityId): GameState {
-        var newState = withoutEntity(entityId)
+        // Leave the stack first, while the entity still exists, so its last-known spell is kept.
+        var newState = if (entityId in stack) removeFromStack(entityId).withoutEntity(entityId) else withoutEntity(entityId)
         // Also remove from all zones
         zones.forEach { (key, ids) ->
             if (entityId in ids) {
                 newState = newState.removeFromZone(key, entityId)
             }
-        }
-        // Also remove from stack if present
-        if (entityId in stack) {
-            newState = newState.removeFromStack(entityId)
         }
         return newState
     }

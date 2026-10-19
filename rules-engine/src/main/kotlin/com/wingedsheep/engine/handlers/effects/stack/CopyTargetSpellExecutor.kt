@@ -36,7 +36,13 @@ class CopyTargetSpellExecutor(
         effect: CopyTargetSpellEffect,
         context: EffectContext
     ): EffectResult {
+        // "Copy that spell" names the triggering spell, which may have left the stack (countered,
+        // bounced) and so become a new object (CR 400.7). The copy is then made from the spell as
+        // it last existed on the stack (CR 608.2h).
         val spellEntityId = context.resolveTarget(effect.target)
+            ?: context.objectReferences.triggering
+                ?.takeIf { effect.target == com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity }
+                ?.let(state::departedSpellEntity)
             ?: return EffectResult.error(state, "No target spell to copy")
 
         // "Copy it for each …" clauses resolve their count here (Thousand-Year Storm). Zero
@@ -44,7 +50,7 @@ class CopyTargetSpellExecutor(
         val copyCount = dynamicAmountEvaluator.evaluate(state, effect.copies, context)
         if (copyCount <= 0) return EffectResult.success(state)
 
-        val container = state.getEntity(spellEntityId)
+        val container = state.spellOrLastKnown(spellEntityId)
             ?: return EffectResult.error(state, "Target spell entity not found on stack")
 
         val cardComponent = container.get<CardComponent>()

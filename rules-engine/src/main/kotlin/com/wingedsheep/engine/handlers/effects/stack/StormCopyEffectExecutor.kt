@@ -217,7 +217,7 @@ class StormCopyEffectExecutor(
             var ordinal = currentOrdinal
             var copiesLeft = remainingCopies
 
-            val sourceSpellComp = currentState.getEntity(sourceId)?.get<SpellOnStackComponent>()
+            val sourceSpellComp = currentState.spellOrLastKnown(sourceId)?.get<SpellOnStackComponent>()
                 ?: return ExecutionResult.error(currentState, "Storm source spell not found: $sourceId")
             val sourceModeTargetsOrdered = sourceSpellComp.modeTargetsOrdered
 

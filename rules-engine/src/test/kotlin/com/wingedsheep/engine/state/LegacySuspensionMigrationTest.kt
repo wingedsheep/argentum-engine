@@ -429,7 +429,7 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
             "playersDealtNoncombatDamageThisTurn", "playersDealtNoncombatDamageLastTurn", "playersWhoLostLifeLastTurn",
             "playersWithPermanentDealtExcessDamageThisTurn",
             "pendingReplacementRiders", "playersDealtCombatDamageSinceTheirLastTurn", "roundNumber", "monarch",
-            "initiative", "pendingAnyManaTypeSpells",
+            "initiative", "pendingAnyManaTypeSpells", "departedSpells",
         )
     }
 }
