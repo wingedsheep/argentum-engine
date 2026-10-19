@@ -2131,6 +2131,148 @@
     ]
 }
 
+// Gauntlets of Chaos
+{
+    "name": "Gauntlets of Chaos",
+    "manaCost": "{5}",
+    "typeLine": "Artifact",
+    "oracleText": "{5}, Sacrifice this artifact: Exchange control of target artifact, creature, or land you control and target permanent an opponent controls that shares one of those types with it. If those permanents are exchanged this way, destroy all Auras attached to them.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Gauntlets of Chaos:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
+                            "type": "ExchangeControl",
+                            "target1": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "target2": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        "successCriterion": "SuccessCriterion.ControlChanged"
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "AttachedToTarget",
+                                    "host": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "filter": "permanent Aura"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "AttachedToTarget",
+                                    "host": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    },
+                                    "filter": "permanent Aura"
+                                },
+                                "storeAs": "gathered1"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Destroy"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Destroy"
+                            }
+                        ]
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact|creature|land ctrl:you"
+                        },
+                        "id": "t0"
+                    },
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsPermanent",
+                                    {
+                                        "type": "SharesCardTypeWith",
+                                        "entity": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        },
+                                        "among": [
+                                            "ARTIFACT",
+                                            "CREATURE",
+                                            "LAND"
+                                        ]
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByOpponent"
+                            }
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "278",
+        "rarity": "RARE",
+        "artist": "Dan Frazier",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6f8f11b5-3ba8-4913-b76a-fb469a74864d.jpg?1783948029",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "As you activate the ability, the targets you choose must be two artifacts, two creatures, or two lands. As the ability resolves, both targets will be legal only if they are two artifacts, two creatures, or two lands at that time as well, though they may be a different type than they were at the time the ability was activated."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "If one of the targets is illegal by the time the ability resolves, the exchange doesn't happen. The target that's still legal will remain under its controller's control. Since the exchange doesn't happen, no Auras are destroyed. (If both targets are illegal, the ability doesn't resolve.)"
+            }
+        ]
+    }
+}
+
 // Ghosts of the Damned
 {
     "name": "Ghosts of the Damned",
@@ -2213,6 +2355,137 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Glyph of Delusion
+{
+    "name": "Glyph of Delusion",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Put X glyph counters on target creature that target Wall blocked this turn, where X is the power of that blocked creature. The creature gains \"This creature doesn't untap during your untap step if it has a glyph counter on it\" and \"At the beginning of your upkeep, remove a glyph counter from this creature.\"",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddDynamicCounters",
+                    "counterType": "GLYPH",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                {
+                    "type": "BecomeArtifact",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "cardTypes": null,
+                    "subtypes": null,
+                    "colors": null,
+                    "loseAllAbilities": false,
+                    "grantedStaticAbilities": [
+                        {
+                            "type": "ConditionalStaticAbility",
+                            "ability": {
+                                "type": "GrantKeyword",
+                                "keyword": "DOESNT_UNTAP",
+                                "filter": {
+                                    "baseFilter": "permanent",
+                                    "scope": "Self"
+                                }
+                            },
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        {
+                                            "type": "HasCounter",
+                                            "counterType": "GLYPH"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "GrantTriggeredAbility",
+                    "ability": {
+                        "id": "Glyph of Delusion:1",
+                        "trigger": {
+                            "type": "StepEvent",
+                            "step": "UPKEEP"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "RemoveCounters",
+                            "counterType": "GLYPH",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Self"
+                        },
+                        "descriptionOverride": "At the beginning of your upkeep, remove a glyph counter from this creature."
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "duration": "Permanent"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "permanent Wall"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "BlockPairedWithEntityThisTurn",
+                                "reference": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "direction": "BLOCKED_BY"
+                            }
+                        ]
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "artist": "Susan Van Camp",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/ee39da13-4b8a-4796-a7c2-aaa11992d573.jpg?1783948075"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

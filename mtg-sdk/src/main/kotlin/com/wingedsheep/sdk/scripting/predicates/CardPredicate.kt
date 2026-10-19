@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.predicates
 
+import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
@@ -1039,14 +1040,25 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
      * Card types only — the supertypes (legendary, basic, snow) and the subtypes below them are
      * deliberately not compared, because "card type" is the printed term for exactly the middle
      * band of the type line (CR 205.2a). Reach for [SharesCreatureTypeWith] for the subtype axis.
+     *
+     * [among] narrows which shared card types count: empty means any card type; otherwise only a
+     * type in [among] that both objects have — "target permanent an opponent controls that shares
+     * one of those types with it", where "those types" are artifact, creature and land (Gauntlets
+     * of Chaos). A shared enchantment doesn't qualify there.
      */
     @SerialName("SharesCardTypeWith")
     @Serializable
-    data class SharesCardTypeWith(val entity: EffectTarget.SingleEntity) : CardPredicate {
-        override val description: String = when (entity) {
-            is EffectTarget.Self -> "that shares a card type with this permanent"
-            is EffectTarget.TriggeringEntity -> "that shares a card type with it"
-            else -> "that shares a card type with ${entity.description}"
+    data class SharesCardTypeWith(
+        val entity: EffectTarget.SingleEntity,
+        val among: Set<CardType> = emptySet()
+    ) : CardPredicate {
+        override val description: String = run {
+            val what = if (among.isEmpty()) "a card type" else "one of those types"
+            when (entity) {
+                is EffectTarget.Self -> "that shares $what with this permanent"
+                is EffectTarget.TriggeringEntity -> "that shares $what with it"
+                else -> "that shares $what with ${entity.description}"
+            }
         }
     }
 

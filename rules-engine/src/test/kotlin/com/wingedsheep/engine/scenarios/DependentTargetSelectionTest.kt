@@ -56,6 +56,38 @@ class DependentTargetSelectionTest : FunSpec({
         DependentTargetSelection.legalNext(d.state, requirements, listOf(listOf(green)), context, targetFinder = TargetFinder(PredicateEvaluator(cardRegistry = null))) shouldBe listOf(partner)
     }
 
+    test("a type-scoped share filter counts only the listed card types") {
+        val d = driver()
+        val bears = d.putCreatureOnBattlefield(d.player1, "Grizzly Bears")
+        val myForest = d.putLandOnBattlefield(d.player1, "Forest")
+        val giant = d.putCreatureOnBattlefield(d.player2, "Hill Giant")
+        val theirForest = d.putLandOnBattlefield(d.player2, "Forest")
+        fun requirements(among: Set<com.wingedsheep.sdk.core.CardType>) = listOf(
+            TargetObject(filter = TargetFilter.PermanentYouControl),
+            TargetObject(filter = TargetFilter(com.wingedsheep.sdk.scripting.GameObjectFilter.Permanent.opponentControls()
+                .sharingCardTypeWith(EffectTarget.ContextTarget(0), among))),
+        )
+        val context = PredicateContext(controllerId = d.player1)
+        val finder = TargetFinder(PredicateEvaluator(cardRegistry = null))
+        val all = requirements(emptySet())
+        DependentTargetSelection.legalNext(d.state, all, listOf(listOf(bears)), context, finder) shouldBe listOf(giant)
+        DependentTargetSelection.legalNext(d.state, all, listOf(listOf(myForest)), context, finder) shouldBe listOf(theirForest)
+        val landsOnly = requirements(setOf(com.wingedsheep.sdk.core.CardType.LAND))
+        DependentTargetSelection.legalNext(d.state, landsOnly, emptyList(), context, finder) shouldBe listOf(myForest)
+    }
+
+    test("a combat-relation state predicate over an earlier target makes selection dependent") {
+        val requirements = listOf(
+            TargetObject(filter = TargetFilter(com.wingedsheep.sdk.scripting.GameObjectFilter.Creature.withSubtype("Wall"))),
+            TargetObject(filter = TargetFilter(com.wingedsheep.sdk.scripting.GameObjectFilter.Creature
+                .wasBlockedByThisTurn(EffectTarget.ContextTarget(0)))),
+        )
+        DependentTargetSelection.isRequired(requirements) shouldBe true
+        DependentTargetSelection.isRequired(listOf(TargetObject(filter = TargetFilter(
+            com.wingedsheep.sdk.scripting.GameObjectFilter.Creature.wasBlockedByThisTurn(EffectTarget.Self)
+        )))) shouldBe false
+    }
+
     test("lookahead checks all remaining slots rather than only the next slot") {
         val d = driver()
         val small = d.putCreatureOnBattlefield(d.player1, "Llanowar Elves")

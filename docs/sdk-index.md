@@ -263,7 +263,7 @@ Families:
 - `CardPredicate.PowerLessThanEntity(reference: EffectTarget.SingleEntity)` — Power strictly less than the projected power of reference (e.g. "a creature with lesser power" than the source — Rangers of Ithilien).
 - `CardPredicate.PowerOrToughnessAtLeast(min: Int)` — Power or toughness is at least the given value (OR logic)
 - `CardPredicate.PowerOrToughnessAtMost(max: Int)` — Power or toughness is at most the given value (OR logic)
-- `CardPredicate.SharesCardTypeWith(entity: EffectTarget.SingleEntity)` — Matches objects that share a **card type** with the referenced entity — "that shares a card type with it" (Confusion in the Ranks).
+- `CardPredicate.SharesCardTypeWith(entity: EffectTarget.SingleEntity, among: Set<CardType>)` — Matches objects that share a **card type** with the referenced entity — "that shares a card type with it" (Confusion in the Ranks).
 - `CardPredicate.SharesCardTypeWithLinkedExile` — Matches objects that share a card type with **any** card exiled with the asking ability's source — "shares a card type with a card exiled with this creature" (Cemetery Illuminator).
 - `CardPredicate.SharesChosenColorWithSource` — Matches objects whose color set includes the color chosen on the source permanent (read from its CastChoicesComponent).
 - `CardPredicate.SharesColorWith(entity: EffectTarget.SingleEntity)` — Matches objects that share a color with the referenced entity

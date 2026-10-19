@@ -1227,7 +1227,7 @@ class PredicateEvaluator(
                 if (referenceTypes.isEmpty()) return false
                 val entityTypes = cardTypesOf(state, projected, entityId, projectedValues?.types)
                     .ifEmpty { card.typeLine.cardTypes.mapTo(mutableSetOf()) { it.name } }
-                entityTypes.any { it in referenceTypes }
+                entityTypes.any { it in referenceTypes && (predicate.among.isEmpty() || predicate.among.any { t -> t.name == it }) }
             }
 
             // "shares a card type with a card exiled with this creature" (Cemetery Illuminator).

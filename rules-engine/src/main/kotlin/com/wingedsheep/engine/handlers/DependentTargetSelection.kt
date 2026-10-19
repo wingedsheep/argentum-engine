@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
+import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
@@ -29,6 +30,7 @@ object DependentTargetSelection {
 
     private fun referencesTarget(filter: GameObjectFilter): Boolean =
         filter.cardPredicates.any(::referencesTarget) ||
+            filter.statePredicates.any(::referencesTarget) ||
             filter.controllerPredicate?.let(::referencesTarget) == true ||
             filter.anyOf.any(::referencesTarget)
 
@@ -42,6 +44,26 @@ object DependentTargetSelection {
         }
         else -> false
     }
+
+    /**
+     * A state predicate reads an earlier target when it relates the candidate to it in combat —
+     * "target creature that target Wall blocked this turn" (Glyph of Delusion).
+     */
+    private fun referencesTarget(predicate: StatePredicate): Boolean = when (predicate) {
+        is StatePredicate.And -> predicate.predicates.any(::referencesTarget)
+        is StatePredicate.Or -> predicate.predicates.any(::referencesTarget)
+        is StatePredicate.Not -> referencesTarget(predicate.predicate)
+        else -> isTargetReference(when (predicate) {
+            is StatePredicate.BlockPairedWithEntityThisTurn -> predicate.reference
+            is StatePredicate.IsBlockingEntity -> predicate.reference
+            is StatePredicate.IsAttackingDefenderOf -> predicate.reference
+            is StatePredicate.IsAttackingPlayer -> predicate.player
+            else -> null
+        })
+    }
+
+    private fun isTargetReference(target: EffectTarget?): Boolean =
+        target is EffectTarget.ContextTarget || target is EffectTarget.BoundVariable
 
     /** Whether selection may stop before slot [index]: it and every later slot are "up to one". */
     fun canStopAt(requirements: List<TargetRequirement>, index: Int): Boolean =
@@ -62,7 +84,7 @@ object DependentTargetSelection {
             is CardPredicate.SharesManaValueWith -> predicate.entity
             is CardPredicate.SharesNameWith -> predicate.entity
             else -> null
-        }).let { it is EffectTarget.ContextTarget || it is EffectTarget.BoundVariable }
+        }).let(::isTargetReference)
     }
 
     /**

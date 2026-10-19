@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
@@ -450,10 +451,11 @@ interface ObjectFilterBuilder<out Self> {
      * Must share a **card type** with the referenced entity (Confusion in the Ranks: "target
      * permanent another player controls that shares a card type with it"). The card-type sibling
      * of [sharingCreatureTypeWith] — see [CardPredicate.SharesCardTypeWith] for why the two axes
-     * stay apart.
+     * stay apart. Pass [among] to count only those shared card types ("shares one of those types
+     * with it", Gauntlets of Chaos).
      */
-    fun sharingCardTypeWith(entity: EffectTarget.SingleEntity) =
-        withCardPredicate(CardPredicate.SharesCardTypeWith(entity))
+    fun sharingCardTypeWith(entity: EffectTarget.SingleEntity, among: Set<CardType> = emptySet()) =
+        withCardPredicate(CardPredicate.SharesCardTypeWith(entity, among))
 
     /** Must share a color with the referenced entity */
     fun sharingColorWith(entity: EffectTarget.SingleEntity) =

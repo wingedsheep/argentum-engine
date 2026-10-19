@@ -3125,12 +3125,17 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   (a card that comes back to its first owner reports nothing). Follow it with an ordinary move to act on the
   card as its new owner's ("…exchange that card with the top card of your library" → `Effects.Move(card,
   Zone.LIBRARY, placement = Top)` lands in *your* library).
-  Triggered abilities with mandatory single-permanent target slots may compare a later target to an
-  earlier one using `EffectTarget.ContextTarget(index)` (Spawnbroker: `powerAtMostEntity(ContextTarget(0))`).
-  The engine asks for these targets sequentially, offers only choices that can complete the remaining
-  slots, and rechecks the relationship against projected characteristics at resolution. The optional
-  exchange remains a resolution-time consent choice. This selection path does not support optional
-  or multiple-object slots.
+  Spells, activated and triggered abilities may compare a later target to an earlier one using
+  `EffectTarget.ContextTarget(index)` (Spawnbroker: `powerAtMostEntity(ContextTarget(0))`; Gauntlets of
+  Chaos: `sharingCardTypeWith(yours, among = setOf(ARTIFACT, CREATURE, LAND))`). The relation may be a
+  card predicate (power / mana value / color / card type / creature type / name) or a combat-relation
+  state predicate — `wasBlockedByThisTurn` / `blockedOrWasBlockedByThisTurn`, `IsBlockingEntity`,
+  `IsAttackingDefenderOf`, `IsAttackingPlayer` (Glyph of Delusion: "target creature that target Wall
+  blocked this turn" declares the Wall first, then `Creature.wasBlockedByThisTurn(wall)`; announcement
+  order is free, so the referenced target is simply declared first). `DependentTargetSelection` asks for
+  these targets sequentially, offers only choices that can complete the remaining slots, and the
+  relationship is rechecked against projected characteristics at resolution. Every slot but the last
+  picks one target; a slot may be "up to one" only when every later slot is too.
 
 - `GainControlByRankEffect(metric, target?, direction?, tieBreak?)` — rank the players still in the
   game by a `PlayerRankMetric` and hand the target to whoever sits at one end. Three independent
@@ -6279,8 +6284,10 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   `AggregateBattlefield(Player.Each, GameObjectFilter.Creature.sharingCreatureTypeWith(EffectTarget.AffectedEntity), excludeSelf = true)`
   for "+X/+X for each OTHER creature that shares a creature type with it" (Alpha Status). In a granted
   context `excludeSelf` excludes the affected (enchanted) creature, not the granting source.
-- `.sharingCardTypeWith(entity)` — `CardPredicate.SharesCardTypeWith(entity)`: shares ≥1 (projected)
-  **card type** with a referenced entity. The card-type sibling of `.sharingCreatureTypeWith(entity)`, one
+- `.sharingCardTypeWith(entity, among = emptySet())` — `CardPredicate.SharesCardTypeWith(entity, among)`: shares ≥1 (projected)
+  **card type** with a referenced entity. A non-empty `among` counts only those shared types — "target
+  permanent an opponent controls that shares one of those types with it" after "target artifact, creature,
+  or land" (Gauntlets of Chaos), where a shared enchantment alone doesn't pair them. The card-type sibling of `.sharingCreatureTypeWith(entity)`, one
   band up the type line — Confusion in the Ranks ("target permanent another player controls that shares a
   card type with it") with `EffectTarget.TriggeringEntity`. Both sides read projected types, so an animated
   artifact land shares "Creature" with an entering creature. **Card types only**: supertypes are sieved
@@ -17682,7 +17689,7 @@ are their printed spellings (`CounterType.printed`). Text converts back only thr
   `blood`, `cage`, `doom`, `storage`, `divinity` (`CounterType.DIVINITY`, a passive counter used by the Myojin
   cycle), `charm`, `music`, `crumble`, `corpse`, `germ`, `ink`, `growth`,
   `hour`, `energy`, `scry`, `aura`, `chapter`, `citation`, `rune`, `scar`, `crux`, `omen`, `secret`, `feather`,
-  `hourglass`, `hope`, `verse`, `influence`, `burden`, `loot`, `soul`, `bait` — assorted printed counter kinds. (`hourglass`: Temporal Distortion
+  `hourglass`, `hope`, `verse`, `influence`, `burden`, `loot`, `soul`, `bait`, `glyph` — assorted printed counter kinds. (`glyph`: Glyph of Delusion — the creature *gains* a conditional `DOESNT_UNTAP` static and an upkeep remove-a-counter trigger.) (`hourglass`: Temporal Distortion
   — a permanent with one doesn't untap during its controller's untap step; model the restriction with
   `GrantKeyword(AbilityFlag.DOESNT_UNTAP.name, GroupFilter(... .withCounter(CounterType.HOURGLASS)))` so it stays
   projection-scoped.) (`hope` / `verse` / `influence` / `burden`: LTR — Dawn of a New Age / Lost Isle Calling /
