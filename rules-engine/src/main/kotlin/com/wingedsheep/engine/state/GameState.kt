@@ -280,6 +280,14 @@ data class GameState(
     val pendingFreeCastSpells: List<PendingFreeCastSpell> = emptyList(),
 
     /**
+     * Pending "for one spell this turn, you may spend mana as though it were mana of any type"
+     * riders (North Star). Read as a may-spend-any-type grant by the cast enumerators and spent by
+     * [com.wingedsheep.engine.handlers.actions.spell.CastCostPayer] on the first matching spell
+     * whose payment needs it.
+     */
+    val pendingAnyManaTypeSpells: List<PendingOneSpellAnyManaType> = emptyList(),
+
+    /**
      * Duration-bounded "spells you cast [this turn | until your next turn] that match … cost {N}
      * less" discounts (the Scion cycle; Ral, Leyline Prodigy). Unlike [pendingNextSpellAffinities]
      * these are not consumed by the spell they discount — they apply to every matching spell until

@@ -5745,6 +5745,14 @@ object Effects {
     ): Effect = com.wingedsheep.sdk.scripting.effects.GrantNextSpellKeywordEffect(keyword, spellFilter)
 
     /**
+     * "For one spell this turn, you may spend mana as though it were mana of any type to pay that
+     * spell's mana cost" (North Star). Spent by the first [spellFilter] spell whose payment needs it.
+     */
+    fun SpendAnyManaTypeForOneSpell(
+        spellFilter: GameObjectFilter = GameObjectFilter.Any
+    ): Effect = com.wingedsheep.sdk.scripting.effects.GrantOneSpellAnyManaTypeEffect(spellFilter)
+
+    /**
      * "Spells you cast this turn that match [spellFilter] cost {X} less to cast, where X is
      * [amount]" (Will, Scion of Peace / Rowan, Scion of War); with
      * `duration = Duration.UntilYourNextTurn`, "until your next turn, … spells you cast cost {X}

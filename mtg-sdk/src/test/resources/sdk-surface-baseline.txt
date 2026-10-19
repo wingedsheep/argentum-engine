@@ -724,6 +724,7 @@ GrantMayPlayFromExileEffect — Effect
 GrantNextSpellAffinityEffect — Effect
 GrantNextSpellFreeCastEffect — Effect
 GrantNextSpellKeywordEffect — Effect
+GrantOneSpellAnyManaTypeEffect — Effect
 GrantPlayWithAdditionalCostEffect — Effect
 GrantPlayWithCostIncreaseEffect — Effect
 GrantPlayWithoutPayingCostEffect — Effect

@@ -157,6 +157,8 @@ class TurnManager(
             // riders (World War Hulk I) are turn-scoped too — an unused free cast must not leak
             // into a later turn.
             pendingFreeCastSpells = emptyList(),
+            // "For one spell this turn, … mana of any type" riders (North Star) likewise.
+            pendingAnyManaTypeSpells = emptyList(),
             // "Spells you cast this turn cost {N} less" discounts (Will / Rowan, Scion of …) end
             // with the turn that installed them; "until your next turn" ones (Ral, Leyline
             // Prodigy) survive and expire after their controller's next untap step.

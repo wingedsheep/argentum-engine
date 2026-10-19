@@ -23,6 +23,7 @@ import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.PendingOneSpellAnyManaType
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.CastFromTopOfLibraryUsesThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
@@ -1959,8 +1960,33 @@ class CastPermissionUtils(
      * consulted for hand casts, top-of-library casts and may-play casts alike. The card is matched
      * against the filter in projected state, so a permanent that is only a creature *because* of a
      * continuous effect still counts.
+     *
+     * Also true while a matching one-spell rider ([oneSpellAnyManaTypeRider], North Star) waits:
+     * the enumerators ask whether the spell is affordable at all, and the rider may pay for it.
+     * Payment itself spends the rider only when it's needed (`CastCostPayer.relaxForCastPermission`),
+     * so the payment side reads [hasSpendAnyManaTypeStatic] instead.
      */
-    fun canSpendAnyManaTypeForSpell(state: GameState, playerId: EntityId, cardId: EntityId): Boolean {
+    fun canSpendAnyManaTypeForSpell(state: GameState, playerId: EntityId, cardId: EntityId): Boolean =
+        hasSpendAnyManaTypeStatic(state, playerId, cardId) || oneSpellAnyManaTypeRider(state, playerId, cardId) != null
+
+    /**
+     * The first pending "for one spell this turn, you may spend mana as though it were mana of any
+     * type" rider (North Star) of [playerId]'s that may apply to the card [cardId] they are casting,
+     * or null. Matched like the static, in projected state, with the rider's source in context.
+     */
+    fun oneSpellAnyManaTypeRider(state: GameState, playerId: EntityId, cardId: EntityId): PendingOneSpellAnyManaType? =
+        state.pendingAnyManaTypeSpells.firstOrNull { rider ->
+            rider.controllerId == playerId && predicateEvaluator.matches(
+                state, state.projectedState, cardId, rider.spellFilter,
+                PredicateContext(controllerId = playerId, sourceId = rider.sourceId)
+            )
+        }
+
+    /**
+     * The battlefield half of [canSpendAnyManaTypeForSpell]: a [com.wingedsheep.sdk.scripting.SpendAnyManaTypeForSpells]
+     * static controlled by [playerId] matches [cardId].
+     */
+    fun hasSpendAnyManaTypeStatic(state: GameState, playerId: EntityId, cardId: EntityId): Boolean {
         val projected = state.projectedState
         for (granterId in state.getBattlefield()) {
             val granter = state.getEntity(granterId) ?: continue

@@ -741,6 +741,26 @@ internal class PlayerActiveEffectsProjector(
                 )
             )
         }
+
+        // Check for pending "for one spell this turn, mana of any type" riders (North Star) — the
+        // player needs to see the rider is still waiting for the spell that needs it.
+        val pendingAnyType = state.pendingAnyManaTypeSpells.filter { it.controllerId == playerId }
+        if (pendingAnyType.isNotEmpty()) {
+            val sourceName = pendingAnyType.map { it.sourceName }.distinct().joinToString(", ")
+            val filterDesc = if (pendingAnyType.any { it.spellFilter == GameObjectFilter.Any }) {
+                ""
+            } else {
+                pendingAnyType.map { it.spellFilter.description }.distinct().joinToString("/") + " "
+            }
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "pending_one_spell_any_mana_type",
+                    name = "Any Mana Type",
+                    description = "For one ${filterDesc}spell this turn, you may spend mana as though it were mana of any type to pay its mana cost ($sourceName)",
+                    icon = "granted-ability"
+                )
+            )
+        }
         return effects
     }
 

@@ -1322,6 +1322,34 @@ data class GrantNextSpellKeywordEffect(
 }
 
 /**
+ * "For one spell this turn, you may spend mana as though it were mana of any type to pay that
+ * spell's mana cost. (Additional costs are still paid normally.)" (North Star) — a one-shot,
+ * turn-scoped rider in the [GrantNextSpellKeywordEffect] family, but **not** a "next spell" one:
+ * the printed text lets the player pick which spell, so the rider is spent only by the first
+ * matching cast whose mana payment actually needs it (CR 118.14 / 609.4b). A matching spell the
+ * player pays with the right types leaves it waiting; an unused rider clears at the turn boundary.
+ *
+ * Only the colored, hybrid, Phyrexian and colorless pips of the spell's own mana cost are relaxed —
+ * pips added by additional costs (kicker and the like) still need their printed type.
+ *
+ * @property spellFilter Which spells the rider may apply to (defaults to any spell).
+ */
+@SerialName("GrantOneSpellAnyManaType")
+@Serializable
+data class GrantOneSpellAnyManaTypeEffect(
+    val spellFilter: GameObjectFilter = GameObjectFilter.Any
+) : Effect {
+    override val description: String = buildString {
+        append("For one ")
+        if (spellFilter != GameObjectFilter.Any) append("${spellFilter.description} ")
+        append("spell this turn, you may spend mana as though it were mana of any type to pay that spell's mana cost")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect =
+        copy(spellFilter = spellFilter.applyTextReplacement(replacer))
+}
+
+/**
  * "Spells [player] casts [duration] that match [spellFilter] cost {X} less — or, with
  * [increase], {X} more — to cast": a duration-bounded, player-scoped generic cost modifier
  * installed when this effect resolves. Not to be confused with the static

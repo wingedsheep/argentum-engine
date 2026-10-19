@@ -377,7 +377,7 @@ class CastSpellHandler(
                     .filter { !it.requiresSacrifice && it.tapPermanentsSubCost == null }.map { it.entityId }
                 val explicit = action.copy(paymentStrategy = com.wingedsheep.engine.core.PaymentStrategy.Explicit(sources))
                 if (castCostPayer.validateManaPayment(announcedState, explicit, computed.cost, computed.paymentXValue) != null) {
-                    val cost = castCostPayer.relaxForCastPermission(announcedState, action, computed.cost)
+                    val cost = castCostPayer.relaxForCastPermission(announcedState, action, computed.cost, computed.paymentXValue)
                         .withXAs(computed.paymentXValue)
                     // A cast restricted to certain sources' mana (Security Rhox) offers only those
                     // sources and counts only their floating mana — when the window opens and when

@@ -373,6 +373,7 @@ class HiddenIdentityForkChecker(private val registry: CardRegistry) {
         state.pendingTriggers.any { it.sourceId == id || it.granterId == id } -> "pendingTriggers"
         state.floatingEffects.any { effect -> effect.sourceId == id || effect.referencedObjects.any { it.entityId == id } } -> "floatingEffects"
         state.pendingFreeCastSpells.any { it.sourceId == id } -> "pendingFreeCastSpells"
+        state.pendingAnyManaTypeSpells.any { it.sourceId == id } -> "pendingAnyManaTypeSpells"
         state.spellCostModifiers.any { it.sourceId == id } -> "spellCostModifiers"
         state.pendingNextSpellAffinities.any { it.sourceId == id } -> "pendingNextSpellAffinities"
         state.pendingNextSpellKeywords.any { it.sourceId == id } -> "pendingNextSpellKeywords"

@@ -4421,6 +4421,41 @@
     ]
 }
 
+// North Star
+{
+    "name": "North Star",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "{4}, {T}: For one spell this turn, you may spend mana as though it were mana of any type to pay that spell's mana cost. (Additional costs are still paid normally.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "North Star:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": "GrantOneSpellAnyManaType"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "288",
+        "rarity": "RARE",
+        "artist": "Kaja Foglio",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/daac2a6b-27c8-4567-9e0c-7b262628d331.jpg?1783948026"
+    }
+}
+
 // Palladia-Mors
 {
     "name": "Palladia-Mors",
