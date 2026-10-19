@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TapReason
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
+import com.wingedsheep.sdk.scripting.ZoneChangeCause
 import com.wingedsheep.sdk.scripting.events.AttackPredicate
 import com.wingedsheep.sdk.scripting.events.DamagePredicate
 import com.wingedsheep.sdk.scripting.events.DamageType
@@ -606,11 +607,16 @@ class ObjectTriggerSubject internal constructor(
         return spec(CycleEvent(Player.You))
     }
 
-    /** "when you discard this card" — fires as it's discarded, wherever the discard sends it (madness). */
-    fun isDiscarded(): TriggerSpec {
+    /**
+     * "when you discard this card" — fires as it's discarded, wherever the discard sends it (madness).
+     * [cause] narrows it to "when a spell or ability an opponent controls causes you to discard this
+     * card" ([ZoneChangeCause.DiscardedByOpponentEffect], Psychic Purge); that controller is
+     * [Player.ControllerOfCause].
+     */
+    fun isDiscarded(cause: ZoneChangeCause = ZoneChangeCause.Any): TriggerSpec {
         unfiltered("isDiscarded")
         only("isDiscarded", TriggerBinding.SELF)
-        return spec(DiscardEvent(player = Player.You))
+        return spec(DiscardEvent(player = Player.You, cause = cause))
     }
 
     /** "when you sacrifice this" — only a sacrifice; [dies] also fires on destruction. */

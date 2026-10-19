@@ -1560,7 +1560,8 @@ class ZoneTransitionService(
         val priorDiscards = discardsThisTurn(newState, playerId)
         newState = trackDiscard(newState, playerId, cardIds)
         val discardEvent = CardsDiscardedEvent(
-            playerId, cardIds, cardNames, asCyclingCost = asCyclingCost, priorDiscardsThisTurn = priorDiscards
+            playerId, cardIds, cardNames, asCyclingCost = asCyclingCost, priorDiscardsThisTurn = priorDiscards,
+            causeControllerId = causedByControllerId
         )
         return ZoneTransitionResult(newState, listOf(discardEvent) + moveEvents, transitions = transitions)
     }

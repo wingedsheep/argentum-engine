@@ -78,6 +78,12 @@ data class TriggerContext(
     val minusOneMinusOneCounterCount: Int? = null,
     /** The spell or ability entity that targeted a permanent (for ward triggers) */
     val targetingSourceEntityId: EntityId? = null,
+    /**
+     * Controller of the spell or ability that caused the triggering event, when the event stamps
+     * it directly (a discard: `CardsDiscardedEvent.causeControllerId`). `Player.ControllerOfCause`
+     * reads this when there is no [targetingSourceEntityId] to look the controller up from.
+     */
+    val causeControllerId: EntityId? = null,
     /** The object that dealt the triggering damage (`EffectTarget.DamageSource`); null outside damage triggers. */
     val damageSourceId: EntityId? = null,
     /** Last known power when the triggering entity left the battlefield (for dies/leaves triggers) */
@@ -505,7 +511,8 @@ data class TriggerContext(
                 // discard, however many cards it contained (CR 603.2c).
                 is CardsDiscardedEvent -> TriggerContext(
                     triggeringPlayerId = event.playerId,
-                    discardedCardCount = event.cardIds.size
+                    discardedCardCount = event.cardIds.size,
+                    causeControllerId = event.causeControllerId
                 )
                 // Paths that don't expand a mill per card (granted/global observers) see the whole
                 // instruction's cards; TriggerMatcher.millTriggerContexts is the per-card form.

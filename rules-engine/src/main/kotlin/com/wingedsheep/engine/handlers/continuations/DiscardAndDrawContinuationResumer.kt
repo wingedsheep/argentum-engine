@@ -84,7 +84,9 @@ class DiscardAndDrawContinuationResumer(
             state.getEntity(cardId)?.get<CardComponent>()?.isCreature == true
         }
 
-        val discardResult = services.zones.discardCards(state, currentPlayerId, selectedCards)
+        val discardResult = services.zones.discardCards(
+            state, currentPlayerId, selectedCards, causedByControllerId = continuation.controllerId
+        )
         val newState = discardResult.state
         val discardEvents: List<GameEvent> = discardResult.events
 

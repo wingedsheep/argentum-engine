@@ -392,26 +392,25 @@ sealed interface Player {
     }
 
     /**
-     * The controller of the spell or ability that **targeted** the source — the other end of a
-     * "becomes the target of a spell or ability" trigger.
+     * The controller of the spell or ability that **caused** the triggering event — the other end
+     * of a trigger whose subject is acted on by a spell or ability:
      *
-     * [TriggeringPlayer] cannot name it: a becomes-target trigger binds the *targeted object* as
-     * the triggering entity, and its trigger context deliberately leaves the triggering player
-     * null unless the thing targeted was itself a player. What the context does carry is the
-     * targeting stack object, and this reference reads that object's controller — the caster of a
-     * spell, or the controller of an activated/triggered ability.
+     * - "Whenever enchanted creature becomes the target of a spell or ability, **that spell or
+     *   ability's controller** gains control of that creature" (Fractured Loyalty). The trigger
+     *   context carries the targeting stack object; resolution reads its controller while it is
+     *   still on the stack, then its last-known controller and finally its owner (CR 608.2h) if it
+     *   was countered in response.
+     * - "When a spell or ability an opponent controls causes you to discard this card, **that
+     *   player** loses 5 life" (Psychic Purge). The discard event stamps the causing controller
+     *   itself, so a resolved sorcery or a vanished ability still names them.
      *
-     * Used by Fractured Loyalty: *"Whenever enchanted creature becomes the target of a spell or
-     * ability, that spell or ability's controller gains control of that creature."*
-     *
-     * The trigger goes on the stack above the spell that caused it, so ordinarily the targeting
-     * object is still on the stack when this resolves. If it left in the meantime (it was
-     * countered in response), resolution falls back to that object's last-known controller and
-     * finally its owner, per CR 608.2h.
+     * [TriggeringPlayer] cannot name this player: it reads the context's *player* slot — the
+     * targeted player (null for a targeted object), the player who discarded. Null when the
+     * triggering event had no spell or ability cause (a cost, the cleanup-step discard).
      */
-    @SerialName("ControllerOfTargetingSource")
+    @SerialName("ControllerOfCause")
     @Serializable
-    data object ControllerOfTargetingSource : Player {
+    data object ControllerOfCause : Player {
         override val description: String = "that spell or ability's controller"
     }
 
@@ -471,7 +470,7 @@ sealed interface Player {
             // Names the same player [You] does; the difference is only where it reads from.
             ControllerOfSource -> "your"
             OwnersOfLinkedExile -> "the exiled card's owner's"
-            ControllerOfTargetingSource -> "that spell or ability's controller's"
+            ControllerOfCause -> "that spell or ability's controller's"
             ControllerOfTriggeringEntity -> "that source's controller's"
             ControllerOfGrantingSource -> "the granting permanent's controller's"
         }

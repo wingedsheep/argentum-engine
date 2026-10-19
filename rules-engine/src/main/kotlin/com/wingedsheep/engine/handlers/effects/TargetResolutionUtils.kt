@@ -372,8 +372,12 @@ object TargetResolutionUtils {
             // that did the targeting (Fractured Loyalty). The trigger context carries the
             // targeting stack object; [stackObjectController] reads it while it is still on the
             // stack, and [controllerOf] supplies last-known information once it has left.
-            Player.ControllerOfTargetingSource -> context.triggerContext?.targetingSourceEntityId
-                ?.let { stackObjectController(state, it) ?: controllerOf(state, it) }
+            // A discard's cause is stamped on the event as a controller id instead (Psychic Purge):
+            // the causing sorcery or ability has usually left the stack by resolution.
+            Player.ControllerOfCause -> context.triggerContext?.let { tc ->
+                tc.targetingSourceEntityId?.let { stackObjectController(state, it) ?: controllerOf(state, it) }
+                    ?: tc.causeControllerId
+            }
             // "That source's controller", for the pipelines that are keyed by Player rather than
             // EffectTarget (Belltower Sphinx's mill). Same entity the EffectTarget form reads, and
             // [controllerOf]'s ladder ends in last-known controller then owner — which is what

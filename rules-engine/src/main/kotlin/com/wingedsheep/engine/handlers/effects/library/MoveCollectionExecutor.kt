@@ -1098,7 +1098,8 @@ class MoveCollectionExecutor(
                 val zones = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
                 events.add(CardsDiscardedEvent(discarderId, discarded, discardNames,
                     undefinedCharacteristics = undefined,
-                    priorDiscardsThisTurn = zones.discardsThisTurn(newState, discarderId)))
+                    priorDiscardsThisTurn = zones.discardsThisTurn(newState, discarderId),
+                    causeControllerId = context.controllerId.takeUnless { context.discardIsCost }))
                 newState = zones.trackDiscard(newState, discarderId, discarded, undefined)
             }
         }

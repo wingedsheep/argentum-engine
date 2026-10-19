@@ -3903,7 +3903,7 @@
                     "permanent": "TriggeringEntity",
                     "newController": {
                         "type": "PlayerRef",
-                        "player": "ControllerOfTargetingSource"
+                        "player": "ControllerOfCause"
                     }
                 },
                 "descriptionOverride": "Whenever enchanted creature becomes the target of a spell or ability, that spell or ability's controller gains control of that creature."

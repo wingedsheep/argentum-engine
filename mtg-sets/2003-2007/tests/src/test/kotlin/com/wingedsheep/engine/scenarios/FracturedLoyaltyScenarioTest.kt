@@ -19,7 +19,7 @@ import com.wingedsheep.engine.core.Outcome
  * Fractured Loyalty (MRD #93) — "Whenever enchanted creature becomes the target of a spell or
  * ability, that spell or ability's controller gains control of that creature."
  *
- * The card exists to prove one reference: `Player.ControllerOfTargetingSource`. A becomes-target
+ * The card exists to prove one reference: `Player.ControllerOfCause`. A becomes-target
  * trigger binds the *targeted object* as its triggering entity, so every player reference already
  * in the SDK points at the wrong end — `TriggeringPlayer` is null for an object target, and
  * `ControllerOfTriggeringEntity` names the victim's controller. Each test below therefore puts the

@@ -2476,8 +2476,9 @@ class TriggerDetector(
                 abilityResolver.getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state, statics)
 
             for (ability in abilities) {
-                if (ability.trigger !is EventPattern.DiscardEvent) continue
+                val discardTrigger = ability.trigger as? EventPattern.DiscardEvent ?: continue
                 if (ability.binding != TriggerBinding.SELF) continue
+                if (!matcher.discardCauseMatches(discardTrigger.cause, event)) continue
                 triggers.add(
                     PendingTrigger(
                         ability = ability,

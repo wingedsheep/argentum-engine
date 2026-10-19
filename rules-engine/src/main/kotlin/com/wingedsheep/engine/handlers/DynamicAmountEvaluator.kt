@@ -1596,7 +1596,7 @@ class DynamicAmountEvaluator(
             // controller controls" work (Skulking Killer's "if that opponent controls no other
             // creatures" = AggregateBattlefield(ControllerOf("target"), Creature) == 1).
             is Player.ControllerOf, is Player.OwnerOf, is Player.OwnerOfSource,
-            is Player.ControllerOfSource, is Player.ControllerOfTargetingSource,
+            is Player.ControllerOfSource, is Player.ControllerOfCause,
             is Player.ControllerOfTriggeringEntity, is Player.ControllerOfGrantingSource -> listOfNotNull(
                 TargetResolutionUtils.resolvePlayerRef(player, context, state)
             )
