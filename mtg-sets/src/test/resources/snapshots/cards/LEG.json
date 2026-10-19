@@ -3739,6 +3739,60 @@
     ]
 }
 
+// Land Equilibrium
+{
+    "name": "Land Equilibrium",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "If an opponent who controls at least as many lands as you do would put a land onto the battlefield, that player instead puts that land onto the battlefield then sacrifices a land of their choice.",
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "PutOntoBattlefieldThen",
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "land",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "putter": "EachOpponent",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "TriggeringPlayer",
+                        "zone": "Battlefield",
+                        "filter": "land"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Battlefield",
+                        "filter": "land"
+                    }
+                },
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land",
+                    "to": "Battlefield"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "RARE",
+        "artist": "Jesper Myrfors",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c406b25-03f8-4aaa-9ea7-48bf754166b7.jpg?1783948074"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Lifeblood
 {
     "name": "Lifeblood",

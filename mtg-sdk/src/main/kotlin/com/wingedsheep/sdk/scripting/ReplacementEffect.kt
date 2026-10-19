@@ -695,6 +695,76 @@ data class PermanentsEnterTapped(
 }
 
 /**
+ * "If [putter] would put a permanent matching [appliesTo] onto the battlefield, that player instead
+ * puts it onto the battlefield, then [effect]" — an entry replacement whose rest *does* something
+ * once the permanent is there (CR 614.1a). Land Equilibrium: "If an opponent who controls at least
+ * as many lands as you do would put a land onto the battlefield, that player instead puts that land
+ * onto the battlefield then sacrifices a land of their choice."
+ *
+ * The permanent still enters — its enter triggers see it, and the player may pick it for the rider
+ * — but the rider runs as part of the same replacement, before anyone gets priority or can tap the
+ * new permanent: the engine queues it as a pending replacement rider that drains at the end of the
+ * putting effect (or at the settle boundary for a land play), ahead of state-based actions and
+ * trigger detection. Applies however the permanent would enter — played, put by a spell or
+ * ability, or created as a token (CR 701.7a: to create a token is to put it onto the battlefield).
+ *
+ * Closest existing types, and why neither takes the axis: [OnEnterRun] runs an effect *as its own
+ * source* enters (a self-replacement read off the entering card's definition, never consulted for
+ * other permanents); [PermanentsEnterTapped] is consulted from the battlefield for other entering
+ * permanents but only ever taps them — it has no effect to run and no player who put it.
+ *
+ * @property effect the rest of the replacement. In it "that player" is
+ *   [com.wingedsheep.sdk.scripting.references.Player.TriggeringPlayer] — the player who put the
+ *   permanent onto the battlefield (not necessarily its controller: the Land Equilibrium ruling) —
+ *   and "you" is this source's controller.
+ * @property putter which player's entries this replaces, relative to this source's controller
+ *   ([Player.EachOpponent], [Player.You], [Player.Each]). The player who puts the permanent is the
+ *   one playing it, or the controller of the spell or ability putting it there.
+ * @property condition optional gate, evaluated as the permanent *would* enter — against the board
+ *   without it — with [Player.TriggeringPlayer] bound to the putting player.
+ */
+@SerialName("PutOntoBattlefieldThen")
+@Serializable
+data class PutOntoBattlefieldThen(
+    val effect: Effect,
+    val putter: Player = Player.Each,
+    val condition: Condition? = null,
+    override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
+        filter = GameObjectFilter.Any,
+        to = Zone.BATTLEFIELD
+    )
+) : ReplacementEffect {
+    init {
+        require(putter == Player.You || putter == Player.EachOpponent || putter == Player.Each || putter == Player.Any) {
+            "PutOntoBattlefieldThen.putter is a relation to this source's controller: You, EachOpponent, Each or Any"
+        }
+    }
+
+    override val description: String = buildString {
+        append("If ")
+        append(
+            when (putter) {
+                Player.EachOpponent -> "an opponent"
+                Player.You -> "you"
+                else -> "a player"
+            }
+        )
+        condition?.let { append(" (${it.description})") }
+        append(" would put ${(appliesTo as? EventPattern.ZoneChangeEvent)?.filter?.description ?: "a permanent"} onto the battlefield, ")
+        append("that player instead puts it onto the battlefield, then ${effect.description.replaceFirstChar { it.lowercase() }}")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val newEffect = effect.applyTextReplacement(replacer)
+        val newCondition = condition?.applyTextReplacement(replacer)
+        val newAppliesTo = appliesTo.applyTextReplacement(replacer)
+        return if (newEffect !== effect || newCondition !== condition || newAppliesTo !== appliesTo)
+            copy(effect = newEffect, condition = newCondition, appliesTo = newAppliesTo)
+        else this
+    }
+}
+
+/**
  * Permanent/creature enters with counters.
  * Example: Master Biomancer, Metallic Mimic
  *

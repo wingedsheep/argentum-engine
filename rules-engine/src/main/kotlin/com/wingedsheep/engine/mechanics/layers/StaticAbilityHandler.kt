@@ -1420,6 +1420,9 @@ class StaticAbilityHandler(
             // "Nonbasic lands enter tapped" (Zhao, the Moon Slayer): the global counterpart of
             // the self-only EntersTapped, consulted from the battlefield against OTHER permanents.
             is com.wingedsheep.sdk.scripting.PermanentsEnterTapped,
+            // "…that player instead puts it onto the battlefield, then …" (Land Equilibrium):
+            // consulted from the battlefield as OTHER permanents enter (EntryRiderReplacements).
+            is com.wingedsheep.sdk.scripting.PutOntoBattlefieldThen,
             // Zone changes and turns:
             is com.wingedsheep.sdk.scripting.RedirectZoneChange,
             is com.wingedsheep.sdk.scripting.RedirectZoneChangeWith,

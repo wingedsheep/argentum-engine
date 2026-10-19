@@ -17079,6 +17079,23 @@ The priority groups are (CR 616.1a–f):
   odd-mana-value half on `SourceChosenModeIs("even")`. Reach for it whenever the clause would otherwise
   want a `ConditionalStaticAbility` wrapper — a runtime replacement can't be wrapped in one, because it is
   stamped into the replacement component rather than projected through the layer system.
+- `PutOntoBattlefieldThen(effect, putter = Player.Each, condition = null, appliesTo = ZoneChangeEvent(filter, to = Zone.BATTLEFIELD))`
+  — "If [putter] would put [filter] onto the battlefield, that player instead puts it onto the battlefield,
+  then [effect]" (Land Equilibrium: `putter = Player.EachOpponent`, `filter = GameObjectFilter.Land`,
+  `effect = Effects.Sacrifice(GameObjectFilter.Land, 1, EffectTarget.PlayerRef(Player.TriggeringPlayer))`).
+  The permanent still enters (its enter triggers fire, and the player may pick it for the rider); the rider
+  is the rest of the same replacement, queued as a `PendingReplacementRider` from
+  `PermanentEntryTracker.record` — the funnel every battlefield entry goes through (land plays, effect moves,
+  tokens) — and drained at the end of the putting effect or at the settle boundary, before state-based
+  actions, triggers and priority, so the land can't be tapped for mana first. In `effect` and `condition`,
+  `Player.TriggeringPlayer` is the player who *put* it there — the one playing it, or the controller of the
+  spell or ability putting it (not necessarily its controller) — and `Player.You` is the source's controller.
+  `putter` is a relation to that controller: `You`, `EachOpponent`, `Each` or `Any`. `condition` is evaluated
+  as the permanent *would* enter, against the board without it ("an opponent who controls at least as many
+  lands as you do": `Conditions.CompareAmounts(DynamicAmounts.count(Player.TriggeringPlayer, Zone.BATTLEFIELD,
+  GameObjectFilter.Land), ComparisonOperator.GTE, DynamicAmounts.count(Player.You, Zone.BATTLEFIELD,
+  GameObjectFilter.Land))`). Distinct from the self-only `OnEnterRun` ("as this enters") and from
+  `PermanentsEnterTapped`, which is consulted the same way but only taps.
 - `RedirectZoneChange(newDestination, appliesTo, linkToSource = false, selfOnly = false, shuffleIntoLibrary = false, reveal = false, requiredCause = ZoneChangeCause.Any)`
   — redirect a zone change to a different destination (Rest in Peace / Leyline of the Void: graveyard →
   exile). `appliesTo` is an `EventPattern.ZoneChangeEvent(filter, from?, to?)`; the `filter`'s

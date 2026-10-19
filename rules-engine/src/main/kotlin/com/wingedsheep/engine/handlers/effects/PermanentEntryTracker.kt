@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.effects
 
 import com.wingedsheep.engine.core.FinishResolvingAbilityContinuation
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.FinishResolvingSpellContinuation
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
@@ -42,6 +43,9 @@ import com.wingedsheep.sdk.model.EntityId
  */
 object PermanentEntryTracker {
 
+    /** Entry filters and gates read only components and counts, never a printed script. */
+    private val entryRiderEvaluator = PredicateEvaluator(cardRegistry = null)
+
     /**
      * Record that [entityId] just entered the battlefield under [controllerId]. The
      * recorded card types are read from the projected state, which the caller is
@@ -72,7 +76,13 @@ object PermanentEntryTracker {
         val stamped = state.updateEntity(entityId) { container ->
             container.with(BattlefieldEntryTimestampComponent(state.timestamp, simultaneousEntryGroup))
                 .with(TimestampComponent(state.timestamp))
-        }.tick().let { recordPut(it, putBy ?: resolvingController(it) ?: controllerId, entityId) }
+        }.tick().let { ticked ->
+            val putter = putBy ?: resolvingController(ticked) ?: controllerId
+            // "If a player would put a land onto the battlefield, that player instead puts it onto
+            // the battlefield, then …" (Land Equilibrium) — queued here because every entry funnels
+            // through this method and this is where the putting player is known.
+            EntryRiderReplacements.queue(recordPut(ticked, putter, entityId), entityId, putter, entryRiderEvaluator)
+        }
         val cardTypes = projectedCardTypes(stamped, entityId)
         if (cardTypes.isEmpty()) return stamped
         val subtypes = stamped.projectedState.getSubtypes(entityId)
