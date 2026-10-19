@@ -1001,6 +1001,7 @@ Families:
 - `RandomizedBlockerPilesEffect(duration: Duration)` — Replace blocker declarations with optional creature piles assigned randomly to attackers.
 - `RecordChosenLinkedExileEffect(from: String)` — Records the card most recently selected from the source's linked-exile pile as its "last chosen card", stamping a `ChosenLinkedExileComponent` on the source.
 - `RecordSourceObjectsEffect(from: String, key: String)` — Append the current battlefield objects in a pipeline collection to a source-local history slot.
+- `RecordValueAsEnteredEffect(amount: DynamicAmount)` — Record amount on the entering permanent as the value it entered with — the non-choice sibling of PayAnyAmountOfLifeAsEntersEffect, read back the same way through com.wingedsheep.sdk.scripting.value…
 - `RedirectCombatDamageToControllerEffect(target: EffectTarget)`
 - `RedirectDamageFromChosenSourceEffect(protectedTarget: EffectTarget, redirectTo: EffectTarget, duration: Duration)` — Choose a damage source on resolution and redirect its next damage instance to another recipient.
 - `RedirectNextDamageEffect(protectedTargets: List<EffectTarget>, redirectTo: EffectTarget, amount: Int?, scope: RedirectScope, creaturesOnly: Boolean, optional: Boolean, fromSource: EffectTarget?)` — Redirect damage that would be dealt to the protected targets this turn.

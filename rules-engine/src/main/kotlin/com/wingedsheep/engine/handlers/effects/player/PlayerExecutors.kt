@@ -95,6 +95,7 @@ class PlayerExecutors(
         SkipCombatPhasesExecutor(),
         SkipStepOrPhaseExecutor(),
         PayAnyAmountOfLifeAsEntersExecutor(amountEvaluator = zones.predicateEvaluator.amounts),
+        RecordValueAsEnteredExecutor(amountEvaluator = zones.predicateEvaluator.amounts),
         SkipNextTurnExecutor(amountEvaluator = zones.predicateEvaluator.amounts),
         SkipUntapExecutor(),
         TakeExtraTurnExecutor(),

@@ -472,6 +472,14 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.PayAnyAmountOfLifeAsEntersEffect(maxAmount)
 
     /**
+     * Record [amount] on the entering permanent for its characteristic-defining ability, read back
+     * through `EntityNumericProperty.ValueChosenAsEntered` — the outcome of an "as this enters"
+     * action, e.g. the Forests Wood Elemental sacrificed as it entered. Use inside `OnEnterRun`.
+     */
+    fun RecordValueAsEntered(amount: DynamicAmount): Effect =
+        com.wingedsheep.sdk.scripting.effects.RecordValueAsEnteredEffect(amount)
+
+    /**
      * Lose life. Default target is target opponent.
      */
     fun LoseLife(amount: Int, target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)): Effect =

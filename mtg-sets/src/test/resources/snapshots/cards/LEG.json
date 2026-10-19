@@ -6926,6 +6926,65 @@
     ]
 }
 
+// Wood Elemental
+{
+    "name": "Wood Elemental",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "As this creature enters, sacrifice any number of untapped Forests.\nWood Elemental's power and toughness are each equal to the number of Forests sacrificed as it entered.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "EntityProperty",
+                "entity": "Self",
+                "numericProperty": "ValueChosenAsEntered"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "EntityProperty",
+                "entity": "Self",
+                "numericProperty": "ValueChosenAsEntered"
+            }
+        }
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "OnEnterRunEffect",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Sacrifice",
+                            "filter": "land Forest untapped",
+                            "any": true
+                        },
+                        {
+                            "type": "RecordValueAsEntered",
+                            "amount": "PermanentsSacrificedThisWay"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "215",
+        "rarity": "RARE",
+        "artist": "Brian Snõddy",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/edc71122-2951-43eb-8ca8-1cda6d231013.jpg?1783948042",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "The Forests are sacrificed to define the power/toughness of this card right before it enters. You have to do this sacrifice no matter how this card enters."
+            }
+        ]
+    }
+}
+
 // Xira Arien
 {
     "name": "Xira Arien",

@@ -804,6 +804,7 @@ PutOntoBattlefieldAttachedToChosenEffect — Effect
 RandomizedBlockerPilesEffect — Effect
 RecordChosenLinkedExileEffect — Effect
 RecordSourceObjectsEffect — Effect
+RecordValueAsEnteredEffect — Effect
 RedirectCombatDamageToControllerEffect — Effect
 RedirectDamageFromChosenSourceEffect — Effect
 RedirectNextDamageEffect — Effect

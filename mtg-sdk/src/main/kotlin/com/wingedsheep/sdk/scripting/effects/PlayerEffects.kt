@@ -86,6 +86,28 @@ data class PayAnyAmountOfLifeAsEntersEffect(
 }
 
 /**
+ * Record [amount] on the entering permanent as the value it entered with — the non-choice sibling
+ * of [PayAnyAmountOfLifeAsEntersEffect], read back the same way through
+ * [com.wingedsheep.sdk.scripting.values.EntityNumericProperty.ValueChosenAsEntered].
+ *
+ * For an "as this enters, <do something>" whose *outcome* a characteristic-defining ability reads
+ * for the rest of the permanent's life: Wood Elemental's "As Wood Elemental enters, sacrifice any
+ * number of untapped Forests. Wood Elemental's power and toughness are each equal to the number of
+ * Forests sacrificed this way" is
+ * `OnEnterRun(SacrificeAnyNumber(<untapped Forest>) then RecordValueAsEntered(permanentsSacrificedThisWay()))`.
+ * [amount] is evaluated once, when this step runs, and never re-read.
+ */
+@SerialName("RecordValueAsEntered")
+@Serializable
+data class RecordValueAsEnteredEffect(
+    val amount: DynamicAmount
+) : Effect {
+    override val description: String = "record ${amount.description} as the value it entered with"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
+/**
  * How long a [SkipStepOrPhaseEffect] lasts.
  */
 @Serializable

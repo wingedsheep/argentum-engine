@@ -1425,6 +1425,7 @@ serialized shape; the facade for each is:
 | `PayManaCostEffect` | `Effects.PayMana("{U}")` |
 | `PayOrSufferEffect` | `Effects.PayOrSuffer` |
 | `PlayAdditionalLandsEffect` | `Effects.PlayAdditionalLands` |
+| `RecordValueAsEnteredEffect` | `Effects.RecordValueAsEntered` |
 | `RedirectCombatDamageToControllerEffect` | `Effects.RedirectCombatDamageToController` |
 | `RedirectNextDamageEffect` | `Effects.RedirectNextDamage` |
 | `RedirectDamageFromChosenSourceEffect` | `Effects.RedirectDamageFromChosenSource` |
@@ -14008,6 +14009,15 @@ answer it and would silently return `false`.
   Written by `PayAnyAmountOfLifeAsEntersEffect`, which is the ETB half of **Nameless Race**
   (`replacementEffect(OnEnterRun(PayAnyAmountOfLifeAsEntersEffect(maxAmount)))`), and read back
   by its characteristic-defining power and toughness via `dynamicStats(...)`.
+  `Effects.RecordValueAsEntered(amount)` (`RecordValueAsEnteredEffect`) writes the same stamp when the
+  value is the *outcome* of an as-enters action rather than a number the player names: it evaluates
+  `amount` once and records it on the entering permanent (the effect's source). **Wood Elemental**'s
+  "As this creature enters, sacrifice any number of untapped Forests. Its power and toughness are each
+  equal to the number of Forests sacrificed as it entered" is
+  `replacementEffect(OnEnterRun(Effects.SacrificeAnyNumber(Land.withSubtype(FOREST).untapped()) then
+  Effects.RecordValueAsEntered(DynamicAmounts.permanentsSacrificedThisWay())))` with the same
+  `dynamicStats(...)` read. Because it rides `OnEnterRun`, it inherits that replacement's entry paths
+  (cast, played, put onto the battlefield by a single-card move) and its scope gaps.
   **Why not a pipeline variable or a counter:** `VariableReference` dies with the resolution that set
   it, and a CDA is consulted during layer projection long afterwards; a counter is visible, removable
   game state, while this is a fixed fact about how the permanent entered. It is stored as its own
