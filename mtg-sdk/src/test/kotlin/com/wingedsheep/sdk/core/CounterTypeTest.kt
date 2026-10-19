@@ -41,6 +41,7 @@ class CounterTypeTest : DescribeSpec({
             CounterType.AGE.printed shouldBe "age"
             CounterType.RAD.printed shouldBe "rad"
             CounterType.GLYPH.printed shouldBe "glyph"
+            CounterType.MATRIX.printed shouldBe "matrix"
         }
     }
 
@@ -113,7 +114,7 @@ class CounterTypeTest : DescribeSpec({
             CounterType.REPRIEVE, CounterType.BOUNTY, CounterType.CORPSE, CounterType.BRICK,
             CounterType.VITALITY, CounterType.AGE, CounterType.EXPERIENCE, CounterType.VOW,
             CounterType.ACORN, CounterType.INGREDIENT, CounterType.RAD, CounterType.PHYRESIS,
-            CounterType.MUSTER, CounterType.GLYPH)
+            CounterType.MUSTER, CounterType.GLYPH, CounterType.MATRIX)
 
         /** The values of the retired `object Counters` string constants, verbatim. */
         val LEGACY_SPELLINGS: Map<CounterType, String> = mapOf(

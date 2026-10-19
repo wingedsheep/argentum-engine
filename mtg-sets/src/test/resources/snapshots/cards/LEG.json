@@ -296,6 +296,61 @@
     "colorIdentityOverride": []
 }
 
+// Alchor's Tomb
+{
+    "name": "Alchor's Tomb",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}, {T}: Target permanent you control becomes the color of your choice. (This effect lasts indefinitely.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Alchor's Tomb:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ChooseColorThen",
+                    "then": {
+                        "type": "ChangeColorToChosen",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "duration": "Permanent"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}, {T}: Target permanent you control becomes the color of your choice."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "272",
+        "rarity": "RARE",
+        "artist": "Jesper Myrfors",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f4395b19-2118-4a09-8932-f9ce9bc54d6d.jpg?1783948029"
+    }
+}
+
 // Amrou Kithkin
 {
     "name": "Amrou Kithkin",
@@ -390,6 +445,64 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Arena of the Ancients
+{
+    "name": "Arena of the Ancients",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "Legendary creatures don't untap during their controllers' untap steps.\nWhen this artifact enters, tap all legendary creatures.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Arena of the Ancients:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsLegendary"
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "TapUntap",
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsLegendary"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "273",
+        "rarity": "RARE",
+        "artist": "Tom Wänerstrand",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/9337996e-a119-4529-b422-f6d286c78e3f.jpg?1783948029"
+    },
+    "colorIdentityOverride": []
 }
 
 // Azure Drake
@@ -527,6 +640,83 @@
     ]
 }
 
+// Black Mana Battery
+{
+    "name": "Black Mana Battery",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}, {T}: Put a charge counter on this artifact.\n{T}, Remove any number of charge counters from this artifact: Add {B}, then add an additional {B} for each charge counter removed this way.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Black Mana Battery:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "CHARGE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "{2}, {T}: Put a charge counter on this artifact."
+            },
+            {
+                "id": "Black Mana Battery:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "CHARGE",
+                                "count": "XValue",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK",
+                    "amount": {
+                        "type": "Add",
+                        "left": "XValue",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}, Remove any number of charge counters from this artifact: Add {B}, then add an additional {B} for each charge counter removed this way."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "274",
+        "rarity": "UNCOMMON",
+        "artist": "Anson Maddocks",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d0c66e64-e357-457d-8302-b3a1fc0c56ce.jpg?1783948029"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Blazing Effigy
 {
     "name": "Blazing Effigy",
@@ -582,6 +772,83 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Blue Mana Battery
+{
+    "name": "Blue Mana Battery",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}, {T}: Put a charge counter on this artifact.\n{T}, Remove any number of charge counters from this artifact: Add {U}, then add an additional {U} for each charge counter removed this way.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Blue Mana Battery:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "CHARGE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "{2}, {T}: Put a charge counter on this artifact."
+            },
+            {
+                "id": "Blue Mana Battery:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "CHARGE",
+                                "count": "XValue",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE",
+                    "amount": {
+                        "type": "Add",
+                        "left": "XValue",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}, Remove any number of charge counters from this artifact: Add {U}, then add an additional {U} for each charge counter removed this way."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "275",
+        "rarity": "UNCOMMON",
+        "artist": "Amy Weber",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/35393661-2c53-46f0-bb33-2390d552b060.jpg?1783948029"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -680,6 +947,72 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Bronze Horse
+{
+    "name": "Bronze Horse",
+    "manaCost": "{7}",
+    "typeLine": "Artifact Creature — Horse",
+    "oracleText": "Trample\nAs long as you control another creature, prevent all damage that would be dealt to this creature by spells that target it.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "restrictions": [
+                    {
+                        "type": "Exists",
+                        "player": "You",
+                        "zone": "Battlefield",
+                        "filter": "creature",
+                        "excludeSelf": true
+                    }
+                ],
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "statePredicates": [
+                                "IsSource"
+                            ]
+                        }
+                    },
+                    "source": {
+                        "cardPredicates": [
+                            {
+                                "type": "TargetsMatching",
+                                "subfilter": {
+                                    "statePredicates": [
+                                        "IsSource"
+                                    ]
+                                }
+                            }
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "InZone",
+                                "zone": "Stack"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "276",
+        "rarity": "RARE",
+        "artist": "Mark Poole",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/936a03a5-73ba-436c-9d49-70e176d118e6.jpg?1783948029"
+    }
 }
 
 // Carrion Ants
@@ -2087,6 +2420,73 @@
     ]
 }
 
+// Forethought Amulet
+{
+    "name": "Forethought Amulet",
+    "manaCost": "{5}",
+    "typeLine": "Artifact",
+    "oracleText": "At the beginning of your upkeep, sacrifice this artifact unless you pay {3}.\nIf an instant or sorcery source would deal 3 or more damage to you, it deals 2 damage to you instead.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Forethought Amulet:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{3}"
+                        }
+                    },
+                    "suffer": "SacrificeSelf"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "CapDamage",
+                "maxAmount": 2,
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "You"
+                    },
+                    "source": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "277",
+        "rarity": "RARE",
+        "artist": "Melissa A. Benson",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/700f53d3-0a84-4c55-8495-786f0f0783db.jpg?1783948029",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "This does not reduce damage which is already 2 or 1."
+            }
+        ]
+    }
+}
+
 // Fortified Area
 {
     "name": "Fortified Area",
@@ -2828,6 +3228,83 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Green Mana Battery
+{
+    "name": "Green Mana Battery",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}, {T}: Put a charge counter on this artifact.\n{T}, Remove any number of charge counters from this artifact: Add {G}, then add an additional {G} for each charge counter removed this way.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Green Mana Battery:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "CHARGE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "{2}, {T}: Put a charge counter on this artifact."
+            },
+            {
+                "id": "Green Mana Battery:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "CHARGE",
+                                "count": "XValue",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN",
+                    "amount": {
+                        "type": "Add",
+                        "left": "XValue",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}, Remove any number of charge counters from this artifact: Add {G}, then add an additional {G} for each charge counter removed this way."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "279",
+        "rarity": "UNCOMMON",
+        "artist": "Christopher Rush",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/4671fa01-4a9e-4cd9-8154-b0d45e11b702.jpg?1783948028"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -3933,6 +4410,82 @@
     ]
 }
 
+// Kry Shield
+{
+    "name": "Kry Shield",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}, {T}: Prevent all damage that would be dealt this turn by target creature you control. That creature gets +0/+X until end of turn, where X is its mana value.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kry Shield:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "PreventDamageShield",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "direction": "FromTarget"
+                        },
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "toughnessModifier": {
+                                "type": "EntityProperty",
+                                "entity": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "numericProperty": "ManaValue"
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "282",
+        "rarity": "UNCOMMON",
+        "artist": "Richard Thomas",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a558f23c-c2ce-40d0-b894-f8ccbff8f622.jpg?1783948027"
+    },
+    "colorIdentityOverride": []
+}
+
 // Lady Caleria
 {
     "name": "Lady Caleria",
@@ -4134,6 +4687,154 @@
     ]
 }
 
+// Life Chisel
+{
+    "name": "Life Chisel",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "Sacrifice a creature: You gain life equal to the sacrificed creature's toughness. Activate only during your upkeep.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Life Chisel:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "creature"
+                    }
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "SacrificedAsCost",
+                        "numericProperty": "Toughness"
+                    }
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationAll",
+                        "restrictions": [
+                            "OnlyDuringYourTurn",
+                            {
+                                "type": "DuringStep",
+                                "step": "UPKEEP"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "283",
+        "rarity": "UNCOMMON",
+        "artist": "Anthony S. Waters",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50052f9a-d667-4a96-a9b1-b4169ee495e6.jpg?1783948027"
+    },
+    "colorIdentityOverride": []
+}
+
+// Life Matrix
+{
+    "name": "Life Matrix",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "{4}, {T}: Put a matrix counter on target creature and that creature gains \"Remove a matrix counter from this creature: Regenerate this creature.\" Activate only during your upkeep.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Life Matrix:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "MATRIX",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantActivatedAbility",
+                            "ability": {
+                                "id": "Life Matrix:1",
+                                "cost": {
+                                    "type": "CostAtomWrapper",
+                                    "atom": {
+                                        "type": "AtomRemoveCounters",
+                                        "counterType": "MATRIX",
+                                        "self": true
+                                    }
+                                },
+                                "effect": {
+                                    "type": "Regenerate",
+                                    "target": "Self"
+                                }
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "Permanent"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    {
+                        "type": "ActivationAll",
+                        "restrictions": [
+                            "OnlyDuringYourTurn",
+                            {
+                                "type": "DuringStep",
+                                "step": "UPKEEP"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "284",
+        "rarity": "RARE",
+        "artist": "Amy Weber",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c99a3abc-e2a3-4eee-8f72-b1b25dcd1d0b.jpg?1783948027",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "Once the counter is placed on the creature, the ability to remove it can only be activated by the player who controls the creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Lifeblood
 {
     "name": "Lifeblood",
@@ -4193,6 +4894,46 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Mana Matrix
+{
+    "name": "Mana Matrix",
+    "manaCost": "{6}",
+    "typeLine": "Artifact",
+    "oracleText": "Instant and enchantment spells you cast cost {2} less to cast.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "instant|enchantment"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "285",
+        "rarity": "RARE",
+        "artist": "Mark Tedin",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a3eedc11-0b47-430c-8391-577a2d05c2ae.jpg?1783948027",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "Multiple Matrices are cumulative. Two will reduce the cost by up to {4}, and so on."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Only reduces the generic mana portion of a spell's cost. If the cost does not include generic mana or includes less than {2}, you get a reduced or null effect from this card."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Marble Priest
@@ -4389,6 +5130,71 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Mirror Universe
+{
+    "name": "Mirror Universe",
+    "manaCost": "{6}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}, Sacrifice this artifact: Exchange life totals with target opponent. Activate only during your upkeep.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mirror Universe:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ExchangeLifeTotals",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    {
+                        "type": "ActivationAll",
+                        "restrictions": [
+                            "OnlyDuringYourTurn",
+                            {
+                                "type": "DuringStep",
+                                "step": "UPKEEP"
+                            }
+                        ]
+                    }
+                ],
+                "descriptionOverride": "Exchange life totals with target opponent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "287",
+        "rarity": "RARE",
+        "artist": "Phil Foglio",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a8f05d5e-bb7d-4554-b880-f0c6b4688357.jpg?1783948026",
+        "rulings": [
+            {
+                "date": "2011-01-01",
+                "text": "If an effect says that a player can't lose life, that player can't exchange life totals with a player who has a lower life total; in that case, the exchange won't happen."
+            },
+            {
+                "date": "2007-09-16",
+                "text": "When the life totals are exchanged, each player gains or loses the amount of life necessary to equal the other player's previous life total. Replacement effects may modify these gains and losses, and triggered abilities may trigger on them."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Mold Demon
@@ -5343,6 +6149,83 @@
     ]
 }
 
+// Red Mana Battery
+{
+    "name": "Red Mana Battery",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}, {T}: Put a charge counter on this artifact.\n{T}, Remove any number of charge counters from this artifact: Add {R}, then add an additional {R} for each charge counter removed this way.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Red Mana Battery:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "CHARGE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "{2}, {T}: Put a charge counter on this artifact."
+            },
+            {
+                "id": "Red Mana Battery:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "CHARGE",
+                                "count": "XValue",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED",
+                    "amount": {
+                        "type": "Add",
+                        "left": "XValue",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}, Remove any number of charge counters from this artifact: Add {R}, then add an additional {R} for each charge counter removed this way."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "291",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Tedin",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/363cc5d6-70f8-4a3c-92bd-8f49774bdce2.jpg?1783948026"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Relic Barrier
 {
     "name": "Relic Barrier",
@@ -5559,6 +6442,72 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Serpent Generator
+{
+    "name": "Serpent Generator",
+    "manaCost": "{6}",
+    "typeLine": "Artifact",
+    "oracleText": "{4}, {T}: Create a 1/1 colorless Snake artifact creature token. It has \"Whenever this creature deals damage to a player, that player gets a poison counter.\" (A player with ten or more poison counters loses the game.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Serpent Generator:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Snake"
+                    ],
+                    "artifactToken": true,
+                    "triggeredAbilities": [
+                        {
+                            "id": "Serpent Generator:1",
+                            "trigger": {
+                                "type": "DealsDamageEvent",
+                                "recipient": {
+                                    "type": "RecipientPlayer",
+                                    "player": "Any"
+                                }
+                            },
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "POISON",
+                                "count": 1,
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "TriggeringPlayer"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{4}, {T}: Create a 1/1 colorless Snake artifact creature token with \"Whenever this creature deals damage to a player, that player gets a poison counter.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "295",
+        "rarity": "RARE",
+        "artist": "Mark Tedin",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c350c38-6cbb-4b8b-823f-45d6a16568cc.jpg?1783948026"
+    }
 }
 
 // Shield Wall
@@ -7689,6 +8638,83 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// White Mana Battery
+{
+    "name": "White Mana Battery",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}, {T}: Put a charge counter on this artifact.\n{T}, Remove any number of charge counters from this artifact: Add {W}, then add an additional {W} for each charge counter removed this way.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "White Mana Battery:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "CHARGE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "{2}, {T}: Put a charge counter on this artifact."
+            },
+            {
+                "id": "White Mana Battery:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "CHARGE",
+                                "count": "XValue",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE",
+                    "amount": {
+                        "type": "Add",
+                        "left": "XValue",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}, Remove any number of charge counters from this artifact: Add {W}, then add an additional {W} for each charge counter removed this way."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "299",
+        "rarity": "UNCOMMON",
+        "artist": "Anthony S. Waters",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/35fbbe41-d21b-4028-905f-054c44d30eb2.jpg?1783948024"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
