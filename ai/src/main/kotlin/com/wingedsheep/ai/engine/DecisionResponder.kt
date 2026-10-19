@@ -12,6 +12,7 @@ import com.wingedsheep.ai.engine.knowledge.ExpiringGrantWindow
 import com.wingedsheep.ai.engine.knowledge.GraveyardSynergy
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.ai.engine.knowledge.TargetPolarity
+import com.wingedsheep.engine.mechanics.ManaValues
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.state.GameState
@@ -283,7 +284,11 @@ class DecisionResponder(
                 } ?: emptyList()
                 return TargetsResponse(decision.id, mapOf(req.index to best))
             }
-            val legal = decision.legalTargets[req.index] ?: return cancelOrFirst(decision)
+            val legal = decision.legalTargets[req.index]
+                // A target whose own mana value is over a "total mana value N or less" cap can never
+                // be picked; growTargets' simulation rejects the combinations that go over.
+                ?.let { all -> req.totalManaValueAtMost?.let { cap -> all.filter { ManaValues.of(state, it) <= cap } } ?: all }
+                ?: return cancelOrFirst(decision)
             if (legal.isEmpty()) return cancelOrFirst(decision)
             val targets = polarityPool(state, legal, playerId, polarities[req.index], optional = req.minTargets == 0)
             // An optional slot whose every legal target is on the wrong side stays empty.

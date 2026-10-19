@@ -507,6 +507,23 @@ object TargetSelection {
     }
 
     /**
+     * Up to [count] of [ranked], best first, skipping any pick that would take the summed mana value
+     * over [cap] ("... with total mana value 6 or less", Kairi, the Swirling Sky).
+     */
+    fun underManaValueCap(state: GameState, ranked: List<EntityId>, cap: Int, count: Int): List<EntityId> {
+        val picks = mutableListOf<EntityId>()
+        var total = 0
+        for (candidate in ranked) {
+            if (picks.size == count) break
+            val manaValue = com.wingedsheep.engine.mechanics.ManaValues.of(state, candidate)
+            if (total + manaValue > cap) continue
+            picks += candidate
+            total += manaValue
+        }
+        return picks
+    }
+
+    /**
      * The heuristic picks for one requirement: the best-ranked candidate, or — when the requirement
      * demands several ("two target creatures") — the best [TargetInfo.minTargets] of them, each
      * from a controller not already used when [TargetInfo.differentControllers] is set. Returns

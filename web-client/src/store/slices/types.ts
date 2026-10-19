@@ -281,6 +281,9 @@ export interface DecisionSelectionState {
   /** Transient warning shown when the user tries an illegal toggle (e.g. clicking past max
    * on a multi-select step). Cleared on the next successful toggle. */
   warning?: string | null
+  /** "... with total mana value N or less": the picks' summed mana value may not exceed `cap`;
+   * `values` holds each option's mana value. */
+  manaValueCap?: { readonly cap: number; readonly values: Readonly<Record<EntityId, number>> } | null
 }
 
 /**

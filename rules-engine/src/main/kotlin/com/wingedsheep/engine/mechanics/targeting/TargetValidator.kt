@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.targeting
 
+import com.wingedsheep.engine.mechanics.ManaValues
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.toEntityId
 
 import com.wingedsheep.engine.handlers.SourceTypeTargeting
@@ -351,8 +352,8 @@ class TargetValidator(
                 }
                 val summedManaValue = targetsForReq.sumOf { target ->
                     when (target) {
-                        is ChosenTarget.Card -> com.wingedsheep.engine.mechanics.ManaValues.of(state, target.cardId)
-                        is ChosenTarget.Permanent -> com.wingedsheep.engine.mechanics.ManaValues.of(state, target.entityId)
+                        is ChosenTarget.Card -> ManaValues.of(state, target.cardId)
+                        is ChosenTarget.Permanent -> ManaValues.of(state, target.entityId)
                         else -> 0
                     }
                 }
