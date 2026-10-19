@@ -5939,10 +5939,13 @@ Every `TargetRequirement` carries count semantics (defaults shown):
   single-target requirements and non-permanent targets. E.g. `TargetObject(filter = TargetFilter.NonlandPermanent, count = 2, sameCardType = true)` (Burglar's Plot, the Adventure half of
   Bilbo, Luckwearer).
 - `totalManaValueAtMost = null` — on `TargetObject`; when set to a `DynamicAmount`, the **combined
-  mana value** of the chosen **card** targets may not exceed the resolved amount ("**any number of
-  target creature cards with total mana value X or less**"). The amount is resolved once the ability
-  is put on the stack — for a reflexive after a pay-`{X}` (`DynamicAmount.XValue` reads the X just
-  paid) — and enforced cross-target against the summed `manaValue` by both `TargetValidator`
+  mana value** of the chosen card or permanent targets may not exceed the resolved amount ("**any
+  number of target creature cards with total mana value X or less**", Kairi, the Swirling Sky's
+  "any number of target nonland permanents with total mana value 6 or less"). The amount is resolved
+  once the ability is put on the stack — for a reflexive after a pay-`{X}` (`DynamicAmount.XValue`
+  reads the X just paid), and per mode when the requirement sits on a chosen `Mode` of a modal
+  triggered ability, whether its targets are picked as it goes on the stack or at resolution — and
+  enforced cross-target against the summed `manaValue` by both `TargetValidator`
   (authoritative, resolving the `DynamicAmount` against `xValue`) and, on the interactive target
   decision, `DecisionValidators` (which sees the cap already baked to a concrete int in
   `TargetRequirementInfo`). Pair with `unlimited = true` for the "any number … with total mana value

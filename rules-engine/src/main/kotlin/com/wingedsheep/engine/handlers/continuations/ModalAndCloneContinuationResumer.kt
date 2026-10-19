@@ -1781,7 +1781,19 @@ internal fun processChosenModeQueue(
             description = req.description,
             mustDifferFromEarlier = req is com.wingedsheep.sdk.scripting.targets.TargetOther,
             minTargets = req.effectiveMinCount,
-            maxTargets = if (req.unlimited) compatible.size else req.count
+            maxTargets = if (req.unlimited) compatible.size else req.count,
+            totalManaValueAtMost = com.wingedsheep.engine.mechanics.targeting.resolveTotalManaValueCap(
+                state, req, services.dynamicAmountEvaluator
+            ) {
+                EffectContext(
+                    sourceId = sourceId,
+                    objectReferences = objectReferences,
+                    controllerId = controllerId,
+                    xValue = xValue,
+                    triggeringEntityId = triggeringEntityId,
+                    pipeline = pipeline
+                )
+            }
         ).withTargetConstraints(state, req, compatible)
     }
 

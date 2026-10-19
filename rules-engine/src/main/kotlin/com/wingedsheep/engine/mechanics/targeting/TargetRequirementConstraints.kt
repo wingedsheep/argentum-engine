@@ -30,3 +30,23 @@ private fun com.wingedsheep.engine.core.TargetRequirementInfo.withDistinctCatego
     val table = OnePerCategoryTargets.forCandidates(state, requirement, candidates) ?: return this
     return copy(distinctCategories = table, maxTargets = minOf(maxTargets, OnePerCategoryTargets.maxTargets(table)))
 }
+
+/**
+ * A requirement's [com.wingedsheep.sdk.scripting.targets.TargetObject.totalManaValueAtMost] cap
+ * ("... with total mana value 6 or less", CR 601.2c) baked to a concrete integer for a targeting
+ * pause, so the decision validator can hold the selection to it. `null` when the requirement has
+ * no such cap or the amount can't be read in [context].
+ */
+fun resolveTotalManaValueCap(
+    state: GameState,
+    requirement: com.wingedsheep.sdk.scripting.targets.TargetRequirement,
+    evaluator: com.wingedsheep.engine.handlers.DynamicAmountEvaluator,
+    context: () -> com.wingedsheep.engine.handlers.EffectContext,
+): Int? {
+    val cap = (requirement as? com.wingedsheep.sdk.scripting.targets.TargetObject)?.totalManaValueAtMost ?: return null
+    return try {
+        evaluator.evaluate(state, cap, context()).coerceAtLeast(0)
+    } catch (_: Exception) {
+        null
+    }
+}

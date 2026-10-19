@@ -336,8 +336,8 @@ class TargetValidator(
 
             // "... with total mana value N or less" — the summed mana value of the chosen card
             // targets may not exceed the resolved cap (Fire Lord Sozin's "total mana value X or
-            // less"; XValue resolves against the paid [xValue]). CR 601.2c. No-op for non-card
-            // targets, which contribute 0.
+            // less"; XValue resolves against the paid [xValue]). CR 601.2c. Cards and permanents
+            // count (Kairi's "nonland permanents with total mana value 6 or less"); players add 0.
             val totalManaCap = (requirement as? TargetObject)?.totalManaValueAtMost
             if (totalManaCap != null && targetsForReq.isNotEmpty()) {
                 val cap = try {
@@ -350,9 +350,11 @@ class TargetValidator(
                     Int.MAX_VALUE
                 }
                 val summedManaValue = targetsForReq.sumOf { target ->
-                    (target as? ChosenTarget.Card)?.let { card ->
-                        state.getEntity(card.cardId)?.get<CardComponent>()?.manaValue ?: 0
-                    } ?: 0
+                    when (target) {
+                        is ChosenTarget.Card -> com.wingedsheep.engine.mechanics.ManaValues.of(state, target.cardId)
+                        is ChosenTarget.Permanent -> com.wingedsheep.engine.mechanics.ManaValues.of(state, target.entityId)
+                        else -> 0
+                    }
                 }
                 if (summedManaValue > cap) {
                     return "Targets must have total mana value $cap or less"

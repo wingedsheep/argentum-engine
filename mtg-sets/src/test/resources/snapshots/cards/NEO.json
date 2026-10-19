@@ -10157,6 +10157,149 @@
     ]
 }
 
+// Kairi, the Swirling Sky
+{
+    "name": "Kairi, the Swirling Sky",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Legendary Creature — Dragon Spirit",
+    "oracleText": "Flying, ward {3}\nWhen Kairi dies, choose one —\n• Return any number of target nonland permanents with total mana value 6 or less to their owners' hands.\n• Mill six cards, then return up to two instant and/or sorcery cards from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{3}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kairi, the Swirling Sky:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "ForEach",
+                                "space": "IterationSpace.Targets",
+                                "body": {
+                                    "type": "MoveToZone",
+                                    "target": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    },
+                                    "destination": "Hand"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "unlimited": true,
+                                    "filter": {
+                                        "baseFilter": "nonland permanent"
+                                    },
+                                    "totalManaValueAtMost": {
+                                        "type": "Fixed",
+                                        "amount": 6
+                                    }
+                                }
+                            ],
+                            "description": "Return any number of target nonland permanents with total mana value 6 or less to their owners' hands."
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "TopOfLibrary",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 6
+                                            },
+                                            "isMill": true
+                                        },
+                                        "storeAs": "milled"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "milled",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        }
+                                    },
+                                    {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "FromZone",
+                                                    "zone": "Graveyard",
+                                                    "filter": "instant|sorcery"
+                                                },
+                                                "storeAs": "gathered0"
+                                            },
+                                            {
+                                                "type": "SelectFromCollection",
+                                                "from": "gathered0",
+                                                "selection": {
+                                                    "type": "ChooseUpTo",
+                                                    "count": {
+                                                        "type": "Fixed",
+                                                        "amount": 2
+                                                    }
+                                                },
+                                                "storeSelected": "selected1",
+                                                "prompt": "Return up to two instant and/or sorcery cards to your hand"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "selected1",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Hand"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "description": "Mill six cards, then return up to two instant and/or sorcery cards from your graveyard to your hand."
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Kairi dies, choose one — • Return any number of target nonland permanents with total mana value 6 or less to their owners' hands. • Mill six cards, then return up to two instant and/or sorcery cards from your graveyard to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "rarity": "MYTHIC",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/af7979d8-21f3-40ba-8a2e-7ebad210e48b.jpg?1783923901"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Kaito Shizuki
 {
     "name": "Kaito Shizuki",

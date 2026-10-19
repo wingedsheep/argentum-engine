@@ -823,7 +823,8 @@ class TriggerProcessor(
                     description = req.description,
                     mustDifferFromEarlier = req is com.wingedsheep.sdk.scripting.targets.TargetOther,
                     minTargets = req.effectiveMinCount,
-                    maxTargets = if (req.unlimited) legalTargetsMap[index].orEmpty().size else req.count
+                    maxTargets = if (req.unlimited) legalTargetsMap[index].orEmpty().size else req.count,
+                    totalManaValueAtMost = resolveModeTotalManaValueAtMost(state, ability, req)
                 ).withTargetConstraints(state, req, legalTargetsMap[index].orEmpty())
             }
 
@@ -948,6 +949,24 @@ class TriggerProcessor(
             stateWithMemory, component, flatTargets,
             targetRequirements = flatRequirements,
             causedByAttack = causedByAttack
+        )
+    }
+
+    /** [resolveTotalManaValueAtMost] for a mode's requirement, read against the ability going on the stack. */
+    private fun resolveModeTotalManaValueAtMost(
+        state: GameState,
+        ability: TriggeredAbilityOnStackComponent,
+        requirement: TargetRequirement
+    ): Int? = com.wingedsheep.engine.mechanics.targeting.resolveTotalManaValueCap(state, requirement, amountEvaluator) {
+        EffectContext(
+            sourceId = ability.sourceId,
+            objectReferences = ability.objectReferences,
+            controllerId = ability.controllerId,
+            triggeringEntityId = ability.triggerContext?.triggeringEntityId,
+            triggeringPlayerId = ability.triggerContext?.triggeringPlayerId,
+            xValue = ability.xValue,
+            triggerContext = ability.triggerContext,
+            pipeline = ability.carriedPipeline ?: com.wingedsheep.engine.handlers.PipelineState.EMPTY,
         )
     }
 
@@ -1312,23 +1331,17 @@ class TriggerProcessor(
         state: GameState,
         trigger: PendingTrigger,
         requirement: TargetRequirement
-    ): Int? {
-        val dyn = (requirement as? TargetObject)?.totalManaValueAtMost ?: return null
-        return try {
-            val context = EffectContext(
-                sourceId = trigger.sourceId,
+    ): Int? = com.wingedsheep.engine.mechanics.targeting.resolveTotalManaValueCap(state, requirement, amountEvaluator) {
+        EffectContext(
+            sourceId = trigger.sourceId,
             objectReferences = trigger.objectReferences,
-                controllerId = trigger.controllerId,
-                triggeringEntityId = trigger.triggerContext.triggeringEntityId,
-                triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
-                xValue = trigger.triggerContext.xValue,
-                triggerContext = trigger.triggerContext,
-                pipeline = targetingPipeline(trigger),
-            )
-            amountEvaluator.evaluate(state, dyn, context).coerceAtLeast(0)
-        } catch (_: Exception) {
-            null
-        }
+            controllerId = trigger.controllerId,
+            triggeringEntityId = trigger.triggerContext.triggeringEntityId,
+            triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
+            xValue = trigger.triggerContext.xValue,
+            triggerContext = trigger.triggerContext,
+            pipeline = targetingPipeline(trigger),
+        )
     }
 
     /**
