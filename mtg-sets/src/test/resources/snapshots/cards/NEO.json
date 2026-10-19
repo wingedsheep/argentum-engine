@@ -1173,6 +1173,113 @@
     ]
 }
 
+// Azusa's Many Journeys
+{
+    "name": "Azusa's Many Journeys",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI — You may play an additional land this turn.\nII — You gain 3 life.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "PlayAdditionalLands",
+                    "count": 1
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": "ExileAndReturnTransformed"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Likeness of the Seeker",
+        "manaCost": "",
+        "typeLine": "Enchantment Creature — Human Monk",
+        "oracleText": "Whenever this creature becomes blocked, untap up to three lands you control.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Likeness of the Seeker:1",
+                    "trigger": "BecomesBlockedEvent",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": "land",
+                                    "player": "You"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
+                                },
+                                "storeSelected": "selected1",
+                                "prompt": "Choose up to three lands to untap"
+                            },
+                            {
+                                "type": "TapUntapCollection",
+                                "collectionName": "selected1",
+                                "tap": false
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "Whenever this creature becomes blocked, untap up to three lands you control."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "172",
+            "rarity": "UNCOMMON",
+            "artist": "Lindsey Look",
+            "flavorText": "\"I ask for nothing more than a new journey and a fresh path to greet my feet when I wake each morning.\"\n—Azusa",
+            "imageUri": "https://cards.scryfall.io/normal/back/e/8/e8a51d2a-1582-4bad-995c-e7fe9f810149.jpg?1783923861"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "rarity": "UNCOMMON",
+        "artist": "Lindsey Look",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e8a51d2a-1582-4bad-995c-e7fe9f810149.jpg?1783923861"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Bamboo Grove Archer
 {
     "name": "Bamboo Grove Archer",
@@ -1358,6 +1465,73 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Bearer of Memory
+{
+    "name": "Bearer of Memory",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment Creature — Human Monk",
+    "oracleText": "{5}{G}: Put a +1/+1 counter on target enchantment creature. It gains trample until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Bearer of Memory:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "TRAMPLE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature enchantment"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{5}{G}: Put a +1/+1 counter on target enchantment creature. It gains trample until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "artist": "Randy Vargas",
+        "flavorText": "Members of the Living Historians don't simply chronicle the past; they embody it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/540ba70a-bea8-4512-83ba-92dab6d25b52.jpg?1783923854"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -3437,6 +3611,126 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Colossal Skyturtle
+{
+    "name": "Colossal Skyturtle",
+    "manaCost": "{4}{G}{G}{U}",
+    "typeLine": "Enchantment Creature — Turtle",
+    "oracleText": "Flying, ward {2}\nChannel — {2}{G}, Discard this card: Return target card from your graveyard to your hand.\nChannel — {1}{U}, Discard this card: Return target creature to its owner's hand.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Colossal Skyturtle:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{G}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Channel — {2}{G}, Discard this card: Return target card from your graveyard to your hand."
+            },
+            {
+                "id": "Colossal Skyturtle:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{U}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Channel — {1}{U}, Discard this card: Return target creature to its owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "216",
+        "rarity": "UNCOMMON",
+        "artist": "Nicholas Gregory",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f40bd797-4d12-4098-a1a8-d7e5b7b82ac9.jpg?1783923837",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "Discarding the card is part of the cost to activate a channel ability."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "If a channel ability requires a target, you may not activate it without a target just to discard the card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
     ]
 }
 
@@ -7182,6 +7476,88 @@
     ]
 }
 
+// Historian's Wisdom
+{
+    "name": "Historian's Wisdom",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant artifact or creature\nWhen this Aura enters, if enchanted permanent is a creature with the greatest power among creatures on the battlefield, draw a card.\nAs long as enchanted permanent is a creature, it gets +2/+1.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Historian's Wisdom:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "interveningIf": {
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "EntityMatches",
+                            "entity": "EnchantedPermanent",
+                            "filter": "creature"
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "EnchantedPermanent",
+                                "numericProperty": "Power"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "AggregateBattlefield",
+                                "player": "Each",
+                                "filter": "creature",
+                                "aggregation": "MAX",
+                                "property": "POWER"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 1
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "creature"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature|artifact"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "192",
+        "rarity": "UNCOMMON",
+        "artist": "Jarel Threat",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/941f91bb-f5a3-4cca-85b5-b610502460bb.jpg?1783923847"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Hotshot Mechanic
 {
     "name": "Hotshot Mechanic",
@@ -7661,6 +8037,99 @@
     ]
 }
 
+// Invigorating Hot Spring
+{
+    "name": "Invigorating Hot Spring",
+    "manaCost": "{1}{R}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "This enchantment enters with four +1/+1 counters on it.\nModified creatures you control have haste. (Equipment, Auras you control, and counters are modifications.)\nRemove a +1/+1 counter from this enchantment: Put a +1/+1 counter on target creature you control. Activate only as a sorcery and only once each turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Invigorating Hot Spring:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomRemoveCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "self": true
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "restrictions": [
+                    "OncePerTurn"
+                ]
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsModified"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 4,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "UNCOMMON",
+        "artist": "Gabor Szikszai",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/59a118d1-30b8-42c0-ac42-6fba0778200a.jpg?1783923834",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "An Aura controlled by an opponent does not cause a creature you control to be modified."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "A creature with a counter on it is considered modified no matter what kind of counter it is or which player put it on that creature."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "A creature that is equipped is considered modified no matter who controls the Equipment that's attached to it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Invoke Calamity
 {
     "name": "Invoke Calamity",
@@ -7985,6 +8454,96 @@
     ]
 }
 
+// Invoke the Ancients
+{
+    "name": "Invoke the Ancients",
+    "manaCost": "{1}{G}{G}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create two 4/5 green Spirit creature tokens. For each of them, put your choice of a reach counter, a vigilance counter, or a trample counter on it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 4,
+                    "toughness": 5,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f48aaab-dd6e-4bcc-a8fb-d31dd4a098ba.jpg?1783923712"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Collection",
+                        "collection": "createdTokens"
+                    },
+                    "body": {
+                        "type": "ChooseAction",
+                        "choices": [
+                            {
+                                "label": "Reach counter",
+                                "effect": {
+                                    "type": "AddCounters",
+                                    "counterType": "REACH",
+                                    "count": 1,
+                                    "target": "IterationEntity"
+                                }
+                            },
+                            {
+                                "label": "Vigilance counter",
+                                "effect": {
+                                    "type": "AddCounters",
+                                    "counterType": "VIGILANCE",
+                                    "count": 1,
+                                    "target": "IterationEntity"
+                                }
+                            },
+                            {
+                                "label": "Trample counter",
+                                "effect": {
+                                    "type": "AddCounters",
+                                    "counterType": "TRAMPLE",
+                                    "count": 1,
+                                    "target": "IterationEntity"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "193",
+        "rarity": "RARE",
+        "artist": "Filip Burburan",
+        "flavorText": "After large sections were clear-cut to build Towashi, the once-peaceful Jukai Forest grew violently hostile to outsiders.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5c02102-3be7-462f-ab9c-ff404255002d.jpg?1783923846",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "You choose the type of counter that each of the two green Spirit creature tokens will get separately."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "If a replacement effect causes you to create more than two tokens, you will make that choice for each of those tokens individually. For example, if you resolve Invoke the Ancients while you control Parallel Lives, you will choose a type of counter for each of the four resulting tokens."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Iron Apprentice
 {
     "name": "Iron Apprentice",
@@ -8123,6 +8682,223 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Jugan Defends the Temple
+{
+    "name": "Jugan Defends the Temple",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI — Create a 1/1 green Human Monk creature token with \"{T}: Add {G}.\"\nII — Put a +1/+1 counter on each of up to two target creatures.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Human",
+                        "Monk"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/8/6/86dd086e-c757-4a6a-8838-51860f2095f8.jpg?1783923713",
+                    "activatedAbilities": [
+                        {
+                            "id": "Jugan Defends the Temple:1",
+                            "cost": "CostTap",
+                            "effect": {
+                                "type": "AddMana",
+                                "color": "GREEN"
+                            },
+                            "timing": "ManaAbility",
+                            "isManaAbility": true,
+                            "descriptionOverride": "{T}: Add {G}."
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": "ExileAndReturnTransformed"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Remnant of the Rising Star",
+        "manaCost": "",
+        "typeLine": "Enchantment Creature — Dragon Spirit",
+        "oracleText": "Flying\nWhenever another creature you control enters, you may pay {X}. When you do, put X +1/+1 counters on that creature.\nAs long as you control five or more modified creatures, this creature gets +5/+5 and has trample. (Equipment, Auras you control, and counters are modifications.)",
+        "creatureStats": {
+            "power": 2,
+            "toughness": 2
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Remnant of the Rising Star:1",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "filter": "creature ctrl:you",
+                        "to": "Battlefield"
+                    },
+                    "binding": "OTHER",
+                    "effect": {
+                        "type": "Gated",
+                        "gate": "Gate.MayPayX",
+                        "then": {
+                            "type": "ReflexiveTrigger",
+                            "action": {
+                                "type": "Composite",
+                                "effects": []
+                            },
+                            "optional": false,
+                            "reflexiveEffect": {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": "XValue",
+                                "target": "TriggeringEntity"
+                            },
+                            "descriptionOverride": "put X +1/+1 counters on that creature"
+                        }
+                    },
+                    "descriptionOverride": "Whenever another creature you control enters, you may pay {X}. When you do, put X +1/+1 counters on that creature."
+                }
+            ],
+            "staticAbilities": [
+                {
+                    "type": "ConditionalStaticAbility",
+                    "ability": {
+                        "type": "ModifyStats",
+                        "powerBonus": 5,
+                        "toughnessBonus": 5,
+                        "filter": {
+                            "baseFilter": "permanent",
+                            "scope": "Self"
+                        }
+                    },
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "IsModified"
+                                ]
+                            }
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 5
+                        }
+                    }
+                },
+                {
+                    "type": "ConditionalStaticAbility",
+                    "ability": {
+                        "type": "GrantKeyword",
+                        "keyword": "TRAMPLE",
+                        "filter": {
+                            "baseFilter": "permanent",
+                            "scope": "Self"
+                        }
+                    },
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "IsModified"
+                                ]
+                            }
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 5
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "194",
+            "rarity": "MYTHIC",
+            "artist": "Daniel Ljunggren",
+            "imageUri": "https://cards.scryfall.io/normal/back/a/2/a22b5f27-f9e7-49e1-8e96-dc5d8e7fbe27.jpg?1783923851",
+            "rulings": [
+                {
+                    "date": "2022-02-18",
+                    "text": "An Aura controlled by an opponent does not cause a creature you control to be modified."
+                },
+                {
+                    "date": "2022-02-18",
+                    "text": "A creature with a counter on it is considered modified no matter what kind of counter it is or which player put it on that creature."
+                },
+                {
+                    "date": "2022-02-18",
+                    "text": "A creature that is equipped is considered modified no matter who controls the Equipment that's attached to it."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "rarity": "MYTHIC",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a22b5f27-f9e7-49e1-8e96-dc5d8e7fbe27.jpg?1783923851"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -8953,6 +9729,133 @@
     ]
 }
 
+// Kappa Tech-Wrecker
+{
+    "name": "Kappa Tech-Wrecker",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Turtle Ninja",
+    "oracleText": "Ninjutsu {1}{G} ({1}{G}, Return an unblocked attacker you control to hand: Put this card onto the battlefield from your hand tapped and attacking.)\nThis creature enters with a deathtouch counter on it.\nWhenever this creature deals combat damage to a player, you may remove a deathtouch counter from it. When you do, exile target artifact or enchantment that player controls.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "NINJUTSU"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ninjutsu",
+            "cost": "{1}{G}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kappa Tech-Wrecker:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "RemoveCounters",
+                        "counterType": "DEATHTOUCH",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Self"
+                    },
+                    "reflexiveEffect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Exile"
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact|enchantment ctrl:triggering-player"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "You may remove a deathtouch counter from this creature. When you do, exile target artifact or enchantment that player controls."
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, you may remove a deathtouch counter from it. When you do, exile target artifact or enchantment that player controls."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ninjutsu_{1}{G}",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{G}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomReturnToHand",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        "IsAttacking",
+                                        "IsUnblocked"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Battlefield",
+                    "placement": "TappedAndAttacking",
+                    "fromZone": "Hand",
+                    "attackDefender": "RETURNED_ATTACKER"
+                },
+                "activateFromZone": "Hand",
+                "descriptionOverride": "Ninjutsu {1}{G} ({1}{G}, Return an unblocked attacker you control to hand: Put this card onto the battlefield from your hand tapped and attacking.)",
+                "keyword": "NINJUTSU"
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "DEATHTOUCH",
+                "count": 1,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "rarity": "UNCOMMON",
+        "artist": "Jehan Choo",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/3/d3a7bc69-4500-4e7e-94e4-67b85597bd82.jpg?1783923845"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Kitsune Ace
 {
     "name": "Kitsune Ace",
@@ -9261,6 +10164,117 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Kura, the Boundless Sky
+{
+    "name": "Kura, the Boundless Sky",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Legendary Creature — Dragon Spirit",
+    "oracleText": "Flying, deathtouch\nWhen Kura dies, choose one —\n• Search your library for up to three land cards, reveal them, put them into your hand, then shuffle.\n• Create an X/X green Spirit creature token, where X is the number of lands you control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kura, the Boundless Sky:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Library",
+                                            "filter": "land"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 3
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library for up to three land cards to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            },
+                            "description": "Search your library for up to three land cards, reveal them, put them into your hand, then shuffle."
+                        },
+                        {
+                            "effect": {
+                                "type": "CreateToken",
+                                "power": 0,
+                                "toughness": 0,
+                                "colors": [
+                                    "GREEN"
+                                ],
+                                "creatureTypes": [
+                                    "Spirit"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/d/2/d237377d-b79b-4f27-a142-e2c1756e0d94.jpg?1783923712",
+                                "dynamicPower": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "land"
+                                },
+                                "dynamicToughness": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "land"
+                                }
+                            },
+                            "description": "Create an X/X green Spirit creature token, where X is the number of lands you control."
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Kura dies, choose one — • Search your library for up to three land cards, reveal them, put them into your hand, then shuffle. • Create an X/X green Spirit creature token, where X is the number of lands you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "MYTHIC",
+        "artist": "Donato Giancola",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/06b25752-26be-4189-bc8b-828db6f0e612.jpg?1783923843"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -13318,6 +14332,74 @@
     ]
 }
 
+// Orochi Merge-Keeper
+{
+    "name": "Orochi Merge-Keeper",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Snake Druid",
+    "oracleText": "{T}: Add {G}.\nAs long as this creature is modified, it has \"{T}: Add {G}{G}.\" (Equipment, Auras you control, and counters are modifications.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Orochi Merge-Keeper:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {G}."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Orochi Merge-Keeper:2",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "GREEN",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true,
+                    "descriptionOverride": "{T}: Add {G}{G}."
+                },
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsPermanent"
+                        ],
+                        "statePredicates": [
+                            "IsSource",
+                            "IsModified"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "rarity": "UNCOMMON",
+        "artist": "Brent Hollowell",
+        "flavorText": "One day the spirit and mortal realms will be one. Until then, she faithfully guards the sites where they merge.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/736c3278-6ee2-47f9-aab0-1457e90137b1.jpg?1783923843"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Otawara, Soaring City
 {
     "name": "Otawara, Soaring City",
@@ -15890,6 +16972,152 @@
     ]
 }
 
+// Shigeki, Jukai Visionary
+{
+    "name": "Shigeki, Jukai Visionary",
+    "manaCost": "{1}{G}",
+    "typeLine": "Legendary Enchantment Creature — Snake Druid",
+    "oracleText": "{1}{G}, {T}, Return Shigeki to its owner's hand: Reveal the top four cards of your library. You may put a land card from among them onto the battlefield tapped. Put the rest into your graveyard.\nChannel — {X}{X}{G}{G}, Discard this card: Return X target nonlegendary cards from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Shigeki, Jukai Visionary:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{G}"
+                            }
+                        },
+                        "CostTap",
+                        "CostReturnSelfToHand"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "land",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "You may put a land card onto the battlefield tapped",
+                            "selectedLabel": "Put onto battlefield",
+                            "remainderLabel": "Put into graveyard",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Shigeki, Jukai Visionary:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}{X}{G}{G}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsNonlegendary"
+                                ],
+                                "controllerPredicate": "OwnedByYou"
+                            },
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0",
+                        "dynamicMaxCount": "XValue",
+                        "dynamicMinCount": "XValue"
+                    }
+                ],
+                "activateFromZone": "Hand"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "rarity": "RARE",
+        "artist": "Anna Podedworna",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/52a16623-7e6d-405b-95db-bf18aeea3f49.jpg?1783923841"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Short Circuit
 {
     "name": "Short Circuit",
@@ -16707,6 +17935,133 @@
     ]
 }
 
+// Spirit-Sister's Call
+{
+    "name": "Spirit-Sister's Call",
+    "manaCost": "{3}{W}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your end step, choose target permanent card in your graveyard. You may sacrifice a permanent that shares a card type with the chosen card. If you do, return the chosen card from your graveyard to the battlefield and it gains \"If this permanent would leave the battlefield, exile it instead of putting it anywhere else.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spirit-Sister's Call:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "BattlefieldMatching",
+                                        "filter": {
+                                            "cardPredicates": [
+                                                "IsPermanent",
+                                                {
+                                                    "type": "SharesCardTypeWith",
+                                                    "entity": {
+                                                        "type": "BoundVariable",
+                                                        "name": "t0"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "player": "You"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "sacrificed",
+                                    "prompt": "You may sacrifice a permanent that shares a card type with the chosen card",
+                                    "useTargetingUI": true
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "sacrificed",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Sacrifice"
+                                }
+                            ]
+                        },
+                        "successCriterion": {
+                            "type": "SuccessCriterion.CollectionNonEmpty",
+                            "name": "sacrificed"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Battlefield",
+                                "fromZone": "Graveyard"
+                            },
+                            {
+                                "type": "GrantExileOnLeave",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "rarity": "MYTHIC",
+        "artist": "Dominik Mayer",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f094735f-5843-4f75-bc90-3e248a061a43.jpg?1783923829",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "If Spirit-Sister's Call leaves the battlefield, the replacement effect continues to apply. If one of the permanents it returned would leave the battlefield, it'll be exiled instead."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "Because to die means to be put into a graveyard from the battlefield, a creature or planeswalker that is exiled instead doesn't \"die.\" Abilities that would trigger when it dies won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Spirited Companion
 {
     "name": "Spirited Companion",
@@ -17409,6 +18764,377 @@
         "artist": "Aurore Folny",
         "flavorText": "To keep the Reality Chip out of Jin-Gitaxias's hands, the Wanderer entrusted it to Tamiyo.",
         "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd4b7ee2-de65-4288-872d-486065a4f226.jpg?1783923839"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Tatsunari, Toad Rider
+{
+    "name": "Tatsunari, Toad Rider",
+    "manaCost": "{2}{B}",
+    "typeLine": "Legendary Creature — Human Ninja",
+    "oracleText": "Whenever you cast an enchantment spell, if you don't control a creature named Keimi, create Keimi, a legendary 3/3 black and green Frog creature token with \"Whenever you cast an enchantment spell, each opponent loses 1 life and you gain 1 life.\"\n{1}{G/U}: Tatsunari and target Frog you control can't be blocked this turn except by creatures with flying or reach.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tatsunari, Toad Rider:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsEnchantment"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "BLACK",
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Frog"
+                    ],
+                    "name": "Keimi",
+                    "imageUri": "https://cards.scryfall.io/normal/front/f/b/fbb5b3f9-0012-4deb-b795-c377cdfe546b.jpg?1783923712",
+                    "legendary": true,
+                    "triggeredAbilities": [
+                        {
+                            "id": "Tatsunari, Toad Rider:1",
+                            "trigger": {
+                                "type": "SpellCastEvent",
+                                "spellFilter": {
+                                    "cardPredicates": [
+                                        "IsEnchantment"
+                                    ]
+                                }
+                            },
+                            "binding": "ANY",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "LoseLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "target": {
+                                            "type": "PlayerRef",
+                                            "player": "EachOpponent"
+                                        }
+                                    },
+                                    {
+                                        "type": "GainLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "creature name:Keimi",
+                    "negate": true
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Tatsunari, Toad Rider:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{G/U}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantCantBeBlockedExceptBy",
+                            "target": "Self",
+                            "blockerFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            {
+                                                "type": "HasKeyword",
+                                                "keyword": "FLYING"
+                                            },
+                                            {
+                                                "type": "HasKeyword",
+                                                "keyword": "REACH"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "GrantCantBeBlockedExceptBy",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "blockerFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            {
+                                                "type": "HasKeyword",
+                                                "keyword": "FLYING"
+                                            },
+                                            {
+                                                "type": "HasKeyword",
+                                                "keyword": "REACH"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent Frog ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Tatsunari and target Frog you control can't be blocked this turn except by creatures with flying or reach."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "rarity": "RARE",
+        "artist": "Justine Cruz",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/abf42833-43d0-4b05-b499-d13b2c577ee8.jpg?1783923876"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Teachings of the Kirin
+{
+    "name": "Teachings of the Kirin",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI — Mill three cards. Create a 1/1 colorless Spirit creature token.\nII — Put a +1/+1 counter on target creature you control.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [],
+                            "creatureTypes": [
+                                "Spirit"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca20548f-6324-4858-adbe-87303ff1ca52.jpg?1783923715"
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": "ExileAndReturnTransformed"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Kirin-Touched Orochi",
+        "manaCost": "",
+        "typeLine": "Enchantment Creature — Snake Monk",
+        "oracleText": "Whenever this creature attacks, choose one —\n• Exile target creature card from a graveyard. When you do, create a 1/1 colorless Spirit creature token.\n• Exile target noncreature card from a graveyard. When you do, put a +1/+1 counter on target creature you control.",
+        "creatureStats": {
+            "power": 1,
+            "toughness": 1
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Kirin-Touched Orochi:1",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "Modal",
+                        "modes": [
+                            {
+                                "effect": {
+                                    "type": "ReflexiveTrigger",
+                                    "action": {
+                                        "type": "MoveToZone",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        },
+                                        "destination": "Exile"
+                                    },
+                                    "optional": false,
+                                    "reflexiveEffect": {
+                                        "type": "CreateToken",
+                                        "power": 1,
+                                        "toughness": 1,
+                                        "colors": [],
+                                        "creatureTypes": [
+                                            "Spirit"
+                                        ],
+                                        "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca20548f-6324-4858-adbe-87303ff1ca52.jpg?1783923715"
+                                    },
+                                    "descriptionOverride": "Exile target creature card from a graveyard. When you do, create a 1/1 colorless Spirit creature token."
+                                },
+                                "targetRequirements": [
+                                    {
+                                        "type": "TargetObject",
+                                        "filter": {
+                                            "baseFilter": "creature",
+                                            "zone": "Graveyard"
+                                        },
+                                        "id": "t0"
+                                    }
+                                ],
+                                "description": "Exile target creature card from a graveyard. When you do, create a 1/1 colorless Spirit creature token."
+                            },
+                            {
+                                "effect": {
+                                    "type": "ReflexiveTrigger",
+                                    "action": {
+                                        "type": "MoveToZone",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t1"
+                                        },
+                                        "destination": "Exile"
+                                    },
+                                    "optional": false,
+                                    "reflexiveEffect": {
+                                        "type": "AddCounters",
+                                        "counterType": "PLUS_ONE_PLUS_ONE",
+                                        "count": 1,
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t2"
+                                        }
+                                    },
+                                    "reflexiveTargetRequirements": [
+                                        {
+                                            "type": "TargetObject",
+                                            "filter": {
+                                                "baseFilter": "creature ctrl:you"
+                                            },
+                                            "id": "t2"
+                                        }
+                                    ],
+                                    "descriptionOverride": "Exile target noncreature card from a graveyard. When you do, put a +1/+1 counter on target creature you control."
+                                },
+                                "targetRequirements": [
+                                    {
+                                        "type": "TargetObject",
+                                        "filter": {
+                                            "baseFilter": "noncreature",
+                                            "zone": "Graveyard"
+                                        },
+                                        "id": "t1"
+                                    }
+                                ],
+                                "description": "Exile target noncreature card from a graveyard. When you do, put a +1/+1 counter on target creature you control."
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "Whenever this creature attacks, choose one — • Exile target creature card from a graveyard. When you do, create a 1/1 colorless Spirit creature token. • Exile target noncreature card from a graveyard. When you do, put a +1/+1 counter on target creature you control."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "212",
+            "rarity": "RARE",
+            "artist": "Sam Burley",
+            "imageUri": "https://cards.scryfall.io/normal/back/4/c/4c0c6c2a-4352-4c65-b41d-2a722bbef6c5.jpg?1783923843"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "RARE",
+        "artist": "Sam Burley",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4c0c6c2a-4352-4c65-b41d-2a722bbef6c5.jpg?1783923843"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -20038,6 +21764,96 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Weaver of Harmony
+{
+    "name": "Weaver of Harmony",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment Creature — Snake Druid",
+    "oracleText": "Other enchantment creatures you control get +1/+1.\n{G}, {T}: Copy target activated or triggered ability you control from an enchantment source. You may choose new targets for the copy. (Mana abilities can't be targeted.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Weaver of Harmony:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{G}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CopyTargetSpellOrAbility",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsActivatedOrTriggeredAbility",
+                                    {
+                                        "type": "AbilitySourceMatches",
+                                        "subfilter": {
+                                            "cardPredicates": [
+                                                "IsEnchantment"
+                                            ]
+                                        }
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            },
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{G}, {T}: Copy target activated or triggered ability you control from an enchantment source. You may choose new targets for the copy.",
+                "holdPriority": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature enchantment ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "213",
+        "rarity": "RARE",
+        "artist": "Tuan Duong Chu",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d1682673-e947-44e2-b9c9-cbcb9a16892b.jpg?1783923838",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "Activated and triggered abilities from enchantment sources include abilities of enchantment cards that can be activated or triggered from other zones, such as channel abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
