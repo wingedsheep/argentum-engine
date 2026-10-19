@@ -2256,6 +2256,10 @@ class CastSpellEnumerator(
                     // "with Flash" / "Kicked" for the kicker family. The client shows this verbatim.
                     val kickLabel = when {
                         declaredSlot == ChoiceSlot.BARGAINED -> "Bargained"
+                        // An unnamed optional additional cost names what it pays ("Sacrifice an artifact").
+                        declaredSlot == ChoiceSlot.ADDITIONAL_COST_PAID ->
+                            additionalCostKicker?.additionalCost?.description?.replaceFirstChar { it.uppercase() }
+                                ?: "Additional cost"
                         declaredSlot == ChoiceSlot.REPLICATED -> "Replicate"
                         declaredSlot == ChoiceSlot.SQUAD -> "Squad"
                         // Collect evidence names the amount, because the amount is the whole choice —

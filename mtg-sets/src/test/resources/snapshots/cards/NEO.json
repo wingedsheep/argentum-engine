@@ -19856,6 +19856,79 @@
     ]
 }
 
+// Voltage Surge
+{
+    "name": "Voltage Surge",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, you may sacrifice an artifact.\nVoltage Surge deals 2 damage to target creature or planeswalker. If this spell's additional cost was paid, Voltage Surge deals 4 damage instead.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "artifact"
+                }
+            },
+            "displayPrefix": "Additional cost",
+            "declaredSlot": "ADDITIONAL_COST_PAID"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "CastChoiceMade",
+                    "slot": "ADDITIONAL_COST_PAID"
+                }
+            },
+            "then": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 4
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            },
+            "otherwise": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "artist": "Randy Vargas",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5a9b7141-45b9-4629-a4e4-b50f93929717.jpg?1783923855"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Walking Skyscraper
 {
     "name": "Walking Skyscraper",

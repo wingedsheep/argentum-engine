@@ -535,7 +535,8 @@ sealed interface KeywordAbility {
             // Collect evidence is a keyword *action*, not a keyword ability, so it has no keyword
             // label to hang a "Prefix—cost" shape on: the cards print the additional cost in full
             // (CR 701.59, "As an additional cost to cast this spell, you may collect evidence 6").
-            declaredSlot == ChoiceSlot.EVIDENCE_COLLECTED ->
+            // The unnamed "you may <cost>" additional cost has no keyword either, and prints the same way.
+            declaredSlot == ChoiceSlot.EVIDENCE_COLLECTED || declaredSlot == ChoiceSlot.ADDITIONAL_COST_PAID ->
                 "As an additional cost to cast this spell, you may " +
                     "${additionalCost?.description?.replaceFirstChar { it.lowercase() }}."
             grantsFlashTiming && additionalCost != null ->
@@ -1676,6 +1677,19 @@ sealed interface KeywordAbility {
          */
         fun kicker(additionalCost: AdditionalCost): KeywordAbility =
             OptionalAdditionalCost(additionalCost = additionalCost)
+
+        /**
+         * Create an unnamed optional additional cost — "As an additional cost to cast this spell,
+         * you may [additionalCost]" (Voltage Surge: "you may sacrifice an artifact"). Rides the
+         * kicker rail but declares [ChoiceSlot.ADDITIONAL_COST_PAID], so the spell never reads as
+         * kicked; the card's "if this spell's additional cost was paid" rider reads
+         * `Conditions.AdditionalCostWasPaid`.
+         */
+        fun optionalAdditionalCost(additionalCost: AdditionalCost): KeywordAbility = OptionalAdditionalCost(
+            additionalCost = additionalCost,
+            displayPrefix = "Additional cost",
+            declaredSlot = ChoiceSlot.ADDITIONAL_COST_PAID
+        )
 
         /**
          * Create Multikicker — a kicker whose cost can be paid any number of times.

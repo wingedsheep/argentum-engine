@@ -3018,6 +3018,10 @@ class CastFromZoneEnumerator(
 
                     val kickLabel = when {
                         declaredSlot == ChoiceSlot.BARGAINED -> "Bargained"
+                        // An unnamed optional additional cost names what it pays ("Sacrifice an artifact").
+                        declaredSlot == ChoiceSlot.ADDITIONAL_COST_PAID ->
+                            additionalCostKicker?.additionalCost?.description?.replaceFirstChar { it.uppercase() }
+                                ?: "Additional cost"
                         declaredSlot == ChoiceSlot.SQUAD -> "Squad"
                         declaredSlot == ChoiceSlot.REPLICATED -> "Replicate"
                         // See CastSpellEnumerator — the amount is the choice.

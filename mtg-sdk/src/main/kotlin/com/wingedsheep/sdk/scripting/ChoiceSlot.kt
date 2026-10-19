@@ -262,4 +262,20 @@ enum class ChoiceSlot {
 
     /** Zero-based branch of a declared additional-cost choice. */
     ADDITIONAL_COST_BRANCH,
+
+    /**
+     * Whether the spell's **unnamed optional additional cost** was paid when cast — the plain
+     * "As an additional cost to cast this spell, you may <cost>" that no keyword names (Kamigawa:
+     * Neon Dynasty's Voltage Surge: "you may sacrifice an artifact … If this spell's additional
+     * cost was paid, …"). A present value means the cost was declared and paid. Declared through
+     * [com.wingedsheep.sdk.scripting.KeywordAbility.Companion.optionalAdditionalCost] and read back
+     * through [com.wingedsheep.sdk.dsl.Conditions.AdditionalCostWasPaid].
+     *
+     * Deliberately distinct from [KICKED], [BARGAINED] and [EVIDENCE_COLLECTED] even though all ride
+     * the same optional-additional-cost rail
+     * ([com.wingedsheep.sdk.scripting.KeywordAbility.OptionalAdditionalCost.declaredSlot]): the
+     * spell is neither kicked nor bargained, so it must not satisfy "whenever you cast a kicked
+     * spell" payoffs.
+     */
+    ADDITIONAL_COST_PAID,
 }

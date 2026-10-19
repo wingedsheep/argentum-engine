@@ -1145,6 +1145,18 @@ object Conditions {
         CastChoiceMadeCondition(com.wingedsheep.sdk.scripting.ChoiceSlot.EVIDENCE_COLLECTED)
 
     /**
+     * "If this spell's additional cost was paid" — the spell's unnamed optional additional cost
+     * ("As an additional cost to cast this spell, you may sacrifice an artifact", Voltage Surge)
+     * was declared and paid as it was cast. A facade over the durable choice-slot read
+     * ([com.wingedsheep.sdk.scripting.ChoiceSlot.ADDITIONAL_COST_PAID]); pairs with
+     * `KeywordAbility.optionalAdditionalCost(...)`. It answers from the spell's own resolving
+     * effect and from an enters trigger on the permanent the spell became. Never true for a
+     * kicked or bargained spell.
+     */
+    val AdditionalCostWasPaid: ConditionInterface =
+        CastChoiceMadeCondition(com.wingedsheep.sdk.scripting.ChoiceSlot.ADDITIONAL_COST_PAID)
+
+    /**
      * If this spell was cast **using teamwork** (CR 702.194b, Marvel Super Heroes) — its optional
      * "tap any number of creatures you control with total power N or more" additional cost was
      * declared as it was cast.

@@ -143,6 +143,7 @@ internal class SpellOnStackProjector(
                 }
                 declared?.keyword == Keyword.OFFSPRING -> "Offspring"
                 slot == ChoiceSlot.BARGAINED -> "Bargained"
+                slot == ChoiceSlot.ADDITIONAL_COST_PAID -> "Additional cost paid"
                 slot == ChoiceSlot.KICKED -> {
                     // A two-kicker card names the kicker(s) paid ("Kicked {G}"), CR 702.33f.
                     val kickers = cardDef?.keywordAbilities
