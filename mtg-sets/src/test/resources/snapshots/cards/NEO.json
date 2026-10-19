@@ -4957,6 +4957,82 @@
     ]
 }
 
+// Enormous Energy Blade
+{
+    "name": "Enormous Energy Blade",
+    "manaCost": "{2}{B}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +4/+0.\nWhenever this Equipment becomes attached to a creature, tap that creature.\nEquip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Enormous Energy Blade:1",
+                "trigger": {
+                    "type": "BecomesAttachedEvent",
+                    "attachedToFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "AttachedToTriggeringPermanent"
+                },
+                "descriptionOverride": "Whenever this Equipment becomes attached to a creature, tap that creature."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Enormous Energy Blade:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 4,
+                "toughnessBonus": 0
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "UNCOMMON",
+        "artist": "Campbell White",
+        "flavorText": "\"Heavy? Maybe for you.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/991370bd-a96a-4ed0-bdf9-f03b98191abf.jpg?1783923888"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Enthusiastic Mechanaut
 {
     "name": "Enthusiastic Mechanaut",
@@ -5921,6 +5997,70 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Gloomshrieker
+{
+    "name": "Gloomshrieker",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Enchantment Creature — Cat Beast",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nWhen this creature enters, return target permanent card from your graveyard to your hand.\nIf this creature would die, exile it instead.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gloomshrieker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChange",
+                "newDestination": "Exile",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "UNCOMMON",
+        "artist": "Fiona Hsieh",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2b50751-7f65-4321-86da-eef735bf8b67.jpg?1783923836"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
     ]
 }
 
@@ -7497,6 +7637,214 @@
     ]
 }
 
+// Invoke Despair
+{
+    "name": "Invoke Despair",
+    "manaCost": "{1}{B}{B}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent sacrifices a creature of their choice. If they can't, they lose 2 life and you draw a card. Then repeat this process for an enchantment and a planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "StoreNumber",
+                    "name": "invokeDespair_creature_before",
+                    "amount": "PermanentsSacrificedThisWay"
+                },
+                {
+                    "type": "ForceSacrifice",
+                    "filter": "creature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": "PermanentsSacrificedThisWay",
+                            "operator": "EQ",
+                            "right": {
+                                "type": "VariableReference",
+                                "variableName": "invokeDespair_creature_before"
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "StoreNumber",
+                            "name": "invokeDespair_enchantment_before",
+                            "amount": "PermanentsSacrificedThisWay"
+                        },
+                        {
+                            "type": "ForceSacrifice",
+                            "filter": "enchantment",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": "PermanentsSacrificedThisWay",
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "VariableReference",
+                                        "variableName": "invokeDespair_enchantment_before"
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "LoseLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "StoreNumber",
+                            "name": "invokeDespair_planeswalker_before",
+                            "amount": "PermanentsSacrificedThisWay"
+                        },
+                        {
+                            "type": "ForceSacrifice",
+                            "filter": "planeswalker",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": "PermanentsSacrificedThisWay",
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "VariableReference",
+                                        "variableName": "invokeDespair_planeswalker_before"
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "LoseLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "RARE",
+        "artist": "Olivier Bernard",
+        "flavorText": "Although officials said it was a sewer failure, the people whispered that it was a warning of night's reach.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/35af9d5c-4449-4549-b549-c3ba4a67dee0.jpg?1783923885",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "The target opponent doesn't choose whether to sacrifice a creature or not, although they do choose which creature they control to sacrifice."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "When you repeat the process, you don't choose a new player. The same player sacrifices each of the three permanents, if able."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "You repeat the process for an enchantment and a planeswalker whether the target opponent was able to sacrifice a creature or not."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Invoke Justice
 {
     "name": "Invoke Justice",
@@ -7840,6 +8188,248 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Junji, the Midnight Sky
+{
+    "name": "Junji, the Midnight Sky",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Legendary Creature — Dragon Spirit",
+    "oracleText": "Flying, menace\nWhen Junji dies, choose one —\n• Each opponent discards two cards and loses 2 life.\n• Put target non-Dragon creature card from a graveyard onto the battlefield under your control. You lose 2 life.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Junji, the Midnight Sky:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "ForEach",
+                                        "space": {
+                                            "type": "IterationSpace.Players",
+                                            "players": "EachOpponent"
+                                        },
+                                        "body": {
+                                            "type": "Composite",
+                                            "effects": [
+                                                {
+                                                    "type": "GatherCards",
+                                                    "source": {
+                                                        "type": "FromZone",
+                                                        "zone": "Hand"
+                                                    },
+                                                    "storeAs": "hand"
+                                                },
+                                                {
+                                                    "type": "SelectFromCollection",
+                                                    "from": "hand",
+                                                    "selection": {
+                                                        "type": "ChooseExactly",
+                                                        "count": {
+                                                            "type": "Fixed",
+                                                            "amount": 2
+                                                        }
+                                                    },
+                                                    "storeSelected": "discarded"
+                                                },
+                                                {
+                                                    "type": "MoveCollection",
+                                                    "from": "discarded",
+                                                    "destination": {
+                                                        "type": "ToZone",
+                                                        "zone": "Graveyard"
+                                                    },
+                                                    "moveType": "Discard"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "type": "LoseLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "target": {
+                                            "type": "PlayerRef",
+                                            "player": "EachOpponent"
+                                        }
+                                    }
+                                ]
+                            },
+                            "description": "Each opponent discards two cards and loses 2 life."
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "MoveToZone",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        },
+                                        "destination": "Battlefield",
+                                        "controllerOverride": "Controller",
+                                        "fromZone": "Graveyard"
+                                    },
+                                    {
+                                        "type": "LoseLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "target": "Controller"
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": {
+                                            "cardPredicates": [
+                                                "IsCreature",
+                                                {
+                                                    "type": "NotSubtype",
+                                                    "subtype": "Dragon"
+                                                }
+                                            ]
+                                        },
+                                        "zone": "Graveyard"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Put target non-Dragon creature card from a graveyard onto the battlefield under your control. You lose 2 life."
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Junji dies, choose one — • Each opponent discards two cards and loses 2 life. • Put target non-Dragon creature card from a graveyard onto the battlefield under your control. You lose 2 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/9033cf27-d9e6-49b8-8ee1-c1f38c9680b9.jpg?1783923885"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Kaito's Pursuit
+{
+    "name": "Kaito's Pursuit",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player discards two cards. Ninjas and Rogues you control gain menace until end of turn. (They can't be blocked except by two or more creatures.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "hand"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "hand",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "chooser": "TargetPlayer",
+                    "storeSelected": "discarded",
+                    "prompt": "Choose 2 cards to discard"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "discarded",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "HasAnyOfSubtypes",
+                                        "subtypes": [
+                                            "Ninja",
+                                            "Rogue"
+                                        ]
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "MENACE",
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "artist": "Cristi Balanescu",
+        "flavorText": "Kaito knew every rooftop in the city, and closed in quickly on his quarry—but he knew nothing of the Planar Bridge until it was already too late.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd73fa5a-be0f-49a4-a921-afefbc8fa9c5.jpg?1783923883"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -8829,6 +9419,231 @@
                 "text": "An Aura controlled by an opponent does not cause a creature you control to be modified."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Life of Toshiro Umezawa
+{
+    "name": "Life of Toshiro Umezawa",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI, II — Choose one —\n• Target creature gets +2/+2 until end of turn.\n• Target creature gets -1/-1 until end of turn.\n• You gain 2 life.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Target creature gets +2/+2 until end of turn"
+                        },
+                        {
+                            "effect": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": -1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": -1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Target creature gets -1/-1 until end of turn"
+                        },
+                        {
+                            "effect": {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "description": "You gain 2 life"
+                        }
+                    ],
+                    "countsAsModalSpell": false
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t2"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t2"
+                                }
+                            ],
+                            "description": "Target creature gets +2/+2 until end of turn"
+                        },
+                        {
+                            "effect": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": -1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": -1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t3"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t3"
+                                }
+                            ],
+                            "description": "Target creature gets -1/-1 until end of turn"
+                        },
+                        {
+                            "effect": {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "description": "You gain 2 life"
+                        }
+                    ],
+                    "countsAsModalSpell": false
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": "ExileAndReturnTransformed"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Memory of Toshiro",
+        "manaCost": "",
+        "typeLine": "Enchantment Creature — Human Samurai",
+        "oracleText": "{T}, Pay 1 life: Add {B}. Spend this mana only to cast an instant or sorcery spell.",
+        "creatureStats": {
+            "power": 2,
+            "toughness": 3
+        },
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Memory of Toshiro:1",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            "CostTap",
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomPayLife",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "BLACK",
+                        "restriction": "InstantOrSorceryOnly"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "108",
+            "rarity": "UNCOMMON",
+            "artist": "Sidharth Chaturvedi",
+            "flavorText": "\"Some called him the hero of the Kami War, others a selfish thief. As ever, the truth is hidden somewhere in between.\"\n—Reki, founder of the Living Historians",
+            "imageUri": "https://cards.scryfall.io/normal/back/f/7/f7f4adf7-b871-417b-8904-7f024ca21486.jpg?1783923889"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "rarity": "UNCOMMON",
+        "artist": "Sidharth Chaturvedi",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7f4adf7-b871-417b-8904-7f024ca21486.jpg?1783923889"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -10894,6 +11709,73 @@
     ]
 }
 
+// Mukotai Soulripper
+{
+    "name": "Mukotai Soulripper",
+    "manaCost": "{1}{B}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Whenever this Vehicle attacks, you may sacrifice another artifact or creature. If you do, put a +1/+1 counter on this Vehicle and it gains menace until end of turn.\nCrew 2 (Tap any number of creatures you control with total power 2 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mukotai Soulripper:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Sacrifice",
+                            "filter": "creature|artifact",
+                            "excludeSource": true
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "Self"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "MENACE",
+                                "target": "Self"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever this Vehicle attacks, you may sacrifice another artifact or creature. If you do, put a +1/+1 counter on this Vehicle and it gains menace until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "rarity": "RARE",
+        "artist": "Eddie Mendoza",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/166775be-c3b7-4a17-9376-aa4229b147f9.jpg?1783923879"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Naomi, Pillar of Order
 {
     "name": "Naomi, Pillar of Order",
@@ -11936,6 +12818,91 @@
     ]
 }
 
+// Oni-Cult Anvil
+{
+    "name": "Oni-Cult Anvil",
+    "manaCost": "{B}{R}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever one or more artifacts you control leave the battlefield during your turn, create a 1/1 colorless Construct artifact creature token. This ability triggers only once each turn.\n{T}, Sacrifice an artifact: This artifact deals 1 damage to each opponent. You gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Oni-Cult Anvil:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "artifact ctrl:you",
+                    "from": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Construct"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/2/7/2770f887-7e96-44d1-864a-8c0504a39785.jpg?1783923710",
+                    "artifactToken": true
+                },
+                "triggerRestriction": "IsYourTurn",
+                "oncePerTurn": true
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Oni-Cult Anvil:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c84db1e2-855c-4169-a9cc-a54c73c14e0c.jpg?1783923832"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Otawara, Soaring City
 {
     "name": "Otawara, Soaring City",
@@ -12974,6 +13941,84 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Return to Action
+{
+    "name": "Return to Action",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, target creature gets +1/+0 and gains lifelink and \"When this creature dies, return it to the battlefield tapped under its owner's control.\"",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantTriggeredAbility",
+                    "ability": {
+                        "id": "Return to Action:1",
+                        "trigger": {
+                            "type": "ZoneChangeEvent",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        },
+                        "effect": {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Battlefield",
+                            "placement": "Tapped"
+                        },
+                        "descriptionOverride": "When this creature dies, return it to the battlefield tapped under its owner's control."
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "artist": "Jeremy Wilson",
+        "flavorText": "\"You're hurt? Too bad. You stop fighting when I say, and not a moment sooner.\"\n—Satoru Umezawa",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/4/342ec072-e581-490c-b5ae-a625bd35a153.jpg?1783923877"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -14722,6 +15767,108 @@
     ]
 }
 
+// Soul Transfer
+{
+    "name": "Soul Transfer",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one. If you control an artifact and an enchantment as you cast this spell, you may choose both instead.\n• Exile target creature or planeswalker.\n• Return target creature or planeswalker card from your graveyard to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Exile"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetCreatureOrPlaneswalker",
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Exile target creature or planeswalker"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Hand"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature|planeswalker own:you",
+                                "zone": "Graveyard"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Return target creature or planeswalker card from your graveyard to your hand"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1,
+            "dynamicChooseCount": {
+                "type": "Conditional",
+                "condition": {
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "artifact"
+                        },
+                        {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "enchantment"
+                        }
+                    ]
+                },
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "RARE",
+        "artist": "Lorenzo Mastroianni",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e5aba90-c8c7-4f06-b7b3-1b4758d2791a.jpg?1783923876",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "The artifact and the enchantment may be the same permanent."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "Once you cast Soul Transfer and choose both modes, it doesn't matter what happens to the artifact or enchantment you control in response. Soul Transfer will still have both modes chosen."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Spinning Wheel Kick
 {
     "name": "Spinning Wheel Kick",
@@ -16114,6 +17261,125 @@
     ]
 }
 
+// The Long Reach of Night
+{
+    "name": "The Long Reach of Night",
+    "manaCost": "{3}{B}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI, II — Each opponent sacrifices a creature of their choice unless they discard a card.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "PayOrSuffer",
+                        "cost": {
+                            "type": "PayAtom",
+                            "atom": "AtomDiscard"
+                        },
+                        "suffer": {
+                            "type": "ForceSacrifice",
+                            "filter": "creature",
+                            "target": "Controller"
+                        }
+                    }
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "PayOrSuffer",
+                        "cost": {
+                            "type": "PayAtom",
+                            "atom": "AtomDiscard"
+                        },
+                        "suffer": {
+                            "type": "ForceSacrifice",
+                            "filter": "creature",
+                            "target": "Controller"
+                        }
+                    }
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": "ExileAndReturnTransformed"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Animus of Night's Reach",
+        "manaCost": "",
+        "typeLine": "Enchantment Creature — Spirit",
+        "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nWhenever this creature attacks, it gets +X/+0 until end of turn, where X is the number of creature cards in defending player's graveyard.",
+        "creatureStats": {
+            "power": 0,
+            "toughness": 4
+        },
+        "keywords": [
+            "MENACE"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Animus of Night's Reach:1",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "AggregateZone",
+                            "player": "DefendingPlayer",
+                            "zone": "Graveyard",
+                            "filter": "creature"
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "Self"
+                    },
+                    "descriptionOverride": "Whenever this creature attacks, it gets +X/+0 until end of turn, where X is the number of creature cards in defending player's graveyard."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "109",
+            "rarity": "UNCOMMON",
+            "artist": "Tuan Duong Chu",
+            "flavorText": "The dark myojin's gifts were instrumental in ending the Kami War.",
+            "imageUri": "https://cards.scryfall.io/normal/back/4/e/4ec18bf7-bd80-408d-acc4-ffaaf7ef6b5b.jpg?1783923888"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "UNCOMMON",
+        "artist": "Tuan Duong Chu",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4ec18bf7-bd80-408d-acc4-ffaaf7ef6b5b.jpg?1783923888"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // The Modern Age
 {
     "name": "The Modern Age",
@@ -16936,6 +18202,211 @@
     ]
 }
 
+// Tribute to Horobi
+{
+    "name": "Tribute to Horobi",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI, II — Each opponent creates a 1/1 black Rat Rogue creature token.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Rat",
+                        "Rogue"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/6/9/695f72ea-13e6-40ab-afc7-55657701c82d.jpg?1783923715",
+                    "controller": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Rat",
+                        "Rogue"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/6/9/695f72ea-13e6-40ab-afc7-55657701c82d.jpg?1783923715",
+                    "controller": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": "ExileAndReturnTransformed"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Echo of Death's Wail",
+        "manaCost": "",
+        "typeLine": "Enchantment Creature — Spirit",
+        "oracleText": "Flying, haste\nWhen this creature enters, gain control of all Rat tokens.\nWhenever this creature attacks, you may sacrifice another creature. If you do, draw a card.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "keywords": [
+            "FLYING",
+            "HASTE"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Echo of Death's Wail:1",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "to": "Battlefield"
+                    },
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "permanent Rat token"
+                            }
+                        },
+                        "body": {
+                            "type": "GainControl",
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "descriptionOverride": "When this creature enters, gain control of all Rat tokens."
+                },
+                {
+                    "id": "Echo of Death's Wail:2",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.MayPay",
+                            "cost": {
+                                "type": "Sacrifice",
+                                "filter": "creature",
+                                "excludeSource": true
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "descriptionOverride": "Whenever this creature attacks, you may sacrifice another creature. If you do, draw a card."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "124",
+            "rarity": "RARE",
+            "artist": "Robin Olausson",
+            "imageUri": "https://cards.scryfall.io/normal/back/5/4/54613f38-ca91-4764-b1fe-60cd83707fb4.jpg?1783923882"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "RARE",
+        "artist": "Robin Olausson",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/54613f38-ca91-4764-b1fe-60cd83707fb4.jpg?1783923882"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Twisted Embrace
+{
+    "name": "Twisted Embrace",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant artifact or creature you control\nWhen this Aura enters, destroy target creature or planeswalker an opponent controls.\nAs long as enchanted permanent is a creature, it gets +1/+1.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Twisted Embrace:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|planeswalker ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 1
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "creature"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature|artifact ctrl:you"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "artist": "Betty Jiang",
+        "flavorText": "Evil kami are drawn to mortals who share their grim fascinations.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e4c7919a-de62-46df-a937-593647473ef5.jpg?1783923875"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Uncharted Haven
 {
     "name": "Uncharted Haven",
@@ -17384,5 +18855,61 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// You Are Already Dead
+{
+    "name": "You Are Already Dead",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature that was dealt damage this turn.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "WasDealtDamageThisTurn"
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "artist": "Zoltan Boros",
+        "flavorText": "So swift and sharp was his blade that the ogre never even felt the cut.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/768727ce-4f84-4527-8d69-3c9b7877b748.jpg?1783923872"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
