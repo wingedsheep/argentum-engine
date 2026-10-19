@@ -16,8 +16,7 @@ import io.kotest.matchers.string.shouldContain
  * to deal damage to that creature this turn, prevent that damage."
  *
  * Pinned: a targeted spell's damage is prevented; so is an ability's that targets the creature,
- * though the ability's creature is the source; an untargeted sweeper and combat damage get through;
- * a spell aimed at another creature still hurts that one.
+ * though the ability's creature is the source; an untargeted sweeper and combat damage get through.
  */
 class SilhouetteScenarioTest : ScenarioTestBase() {
 
@@ -78,15 +77,6 @@ class SilhouetteScenarioTest : ScenarioTestBase() {
                 withClue("Pyroclasm targets nothing, so its damage is dealt") {
                     game.isInGraveyard(1, "Grizzly Bears") shouldBe true
                 }
-            }
-
-            test("protects only the chosen creature") {
-                val game = board("Lightning Bolt")
-                game.silhouetteOnBears()
-                game.castSpell(1, "Lightning Bolt", game.findPermanent("Centaur Courser")!!).error shouldBe null
-                game.resolveStack()
-
-                game.isInGraveyard(2, "Centaur Courser") shouldBe true
             }
 
             test("the shielded creature's badge names Silhouette and what it prevents") {

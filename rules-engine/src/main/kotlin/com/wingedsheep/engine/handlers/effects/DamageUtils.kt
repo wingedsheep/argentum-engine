@@ -24,6 +24,9 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.state.nameVisibleToAll
 import com.wingedsheep.engine.replacement.PendingReplacementRider
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.innermostResolvingFrame
+import com.wingedsheep.engine.core.FinishResolvingAbilityContinuation
+import com.wingedsheep.engine.core.FinishResolvingSpellContinuation
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
@@ -1773,15 +1776,12 @@ object DamageUtils {
      * cause. Read by the Silhouette shield (`PreventionSourceFilter.TargetingRecipient`).
      */
     private fun resolvingObjectTargets(state: GameState, recipientId: EntityId): Boolean {
-        val resolving = state.continuationStack.asReversed().firstNotNullOfOrNull {
-            when (it) {
-                is com.wingedsheep.engine.core.FinishResolvingSpellContinuation -> it.spellObject
-                is com.wingedsheep.engine.core.FinishResolvingAbilityContinuation -> it.abilityObject
-                else -> null
-            }
-        } ?: return false
-        val targets = state.getEntity(resolving.entityId)
-            ?.get<com.wingedsheep.engine.state.components.stack.TargetsComponent>() ?: return false
+        val resolving = when (val frame = state.innermostResolvingFrame()) {
+            is FinishResolvingSpellContinuation -> frame.spellObject
+            is FinishResolvingAbilityContinuation -> frame.abilityObject
+            else -> return false
+        }
+        val targets = state.getEntity(resolving.entityId)?.get<TargetsComponent>() ?: return false
         val targeted = targets.targets.any { target ->
             when (target) {
                 is ChosenTarget.Player -> target.playerId

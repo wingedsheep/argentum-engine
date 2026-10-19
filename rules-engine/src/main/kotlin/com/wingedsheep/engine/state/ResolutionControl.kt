@@ -1,6 +1,9 @@
 package com.wingedsheep.engine.state
 
+import com.wingedsheep.engine.core.AutomaticContinuation
 import com.wingedsheep.engine.core.EndResolutionControlContinuation
+import com.wingedsheep.engine.core.FinishResolvingAbilityContinuation
+import com.wingedsheep.engine.core.FinishResolvingSpellContinuation
 import com.wingedsheep.engine.core.ResolutionControlEvent
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.sdk.model.EntityId
@@ -17,6 +20,17 @@ data class ResolutionControl(
 fun GameState.isResolving(ref: ObjectRef): Boolean = continuationStack.any {
     it is EndResolutionControlContinuation && it.resolvingObject == ref
 }
+
+/**
+ * The finishing frame of the innermost spell or ability now resolving. Each resolving object keeps
+ * its [FinishResolvingSpellContinuation] / [FinishResolvingAbilityContinuation] on the continuation
+ * stack until its effect is done (CR 608.2n), so the newest such frame is the object whose
+ * instructions are being followed right now; null outside any resolution (combat damage, SBAs).
+ */
+fun GameState.innermostResolvingFrame(): AutomaticContinuation? =
+    continuationStack.lastOrNull {
+        it is FinishResolvingSpellContinuation || it is FinishResolvingAbilityContinuation
+    } as AutomaticContinuation?
 
 /** Rules control restricts out-of-game choices; session hotseat alone does not. */
 fun GameState.isPlayerControlledByEffect(playerId: EntityId): Boolean {

@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.FinishResolvingAbilityContinuation
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.FinishResolvingSpellContinuation
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.innermostResolvingFrame
 import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
 import com.wingedsheep.engine.state.components.battlefield.TimestampComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
@@ -118,19 +119,15 @@ object PermanentEntryTracker {
 
     /**
      * The controller of the innermost spell or ability now resolving — the player whose effect is
-     * putting things onto the battlefield. Each resolving object keeps its finishing frame on the
-     * continuation stack until its effect is done (CR 608.2n), so the newest such frame is it.
+     * putting things onto the battlefield.
      */
-    private fun resolvingController(state: GameState): EntityId? {
-        val ref = state.continuationStack.asReversed().firstNotNullOfOrNull { frame ->
-            when (frame) {
-                is FinishResolvingSpellContinuation -> return frame.spellComponent.casterId
-                is FinishResolvingAbilityContinuation -> frame.abilityObject
-                else -> null
-            }
-        } ?: return null
-        return TargetResolutionUtils.stackObjectController(state, ref.entityId)
-    }
+    private fun resolvingController(state: GameState): EntityId? =
+        when (val frame = state.innermostResolvingFrame()) {
+            is FinishResolvingSpellContinuation -> frame.spellComponent.casterId
+            is FinishResolvingAbilityContinuation ->
+                TargetResolutionUtils.stackObjectController(state, frame.abilityObject.entityId)
+            else -> null
+        }
 
     private fun projectedCardTypes(state: GameState, entityId: EntityId): Set<CardType> {
         val typeNames = state.projectedState.getTypes(entityId)
