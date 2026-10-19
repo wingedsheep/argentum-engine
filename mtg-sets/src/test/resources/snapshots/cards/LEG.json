@@ -165,6 +165,41 @@
     ]
 }
 
+// Adventurers' Guildhouse
+{
+    "name": "Adventurers' Guildhouse",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "Green legendary creatures you control have \"bands with other legendary creatures.\" (Any legendary creatures can attack in a band as long as at least one has \"bands with other legendary creatures.\" Bands are blocked as a group. If at least two legendary creatures you control, one of which has \"bands with other legendary creatures,\" are blocking or being blocked by the same creature, you divide that creature's combat damage, not its controller, among any of the creatures it's being blocked by or is blocking.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "BANDS_WITH_OTHER_SUPERTYPE_LEGENDARY",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasColor",
+                                "color": "GREEN"
+                            },
+                            "IsLegendary"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "300",
+        "rarity": "UNCOMMON",
+        "artist": "Tom Wänerstrand",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/32865e68-5842-4f17-b2ea-4ffa743b511f.jpg?1783948024"
+    }
+}
+
 // Aerathi Berserker
 {
     "name": "Aerathi Berserker",
@@ -3373,6 +3408,113 @@
     ]
 }
 
+// Hammerheim
+{
+    "name": "Hammerheim",
+    "manaCost": "",
+    "typeLine": "Legendary Land",
+    "oracleText": "{T}: Add {R}.\n{T}: Target creature loses all landwalk abilities until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hammerheim:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Hammerheim:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RemoveKeyword",
+                            "keyword": "SWAMPWALK",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "RemoveKeyword",
+                            "keyword": "FORESTWALK",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "RemoveKeyword",
+                            "keyword": "ISLANDWALK",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "RemoveKeyword",
+                            "keyword": "MOUNTAINWALK",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "RemoveKeyword",
+                            "keyword": "PLAINSWALK",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "RemoveKeyword",
+                            "keyword": "DESERTWALK",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "RemoveKeyword",
+                            "keyword": "NONBASIC_LANDWALK",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "Target creature loses all landwalk abilities until end of turn."
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}: Target creature loses all landwalk abilities until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "302",
+        "rarity": "UNCOMMON",
+        "artist": "Bryon Wackwitz",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/2816d30e-1e52-4323-b30e-1688fba23368.jpg?1783948022"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Headless Horseman
 {
     "name": "Headless Horseman",
@@ -4132,6 +4274,64 @@
     }
 }
 
+// Karakas
+{
+    "name": "Karakas",
+    "manaCost": "",
+    "typeLine": "Legendary Land",
+    "oracleText": "{T}: Add {W}.\n{T}: Return target legendary creature to its owner's hand.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Karakas:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Karakas:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsLegendary"
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}: Return target legendary creature to its owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "303",
+        "rarity": "UNCOMMON",
+        "artist": "Nicola Leonard",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/31d2422a-bb7d-4cdd-9aac-e5a936a4be3b.jpg?1783948023"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Kasimir the Lone Wolf
 {
     "name": "Kasimir the Lone Wolf",
@@ -4273,6 +4473,164 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Knowledge Vault
+{
+    "name": "Knowledge Vault",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}, {T}: Exile the top card of your library face down.\n{0}: Sacrifice this artifact. If you do, discard your hand, then put all cards exiled with this artifact into their owner's hand.\nWhen this artifact leaves the battlefield, put all cards exiled with it into their owner's graveyard.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Knowledge Vault:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this artifact leaves the battlefield, put all cards exiled with it into their owner's graveyard."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Knowledge Vault:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true,
+                            "faceDown": "HIDDEN"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{2}, {T}: Exile the top card of your library face down."
+            },
+            {
+                "id": "Knowledge Vault:2",
+                "cost": "CostFree",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": "SacrificeSelf",
+                        "successCriterion": "SuccessCriterion.PermanentsSacrificed"
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "discardedHand"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discardedHand",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": "FromLinkedExile",
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "gathered0",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "Sacrifice this artifact. If you do, discard your hand, then put all cards exiled with this artifact into their owner's hand."
+                },
+                "descriptionOverride": "{0}: Sacrifice this artifact. If you do, discard your hand, then put all cards exiled with this artifact into their owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "281",
+        "rarity": "RARE",
+        "artist": "Amy Weber",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/65947312-75c2-4baa-805c-238a154156ef.jpg?1783948028",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "You don't get to look at the cards exiled with Knowledge Vault."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "If you activate Knowledge Vault's second ability, all that happens at that time is that you pay a cost of {0}. As the ability resolves, you must sacrifice Knowledge Vault. This is mandatory. If you are able to do so, you discard your hand and put all cards exiled with Knowledge Vault into their owners' hands. If you aren't able to do so because Knowledge Vault left the battlefield or changed controllers before the ability resolves, nothing happens."
+            },
+            {
+                "date": "2008-10-01",
+                "text": "You can activate the second ability any time you have priority, including in response to itself. However, you will only be able to sacrifice the Vault as the first such ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Kobold Drill Sergeant
@@ -5261,6 +5619,41 @@
     ]
 }
 
+// Mountain Stronghold
+{
+    "name": "Mountain Stronghold",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "Red legendary creatures you control have \"bands with other legendary creatures.\" (Any legendary creatures can attack in a band as long as at least one has \"bands with other legendary creatures.\" Bands are blocked as a group. If at least two legendary creatures you control, one of which has \"bands with other legendary creatures,\" are blocking or being blocked by the same creature, you divide that creature's combat damage, not its controller, among any of the creatures it's being blocked by or is blocking.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "BANDS_WITH_OTHER_SUPERTYPE_LEGENDARY",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasColor",
+                                "color": "RED"
+                            },
+                            "IsLegendary"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "304",
+        "rarity": "UNCOMMON",
+        "artist": "Tom Wänerstrand",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/314fd1d7-4bd8-4d95-b7c2-1aa6660ab88a.jpg?1783948022"
+    }
+}
+
 // Mountain Yeti
 {
     "name": "Mountain Yeti",
@@ -5327,6 +5720,58 @@
         "rarity": "RARE",
         "artist": "Kaja Foglio",
         "imageUri": "https://cards.scryfall.io/normal/front/d/a/daac2a6b-27c8-4567-9e0c-7b262628d331.jpg?1783948026"
+    }
+}
+
+// Nova Pentacle
+{
+    "name": "Nova Pentacle",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "{3}, {T}: The next time a source of your choice would deal damage to you this turn, that damage is dealt to target creature of an opponent's choice instead.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nova Pentacle:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "RedirectDamageFromChosenSource",
+                    "protectedTarget": "Controller",
+                    "redirectTo": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0",
+                        "chooser": "Opponent"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "289",
+        "rarity": "RARE",
+        "artist": "Richard Thomas",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc60e209-aa29-48aa-9128-9bb175403c0c.jpg?1783948027"
     }
 }
 
@@ -5426,6 +5871,66 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Pendelhaven
+{
+    "name": "Pendelhaven",
+    "manaCost": "",
+    "typeLine": "Legendary Land",
+    "oracleText": "{T}: Add {G}.\n{T}: Target 1/1 creature gets +1/+2 until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Pendelhaven:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Pendelhaven:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature pow=1 tou>=1 tou<=1"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}: Target 1/1 creature gets +1/+2 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "305",
+        "rarity": "UNCOMMON",
+        "artist": "Bryon Wackwitz",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/79427109-c1f3-476d-a029-0049217237b5.jpg?1783948022"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -6382,6 +6887,73 @@
     ]
 }
 
+// Ring of Immortals
+{
+    "name": "Ring of Immortals",
+    "manaCost": "{5}",
+    "typeLine": "Artifact",
+    "oracleText": "{3}, {T}: Counter target instant or Aura spell that targets a permanent you control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ring of Immortals:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": "Counter",
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            {
+                                                "type": "HasSubtype",
+                                                "subtype": "Aura"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "TargetsMatching",
+                                        "subfilter": {
+                                            "cardPredicates": [
+                                                "IsPermanent"
+                                            ],
+                                            "controllerPredicate": "ControlledByYou"
+                                        }
+                                    }
+                                ]
+                            },
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "293",
+        "rarity": "RARE",
+        "artist": "Melissa A. Benson",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/61706102-67fd-4167-bd7d-ec6da41db362.jpg?1783948026"
+    }
+}
+
 // Riven Turnbull
 {
     "name": "Riven Turnbull",
@@ -6419,6 +6991,41 @@
     ]
 }
 
+// Seafarer's Quay
+{
+    "name": "Seafarer's Quay",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "Blue legendary creatures you control have \"bands with other legendary creatures.\" (Any legendary creatures can attack in a band as long as at least one has \"bands with other legendary creatures.\" Bands are blocked as a group. If at least two legendary creatures you control, one of which has \"bands with other legendary creatures,\" are blocking or being blocked by the same creature, you divide that creature's combat damage, not its controller, among any of the creatures it's being blocked by or is blocking.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "BANDS_WITH_OTHER_SUPERTYPE_LEGENDARY",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasColor",
+                                "color": "BLUE"
+                            },
+                            "IsLegendary"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "306",
+        "rarity": "UNCOMMON",
+        "artist": "Tom Wänerstrand",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66641d88-b3f0-4bcd-8d2d-29aa2de69e30.jpg?1783948022"
+    }
+}
+
 // Segovian Leviathan
 {
     "name": "Segovian Leviathan",
@@ -6442,6 +7049,68 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Sentinel
+{
+    "name": "Sentinel",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Shapeshifter",
+    "oracleText": "{0}: This creature's base toughness becomes equal to 1 plus the power of target creature blocking or blocked by this creature. (This effect lasts indefinitely.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sentinel:1",
+                "cost": "CostFree",
+                "effect": {
+                    "type": "SetBaseStats",
+                    "target": "Self",
+                    "toughness": {
+                        "type": "Add",
+                        "left": {
+                            "type": "EntityProperty",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "numericProperty": "Power"
+                        },
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "IsCombatPairedWithSource"
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Sentinel's base toughness becomes 1 plus the power of target creature blocking or blocked by it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "294",
+        "rarity": "RARE",
+        "artist": "Randy Asplund-Faith",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c970830-95cf-4471-af28-43da635073d0.jpg?1783948025"
+    }
 }
 
 // Serpent Generator
@@ -7782,6 +8451,56 @@
     ]
 }
 
+// The Tabernacle at Pendrell Vale
+{
+    "name": "The Tabernacle at Pendrell Vale",
+    "manaCost": "",
+    "typeLine": "Legendary Land",
+    "oracleText": "All creatures have \"At the beginning of your upkeep, destroy this creature unless you pay {1}.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "The Tabernacle at Pendrell Vale:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "PayOrSuffer",
+                        "cost": {
+                            "type": "PayAtom",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "suffer": {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        },
+                        "consequenceDescription": "destroy this creature"
+                    },
+                    "descriptionOverride": "At the beginning of your upkeep, destroy this creature unless you pay {1}."
+                },
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "307",
+        "rarity": "RARE",
+        "artist": "Nicola Leonard",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/64bc9b1d-5818-4d9e-b771-e49af4ff9a5c.jpg?1783948022"
+    }
+}
+
 // Thunder Spirit
 {
     "name": "Thunder Spirit",
@@ -7826,6 +8545,65 @@
     },
     "colorIdentityOverride": [
         "WHITE",
+        "BLUE"
+    ]
+}
+
+// Tolaria
+{
+    "name": "Tolaria",
+    "manaCost": "",
+    "typeLine": "Legendary Land",
+    "oracleText": "{T}: Add {U}.\n{T}: Target creature loses banding and all \"bands with other\" abilities until end of turn. Activate only during any upkeep step.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tolaria:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Tolaria:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "RemoveKeyword",
+                    "keyword": "BANDING",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    {
+                        "type": "DuringStep",
+                        "step": "UPKEEP"
+                    }
+                ],
+                "descriptionOverride": "{T}: Target creature loses banding and all \"bands with other\" abilities until end of turn. Activate only during any upkeep step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "308",
+        "rarity": "UNCOMMON",
+        "artist": "Nicola Leonard",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d43c01b7-443d-4061-a934-6863d230c9b8.jpg?1783948022"
+    },
+    "colorIdentityOverride": [
         "BLUE"
     ]
 }
@@ -7913,6 +8691,146 @@
         "WHITE",
         "GREEN"
     ]
+}
+
+// Triassic Egg
+{
+    "name": "Triassic Egg",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "{3}, {T}: Put a hatchling counter on this artifact.\nSacrifice this artifact: Choose one. Activate only if there are two or more hatchling counters on this artifact.\n• You may put a creature card from your hand onto the battlefield.\n• Return target creature card from your graveyard to the battlefield.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Triassic Egg:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "HATCHLING",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "{3}, {T}: Put a hatchling counter on this artifact."
+            },
+            {
+                "id": "Triassic Egg:2",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand",
+                                            "filter": "creature"
+                                        },
+                                        "storeAs": "put_candidates"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "put_candidates",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "putting",
+                                        "prompt": "Put a creature card from your hand onto the battlefield?"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "putting",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        }
+                                    }
+                                ]
+                            },
+                            "description": "You may put a creature card from your hand onto the battlefield"
+                        },
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Battlefield",
+                                "fromZone": "Graveyard"
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature own:you",
+                                        "zone": "Graveyard"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Return target creature card from your graveyard to the battlefield"
+                        }
+                    ],
+                    "countsAsModalSpell": false
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": "HATCHLING"
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Sacrifice this artifact: Put a creature card from your hand onto the battlefield, or return target creature card from your graveyard to the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "297",
+        "rarity": "RARE",
+        "artist": "Dan Frazier",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce3756f7-0d99-4562-b32d-66de18a58fdf.jpg?1783948024",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "You can use the sacrifice ability even if it is tapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Tuknir Deathlock
@@ -8050,6 +8968,41 @@
     ]
 }
 
+// Unholy Citadel
+{
+    "name": "Unholy Citadel",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "Black legendary creatures you control have \"bands with other legendary creatures.\" (Any legendary creatures can attack in a band as long as at least one has \"bands with other legendary creatures.\" Bands are blocked as a group. If at least two legendary creatures you control, one of which has \"bands with other legendary creatures,\" are blocking or being blocked by the same creature, you divide that creature's combat damage, not its controller, among any of the creatures it's being blocked by or is blocking.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "BANDS_WITH_OTHER_SUPERTYPE_LEGENDARY",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasColor",
+                                "color": "BLACK"
+                            },
+                            "IsLegendary"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "309",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Poole",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9de534ff-fb48-4692-bd0f-dd237ca28502.jpg?1783948022"
+    }
+}
+
 // Untamed Wilds
 {
     "name": "Untamed Wilds",
@@ -8138,6 +9091,78 @@
     },
     "colorIdentityOverride": [
         "BLUE",
+        "BLACK"
+    ]
+}
+
+// Urborg
+{
+    "name": "Urborg",
+    "manaCost": "",
+    "typeLine": "Legendary Land",
+    "oracleText": "{T}: Add {B}.\n{T}: Target creature loses first strike or swampwalk until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Urborg:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Urborg:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "It loses first strike",
+                            "effect": {
+                                "type": "RemoveKeyword",
+                                "keyword": "FIRST_STRIKE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        },
+                        {
+                            "label": "It loses swampwalk",
+                            "effect": {
+                                "type": "RemoveKeyword",
+                                "keyword": "SWAMPWALK",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}: Target creature loses first strike or swampwalk until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "310",
+        "rarity": "UNCOMMON",
+        "artist": "Bryon Wackwitz",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d0a261d0-7678-46f7-9285-d541486567d8.jpg?1783948022"
+    },
+    "colorIdentityOverride": [
         "BLACK"
     ]
 }
