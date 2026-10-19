@@ -3129,8 +3129,8 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `EffectTarget.ContextTarget(index)` (Spawnbroker: `powerAtMostEntity(ContextTarget(0))`; Gauntlets of
   Chaos: `sharingCardTypeWith(yours, among = setOf(ARTIFACT, CREATURE, LAND))`). The relation may be a
   card predicate (power / mana value / color / card type / creature type / name) or a combat-relation
-  state predicate — `wasBlockedByThisTurn` / `blockedOrWasBlockedByThisTurn`, `IsBlockingEntity`,
-  `IsAttackingDefenderOf`, `IsAttackingPlayer` (Glyph of Delusion: "target creature that target Wall
+  state predicate — `wasBlockedByThisTurn` / `blockedOrWasBlockedByThisTurn`, `blockingEntity`,
+  `attackingDefenderOf`, `attackingPlayer` (Glyph of Delusion: "target creature that target Wall
   blocked this turn" declares the Wall first, then `Creature.wasBlockedByThisTurn(wall)`; announcement
   order is free, so the referenced target is simply declared first). `DependentTargetSelection` asks for
   these targets sequentially, offers only choices that can complete the remaining slots, and the

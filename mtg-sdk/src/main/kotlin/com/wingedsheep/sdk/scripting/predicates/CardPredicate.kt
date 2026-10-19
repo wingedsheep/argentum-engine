@@ -1053,7 +1053,12 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         val among: Set<CardType> = emptySet()
     ) : CardPredicate {
         override val description: String = run {
-            val what = if (among.isEmpty()) "a card type" else "one of those types"
+            val what = if (among.isEmpty()) "a card type" else {
+                val names = among.map { it.displayName.lowercase() }
+                val listed = if (names.size < 3) names.joinToString(" or ")
+                else names.dropLast(1).joinToString(", ") + ", or " + names.last()
+                "one of the types $listed"
+            }
             when (entity) {
                 is EffectTarget.Self -> "that shares $what with this permanent"
                 is EffectTarget.TriggeringEntity -> "that shares $what with it"
