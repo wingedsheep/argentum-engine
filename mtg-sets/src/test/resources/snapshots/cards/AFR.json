@@ -1,3 +1,61 @@
+// Black Dragon
+{
+    "name": "Black Dragon",
+    "manaCost": "{5}{B}{B}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nAcid Breath — When this creature enters, target creature an opponent controls gets -3/-3 until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Black Dragon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Zug",
+        "flavorText": "Black dragons revel in the collapse of humanoid kingdoms.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aaca283a-39f1-4ae7-98fb-7821a927ef86.jpg?1783926500"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Deadly Dispute
 {
     "name": "Deadly Dispute",
