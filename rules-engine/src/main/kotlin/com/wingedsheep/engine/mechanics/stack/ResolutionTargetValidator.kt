@@ -112,11 +112,9 @@ internal class ResolutionTargetValidator(
                         controllerId, sourceId, targetingSourceType, targetEntryStamps, predicateContext
                     )
 
-                    is ChosenTarget.Card -> {
-                        // Card is valid if in expected zone
-                        val zoneKey = ZoneKey(target.ownerId, target.zone)
-                        target.cardId in state.getZone(zoneKey)
-                    }
+                    is ChosenTarget.Card -> isCardTargetLegal(
+                        state, projected, index, target, targets, targetRequirements, predicateContext
+                    )
 
                     is ChosenTarget.Spell -> {
                         // Spell is valid if still on stack
@@ -410,6 +408,34 @@ internal class ResolutionTargetValidator(
             return false
         }
         return true
+    }
+
+    /**
+     * A card target outside the battlefield (graveyard, exile, …) is legal if it is still in the
+     * zone it was chosen from *and* still matches the requirement's filter (CR 608.2b). The filter
+     * re-check matters for dynamic caps read off the game — Unforgiving One's "creature card with
+     * mana value X or less, where X is the number of modified creatures you control" no longer
+     * resolves once X drops below the card's mana value. The context mirrors the cast-time one in
+     * `TargetValidator`: the card's owner, and the separately-chosen player for "target player's
+     * graveyard" relations.
+     */
+    private fun isCardTargetLegal(
+        state: GameState,
+        projected: ProjectedState,
+        index: Int,
+        target: ChosenTarget.Card,
+        targets: List<ChosenTarget>,
+        targetRequirements: List<TargetRequirement>,
+        predicateContext: PredicateContext
+    ): Boolean {
+        if (target.cardId !in state.getZone(ZoneKey(target.ownerId, target.zone))) return false
+        val filter = extractTargetFilter(getRequirementForTargetIndex(index, targetRequirements)) ?: return true
+        val cardContext = predicateContext.copy(
+            ownerId = target.ownerId,
+            targetPlayerId = predicateContext.targetPlayerId
+                ?: targets.firstNotNullOfOrNull { (it as? ChosenTarget.Player)?.playerId },
+        )
+        return predicateEvaluator.matches(state, projected, target.cardId, filter.baseFilter, cardContext)
     }
 
     private fun stillMatchesRequirementFilter(

@@ -18482,6 +18482,94 @@
     ]
 }
 
+// Unforgiving One
+{
+    "name": "Unforgiving One",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nWhenever this creature attacks, return target creature card with mana value X or less from your graveyard to the battlefield, where X is the number of modified creatures you control. (Equipment, Auras you control, and counters are modifications.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Unforgiving One:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "ManaValueAtMostDynamic",
+                                    "amount": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": {
+                                            "cardPredicates": [
+                                                "IsCreature"
+                                            ],
+                                            "statePredicates": [
+                                                "IsModified"
+                                            ]
+                                        }
+                                    }
+                                }
+                            ],
+                            "controllerPredicate": "OwnedByYou"
+                        },
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature attacks, return target creature card with mana value X or less from your graveyard to the battlefield, where X is the number of modified creatures you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "UNCOMMON",
+        "artist": "Fariba Khamseh",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cfb20c08-a84a-4773-a90c-fb007b94644b.jpg?1783923873",
+        "rulings": [
+            {
+                "date": "2022-02-18",
+                "text": "The value of X needs to be determined both when the ability triggers (so you can choose a target) and again when the ability resolves (to check if that target is still legal). If the number of modified creatures you control has decreased enough in that time to make the target illegal, Unforgiving One's ability won't resolve."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "An Aura controlled by an opponent does not cause a creature you control to be modified."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "A creature with a counter on it is considered modified no matter what kind of counter it is or which player put it on that creature."
+            },
+            {
+                "date": "2022-02-18",
+                "text": "A creature that is equipped is considered modified no matter who controls the Equipment that's attached to it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Unstoppable Ogre
 {
     "name": "Unstoppable Ogre",

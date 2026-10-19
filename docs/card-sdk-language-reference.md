@@ -1871,7 +1871,11 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   return ("Return target creature card from your graveyard to your hand"): the requirement's own
   `zone = GRAVEYARD` is re-checked at resolution under CR 608.2b, so the clause needs no `fromZone`
   guard, and Argentum Assay's `Graveyard.kt` row builds it without one. Writing the guard on a
-  targeted return *creates* a differential divergence.
+  targeted return *creates* a differential divergence. The re-check covers the requirement's whole
+  filter, not just its zone: a card target outside the battlefield must still match it on resolution,
+  so a dynamic cap like `CreatureInYourGraveyard.manaValueAtMostDynamic(<count>)` is read again then —
+  Unforgiving One's "mana value X or less, where X is the number of modified creatures you control"
+  doesn't resolve once X has dropped below the card's mana value.
 - `ReturnToHandFromGraveyard(target)` — the *guarded* bounce, `PutOntoBattlefieldFromGraveyard`'s
   sibling one destination over: `MoveToZone(…, Zone.HAND, fromZone = GRAVEYARD)`, so the move is
   skipped if the card has left the graveyard by resolution. Use this for the **self**-return, and only
