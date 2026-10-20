@@ -352,6 +352,9 @@ data class ManaProduction(
 ) {
     /** The colors of this mana — empty for colorless. "The mana that land produced" (C.A.M.P.). */
     val producedColors: Set<Color> get() = setOfNotNull(color)
+
+    /** How much mana this is — [amount] of [color], or [colorless] when it has no color. */
+    val total: Int get() = if (color != null) amount else colorless
 }
 
 /**

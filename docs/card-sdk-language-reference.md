@@ -7506,7 +7506,7 @@ excludeSacrifice?, asCraftMaterial?)`, `dies()`, `changesZone(from?, to?, exclud
 moves), `attacks(requires)`, `blocks(attackerFilter?, minBlockedAttackers?)`, `becomesBlocked(by?)`,
 `blocksOrBecomesBlocked(by?, oncePerCombat?)`, `attacksAndIsntBlocked()`, `dealsDamage(to, damageType,
 requireExcess, batch, requires)`, `dealsCombatDamage(to, …)`, `isDealtDamage(by)`,
-`damagedCreatureDies(dying?)`, `becomesTapped(reason?, firstTimeEachTurn?)`, `becomesUntapped()`, `tappedForMana()` (SELF / ATTACHED),
+`damagedCreatureDies(dying?)`, `becomesTapped(reason?, firstTimeEachTurn?)`, `becomesUntapped()`, `tappedForMana()` (SELF / ATTACHED), `manaAbilityResolves()` (SELF only),
 `turnedFaceUp()`, `mutates()` (SELF only), `transforms(intoBackFace?)`, `phasesIn()`, `becomesTarget(of?, byYou, byOpponent,
 spellsOnly, abilitiesOnly, firstTimeEachTurn, includeSpellTargets, includePlayerTargets, ofBackupAbility,
 targetsOnlyIt)`,
@@ -8743,6 +8743,17 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   target. The mana-adding family (Mana Flare, Heartbeat of Spring, Groundchuck & Dirtbag) is a
   triggered mana ability (CR 605.1b) and uses `AdditionalManaOnSourceTap` or the other mana statics
   in §9 instead.
+- `Triggers.self.manaAbilityResolves()` — "whenever a mana ability of this creature resolves"
+  (`EventPattern.ManaAbilityResolved`, SELF only, no subject filter) — the ability Tyvar the Bellicose
+  grants each creature you control. Unlike `tappedForMana()` it fires for **every** mana ability of the
+  permanent, {T} in its cost or not, on any permanent type, and whoever activated it. The engine emits
+  `ManaAbilityResolvedEvent(playerId, sourceId, amount)` from the manual pipeline (synchronous, the
+  color-choice resume and scoped production) and from `tapForMana` on every auto-pay path.
+  `DynamicAmounts.triggerManaProduced()` (`ContextPropertyKey.TRIGGER_MANA_PRODUCED`) is "the amount of
+  mana this creature produced": what the ability itself added, after Damping Sphere and **not**
+  counting mana a separate triggered mana ability adds on top (Mana Flare, Elvish Guidance). A non-mana
+  rider: it uses the stack, so a trigger off a mana ability activated while casting resolves before
+  that spell. Pair with `oncePerTurn = true` for "This ability triggers only once each turn".
 - `Triggers.you.commitsCrime()` — MKM crime mechanic.
 - `Triggers.you.givesAGift()` — Gift mechanic.
 - `Triggers.you.forages()` — Bloomburrow forage (CR 701.59a). Observes **any** forage by the player, in any
@@ -15228,7 +15239,7 @@ forbids `DynamicAmount.X` in card definitions.
 - **Every `ContextPropertyKey` a card reads has a named facade**: `triggerDamageAmount()`,
   `triggerExcessDamageAmount()`, `triggerRecipientToughness()`, `triggerLifeGained()`,
   `triggerLifeLost()`, `triggerDiscardCount()`, `triggerScryCount()`, `triggerScryBottomCount()`, `triggerCountersPlaced()`,
-  `triggerCountersRemoved()`, `triggerDiscoverValue()`, `triggeringSpellManaValue()`,
+  `triggerCountersRemoved()`, `triggerDiscoverValue()`, `triggerManaProduced()`, `triggeringSpellManaValue()`,
   `manaSpentOnTriggeringSpell()`, `modesChosenOnTriggeringSpell()`, `lastKnownPlusOneCounters()`,
   `lastKnownCounterCount()`, `linkedExileCardCount()`, `linkedExileDistinctCardTypeCount()`,
   `targetCount()`, `additionalCostExiledCount()`, `colorsSpentOnTriggeringSpell()`,
@@ -16022,6 +16033,9 @@ Army just amassed by a sibling/action effect, or any cost-chosen entity. The plu
     damage to each opponent." Populated from `CardsDiscardedEvent.cardIds.size`, so one event of
     three cards reports `3` while three sequential single discards fire three triggers reporting `1`.
     Pair with `Triggers.you.discards(batch = true)`; `0` for non-discard triggers.
+  - `TRIGGER_MANA_PRODUCED` — the amount of mana the mana ability behind a
+    `Triggers.self.manaAbilityResolves()` trigger produced (Tyvar the Bellicose). Facade:
+    `DynamicAmounts.triggerManaProduced()`; `0` for other triggers.
   - `TRIGGER_DISCOVER_VALUE` — the discover value N (mana-value threshold) of the discover that
     fired the trigger (CR 701.57) — Curator of Sun's Creation's "discover again for the same value."
     Pair with `Triggers.you.discovers()`; `0` for non-discover triggers.

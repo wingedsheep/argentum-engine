@@ -49,6 +49,13 @@ data class AddDynamicCountersEffect(
 ) : Effect {
     override val description: String =
         "Put ${amount.description} ${counterType.printed} counters on ${target.description}"
+
+    /** The resolved count on the stack ("Put 2 +1/+1 counters on …"); an undeterminable amount keeps its wording. */
+    override fun runtimeDescription(resolver: (DynamicAmount) -> Int?): String {
+        val n = resolver(amount) ?: return description
+        val noun = if (n == 1) "counter" else "counters"
+        return "Put $n ${counterType.printed} $noun on ${target.description}"
+    }
 }
 
 /**

@@ -1831,6 +1831,7 @@ is PermanentsSacrificedEvent -> {
             is BlockerDeclarationPolicyChangedEvent,
             is TextChangedEvent,
             is LandTappedForManaEvent,
+            is ManaAbilityResolvedEvent,
             is DecisionRequestedEvent,
             is AbilityResolvedEvent,
             is SagaChapterResolvedEvent,

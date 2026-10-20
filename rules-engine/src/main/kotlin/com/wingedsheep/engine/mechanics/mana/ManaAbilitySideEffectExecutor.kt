@@ -65,7 +65,8 @@ class ManaAbilitySideEffectExecutor(
         for (source in solution.sources) {
             val production = solution.manaProduced[source.entityId]
             val (tappedState, tapEvents) = tapForMana(
-                currentState, source.entityId, controllerId, production?.producedColors.orEmpty()
+                currentState, source.entityId, controllerId, production?.producedColors.orEmpty(),
+                production?.total ?: 1,
             )
             currentState = tappedState
             events.addAll(tapEvents)

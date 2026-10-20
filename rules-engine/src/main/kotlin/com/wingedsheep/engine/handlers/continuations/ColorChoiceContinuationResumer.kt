@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.actions.ability.hasTapCost
 import com.wingedsheep.engine.handlers.effects.mana.ManaProvenanceTracker
 import com.wingedsheep.engine.handlers.effects.mana.ManaAbilityResolutionPipeline
+import com.wingedsheep.engine.handlers.effects.mana.manaAmountAdded
 import com.wingedsheep.engine.handlers.effects.mana.manaColorsAdded
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
@@ -247,8 +248,19 @@ class ColorChoiceContinuationResumer(
             producedMana = replacement
         }
 
+        val isManaAbility = continuation.baseContext.activatedAbility?.isManaAbility == true
+        // "Whenever a mana ability of this creature resolves" (Tyvar the Bellicose), as on the
+        // synchronous path — `state` is the pool before the chosen mana was added.
+        if (isManaAbility) {
+            events = events + ManaAbilityResolvedEvent(
+                playerId = tapperId,
+                sourceId = sourceId,
+                amount = if (dampening.dampened) 1 else manaAmountAdded(state, dampening.state, tapperId),
+            )
+        }
+
         val snowMarked = ManaProvenanceTracker.markSnowProduction(state, dampening.state, sourceId, tapperId)
-        val tracked = if (continuation.baseContext.activatedAbility?.isManaAbility == true)
+        val tracked = if (isManaAbility)
             com.wingedsheep.engine.state.tagManaObligationProduction(state, snowMarked, tapperId, sourceId)
             else snowMarked
         // Tap bonuses only follow a mana ability with {T} in its cost (see ActivatedManaAbilityResolver).

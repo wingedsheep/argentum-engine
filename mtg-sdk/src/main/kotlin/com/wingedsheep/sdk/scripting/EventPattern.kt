@@ -2367,6 +2367,28 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
+     * When a mana ability of this permanent resolves — "Whenever a mana ability of this creature
+     * resolves" (the ability Tyvar the Bellicose grants). Binding SELF only.
+     *
+     * Fires for *every* mana ability of the permanent, whether or not its cost has {T} and whoever
+     * activated it, and however it was activated — manually or by the auto-payer. The resolving
+     * effect reads the amount of mana the ability produced through
+     * [com.wingedsheep.sdk.scripting.values.ContextPropertyKey.TRIGGER_MANA_PRODUCED]; mana a
+     * separate triggered mana ability adds on top (Mana Flare, Elvish Guidance) is that ability's,
+     * not this permanent's, and isn't counted.
+     *
+     * Not [LandTappedForMana]: that one is "tapped for mana" (CR 106.12 — only a mana ability with
+     * {T} in its cost), and land-only. Not [AbilityActivatedEvent]: activation and resolution are
+     * different moments, and activation carries no amount of mana. A non-mana rider: the trigger
+     * uses the stack.
+     */
+    @SerialName("ManaAbilityResolved")
+    @Serializable
+    data object ManaAbilityResolved : EventPattern {
+        override val description: String = "a mana ability of this permanent resolves"
+    }
+
+    /**
      * When a permanent becomes untapped.
      * Binding SELF = "whenever this becomes untapped".
      *

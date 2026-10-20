@@ -114,6 +114,7 @@ enum class TriggerCategory {
     PLAYER_LOST,
     ROOM_FULLY_UNLOCKED,
     LAND_TAPPED_FOR_MANA,
+    MANA_ABILITY_RESOLVED,
 }
 
 /**
@@ -386,6 +387,8 @@ class TriggerIndex(
                 // stack. A mana-adding one is a triggered mana ability (CR 605.1b), authored as
                 // AdditionalManaOnSourceTap so it resolves immediately instead.
                 is SdkGameEvent.LandTappedForMana -> LAND_TAPPED_FOR_MANA_LIST
+                // "Whenever a mana ability of this creature resolves" (Tyvar the Bellicose's grant).
+                is SdkGameEvent.ManaAbilityResolved -> MANA_ABILITY_RESOLVED_LIST
             }
         }
 
@@ -554,6 +557,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.FlippedEvent -> emptyList()
 
             is com.wingedsheep.engine.core.LandTappedForManaEvent -> LAND_TAPPED_FOR_MANA_LIST
+            is com.wingedsheep.engine.core.ManaAbilityResolvedEvent -> MANA_ABILITY_RESOLVED_LIST
         }
 
         // Pre-allocated lists to avoid allocation on every event
@@ -622,6 +626,7 @@ class TriggerIndex(
         private val SAGA_CHAPTER_RESOLVED_LIST = listOf(TriggerCategory.SAGA_CHAPTER_RESOLVED)
         private val PLAYER_LOST_LIST = listOf(TriggerCategory.PLAYER_LOST)
         private val LAND_TAPPED_FOR_MANA_LIST = listOf(TriggerCategory.LAND_TAPPED_FOR_MANA)
+        private val MANA_ABILITY_RESOLVED_LIST = listOf(TriggerCategory.MANA_ABILITY_RESOLVED)
         private val ROOM_FULLY_UNLOCKED_LIST = listOf(TriggerCategory.ROOM_FULLY_UNLOCKED)
     }
 }

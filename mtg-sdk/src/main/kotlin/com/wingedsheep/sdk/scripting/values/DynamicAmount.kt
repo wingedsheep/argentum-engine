@@ -625,6 +625,12 @@ enum class ContextPropertyKey(val description: String) {
      * separate triggers reporting `1`. `0` when the trigger was not a discard.
      */
     TRIGGER_DISCARD_COUNT("that much"),
+    /**
+     * The amount of mana the mana ability that fired this trigger produced — "equal to the amount
+     * of mana this creature produced" (Tyvar the Bellicose), off
+     * [com.wingedsheep.sdk.scripting.EventPattern.ManaAbilityResolved]. `0` for any other trigger.
+     */
+    TRIGGER_MANA_PRODUCED("the amount of mana produced"),
 }
 
 /**

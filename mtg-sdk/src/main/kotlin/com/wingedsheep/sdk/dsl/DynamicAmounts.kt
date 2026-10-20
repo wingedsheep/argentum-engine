@@ -234,6 +234,9 @@ object DynamicAmounts {
      */
     fun countersRemovedAsCost(): DynamicAmount = DynamicAmount.CountersRemovedAsCost
 
+    /** The amount of mana the triggering mana ability produced ([Triggers.self]`.manaAbilityResolves()`). */
+    fun triggerManaProduced(): DynamicAmount = DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_MANA_PRODUCED)
+
     /** The discover value of the triggering discover. */
     fun triggerDiscoverValue(): DynamicAmount = DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_DISCOVER_VALUE)
 

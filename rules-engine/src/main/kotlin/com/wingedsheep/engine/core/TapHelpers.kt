@@ -150,7 +150,8 @@ class TapOutcome(
 /**
  * Tap [sourceId] as the cost of its mana ability — the [tap] atom plus, when the source is a land,
  * the [LandTappedForManaEvent] that "whenever you tap a land for mana" triggers watch (Forbidden
- * Orchard). Every path that taps a source to pay mana routes through here — the manual activation
+ * Orchard), and the [ManaAbilityResolvedEvent] for the mana ability it resolved ([producedAmount]
+ * mana — 1 when the caller doesn't know it). Every path that taps a source to pay mana routes through here — the manual activation
  * pipeline, the solver's auto-pay, explicit source lists and the source-selection prompt — so the
  * trigger fires the same way however the player paid. Land-ness is read off projected state.
  *
@@ -161,6 +162,7 @@ fun tapForMana(
     sourceId: EntityId,
     tapperId: EntityId,
     producedColors: Set<Color> = emptySet(),
+    producedAmount: Int = 1,
 ): Pair<GameState, List<GameEvent>> {
     val outcome = tap(state, sourceId)
     val tapEvent = outcome.tapped ?: return state to emptyList()
@@ -176,7 +178,12 @@ fun tapForMana(
         tapperId,
         activationSourceSnapshot(state, sourceId),
     )
-    return stamped to listOfNotNull(outcome.turnedFaceUp, tapEvent, landTappedForManaEvent(state, sourceId, tapperId, producedColors))
+    return stamped to listOfNotNull(
+        outcome.turnedFaceUp, tapEvent, landTappedForManaEvent(state, sourceId, tapperId, producedColors),
+        // The auto-payer resolved the source's mana ability ("whenever a mana ability of this
+        // creature resolves" — Tyvar the Bellicose), crediting [producedAmount] mana.
+        ManaAbilityResolvedEvent(playerId = tapperId, sourceId = sourceId, amount = producedAmount),
+    )
 }
 
 /**

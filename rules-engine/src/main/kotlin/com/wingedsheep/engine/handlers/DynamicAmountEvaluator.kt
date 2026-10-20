@@ -1238,6 +1238,8 @@ class DynamicAmountEvaluator(
 
         ContextPropertyKey.TRIGGER_DISCOVER_VALUE -> context.triggerContext?.discoverValue ?: 0
 
+        ContextPropertyKey.TRIGGER_MANA_PRODUCED -> context.triggerContext?.manaProduced ?: 0
+
         ContextPropertyKey.TRIGGER_EXCESS_DAMAGE_AMOUNT -> context.triggerContext?.excessDamageAmount ?: 0
 
         ContextPropertyKey.TRIGGER_RECIPIENT_TOUGHNESS -> context.triggerContext?.recipientToughnessAtDamage ?: 0

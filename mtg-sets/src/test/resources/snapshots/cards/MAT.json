@@ -455,3 +455,79 @@
         "GREEN"
     ]
 }
+
+// Tyvar the Bellicose
+{
+    "name": "Tyvar the Bellicose",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Legendary Creature — Elf Warrior",
+    "oracleText": "Whenever one or more Elves you control attack, they gain deathtouch until end of turn.\nEach creature you control has \"Whenever a mana ability of this creature resolves, put a number of +1/+1 counters on it equal to the amount of mana this creature produced. This ability triggers only once each turn.\"",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tyvar the Bellicose:1",
+                "trigger": {
+                    "type": "YouAttackEvent",
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Elf"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Collection",
+                        "collection": "trigger.captured"
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "DEATHTOUCH",
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Tyvar the Bellicose:2",
+                    "trigger": "ManaAbilityResolved",
+                    "effect": {
+                        "type": "AddDynamicCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "amount": {
+                            "type": "ContextProperty",
+                            "key": "TRIGGER_MANA_PRODUCED"
+                        },
+                        "target": "Self"
+                    },
+                    "oncePerTurn": true
+                },
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "MYTHIC",
+        "artist": "Jarel Threat",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/01a543f0-72fe-4a30-a4a0-356971c1c68a.jpg?1783916508"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}

@@ -29,9 +29,11 @@ fun finishScopedManaProduction(
     )
     // Coalesce the executors' part reports into the whole activation's production.
     val carried = events.filterNot { it is ManaAddedEvent && it.sourceId == frame.sourceId && it.playerId == frame.playerId }
-    val visible = carried + production
+    val produced = production.total
+    // "Whenever a mana ability of this creature resolves" (Tyvar the Bellicose), with the whole
+    // activation's production.
+    val visible = carried + production + ManaAbilityResolvedEvent(frame.playerId, frame.sourceId, produced)
     val tracked = tagManaObligationProduction(before, dampening.state, frame.playerId, frame.sourceId, frame.sourceTag)
-    val produced = production.white + production.blue + production.black + production.red + production.green + production.colorless
     return if (frame.costsTap && produced > 0)
         pipeline.finishTapBonuses(tracked, frame.sourceId, frame.sourceCard, frame.playerId, production, visible)
     else ExecutionResult.success(tracked, visible)

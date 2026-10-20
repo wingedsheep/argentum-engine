@@ -235,6 +235,11 @@ data class TriggerContext(
      */
     val discoverValue: Int? = null,
     /**
+     * The amount of mana the mana ability that fired this trigger produced. Read by
+     * `ContextPropertyKey.TRIGGER_MANA_PRODUCED` (Tyvar the Bellicose). `null` for any other trigger.
+     */
+    val manaProduced: Int? = null,
+    /**
      * Damage past lethal dealt to the trigger's creature recipient (CR 120.4a). Captured
      * from `DamageDealtEvent.excessAmount` so payoffs like Fall of Cair Andros — "amass
      * Orcs X, where X is the excess damage" — can read it via
@@ -557,6 +562,11 @@ data class TriggerContext(
                     triggeringEntityId = event.landId,
                     triggeringPlayerId = event.tapperId,
                     producedManaColors = event.producedColors
+                )
+                is com.wingedsheep.engine.core.ManaAbilityResolvedEvent -> TriggerContext(
+                    triggeringEntityId = event.sourceId,
+                    triggeringPlayerId = event.playerId,
+                    manaProduced = event.amount
                 )
                 is PhasedInEvent -> TriggerContext(triggeringEntityId = event.entityId)
                 is LifeChangedEvent -> TriggerContext(

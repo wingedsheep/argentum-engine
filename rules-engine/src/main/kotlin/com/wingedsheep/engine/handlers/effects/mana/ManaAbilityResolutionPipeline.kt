@@ -451,6 +451,17 @@ private fun ManaAddedEvent?.producedColors(): Set<Color> {
  * resolution added, however many effects it took (restricted mana included). Empty when only
  * colorless was added.
  */
+/**
+ * How much mana [playerId]'s pool gained between [before] and [after] — "the amount of mana this
+ * creature produced" for [com.wingedsheep.engine.core.ManaAbilityResolvedEvent]. Read before
+ * obligation tagging moves plain mana into per-unit entries, as [manaColorsAdded] is.
+ */
+fun manaAmountAdded(before: GameState, after: GameState, playerId: EntityId): Int {
+    val old = before.getEntity(playerId)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
+    val new = after.getEntity(playerId)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
+    return (new.total - old.total).coerceAtLeast(0)
+}
+
 fun manaColorsAdded(before: GameState, after: GameState, playerId: EntityId): Set<Color> {
     val old = before.getEntity(playerId)?.get<ManaPoolComponent>() ?: ManaPoolComponent()
     val new = after.getEntity(playerId)?.get<ManaPoolComponent>() ?: ManaPoolComponent()

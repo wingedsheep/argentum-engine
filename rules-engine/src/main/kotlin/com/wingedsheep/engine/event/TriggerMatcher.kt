@@ -649,6 +649,9 @@ class TriggerMatcher(
                 val filter = trigger.landFilter ?: return true
                 matchesLandFilter(state, filter, event.landId, sourceId, controllerId)
             }
+            // SELF only: "whenever a mana ability of this creature resolves", whoever activated it.
+            is EventPattern.ManaAbilityResolved ->
+                event is com.wingedsheep.engine.core.ManaAbilityResolvedEvent && event.sourceId == sourceId
             is EventPattern.LifeGainEvent -> {
                 event is LifeChangedEvent &&
                     event.reason == com.wingedsheep.engine.core.LifeChangeReason.LIFE_GAIN &&

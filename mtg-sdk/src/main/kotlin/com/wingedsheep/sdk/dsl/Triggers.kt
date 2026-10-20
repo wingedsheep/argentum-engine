@@ -364,6 +364,16 @@ class ObjectTriggerSubject internal constructor(
     }
 
     /**
+     * "a mana ability of this permanent resolves" — any mana ability, {T} or not, manual or
+     * auto-paid. `DynamicAmounts.triggerManaProduced()` is the amount of mana it produced.
+     */
+    fun manaAbilityResolves(): TriggerSpec {
+        only("manaAbilityResolves", TriggerBinding.SELF)
+        unfiltered("manaAbilityResolves")
+        return spec(EventPattern.ManaAbilityResolved)
+    }
+
+    /**
      * "is turned face up" — this, the attached, or (under an unfiltered [Triggers.a]) any permanent
      * (Aphetto Runecaster). "Whenever a [filter] you control is turned face up", matched on its
      * face-up characteristics, is [PlayerTriggerSubject.permanentTurnedFaceUp].

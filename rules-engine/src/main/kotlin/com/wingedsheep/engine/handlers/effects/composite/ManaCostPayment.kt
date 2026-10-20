@@ -62,9 +62,12 @@ fun payManaCostFromPool(
             ?: return EffectResult.error(state, "Cannot pay mana cost")
 
         for (source in solution.sources) {
+            val production = solution.manaProduced[source.entityId]
             val (tappedState, tapEvents) = tapForMana(
                 currentState, source.entityId, player,
-                solution.manaProduced[source.entityId]?.producedColors.orEmpty()
+                production?.producedColors.orEmpty(),
+                // What the pool is credited with below: one colored mana, or the colorless amount.
+                producedAmount = production?.let { if (it.color != null) 1 else it.colorless } ?: 1,
             )
                 .let { (tapped, tapEvents) ->
                     // The mana ability's life cost (Mana Confluence's printed "Pay 1 life", Thran
