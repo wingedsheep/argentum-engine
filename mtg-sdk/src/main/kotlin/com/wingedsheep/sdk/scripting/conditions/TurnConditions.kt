@@ -163,17 +163,27 @@ data object IsFirstCombatPhaseOfTurn : Condition {
 }
 
 /**
- * Condition: "before attackers are declared" this turn — the game hasn't yet reached the declare
- * attackers step of the turn's first combat phase (Master Warcraft's ruling: with several combat
- * phases, it can only be cast before the first one's declare attackers step). True from the start
- * of the turn through the beginning of combat step of the first combat; false from the first
- * combat's declare attackers step on, through every later phase of the turn. An extra combat inserted
- * before the natural one (CR 500.8) is the first combat.
+ * Condition: "before attackers are declared" / "before blockers are declared" this turn — the game
+ * hasn't yet reached [step] of the turn's *first* combat phase (Master Warcraft's and Rapid Fire's
+ * rulings: with several combat phases, the spell can only be cast before that step of the first
+ * one). True from the start of the turn up to [step] of the first combat; false from that step on,
+ * through every later phase of the turn. An extra combat inserted before the natural one (CR 500.8)
+ * is the first combat. [step] is a combat step after the beginning of combat step.
  */
-@SerialName("BeforeAttackersDeclaredThisTurn")
+@SerialName("BeforeFirstCombatStepThisTurn")
 @Serializable
-data object BeforeAttackersDeclaredThisTurn : Condition {
-    override val description: String = "before attackers are declared"
+data class BeforeFirstCombatStepThisTurn(val step: Step) : Condition {
+    init {
+        require(step.phase == Phase.COMBAT && step != Step.BEGIN_COMBAT) {
+            "BeforeFirstCombatStepThisTurn needs a combat step after beginning of combat, got $step"
+        }
+    }
+
+    override val description: String = when (step) {
+        Step.DECLARE_ATTACKERS -> "before attackers are declared"
+        Step.DECLARE_BLOCKERS -> "before blockers are declared"
+        else -> "before the ${step.displayName.lowercase()}"
+    }
 }
 
 /**
@@ -181,7 +191,7 @@ data object BeforeAttackersDeclaredThisTurn : Condition {
  * currently in a combat phase. False during every step of a combat phase (its end of combat step
  * included, which is still combat) and in a turn whose combat phase hasn't happened or was skipped;
  * true in the postcombat main phase and end phase, and in a main phase between two combat phases.
- * The mirror of [BeforeAttackersDeclaredThisTurn]: Glyph of Reincarnation's "Cast this spell only
+ * The mirror of [BeforeFirstCombatStepThisTurn]: Glyph of Reincarnation's "Cast this spell only
  * after combat."
  *
  * Board-derived (reads `state.phase` and the active player's "a combat phase ended this turn" marker).

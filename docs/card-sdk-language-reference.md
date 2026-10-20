@@ -4440,6 +4440,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
 - `ModalEffect.chooseOneNotYetChosenThisTurn(*modes)` — "choose one that hasn't been chosen **this turn**"; the turn-scoped sibling. The source remembers modes chosen during the current turn (per-source `ChosenModesThisTurnComponent`, cleared each cleanup step) and excludes them from later triggers *this turn*, so across all of a turn's triggers each mode is chosen at most once; the memory resets next turn. Once every mode is chosen this turn, a top-level triggered ability is removed from the stack and a top-level activated ability cannot be activated; a nested resolution-time choice does nothing. Keyed to the source object, so two copies track modes independently. Flag: `excludeModesChosenThisTurn` (mutually exclusive with `excludePreviouslyChosenModes`). Repeatable modal triggered/activated abilities only — not modal spells (Breeches, Eager Pillager).
 - `ChooseActionEffect(choices, player = Controller)` — `player` picks from a list of labeled effects; infeasible options (per each `EffectChoice.feasibilityCheck`) are filtered out, and if one remains it auto-runs. `player` may be any `EffectTarget`, including the state-relational `EffectTarget.TargetController` — routing the choice to the controller of the ability's chosen permanent (a "[do X to target permanent] unless its controller [accepts an avoidance]" choice). Combustion Man: "destroy target permanent unless its controller has Combustion Man deal damage to them equal to his power" — `player = TargetController`, with choices `DealDamage(sourcePower(), target = TargetController, damageSource = Self)` and `Destroy(<the permanent>)`. `FeasibilityCheck.CanPayMana(cost)` hides an option whose mana the player can't pay right now (floating mana or untapped sources, the `ManaSolver`'s answer), which is how a **choice of payments** is spelled: "you may pay {G}, {W}, or {U}. If you do, put a +1/+1 counter on Isu" (Isu the Abominable) is one `EffectChoice` per colour — `PayMana(symbol) then AddCounters(...)` with `CanPayMana(symbol)`, so a chosen payment always goes through — plus a "Don't pay" `Effects.Nothing`; with no colour payable only "Don't pay" survives and runs unasked.
 - `GrantBushido(amount, target, duration = EndOfTurn)` — "[target] gains bushido N"; a thin recipe over `GrantKeyword("BUSHIDO_<n>")`, the same `<KEYWORD>_<n>` form as `GrantToxic`. The engine derives the bushido trigger from it and `KeywordValue(BUSHIDO)` counts it. Sensei Golden-Tail: `AddCounters(TRAINING, 1, t) then GrantBushido(1, t, Duration.Permanent) then AddCreatureType("Samurai", t)`.
+- `GrantRampage(amount, target, duration = EndOfTurn)` — "[target] gains rampage N"; `GrantKeyword("RAMPAGE_<n>")`, the `GrantBushido` shape. The engine derives the rampage trigger from it (see `Rampage(n)`). Rapid Fire: `GrantKeyword(FIRST_STRIKE, t) then If(Not(EntityMatches(t, Any.withKeyword(RAMPAGE))), GrantRampage(2, t))`.
 - `GrantProtectionFromColor(color, target, duration)` — grant protection from a **fixed** color to a target (no player choice); a thin recipe over `GrantKeyword("PROTECTION_FROM_<COLOR>")`. "{W}: Target creature gains protection from red until end of turn." (Crimson Acolyte).
 - `GrantProtectionFromCardType(cardType, target, duration)` — the card-type sibling: grant protection from a **fixed** `CardType` (no player choice), a thin recipe over `GrantKeyword("PROTECTION_FROM_CARDTYPE_<TYPE>")` — the same projected keyword the printed `Protection(ProtectionScope.CardType(...))` static and the player-chosen `GrantProtectionFromChosenCardType` produce, so targeting, blocking, and combat damage all read one keyword. Reach for it when the card names the type outright rather than letting the player pick ("gains protection from artifacts" — Razor Barrier).
 - `GrantPlayerProtection(scope = ProtectionScope.Everything, duration = Duration.UntilYourNextTurn, target = Controller)` — grant a **player** protection from a `ProtectionScope` (CR 702.16); the player-level counterpart of the creature protection statics. For a player only the **D**amage and **T**argeting parts of DEBT apply: a protected player can't be the target of, nor be dealt damage by, a source matching the scope. Adds/merges a `PlayerProtectionComponent` (multiple grants stack their scopes); the targeting validator, target enumerator, and `DamageUtils` all consult the shared `PlayerProtectionRules`. `Duration.UntilYourNextTurn` clears it after the untap step of the player's next turn. "You gain protection from everything until your next turn." (The One Ring).
@@ -12936,15 +12937,21 @@ composite abilities).
   The copies enter attacking, so they never "attacked" and don't re-trigger it. The engine picks the
   opponent rather than offering one of their planeswalkers — the CR 508.4 simplification every "enters
   attacking" effect here makes. In a two-player game it does nothing.
-- `Rampage(n)` — +N/+N for each blocker past the first. Display-only; wire the behavior with the
-  `card { rampage(n) }` builder helper, which adds this keyword ability plus a "becomes blocked"
-  triggered ability granting `+n/+n × (blockers − 1)` until end of turn (mirrors `prowess()`).
+- `Rampage(n)` — **engine-live**, the same shape as `Bushido(n)`. Declare it with `card { rampage(n) }`
+  (just this keyword ability); the engine derives CR 702.23a's "whenever this creature becomes blocked,
+  it gets +N/+N until end of turn for each creature blocking it beyond the first" from
+  [`Rampage`](../mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/scripting/Rampage.kt): one trigger per
+  printed instance (CR 702.23c) while the projected bare `RAMPAGE` keyword survives (lost with all
+  abilities), the blocker count read on resolution. A **granted** rampage
+  (`Effects.GrantRampage(n, target, duration)`, Rapid Fire) floats `RAMPAGE_<n>` and adds one more
+  trigger for its N; repeated grants sum into one `RAMPAGE_<total>`. A "with rampage" keyword filter
+  (`withKeyword(Keyword.RAMPAGE)`) matches printed and granted alike — Rapid Fire's "if it doesn't
+  have rampage" is `Conditions.Not(Conditions.EntityMatches(t, GameObjectFilter.Any.withKeyword(RAMPAGE)))`.
 - `Flurry` (Tarkir: Dragonstorm, Jeskai) — "Flurry — Whenever you cast your second spell each turn,
   [effect]." Display-only `Keyword.FLURRY`; wire the behavior with the `card { flurry { … } }` builder
   helper. Author the effect/target/optional inside the block exactly like `triggeredAbility { }` — the
   helper forces the `Triggers.you.castsNth(2)` trigger, adds the FLURRY tag, and prefixes the
-  rendered text with "Flurry — Whenever you cast your second spell each turn," (mirrors `prowess()` /
-  `rampage()`). The second-spell-cast event is matched by `EventPattern.NthSpellCastEvent`; no new engine
+  rendered text with "Flurry — Whenever you cast your second spell each turn," (mirrors `prowess()`). The second-spell-cast event is matched by `EventPattern.NthSpellCastEvent`; no new engine
   subsystem is involved. Example: `flurry { effect = Effects.DealDamage(1, EffectTarget.PlayerRef(Player.EachOpponent), damageSource = EffectTarget.Self) }`.
 - `Casualty(threshold)` (`KeywordAbility.casualty(n)`) — Casualty N (CR 702.153): "As an additional
   cost to cast this spell, you may sacrifice a creature with power N or greater. When you do, copy
@@ -13248,7 +13255,7 @@ composite abilities).
   Display-only; wire the behavior with the `card { mobilize(n) }` builder helper, which adds this keyword
   ability plus a "whenever this attacks" triggered `CreateTokenEffect` (`tapped = true`, `attacking = true`)
   whose `sacrificeAtStep = Step.END` schedules one delayed `SacrificeTargetEffect` per created token at the
-  next end step (mirrors `rampage()`). `n` may be any fixed value (Mobilize 1/2/3, …).
+  next end step. `n` may be any fixed value (Mobilize 1/2/3, …).
   For a dynamic count ("Mobilize X, where X is …"), use the `card { mobilize(amount, amountDescription, label) }`
   overload: it adds a `KeywordAbility.Variable(MOBILIZE, label)` display tag (prints "Mobilize X") plus the same
   attack-triggered `CreateTokenEffect`, but with `count = amount` (any `DynamicAmount`) resolved at attack time.
@@ -13256,7 +13263,7 @@ composite abilities).
 - `Firebending(n)` — "Whenever this creature attacks, add N {R}. Until end of combat, you don't lose this mana
   as steps and phases end." (CR 702.189, Avatar: The Last Airbender). Display-only; wire the behavior with the
   `card { firebending(n) }` builder helper, which adds this keyword ability plus a "whenever this attacks"
-  triggered `AddManaEffect(Color.RED, n, expiry = ManaExpiry.END_OF_COMBAT)` (mirrors `mobilize()` / `rampage()`).
+  triggered `AddManaEffect(Color.RED, n, expiry = ManaExpiry.END_OF_COMBAT)` (mirrors `mobilize()`).
   The mana is ordinary red mana spendable anywhere — it is held as an `AnySpend` restricted-pool entry tagged
   with [ManaExpiry](#manaexpiry).`END_OF_COMBAT` and discarded by `CombatManager.endCombat`. It is a normal
   triggered ability (not a mana ability): it uses the stack and can be responded to. `n` may be any fixed value;
@@ -13581,7 +13588,7 @@ composite abilities).
   Conditions.SourceHasCounter(TIME))` "isn't a creature while it has a time counter" static, and a `YourEndStep`
   triggered ability (gated by the same intervening-if) that removes a time counter. The engine places the N TIME counters
   when a spell cast for its impending cost resolves; casting for the normal mana cost adds no counters, so neither wiring
-  fires (mirrors `prowess()` / `rampage()`).
+  fires (mirrors `prowess()`).
 - `Sneak(cost)` — `card { sneak("{cost}") }` builder helper (CR 702.190, Teenage Mutant Ninja Turtles). An
   alternative cost with a built-in **timing permission**: *"Any time you could cast an instant during your declare
   blockers step, you may cast this spell by paying [cost] and returning an unblocked creature you control to its owner's
@@ -14681,12 +14688,13 @@ that works in both resolution and static-ability (projection) contexts.
   projection. The loop guard for "there is an additional end step after this step" riders: gate the
   `Effects.AddAdditionalEndSteps` call on it so the spawned end step doesn't spawn another (Y'shtola
   Rhul).
-- `Conditions.BeforeAttackersDeclared` (`BeforeAttackersDeclaredThisTurn`) — "before attackers are
-  declared": the turn hasn't reached the declare attackers step of its *first* combat phase (true up
-  to and including that combat's beginning step; false from the first combat's declare attackers
-  step on, through every later phase of the turn — an extra combat inserted *before* the natural one
-  is the first combat). Master Warcraft's timing line:
-  `castOnlyIf(Conditions.BeforeAttackersDeclared)`.
+- `Conditions.BeforeAttackersDeclared` / `Conditions.BeforeBlockersDeclared`
+  (`BeforeFirstCombatStepThisTurn(step)`) — "before attackers / blockers are declared": the turn hasn't
+  reached that step of its *first* combat phase (true up to the step before it in that combat; false
+  from the first combat's `step` on, through every later phase of the turn — an extra combat inserted
+  *before* the natural one is the first combat). `step` is a combat step after beginning of combat.
+  Master Warcraft's timing line is `castOnlyIf(Conditions.BeforeAttackersDeclared)`, Rapid Fire's
+  `castOnlyIf(Conditions.BeforeBlockersDeclared)`.
 - `Conditions.AfterCombat` (`AfterCombatThisTurn`) — "after combat": a combat phase has ended this
   turn and the game isn't in a combat phase now (the end of combat step is still combat; a main
   phase between two combats counts; a turn whose combat was skipped never qualifies). Glyph of

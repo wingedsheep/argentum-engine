@@ -2413,7 +2413,15 @@ object Conditions {
      * `castOnlyIf(Conditions.BeforeAttackersDeclared)` in its `spell { }` block.
      */
     val BeforeAttackersDeclared: ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.BeforeAttackersDeclaredThisTurn
+        com.wingedsheep.sdk.scripting.conditions.BeforeFirstCombatStepThisTurn(com.wingedsheep.sdk.core.Step.DECLARE_ATTACKERS)
+
+    /**
+     * "Before blockers are declared" this turn — before the declare blockers step of the turn's
+     * first combat phase. Rapid Fire's "Cast this spell only before blockers are declared" is
+     * `castOnlyIf(Conditions.BeforeBlockersDeclared)` in its `spell { }` block.
+     */
+    val BeforeBlockersDeclared: ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.BeforeFirstCombatStepThisTurn(com.wingedsheep.sdk.core.Step.DECLARE_BLOCKERS)
 
     /**
      * "After combat" this turn — a combat phase has ended this turn and the game isn't in a combat

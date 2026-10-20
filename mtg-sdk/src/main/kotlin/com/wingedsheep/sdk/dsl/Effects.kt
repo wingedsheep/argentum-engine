@@ -4117,6 +4117,18 @@ object Effects {
     ): Effect = GrantKeywordEffect(com.wingedsheep.sdk.scripting.Bushido.grantedKeyword(amount), target, duration)
 
     /**
+     * "[target] gains rampage [amount]" (Rapid Fire) — [GrantKeywordEffect] with the `RAMPAGE_<n>`
+     * string keyword ([com.wingedsheep.sdk.scripting.Rampage.grantedKeyword]). The engine derives
+     * the CR 702.23a becomes-blocked trigger from it exactly as for printed rampage, and a
+     * "with rampage" keyword filter matches it; see [com.wingedsheep.sdk.scripting.Rampage].
+     */
+    fun GrantRampage(
+        amount: Int,
+        target: EffectTarget,
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = GrantKeywordEffect(com.wingedsheep.sdk.scripting.Rampage.grantedKeyword(amount), target, duration)
+
+    /**
      * Grant Harmonize (CR 702.180) to a target instant or sorcery card in a graveyard.
      * "Target instant or sorcery card in your graveyard gains harmonize until end of turn. Its
      * harmonize cost is equal to its mana cost." — Songcrafter Mage.

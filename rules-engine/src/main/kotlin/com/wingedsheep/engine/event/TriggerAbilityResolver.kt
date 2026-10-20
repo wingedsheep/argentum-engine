@@ -139,10 +139,11 @@ class TriggerAbilityResolver(
         // gates it, the printed KeywordAbility.Numeric supplies N.
         val renownAbilities = getRenownTriggeredAbilities(entityId, cardDefinitionId, state)
 
-        // Bushido N (CR 702.45) — the blocks-or-becomes-blocked pump is intrinsic to the keyword,
-        // printed on no card as a separate line. Printed instances as renown; a granted
-        // `BUSHIDO_<n>` (Sensei Golden-Tail) adds one more trigger for its N.
-        val bushidoAbilities = getBushidoTriggeredAbilities(entityId, cardDefinitionId, state)
+        // Bushido N (CR 702.45) and rampage N (CR 702.23) — the combat pump is intrinsic to the
+        // keyword, printed on no card as a separate line. Printed instances as renown; a granted
+        // `BUSHIDO_<n>` (Sensei Golden-Tail) / `RAMPAGE_<n>` (Rapid Fire) adds one more trigger.
+        val bushidoAbilities = getBushidoTriggeredAbilities(entityId, cardDefinitionId, state) +
+            getRampageTriggeredAbilities(entityId, cardDefinitionId, state)
 
         // Exalted (CR 702.83) — one "attacks alone" pump per instance: the printed keyword plus
         // one per exalted counter (CR 122.1b).
@@ -355,10 +356,11 @@ class TriggerAbilityResolver(
         // gates it, the printed KeywordAbility.Numeric supplies N.
         val renownAbilities = getRenownTriggeredAbilities(entityId, cardDefinitionId, state)
 
-        // Bushido N (CR 702.45) — the blocks-or-becomes-blocked pump is intrinsic to the keyword,
-        // printed on no card as a separate line. Printed instances as renown; a granted
-        // `BUSHIDO_<n>` (Sensei Golden-Tail) adds one more trigger for its N.
-        val bushidoAbilities = getBushidoTriggeredAbilities(entityId, cardDefinitionId, state)
+        // Bushido N (CR 702.45) and rampage N (CR 702.23) — the combat pump is intrinsic to the
+        // keyword, printed on no card as a separate line. Printed instances as renown; a granted
+        // `BUSHIDO_<n>` (Sensei Golden-Tail) / `RAMPAGE_<n>` (Rapid Fire) adds one more trigger.
+        val bushidoAbilities = getBushidoTriggeredAbilities(entityId, cardDefinitionId, state) +
+            getRampageTriggeredAbilities(entityId, cardDefinitionId, state)
 
         // Exalted (CR 702.83) — one "attacks alone" pump per instance: the printed keyword plus
         // one per exalted counter (CR 122.1b).
@@ -859,22 +861,53 @@ class TriggerAbilityResolver(
         entityId: EntityId,
         cardDefinitionId: String,
         state: GameState,
+    ): List<TriggeredAbility> = getNumericKeywordTriggeredAbilities(
+        entityId, cardDefinitionId, state, com.wingedsheep.sdk.core.Keyword.BUSHIDO,
+        printedCounts = com.wingedsheep.sdk.scripting.Bushido::printedCounts,
+        trigger = com.wingedsheep.sdk.scripting.Bushido::trigger,
+    )
+
+    /**
+     * Rampage N (CR 702.23) — the same printed + granted derivation as bushido. See
+     * [com.wingedsheep.sdk.scripting.Rampage].
+     */
+    private fun getRampageTriggeredAbilities(
+        entityId: EntityId,
+        cardDefinitionId: String,
+        state: GameState,
+    ): List<TriggeredAbility> = getNumericKeywordTriggeredAbilities(
+        entityId, cardDefinitionId, state, com.wingedsheep.sdk.core.Keyword.RAMPAGE,
+        printedCounts = com.wingedsheep.sdk.scripting.Rampage::printedCounts,
+        trigger = com.wingedsheep.sdk.scripting.Rampage::trigger,
+    )
+
+    /**
+     * The shared shape of a numeric keyword whose triggered ability the engine derives (bushido,
+     * rampage): one trigger per printed instance while the projected bare [keyword] survives, plus
+     * one for the summed N of every projected granted `<KEYWORD>_<n>`.
+     */
+    private fun getNumericKeywordTriggeredAbilities(
+        entityId: EntityId,
+        cardDefinitionId: String,
+        state: GameState,
+        keyword: com.wingedsheep.sdk.core.Keyword,
+        printedCounts: (com.wingedsheep.sdk.model.CardDefinition) -> List<Int>,
+        trigger: (n: Int, instance: Int, granted: Boolean) -> TriggeredAbility,
     ): List<TriggeredAbility> {
         val keywords = state.projectedState.getKeywords(entityId)
         if (keywords.isEmpty()) return emptyList()
-        val bushido = com.wingedsheep.sdk.core.Keyword.BUSHIDO.name
-        val printed = if (bushido in keywords) {
+        val name = keyword.name
+        val printed = if (name in keywords) {
             cardRegistry.getCard(cardDefinitionId)
-                ?.let { com.wingedsheep.sdk.scripting.Bushido.printedCounts(it) }
+                ?.let(printedCounts)
                 .orEmpty()
-                .mapIndexed { instance, n -> com.wingedsheep.sdk.scripting.Bushido.trigger(n, instance) }
+                .mapIndexed { instance, n -> trigger(n, instance, false) }
         } else {
             emptyList()
         }
-        val prefix = "${bushido}_"
+        val prefix = "${name}_"
         val grantedN = keywords.sumOf { if (it.startsWith(prefix)) it.removePrefix(prefix).toIntOrNull() ?: 0 else 0 }
-        return if (grantedN > 0) printed + com.wingedsheep.sdk.scripting.Bushido.trigger(grantedN, granted = true)
-        else printed
+        return if (grantedN > 0) printed + trigger(grantedN, 0, true) else printed
     }
 
     /**

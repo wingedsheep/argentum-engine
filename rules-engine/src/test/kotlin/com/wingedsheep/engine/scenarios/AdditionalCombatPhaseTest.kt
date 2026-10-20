@@ -8,7 +8,7 @@ import com.wingedsheep.engine.state.components.player.ExtraPhaseKind
 import com.wingedsheep.engine.state.components.player.QueuedPhase
 import com.wingedsheep.engine.state.components.player.PlayerTurnHijackedComponent
 import com.wingedsheep.engine.handlers.EffectContext
-import com.wingedsheep.sdk.scripting.conditions.BeforeAttackersDeclaredThisTurn
+import com.wingedsheep.sdk.scripting.conditions.BeforeFirstCombatStepThisTurn
 import com.wingedsheep.sdk.scripting.conditions.IsFirstCombatPhaseOfTurn
 import com.wingedsheep.sdk.scripting.effects.HijackScope
 import com.wingedsheep.engine.support.GameTestDriver
@@ -226,7 +226,8 @@ class AdditionalCombatPhaseTest : FunSpec({
         driver.queuePhases(attacker, ExtraPhaseKind.COMBAT)
         driver.passPriorityUntil(Step.BEGIN_COMBAT)
         holds(IsFirstCombatPhaseOfTurn) shouldBe true
-        holds(BeforeAttackersDeclaredThisTurn) shouldBe true
+        holds(BeforeFirstCombatStepThisTurn(Step.DECLARE_ATTACKERS)) shouldBe true
+        holds(BeforeFirstCombatStepThisTurn(Step.DECLARE_BLOCKERS)) shouldBe true
 
         var guard = 0
         while (driver.state.getEntity(attacker)?.has<InAdditionalCombatPhaseComponent>() == true && guard++ < 50) {
@@ -234,7 +235,8 @@ class AdditionalCombatPhaseTest : FunSpec({
         }
         driver.currentStep shouldBe Step.BEGIN_COMBAT
         holds(IsFirstCombatPhaseOfTurn) shouldBe false
-        holds(BeforeAttackersDeclaredThisTurn) shouldBe false
+        holds(BeforeFirstCombatStepThisTurn(Step.DECLARE_ATTACKERS)) shouldBe false
+        holds(BeforeFirstCombatStepThisTurn(Step.DECLARE_BLOCKERS)) shouldBe false
     }
 
     test("a scheduled next-combat hijack engages in an inserted combat ahead of the natural one") {

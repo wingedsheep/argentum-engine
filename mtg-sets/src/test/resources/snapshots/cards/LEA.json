@@ -8678,7 +8678,10 @@
                             "type": "All",
                             "conditions": [
                                 "IsOpponentsTurn",
-                                "BeforeAttackersDeclaredThisTurn"
+                                {
+                                    "type": "BeforeFirstCombatStepThisTurn",
+                                    "step": "DECLARE_ATTACKERS"
+                                }
                             ]
                         }
                     }
@@ -11289,7 +11292,10 @@
                     "type": "All",
                     "conditions": [
                         "IsOpponentsTurn",
-                        "BeforeAttackersDeclaredThisTurn"
+                        {
+                            "type": "BeforeFirstCombatStepThisTurn",
+                            "step": "DECLARE_ATTACKERS"
+                        }
                     ]
                 }
             }

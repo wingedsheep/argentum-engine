@@ -482,31 +482,13 @@ class CardBuilder(private val name: String) {
     }
 
     /**
-     * Add Rampage N (CR 702.23) — keyword ability + triggered ability.
-     *
-     * "Whenever this creature becomes blocked, it gets +N/+N until end of turn for each
-     * creature blocking it beyond the first." The keyword ability is display-only (the
-     * engine has no separate Rampage handler); the behavior lives entirely in the
-     * triggered ability wired here. The unfiltered "becomes blocked" trigger fires once,
-     * with the source as the triggering entity, so [DynamicAmounts.numberOfBlockers]
-     * counts the creatures blocking this creature.
+     * Add Rampage N (CR 702.23) — "Whenever this creature becomes blocked, it gets +N/+N until end
+     * of turn for each creature blocking it beyond the first." Only the keyword is stored: the
+     * engine derives the trigger from the projected keyword, printed and granted alike — see
+     * [com.wingedsheep.sdk.scripting.Rampage].
      */
     fun rampage(n: Int) {
         keywordAbilityList.add(KeywordAbility.rampage(n))
-        val perBlockerBeyondFirst = DynamicAmount.Multiply(
-            DynamicAmount.Subtract(DynamicAmounts.numberOfBlockers(), DynamicAmount.Fixed(1)),
-            n
-        )
-        triggeredAbilities.add(
-            TriggeredAbility.create(
-                trigger = Triggers.self.becomesBlocked(),
-                effect = ModifyStatsEffect(
-                    powerModifier = perBlockerBeyondFirst,
-                    toughnessModifier = perBlockerBeyondFirst,
-                    target = EffectTarget.TriggeringEntity
-                )
-            )
-        )
     }
 
     // The set-mechanic helpers mobilize / firebending / sneak / decayed / vivid* / impending /

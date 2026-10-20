@@ -286,50 +286,6 @@
             "n": 3
         }
     ],
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Aerathi Berserker:1",
-                "trigger": "BecomesBlockedEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Multiply",
-                        "amount": {
-                            "type": "Subtract",
-                            "left": {
-                                "type": "EntityProperty",
-                                "entity": "TriggeringEntity",
-                                "numericProperty": "BlockerCount"
-                            },
-                            "right": {
-                                "type": "Fixed",
-                                "amount": 1
-                            }
-                        },
-                        "multiplier": 3
-                    },
-                    "toughnessModifier": {
-                        "type": "Multiply",
-                        "amount": {
-                            "type": "Subtract",
-                            "left": {
-                                "type": "EntityProperty",
-                                "entity": "TriggeringEntity",
-                                "numericProperty": "BlockerCount"
-                            },
-                            "right": {
-                                "type": "Fixed",
-                                "amount": 1
-                            }
-                        },
-                        "multiplier": 3
-                    },
-                    "target": "TriggeringEntity"
-                }
-            }
-        ]
-    },
     "metadata": {
         "collectorNumber": "131",
         "rarity": "UNCOMMON",
@@ -2113,46 +2069,6 @@
                     },
                     "suffer": "SacrificeSelf"
                 }
-            },
-            {
-                "id": "Chromium:2",
-                "trigger": "BecomesBlockedEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Multiply",
-                        "amount": {
-                            "type": "Subtract",
-                            "left": {
-                                "type": "EntityProperty",
-                                "entity": "TriggeringEntity",
-                                "numericProperty": "BlockerCount"
-                            },
-                            "right": {
-                                "type": "Fixed",
-                                "amount": 1
-                            }
-                        },
-                        "multiplier": 2
-                    },
-                    "toughnessModifier": {
-                        "type": "Multiply",
-                        "amount": {
-                            "type": "Subtract",
-                            "left": {
-                                "type": "EntityProperty",
-                                "entity": "TriggeringEntity",
-                                "numericProperty": "BlockerCount"
-                            },
-                            "right": {
-                                "type": "Fixed",
-                                "amount": 1
-                            }
-                        },
-                        "multiplier": 2
-                    },
-                    "target": "TriggeringEntity"
-                }
             }
         ]
     },
@@ -2404,50 +2320,6 @@
             "n": 2
         }
     ],
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Craw Giant:1",
-                "trigger": "BecomesBlockedEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Multiply",
-                        "amount": {
-                            "type": "Subtract",
-                            "left": {
-                                "type": "EntityProperty",
-                                "entity": "TriggeringEntity",
-                                "numericProperty": "BlockerCount"
-                            },
-                            "right": {
-                                "type": "Fixed",
-                                "amount": 1
-                            }
-                        },
-                        "multiplier": 2
-                    },
-                    "toughnessModifier": {
-                        "type": "Multiply",
-                        "amount": {
-                            "type": "Subtract",
-                            "left": {
-                                "type": "EntityProperty",
-                                "entity": "TriggeringEntity",
-                                "numericProperty": "BlockerCount"
-                            },
-                            "right": {
-                                "type": "Fixed",
-                                "amount": 1
-                            }
-                        },
-                        "multiplier": 2
-                    },
-                    "target": "TriggeringEntity"
-                }
-            }
-        ]
-    },
     "metadata": {
         "collectorNumber": "180",
         "rarity": "UNCOMMON",
@@ -4066,50 +3938,6 @@
             "n": 2
         }
     ],
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Frost Giant:1",
-                "trigger": "BecomesBlockedEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Multiply",
-                        "amount": {
-                            "type": "Subtract",
-                            "left": {
-                                "type": "EntityProperty",
-                                "entity": "TriggeringEntity",
-                                "numericProperty": "BlockerCount"
-                            },
-                            "right": {
-                                "type": "Fixed",
-                                "amount": 1
-                            }
-                        },
-                        "multiplier": 2
-                    },
-                    "toughnessModifier": {
-                        "type": "Multiply",
-                        "amount": {
-                            "type": "Subtract",
-                            "left": {
-                                "type": "EntityProperty",
-                                "entity": "TriggeringEntity",
-                                "numericProperty": "BlockerCount"
-                            },
-                            "right": {
-                                "type": "Fixed",
-                                "amount": 1
-                            }
-                        },
-                        "multiplier": 2
-                    },
-                    "target": "TriggeringEntity"
-                }
-            }
-        ]
-    },
     "metadata": {
         "collectorNumber": "148",
         "rarity": "UNCOMMON",
@@ -5776,50 +5604,6 @@
             "n": 1
         }
     ],
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Hunding Gjornersen:1",
-                "trigger": "BecomesBlockedEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Multiply",
-                        "amount": {
-                            "type": "Subtract",
-                            "left": {
-                                "type": "EntityProperty",
-                                "entity": "TriggeringEntity",
-                                "numericProperty": "BlockerCount"
-                            },
-                            "right": {
-                                "type": "Fixed",
-                                "amount": 1
-                            }
-                        },
-                        "multiplier": 1
-                    },
-                    "toughnessModifier": {
-                        "type": "Multiply",
-                        "amount": {
-                            "type": "Subtract",
-                            "left": {
-                                "type": "EntityProperty",
-                                "entity": "TriggeringEntity",
-                                "numericProperty": "BlockerCount"
-                            },
-                            "right": {
-                                "type": "Fixed",
-                                "amount": 1
-                            }
-                        },
-                        "multiplier": 1
-                    },
-                    "target": "TriggeringEntity"
-                }
-            }
-        ]
-    },
     "metadata": {
         "collectorNumber": "231",
         "rarity": "UNCOMMON",
@@ -8047,50 +7831,6 @@
             "n": 1
         }
     ],
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Marhault Elsdragon:1",
-                "trigger": "BecomesBlockedEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Multiply",
-                        "amount": {
-                            "type": "Subtract",
-                            "left": {
-                                "type": "EntityProperty",
-                                "entity": "TriggeringEntity",
-                                "numericProperty": "BlockerCount"
-                            },
-                            "right": {
-                                "type": "Fixed",
-                                "amount": 1
-                            }
-                        },
-                        "multiplier": 1
-                    },
-                    "toughnessModifier": {
-                        "type": "Multiply",
-                        "amount": {
-                            "type": "Subtract",
-                            "left": {
-                                "type": "EntityProperty",
-                                "entity": "TriggeringEntity",
-                                "numericProperty": "BlockerCount"
-                            },
-                            "right": {
-                                "type": "Fixed",
-                                "amount": 1
-                            }
-                        },
-                        "multiplier": 1
-                    },
-                    "target": "TriggeringEntity"
-                }
-            }
-        ]
-    },
     "metadata": {
         "collectorNumber": "244",
         "rarity": "UNCOMMON",
@@ -9433,6 +9173,84 @@
         "BLACK",
         "BLUE"
     ]
+}
+
+// Rapid Fire
+{
+    "name": "Rapid Fire",
+    "manaCost": "{3}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Cast this spell only before blockers are declared.\nTarget creature gains first strike until end of turn. If it doesn't have rampage, that creature gains rampage 2 until end of turn. (Whenever the creature becomes blocked, it gets +2/+2 until end of turn for each creature blocking it beyond the first.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "filter": "kw:rampage"
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "GrantKeyword",
+                        "keyword": "RAMPAGE_2",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "castRestrictions": [
+            {
+                "type": "CastOnlyIfCondition",
+                "condition": {
+                    "type": "BeforeFirstCombatStepThisTurn",
+                    "step": "DECLARE_BLOCKERS"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "rarity": "RARE",
+        "artist": "Justin Hampton",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e26e7c9c-e6de-47f4-8394-7e853408f84c.jpg?1783948082",
+        "rulings": [
+            {
+                "date": "2013-09-20",
+                "text": "If a turn has multiple combat phases, Rapid Fire can only be cast before the beginning of the Declare Blockers Step of the first combat phase in that turn."
+            }
+        ]
+    }
 }
 
 // Rasputin Dreamweaver
@@ -13773,50 +13591,6 @@
             "n": 2
         }
     ],
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Wolverine Pack:1",
-                "trigger": "BecomesBlockedEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Multiply",
-                        "amount": {
-                            "type": "Subtract",
-                            "left": {
-                                "type": "EntityProperty",
-                                "entity": "TriggeringEntity",
-                                "numericProperty": "BlockerCount"
-                            },
-                            "right": {
-                                "type": "Fixed",
-                                "amount": 1
-                            }
-                        },
-                        "multiplier": 2
-                    },
-                    "toughnessModifier": {
-                        "type": "Multiply",
-                        "amount": {
-                            "type": "Subtract",
-                            "left": {
-                                "type": "EntityProperty",
-                                "entity": "TriggeringEntity",
-                                "numericProperty": "BlockerCount"
-                            },
-                            "right": {
-                                "type": "Fixed",
-                                "amount": 1
-                            }
-                        },
-                        "multiplier": 2
-                    },
-                    "target": "TriggeringEntity"
-                }
-            }
-        ]
-    },
     "metadata": {
         "collectorNumber": "214",
         "artist": "Jeff A. Menges",

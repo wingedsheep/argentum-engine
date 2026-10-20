@@ -4458,50 +4458,6 @@
             "n": 4
         }
     ],
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Teeka's Dragon:1",
-                "trigger": "BecomesBlockedEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Multiply",
-                        "amount": {
-                            "type": "Subtract",
-                            "left": {
-                                "type": "EntityProperty",
-                                "entity": "TriggeringEntity",
-                                "numericProperty": "BlockerCount"
-                            },
-                            "right": {
-                                "type": "Fixed",
-                                "amount": 1
-                            }
-                        },
-                        "multiplier": 4
-                    },
-                    "toughnessModifier": {
-                        "type": "Multiply",
-                        "amount": {
-                            "type": "Subtract",
-                            "left": {
-                                "type": "EntityProperty",
-                                "entity": "TriggeringEntity",
-                                "numericProperty": "BlockerCount"
-                            },
-                            "right": {
-                                "type": "Fixed",
-                                "amount": 1
-                            }
-                        },
-                        "multiplier": 4
-                    },
-                    "target": "TriggeringEntity"
-                }
-            }
-        ]
-    },
     "metadata": {
         "collectorNumber": "320",
         "rarity": "RARE",

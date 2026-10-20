@@ -10178,7 +10178,10 @@
         "castRestrictions": [
             {
                 "type": "CastOnlyIfCondition",
-                "condition": "BeforeAttackersDeclaredThisTurn"
+                "condition": {
+                    "type": "BeforeFirstCombatStepThisTurn",
+                    "step": "DECLARE_ATTACKERS"
+                }
             }
         ]
     },

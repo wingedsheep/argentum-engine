@@ -307,7 +307,7 @@ class ConditionEvaluator(
             is EntityMatches,
             is ExiledAsCostHadSubtype,
             IsDay,
-            com.wingedsheep.sdk.scripting.conditions.BeforeAttackersDeclaredThisTurn,
+            is com.wingedsheep.sdk.scripting.conditions.BeforeFirstCombatStepThisTurn,
             com.wingedsheep.sdk.scripting.conditions.AfterCombatThisTurn,
             IsFirstCombatPhaseOfTurn,
             IsFirstEndStepOfTurn,
@@ -468,12 +468,12 @@ class ConditionEvaluator(
                     } != true
             }
 
-            // Before the declare attackers step of the turn's *first* combat (Master Warcraft's
-            // ruling): the step order puts every earlier step of the turn below DECLARE_ATTACKERS,
-            // and once any combat phase has ended (CombatPhaseEndedThisTurnComponent) attackers have
-            // been declared — whether that combat was natural or inserted.
-            is com.wingedsheep.sdk.scripting.conditions.BeforeAttackersDeclaredThisTurn -> {
-                state.step.ordinal < Step.DECLARE_ATTACKERS.ordinal && !combatPhaseEndedThisTurn(state)
+            // Before the given step of the turn's *first* combat (Master Warcraft's and Rapid Fire's
+            // rulings): the step order puts every earlier step of the turn below it, and once any
+            // combat phase has ended (CombatPhaseEndedThisTurnComponent) the first combat is past
+            // that step — whether that combat was natural or inserted.
+            is com.wingedsheep.sdk.scripting.conditions.BeforeFirstCombatStepThisTurn -> {
+                state.step.ordinal < condition.step.ordinal && !combatPhaseEndedThisTurn(state)
             }
 
             // "After combat" (Glyph of Reincarnation): a combat phase has ended this turn and we're
