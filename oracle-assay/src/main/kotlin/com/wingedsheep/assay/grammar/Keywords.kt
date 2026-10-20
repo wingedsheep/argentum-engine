@@ -121,6 +121,7 @@ object Keywords {
         simple(Keyword.MOUNTAINWALK),
         simple(Keyword.PLAINSWALK),
         simple(Keyword.DESERTWALK),
+        simple(Keyword.LEGENDARY_LANDWALK),
         // Combat
         simple(Keyword.FIRST_STRIKE),
         simple(Keyword.DOUBLE_STRIKE),

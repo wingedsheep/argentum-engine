@@ -4792,6 +4792,14 @@
                                 "type": "BoundVariable",
                                 "name": "t0"
                             }
+                        },
+                        {
+                            "type": "RemoveKeyword",
+                            "keyword": "LEGENDARY_LANDWALK",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
                         }
                     ],
                     "descriptionOverride": "Target creature loses all landwalk abilities until end of turn."
@@ -6911,6 +6919,38 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Livonya Silone
+{
+    "name": "Livonya Silone",
+    "manaCost": "{2}{R}{R}{G}{G}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "First strike; legendary landwalk (This creature can't be blocked as long as defending player controls a legendary land.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "LEGENDARY_LANDWALK"
+    ],
+    "metadata": {
+        "collectorNumber": "242",
+        "rarity": "RARE",
+        "artist": "Richard Kane Ferguson",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b9211949-66a5-4039-ac6d-3e42b008b58e.jpg?1783948036",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "\"Legendary landwalk\" means \"This creature is can't be blocked as long as defending player controls a legendary land.\""
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
     ]
 }
 

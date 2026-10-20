@@ -27,6 +27,7 @@ enum class Keyword(val displayName: String) {
     PLAINSWALK("Plainswalk"),
     DESERTWALK("Desertwalk"),
     NONBASIC_LANDWALK("Nonbasic landwalk"),
+    LEGENDARY_LANDWALK("Legendary landwalk"),
 
     // ── Combat ───────────────────────────────────────────────
     FIRST_STRIKE("First strike"),
@@ -1015,7 +1016,8 @@ enum class Keyword(val displayName: String) {
         /** The landwalk family (CR 702.14): every keyword that makes a creature unblockable
          *  while the defending player controls a land of the named kind. */
         val LANDWALK: Set<Keyword> = setOf(
-            SWAMPWALK, FORESTWALK, ISLANDWALK, MOUNTAINWALK, PLAINSWALK, DESERTWALK, NONBASIC_LANDWALK
+            SWAMPWALK, FORESTWALK, ISLANDWALK, MOUNTAINWALK, PLAINSWALK, DESERTWALK, NONBASIC_LANDWALK,
+            LEGENDARY_LANDWALK
         )
 
         fun fromString(value: String): Keyword? =

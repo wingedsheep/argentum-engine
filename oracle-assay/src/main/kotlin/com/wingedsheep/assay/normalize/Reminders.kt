@@ -157,6 +157,7 @@ object Reminders {
         Keyword.MOUNTAINWALK -> landwalkGloss(self, "Mountain")
         Keyword.PLAINSWALK -> landwalkGloss(self, "Plains")
         Keyword.DESERTWALK -> landwalkGloss(self, "Desert")
+        Keyword.LEGENDARY_LANDWALK -> landwalkGloss(self, "legendary land")
         Keyword.FIRST_STRIKE -> "$self deals combat damage before creatures without first strike."
         Keyword.DOUBLE_STRIKE -> "$self deals both first-strike and regular combat damage."
         Keyword.TRAMPLE -> "$self can deal excess combat damage to the player or planeswalker it's attacking."

@@ -14,6 +14,7 @@ const LANDWALK = [
   'PLAINSWALK',
   'DESERTWALK',
   'NONBASIC_LANDWALK',
+  'LEGENDARY_LANDWALK',
 ]
 
 describe('keyword icons', () => {

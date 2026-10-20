@@ -170,8 +170,21 @@ class LandwalkRule(
         ) {
             return "${attackerName()} has ${Keyword.NONBASIC_LANDWALK.displayName} and cannot be blocked"
         }
+        // Legendary landwalk (CR 702.14c): unblockable while the defending player controls a
+        // legendary land. Supertypes are read off the projection so a granted "legendary" counts.
+        if (ctx.projected.hasKeyword(ctx.attackerId, Keyword.LEGENDARY_LANDWALK) &&
+            playerControlsLegendaryLand(ctx) &&
+            Keyword.LEGENDARY_LANDWALK !in suppressed
+        ) {
+            return "${attackerName()} has ${Keyword.LEGENDARY_LANDWALK.displayName} and cannot be blocked"
+        }
         return null
     }
+
+    private fun playerControlsLegendaryLand(ctx: BlockCheckContext): Boolean =
+        ctx.projected.getBattlefieldControlledBy(ctx.blockingPlayer).any { entityId ->
+            ctx.projected.hasType(entityId, "LAND") && ctx.projected.isLegendary(entityId)
+        }
 
     private fun playerControlsNonbasicLand(ctx: BlockCheckContext): Boolean {
         return ctx.state.getBattlefield().any { entityId ->

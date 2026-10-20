@@ -850,5 +850,6 @@ internal object ExpiringGrantWindow {
     private val LANDWALK_KEYWORDS = setOf(
         Keyword.PLAINSWALK, Keyword.ISLANDWALK, Keyword.SWAMPWALK, Keyword.MOUNTAINWALK,
         Keyword.FORESTWALK, Keyword.DESERTWALK, Keyword.NONBASIC_LANDWALK,
+        Keyword.LEGENDARY_LANDWALK,
     ).map { it.name }.toSet()
 }

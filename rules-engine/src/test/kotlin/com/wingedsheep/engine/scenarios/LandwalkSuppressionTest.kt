@@ -69,6 +69,24 @@ class LandwalkSuppressionTest : FunSpec({
         typeLine = "Land"
     }
 
+    val legendaryWalker = card("Test Legendary Walker") {
+        manaCost = "{1}{R}"
+        typeLine = "Creature — Warrior"
+        power = 2
+        toughness = 2
+        keywords(Keyword.LEGENDARY_LANDWALK)
+    }
+
+    val legendaryLand = card("Test Legendary Land") {
+        typeLine = "Legendary Land"
+    }
+
+    val legendarySuppressor = card("Test Legendary Shield") {
+        manaCost = "{2}"
+        typeLine = "Artifact"
+        staticAbility { ability = SuppressLandwalkForGroup(Keyword.LEGENDARY_LANDWALK) }
+    }
+
     // One sentence naming two landwalks (the Staff of the Ages shape).
     val bothSuppressor = card("Test Forest Island Wall") {
         manaCost = "{3}"
@@ -106,6 +124,7 @@ class LandwalkSuppressionTest : FunSpec({
         driver.registerCard(doubleWalker)
         driver.registerCard(mute)
         listOf(nonbasicWalker, nonbasicLand, bothSuppressor, nonbasicSuppressor).forEach(driver::registerCard)
+        listOf(legendaryWalker, legendaryLand, legendarySuppressor).forEach(driver::registerCard)
         driver.registerCard(forestPath)
         driver.initMirrorMatch(
             deck = Deck.of("Forest" to 20, "Island" to 10, "Grizzly Bears" to 10),
@@ -202,6 +221,22 @@ class LandwalkSuppressionTest : FunSpec({
         val other = createDriver()
         val (_, result) = other.attackAndBlock("Test Nonbasic Walker", listOf("Test Nonbasic Land")) {
             putPermanentOnBattlefield(player2, "Test Nonbasic Shield")
+        }
+        result.error shouldBe null
+    }
+
+    test("legendary landwalk keys off a legendary land and is suppressed the same way") {
+        val driver = createDriver()
+        val (_, unsuppressed) = driver.attackAndBlock("Test Legendary Walker", listOf("Test Legendary Land"))
+        unsuppressed.error shouldContainIgnoringCase "legendary landwalk"
+
+        val nonlegendary = createDriver()
+        val (_, blockable) = nonlegendary.attackAndBlock("Test Legendary Walker", listOf("Test Nonbasic Land"))
+        blockable.error shouldBe null
+
+        val other = createDriver()
+        val (_, result) = other.attackAndBlock("Test Legendary Walker", listOf("Test Legendary Land")) {
+            putPermanentOnBattlefield(player2, "Test Legendary Shield")
         }
         result.error shouldBe null
     }

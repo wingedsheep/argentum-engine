@@ -10185,7 +10185,7 @@ in the declare-blockers step, even before the turn-based block action has comple
   with the defender bound as "you", so it needs no controller predicate of its own.
   **Defender-relative, not "any opponent"** — `Conditions.OpponentControls(filter)` wrapped around
   `CantBeBlocked` is existential across opponents and only coincides with this in a two-player game.
-  The basic landwalk keywords (`Keyword.FORESTWALK` and friends, plus `NONBASIC_LANDWALK`) keep their
+  The basic landwalk keywords (`Keyword.FORESTWALK` and friends, plus `NONBASIC_LANDWALK` and `LEGENDARY_LANDWALK`) keep their
   own keyword-driven `LandwalkRule` fast path rather than desugaring to this.
 - `CantBlockCreaturesWithGreaterPower(filter = source())` — blocker-side evasion (Spitfire Handler): this
   creature can't block creatures whose projected power exceeds its own.
@@ -10273,7 +10273,7 @@ in the declare-blockers step, even before the turn-based block action has comple
   "Can block as though it were untapped" badge — never through projection.
 - `SuppressLandwalkForGroup(landwalks, filter = GroupFilter.AllCreatures)` — creatures matching
   `filter` can be blocked as though they didn't have the `landwalks` (members of `Keyword.LANDWALK`:
-  Swampwalk … Desertwalk, Nonbasic landwalk; anything else is rejected at construction). A
+  Swampwalk … Desertwalk, Nonbasic landwalk, Legendary landwalk; anything else is rejected at construction). A
   single-keyword constructor covers the common case: Quagmire / Ur-Drago are
   `SuppressLandwalkForGroup(Keyword.SWAMPWALK)`. One printed sentence is one instance — Lord Magnus's
   two sentences are two, a sentence naming several landwalks passes them all. Only the CR 702.14
@@ -12657,7 +12657,9 @@ copy of it (CR 707.10e). The activated-ability analogue of the spell-level `cant
 Flying, Menace, Intimidate, Fear, Shadow, Horsemanship, all basic landwalks (Plainswalk … Forestwalk), Desertwalk
 (nonbasic landwalk variant — `Keyword.DESERTWALK`, keyed off `Subtype.DESERT`), Nonbasic landwalk
 (`Keyword.NONBASIC_LANDWALK` — unblockable while the defending player controls any non-basic land;
-`LandwalkRule` checks `typeLine.isLand && !isBasicLand`; Trailblazer's Boots), First Strike, Double
+`LandwalkRule` checks `typeLine.isLand && !isBasicLand`; Trailblazer's Boots), Legendary landwalk
+(`Keyword.LEGENDARY_LANDWALK` — CR 702.14c, unblockable while the defending player controls a legendary land,
+read off the projection so a granted supertype counts; Livonya Silone), First Strike, Double
 Strike, Trample, Deathtouch, Lifelink, Vigilance, Reach, Provoke, Defender, Indestructible, Hexproof, Shroud, Haste,
 Flash, Prowess, Flurry, Changeling, Devoid (**not** display-only — see the note above: the engine
 derives `CardDefinition.colors` from it), Convoke, Delve, Improvise, Affinity, Emerge, Storm, Flashback, Harmonize, Mayhem, Escape, Disturb, Evoke, Sneak, Ninjutsu, Web-slinging, Impending, Conspire, Casualty, Miracle, Hideaway, Cascade, Plot,
