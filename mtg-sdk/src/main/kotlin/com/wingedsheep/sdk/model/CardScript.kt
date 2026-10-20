@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.Serializable
 
 // Type alias for clarity - replacement effects are in the scripting package
@@ -387,6 +388,18 @@ data class CardScript(
      * [com.wingedsheep.sdk.scripting.values.DynamicAmount.ManaSpentOnX].
      */
     val xManaRestriction: Set<Color> = emptySet(),
+
+    /**
+     * "X can't be greater than <amount>." — the largest X this spell may be cast with, read as
+     * X is announced (CR 601.2b) and never again: Open the Way's ruling — "the number of players
+     * in the game is checked only as you choose the value for X". The cast enumerator caps the
+     * offered X slider at it and the cast validator rejects a larger announced X. Null (the
+     * default) means only the mana the caster can pay bounds X.
+     *
+     * A spell copied on the stack isn't cast, so it keeps its copied X uncapped. Declared with
+     * `spell { xMaximum = ... }`.
+     */
+    val xMaximum: DynamicAmount? = null,
 
     /**
      * Leyline mechanic. "If this card is in your opening hand, you may begin the game

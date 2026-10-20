@@ -633,6 +633,9 @@ internal class CastValidator(
         if (cardDef.script.castRestrictions.isNotEmpty()) {
             legality.castRestrictionsFailure(state, action.playerId, cardDef.script.castRestrictions)?.let { return it }
         }
+        legality.spellXMaximum(state, action.playerId, action.cardId, cardDef.script)?.let { cap ->
+            if ((action.xValue ?: 0) > cap) return "X can't be greater than $cap"
+        }
         if (action.chosenModes.isNotEmpty()) {
             val modalEffect = cardDef.script.spellEffect as? ModalEffect
             if (modalEffect != null) {

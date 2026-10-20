@@ -992,6 +992,7 @@ class CardBuilder(private val name: String) {
             returnTransformedFromGraveyardOnResolve = spellBuilder?.returnTransformedFromGraveyardMarker,
             selfAlternativeCost = selfAlternativeCost,
             xManaRestriction = spellBuilder?.xManaRestriction ?: emptySet(),
+            xMaximum = spellBuilder?.xMaximum,
             mayStartOnBattlefield = mayStartOnBattlefield,
             openingHandReveal = openingHandReveal,
             castTimeCaptures = spellBuilder?.castTimeCaptures ?: emptyList()
@@ -1088,6 +1089,8 @@ class SpellBuilder(private val declaredTargets: TargetList = TargetList()) : Tar
     var condition: Condition? = null
     /** Colors that may be spent on the `{X}` portion of this spell's cost (empty = any). */
     var xManaRestriction: Set<Color> = emptySet()
+    /** "X can't be greater than [xMaximum]" — checked once, as X is announced (null = no cap). */
+    var xMaximum: DynamicAmount? = null
     private var selfExileOnResolve: Boolean = false
 
     /**

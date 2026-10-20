@@ -985,6 +985,10 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   payment path. Per-color amount spent on X is then readable via `DynamicAmount.ManaSpentOnX(color)`.
   Soul Burn (`spell { xManaRestriction = setOf(Color.BLACK, Color.RED) }`) and Atalya, Samite Master
   (`activatedAbility { xManaRestriction = setOf(Color.WHITE) }`) are the first users.
+- `xMaximum = amount` (in `spell { }`) — "X can't be greater than [amount]." A `DynamicAmount` read
+  once, as X is announced (CR 601.2b), never again: the cast offer's X slider is capped at it on every
+  casting rail and the cast validator rejects a larger X; a copy of the spell isn't cast and keeps its X.
+  Open the Way (`xMaximum = DynamicAmounts.playerCount(Player.Each)`) is the first user.
 
 **`Costs.additional.*`** (wraps `AdditionalCost`) — extra costs paid alongside the mana cost. Card
 definitions construct these through the facade, e.g. `Costs.additional.SacrificePermanent(Filters.Creature)`.

@@ -129,7 +129,7 @@ class LegalActionEnumerator(
             offers
         }
         return com.wingedsheep.engine.legalactions.enumerators.AdditionalManaForCountersOffer
-            .annotate(context, permitted.map(::capXAtExactTargetCount), predicateEvaluator = predicateEvaluator)
+            .annotate(context, permitted.map { capXAtSpellMaximum(context, capXAtExactTargetCount(it)) }, predicateEvaluator = predicateEvaluator)
     }
 
     /** Reuse every casting rail under an immutable declared-cost pricing context. */
@@ -167,6 +167,22 @@ class LegalActionEnumerator(
                 offer.copy(action = action.copy(optionalCostPayments = chosen), description = "${offer.description} — pay $life life")
             }.toList()
         }
+    }
+
+    /**
+     * "X can't be greater than ..." ([com.wingedsheep.sdk.model.CardScript.xMaximum], Open the
+     * Way): cap a cast offer's [LegalAction.maxAffordableX] at the spell's own maximum, read now
+     * as X would be announced (CR 601.2b). One pass over every casting rail — hand, graveyard,
+     * exile permissions — so none offers an X the cast validator then rejects.
+     */
+    private fun capXAtSpellMaximum(context: EnumerationContext, action: LegalAction): LegalAction {
+        val maxX = action.maxAffordableX ?: return action
+        val cast = action.action as? com.wingedsheep.engine.core.CastSpell ?: return action
+        val component = context.state.getEntity(cast.cardId)
+            ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>() ?: return action
+        val script = cardRegistry.getCard(component.cardDefinitionId)?.script ?: return action
+        val cap = context.legality.spellXMaximum(context.state, cast.playerId, cast.cardId, script) ?: return action
+        return if (cap < maxX) action.copy(maxAffordableX = cap) else action
     }
 
     /**

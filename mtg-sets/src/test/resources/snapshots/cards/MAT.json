@@ -342,6 +342,66 @@
     ]
 }
 
+// Open the Way
+{
+    "name": "Open the Way",
+    "manaCost": "{X}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "X can't be greater than the number of players in the game.\nReveal cards from the top of your library until you reveal X land cards. Put those land cards onto the battlefield tapped and the rest on the bottom of your library in a random order.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherUntilMatch",
+                    "filter": "land",
+                    "storeMatch": "matched0",
+                    "storeRevealed": "revealed0",
+                    "count": "XValue"
+                },
+                {
+                    "type": "RevealCollection",
+                    "from": "revealed0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "revealed0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    },
+                    "filter": "land"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "revealed0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "Random",
+                    "filter": "nonland"
+                }
+            ]
+        },
+        "xMaximum": {
+            "type": "PlayerCount",
+            "scope": "Each"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "RARE",
+        "artist": "Livia Prima",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e72a911e-8291-48ca-bfc6-8907e3b57011.jpg?1783916520"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Pia Nalaar, Consul of Revival
 {
     "name": "Pia Nalaar, Consul of Revival",
