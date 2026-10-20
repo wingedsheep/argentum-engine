@@ -1415,9 +1415,15 @@ internal class CombatDamageManager(
         var newState = state
         val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
         val currentCount = counters.getCount(counterType)
+        // A loyalty floor (Deification) keeps counters on without changing the damage dealt.
+        val removed = if (counterType == com.wingedsheep.sdk.core.CounterType.LOYALTY) {
+            DamageUtils.loyaltyRemovedByDamage(
+                state, targetId, currentCount, amount, sourceId, isCombatDamage = true, predicateEvaluator = predicateEvaluator
+            )
+        } else amount.coerceAtMost(currentCount)
         newState = newState.updateEntity(targetId) { container ->
             WasDealtDamageThisTurnComponent.markedOn(container, isCombatDamage = true)
-                .with(counters.withRemoved(counterType, amount))
+                .with(counters.withRemoved(counterType, removed))
         }
 
         // Combat damage that takes a Siege's last defense counter defeats it (CR 310.12b). Arm the
@@ -1455,7 +1461,6 @@ internal class CombatDamageManager(
             targetLastKnown = captureLastKnown(state, targetId), excessAmount = excess,
             sourceAttachmentIds = attachmentIdsOf(state, sourceId),
             sourceLastKnown = captureLastKnown(state, sourceId)))
-        val removed = amount.coerceAtMost(currentCount)
         if (counterType == com.wingedsheep.sdk.core.CounterType.LOYALTY) {
             events.add(LoyaltyChangedEvent(targetId, targetName, -removed))
         } else if (removed > 0) {

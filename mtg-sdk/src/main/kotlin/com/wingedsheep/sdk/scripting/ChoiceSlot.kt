@@ -25,6 +25,9 @@ enum class ChoiceSlot {
     /** A creature type chosen as the object entered (e.g. Riptide Replicator "choose a creature type"). */
     CREATURE_TYPE,
 
+    /** A planeswalker type chosen as the object entered (e.g. Deification "choose a planeswalker type"). */
+    PLANESWALKER_TYPE,
+
     /** A basic land type chosen as the object entered (e.g. Phantasmal Terrain). */
     LAND_TYPE,
 

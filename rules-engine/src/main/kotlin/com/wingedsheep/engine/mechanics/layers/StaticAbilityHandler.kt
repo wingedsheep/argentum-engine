@@ -1387,6 +1387,7 @@ class StaticAbilityHandler(
             is ReplaceDamageWithCounters,
             is com.wingedsheep.sdk.scripting.ReplaceDamageWithMill,
             is com.wingedsheep.sdk.scripting.HealOtherDamage,
+            is com.wingedsheep.sdk.scripting.LoyaltyDamageFloor,
             // Counter replacement (Guile):
             is com.wingedsheep.sdk.scripting.ExileCounteredSpellInstead,
             // Life gain/loss:

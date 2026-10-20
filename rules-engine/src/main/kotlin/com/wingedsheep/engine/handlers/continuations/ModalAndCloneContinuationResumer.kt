@@ -748,6 +748,16 @@ class ModalAndCloneContinuationResumer(
                     c.withCastChoice(ChoiceSlot.CREATURE_TYPE, ChoiceValue.TextChoice(chosenType))
                 }
             }
+            com.wingedsheep.sdk.scripting.ChoiceType.PLANESWALKER_TYPE -> {
+                if (response !is OptionChosenResponse) {
+                    return ExecutionResult.error(state, "Expected option chosen response for planeswalker type choice")
+                }
+                val chosenType = continuation.planeswalkerTypes.getOrNull(response.optionIndex)
+                    ?: return ExecutionResult.error(state, "Invalid planeswalker type index: ${response.optionIndex}")
+                state.updateEntity(spellId) { c ->
+                    c.withCastChoice(ChoiceSlot.PLANESWALKER_TYPE, ChoiceValue.TextChoice(chosenType))
+                }
+            }
             com.wingedsheep.sdk.scripting.ChoiceType.CREATURE_ON_BATTLEFIELD -> {
                 if (response !is CardsSelectedResponse) {
                     return ExecutionResult.error(state, "Expected cards selected response for creature choice")

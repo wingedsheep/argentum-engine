@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.mechanics.layers
 
 import com.wingedsheep.engine.state.components.battlefield.chosenColor
-import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
+import com.wingedsheep.engine.state.components.battlefield.chosenSubtype
 import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureOf
 import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
@@ -312,7 +312,7 @@ internal class AffectsFilterResolver(
 
         // Read chosen subtype once from source's CastChoicesComponent if needed
         val chosenSubtype = if (groupFilter.chosenSubtypeKey != null) {
-            state.getEntity(sourceId)?.chosenCreatureType()
+            state.getEntity(sourceId)?.chosenSubtype()
                 ?: return emptySet()
         } else null
 

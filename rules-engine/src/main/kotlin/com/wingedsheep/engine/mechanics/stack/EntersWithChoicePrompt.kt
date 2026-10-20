@@ -44,6 +44,8 @@ internal class EntersWithChoicePrompt(
                 promptColor(state, spellId, controllerId, ownerId, cardComponent, choice, chooserId)
             ChoiceType.CREATURE_TYPE ->
                 promptCreatureType(state, spellId, controllerId, ownerId, cardComponent, choice, chooserId)
+            ChoiceType.PLANESWALKER_TYPE ->
+                promptPlaneswalkerType(state, spellId, controllerId, ownerId, cardComponent, chooserId)
             ChoiceType.CREATURE_ON_BATTLEFIELD ->
                 promptCreatureYouControl(state, spellId, controllerId, ownerId, cardComponent, choice)
             ChoiceType.MODE ->
@@ -125,6 +127,41 @@ internal class EntersWithChoicePrompt(
                         phase = DecisionPhase.RESOLUTION
                     ),
                     options = creatureTypeOptions,
+                    defaultSearch = ""
+                )
+            },
+            answer = continuation
+        )
+    }
+
+    private fun promptPlaneswalkerType(
+        state: GameState,
+        spellId: EntityId,
+        controllerId: EntityId,
+        ownerId: EntityId,
+        cardComponent: CardComponent,
+        chooserId: EntityId
+    ): ExecutionResult? {
+        val options = com.wingedsheep.sdk.core.Subtype.ALL_PLANESWALKER_TYPES
+        val continuation = EntersWithChoiceSpellContinuation(
+            spellId = spellId,
+            controllerId = controllerId,
+            ownerId = ownerId,
+            choiceType = ChoiceType.PLANESWALKER_TYPE,
+            planeswalkerTypes = options
+        )
+        return state.suspendForDecision(
+            question = { decisionId ->
+                ChooseOptionDecision(
+                    id = decisionId,
+                    playerId = chooserId,
+                    prompt = "Choose a planeswalker type",
+                    context = DecisionContext(
+                        sourceId = spellId,
+                        sourceName = cardComponent.name,
+                        phase = DecisionPhase.RESOLUTION
+                    ),
+                    options = options,
                     defaultSearch = ""
                 )
             },

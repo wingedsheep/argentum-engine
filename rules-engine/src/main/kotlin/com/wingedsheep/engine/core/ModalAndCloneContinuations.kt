@@ -363,6 +363,11 @@ data class EntersWithChoiceSpellContinuation(
     val choiceType: com.wingedsheep.sdk.scripting.ChoiceType,
     val creatureTypes: List<String> = emptyList(),
     /**
+     * For [com.wingedsheep.sdk.scripting.ChoiceType.PLANESWALKER_TYPE] choices, the positionally
+     * aligned list of planeswalker type options presented (Deification).
+     */
+    val planeswalkerTypes: List<String> = emptyList(),
+    /**
      * For [com.wingedsheep.sdk.scripting.ChoiceType.MODE] choices, the
      * positionally aligned list of mode ids. The response's chosen index
      * indexes into this list to recover the stable mode id stored on the
@@ -428,6 +433,9 @@ data class EntersWithChoiceOnBattlefieldContinuation(
     val controllerId: EntityId,
     val choiceType: com.wingedsheep.sdk.scripting.ChoiceType,
     val creatureTypes: List<String> = emptyList(),
+    /** For [com.wingedsheep.sdk.scripting.ChoiceType.PLANESWALKER_TYPE] choices, see
+     *  [EntersWithChoiceSpellContinuation.planeswalkerTypes]. */
+    val planeswalkerTypes: List<String> = emptyList(),
     /** For [com.wingedsheep.sdk.scripting.ChoiceType.MODE] choices, see
      *  [EntersWithChoiceSpellContinuation.modeOptionIds]. */
     val modeOptionIds: List<String> = emptyList(),

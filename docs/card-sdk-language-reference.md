@@ -16871,6 +16871,11 @@ EntersWithChoice(
 `GrantChosenColor`), and takes `excludedColors` for "choose a color other than red" (the Thriving lands — the
 `ChooseColorDecision` offers only the remaining colors and the validator rejects an excluded one),
 `ChoiceType.CREATURE_TYPE` writes `ChosenCreatureTypeComponent`,
+`ChoiceType.PLANESWALKER_TYPE` (CR 205.3j, options `Subtype.ALL_PLANESWALKER_TYPES`) writes
+`ChoiceSlot.PLANESWALKER_TYPE`, matched by `CardPredicate.HasChosenSubtype` / `withChosenSubtype()` and by a
+`GroupFilter` with a `chosenSubtypeKey` exactly like a chosen creature type — Deification's "planeswalkers you
+control of the chosen type have hexproof" is `GrantKeyword(HEXPROOF, GroupFilter(Planeswalker.youControl(),
+chosenSubtypeKey = "chosenPlaneswalkerType"))`,
 `ChoiceType.CREATURE_ON_BATTLEFIELD` writes `ChosenCreatureComponent` — by default "another creature
 you control"; `permanentFilter` widens or narrows the pool (matched from the entering permanent's controller's
 view, never the entering object itself) and `mayChooseNothing = true` lets the chooser pick nothing ("you may choose" —
@@ -17802,6 +17807,17 @@ not update an existing copy.
   and damage-dealt triggers see the full damage. Multiple instances pick the strictest floor. Used by
   Ali from Cairo (`LifeLossFloor(floor = 1, appliesTo = LifeLossEvent(Player.You))`); Worship adds a
   `restrictions = listOf(YouControlACreature)` gate.
+- `LoyaltyDamageFloor(floor = 1, restrictions, appliesTo)` — the planeswalker counterpart of
+  `LifeLossFloor`: damage matching `appliesTo` (a `DamageEvent`; its `recipient` names which
+  planeswalkers, its `damageType`/`source` gate as usual) that would leave a planeswalker with fewer than
+  `floor` loyalty counters removes only enough to leave `floor` (none if it already has `floor` or
+  fewer). Only the counter removal changes — the damage is still dealt in full, so lifelink, "deals
+  damage" triggers and excess damage see the whole amount. `restrictions` are evaluated against the
+  source and its controller; multiple instances pick the strictest floor. Read by both damage paths
+  (`DamageUtils.loyaltyRemovedByDamage`, called from the noncombat planeswalker branch and combat's
+  `removeCountersForDamage`). Deification: `LoyaltyDamageFloor(restrictions =
+  listOf(Conditions.YouControl(GameObjectFilter.Creature)), appliesTo = DamageEvent(recipient =
+  Recipient.Object(GameObjectFilter.Planeswalker.youControl().withChosenSubtype())))`.
 - `GainLifeInsteadOfLosingLife(origin, restrictions, appliesTo)` — non-damage life loss of one
   `LifeLossOrigin` becomes life gain of that much: "You gain life rather than lose life from radiation"
   (Strong, the Brutish Thespian: `GainLifeInsteadOfLosingLife(origin = LifeLossOrigin.RADIATION)`).

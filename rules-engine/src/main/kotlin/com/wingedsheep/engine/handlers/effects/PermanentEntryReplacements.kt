@@ -396,6 +396,8 @@ object PermanentEntryReplacements {
                 ?.let { ChoiceSlot.COLOR to ChoiceValue.ColorChoice(it.color) }
             ChoiceType.CREATURE_TYPE -> option(question.creatureTypes)
                 ?.let { ChoiceSlot.CREATURE_TYPE to ChoiceValue.TextChoice(it) }
+            ChoiceType.PLANESWALKER_TYPE -> option(question.planeswalkerTypes)
+                ?.let { ChoiceSlot.PLANESWALKER_TYPE to ChoiceValue.TextChoice(it) }
             ChoiceType.CREATURE_ON_BATTLEFIELD -> (response as? CardsSelectedResponse)?.selectedCards?.firstOrNull()
                 ?.let { ChoiceSlot.CREATURE to ChoiceValue.EntityChoice(it, state.objectRef(it)?.generation) }
             ChoiceType.MODE -> option(question.modeOptionIds)
@@ -542,6 +544,27 @@ object PermanentEntryReplacements {
                         controllerId = controllerId,
                         choiceType = ChoiceType.CREATURE_TYPE,
                         creatureTypes = options,
+                        fromZone = fromZone
+                    )
+                )
+            }
+
+            ChoiceType.PLANESWALKER_TYPE -> {
+                val options = Subtype.ALL_PLANESWALKER_TYPES
+                pause(
+                    { id -> ChooseOptionDecision(
+                        id = id,
+                        playerId = chooserId,
+                        prompt = "Choose a planeswalker type",
+                        context = context(),
+                        options = options,
+                        defaultSearch = ""
+                    ) },
+                    EntersWithChoiceOnBattlefieldContinuation(
+                        entityId = entityId,
+                        controllerId = controllerId,
+                        choiceType = ChoiceType.PLANESWALKER_TYPE,
+                        planeswalkerTypes = options,
                         fromZone = fromZone
                     )
                 )

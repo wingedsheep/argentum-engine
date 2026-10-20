@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers
 import com.wingedsheep.engine.mechanics.ManaValues
 import com.wingedsheep.engine.mechanics.layers.containsKeyword
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
+import com.wingedsheep.engine.state.components.battlefield.chosenSubtype
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureOf
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.state.components.battlefield.entitiesChoice
@@ -1226,7 +1227,7 @@ class PredicateEvaluator(
             CardPredicate.HasChosenSubtype -> {
                 val sourceId = context?.sourceId ?: return false
                 val chosenType = state.getEntity(sourceId)
-                    ?.chosenCreatureType()
+                    ?.chosenSubtype()
                     ?: return false
                 val entitySubtypes = effectiveSubtypes(state, projected, entityId, card, projectedValues)
                 entitySubtypes.any { it.equals(chosenType, ignoreCase = true) } ||

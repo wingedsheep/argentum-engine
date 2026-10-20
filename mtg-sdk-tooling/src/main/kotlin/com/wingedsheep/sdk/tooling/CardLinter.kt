@@ -922,6 +922,7 @@ object CardLinter {
     private val choiceTypeToSlot: Map<String, String> = mapOf(
         "COLOR" to "COLOR",
         "CREATURE_TYPE" to "CREATURE_TYPE",
+        "PLANESWALKER_TYPE" to "PLANESWALKER_TYPE",
         "BASIC_LAND_TYPE" to "LAND_TYPE",
         "MODE" to "MODE",
         "CREATURE_ON_BATTLEFIELD" to "CREATURE",
@@ -1480,10 +1481,14 @@ object CardLinter {
          * The default `chosenCreatureType` key doubles as the read path for the CREATURE_TYPE
          * choice slot: statics like Cover of Darkness pair `EntersWithChoice(CREATURE_TYPE)` with
          * a `chosenSubtypeKey = "chosenCreatureType"` group filter, no pipeline write involved.
+         * A planeswalker-type choice reads back the same way under `chosenPlaneswalkerType`
+         * (Deification).
          */
         fun satisfiedBySlot(read: Access): Boolean =
-            read.space == Space.CHOSEN && read.name == "chosenCreatureType" &&
-                "CREATURE_TYPE" in slots.declared
+            read.space == Space.CHOSEN && (
+                (read.name == "chosenCreatureType" && "CREATURE_TYPE" in slots.declared) ||
+                    (read.name == "chosenPlaneswalkerType" && "PLANESWALKER_TYPE" in slots.declared)
+                )
 
         /**
          * Collections the engine seeds for the ability before its effect runs, so a read with no

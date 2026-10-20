@@ -1,3 +1,76 @@
+// Deification
+{
+    "name": "Deification",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "As this enchantment enters, choose a planeswalker type.\nPlaneswalkers you control of the chosen type have hexproof.\nAs long as you control a creature, if damage dealt to a planeswalker you control of the chosen type would result in all loyalty counters on it being removed, instead all but one of those counters are removed.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HEXPROOF",
+                "filter": {
+                    "baseFilter": "planeswalker ctrl:you",
+                    "chosenSubtypeKey": "chosenPlaneswalkerType"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "PLANESWALKER_TYPE"
+            },
+            {
+                "type": "LoyaltyDamageFloor",
+                "restrictions": [
+                    {
+                        "type": "Exists",
+                        "player": "You",
+                        "zone": "Battlefield",
+                        "filter": "creature"
+                    }
+                ],
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsPlaneswalker",
+                                "HasChosenSubtype"
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "RARE",
+        "artist": "Maxime Minard",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/52ce799e-cb9e-4d74-8b13-a5f4559e13a9.jpg?1783916530",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "A planeswalker with hexproof may still be attacked."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "Deification's last ability doesn't prevent damage. All damage is still dealt to the affected planeswalkers, and any additional effects of that damage will still happen. For example, if a 3/3 creature with lifelink attacks an affected planeswalker with two loyalty counters on it, 3 damage will be dealt, causing the controller of the creature to gain 3 life and one loyalty counter to be removed from the planeswalker."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "Deification's last ability will apply to a planeswalker dealt combat damage in the same combat damage step that its controller's last creature is destroyed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Feast of the Victorious Dead
 {
     "name": "Feast of the Victorious Dead",

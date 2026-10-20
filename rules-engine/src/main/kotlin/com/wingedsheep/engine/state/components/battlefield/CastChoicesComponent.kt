@@ -115,6 +115,16 @@ fun ComponentContainer.chosenColor(): Color? =
 fun ComponentContainer.chosenCreatureType(): String? =
     (get<CastChoicesComponent>()?.chosen?.get(ChoiceSlot.CREATURE_TYPE) as? ChoiceValue.TextChoice)?.text
 
+/** The planeswalker type chosen as this object entered (Deification), or null. */
+fun ComponentContainer.chosenPlaneswalkerType(): String? =
+    (get<CastChoicesComponent>()?.chosen?.get(ChoiceSlot.PLANESWALKER_TYPE) as? ChoiceValue.TextChoice)?.text
+
+/**
+ * The subtype [com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasChosenSubtype] matches:
+ * the creature type chosen as this object entered, else its chosen planeswalker type.
+ */
+fun ComponentContainer.chosenSubtype(): String? = chosenCreatureType() ?: chosenPlaneswalkerType()
+
 /** The basic land type chosen as this object entered, or null. */
 fun ComponentContainer.chosenLandType(): String? =
     (get<CastChoicesComponent>()?.chosen?.get(ChoiceSlot.LAND_TYPE) as? ChoiceValue.TextChoice)?.text

@@ -280,6 +280,22 @@ value class Subtype(val value: String) {
         val OUTLAW_TYPES: List<Subtype> = listOf(ASSASSIN, MERCENARY, PIRATE, ROGUE, WARLOCK)
 
         /**
+         * All official planeswalker types per comprehensive rules 205.3j, alphabetical — the options
+         * of a "choose a planeswalker type" decision.
+         */
+        val ALL_PLANESWALKER_TYPES: List<String> = listOf(
+            "Ajani", "Aminatou", "Angrath", "Arlinn", "Ashiok", "Bahamut", "Basri", "Bolas", "Calix",
+            "Chandra", "Comet", "Dack", "Dakkon", "Daretti", "Davriel", "Dellian", "Dihada", "Domri",
+            "Dovin", "Ellywick", "Elminster", "Elspeth", "Estrid", "Freyalise", "Garruk", "Gideon",
+            "Grist", "Guff", "Huatli", "Jace", "Jared", "Jaya", "Jeska", "Kaito", "Karn", "Kasmina",
+            "Kaya", "Kiora", "Koth", "Liliana", "Lolth", "Lukka", "Minsc", "Mordenkainen", "Nahiri",
+            "Narset", "Niko", "Nissa", "Nixilis", "Oko", "Quintorius", "Ral", "Rowan", "Saheeli",
+            "Samut", "Sarkhan", "Serra", "Sivitri", "Sorin", "Szat", "Tamiyo", "Tasha", "Teferi",
+            "Teyo", "Tezzeret", "Tibalt", "Tyvar", "Ugin", "Urza", "Venser", "Vivien", "Vraska",
+            "Vronos", "Will", "Windgrace", "Wrenn", "Xenagos", "Yanggu", "Yanling", "Zariel"
+        )
+
+        /**
          * All official creature types per comprehensive rules 205.3m.
          * Sorted alphabetically for presentation in choose-option decisions.
          */

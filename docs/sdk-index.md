@@ -190,7 +190,7 @@ Families:
 - `CardPredicate.HasAnyOfSubtypes(subtypes: List<Subtype>)` — Matches cards with any one of the given subtypes (OR logic).
 - `CardPredicate.HasBasicLandType(landType: String)` — Matches basic land types: Plains, Island, Swamp, Mountain, Forest
 - `CardPredicate.HasChosenColor` — Matches cards whose colors include the color chosen during this effect's resolution (e.g. via ChooseColorThenEffectcom.wingedsheep.sdk.scripting.effects.ChooseColorThenEffect).
-- `CardPredicate.HasChosenSubtype` — Matches creatures that have the subtype chosen on the source permanent (CastChoicesComponent)
+- `CardPredicate.HasChosenSubtype` — Matches objects that have the subtype chosen on the source permanent as it entered — its chosen creature type (com.wingedsheep.sdk.scripting.ChoiceSlot.CREATURE_TYPE) or, failing that, its chosen p…
 - `CardPredicate.HasColor(color: Color)`
 - `CardPredicate.HasCycling` — Matches a card with a cycling ability — plain cycling or any typecycling variant (typecycling is a variant of cycling, CR 702.29e).
 - `CardPredicate.HasExactlyColors(count: Int)` — Exactly count colors (CR 105.2).
@@ -1543,6 +1543,7 @@ Families:
 - `HalveDamage(restrictions: List<Condition>, appliesTo: EventPattern)` — Halve damage dealt, **rounded down** — the dividing mirror of DoubleDamage.
 - `HealOtherDamage(appliesTo: EventPattern)` — The damage is still dealt in full, but as part of the same replacement all *other* damage already marked on the recipient is **healed** (CR 701.69a: "If an effect states that damage already dealt t…
 - `LifeLossFloor(floor: Int, restrictions: List<Condition>, appliesTo: EventPattern)` — Floor the resulting life total when a player would lose life from damage.
+- `LoyaltyDamageFloor(floor: Int, restrictions: List<Condition>, appliesTo: EventPattern)` — Floor the loyalty a planeswalker keeps when damage would remove its loyalty counters (CR 120.3c, CR 306.8): if damage matching appliesTo would leave the planeswalker with fewer than floor loyalty c…
 - `ModifyCounterPlacement(modifier: Int, appliesTo: EventPattern, placedByYou: Boolean)` — Add additional counters when counters are placed.
 - `ModifyDamageAmount(modifier: Int, dynamicModifier: DynamicAmount?, restrictions: List<Condition>, appliesTo: EventPattern)` — Modify damage dealt by an additive amount — either a fixed modifier or, when dynamicModifier is supplied, an amount computed at damage time against the replacement's *source* permanent.
 - `ModifyDrawAmount(modifier: Int, multiplier: Int, restrictions: List<Condition>, appliesTo: EventPattern.DrawCardsEvent)` — Modify the number of cards a draw event draws — `(count * multiplier) + modifier`, clamped to ≥ 0 — optionally gated by additional restrictions.

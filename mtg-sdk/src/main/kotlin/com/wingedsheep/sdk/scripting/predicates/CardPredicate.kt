@@ -997,7 +997,12 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override val description: String = "that shares a creature type with it"
     }
 
-    /** Matches creatures that have the subtype chosen on the source permanent (CastChoicesComponent) */
+    /**
+     * Matches objects that have the subtype chosen on the source permanent as it entered — its
+     * chosen creature type ([com.wingedsheep.sdk.scripting.ChoiceSlot.CREATURE_TYPE]) or, failing
+     * that, its chosen planeswalker type ([com.wingedsheep.sdk.scripting.ChoiceSlot.PLANESWALKER_TYPE],
+     * Deification). Read from the source's CastChoicesComponent.
+     */
     @SerialName("HasChosenSubtype")
     @Serializable
     data object HasChosenSubtype : CardPredicate {

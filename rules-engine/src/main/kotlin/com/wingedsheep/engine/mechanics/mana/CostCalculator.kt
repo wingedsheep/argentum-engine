@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.mechanics.mana
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureOf
-import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
+import com.wingedsheep.engine.state.components.battlefield.chosenSubtype
 import com.wingedsheep.engine.state.components.battlefield.chosenColor
 import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
 import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
@@ -1777,7 +1777,7 @@ class CostCalculator(
             CardPredicate.HasChosenSubtype -> {
                 if (sourceEntityId == null || state == null) return false
                 val chosenType = state.getEntity(sourceEntityId)
-                    ?.chosenCreatureType()
+                    ?.chosenSubtype()
                     ?: return false
                 val spellSubtypes = cardDef.typeLine.subtypes.map { it.value }
                 spellSubtypes.any { it.equals(chosenType, ignoreCase = true) } ||

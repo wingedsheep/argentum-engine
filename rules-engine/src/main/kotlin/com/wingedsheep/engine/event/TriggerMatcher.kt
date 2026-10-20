@@ -16,7 +16,7 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
-import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
+import com.wingedsheep.engine.state.components.battlefield.chosenSubtype
 import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
 import com.wingedsheep.engine.state.components.battlefield.chosenPlayer
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -1493,7 +1493,7 @@ class TriggerMatcher(
                         // Resolve the chosen subtype from the trigger source's CastChoicesComponent
                         // and check that the entering/leaving entity has that subtype.
                         val chosenType = state.getEntity(sourceId)
-                            ?.chosenCreatureType()
+                            ?.chosenSubtype()
                             ?: return false
                         val hasSubtype = if (event.toZone == Zone.BATTLEFIELD) {
                             projected.hasSubtype(event.entityId, chosenType)
