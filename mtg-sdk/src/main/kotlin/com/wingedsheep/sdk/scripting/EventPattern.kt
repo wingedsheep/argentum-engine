@@ -1209,9 +1209,10 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
 
         override val description: String = buildString {
             append(if (player == Player.You) "you play a land" else "a player plays a land")
-            if (fromZone != null) append(" from ${if (fromZone == Zone.EXILE) "exile" else "your ${fromZone.name.lowercase()}"}")
+            val possessive = if (player == Player.You) "your" else "their"
+            if (fromZone != null) append(" from ${if (fromZone == Zone.EXILE) "exile" else "$possessive ${fromZone.name.lowercase()}"}")
             if (fromZoneOtherThan != null) {
-                append(" from anywhere other than your ${fromZoneOtherThan.name.lowercase()}")
+                append(" from anywhere other than $possessive ${fromZoneOtherThan.name.lowercase()}")
             }
         }
     }
