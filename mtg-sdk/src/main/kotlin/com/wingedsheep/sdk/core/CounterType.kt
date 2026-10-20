@@ -111,6 +111,7 @@ value class CounterType(val name: String) {
         val SLEEP = CounterType("SLEEP")
         val PIN = CounterType("PIN")
         val CARRION = CounterType("CARRION")
+        val PUPA = CounterType("PUPA")
         val POISON = CounterType("POISON")
         val SILVER = CounterType("SILVER")
         val GOLD = CounterType("GOLD")
@@ -812,6 +813,7 @@ value class CounterType(val name: String) {
             SLEEP,
             PIN,
             CARRION,
+            PUPA,
             POISON,
             SILVER,
             GOLD,
