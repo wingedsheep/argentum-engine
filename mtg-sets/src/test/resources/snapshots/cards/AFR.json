@@ -145,6 +145,56 @@
     ]
 }
 
+// Celestial Unicorn
+{
+    "name": "Celestial Unicorn",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Unicorn",
+    "oracleText": "Whenever you gain life, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Celestial Unicorn:1",
+                "trigger": "LifeGainEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "artist": "Johannes Voss",
+        "flavorText": "When all hope fails, its light remains.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2d68812-8862-4e34-a992-7d6bbadaf316.jpg?1783926539",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "The ability of Celestial Unicorn triggers just once for each life-gaining event, whether it's 1 life from Dazzling Angel or 4 life from Apothecary Stomper."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If Celestial Unicorn is dealt lethal damage at the same time that you gain life, it won't receive a counter from its ability in time to save it."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If you gain an amount of life \"for each\" of something or \"equal to the number\" of something, that life is gained as one event and Celestial Unicorn's ability triggers only once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Deadly Dispute
 {
     "name": "Deadly Dispute",
