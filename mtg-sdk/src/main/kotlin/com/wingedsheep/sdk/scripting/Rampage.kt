@@ -44,10 +44,14 @@ object Rampage {
      * id apart from every printed one.
      */
     fun trigger(n: Int, instance: Int = 0, granted: Boolean = false): TriggeredAbility {
+        // Floored at zero: a creature whose only blocker left before resolution has no blockers,
+        // and "for each creature blocking it beyond the first" is then none, not minus one.
         val perBlockerBeyondFirst = DynamicAmount.Multiply(
-            DynamicAmount.Subtract(
-                DynamicAmount.EntityProperty(EffectTarget.Self, EntityNumericProperty.BlockerCount),
-                DynamicAmount.Fixed(1),
+            DynamicAmount.IfPositive(
+                DynamicAmount.Subtract(
+                    DynamicAmount.EntityProperty(EffectTarget.Self, EntityNumericProperty.BlockerCount),
+                    DynamicAmount.Fixed(1),
+                )
             ),
             n,
         )

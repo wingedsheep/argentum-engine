@@ -232,7 +232,7 @@ class ObjectTriggerSubject internal constructor(
 
     /**
      * "becomes blocked [by a creature matching [by]]". Under [Triggers.self] the bare form fires
-     * **once** however many creatures block, with the source as the triggering entity (Rampage);
+     * **once** however many creatures block, with the source as the triggering entity;
      * `by` fires once **per matching blocker**, with that blocker as the triggering entity
      * (Sylvan Basilisk, "destroy that creature"). `by` also supports [Triggers.attached]. A
      * filtered SELF/ATTACHED subject is rejected: the event's filter axis is the blocker.

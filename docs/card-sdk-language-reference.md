@@ -8046,7 +8046,7 @@ Triggers.self.blocks(attackerFilter = GameObjectFilter.Creature.withKeyword(Keyw
 
 `Triggers.self.becomesBlocked()` (SELF, **unfiltered**) fires **once** when the creature becomes
 blocked, regardless of how many creatures block it, with `triggeringEntityId` = the source —
-so `DynamicAmounts.numberOfBlockers()` reads this creature's blocker count (Rampage). The
+so `DynamicAmounts.numberOfBlockers()` reads this creature's blocker count. The
 **filtered** SELF form `Triggers.self.becomesBlocked(by = filter)` instead fires once per matching blocker,
 with `triggeringEntityId` = that blocker (Flanking gives each blocker -1/-1).
 

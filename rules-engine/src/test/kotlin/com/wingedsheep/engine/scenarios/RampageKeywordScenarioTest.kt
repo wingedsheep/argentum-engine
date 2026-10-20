@@ -22,7 +22,8 @@ import io.kotest.matchers.shouldBe
  * | 702.23a — becomes blocked → +N/+N per blocker beyond the first | "printed rampage counts blockers beyond the first" |
  * | 702.23a — one trigger however many block; one blocker → +0/+0 | "blocked by one creature, rampage adds nothing" |
  * | 702.23a — nothing when unblocked | "an unblocked attacker gets nothing" |
- * | 702.23b — bonus counted when the trigger resolves | "a blocker removed in response lowers the bonus" |
+ * | 702.23b — bonus counted when the trigger resolves | "a blocker removed in response lowers the bonus", "printed rampage counts blockers beyond the first" (removal after resolution) |
+ * | no blockers left on resolution → +0/+0, never negative | "the only blocker removed in response leaves +0/+0, not a negative bonus" |
  * | 702.23c — each instance triggers separately | "two printed instances trigger separately" |
  * | rampage is an ability — lose all abilities, no trigger | "a creature that lost its abilities has no rampage" |
  * | granted rampage triggers and reads as the keyword | "granted rampage triggers and is a rampage keyword" |
@@ -121,11 +122,16 @@ class RampageKeywordScenarioTest : FunSpec({
     test("printed rampage counts blockers beyond the first") {
         val driver = createDriver()
         val beast = driver.attacker("Test Rampage Two")
-        driver.attackInto(beast, driver.blockers(3)) shouldBe 1
+        val blockers = driver.blockers(3)
+        driver.attackInto(beast, blockers) shouldBe 1
         driver.resolveStack()
 
         driver.power(beast) shouldBe 7
         driver.toughness(beast) shouldBe 7
+
+        // CR 702.23b: removing a blocker after the trigger resolved doesn't change the bonus.
+        driver.castAndResolve("Test Kill", blockers.first(), Color.BLACK, caster = driver.state.priorityPlayerId!!)
+        driver.power(beast) shouldBe 7
     }
 
     test("blocked by one creature, rampage adds nothing") {
@@ -158,6 +164,19 @@ class RampageKeywordScenarioTest : FunSpec({
 
         driver.power(beast) shouldBe 5
         driver.toughness(beast) shouldBe 5
+    }
+
+    test("the only blocker removed in response leaves +0/+0, not a negative bonus") {
+        val driver = createDriver()
+        val beast = driver.attacker("Test Rampage Two")
+        val blockers = driver.blockers(1)
+        driver.attackInto(beast, blockers) shouldBe 1
+
+        driver.castAndResolve("Test Kill", blockers.single(), Color.BLACK, caster = driver.state.priorityPlayerId!!)
+        driver.resolveStack()
+
+        driver.power(beast) shouldBe 3
+        driver.toughness(beast) shouldBe 3
     }
 
     test("two printed instances trigger separately") {
