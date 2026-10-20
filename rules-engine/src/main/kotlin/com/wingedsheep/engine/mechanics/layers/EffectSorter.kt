@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.mechanics.layers
 
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.sdk.core.Keyword
 
 /**
  * Sorts continuous effects by layer, sublayer, dependency, and timestamp (Rule 613).
@@ -41,9 +42,10 @@ internal class EffectSorter {
 
         for (effectA in effects) {
             val dependsOn = mutableSetOf<ContinuousEffect>()
+            val readKeywords = effectA.affectsFilter?.let(::keywordsReadBy).orEmpty()
             for (effectB in effects) {
                 if (effectA === effectB) continue
-                if (dependsOn(effectA, effectB, state)) {
+                if (dependsOn(effectA, effectB, readKeywords, state)) {
                     dependsOn.add(effectB)
                 }
             }
@@ -76,6 +78,7 @@ internal class EffectSorter {
     private fun dependsOn(
         effectA: ContinuousEffect,
         effectB: ContinuousEffect,
+        readKeywords: Set<Keyword>,
         state: GameState
     ): Boolean {
         // Type-changing effects: any effect that changes types, subtypes, or land types
@@ -100,9 +103,28 @@ internal class EffectSorter {
         // the removal changes the grant's existence) — StateProjector then drops the grant.
         if (effectA.fromStaticAbility && effectB.modification is Modification.RemoveAllAbilities &&
             (effectA.modification is Modification.GrantKeyword || effectA.modification is Modification.GrantStaticAbility)) {
-            return effectA.sourceId in effectB.affectedEntities ||
-                effectA.affectedEntities.any { it in effectB.affectedEntities }
+            if (effectA.sourceId in effectB.affectedEntities ||
+                effectA.affectedEntities.any { it in effectB.affectedEntities }) return true
         }
+        // An effect whose affected set reads keywords ("creatures with flying have vigilance")
+        // depends on a same-layer effect that grants or removes one of those keywords
+        // (CR 613.8a): applying that one changes what this one applies to. StateProjector
+        // re-resolves the keyword-reading set when it applies.
+        if (readKeywords.isNotEmpty() && changesKeywords(effectB.modification, readKeywords)) return true
         return false
     }
+
+    private fun changesKeywords(modification: Modification, keywords: Set<Keyword>): Boolean = when (modification) {
+        is Modification.GrantKeyword -> keywords.any { modification.keyword.isKeyword(it) }
+        is Modification.RemoveKeyword -> keywords.any { modification.keyword.isKeyword(it) }
+        Modification.RemoveAllAbilities,
+        Modification.GrantLandwalkFromChosen,
+        is Modification.GrantKeywordsOfCards -> true
+        else -> false
+    }
+
+    /** Whether a projected keyword string is [keyword], bare or numeric (`RAMPAGE_2`) — see [containsKeyword]. */
+    private fun String.isKeyword(keyword: Keyword): Boolean =
+        this == keyword.name || (startsWith("${keyword.name}_") && length > keyword.name.length + 1 &&
+            substring(keyword.name.length + 1).all(Char::isDigit))
 }

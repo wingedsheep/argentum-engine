@@ -7967,6 +7967,41 @@
     "colorIdentityOverride": []
 }
 
+// Moat
+{
+    "name": "Moat",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creatures without flying can't attack.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotKeyword",
+                                "keyword": "FLYING"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "RARE",
+        "artist": "Jeff A. Menges",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/952ba126-0915-47f0-9b6a-a0a6dcd22c6f.jpg?1783948082"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Mold Demon
 {
     "name": "Mold Demon",

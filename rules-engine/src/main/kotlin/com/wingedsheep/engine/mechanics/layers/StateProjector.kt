@@ -344,8 +344,20 @@ class StateProjector {
                 effect.abilityGainedAt > (latestAbilityRemoval[effect.sourceId] ?: Long.MIN_VALUE)
 
         // === Layers 5-6 (Color + Ability) ===
+        // A keyword-reading set ("creatures with flying have vigilance") is re-resolved where it
+        // applies: EffectSorter orders a Layer-6 one after the keyword grants and removals it
+        // depends on (CR 613.8a), and the deferred restrictions below run after all of Layer 6.
+        // A locked CR 613.6 group keeps its frozen set.
+        fun withKeywordSetResolved(effect: ContinuousEffect): ContinuousEffect {
+            val filter = effect.affectsFilter
+            if (filter == null || !filterResolver.isKeywordDependentFilter(filter)) return effect
+            return effect.copy(affectedEntities = lockAffected(effect,
+                filterResolver.resolveAffectedEntities(state, effect.sourceId, filter, projectedValues, effect.controllerId)))
+        }
         val deferredCantBlock = mutableListOf<Pair<ContinuousEffect, Boolean>>()
-        for (effect in postTypeEffects) {
+        val deferredCantAttack = mutableListOf<Pair<ContinuousEffect, Boolean>>()
+        for (sortedEffect in postTypeEffects) {
+            val effect = withKeywordSetResolved(sortedEffect)
             if (effect.modification is Modification.CanAttackAsThoughHasty) continue
             if (effect.modification is Modification.GrantStaticAbility && effect.fromStaticAbility &&
                 projectedValues[effect.sourceId]?.isFaceDown == true) continue
@@ -370,6 +382,12 @@ class StateProjector {
                 deferredCantBlock += effect to startedBeforeAbility
                 continue
             }
+            // "Can't attack" is a rules effect too (CR 613.11): applied once Layer 6 is settled, so
+            // a Moat reads the flying a newer Jump granted.
+            if (effect.modification is Modification.SetCantAttack) {
+                deferredCantAttack += effect to startedBeforeAbility
+                continue
+            }
             effectApplicator.applyEffect(effect, state, projectedValues,
                 restrictionSurvivesSourceAbilityRemoval = startedBeforeAbility)
         }
@@ -382,7 +400,11 @@ class StateProjector {
             if (effect.fromStaticAbility && !startedBeforeAbility &&
                 effect.sourceId !in staticRemoveAllAbilitiesSources && !gainedAfterRemoval(effect) &&
                 projectedValues[effect.sourceId]?.lostAllAbilities == true) continue
-            effectApplicator.applyEffect(effect, state, projectedValues)
+            effectApplicator.applyEffect(withKeywordSetResolved(effect), state, projectedValues)
+        }
+        for ((effect, startedBeforeAbility) in deferredCantAttack) {
+            effectApplicator.applyEffect(withKeywordSetResolved(effect), state, projectedValues,
+                restrictionSurvivesSourceAbilityRemoval = startedBeforeAbility)
         }
 
         // Rule 122.1b: re-apply keyword counters after Layer 6.
@@ -447,6 +469,7 @@ class StateProjector {
             val resolved = if (effect.affectsFilter != null &&
                 (filterResolver.isSubtypeDependentFilter(effect.affectsFilter) ||
                     filterResolver.isControllerDependentFilter(effect.affectsFilter) ||
+                    filterResolver.isKeywordDependentFilter(effect.affectsFilter) ||
                     filterResolver.isCreatureDependentFilter(effect.affectsFilter))) {
                 filterResolver.resolveAffectedEntities(state, effect.sourceId, effect.affectsFilter, projectedValues, effect.controllerId)
             } else {

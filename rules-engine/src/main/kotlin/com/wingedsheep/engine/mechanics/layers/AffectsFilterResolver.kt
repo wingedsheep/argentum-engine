@@ -261,6 +261,13 @@ internal class AffectsFilterResolver(
             ))
     }
 
+    /**
+     * True when the filter reads keywords ("creatures without flying" — Moat). Such a filter must
+     * be re-resolved where its effect applies, after the Layer-6 grants and removals it depends on
+     * (CR 613.8a); see [keywordsReadBy].
+     */
+    fun isKeywordDependentFilter(filter: AffectsFilter): Boolean = keywordsReadBy(filter).isNotEmpty()
+
     fun isControllerDependentFilter(filter: AffectsFilter): Boolean {
         return filter is AffectsFilter.AllCreaturesYouControl ||
             filter is AffectsFilter.AllCreaturesOpponentsControl ||
@@ -1169,4 +1176,25 @@ internal class AffectsFilterResolver(
         return projectedValues[entityId]?.controllerId
             ?: state.getEntity(entityId)?.get<ControllerComponent>()?.playerId
     }
+}
+
+/**
+ * The keywords a [AffectsFilter.Generic] filter's card predicates read, looking through
+ * `And`/`Or`/`Not`; empty for every other filter shape.
+ */
+internal fun keywordsReadBy(filter: AffectsFilter): Set<Keyword> {
+    if (filter !is AffectsFilter.Generic) return emptySet()
+    val out = mutableSetOf<Keyword>()
+    fun visit(p: CardPredicate) {
+        when (p) {
+            is CardPredicate.HasKeyword -> out += p.keyword
+            is CardPredicate.NotKeyword -> out += p.keyword
+            is CardPredicate.And -> p.predicates.forEach(::visit)
+            is CardPredicate.Or -> p.predicates.forEach(::visit)
+            is CardPredicate.Not -> visit(p.predicate)
+            else -> {}
+        }
+    }
+    filter.groupFilter.baseFilter.cardPredicates.forEach(::visit)
+    return out
 }
