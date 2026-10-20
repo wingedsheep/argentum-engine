@@ -9589,6 +9589,99 @@
     ]
 }
 
+// Stangg
+{
+    "name": "Stangg",
+    "manaCost": "{4}{R}{G}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "When Stangg enters, create Stangg Twin, a legendary 3/4 red and green Human Warrior creature token. Exile that token when Stangg leaves the battlefield. Sacrifice Stangg when that token leaves the battlefield.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stangg:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 3,
+                            "toughness": 4,
+                            "colors": [
+                                "RED",
+                                "GREEN"
+                            ],
+                            "creatureTypes": [
+                                "Human",
+                                "Warrior"
+                            ],
+                            "name": "Stangg Twin",
+                            "imageUri": "https://cards.scryfall.io/normal/front/e/b/eba90d37-d7ac-4097-a04d-1f27e4c9e5de.jpg?1783935203",
+                            "legendary": true
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "createdTokens"
+                                },
+                                "destination": "Exile"
+                            },
+                            "trigger": {
+                                "event": {
+                                    "type": "ZoneChangeEvent",
+                                    "from": "Battlefield"
+                                }
+                            },
+                            "watchedTarget": "Self",
+                            "expiry": "DelayedTriggerExpiry.Never",
+                            "fireOnce": true
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "effect": {
+                                "type": "SacrificeTarget",
+                                "target": "Self"
+                            },
+                            "trigger": {
+                                "event": {
+                                    "type": "ZoneChangeEvent",
+                                    "from": "Battlefield"
+                                }
+                            },
+                            "watchedTarget": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            },
+                            "expiry": "DelayedTriggerExpiry.Never",
+                            "fireOnce": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "260",
+        "rarity": "RARE",
+        "artist": "Mark Poole",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a277775a-6b48-4238-a618-3ae94c4cc85c.jpg?1783948032"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Storm World
 {
     "name": "Storm World",

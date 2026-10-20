@@ -70,8 +70,8 @@ object TargetResolutionUtils {
     ): EntityId? = entityOf(reference, context, state, projected)
 
     /**
-     * Whether [target] names the source, the triggering object, or a loop's current object and
-     * that object has since become a new object (CR 400.7). [state] is null for the context-only
+     * Whether [target] names the source, the triggering object, a loop's current object, or an id a
+     * delayed trigger bound to its object, and that object has since become a new object (CR 400.7). [state] is null for the context-only
      * resolution, which reads the flags [EffectContext] froze at the start of the instruction.
      */
     private fun isLostObject(target: EffectTarget, context: EffectContext, state: GameState?): Boolean {
@@ -83,6 +83,7 @@ object TargetResolutionUtils {
                 context.triggeringEntityId !in state.turnOrder && !references.isCurrent(references.triggering, state))
             EffectTarget.IterationEntity -> context.iterationReferenceLost ||
                 (state != null && references.iteration != null && !references.isIterationCurrent(state))
+            is EffectTarget.SpecificEntity -> state != null && references.isBoundLost(target.entityId, state)
             else -> false
         }
     }

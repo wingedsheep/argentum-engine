@@ -27,8 +27,10 @@ class CantBeRegeneratedExecutor : EffectExecutor<CantBeRegeneratedEffect> {
         effect: CantBeRegeneratedEffect,
         context: EffectContext
     ): EffectResult {
-        val targetId = context.resolveTarget(effect.target)
-            ?: return EffectResult.error(state, "No valid target for can't be regenerated")
+        // A delayed trigger's "that creature" names nothing once the creature is a new object
+        // (CR 603.7c) — the rider simply has nothing to apply to.
+        val targetId = context.resolveTarget(effect.target, state)
+            ?: return EffectResult.success(state)
 
         val newState = state.addFloatingEffect(
             layer = Layer.ABILITY,

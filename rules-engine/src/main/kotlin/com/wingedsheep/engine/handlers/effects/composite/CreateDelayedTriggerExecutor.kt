@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
+import com.wingedsheep.sdk.scripting.effects.CantBeRegeneratedEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
@@ -33,6 +34,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.MoveTrackedBattlefieldObjectEffect
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.EventPattern
@@ -69,8 +71,11 @@ class CreateDelayedTriggerExecutor(
         val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Unknown"
 
         // Bake in any context-dependent target references so the delayed trigger
-        // has concrete entity IDs when it fires later.
-        val resolvedEffect = resolveContextTargets(effect.effect, context, state)
+        // has concrete entity IDs when it fires later. The battlefield objects those ids name are
+        // bound with their identity: "destroy that creature" must not hit it once it has left and
+        // returned as a new object (CR 603.7c / 400.7).
+        val bound = mutableListOf<com.wingedsheep.engine.handlers.CapturedObjectBinding>()
+        val resolvedEffect = resolveContextTargets(effect.effect, context, state, bound)
 
         // Bake any chosen-value references in the trigger's filter into concrete predicates.
         // Long List of the Ents (LTR) needs "when you cast a creature spell of the type just
@@ -175,9 +180,11 @@ class CreateDelayedTriggerExecutor(
             // ForEach body still refers to *that* object — "exile each creature; return it at the
             // next end step" — and, having captured its identity, stops affecting it once it is in
             // a zone the trigger didn't expect (CR 603.7c).
-            objectReferences = if (effect.trigger == null && fireOnPlayerId == null && watchedEntityId != null) {
+            objectReferences = (if (effect.trigger == null && fireOnPlayerId == null && watchedEntityId != null) {
                 context.objectReferences.copy(triggering = state.objectRef(watchedEntityId))
-            } else context.objectReferences,
+            } else context.objectReferences).let { refs ->
+                if (bound.isEmpty()) refs else refs.copy(bound = (refs.bound + bound).distinctBy { it.entityId })
+            },
             sourceName = sourceName,
             controllerId = context.controllerId,
             trigger = resolvedTrigger,
@@ -382,6 +389,17 @@ class CreateDelayedTriggerExecutor(
      * references, identity included, so the trigger stops affecting either once it has become a new
      * object (CR 603.7c). A baked id would follow the new object instead.
      */
+    /** Bind [id] to the battlefield object it names now; an id off the battlefield stays unbound. */
+    private fun bind(
+        id: EntityId,
+        state: GameState,
+        bound: MutableList<com.wingedsheep.engine.handlers.CapturedObjectBinding>,
+    ) {
+        if (id in state.getBattlefield() && bound.none { it.entityId == id }) {
+            bound += com.wingedsheep.engine.handlers.CapturedObjectBinding(id, state.objectRef(id))
+        }
+    }
+
     private fun bakedId(target: EffectTarget, context: EffectContext): EntityId? =
         if (target == EffectTarget.Self || target == EffectTarget.IterationEntity) null
         else context.resolveTarget(target)
@@ -428,13 +446,21 @@ class CreateDelayedTriggerExecutor(
      * that won't be resolvable when the delayed trigger fires later; see [bakedId] for the two
      * that stay symbolic.
      */
-    private fun resolveContextTargets(effect: Effect, context: EffectContext, state: GameState): Effect {
+    private fun resolveContextTargets(
+        effect: Effect,
+        context: EffectContext,
+        state: GameState,
+        bound: MutableList<com.wingedsheep.engine.handlers.CapturedObjectBinding>,
+    ): Effect {
         return when (effect) {
             is MoveToZoneEffect -> {
                 val resolvedId = bakedId(effect.target, context)
                 val resolvedController = effect.controllerOverride?.let { co ->
                     context.resolveTarget(co)?.let { EffectTarget.SpecificEntity(it) }
                 }
+                // A move *to* the battlefield returns a card from elsewhere; only a move off the
+                // battlefield acts on the permanent it was bound to.
+                if (resolvedId != null && effect.destination != Zone.BATTLEFIELD) bind(resolvedId, state, bound)
                 effect.copy(
                     target = if (resolvedId != null) EffectTarget.SpecificEntity(resolvedId) else effect.target,
                     controllerOverride = resolvedController ?: effect.controllerOverride
@@ -442,6 +468,13 @@ class CreateDelayedTriggerExecutor(
             }
             is SacrificeTargetEffect -> {
                 val resolvedId = bakedId(effect.target, context)
+                if (resolvedId != null) bind(resolvedId, state, bound)
+                if (resolvedId != null) effect.copy(target = EffectTarget.SpecificEntity(resolvedId)) else effect
+            }
+            // War Barge: "destroy that creature. A creature destroyed this way can't be regenerated."
+            is CantBeRegeneratedEffect -> {
+                val resolvedId = bakedId(effect.target, context)
+                if (resolvedId != null) bind(resolvedId, state, bound)
                 if (resolvedId != null) effect.copy(target = EffectTarget.SpecificEntity(resolvedId)) else effect
             }
             is DestroyAllEquipmentOnTargetEffect -> {
@@ -547,7 +580,7 @@ class CreateDelayedTriggerExecutor(
                 if (target !== effect.target) effect.copy(target = target) else effect
             }
             is CompositeEffect -> effect.copy(
-                effects = effect.effects.map { resolveContextTargets(it, context, state) }
+                effects = effect.effects.map { resolveContextTargets(it, context, state, bound) }
             )
             // "Flip a coin at the beginning of the next end step. If you lose the flip, sacrifice
             // that creature" (Goblin Kites) — the flip happens when the delayed trigger fires, but
@@ -555,17 +588,17 @@ class CreateDelayedTriggerExecutor(
             // effect gets. Without this the branch keeps an unresolvable ContextTarget and does
             // nothing when the trigger resolves.
             is FlipCoinEffect -> effect.copy(
-                wonEffect = effect.wonEffect?.let { resolveContextTargets(it, context, state) },
-                lostEffect = effect.lostEffect?.let { resolveContextTargets(it, context, state) },
+                wonEffect = effect.wonEffect?.let { resolveContextTargets(it, context, state, bound) },
+                lostEffect = effect.lostEffect?.let { resolveContextTargets(it, context, state, bound) },
             )
             // Every gate kind — "you may", "if [condition]", "you may pay … if you do", "[action].
             // If you do", … — is resolved when the delayed trigger fires, but the objects its
             // branches name were chosen now. Bake both branches and any effect the gate itself
             // carries (a MayPay cost, a DoAction action), whatever the gate kind.
             is GatedEffect -> {
-                val gate = resolveGateContextTargets(effect.gate, context, state)
-                val then = resolveContextTargets(effect.then, context, state)
-                val otherwise = effect.otherwise?.let { resolveContextTargets(it, context, state) }
+                val gate = resolveGateContextTargets(effect.gate, context, state, bound)
+                val then = resolveContextTargets(effect.then, context, state, bound)
+                val otherwise = effect.otherwise?.let { resolveContextTargets(it, context, state, bound) }
                 if (gate !== effect.gate || then !== effect.then || otherwise !== effect.otherwise) {
                     effect.copy(gate = gate, then = then, otherwise = otherwise)
                 } else effect
@@ -578,14 +611,19 @@ class CreateDelayedTriggerExecutor(
      * Bake the effects a [Gate] carries. Exhaustive on purpose: a new gate kind that carries an
      * effect must be baked here, and the compiler points at this `when` when one is added.
      */
-    private fun resolveGateContextTargets(gate: Gate, context: EffectContext, state: GameState): Gate =
+    private fun resolveGateContextTargets(
+        gate: Gate,
+        context: EffectContext,
+        state: GameState,
+        bound: MutableList<com.wingedsheep.engine.handlers.CapturedObjectBinding>,
+    ): Gate =
         when (gate) {
             is Gate.MayPay -> {
-                val cost = resolveContextTargets(gate.cost, context, state)
+                val cost = resolveContextTargets(gate.cost, context, state, bound)
                 if (cost !== gate.cost) gate.copy(cost = cost) else gate
             }
             is Gate.DoAction -> {
-                val action = resolveContextTargets(gate.action, context, state)
+                val action = resolveContextTargets(gate.action, context, state, bound)
                 if (action !== gate.action) gate.copy(action = action) else gate
             }
             is Gate.MayDecide,

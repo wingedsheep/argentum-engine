@@ -9361,6 +9361,14 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
     may draw up to two cards at the beginning of the next turn's upkeep" is
     `CreateDelayedTrigger(step = UPKEEP, timing = NEXT_TURN, effect = DrawUpTo(2, TargetController))`,
     scheduled before the `CounterSpell()` so the caster is read off the spell still on the stack.
+  - **Permanents named through this resolution are bound to that object.** A `Destroy` / `Exile` /
+    bounce (`MoveToZone` off the battlefield), `SacrificeTarget` or `CantBeRegenerated` inside
+    `effect` whose target is a chosen target, pipeline slot or triggering entity is baked to its id
+    *with the battlefield identity it has now*; if the permanent leaves and comes back under the
+    same id before the trigger resolves, it is a new object and the instruction does nothing
+    (CR 603.7c / 400.7). `Self` keeps the source's identity the same way. **War Barge**: a
+    passenger flickered before the Barge sinks survives; **Stangg**: a flickered Stangg exiles its
+    old Twin but isn't sacrificed for it.
 - **Event-based delayed triggers** — pass `trigger = <TriggerSpec>` (instead of `step`) and the
   delayed ability fires whenever a matching *event* occurs, staying resident until `expiry`
   (`DelayedTriggerExpiry.EndOfTurn`) removes it. Supported events include `DealsDamageEvent`,

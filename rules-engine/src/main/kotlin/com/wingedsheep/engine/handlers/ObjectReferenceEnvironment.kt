@@ -26,7 +26,20 @@ data class ObjectReferenceEnvironment(
      * trigger the body creates.
      */
     val iteration: CapturedObjectBinding? = null,
+    /**
+     * Battlefield objects a delayed trigger baked into its effect as concrete ids ("destroy that
+     * creature", "sacrifice that token"), each with the identity it had when the trigger was
+     * created. A baked id whose object has since left the battlefield — even one that came back as
+     * a new object under the same id — names nothing (CR 603.7c / 400.7).
+     */
+    val bound: List<CapturedObjectBinding> = emptyList(),
 ) {
+    /** Whether [entityId] was [bound] and is no longer that same object. */
+    fun isBoundLost(entityId: com.wingedsheep.sdk.model.EntityId, state: GameState): Boolean {
+        val binding = bound.firstOrNull { it.entityId == entityId } ?: return false
+        return binding.objectRef?.let { !isCurrent(it, state) } ?: true
+    }
+
     fun followed(reference: ObjectRef): ObjectRef {
         var current = reference
         for (move in permittedMoves) if (move.oldObject == current) current = move.newObject
