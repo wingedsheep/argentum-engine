@@ -10701,6 +10701,85 @@
     ]
 }
 
+// Reincarnation
+{
+    "name": "Reincarnation",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Choose target creature. When that creature dies this turn, return a creature card from its owner's graveyard to the battlefield under the control of that creature's owner.",
+    "script": {
+        "spellEffect": {
+            "type": "CreateDelayedTrigger",
+            "effect": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Graveyard",
+                            "player": "OwnerOfTriggeringEntity",
+                            "filter": "creature"
+                        },
+                        "storeAs": "gathered0"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "gathered0",
+                        "selection": {
+                            "type": "ChooseExactly",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "storeSelected": "selected1",
+                        "prompt": "Choose a creature card to return to the battlefield"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "selected1",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Battlefield"
+                        },
+                        "underOwnersControl": true
+                    }
+                ]
+            },
+            "trigger": {
+                "event": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                }
+            },
+            "watchedTarget": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "rarity": "UNCOMMON",
+        "artist": "Edward P. Beard, Jr.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/969c104e-daf4-480d-99a2-dd93c498b48e.jpg?1783948045"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Relic Barrier
 {
     "name": "Relic Barrier",
