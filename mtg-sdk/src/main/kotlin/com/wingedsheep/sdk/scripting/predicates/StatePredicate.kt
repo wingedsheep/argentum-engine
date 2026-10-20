@@ -54,8 +54,8 @@ sealed interface StatePredicate {
      *
      * Neither neighbour takes this axis: [HasManaAbility] also counts triggered mana abilities and
      * answers only yes/no, and `CardPredicate.HasActivatedAbility` / `HasNonManaActivatedAbility`
-     * are precomputed printed-only flags (zone-scoped for craft and Tsabo's Web, and readable without
-     * a game for companion checks), blind to granted and removed abilities.
+     * are precomputed printed-only flags (readable without a game, as companion checks need), blind
+     * to keyword, granted and removed abilities.
      */
     @SerialName("HasActivatedAbilities")
     @Serializable

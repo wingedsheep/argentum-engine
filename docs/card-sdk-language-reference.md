@@ -6888,6 +6888,8 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   land types can grant intrinsic mana abilities even to face-down permanents. Requires the
   registry-backed engine evaluator; registry-free layer filters and historical snapshots
   fail closed, so use this predicate for live targeting, gathering, and resolution queries.
+  Power Sink composes a payer-rebinding player loop and optional payment gate; its decline
+  branch counters, taps `Land.withManaAbility()`, and loses the payer's unspent mana.
 - `.withActivatedAbilities(atLeast = 1, excludeManaAbilities = false)` —
   `StatePredicate.HasActivatedAbilities`: the object currently has at least `atLeast` activated
   abilities, counted in any zone — printed and copied, class `Level N` lines, unlocked Room doors,
@@ -6899,8 +6901,6 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   hand" — Tazri, Stalwart Survivor). Registry-backed like `.withManaAbility()`: fails closed in
   registry-free layer filters. Unlike the printed-only `CardPredicate.HasActivatedAbility` /
   `HasNonManaActivatedAbility` flags, it sees granted and removed abilities.
-  Power Sink composes a payer-rebinding player loop and optional payment gate; its decline
-  branch counters, taps `Land.withManaAbility()`, and loses the payer's unspent mana.
 - `.faceDown()` — face-down state.
 - `.commander()` — `StatePredicate.IsCommander`: the object **is a commander**, any player's (CR 903.3). The designation is an attribute of the card, not a characteristic: it follows the card across zones and stays on a face-down commander, and a copy (token or Clone) is never one. Compose with a zone: "you control a commander" is a battlefield permanent (CR 903.3d) — `Conditions.YouControlACommander`.
 - `.transformed()` — a **transformed permanent** (CR 701.27g): back face up on the battlefield. "Each transformed permanent you control" (Mutagen Connoisseur), "other transformed permanents you control have …" (Gargantuan Slabhorn). Not `Filters.DoubleFaced` — that is the *card*, true in every zone and of a front-face werewolf too.

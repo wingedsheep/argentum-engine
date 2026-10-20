@@ -105,7 +105,7 @@ class HasActivatedAbilitiesPredicateTest : ScenarioTestBase() {
             g.has(g.findPermanent(pinger.name)!!, atLeast = 2) shouldBe true
         }
 
-        test("losing all abilities drops the printed ones but not a grant from another permanent") {
+        test("losing all abilities drops the printed ones; a static grant is still counted, as the enumerator offers it") {
             val g = board(granter.name, pinger.name)
             val p = g.findPermanent(pinger.name)!!
             val result = services.effectExecutorRegistry.execute(

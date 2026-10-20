@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.CycleCard
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
@@ -71,6 +72,20 @@ class TazriStalwartSurvivorScenarioTest : ScenarioTestBase() {
                 ActivateAbility(g.player1Id, dragon, firebreathing, paymentStrategy = PaymentStrategy.FromPool)
             ).error shouldBe null
             g.pool().restrictedMana.size shouldBe 0
+        }
+
+        test("the mana can't pay a creature card's cycling from hand") {
+            val g = board("Disciple of Grace", "Shivan Dragon")
+                .withCardInHand(1, "Disciple of Grace")
+                .build()
+            g.execute(ActivateAbility(g.player1Id, g.findPermanent("Disciple of Grace")!!, grantedManaId, manaColorChoice = Color.WHITE)).error shouldBe null
+            g.execute(ActivateAbility(g.player1Id, g.findPermanent("Shivan Dragon")!!, grantedManaId, manaColorChoice = Color.RED)).error shouldBe null
+            g.pool().restrictedMana.size shouldBe 2
+
+            val inHand = g.findCardsInHand(1, "Disciple of Grace").single()
+            g.execute(CycleCard(g.player1Id, inHand, paymentStrategy = PaymentStrategy.FromPool)).error shouldNotBe null
+            g.isInHand(1, "Disciple of Grace") shouldBe true
+            g.pool().restrictedMana.size shouldBe 2
         }
 
         test("mills five and returns only creature cards with non-mana activated abilities") {

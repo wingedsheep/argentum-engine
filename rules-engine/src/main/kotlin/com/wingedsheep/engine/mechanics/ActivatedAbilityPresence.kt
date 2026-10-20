@@ -29,7 +29,7 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
  * Room doors, the activated keyword abilities the engine keeps outside `activatedAbilities` —
  * cycling, crew, saddle — and the intrinsic mana ability of each basic land type, CR 305.6) unless
  * it is face down or has lost all abilities; plus every ability granted to it by an effect, a
- * static ability or an emblem, which survive both.
+ * static ability or an emblem, counted exactly as the activated-ability enumerator offers them.
  */
 object ActivatedAbilityPresence {
     fun count(
