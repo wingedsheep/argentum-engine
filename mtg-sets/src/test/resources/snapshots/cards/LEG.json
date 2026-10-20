@@ -1,3 +1,69 @@
+// Abomination
+{
+    "name": "Abomination",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Horror",
+    "oracleText": "Whenever this creature blocks or becomes blocked by a green or white creature, destroy that creature at end of combat.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Abomination:1",
+                "trigger": {
+                    "type": "BlocksOrBecomesBlockedByEvent",
+                    "partnerFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "HasColor",
+                                        "color": "GREEN"
+                                    },
+                                    {
+                                        "type": "HasColor",
+                                        "color": "WHITE"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END_COMBAT",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": "TriggeringEntity",
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    }
+                },
+                "descriptionOverride": "Whenever this creature blocks or becomes blocked by a green or white creature, destroy that creature at end of combat."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Tedin",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a69e2cf8-5ecb-485a-92a2-b4e0a7959f1f.jpg?1783948069",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "The color of the blocking/blocked creature is checked only at declaration of the block. If the creature is green or white at that time, it will be destroyed at end of combat even if it changes color before combat ends."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Acid Rain
 {
     "name": "Acid Rain",
@@ -384,6 +450,156 @@
         "artist": "Jesper Myrfors",
         "imageUri": "https://cards.scryfall.io/normal/front/f/4/f4395b19-2118-4a09-8932-f9ce9bc54d6d.jpg?1783948029"
     }
+}
+
+// All Hallow's Eve
+{
+    "name": "All Hallow's Eve",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile All Hallow's Eve with two scream counters on it.\nAt the beginning of your upkeep, if this card is exiled with a scream counter on it, remove a scream counter from it. If there are no more scream counters on it, put it into your graveyard and each player returns all creature cards from their graveyard to the battlefield.",
+    "script": {
+        "spellEffect": {
+            "type": "MarkSpellExileWithCounters",
+            "target": "Self",
+            "counterType": "SCREAM",
+            "count": 2
+        },
+        "triggeredAbilities": [
+            {
+                "id": "All Hallow's Eve:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RemoveCounters",
+                            "counterType": "SCREAM",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Not",
+                                    "condition": {
+                                        "type": "EntityMatches",
+                                        "entity": "Self",
+                                        "filter": {
+                                            "statePredicates": [
+                                                {
+                                                    "type": "HasCounter",
+                                                    "counterType": "SCREAM"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "MoveToZone",
+                                        "target": "Self",
+                                        "destination": "Graveyard",
+                                        "fromZone": "Exile"
+                                    },
+                                    {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "FromZone",
+                                                    "zone": "Graveyard",
+                                                    "player": "Each",
+                                                    "filter": "creature"
+                                                },
+                                                "storeAs": "gathered0"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "gathered0",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Battlefield"
+                                                },
+                                                "underOwnersControl": true
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "activeZones": [
+                    "Exile"
+                ],
+                "interveningIf": {
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "SourceInZone",
+                            "zones": [
+                                "Exile"
+                            ]
+                        },
+                        {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "SCREAM"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, if this card is exiled with a scream counter on it, remove a scream counter from it. If there are no more scream counters on it, put it into your graveyard and each player returns all creature cards from their graveyard to the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "RARE",
+        "artist": "Christopher Rush",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/18787a2d-6688-47e9-94bc-ccf229df823f.jpg?1783948069",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "The only thing that happens when All Hallow's Eve resolves is that it's exiled with two scream counters on it."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "All Hallow's Eve's triggered ability functions from the exile zone. This ability has an \"intervening 'if' clause.\" It won't trigger at all unless All Hallow's Eve is exiled and has a scream counter on it (which can happen only if it resolves as a spell)."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "Each creature returned to the battlefield by All Hallow's Eve enters under its owner's control."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Since you can respond to triggered abilities, it is legal to sacrifice creatures using some spell or ability prior to resolving the ability that removes the final counter from All Hallow's Eve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Amrou Kithkin
@@ -807,6 +1023,44 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Blight
+{
+    "name": "Blight",
+    "manaCost": "{B}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant land\nWhen enchanted land becomes tapped, destroy it.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Blight:1",
+                "trigger": "TapEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "TriggeringEntity",
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "rarity": "UNCOMMON",
+        "artist": "Pete Venters",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9ca19b39-4201-463c-bd40-fbffa31c9eda.jpg?1783948069"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -1382,6 +1636,89 @@
     ]
 }
 
+// Cosmic Horror
+{
+    "name": "Cosmic Horror",
+    "manaCost": "{3}{B}{B}{B}",
+    "typeLine": "Creature — Horror",
+    "oracleText": "First strike\nAt the beginning of your upkeep, destroy this creature unless you pay {3}{B}{B}{B}. If this creature is destroyed this way, it deals 7 damage to you.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cosmic Horror:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{3}{B}{B}{B}"
+                        }
+                    },
+                    "suffer": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": "Self",
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Destroy",
+                                "storeMovedAs": "moved1"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "moved1",
+                                "ifNotEmpty": {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 7
+                                    },
+                                    "target": {
+                                        "type": "PlayerRef",
+                                        "player": "You"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "consequenceDescription": "destroy Cosmic Horror; if it's destroyed this way, it deals 7 damage to you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "RARE",
+        "artist": "Jesper Myrfors",
+        "flavorText": "\"Then flashed the living lightning from her eyes,/ And screams of horror rend th' affrighted skies.\" —Alexander Pope, *The Rape of the Lock*",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/18bc6ac2-19e0-4765-852b-e303a5bb4040.jpg?1783948068"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Craw Giant
 {
     "name": "Craw Giant",
@@ -1737,6 +2074,54 @@
     ]
 }
 
+// Demonic Torment
+{
+    "name": "Demonic Torment",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature can't attack.\nPrevent all combat damage that would be dealt by enchanted creature.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "source": {
+                        "statePredicates": [
+                            "IsAttachedToBySource"
+                        ]
+                    },
+                    "damageType": "DamageCombat"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "rarity": "UNCOMMON",
+        "artist": "Anson Maddocks",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/3/d3ec14bc-95e9-47ce-b51e-d5eac9b345fe.jpg?1783948067"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Devouring Deep
 {
     "name": "Devouring Deep",
@@ -2081,6 +2466,59 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Evil Eye of Orms-by-Gore
+{
+    "name": "Evil Eye of Orms-by-Gore",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Eye",
+    "oracleText": "Non-Eye creatures you control can't attack.\nThis creature can't be blocked except by Walls.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 6
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Eye"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            },
+            {
+                "type": "CantBeBlockedExceptBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasSubtype",
+                            "subtype": "Wall"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Myrfors",
+        "flavorText": "\"The highway of fear is the shortest route to defeat.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b060f747-f65c-4ee0-923a-76298cb51a03.jpg?1783948067"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -2823,6 +3261,95 @@
         "artist": "Edward P. Beard, Jr.",
         "flavorText": "The voices of the dead ring in the heart long after they have faded from the ears.",
         "imageUri": "https://cards.scryfall.io/normal/front/2/0/20275678-3488-43d8-a93b-993e2267ab07.jpg?1783948067"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Giant Slug
+{
+    "name": "Giant Slug",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Slug",
+    "oracleText": "{5}: At the beginning of your next upkeep, choose a basic land type. This creature gains landwalk of the chosen type until the end of that turn. (It can't be blocked as long as defending player controls a land of that type.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Giant Slug:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}"
+                    }
+                },
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "step": "UPKEEP",
+                    "effect": {
+                        "type": "ChooseAction",
+                        "choices": [
+                            {
+                                "label": "Plains",
+                                "effect": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "PLAINSWALK",
+                                    "target": "Self"
+                                }
+                            },
+                            {
+                                "label": "Island",
+                                "effect": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "ISLANDWALK",
+                                    "target": "Self"
+                                }
+                            },
+                            {
+                                "label": "Swamp",
+                                "effect": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "SWAMPWALK",
+                                    "target": "Self"
+                                }
+                            },
+                            {
+                                "label": "Mountain",
+                                "effect": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "MOUNTAINWALK",
+                                    "target": "Self"
+                                }
+                            },
+                            {
+                                "label": "Forest",
+                                "effect": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "FORESTWALK",
+                                    "target": "Self"
+                                }
+                            }
+                        ]
+                    },
+                    "timing": "NextTurn",
+                    "fireOnPlayer": {
+                        "type": "PlayerRef",
+                        "player": "You"
+                    }
+                },
+                "descriptionOverride": "{5}: At the beginning of your next upkeep, choose a basic land type. This creature gains landwalk of the chosen type until the end of that turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "artist": "Anson Maddocks",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/43a612e5-a680-4c5b-8ce7-432a86240a6c.jpg?1783948066"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -3648,6 +4175,104 @@
     ]
 }
 
+// Hellfire
+{
+    "name": "Hellfire",
+    "manaCost": "{2}{B}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy all nonblack creatures. Hellfire deals X plus 3 damage to you, where X is the number of creatures that died this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "NotColor",
+                                            "color": "BLACK"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy",
+                            "storeMovedAs": "stored0"
+                        }
+                    ]
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "stored0",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "InZone",
+                                "zone": "Graveyard"
+                            }
+                        ]
+                    },
+                    "storeMatching": "matching1"
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Add",
+                        "left": {
+                            "type": "VariableReference",
+                            "variableName": "matching1_count"
+                        },
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    "target": "Controller"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "rarity": "RARE",
+        "artist": "Pete Venters",
+        "flavorText": "\"High on a throne of royal state . . . insatiate to pursue vain war with heav'n.\" —John Milton, *Paradise Lost*",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/362f1fe9-20af-434c-9957-7a1a564d89e6.jpg?1783948065",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "Hellfire checks the number of creatures put into graveyards as the result of its effect, not the number of creatures destroyed as a result of its effect. For example, a replacement effect that says \"If a creature would be put into a graveyard from the battlefield, exile it instead\" won't affect whether a creature is destroyed or not, but will affect whether it's put into a graveyard or not."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "A creature that regenerates instead of being destroyed doesn't leave the battlefield, so it's not put into a graveyard."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "A token creature that's destroyed is put into its owner's graveyard, and will be counted by Hellfire's effect. (Immediately after Hellfire finishes resolving, the token will cease to exist.)"
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Holy Day
 {
     "name": "Holy Day",
@@ -4108,6 +4733,79 @@
     ]
 }
 
+// Infernal Medusa
+{
+    "name": "Infernal Medusa",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Gorgon",
+    "oracleText": "Whenever this creature blocks a creature, destroy that creature at end of combat.\nWhenever this creature becomes blocked by a non-Wall creature, destroy that creature at end of combat.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Infernal Medusa:1",
+                "trigger": {
+                    "type": "BlockEvent",
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END_COMBAT",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": "TriggeringEntity",
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    }
+                },
+                "descriptionOverride": "Whenever this creature blocks a creature, destroy that creature at end of combat."
+            },
+            {
+                "id": "Infernal Medusa:2",
+                "trigger": {
+                    "type": "BecomesBlockedEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Wall"
+                            }
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END_COMBAT",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": "TriggeringEntity",
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    }
+                },
+                "descriptionOverride": "Whenever this creature becomes blocked by a non-Wall creature, destroy that creature at end of combat."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "rarity": "UNCOMMON",
+        "artist": "Anson Maddocks",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/6/26a5333f-2761-42b8-ae8b-1d360b109daf.jpg?1783948064"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Jacques le Vert
 {
     "name": "Jacques le Vert",
@@ -4272,6 +4970,48 @@
         "artist": "Mark Tedin",
         "imageUri": "https://cards.scryfall.io/normal/front/b/8/b851d5b4-7991-49d4-8a52-bf233f960cbf.jpg?1783948038"
     }
+}
+
+// Jovial Evil
+{
+    "name": "Jovial Evil",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Jovial Evil deals X damage to target opponent, where X is twice the number of white creatures that player controls.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Multiply",
+                "amount": {
+                    "type": "AggregateBattlefield",
+                    "player": "TargetOpponent",
+                    "filter": "creature white"
+                },
+                "multiplier": 2
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "RARE",
+        "artist": "Christopher Rush",
+        "flavorText": "\"Today, for a lark, let's visit the plains. I'm sure we'll find something to entertain us.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c993c74c-a574-423b-81c8-96b0a7a6e529.jpg?1783948064"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Karakas
@@ -5043,6 +5783,106 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Lesser Werewolf
+{
+    "name": "Lesser Werewolf",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Werewolf",
+    "oracleText": "{B}: If this creature's power is 1 or more, it gets -1/-0 until end of turn and put a -0/-1 counter on target creature blocking or blocked by this creature. Activate only during the declare blockers step.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Lesser Werewolf:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": -1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": "Self"
+                            },
+                            {
+                                "type": "AddCounters",
+                                "counterType": "MINUS_ZERO_MINUS_ONE",
+                                "count": 1,
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "IsCombatPairedWithSource"
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    {
+                        "type": "DuringStep",
+                        "step": "DECLARE_BLOCKERS"
+                    }
+                ],
+                "descriptionOverride": "If Lesser Werewolf's power is 1 or more, it gets -1/-0 until end of turn and put a -0/-1 counter on target creature blocking or blocked by it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "rarity": "UNCOMMON",
+        "artist": "Quinton Hoover",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/baae02e4-7db9-4a7b-a4ee-ecb22fcb77bd.jpg?1783948064"
+    }
 }
 
 // Life Chisel
@@ -6024,6 +6864,50 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Pit Scorpion
+{
+    "name": "Pit Scorpion",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Scorpion",
+    "oracleText": "Whenever this creature deals damage to a player, that player gets a poison counter. (A player with ten or more poison counters loses the game.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pit Scorpion:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "POISON",
+                    "count": 1,
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "artist": "Scott Kirschner",
+        "flavorText": "Sometimes the smallest nuisance can be the greatest pain.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc564f84-0d6e-4e09-a58d-a694d918cf12.jpg?1783948064"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -8499,6 +9383,65 @@
         "artist": "Nicola Leonard",
         "imageUri": "https://cards.scryfall.io/normal/front/6/4/64bc9b1d-5818-4d9e-b771-e49af4ff9a5c.jpg?1783948022"
     }
+}
+
+// The Wretched
+{
+    "name": "The Wretched",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "At end of combat, gain control of all creatures blocking this creature for as long as you control this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "The Wretched:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END_COMBAT",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "IsBlockingSource"
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "GainControl",
+                        "target": "IterationEntity",
+                        "duration": {
+                            "type": "WhileYouControlSource",
+                            "sourceDescription": "The Wretched"
+                        }
+                    }
+                },
+                "descriptionOverride": "At end of combat, gain control of all creatures blocking this creature for as long as you control this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "RARE",
+        "artist": "Christopher Rush",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/14c45416-a826-42e9-9967-8838158cf16d.jpg?1783948062"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Thunder Spirit
