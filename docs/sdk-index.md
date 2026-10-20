@@ -1217,7 +1217,7 @@ Families:
 - `EventPattern.ForagedEvent(player: Player)` — Whenever player forages — CR 701.59a, "Exile three cards from your graveyard or sacrifice a Food." The sibling of EvidenceCollectedEvent in every respect that matters, and modelled on it deliberately.
 - `EventPattern.GiftGivenEvent(player: Player)` — When a player gives a gift (Bloomburrow gift mechanic).
 - `EventPattern.InvestigatedEvent(player: Player, firstTimeEachTurn: Boolean)` — Whenever player investigates — CR 701.16a, "create a Clue token".
-- `EventPattern.LandPlayedEvent(fromZoneOtherThan: Zone?, player: Player)` — Whenever player plays a land (CR 305.1 — the special land-play action).
+- `EventPattern.LandPlayedEvent(fromZoneOtherThan: Zone?, player: Player, fromZone: Zone?)` — Whenever player plays a land (CR 305.1 — the special land-play action).
 - `EventPattern.LandTappedForMana(player: Player, landFilter: GameObjectFilter?)` — When a player taps a land for mana (a land's mana ability resolves).
 - `EventPattern.LeaveBattlefieldWithoutDyingEvent(filter: GameObjectFilter, excludeSelf: Boolean)` — Whenever one or more creatures you control leave the battlefield without dying.
 - `EventPattern.LifeGainEvent(player: Player, firstTimeEachTurn: Boolean)` — When a player would gain life.

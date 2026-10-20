@@ -8449,6 +8449,12 @@ caster with `EffectTarget.PlayerRef(Player.TriggeringPlayer)`.
   spell from a non-hand zone", use two triggered abilities — this one plus
   `Triggers.you.casts(spell, requires)`.
 
+- `Triggers.you.playsLandFrom(zone)` / `Triggers.anyPlayer.playsLandFrom(zone)` — "whenever you / a player
+  play(s) a land **from** `zone`" (`LandPlayedEvent.fromZone`, mutually exclusive with `fromZoneOtherThan`).
+  `playsLandFrom(Zone.EXILE)` is the land half of "whenever you play a land from exile or cast a spell from
+  exile" (**Pia Nalaar, Consul of Revival**; **Rocco, Street Chef** with `anyPlayer`); the spell half is a
+  second triggered ability on `Triggers.you.casts(requires = setOf(SpellCastPredicate.CastFromZone(Zone.EXILE)))`.
+
 - `Triggers.anyPlayer.playsLand(fromZoneOtherThan)` — "whenever **a player** plays a land"
   (Cemetery Gatekeeper). The any-player scope of `Triggers.you.playsLand(fromZoneOtherThan)`, and the land-play counterpart of
   `Triggers.anyPlayer.casts()`: `EventPattern.LandPlayedEvent.player` reads the same `Player` vocabulary

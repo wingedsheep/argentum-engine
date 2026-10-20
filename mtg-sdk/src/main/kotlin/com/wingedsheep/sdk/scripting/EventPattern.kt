@@ -1178,10 +1178,12 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
-     * Whenever [player] plays a land (CR 305.1 — the special land-play action). [fromZoneOtherThan],
-     * when set, restricts to lands *played* from a zone other than that one: "whenever you play a
-     * land … from anywhere other than your hand" (Shadow of the Goblin) is
-     * `fromZoneOtherThan = Zone.HAND`.
+     * Whenever [player] plays a land (CR 305.1 — the special land-play action). [fromZone], when
+     * set, restricts to lands *played* from that zone: "whenever you play a land from exile" (Pia
+     * Nalaar, Consul of Revival) is `fromZone = Zone.EXILE`. [fromZoneOtherThan] is its complement —
+     * "whenever you play a land … from anywhere other than your hand" (Shadow of the Goblin) is
+     * `fromZoneOtherThan = Zone.HAND`. The two are mutually exclusive, mirroring
+     * [com.wingedsheep.sdk.scripting.conditions.PlayerPlayedLandThisTurn].
      *
      * [player] reads the same vocabulary as [SpellCastEvent.player], which is what lets the two sit
      * side by side under an [AnyOf] for "whenever a player plays a land or casts a spell" (the
@@ -1196,10 +1198,18 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     @Serializable
     data class LandPlayedEvent(
         val fromZoneOtherThan: Zone? = null,
-        val player: Player = Player.You
+        val player: Player = Player.You,
+        val fromZone: Zone? = null
     ) : EventPattern {
+        init {
+            require(fromZone == null || fromZoneOtherThan == null) {
+                "LandPlayedEvent: fromZone and fromZoneOtherThan are mutually exclusive"
+            }
+        }
+
         override val description: String = buildString {
             append(if (player == Player.You) "you play a land" else "a player plays a land")
+            if (fromZone != null) append(" from ${if (fromZone == Zone.EXILE) "exile" else "your ${fromZone.name.lowercase()}"}")
             if (fromZoneOtherThan != null) {
                 append(" from anywhere other than your ${fromZoneOtherThan.name.lowercase()}")
             }

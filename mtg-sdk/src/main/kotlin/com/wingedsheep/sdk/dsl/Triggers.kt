@@ -1025,11 +1025,15 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
     fun cycles(): TriggerSpec = spec(CycleEvent(player))
 
     /**
-     * "plays a land [from a zone other than [fromZoneOtherThan]]" (CR 305.1) — the land-play action,
+     * "plays a land [from anywhere other than [fromZoneOtherThan]]" (CR 305.1) — the land-play action,
      * not a land an effect puts onto the battlefield.
      */
     fun playsLand(fromZoneOtherThan: Zone? = null): TriggerSpec =
         spec(LandPlayedEvent(fromZoneOtherThan = fromZoneOtherThan, player = player))
+
+    /** "plays a land from [zone]" — e.g. `playsLandFrom(Zone.EXILE)` for "plays a land from exile". */
+    fun playsLandFrom(zone: Zone): TriggerSpec =
+        spec(LandPlayedEvent(fromZone = zone, player = player))
 
     /** "is turned face up" for "a [filter] you control" — matched on its face-up characteristics (Perimeter Enforcer). */
     fun permanentTurnedFaceUp(filter: GameObjectFilter = GameObjectFilter.Any): TriggerSpec =

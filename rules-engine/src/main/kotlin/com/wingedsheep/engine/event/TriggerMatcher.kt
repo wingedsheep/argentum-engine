@@ -176,11 +176,12 @@ class TriggerMatcher(
                 // "Whenever you play a land …" (Shadow of the Goblin) / "whenever a player plays a
                 // land …" (Cemetery Gatekeeper). ANY-binding player trigger scoped by `player`,
                 // reading the same vocabulary as the SpellCastEvent branch above so the two compose
-                // under an AnyOf. `fromZoneOtherThan` excludes lands played from that zone (Shadow:
-                // not from hand).
+                // under an AnyOf. `fromZone` requires lands played from that zone (Pia Nalaar: from
+                // exile); `fromZoneOtherThan` excludes lands played from that zone (Shadow: not from hand).
                 if (event !is com.wingedsheep.engine.core.LandPlayedEvent) return false
                 if (!matchesPlayer(state, trigger.player, event.controllerId, controllerId)) return false
-                trigger.fromZoneOtherThan == null || event.fromZone != trigger.fromZoneOtherThan
+                (trigger.fromZone == null || event.fromZone == trigger.fromZone) &&
+                    (trigger.fromZoneOtherThan == null || event.fromZone != trigger.fromZoneOtherThan)
             }
             is EventPattern.CreaturesAttackYouEvent ->
                 attackersAgainstYou(trigger, event, controllerId, state).size >= trigger.minAttackers
