@@ -86,6 +86,13 @@ data class TriggerContext(
     val causeControllerId: EntityId? = null,
     /** The object that dealt the triggering damage (`EffectTarget.DamageSource`); null outside damage triggers. */
     val damageSourceId: EntityId? = null,
+    /**
+     * The damage source's controller at the instant the triggering damage was dealt (CR 603.10),
+     * read off the event's `sourceLastKnown`. "That creature's controller" (Backfire) still names
+     * a player once the source has left the battlefield before resolution — a token that died to
+     * the same combat damage has ceased to exist by then. Null when the event carries no snapshot.
+     */
+    val damageSourceControllerId: EntityId? = null,
     /** Last known power when the triggering entity left the battlefield (for dies/leaves triggers) */
     val lastKnownPower: Int? = null,
     /** Last known toughness when the triggering entity left the battlefield (for dies/leaves triggers) */
@@ -372,6 +379,7 @@ data class TriggerContext(
                 is DamageDealtEvent -> TriggerContext(
                     triggeringEntityId = event.targetId,
                     damageSourceId = event.sourceId,
+                    damageSourceControllerId = event.sourceLastKnown?.controllerId,
                     triggeringPlayerId = event.targetLastKnown?.controllerId,
                     damageAmount = event.amount,
                     excessDamageAmount = event.excessAmount.takeIf { it > 0 },

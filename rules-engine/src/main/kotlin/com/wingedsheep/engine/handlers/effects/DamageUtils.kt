@@ -678,6 +678,9 @@ object DamageUtils {
                 targetToughnessAtDamage = targetToughnessAtDamage,
                 sourceTargetIdsAtDamage = sourceTargetIds,
                 sourceAttachmentIds = attachmentIdsOf(state, sourceId),
+                sourceLastKnown = sourceId
+                    ?.takeIf { targetIsPlayer && state.getEntity(it) != null }
+                    ?.let { captureLastKnown(state, it) },
             )
         )
         // A redirected excess (Gandalf's Sanction) never reaches the creature, so it wasn't dealt excess damage.

@@ -5320,8 +5320,12 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   the Equipment moved or left in response — unlike `EquippedCreature`, which re-reads the attachment at
   resolution. Read live (a departed source makes the effect a no-op). Ogre-Head Helm: "whenever
   equipped creature deals combat damage to a player, you may sacrifice it" is
-  `Effects.SacrificeTarget(EffectTarget.DamageSource)`. The trigger-side sibling of
-  `ControllerOfDamageSource` (the damage-replacement reading).
+  `Effects.SacrificeTarget(EffectTarget.DamageSource)`.
+- `EffectTarget.ControllerOfDamageSource` — "that creature's controller" in a deals-damage trigger:
+  the damage source's current controller while it is on the battlefield, else its controller when it
+  dealt the damage (CR 608.2h; a token that died to the same combat damage still names a player).
+  Backfire: `Effects.DealDamage(DynamicAmounts.triggerDamageAmount(), EffectTarget.ControllerOfDamageSource)`.
+  Inside a damage replacement it is the in-flight source's controller instead (`RedirectDamage`, below).
 - `EffectTarget.TargetController` — the controller of the spell/ability's first chosen target
   ("its controller creates two Map tokens", "its controller gains 4 life"). Control-change effects
   are honored (projected controller first), and a target that has already left the battlefield —

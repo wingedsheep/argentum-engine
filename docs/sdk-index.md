@@ -1100,7 +1100,7 @@ Families:
 - `EffectTarget.ChosenCreature` — CHOSEN CREATURE: Refers to the creature chosen when this permanent entered the battlefield.
 - `EffectTarget.ContextTarget(index: Int)` — TARGET BINDING: Refers to a specific target selection from the declaration phase.
 - `EffectTarget.Controller` — The controller of the source ability
-- `EffectTarget.ControllerOfDamageSource` — CONTROLLER OF DAMAGE SOURCE: the controller of the source dealing the damage currently being processed.
+- `EffectTarget.ControllerOfDamageSource` — CONTROLLER OF DAMAGE SOURCE: the controller of the source dealing the damage.
 - `EffectTarget.ControllerOfPipelineTarget(collectionName: String, index: Int)` — CONTROLLER OF PIPELINE TARGET: Refers to the controller of an entity stored in a pipeline collection.
 - `EffectTarget.ControllerOfTriggeringEntity` — CONTROLLER OF TRIGGERING ENTITY: Refers to the controller/owner of the entity that caused the trigger to fire.
 - `EffectTarget.DamageSource` — DAMAGE SOURCE: the object that dealt the damage of a deals-damage trigger — "it" in "whenever equipped creature deals combat damage to a player, you may sacrifice it" (Ogre-Head Helm).

@@ -1123,6 +1123,53 @@
     }
 }
 
+// Backfire
+{
+    "name": "Backfire",
+    "manaCost": "{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhenever enchanted creature deals damage to you, this Aura deals that much damage to that creature's controller.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Backfire:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "You"
+                    }
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "target": "ControllerOfDamageSource"
+                },
+                "descriptionOverride": "Whenever enchanted creature deals damage to you, this Aura deals that much damage to that creature's controller."
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "UNCOMMON",
+        "artist": "Brian Snõddy",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/04bc57aa-d4d9-4bd9-ba09-984370c7e23b.jpg?1783948078"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Barbary Apes
 {
     "name": "Barbary Apes",

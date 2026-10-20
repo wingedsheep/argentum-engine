@@ -143,11 +143,12 @@ object TargetResolutionUtils {
         // single entity and goes through [resolvePlayerTargets].
         is EffectTarget.PlayerRef -> state?.let { resolvePlayerRef(target.player, context, it) }
         // Sets of objects name no single entity: the group resolvers handle them.
-        // ControllerOfDamageSource is resolved by the damage pipeline from the damage in flight.
+        // Inside a damage replacement ControllerOfDamageSource is resolved by the damage pipeline
+        // from the damage in flight; inside a damage trigger it is the source's controller.
+        EffectTarget.ControllerOfDamageSource -> state?.let { damageSourceController(context, it) }
         is EffectTarget.GroupRef,
         is EffectTarget.FilteredTarget,
-        EffectTarget.EachDamagedBySourceThisGame,
-        EffectTarget.ControllerOfDamageSource -> null
+        EffectTarget.EachDamagedBySourceThisGame -> null
     }
 
     /**
@@ -208,6 +209,18 @@ object TargetResolutionUtils {
         // and Assimilation Aegis want.
         val attachmentId = context.triggeringEntityId ?: return null
         return state.getEntity(attachmentId)?.get<AttachedToComponent>()?.targetId
+    }
+
+    /**
+     * "That creature's controller" in a deals-damage trigger: the source's controller now if it is
+     * still on the battlefield, else its controller when it dealt the damage (CR 608.2h) — a token
+     * that died to the same combat damage no longer exists to be asked.
+     */
+    private fun damageSourceController(context: EffectContext, state: GameState): EntityId? {
+        val trigger = context.triggerContext ?: return null
+        val sourceId = trigger.damageSourceId ?: return null
+        if (sourceId in state.getBattlefield()) state.projectedState.getController(sourceId)?.let { return it }
+        return trigger.damageSourceControllerId ?: controllerOf(state, sourceId)
     }
 
     private fun controllerOfTriggeringEntity(context: EffectContext, state: GameState): EntityId? {
@@ -552,7 +565,9 @@ object TargetResolutionUtils {
         // trigger (Gonti, Night Minister: the creature that dealt the combat damage). The entity
         // resolver already walks projected controller → base controller → ability source →
         // last-known controller → owner, so this delegates rather than duplicating that ladder.
-        if (effectTarget is EffectTarget.ControllerOfTriggeringEntity) {
+        // "That creature's controller" in a damage trigger delegates the same way.
+        if (effectTarget is EffectTarget.ControllerOfTriggeringEntity ||
+            effectTarget is EffectTarget.ControllerOfDamageSource) {
             return resolveTarget(effectTarget, context, state)
         }
 

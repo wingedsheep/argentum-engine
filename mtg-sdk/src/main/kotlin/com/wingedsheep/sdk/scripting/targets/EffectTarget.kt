@@ -328,8 +328,8 @@ sealed interface EffectTarget {
      * Unlike [EquippedCreature]/[EnchantedCreature], which re-read the attachment at resolution,
      * this is fixed when the trigger fires, so it still names the creature that dealt the damage
      * after the Equipment moved or left in response. Read live: once that creature has left the
-     * battlefield, an effect on it does nothing. The trigger-side sibling of
-     * [ControllerOfDamageSource], which is the damage-replacement reading.
+     * battlefield, an effect on it does nothing. Its controller ("that creature's controller")
+     * is [ControllerOfDamageSource], which keeps last-known information.
      */
     @SerialName("DamageSource")
     @Serializable
@@ -550,13 +550,17 @@ sealed interface EffectTarget {
     }
 
     /**
-     * CONTROLLER OF DAMAGE SOURCE: the controller of the source dealing the damage
-     * currently being processed. Only meaningful inside a damage replacement
-     * (e.g. [com.wingedsheep.sdk.scripting.RedirectDamage]); resolved by the damage
-     * pipeline from the source of the in-flight damage.
+     * CONTROLLER OF DAMAGE SOURCE: the controller of the source dealing the damage.
+     * Inside a damage replacement (e.g. [com.wingedsheep.sdk.scripting.RedirectDamage]) it is
+     * resolved by the damage pipeline from the source of the in-flight damage — Harsh Judgment
+     * ("If an instant or sorcery spell of the chosen color would deal damage to you, it deals
+     * that damage to its controller instead").
      *
-     * Used by Harsh Judgment ("If an instant or sorcery spell of the chosen color
-     * would deal damage to you, it deals that damage to its controller instead").
+     * Inside a [com.wingedsheep.sdk.scripting.EventPattern.DealsDamageEvent] trigger it is the
+     * controller of [DamageSource]: its current controller while it is still on the battlefield,
+     * else its controller when it dealt the damage (CR 608.2h) — so a token that died to the same
+     * combat damage still names a player. Backfire: "Whenever enchanted creature deals damage to
+     * you, this Aura deals that much damage to that creature's controller."
      */
     @SerialName("ControllerOfDamageSource")
     @Serializable
