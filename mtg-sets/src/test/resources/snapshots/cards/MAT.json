@@ -294,11 +294,11 @@
                                             "amount": 1
                                         }
                                     },
-                                    "storeAs": "gathered0"
+                                    "storeAs": "impulseExiled"
                                 },
                                 {
                                     "type": "MoveCollection",
-                                    "from": "gathered0",
+                                    "from": "impulseExiled",
                                     "destination": {
                                         "type": "ToZone",
                                         "zone": "Exile"
@@ -306,7 +306,7 @@
                                 },
                                 {
                                     "type": "GrantMayPlayFromExile",
-                                    "from": "gathered0",
+                                    "from": "impulseExiled",
                                     "expiry": {
                                         "type": "UntilControllerStep",
                                         "step": "END"

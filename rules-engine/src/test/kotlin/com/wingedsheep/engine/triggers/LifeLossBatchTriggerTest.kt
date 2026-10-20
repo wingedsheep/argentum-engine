@@ -29,7 +29,9 @@ import io.kotest.matchers.shouldBe
  *    combat damage at once are a loss of 3 — and the trigger fires once if any opponent's total is
  *    exactly 1. Damage, "loses N life" and a life payment all count (the "pays exactly 1 life"
  *    ruling).
- *  - "Whenever one or more opponents lose life": once per batch however many opponents lost life.
+ *  - "Whenever one or more opponents lose life": once per occurrence however many opponents lost life.
+ *  - An action's damage is one simultaneous occurrence; other losses split into runs that end when a
+ *    player repeats, so "loses 1 life, then loses 1 life" is two occurrences.
  *  - The per-event `LifeLossEvent` (no batch) keeps firing once per event.
  *
  * Driven directly with synthesized [LifeChangedEvent]s in a three-player game.
@@ -127,6 +129,22 @@ class LifeLossBatchTriggerTest : FunSpec({
             ) shouldHaveSize 1
         }
 
+        test("losing 1 life, then 1 life again in one resolution is two occurrences — fires twice") {
+            val t = table()
+            t.triggersOf(
+                "Exactly One Life Loss Observer",
+                listOf(loss(t.oppA, 1, LifeChangeReason.LIFE_LOSS), loss(t.oppA, 1, LifeChangeReason.LIFE_LOSS))
+            ) shouldHaveSize 2
+        }
+
+        test("1 damage and a separate loss of 1 in one resolution fire once each") {
+            val t = table()
+            t.triggersOf(
+                "Exactly One Life Loss Observer",
+                listOf(loss(t.oppA, 1), loss(t.oppA, 1, LifeChangeReason.LIFE_LOSS))
+            ) shouldHaveSize 2
+        }
+
         test("paying exactly 1 life counts") {
             val t = table()
             t.triggersOf(
@@ -151,7 +169,7 @@ class LifeLossBatchTriggerTest : FunSpec({
 
     context("one or more lose life") {
 
-        test("several opponents losing life in one batch fires once") {
+        test("several opponents dealt damage at once fires once") {
             val t = table()
             t.triggersOf(
                 "One Or More Life Loss Observer",
@@ -179,5 +197,7 @@ class LifeLossBatchTriggerTest : FunSpec({
         }
         Triggers.anOpponent.losesLife(exactly = 1).event shouldBe
             EventPattern.LifeLossEvent(Player.EachOpponent, batch = true, exactAmount = 1)
+        EventPattern.LifeLossEvent(Player.EachOpponent, batch = true, exactAmount = 1).description shouldBe
+            "one or more opponents each lose exactly 1 life"
     }
 })

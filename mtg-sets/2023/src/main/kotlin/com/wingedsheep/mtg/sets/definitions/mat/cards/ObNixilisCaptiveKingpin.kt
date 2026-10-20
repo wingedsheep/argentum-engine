@@ -2,14 +2,11 @@ package com.wingedsheep.mtg.sets.definitions.mat.cards
 
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.CardDestination
-import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -40,11 +37,7 @@ val ObNixilisCaptiveKingpin = card("Ob Nixilis, Captive Kingpin") {
     triggeredAbility {
         trigger = Triggers.anOpponent.losesLife(exactly = 1)
         effect = Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self) then
-            Effects.Pipeline {
-                val exiled = gather(CardSource.TopOfLibrary(DynamicAmounts.fixed(1)))
-                move(exiled, CardDestination.ToZone(Zone.EXILE))
-                run(Effects.GrantMayPlayFromExile(from = exiled, expiry = MayPlayExpiry.UntilNextEndStep))
-            }
+            Patterns.Exile.impulse(expiry = MayPlayExpiry.UntilNextEndStep)
         description = "Whenever one or more opponents each lose exactly 1 life, put a +1/+1 counter on " +
             "Ob Nixilis. Exile the top card of your library. Until your next end step, you may play that card."
     }

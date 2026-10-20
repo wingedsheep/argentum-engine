@@ -487,12 +487,12 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * When a player would lose life.
      *
      * As a trigger it fires once per life-loss event by default. [batch] is the "one or more
-     * [players] lose life" reading: once per simultaneous batch of life loss, however many matching
-     * players lost life in it (Emet-Selch of the Third Seat). [exactAmount] narrows a batch trigger
-     * to "one or more [players] each lose exactly N life" (Ob Nixilis, Captive Kingpin): a matching
-     * player's losses in the batch are summed — three 1/1s dealing combat damage at once are one
-     * loss of 3 — and the trigger fires once if at least one of them totals exactly N. Only a batch
-     * can carry it, because the exact amount is a property of the whole simultaneous loss.
+     * [players] lose life" reading: once per simultaneous life-loss occurrence, however many matching
+     * players lost life in it. [exactAmount] narrows a batch trigger to "one or more [players] each
+     * lose exactly N life" (Ob Nixilis, Captive Kingpin): a matching player's simultaneous losses are
+     * summed — three 1/1s dealing combat damage at once are one loss of 3 — and the trigger fires
+     * once if at least one of them totals exactly N. Only a batch can carry it, because the exact
+     * amount is a property of the whole simultaneous loss.
      *
      * As a replacement `appliesTo`, only [player] is read.
      */
@@ -508,10 +508,17 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
             require(exactAmount == null || exactAmount > 0) { "LifeLossEvent.exactAmount must be positive" }
         }
 
-        override val description: String = when {
-            exactAmount != null -> "one or more of ${player.description} each lose exactly $exactAmount life"
-            batch -> "one or more of ${player.description} lose life"
-            else -> "${player.description} would lose life"
+        override val description: String = run {
+            val players = when (player) {
+                Player.EachOpponent -> "one or more opponents"
+                Player.Each -> "one or more players"
+                else -> player.description
+            }
+            when {
+                exactAmount != null -> "$players each lose exactly $exactAmount life"
+                batch -> "$players lose life"
+                else -> "${player.description} would lose life"
+            }
         }
     }
 

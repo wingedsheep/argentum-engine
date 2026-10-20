@@ -64,5 +64,17 @@ class ObNixilisCaptiveKingpinScenarioTest : ScenarioTestBase() {
             g.obCounters() shouldBe 0
             g.state.getExile(g.player1Id) shouldBe emptyList()
         }
+
+        test("first-strike and regular combat damage are separate occurrences — triggers twice") {
+            val g = scenarioWith("Tundra Wolves", "Savannah Lions")
+
+            g.advanceToPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+            g.declareAttackers(mapOf("Tundra Wolves" to 2, "Savannah Lions" to 2)).error shouldBe null
+            g.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
+
+            g.getLifeTotal(2) shouldBe 18
+            g.obCounters() shouldBe 2
+            g.state.getExile(g.player1Id).size shouldBe 2
+        }
     }
 }
