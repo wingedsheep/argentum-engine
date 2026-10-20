@@ -13,13 +13,15 @@ interface ArrowProps {
   end: Point
   color: string
   damageLabel?: number | null | undefined
+  /** What the share counts when it isn't damage — "+1/+1 counter". Absent means damage. */
+  distributionUnit?: string | null | undefined
 }
 
 /**
  * SVG arrow component with curved path and arrowhead.
  * Reuses the same design as CombatArrows.
  */
-function Arrow({ start, end, color, damageLabel }: ArrowProps) {
+function Arrow({ start, end, color, damageLabel, distributionUnit }: ArrowProps) {
   // Calculate control point for quadratic bezier (arc upward)
   const midX = (start.x + end.x) / 2
   const midY = (start.y + end.y) / 2
@@ -58,15 +60,20 @@ function Arrow({ start, end, color, damageLabel }: ArrowProps) {
 
   const arrowheadD = `M ${end.x} ${end.y} L ${arrow1X} ${arrow1Y} M ${end.x} ${end.y} L ${arrow2X} ${arrow2Y}`
 
-  // Damage badge position at t=0.5 on the bezier curve (midpoint)
+  // Share badge at t=0.7 on the bezier curve: a divided spell's arrows leave one stack card
+  // together, so their midpoints crowd each other; nearer the targets they have spread apart.
   let badgeElement: React.ReactNode = null
   if (damageLabel != null) {
-    const t = 0.5
+    const t = 0.7
     const mt = 1 - t
     const badgeX = mt * mt * start.x + 2 * mt * t * controlX + t * t * end.x
     const badgeY = mt * mt * start.y + 2 * mt * t * controlY + t * t * end.y
-    const label = `${damageLabel} dmg`
+    // Damage reads "3 dmg"; a counter share reads "2 × +1/+1" in green, so it never looks like damage.
+    const counterName = distributionUnit?.replace(/ counters?$/, '')
+    const label = counterName ? `${damageLabel} × ${counterName}` : `${damageLabel} dmg`
     const textWidth = label.length * 7 + 12
+    const badgeStroke = counterName ? '#16a34a' : '#dc2626'
+    const badgeText = counterName ? '#4ade80' : '#f87171'
 
     badgeElement = (
       <g>
@@ -78,14 +85,14 @@ function Arrow({ start, end, color, damageLabel }: ArrowProps) {
           rx={11}
           fill="#000000"
           fillOpacity={0.85}
-          stroke="#dc2626"
+          stroke={badgeStroke}
           strokeWidth={1.5}
         />
         <text
           x={badgeX}
           y={badgeY + 4}
           textAnchor="middle"
-          fill="#f87171"
+          fill={badgeText}
           fontSize={12}
           fontWeight={700}
           fontFamily="system-ui, sans-serif"
@@ -250,6 +257,7 @@ interface TargetArrow {
   end: Point
   color: string
   damageLabel?: number | null | undefined
+  distributionUnit?: string | null | undefined
 }
 
 /**
@@ -312,6 +320,7 @@ export function TargetingArrows() {
             end: targetPos,
             color: '#ff8800',
             damageLabel,
+            distributionUnit: card.damageDistributionUnit,
           })
         }
 
@@ -355,13 +364,14 @@ export function TargetingArrows() {
         zIndex: 999,
       }}
     >
-      {arrows.map(({ targetKey, start, end, color, damageLabel }) => (
+      {arrows.map(({ targetKey, start, end, color, damageLabel, distributionUnit }) => (
         <Arrow
           key={targetKey}
           start={start}
           end={end}
           color={color}
           damageLabel={damageLabel}
+          distributionUnit={distributionUnit}
         />
       ))}
     </svg>

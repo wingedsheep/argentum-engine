@@ -562,8 +562,11 @@ export interface ClientCard {
    */
   readonly grantedCardTypes?: readonly string[]
 
-  /** Damage distribution for DividedDamageEffect spells on the stack (target entity ID -> damage amount) */
+  /** The division a spell or ability on the stack announced (target entity ID -> share of damage or counters) */
   readonly damageDistribution?: Record<EntityId, number> | null
+
+  /** What {@link damageDistribution} divides when it isn't damage — "+1/+1 counter". Absent means damage. */
+  readonly damageDistributionUnit?: string | null
 
   /** For Sagas: the total number of chapters (e.g., 3). Null for non-Sagas. */
   readonly sagaTotalChapters?: number | null

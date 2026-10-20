@@ -84,6 +84,12 @@ class UndercityUpheavalScenarioTest : ScenarioTestBase() {
                 val courser = game.findPermanent("Centaur Courser")!!
 
                 game.cast(listOf(bears, giant), mapOf(bears to 2, giant to 1)).error shouldBe null
+                withClue("the stack shows the announced split as counters, not damage") {
+                    val spell = game.state.stack.single()
+                    val view = stateTransformer.transform(game.state, game.player2Id).cards.getValue(spell)
+                    view.damageDistribution shouldBe mapOf(bears to 2, giant to 1)
+                    view.damageDistributionUnit shouldBe "+1/+1 counter"
+                }
                 game.resolveStack()
 
                 game.hasPendingDecision() shouldBe false

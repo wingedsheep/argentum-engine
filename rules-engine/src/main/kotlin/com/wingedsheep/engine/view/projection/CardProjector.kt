@@ -2,6 +2,7 @@ package com.wingedsheep.engine.view.projection
 
 import com.wingedsheep.engine.mechanics.combat.BandsWithOtherRules
 import com.wingedsheep.engine.handlers.ConditionEvaluator
+import com.wingedsheep.engine.handlers.effects.AnnouncedDivision
 import com.wingedsheep.engine.handlers.effects.FaceDownTurnUp
 import com.wingedsheep.engine.mechanics.SoulbondPairing
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
@@ -624,6 +625,7 @@ internal class CardProjector(
             damageDistribution = (spellOnStack?.damageDistribution
                 ?: container.get<TriggeredAbilityOnStackComponent>()?.damageDistribution
                 ?: container.get<ActivatedAbilityOnStackComponent>()?.damageDistribution)?.takeIf { it.isNotEmpty() },
+            damageDistributionUnit = distributionUnit(container, spellOnStack, cardDef),
             sagaTotalChapters = cardDef?.finalChapter,
             classLevel = container.get<ClassLevelComponent>()?.currentLevel,
             classMaxLevel = cardDef?.maxClassLevel,
@@ -939,5 +941,27 @@ internal class CardProjector(
 
         fun abilityFlagsOf(keywords: Set<String>): Set<AbilityFlag> =
             keywords.mapNotNull { try { AbilityFlag.valueOf(it) } catch (_: Exception) { null } }.toSet()
+    }
+
+    /**
+     * The unit of the division a stack object announced, when it divides counters rather than damage
+     * ("+1/+1 counter" — Undercity Upheaval, Ajani, Sleeper Agent's −3), so the target arrows don't
+     * label counters as damage. Null for damage, and when nothing was announced.
+     */
+    private fun distributionUnit(
+        container: ComponentContainer,
+        spellOnStack: SpellOnStackComponent?,
+        cardDef: CardDefinition?
+    ): String? {
+        val announced = spellOnStack?.damageDistribution
+            ?: container.get<TriggeredAbilityOnStackComponent>()?.damageDistribution
+            ?: container.get<ActivatedAbilityOnStackComponent>()?.damageDistribution
+        if (announced.isNullOrEmpty()) return null
+        val division = when {
+            spellOnStack != null -> AnnouncedDivision.ofSpell(cardDef?.script?.spellEffect)
+            else -> (container.get<TriggeredAbilityOnStackComponent>()?.effect
+                ?: container.get<ActivatedAbilityOnStackComponent>()?.effect)?.let(AnnouncedDivision::of)
+        }
+        return division?.let(AnnouncedDivision::counterUnit)
     }
 }
