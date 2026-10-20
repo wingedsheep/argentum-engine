@@ -504,7 +504,7 @@ object DamageUtils {
                 container.with(counters.withRemoved(CounterType.LOYALTY, loyaltyRemoved))
             }
             val targetName = newState.getEntity(targetId)?.get<CardComponent>()?.name ?: "Planeswalker"
-            events.add(LoyaltyChangedEvent(targetId, targetName, -loyaltyRemoved))
+            if (loyaltyRemoved > 0) events.add(LoyaltyChangedEvent(targetId, targetName, -loyaltyRemoved))
         } else if (projected.isBattle(targetId)) {
             // CR 120.3h — damage dealt to a battle removes that many defense counters from it. The
             // battle isn't destroyed by the damage; state-based actions bin it once its defense
@@ -3064,39 +3064,26 @@ object DamageUtils {
         var removed = amount.coerceAtMost(currentLoyalty)
         if (removed <= 0) return removed
         val projected = state.projectedState
-        for (entityId in state.getBattlefield()) {
-            val container = state.getEntity(entityId) ?: continue
-            val replacementComponent = container.get<ReplacementEffectSourceComponent>() ?: continue
-            if (replacementComponent.replacementEffects.none { it is LoyaltyDamageFloor }) continue
-            val hostControllerId = replacementHostController(state, entityId) ?: continue
-            for (effect in replacementComponent.replacementEffects) {
-                if (effect !is LoyaltyDamageFloor) continue
-                if (currentLoyalty - removed >= effect.floor) continue
-                val damageEvent = effect.appliesTo as? com.wingedsheep.sdk.scripting.EventPattern.DamageEvent ?: continue
-                val damageTypeMatches = when (damageEvent.damageType) {
-                    is DamageType.Any -> true
-                    is DamageType.Combat -> isCombatDamage
-                    is DamageType.NonCombat -> !isCombatDamage
-                }
-                if (!damageTypeMatches || !damageEvent.amount.matches(amount)) continue
-                if (!damageSourceMatches(
-                        state, projected, damageEvent.source, sourceId,
-                        hostId = entityId, hostControllerId = hostControllerId, recipientId = targetId,
-                        predicateEvaluator = predicateEvaluator
-                    )
-                ) continue
-                if (!damageRecipientMatches(
-                        state, projected, damageEvent.recipient, targetId,
-                        hostId = entityId, hostControllerId = hostControllerId,
-                        predicateEvaluator = predicateEvaluator
-                    )
-                ) continue
-                if (effect.restrictions.isNotEmpty()) {
-                    val context = EffectContext(sourceId = entityId, controllerId = hostControllerId)
-                    if (effect.restrictions.any { !predicateEvaluator.conditions.evaluate(state, it, context) }) continue
-                }
-                removed = (currentLoyalty - effect.floor).coerceAtLeast(0)
+        for (active in com.wingedsheep.engine.replacement.ActiveReplacements.all(state)) {
+            val effect = active.effect as? LoyaltyDamageFloor ?: continue
+            if (currentLoyalty - removed >= effect.floor) continue
+            if (!active.granted && (projected.hasLostAllAbilities(active.sourceId) || projected.isFaceDown(active.sourceId))) continue
+            val pattern = effect.appliesTo
+            val damageTypeMatches = when (pattern.damageType) {
+                DamageType.Any -> true
+                DamageType.Combat -> isCombatDamage
+                DamageType.NonCombat -> !isCombatDamage
             }
+            if (!damageTypeMatches || !pattern.amount.matches(amount)) continue
+            if (!damageSourceMatches(state, projected, pattern.source, sourceId,
+                    active.sourceId, active.controllerId, targetId, predicateEvaluator)) continue
+            if (!damageRecipientMatches(state, projected, pattern.recipient, targetId,
+                    active.sourceId, active.controllerId, predicateEvaluator)) continue
+            if (effect.restrictions.isNotEmpty()) {
+                val context = EffectContext(sourceId = active.sourceId, controllerId = active.controllerId)
+                if (effect.restrictions.any { !predicateEvaluator.conditions.evaluate(state, it, context) }) continue
+            }
+            removed = (currentLoyalty - effect.floor).coerceAtLeast(0)
         }
         return removed
     }

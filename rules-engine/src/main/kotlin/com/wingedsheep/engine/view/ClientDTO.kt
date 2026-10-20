@@ -568,7 +568,7 @@ data class ClientCard(
     /** Total number of copies for storm/copy effects on the stack */
     val copyTotal: Int? = null,
 
-    /** Chosen creature type for "as enters, choose a creature type" permanents (e.g., Doom Cannon) */
+    /** Chosen creature type (Doom Cannon) or planeswalker type (Deification) for "as enters, choose a … type" permanents */
     val chosenCreatureType: String? = null,
 
     /** Chosen color for "as enters, choose a color" permanents (e.g., Riptide Replicator) */

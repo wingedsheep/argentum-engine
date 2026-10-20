@@ -67,6 +67,30 @@ class DeificationScenarioTest : ScenarioTestBase() {
             projected.hasKeyword(game.findPermanent("Liliana of the Veil")!!, Keyword.HEXPROOF) shouldBe false
         }
 
+        test("put onto the battlefield without being cast, it still asks for a planeswalker type") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardInGraveyard(1, "Deification")
+                .withCardInHand(1, "Open the Vaults")
+                .withLandsOnBattlefield(1, "Plains", 6)
+                .withCardOnBattlefield(1, "Jace Beleren")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.castSpell(1, "Open the Vaults").error shouldBe null
+            if (game.getPendingDecision() is SelectManaSourcesDecision) game.submitManaSourcesAutoPay()
+            game.resolveStack()
+
+            val choose = game.getPendingDecision() as ChooseOptionDecision
+            choose.prompt shouldBe "Choose a planeswalker type"
+            game.submitDecision(OptionChosenResponse(choose.id, choose.options.indexOf("Jace"))).error shouldBe null
+            game.resolveStack()
+
+            game.state.getEntity(game.findPermanent("Deification")!!)!!.chosenPlaneswalkerType() shouldBe "Jace"
+            game.state.projectedState.hasKeyword(game.findPermanent("Jace Beleren")!!, Keyword.HEXPROOF) shouldBe true
+        }
+
         test("an opponent can't target a planeswalker of the chosen type, but can target another") {
             val game = scenario()
                 .withPlayers("Player", "Opponent")

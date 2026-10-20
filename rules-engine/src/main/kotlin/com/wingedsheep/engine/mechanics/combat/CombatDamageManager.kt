@@ -1462,7 +1462,7 @@ internal class CombatDamageManager(
             sourceAttachmentIds = attachmentIdsOf(state, sourceId),
             sourceLastKnown = captureLastKnown(state, sourceId)))
         if (counterType == com.wingedsheep.sdk.core.CounterType.LOYALTY) {
-            events.add(LoyaltyChangedEvent(targetId, targetName, -removed))
+            if (removed > 0) events.add(LoyaltyChangedEvent(targetId, targetName, -removed))
         } else if (removed > 0) {
             events.add(
                 com.wingedsheep.engine.core.CountersRemovedEvent(

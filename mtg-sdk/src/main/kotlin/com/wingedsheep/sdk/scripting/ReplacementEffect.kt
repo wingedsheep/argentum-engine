@@ -1894,7 +1894,7 @@ data class ModifyLifeLoss(
  *     `LifeLossFloor(floor = 1, appliesTo = LifeLossEvent(Player.You))`
  * - Worship ("If you control a creature, damage that would reduce your life total
  *   to less than 1 reduces it to 1 instead"):
- *     `LifeLossFloor(floor = 1, restrictions = listOf(YouControlACreature),
+ *     `LifeLossFloor(floor = 1, restrictions = listOf(Conditions.YouControl(GameObjectFilter.Creature)),
  *                    appliesTo = LifeLossEvent(Player.You))`
  *
  * @param floor Minimum resulting life total (default 1).
@@ -1956,7 +1956,7 @@ data class LifeLossFloor(
  * Example — Deification ("As long as you control a creature, if damage dealt to a planeswalker you
  * control of the chosen type would result in all loyalty counters on it being removed, instead all
  * but one of those counters are removed"):
- *   `LoyaltyDamageFloor(floor = 1, restrictions = listOf(Conditions.YouControlACreature),
+ *   `LoyaltyDamageFloor(floor = 1, restrictions = listOf(Conditions.YouControl(GameObjectFilter.Creature)),
  *      appliesTo = DamageEvent(recipient = Recipient.Object(planeswalker you control of the chosen type)))`
  */
 @SerialName("LoyaltyDamageFloor")
@@ -1964,23 +1964,18 @@ data class LifeLossFloor(
 data class LoyaltyDamageFloor(
     val floor: Int = 1,
     override val restrictions: List<Condition> = emptyList(),
-    override val appliesTo: EventPattern
+    override val appliesTo: EventPattern.DamageEvent
 ) : ReplacementEffect {
     override val description: String = buildString {
         val restrictionDesc = restrictions.joinToString(" and ") { it.description.removePrefix("if ") }
-        if (restrictionDesc.isNotEmpty()) {
-            append(restrictionDesc.replaceFirstChar { it.uppercase() })
-            append(", if ")
-        } else {
-            append("If ")
-        }
-        append(appliesTo.description)
-        append(" and that damage would leave it with fewer than $floor loyalty counters, ")
+        if (restrictionDesc.isNotEmpty()) append("As long as $restrictionDesc, if ") else append("If ")
+        val counters = if (floor == 1) "loyalty counter" else "loyalty counters"
+        append("damage dealt to ${appliesTo.recipient.description} would leave it with fewer than $floor $counters, ")
         append("instead only enough counters are removed to leave $floor")
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
-        val newAppliesTo = appliesTo.applyTextReplacement(replacer)
+        val newAppliesTo = appliesTo.applyTextReplacement(replacer) as EventPattern.DamageEvent
         val newRestrictions = restrictions.map { it.applyTextReplacement(replacer) }
         val anyChanged = newAppliesTo !== appliesTo ||
             newRestrictions.zip(restrictions).any { (a, b) -> a !== b }

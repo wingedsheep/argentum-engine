@@ -817,10 +817,11 @@ internal class CardProjector(
     private fun chosenValues(frame: CardFrame): ChosenValues {
         val container = frame.container
         return ChosenValues(
-            // Get chosen creature type for "as enters" permanents (e.g., Doom Cannon) or spells on stack (e.g., Aphetto Dredging).
+            // Get chosen creature type for "as enters" permanents (e.g., Doom Cannon) or spells on stack (e.g., Aphetto Dredging),
+            // or a chosen planeswalker type (Deification) — the subtype HasChosenSubtype matches.
             // Note: temporary type changes from floating SetCreatureSubtypes effects (e.g., Mistform Wall, Figure of Fable)
             // are surfaced via the "type-change" active-effect badge in CardActiveEffectsProjector, not as a chosen-type label.
-            creatureType = container.chosenCreatureType() ?: frame.spellOnStack?.chosenCreatureType,
+            creatureType = container.chosenSubtype() ?: frame.spellOnStack?.chosenCreatureType,
             // Get chosen color for "as enters, choose a color" permanents (e.g., Riptide Replicator)
             color = container.chosenColor()?.displayName,
             mode = chosenModeLabel(frame),

@@ -31,7 +31,6 @@
                     }
                 ],
                 "appliesTo": {
-                    "type": "DamageEvent",
                     "recipient": {
                         "type": "RecipientObject",
                         "filter": {
