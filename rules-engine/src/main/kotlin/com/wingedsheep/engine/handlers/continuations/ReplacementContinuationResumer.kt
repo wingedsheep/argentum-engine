@@ -164,7 +164,10 @@ class ReplacementContinuationResumer(
         val resumeContinuation = ReplacementResolveContinuation
 
         val stateWithResumeFrame = state.pushContinuation(resumeContinuation).let {
-            if (restoreDrawChain) it.pushContinuation(RestoreReplacementChainContinuation(drawParentChain)) else it
+            // `applied` keeps the chain the processor stamped (CR 614.5) in force across a
+            // pause inside the replacement effect, scoped to it until the frame pops.
+            if (restoreDrawChain) it.pushContinuation(RestoreReplacementChainContinuation(drawParentChain,
+                applied = state.activeReplacementChain ?: emptySet())) else it
         }
 
         // Execute the new effect

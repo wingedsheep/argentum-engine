@@ -271,11 +271,16 @@ class DrawReplacementDispatcher(
 
         // A nested life replacement may suspend and later restore this draw's chain.
         // Keep the draw's boundary on the stack so that restoration cannot leak into
-        // the independent instruction that follows the completed replacement.
-        state = state.pushContinuation(com.wingedsheep.engine.core.RestoreReplacementChainContinuation(previousChain))
+        // the independent instruction that follows the completed replacement. The frame
+        // also carries the chain itself (`applied`): CR 614.5 must hold for events inside
+        // the replacement effect even after it pauses for a decision (Chains of
+        // Mephistopheles' discard-then-draw), while the flat chain below is cleared.
+        state = state.pushContinuation(com.wingedsheep.engine.core.RestoreReplacementChainContinuation(
+            previousChain, applied = processorState.activeReplacementChain ?: emptySet()))
         val pipelineResult = executor(state, replacementEffect, context)
         if (pipelineResult.outcome is Outcome.Paused) {
-            // Clear chain on pause so subsequent draw iterations are unaffected.
+            // Clear the flat chain on pause; the boundary frame keeps it scoped to this
+            // replacement's own events until the frame pops.
             val clearedState = pipelineResult.state.copy(activeReplacementChain = null)
             return DispatchResult.Paused(
                 EffectResult.propagatePause(clearedState, pipelineResult.events)

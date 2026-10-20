@@ -17557,6 +17557,15 @@ not update an existing copy.
   copied Aura picks its host before those questions. A land played as a copy (Vesuva-style) asks
   the copied land's `EntersWithChoice` after the copy, and an effect-driven entry asks the copied
   card's — see `EntersWithChoice` under "Permanent enters-with-choice".
+- `ReplaceDrawWith(replacementEffect, optional, restrictions, appliesTo)` — a per-card draw replacement
+  (`EventPattern.DrawEvent`): `replacementEffect` runs instead of that one draw, controlled by the
+  drawing player. Draws the effect performs itself are new events it can't replace again (CR 614.5)
+  — **even after the effect pauses for a decision**: the draw's `RestoreReplacementChainContinuation`
+  frame carries the applied chain (`applied`) until the effect finishes, so a later draw of the same
+  instruction is replaced afresh. **Chains of Mephistopheles**: `ReplaceDrawWith(Effects.IfYouDo(
+  Discard(1), then = DrawCards(1), otherwise = Patterns.Library.mill(1)), appliesTo = DrawEvent(Player.Each,
+  firstInDrawStep = EXCLUDED))` — the discard's choice pauses, the draw after it isn't re-replaced by
+  this Chains, and a second Chains still applies to it (cumulative, per its rulings).
 - `ModifyDrawAmount(modifier, multiplier, restrictions, appliesTo)` — modify the number of cards a draw
   instruction announces to `(count * multiplier) + modifier`, clamped to ≥ 0, optionally gated by extra
   `restrictions: List<Condition>`

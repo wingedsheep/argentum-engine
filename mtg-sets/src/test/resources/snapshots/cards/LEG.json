@@ -1411,6 +1411,127 @@
     }
 }
 
+// Chains of Mephistopheles
+{
+    "name": "Chains of Mephistopheles",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "If a player would draw a card except the first one they draw in each of their draw steps, that player discards a card instead. If the player discards a card this way, they draw a card. If the player doesn't discard a card this way, they mill a card.",
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "ReplaceDrawWith",
+                "replacementEffect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "otherwise": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "isMill": true
+                                },
+                                "storeAs": "milled"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "milled",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "appliesTo": {
+                    "type": "DrawEvent",
+                    "player": "Each",
+                    "firstInDrawStep": "EXCLUDED"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "rarity": "RARE",
+        "artist": "Heather Hudson",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2bb0e884-5bb4-41f3-b04b-6f638357c166.jpg?1783948068",
+        "rulings": [
+            {
+                "date": "2007-09-16",
+                "text": "If a spell or ability would cause a player to draw multiple cards, this is treated as a number of individual \"draw one card\" actions. Apply the effect of Chains of Mephistopheles to each one."
+            },
+            {
+                "date": "2007-09-16",
+                "text": "A player's normal card draw on their turn is exempt from this effect. All other draws will be affected."
+            },
+            {
+                "date": "2007-09-16",
+                "text": "Here's what happens when Chains of Mephistopheles replaces a player's draw: — If that player has at least one card in their hand, they discard a card and then draws a card. — If that player's hand is empty, they put the top card of their library into their graveyard. The player doesn't draw a card at all."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "The effect is cumulative. If there are two of these on the battlefield, each of them will modify each draw (after the first one if during the draw step), and will cause the player to discard or to \"mill\" a card from their library. As they resolve in order, the player must discard if possible. Once the player fails to discard and instead \"mills\" a card, all further effects of additional Chains of Mephistopheles will not do anything. This is because the \"mill\" also replaces the draw effect and the player is no longer drawing a card. You handle them in order. Each one makes you discard first and then continue or else mill a card and lose the draw."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Cards which are drawn as a cost are affected by this card because replacement effects can alter the payment of costs."
+            }
+        ]
+    }
+}
+
 // Chromium
 {
     "name": "Chromium",
