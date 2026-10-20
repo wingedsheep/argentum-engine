@@ -1464,6 +1464,7 @@ Families:
 - `Player.InCollection(collection: String)` — "Those players" — every player recorded in the pipeline collection collection (written by com.wingedsheep.sdk.scripting.effects.StorePlayerEffect), iterated in APNAP order (CR 101.4) and skipping a…
 - `Player.OwnerOf(targetDescription: String)` — Owner of a permanent (used with EffectTarget)
 - `Player.OwnerOfSource` — The owner of the effect's **source** — the card the ability is printed on, not whoever currently controls it.
+- `Player.OwnerOfTriggeringEntity` — The **owner** of the triggering entity — the ownership counterpart of ControllerOfTriggeringEntity.
 - `Player.OwnersOfLinkedExile` — The distinct owners of the cards currently in the effect source's *linked-exile pile* (the source's com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent, populated by com.winged…
 - `Player.TargetOpponent` — A targeted opponent (resolved at effect execution)
 - `Player.TargetPlayer` — A targeted player (resolved at effect execution)

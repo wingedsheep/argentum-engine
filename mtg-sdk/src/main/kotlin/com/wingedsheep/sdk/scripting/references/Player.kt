@@ -392,6 +392,24 @@ sealed interface Player {
     }
 
     /**
+     * The **owner** of the triggering entity — the ownership counterpart of
+     * [ControllerOfTriggeringEntity]. "When that creature dies this turn, return a creature card
+     * from **its owner's** graveyard to the battlefield" (Reincarnation): a watched-creature delayed
+     * trigger fires with the dead creature as its triggering entity and no chosen targets of its
+     * own, so [OwnerOf] (which reads the first chosen target) has nothing to read, and
+     * [ControllerOfTriggeringEntity] answers with the creature's last controller — the wrong
+     * player whenever it died stolen.
+     *
+     * Owner is read off the card itself, so a creature card already in the graveyard still
+     * answers; a token that has ceased to exist answers through its last-known snapshot.
+     */
+    @SerialName("OwnerOfTriggeringEntity")
+    @Serializable
+    data object OwnerOfTriggeringEntity : Player {
+        override val description: String = "that creature's owner"
+    }
+
+    /**
      * The controller of the spell or ability that **caused** the triggering event — the other end
      * of a trigger whose subject is acted on by a spell or ability:
      *
@@ -472,6 +490,7 @@ sealed interface Player {
             OwnersOfLinkedExile -> "the exiled card's owner's"
             ControllerOfCause -> "that spell or ability's controller's"
             ControllerOfTriggeringEntity -> "that source's controller's"
+            OwnerOfTriggeringEntity -> "that creature's owner's"
             ControllerOfGrantingSource -> "the granting permanent's controller's"
         }
 }

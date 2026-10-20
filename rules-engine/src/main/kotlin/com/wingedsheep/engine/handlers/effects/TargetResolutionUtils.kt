@@ -400,6 +400,13 @@ object TargetResolutionUtils {
             // *player* slot and is null when the thing that triggered the ability was an object.
             Player.ControllerOfTriggeringEntity -> context.triggeringEntityId
                 ?.let { controllerOf(state, it) }
+            // "Its owner's graveyard" off a watched-creature delayed trigger (Reincarnation): the dead
+            // creature is the triggering entity. A card keeps its owner across zones; a token that has
+            // ceased to exist answers through its last-known snapshot.
+            Player.OwnerOfTriggeringEntity -> context.triggeringEntityId?.let { id ->
+                state.getEntity(id)?.get<CardComponent>()?.ownerId
+                    ?: context.triggerContext?.triggeringLastKnownSnapshot?.takeIf { it.entityId == id }?.ownerId
+            }
             // Multi-player / list-only references have no single resolution here.
             // OwnersOfLinkedExile is resolved by ForEachExecutor.resolvePlayers (a player loop);
             // EachTargetedPlayer by DynamicAmountEvaluator.resolveUnifiedPlayerIds. Collapsing

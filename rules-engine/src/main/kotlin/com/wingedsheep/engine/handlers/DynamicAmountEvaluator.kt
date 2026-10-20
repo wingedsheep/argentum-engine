@@ -1604,7 +1604,8 @@ class DynamicAmountEvaluator(
             // creatures" = AggregateBattlefield(ControllerOf("target"), Creature) == 1).
             is Player.ControllerOf, is Player.OwnerOf, is Player.OwnerOfSource,
             is Player.ControllerOfSource, is Player.ControllerOfCause,
-            is Player.ControllerOfTriggeringEntity, is Player.ControllerOfGrantingSource -> listOfNotNull(
+            is Player.ControllerOfTriggeringEntity, is Player.OwnerOfTriggeringEntity,
+            is Player.ControllerOfGrantingSource -> listOfNotNull(
                 TargetResolutionUtils.resolvePlayerRef(player, context, state)
             )
             is Player.TriggeringPlayer -> {

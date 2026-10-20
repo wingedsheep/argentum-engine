@@ -5545,6 +5545,16 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   `Patterns.Library.mill(DynamicAmount.ContextProperty(TRIGGER_DAMAGE_AMOUNT),
   EffectTarget.ControllerOfTriggeringEntity)`; Mesmeric Orb is the same shape on
   `Triggers.<subject>.becomesUntapped()`.
+- `Player.OwnerOfTriggeringEntity` — the **owner** of the triggering entity: the ownership
+  counterpart of `Player.ControllerOfTriggeringEntity`, which follows control and so names the wrong
+  player for a creature that died stolen. `Player.OwnerOf` reads the first *chosen target*, which a
+  fired watched-creature delayed trigger doesn't have. Read off the card (it keeps its owner in the
+  graveyard), else the trigger's last-known snapshot for a token that ceased to exist. Reincarnation
+  ("when that creature dies this turn, return a creature card from its owner's graveyard to the
+  battlefield under the control of that creature's owner") =
+  `CreateDelayedTrigger(Pipeline { gather(FromZone(GRAVEYARD, Player.OwnerOfTriggeringEntity,
+  Creature)) → chooseExactly(1) → move(→ BATTLEFIELD, underOwnersControl = true) },
+  Triggers.self.dies(), watchedTarget = creature, expiry = EndOfTurn)`.
 - `Player.ControllerOfGrantingSource` — the controller of the **granting permanent**: the `Player`
   half of `EffectTarget.GrantingSource`. A granted ability's source is the permanent it was granted
   *to*, so `Player.You` / `Player.ControllerOfSource` name the bearer's controller — the player who
