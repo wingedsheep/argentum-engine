@@ -1,3 +1,31 @@
+// Adult Gold Dragon
+{
+    "name": "Adult Gold Dragon",
+    "manaCost": "{3}{R}{W}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying, lifelink, haste",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "LIFELINK",
+        "HASTE"
+    ],
+    "metadata": {
+        "collectorNumber": "216",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "flavorText": "Gold dragons are the greatest of the metallic dragons in size, power, and wisdom, and often take it upon themselves to safeguard mortal communities from evils that might threaten them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/67a76010-d932-4727-8b5e-b8e2d14e1362.jpg?1783926450"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Black Dragon
 {
     "name": "Black Dragon",
