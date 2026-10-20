@@ -4952,6 +4952,55 @@
     ]
 }
 
+// Glyph of Life
+{
+    "name": "Glyph of Life",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Choose target Wall creature. Whenever that creature is dealt damage by an attacking creature this turn, you gain that much life.",
+    "script": {
+        "spellEffect": {
+            "type": "CreateDelayedTrigger",
+            "effect": {
+                "type": "GainLife",
+                "amount": {
+                    "type": "ContextProperty",
+                    "key": "TRIGGER_DAMAGE_AMOUNT"
+                }
+            },
+            "trigger": {
+                "event": {
+                    "type": "DealsDamageEvent",
+                    "sourceFilter": "creature attacking"
+                },
+                "binding": "ANY"
+            },
+            "watchedRecipient": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature Wall"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "artist": "Susan Van Camp",
+        "flavorText": "Any wall can be battered down, but at what cost?",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba1384e5-d140-4074-9548-250af09cb413.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Glyph of Reincarnation
 {
     "name": "Glyph of Reincarnation",
@@ -9436,6 +9485,55 @@
     ]
 }
 
+// Presence of the Master
+{
+    "name": "Presence of the Master",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a player casts an enchantment spell, counter it.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Presence of the Master:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsEnchantment"
+                        ]
+                    },
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Counter",
+                    "targetSource": "CounterTargetSource.TriggeringEntity"
+                },
+                "descriptionOverride": "Whenever a player casts an enchantment spell, counter it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "UNCOMMON",
+        "artist": "Phil Foglio",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1cb86b2f-116d-4952-b35a-1398341baaf5.jpg?1783948082",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "Does not stop enchantments from being put onto the battlefield by a spell or ability."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "This effect triggers when the spell is announced and prior to allowing responses to it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Primordial Ooze
 {
     "name": "Primordial Ooze",
@@ -10111,6 +10209,61 @@
     "colorIdentityOverride": [
         "BLACK",
         "BLUE"
+    ]
+}
+
+// Ramses Overdark
+{
+    "name": "Ramses Overdark",
+    "manaCost": "{2}{U}{U}{B}{B}",
+    "typeLine": "Legendary Creature — Human Assassin",
+    "oracleText": "{T}: Destroy target enchanted creature.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ramses Overdark:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "IsEnchanted"
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "252",
+        "rarity": "RARE",
+        "artist": "Richard Kane Ferguson",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f079c74e-a39a-40f9-9c7e-9319c0c189c6.jpg?1783948033"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -11305,6 +11458,51 @@
         "GREEN",
         "BLUE",
         "WHITE"
+    ]
+}
+
+// Rust
+{
+    "name": "Rust",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target activated ability from an artifact source. (Mana abilities can't be targeted.)",
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "target": "CounterTarget.Ability"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsActivatedAbility",
+                            {
+                                "type": "AbilitySourceMatches",
+                                "subfilter": {
+                                    "cardPredicates": [
+                                        "IsArtifact"
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "artist": "Liz Danforth",
+        "flavorText": "\"How dull it is to pause, to make an end,/ To rust unburnished, not to shine in use,/ As though to breathe were life!\"\n—Alfred, Lord Tennyson, \"Ulysses\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/ad4974c8-34c5-4290-b325-7586a67f6d56.jpg?1783948044"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -12570,6 +12768,46 @@
     ]
 }
 
+// Sylvan Paradise
+{
+    "name": "Sylvan Paradise",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "One or more target creatures become green until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "ChangeColor",
+                "colors": [
+                    "GREEN"
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "minCount": 1,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Asplund-Faith",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f323c3bb-cece-4035-b1a7-c4817cf7a08c.jpg?1783948043"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Syphon Soul
 {
     "name": "Syphon Soul",
@@ -13331,6 +13569,121 @@
     ]
 }
 
+// Time Elemental
+{
+    "name": "Time Elemental",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "When this creature attacks or blocks, at end of combat, sacrifice it and it deals 5 damage to you.\n{2}{U}{U}, {T}: Return target permanent that isn't enchanted to its owner's hand.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Time Elemental:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END_COMBAT",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            "SacrificeSelf",
+                            {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                },
+                                "target": "Controller"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "id": "Time Elemental:2",
+                "trigger": "BlockEvent",
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END_COMBAT",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            "SacrificeSelf",
+                            {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                },
+                                "target": "Controller"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Time Elemental:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{U}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsPermanent"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "StateNot",
+                                        "predicate": "IsEnchanted"
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}{U}{U}, {T}: Return target permanent that isn't enchanted to its owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "RARE",
+        "artist": "Amy Weber",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/61510e88-97d0-410a-9431-ebf12990e33d.jpg?1783948070"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Tobias Andrion
 {
     "name": "Tobias Andrion",
@@ -13531,6 +13884,59 @@
         "rarity": "UNCOMMON",
         "artist": "Pete Venters",
         "imageUri": "https://cards.scryfall.io/normal/front/e/d/eda7177f-1354-4008-aaaa-2c8b823ed5e9.jpg?1783948061"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Transmutation
+{
+    "name": "Transmutation",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Switch target creature's power and toughness until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "SwitchPowerToughness",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "artist": "Susan Van Camp",
+        "flavorText": "\"You know what I was,/ You see what I am: change me, change me!\" —Randall",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/329f7eb2-eadf-46ec-aed4-63152051f3c1.jpg?1783948061",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "Effects that switch a creature's power and toughness apply after all other effects, regardless of when those effects began to apply. For instance, if you target a 1/2 creature then give it +2/+0 later in the turn, it's a 2/3 creature, not a 4/1 creature."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "Because damage remains marked on a creature until the damage is removed as the turn ends, nonlethal damage dealt to a creature may become lethal if you switch its power and toughness during that turn."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "Switching a creature's power and toughness twice (or any even number of times) effectively returns the creature to the power and toughness it had before any switches."
+            },
+            {
+                "date": "2005-11-01",
+                "text": "Note that the wording \"Effects that alter the creature's power alter its toughness instead, and vice versa, this turn\" has been removed."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -13810,6 +14216,33 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Undertow
+{
+    "name": "Undertow",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creatures with islandwalk can be blocked as though they didn't have islandwalk.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "SuppressLandwalkForGroup",
+                "landwalks": [
+                    "ISLANDWALK"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Asplund-Faith",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cf05e5c9-b7e4-4bd8-ab73-b54565710527.jpg?1783948070"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -14226,6 +14659,60 @@
     ]
 }
 
+// Visions
+{
+    "name": "Visions",
+    "manaCost": "{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top five cards of target player's library. You may then have that player shuffle that library.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 5
+                        },
+                        "player": "TargetPlayer"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "ShuffleLibrary",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "UNCOMMON",
+        "artist": "NéNé Thomas",
+        "flavorText": "\"Visions of glory, spare my aching sight,/ Ye unborn ages, crowd not on my soul!\"\n—Thomas Gray, *The Bard*",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21d00299-e183-4b3d-b015-18808e7135b9.jpg?1783948080"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Walking Dead
 {
     "name": "Walking Dead",
@@ -14262,6 +14749,98 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Wall of Caltrops
+{
+    "name": "Wall of Caltrops",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Wall",
+    "oracleText": "Defender (This creature can't attack.)\nWhenever this creature blocks a creature, if at least one other Wall creature is blocking that creature and no non-Wall creatures are blocking that creature, this creature gains banding until end of turn. (If any creatures with banding you control are blocking a creature, you divide that creature's combat damage, not its controller, among any of the creatures it's being blocked by.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wall of Caltrops:1",
+                "trigger": {
+                    "type": "BlockEvent",
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "BANDING",
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "Exists",
+                            "player": "Each",
+                            "zone": "Battlefield",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Wall"
+                                    }
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "IsBlockingEntity",
+                                        "reference": "TriggeringEntity"
+                                    }
+                                ]
+                            },
+                            "excludeSelf": true
+                        },
+                        {
+                            "type": "Exists",
+                            "player": "Each",
+                            "zone": "Battlefield",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotSubtype",
+                                        "subtype": "Wall"
+                                    }
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "IsBlockingEntity",
+                                        "reference": "TriggeringEntity"
+                                    }
+                                ]
+                            },
+                            "negate": true
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature blocks a creature, if at least one other Wall creature is blocking that creature and no non-Wall creatures are blocking that creature, this creature gains banding until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "artist": "Brian Snõddy",
+        "flavorText": "\"Ow! Ow ow ow! Oooh, ow, OW!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/664ad588-3002-4f63-93bd-38663171018f.jpg?1783948079"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -14444,6 +15023,65 @@
     ]
 }
 
+// Wall of Putrid Flesh
+{
+    "name": "Wall of Putrid Flesh",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Wall",
+    "oracleText": "Defender (This creature can't attack.)\nProtection from white\nPrevent all damage that would be dealt to this creature by enchanted creatures.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Color",
+                "color": "WHITE"
+            }
+        }
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "statePredicates": [
+                                "IsSource"
+                            ]
+                        }
+                    },
+                    "source": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsEnchanted"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "UNCOMMON",
+        "artist": "Richard Thomas",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/07a17b74-a9c9-419a-8369-9ab4fec213f2.jpg?1783948061"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Wall of Shadows
 {
     "name": "Wall of Shadows",
@@ -14502,6 +15140,59 @@
     ]
 }
 
+// Wall of Tombstones
+{
+    "name": "Wall of Tombstones",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Wall",
+    "oracleText": "Defender (This creature can't attack.)\nAt the beginning of your upkeep, this creature's base toughness becomes equal to 1 plus the number of creature cards in your graveyard. (This effect lasts indefinitely.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wall of Tombstones:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "SetBaseStats",
+                    "target": "Self",
+                    "toughness": {
+                        "type": "Add",
+                        "left": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Graveyard",
+                            "filter": "creature"
+                        },
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Frazier",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/55da1e86-fe18-486a-b510-f941e6f6e378.jpg?1783948060"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Wall of Vapor
 {
     "name": "Wall of Vapor",
@@ -14546,6 +15237,64 @@
         "artist": "Richard Thomas",
         "flavorText": "\"Walls of a castle are made out of stone,/ Walls of a house out of bricks or of wood./ My walls are made out of magic alone,/ Stronger than any that ever have stood.\"\n—Chrysoberyl Earthsdaughter, Incantations",
         "imageUri": "https://cards.scryfall.io/normal/front/6/a/6a6c0a27-d410-4ded-a842-70e1656ea21e.jpg?1783948070"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Wall of Wonder
+{
+    "name": "Wall of Wonder",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Wall",
+    "oracleText": "Defender (This creature can't attack.)\n{2}{U}{U}: This creature gets +4/-4 until end of turn and can attack this turn as though it didn't have defender.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 5
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Wall of Wonder:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{U}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 4
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": -4
+                            },
+                            "target": "Self"
+                        },
+                        "CanAttackDespiteDefenderThisTurn"
+                    ]
+                },
+                "descriptionOverride": "{2}{U}{U}: This creature gets +4/-4 until end of turn and can attack this turn as though it didn't have defender."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "rarity": "UNCOMMON",
+        "artist": "Richard Thomas",
+        "flavorText": "So confusing is the Wall's appearance that few of its victims even see it move.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bcd9af40-b46c-44b4-878e-8eb026c96b51.jpg?1783948070"
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -14818,6 +15567,92 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Winter Blast
+{
+    "name": "Winter Blast",
+    "manaCost": "{X}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Tap X target creatures. Winter Blast deals 2 damage to each of those creatures with flying.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "filter": "creature kw:flying"
+                            }
+                        },
+                        "then": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0",
+                "dynamicMaxCount": "XValue",
+                "dynamicMinCount": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "213",
+        "rarity": "RARE",
+        "artist": "Kaja Foglio",
+        "flavorText": "\"Blow, winds, and crack your cheeks! rage! blow!\"\n—William Shakespeare, King Lear",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fb846366-2105-4999-8af1-a11687f42e17.jpg?1783948043",
+        "rulings": [
+            {
+                "date": "2007-09-16",
+                "text": "Winter Blast can target tapped creatures. If they have flying, the second part of the effect will still affect them."
+            },
+            {
+                "date": "2007-09-16",
+                "text": "Checks if the creatures are Flying on resolution and not on announcement. It's not a targeting restriction."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
