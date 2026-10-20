@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.effects.composite
 
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.event.DelayedTriggeredAbility
+import com.wingedsheep.engine.handlers.CapturedObjectBinding
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -74,7 +75,7 @@ class CreateDelayedTriggerExecutor(
         // has concrete entity IDs when it fires later. The battlefield objects those ids name are
         // bound with their identity: "destroy that creature" must not hit it once it has left and
         // returned as a new object (CR 603.7c / 400.7).
-        val bound = mutableListOf<com.wingedsheep.engine.handlers.CapturedObjectBinding>()
+        val bound = mutableListOf<CapturedObjectBinding>()
         val resolvedEffect = resolveContextTargets(effect.effect, context, state, bound)
 
         // Bake any chosen-value references in the trigger's filter into concrete predicates.
@@ -183,6 +184,8 @@ class CreateDelayedTriggerExecutor(
             objectReferences = (if (effect.trigger == null && fireOnPlayerId == null && watchedEntityId != null) {
                 context.objectReferences.copy(triggering = state.objectRef(watchedEntityId))
             } else context.objectReferences).let { refs ->
+                // A delayed trigger created by another keeps the binding it inherited: "that
+                // creature" still means the object the outer trigger named.
                 if (bound.isEmpty()) refs else refs.copy(bound = (refs.bound + bound).distinctBy { it.entityId })
             },
             sourceName = sourceName,
@@ -201,7 +204,7 @@ class CreateDelayedTriggerExecutor(
             fireOnPlayerId = fireOnPlayerId,
             carriedCollections = effect.carryCollections.associateWith { name ->
                 (context.pipeline.storedCollections[name] ?: emptyList()).map { id ->
-                    com.wingedsheep.engine.handlers.CapturedObjectBinding(id, state.objectRef(id))
+                    CapturedObjectBinding(id, state.objectRef(id))
                 }
             }
         )
@@ -387,22 +390,22 @@ class CreateDelayedTriggerExecutor(
      * The entity [target] names now, to bake into the delayed trigger — or null for the references
      * that stay symbolic: the source and a loop's current object travel with the trigger's object
      * references, identity included, so the trigger stops affecting either once it has become a new
-     * object (CR 603.7c). A baked id would follow the new object instead.
+     * object (CR 603.7c). A baked id keeps that guarantee only where [bind] records its identity.
      */
+    private fun bakedId(target: EffectTarget, context: EffectContext): EntityId? =
+        if (target == EffectTarget.Self || target == EffectTarget.IterationEntity) null
+        else context.resolveTarget(target)
+
     /** Bind [id] to the battlefield object it names now; an id off the battlefield stays unbound. */
     private fun bind(
         id: EntityId,
         state: GameState,
-        bound: MutableList<com.wingedsheep.engine.handlers.CapturedObjectBinding>,
+        bound: MutableList<CapturedObjectBinding>,
     ) {
         if (id in state.getBattlefield() && bound.none { it.entityId == id }) {
-            bound += com.wingedsheep.engine.handlers.CapturedObjectBinding(id, state.objectRef(id))
+            bound += CapturedObjectBinding(id, state.objectRef(id))
         }
     }
-
-    private fun bakedId(target: EffectTarget, context: EffectContext): EntityId? =
-        if (target == EffectTarget.Self || target == EffectTarget.IterationEntity) null
-        else context.resolveTarget(target)
 
     /**
      * A player reference that names a player only through *this* resolution's context — a chosen
@@ -450,7 +453,7 @@ class CreateDelayedTriggerExecutor(
         effect: Effect,
         context: EffectContext,
         state: GameState,
-        bound: MutableList<com.wingedsheep.engine.handlers.CapturedObjectBinding>,
+        bound: MutableList<CapturedObjectBinding>,
     ): Effect {
         return when (effect) {
             is MoveToZoneEffect -> {
@@ -615,7 +618,7 @@ class CreateDelayedTriggerExecutor(
         gate: Gate,
         context: EffectContext,
         state: GameState,
-        bound: MutableList<com.wingedsheep.engine.handlers.CapturedObjectBinding>,
+        bound: MutableList<CapturedObjectBinding>,
     ): Gate =
         when (gate) {
             is Gate.MayPay -> {
