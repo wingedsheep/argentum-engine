@@ -1,7 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.counters
 
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
-import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.suspendForDecision
 import com.wingedsheep.engine.core.DecisionContext
 import com.wingedsheep.engine.core.DecisionPhase

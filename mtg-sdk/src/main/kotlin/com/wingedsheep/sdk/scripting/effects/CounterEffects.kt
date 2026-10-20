@@ -684,7 +684,7 @@ data class DistributeCountersAmongTargetsEffect(
 }
 
 /**
- * Distribute a fixed number of *new* counters among permanents matching [filter], chosen at
+ * Distribute a resolution-evaluated number of *new* counters among permanents matching [filter], chosen at
  * resolution (NOT the spell's declared targets). The eligible group is resolved when the effect
  * resolves, then the controller picks how to split [totalCounters] among them (each chosen recipient
  * gets at least [minPerTarget] — 0 models "among any number of"). No-op when nothing matches.
