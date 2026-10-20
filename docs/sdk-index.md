@@ -1221,7 +1221,7 @@ Families:
 - `EventPattern.LandTappedForMana(player: Player, landFilter: GameObjectFilter?)` — When a player taps a land for mana (a land's mana ability resolves).
 - `EventPattern.LeaveBattlefieldWithoutDyingEvent(filter: GameObjectFilter, excludeSelf: Boolean)` — Whenever one or more creatures you control leave the battlefield without dying.
 - `EventPattern.LifeGainEvent(player: Player, firstTimeEachTurn: Boolean)` — When a player would gain life.
-- `EventPattern.LifeLossEvent(player: Player)` — When a player would lose life.
+- `EventPattern.LifeLossEvent(player: Player, batch: Boolean, exactAmount: Int?)` — When a player would lose life.
 - `EventPattern.LifePaymentEvent(player: Player)` — When a player would **pay** life — life spent to satisfy a cost (CR 118.8), as opposed to life lost to damage or to a "loses N life" effect.
 - `EventPattern.ManaAbilityResolved` — When a mana ability of this permanent resolves — "Whenever a mana ability of this creature resolves" (the ability Tyvar the Bellicose grants).
 - `EventPattern.ManifestedDreadEvent(player: Player)` — Whenever a player manifests dread (CR 701.60).

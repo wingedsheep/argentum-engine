@@ -58,6 +58,8 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.engine.core.LifeChangeReason
+import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.predicates.evaluateWith
@@ -397,6 +399,11 @@ class TriggerDetector(
         // (e.g., Deeproot Pilgrimage). Fires the trigger at most once per source regardless of how
         // many matching permanents were tapped simultaneously; the per-event path skips batch taps.
         detectTapBatchTriggers(state, events, triggers, index)
+
+        // Detect "whenever one or more [players] lose [exactly N] life" batching triggers
+        // (LifeLossEvent(batch = true), e.g. Ob Nixilis, Captive Kingpin). Sums each player's
+        // losses over the batch and fires at most once per source; the per-event path skips them.
+        detectLifeLossBatchTriggers(state, events, triggers, index)
 
         // Detect "whenever you untap one or more permanents …" batching triggers (e.g. The
         // Millennium Calendar). The untap step untaps all your permanents in one batch; this fires
@@ -3244,6 +3251,56 @@ class TriggerDetector(
                         sourceName = entry.cardComponent.name,
                         controllerId = entry.controllerId,
                         triggerContext = TriggerContext(triggeringEntityId = matched.first())
+                    )
+                )
+            }
+        }
+    }
+
+    /**
+     * Detect "whenever one or more [players] lose life" / "… each lose exactly N life" batching
+     * triggers (`LifeLossEvent(batch = true)` — Ob Nixilis, Captive Kingpin). Every life-reducing
+     * [LifeChangedEvent] in the batch — damage, "loses N life", radiation, a life payment — is summed
+     * per player, so combat damage from three 1/1s is one loss of 3 (Ob Nixilis ruling). The trigger
+     * fires **once** for the batch if any matching player lost life (and, with `exactAmount`, if any
+     * matching player's total is exactly that amount), however many players qualify. That player and
+     * their total are bound as the triggering player and `damageAmount`.
+     */
+    private fun detectLifeLossBatchTriggers(
+        state: GameState,
+        events: List<EngineGameEvent>,
+        triggers: MutableList<PendingTrigger>,
+        index: TriggerIndex
+    ) {
+        var lostByPlayer: MutableMap<EntityId, Int>? = null
+        for (event in events) {
+            if (event !is LifeChangedEvent || event.reason == LifeChangeReason.LIFE_GAIN) continue
+            if (event.oldLife <= event.newLife) continue
+            val totals = lostByPlayer ?: mutableMapOf<EntityId, Int>().also { lostByPlayer = it }
+            totals[event.playerId] = (totals[event.playerId] ?: 0) + (event.oldLife - event.newLife)
+        }
+        val totals = lostByPlayer ?: return
+
+        for (entry in index.getEntitiesForCategory(TriggerCategory.LIFE_LOSS)) {
+            for (ability in entry.abilities) {
+                val trigger = ability.trigger
+                if (trigger !is EventPattern.LifeLossEvent || !trigger.batch) continue
+                val exact = trigger.exactAmount
+                val hit = totals.entries.firstOrNull { (playerId, lost) ->
+                    (exact == null || lost == exact) &&
+                        matcher.matchesPlayer(state, trigger.player, playerId, entry.controllerId)
+                } ?: continue
+                triggers.add(
+                    PendingTrigger(
+                        ability = ability,
+                        sourceId = entry.entityId,
+                        sourceName = entry.cardComponent.name,
+                        controllerId = entry.controllerId,
+                        triggerContext = TriggerContext(
+                            triggeringEntityId = hit.key,
+                            triggeringPlayerId = hit.key,
+                            damageAmount = hit.value
+                        )
                     )
                 )
             }

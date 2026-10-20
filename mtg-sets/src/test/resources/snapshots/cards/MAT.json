@@ -248,6 +248,100 @@
     ]
 }
 
+// Ob Nixilis, Captive Kingpin
+{
+    "name": "Ob Nixilis, Captive Kingpin",
+    "manaCost": "{2}{B}{R}",
+    "typeLine": "Legendary Creature — Demon",
+    "oracleText": "Flying, trample\nWhenever one or more opponents each lose exactly 1 life, put a +1/+1 counter on Ob Nixilis. Exile the top card of your library. Until your next end step, you may play that card.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ob Nixilis, Captive Kingpin:1",
+                "trigger": {
+                    "type": "LifeLossEvent",
+                    "player": "EachOpponent",
+                    "batch": true,
+                    "exactAmount": 1
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "gathered0",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Exile"
+                                    }
+                                },
+                                {
+                                    "type": "GrantMayPlayFromExile",
+                                    "from": "gathered0",
+                                    "expiry": {
+                                        "type": "UntilControllerStep",
+                                        "step": "END"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever one or more opponents each lose exactly 1 life, put a +1/+1 counter on Ob Nixilis. Exile the top card of your library. Until your next end step, you may play that card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "MYTHIC",
+        "artist": "Zezhou Chen",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/ddb68233-3683-41bd-9b6e-4f07a1b54244.jpg?1783916511",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "Ob Nixilis's last ability will trigger if an opponent is dealt exactly 1 damage, pays exactly 1 life, or loses exactly 1 life some other way."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "Ob Nixilis's last ability looks at all combat damage dealt to an opponent in total to determine whether it triggers. For example, if three 1/1 creatures deal combat damage to an opponent, that player loses 3 life. Ob Nixilis's ability won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Pia Nalaar, Consul of Revival
 {
     "name": "Pia Nalaar, Consul of Revival",

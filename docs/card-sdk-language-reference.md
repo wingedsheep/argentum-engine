@@ -7546,7 +7546,7 @@ put on the player by anyone: "whenever you get one or more {E}", `CountersPlaced
 `draws(firstInDrawStep?)`,
 `drawsNth(n)`, `revealsFirstDraw(card?)`, `discards(card?, batch?, firstTimeEachTurn?)`, `mills(card?, batch?)`, `cycles()`, `playsLand(…)`,
 `permanentTurnedFaceUp(filter)`, `searchesLibrary()`, `shufflesLibrary()`, `gainsLife(firstTimeEachTurn?)`,
-`losesLife()`, `losesGame()`, `sacrifices(filter, batch?)`,
+`losesLife(batch?, exactly?)`, `losesGame()`, `sacrifices(filter, batch?)`,
 `sacrificesAnother(filter)`, `taps(filter, batch?)`, `tapsLandForMana(land?)`, `createsToken(token?)`,
 `exploits(nontoken?)`, `commitsCrime()`, `givesAGift()`, `scries()`, `surveils()`, `scriesOrSurveils()`, `proliferates()`,
 `discovers()`, `collectsEvidence()`, `forages()`, `investigates(firstTimeEachTurn?)`, `solvesACase()`, `clashes(andWins?)`,
@@ -8873,6 +8873,8 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
 - `Triggers.you.losesLife()` — you lose any life.
 - `Triggers.anyPlayer.losesLife()` — anyone loses life.
 - `Triggers.anOpponent.losesLife()` — an opponent loses life (fires per opponent life-loss event; read the amount via `ContextPropertyKey.TRIGGER_LIFE_LOST`). Bloodthirsty Conqueror; Kefka, Ruler of Ruin (pair with `triggerRestriction = Conditions.IsYourTurn` for "during your turn").
+- `Triggers.anOpponent.losesLife(batch = true)` — "whenever one or more opponents lose life": `LifeLossEvent(batch = true)`, fires **once per simultaneous batch** however many opponents lost life (Emet-Selch of the Third Seat). The triggering player is one opponent who lost life, `damageAmount` their total.
+- `Triggers.anOpponent.losesLife(exactly = 1)` — "whenever one or more opponents each lose exactly 1 life" (Ob Nixilis, Captive Kingpin): `LifeLossEvent(batch = true, exactAmount = 1)`. Each opponent's losses in the batch — damage, "loses N life", radiation, a life payment — are **summed** first (three 1/1s connecting at once are a loss of 3, so it doesn't fire), then the trigger fires once if any opponent's total is exactly N. `exactAmount` requires `batch`. Detected by `TriggerDetector.detectLifeLossBatchTriggers`; the per-event matcher skips batch patterns.
 - `Triggers.or(Triggers.you.gainsLife(), Triggers.you.losesLife())` — "gain or lose life" as **one** ability, so a "triggers only once each turn" limit covers both halves (Moonstone Harbinger, Wax-Wane Witness). There is no combined verb.
 - `Triggers.anyPlayer.losesGame()` — a player loses the game (CR 104.3; backed by `EventPattern.PlayerLostGameEvent`, matched against the engine's `PlayerLostEvent`). Fires for every player's loss; `Player.TriggeringPlayer` inside the effect is the loser. Narrow to one player with a `triggerRestriction` — Shinryu, Transcendent Rival's "When the chosen player loses the game, you win the game" uses `triggerRestriction = Conditions.TriggeringPlayerIs(Player.ChosenOpponent)` + `Effects.WinGame()`.
 

@@ -901,6 +901,9 @@ class TriggerMatcher(
             // singular templating), matched against each token-creation ZoneChangeEvent.
             is EventPattern.TokenCreationEvent -> matchesTokenCreationTrigger(trigger, event, controllerId, state)
             is EventPattern.LifeLossEvent -> {
+                // Batch ("one or more … lose [exactly N] life") triggers fire once per batch,
+                // handled by detectLifeLossBatchTriggers — never once per event here.
+                !trigger.batch &&
                 event is LifeChangedEvent &&
                     event.reason != com.wingedsheep.engine.core.LifeChangeReason.LIFE_GAIN &&
                     event.oldLife > event.newLife &&

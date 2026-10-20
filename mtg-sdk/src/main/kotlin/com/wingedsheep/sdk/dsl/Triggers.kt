@@ -1075,8 +1075,14 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
     fun gainsLife(firstTimeEachTurn: Boolean = false): TriggerSpec =
         spec(LifeGainEvent(player, firstTimeEachTurn = firstTimeEachTurn))
 
-    /** "loses life" — the amount is `TRIGGER_LIFE_LOST`. */
-    fun losesLife(): TriggerSpec = spec(LifeLossEvent(player))
+    /**
+     * "loses life" — once per life-loss event; the amount is `TRIGGER_LIFE_LOST`. [batch] is "one or
+     * more [players] lose life", once per simultaneous batch; [exactly] is "one or more [players]
+     * each lose exactly N life" (Ob Nixilis, Captive Kingpin), summed per player over the batch and
+     * always batched. See [LifeLossEvent].
+     */
+    fun losesLife(batch: Boolean = false, exactly: Int? = null): TriggerSpec =
+        spec(LifeLossEvent(player, batch = batch || exactly != null, exactAmount = exactly))
 
     /** "loses the game" (CR 104.3). */
     fun losesGame(): TriggerSpec = spec(PlayerLostGameEvent(player))
