@@ -35,7 +35,7 @@ class ArcadesSabbothScenarioTest : ScenarioTestBase() {
                 val projected = game.state.projectedState
 
                 withClue("Arcades Sabboth buffs itself") {
-                    projected.getToughness(game.findPermanent("Arcades Sabboth")!!) shouldBe 10
+                    projected.getToughness(game.findPermanent("Arcades Sabboth")!!) shouldBe 9
                 }
                 withClue("untapped Grizzly Bears") {
                     projected.getToughness(game.findPermanent("Grizzly Bears")!!) shouldBe 4

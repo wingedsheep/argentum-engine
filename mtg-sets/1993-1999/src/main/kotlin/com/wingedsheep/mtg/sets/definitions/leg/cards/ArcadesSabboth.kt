@@ -16,9 +16,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Arcades Sabboth
- * {2}{G}{W}{U}
+ * {2}{G}{G}{W}{W}{U}{U}
  * Legendary Creature — Elder Dragon
- * 4/8
+ * 7/7
  *
  * Flying
  * At the beginning of your upkeep, sacrifice Arcades Sabboth unless you pay {G}{W}{U}.
@@ -29,11 +29,11 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * control" — a vigilant attacker stays untapped but loses the bonus while it's attacking.
  */
 val ArcadesSabboth = card("Arcades Sabboth") {
-    manaCost = "{2}{G}{W}{U}"
+    manaCost = "{2}{G}{G}{W}{W}{U}{U}"
     colorIdentity = "GUW"
     typeLine = "Legendary Creature — Elder Dragon"
-    power = 4
-    toughness = 8
+    power = 7
+    toughness = 7
     oracleText = "Flying\n" +
         "At the beginning of your upkeep, sacrifice Arcades Sabboth unless you pay {G}{W}{U}.\n" +
         "Each untapped creature you control gets +0/+2 as long as it's not attacking.\n" +

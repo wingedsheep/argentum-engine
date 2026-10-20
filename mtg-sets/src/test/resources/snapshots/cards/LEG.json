@@ -955,12 +955,12 @@
 // Arcades Sabboth
 {
     "name": "Arcades Sabboth",
-    "manaCost": "{2}{G}{W}{U}",
+    "manaCost": "{2}{G}{G}{W}{W}{U}{U}",
     "typeLine": "Legendary Creature — Elder Dragon",
     "oracleText": "Flying\nAt the beginning of your upkeep, sacrifice Arcades Sabboth unless you pay {G}{W}{U}.\nEach untapped creature you control gets +0/+2 as long as it's not attacking.\n{W}: Arcades Sabboth gets +0/+1 until end of turn.",
     "creatureStats": {
-        "power": 4,
-        "toughness": 8
+        "power": 7,
+        "toughness": 7
     },
     "keywords": [
         "FLYING"
@@ -1515,6 +1515,7 @@
         "collectorNumber": "222",
         "rarity": "RARE",
         "artist": "Andi Rusu",
+        "flavorText": "Thundering down from Hammerheim, no foe could slow Bartel's charge.",
         "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1a42691-98bb-4234-9b56-085e6677f3e4.jpg?1783948040"
     },
     "colorIdentityOverride": [
@@ -3535,10 +3536,10 @@
     },
     "metadata": {
         "collectorNumber": "11",
-        "rarity": "UNCOMMON",
+        "rarity": "RARE",
         "artist": "Quinton Hoover",
         "flavorText": "Sometimes it's best to let sleeping dragons lie.",
-        "imageUri": "https://cards.scryfall.io/normal/front/3/6/369b3ebc-572b-4614-aacb-4990309d8848.jpg?1783942966",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/ef3651d4-969c-464d-a444-40a640d0c6ba.jpg?1783948087",
         "rulings": [
             {
                 "date": "2004-10-04",
@@ -4340,6 +4341,7 @@
         "collectorNumber": "55",
         "rarity": "RARE",
         "artist": "Kaja Foglio",
+        "flavorText": "Some people say that the world is round, and if you travel far enough you'll come to the other side, where everything is upside down.",
         "imageUri": "https://cards.scryfall.io/normal/front/6/a/6a63e119-3b1b-4964-a4b9-b10170ff542b.jpg?1783948076"
     },
     "colorIdentityOverride": [
@@ -6116,6 +6118,7 @@
         "collectorNumber": "228",
         "rarity": "RARE",
         "artist": "Julie Baroh",
+        "flavorText": "Urborg became the final resting place of many swordsmen of renown, their steel outmatched by the wiles of Gwendlyn.",
         "imageUri": "https://cards.scryfall.io/normal/front/4/7/473d70b6-a88c-49f4-9415-19919c4468ae.jpg?1783948039"
     },
     "colorIdentityOverride": [

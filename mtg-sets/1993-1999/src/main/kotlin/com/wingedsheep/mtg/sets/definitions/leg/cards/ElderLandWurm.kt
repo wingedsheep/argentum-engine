@@ -35,11 +35,11 @@ val ElderLandWurm = card("Elder Land Wurm") {
     }
 
     metadata {
-        rarity = Rarity.UNCOMMON
+        rarity = Rarity.RARE
         collectorNumber = "11"
         artist = "Quinton Hoover"
         flavorText = "Sometimes it's best to let sleeping dragons lie."
-        imageUri = "https://cards.scryfall.io/normal/front/3/6/369b3ebc-572b-4614-aacb-4990309d8848.jpg?1783942966"
+        imageUri = "https://cards.scryfall.io/normal/front/e/f/ef3651d4-969c-464d-a444-40a640d0c6ba.jpg?1783948087"
         ruling("2004-10-04", "Another effect can give Elder Land Wurm defender after it has lost it. Blocking again will cause it to lose that instance of defender too.")
     }
 }

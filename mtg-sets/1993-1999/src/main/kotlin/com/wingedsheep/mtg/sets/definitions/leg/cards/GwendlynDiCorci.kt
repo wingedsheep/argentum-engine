@@ -33,6 +33,8 @@ val GwendlynDiCorci = card("Gwendlyn Di Corci") {
         rarity = Rarity.RARE
         collectorNumber = "228"
         artist = "Julie Baroh"
+        flavorText = "Urborg became the final resting place of many swordsmen of renown, their steel " +
+            "outmatched by the wiles of Gwendlyn."
         imageUri = "https://cards.scryfall.io/normal/front/4/7/473d70b6-a88c-49f4-9415-19919c4468ae.jpg?1783948039"
     }
 }

@@ -28,6 +28,8 @@ val FieldOfDreams = card("Field of Dreams") {
         rarity = Rarity.RARE
         collectorNumber = "55"
         artist = "Kaja Foglio"
+        flavorText = "Some people say that the world is round, and if you travel far enough you'll come to " +
+            "the other side, where everything is upside down."
         imageUri = "https://cards.scryfall.io/normal/front/6/a/6a63e119-3b1b-4964-a4b9-b10170ff542b.jpg?1783948076"
     }
 }

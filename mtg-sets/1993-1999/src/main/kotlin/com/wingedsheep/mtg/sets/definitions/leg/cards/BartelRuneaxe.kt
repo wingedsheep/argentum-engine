@@ -35,6 +35,7 @@ val BartelRuneaxe = card("Bartel Runeaxe") {
         rarity = Rarity.RARE
         collectorNumber = "222"
         artist = "Andi Rusu"
+        flavorText = "Thundering down from Hammerheim, no foe could slow Bartel's charge."
         imageUri = "https://cards.scryfall.io/normal/front/f/1/f1a42691-98bb-4234-9b56-085e6677f3e4.jpg?1783948040"
     }
 }
