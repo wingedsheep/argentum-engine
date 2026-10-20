@@ -26,6 +26,26 @@ class SetArchetypesTest : StringSpec({
         synergies.archetypes.map { it.colors.toSet() } shouldContainExactly ALL_COLOR_PAIRS.toList()
     }
 
+    "Legends exposes its five allied gold-legend pairs" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("leg"))
+
+        synergies.setName shouldBe "Legends"
+        synergies.archetypes.map { it.name } shouldContainExactly listOf(
+            "Banding Skies",
+            "Legendary Control",
+            "Landwalk Aggro",
+            "Rampage Stompy",
+            "Selesnya Legends",
+        )
+        synergies.archetypes.map { it.colors.toSet() } shouldContainExactly listOf(
+            setOf(Color.WHITE, Color.BLUE),
+            setOf(Color.BLUE, Color.BLACK),
+            setOf(Color.BLACK, Color.RED),
+            setOf(Color.RED, Color.GREEN),
+            setOf(Color.GREEN, Color.WHITE),
+        )
+    }
+
     "Dominaria United exposes all ten limited color-pair archetypes" {
         val synergies = requireNotNull(SetArchetypes.getForSet("dmu"))
 

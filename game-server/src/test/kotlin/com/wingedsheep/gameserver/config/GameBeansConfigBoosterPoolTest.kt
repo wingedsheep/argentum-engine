@@ -121,6 +121,33 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         (mythics.toDouble() / packs) shouldBe (0.125 plusOrMinus 0.03)
     }
 
+    test("Legends draft pack is the classic 11 commons, 3 uncommons and a rare from its full pool") {
+        // 15-card booster, 11C / 3U / 1R; the set is 75 commons, 114 uncommons and 121 rares. The
+        // C2/U2 print-sheet doubling (46 commons, 7 uncommons) is not modelled: every card of a
+        // rarity is equally likely.
+        val leg = boosterGenerator.availableSets["LEG"].shouldNotBeNull()
+        leg.fullyImplemented shouldBe true
+        leg.boosterStrategy shouldBe StandardBooster()
+        val eligible = leg.cards.filter { it.metadata.inBooster && !it.typeLine.isBasicLand }
+        eligible.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 75, Rarity.UNCOMMON to 114, Rarity.RARE to 121,
+        )
+        val eligibleNames = eligible.map { it.name }.toSet()
+        repeat(500) {
+            val pack = boosterGenerator.generateBooster("LEG")
+            pack.size shouldBe 15
+            pack.map { it.name }.toSet().size shouldBe 15
+            withClue("pack ${pack.map { it.name }} holds an off-sheet card") {
+                pack.all { it.name in eligibleNames } shouldBe true
+            }
+            pack.count { it.metadata.rarity == Rarity.COMMON } shouldBe 11
+            pack.count { it.metadata.rarity == Rarity.UNCOMMON } shouldBe 3
+            pack.count { it.metadata.rarity == Rarity.RARE } shouldBe 1
+        }
+        leg.basicLands.map { it.name }.toSet() shouldBe
+            setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
+    }
+
     test("every Dominaria United draft pack opens exactly one legendary creature from its booster pool") {
         val dmu = boosterGenerator.availableSets["DMU"].shouldNotBeNull()
         dmu.fullyImplemented shouldBe true

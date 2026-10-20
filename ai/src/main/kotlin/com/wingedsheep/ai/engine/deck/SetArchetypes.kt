@@ -73,6 +73,22 @@ object SetArchetypes {
                     "Large efficient creatures that overpower opponents through raw stats and size. Simple but effective."),
             )
         ),
+        "LEG" to SetSynergies(
+            setCode = "LEG",
+            setName = "Legends",
+            archetypes = listOf(
+                Archetype("Banding Skies", listOf(Color.WHITE, Color.BLUE),
+                    "White banding creatures and blue fliers hold the ground while evasive attackers chip in. Heavy legends like Hunding Gjornersen and Jedit Ojanen top the curve and end the game."),
+                Archetype("Legendary Control", listOf(Color.BLUE, Color.BLACK),
+                    "Blue counterspells and bounce plus black removal grind the opponent out of threats. Evasive legends like Ramirez DePietro and Princess Lucrezia close once the board is under control."),
+                Archetype("Landwalk Aggro", listOf(Color.BLACK, Color.RED),
+                    "Aggressive black and red creatures, landwalkers among them, push damage early while burn clears blockers. Tor Wauki and Barktooth Warbeard turn the last few points into lethal."),
+                Archetype("Rampage Stompy", listOf(Color.RED, Color.GREEN),
+                    "Big green and red bodies with rampage punish double blocks and trample through defences. Ramp into Marhault Elsdragon and Jerrard of the Closed Fist and attack every turn."),
+                Archetype("Selesnya Legends", listOf(Color.GREEN, Color.WHITE),
+                    "Efficient green creatures and white protection build a sturdy midrange board. Sir Shandlar, Lord Magnus and Torsten Von Ursus outclass the opponent's creatures in the late game."),
+            )
+        ),
         "ONS" to SetSynergies(
             setCode = "ONS",
             setName = "Onslaught",
