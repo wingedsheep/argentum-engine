@@ -88,6 +88,7 @@ class GatherUntilMatchExecutor(
             Player.EachDefendingPlayer -> com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state)
             Player.Each -> state.activePlayers
             Player.ActivePlayerFirst -> state.apnapOrder
+            Player.EachStartingWithYou -> state.turnOrderStartingWith(context.controllerId)
             Player.EachOpponent -> state.getOpponents(context.controllerId)
             else -> listOf(TargetResolutionUtils.resolvePlayerRef(player, context, state) ?: context.controllerId)
         }

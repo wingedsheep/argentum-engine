@@ -413,6 +413,7 @@ object TargetResolutionUtils {
             // either to its first player is exactly the bug they exist to avoid, so neither gets a
             // single-player arm.
             Player.Each, Player.EachOpponent, Player.EachDefendingPlayer, Player.ActivePlayerFirst,
+            Player.EachStartingWithYou,
             Player.EachTargetedPlayer, Player.OwnersOfLinkedExile, is Player.InCollection -> null
         }
     }
@@ -612,6 +613,7 @@ object TargetResolutionUtils {
                 // per-player choices are made in turn order starting with the active player
                 // ("each player sacrifices two creatures of their choice").
                 Player.ActivePlayerFirst -> state.apnapOrder
+                Player.EachStartingWithYou -> state.turnOrderStartingWith(context.controllerId)
                 Player.EachOpponent -> state.getOpponents(context.controllerId)
                 else -> resolvePlayerRef(effectTarget.player, context, state)
                     ?.let { listOf(it) } ?: emptyList()

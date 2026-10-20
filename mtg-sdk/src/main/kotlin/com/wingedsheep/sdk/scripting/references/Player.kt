@@ -93,6 +93,21 @@ sealed interface Player {
         override val description: String = "each player"
     }
 
+    /**
+     * All players in turn order **starting with you** (the ability's controller), then each other
+     * player in turn order from the one after you — "Starting with you, each player …" (Eureka).
+     *
+     * The closest neighbours don't take the axis: [Each] carries no order, and [ActivePlayerFirst]
+     * starts with the *active* player, which is a different player when the spell or ability
+     * resolves on another player's turn. Inside a per-player loop the iterated player is rebound to
+     * `Player.You`, so the rotation is anchored to the controller at the moment the loop starts.
+     */
+    @SerialName("EachStartingWithYou")
+    @Serializable
+    data object EachStartingWithYou : Player {
+        override val description: String = "each player, starting with you"
+    }
+
     /** Any player (for matching/filtering) */
     @SerialName("Any")
     @Serializable
@@ -473,6 +488,7 @@ sealed interface Player {
             is InCollection -> "those players'"
             Each -> "each player's"
             ActivePlayerFirst -> "each player's"
+            EachStartingWithYou -> "each player's"
             EachOpponent -> "each opponent's"
             Any -> "a player's"
             is ContextPlayer -> "that player's"

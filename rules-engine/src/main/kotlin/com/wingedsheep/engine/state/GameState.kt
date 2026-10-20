@@ -950,12 +950,18 @@ data class GameState(
      * there is no active player (before the first turn begins).
      */
     val apnapOrder: List<EntityId>
-        get() {
-            val ordered = activePlayers
-            val active = activePlayerId ?: return ordered
-            val index = ordered.indexOf(active)
-            return if (index <= 0) ordered else ordered.drop(index) + ordered.take(index)
-        }
+        get() = activePlayerId?.let { turnOrderStartingWith(it) } ?: activePlayers
+
+    /**
+     * [activePlayers] rotated to start with [playerId], then the remaining players in turn order
+     * from the one after them — "starting with you, each player …". Plain turn order when
+     * [playerId] has left the game.
+     */
+    fun turnOrderStartingWith(playerId: EntityId): List<EntityId> {
+        val ordered = activePlayers
+        val index = ordered.indexOf(playerId)
+        return if (index <= 0) ordered else ordered.drop(index) + ordered.take(index)
+    }
 
     /**
      * Opponents of a player, in turn order, excluding players who have lost or left the

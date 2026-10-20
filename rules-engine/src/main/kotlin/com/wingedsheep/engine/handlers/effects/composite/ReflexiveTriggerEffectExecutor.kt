@@ -384,6 +384,8 @@ class ReflexiveTriggerEffectExecutor(
         is com.wingedsheep.sdk.scripting.references.Player.EachDefendingPlayer -> com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state)
         is com.wingedsheep.sdk.scripting.references.Player.Each,
         is com.wingedsheep.sdk.scripting.references.Player.ActivePlayerFirst -> state.turnOrder
+        is com.wingedsheep.sdk.scripting.references.Player.EachStartingWithYou ->
+            state.turnOrderStartingWith(context.controllerId)
         is com.wingedsheep.sdk.scripting.references.Player.EachOpponent ->
             state.turnOrder.filter { it != context.controllerId }
         else -> TargetResolutionUtils.resolvePlayerRef(player, context, state)?.let { listOf(it) }

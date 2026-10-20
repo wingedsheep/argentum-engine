@@ -5565,6 +5565,16 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   sacrifices it and draws a card" = `Effects.SacrificeTarget(EffectTarget.GrantingSource,
   sacrificedByItsController = true) then Effects.DrawCards(1,
   EffectTarget.PlayerRef(Player.ControllerOfGrantingSource))`.
+- `Player.EachStartingWithYou` — every player in turn order **starting with you** (the ability's
+  controller), then the next player in turn order and so on — "Starting with you, each player …".
+  Not `Player.ActivePlayerFirst`, which starts with the *active* player and so asks the wrong player
+  first when the spell resolves on another player's turn (a sorcery cast with Leyline of
+  Anticipation, an instant, a trigger). Resolves wherever the multi-player references do
+  (`ForEachPlayer`, `forEachPlayerCollecting`, the gathers, `AnyPlayerMayPay`). Eureka ("starting with
+  you, each player may put a permanent card from their hand onto the battlefield. Repeat this process
+  until no one puts a card onto the battlefield") = `RepeatWhile(Pipeline {
+  forEachPlayerCollecting(Player.EachStartingWithYou) { chooseUpTo(1, permanents in hand) → move(→
+  BATTLEFIELD) } }, WhileCondition(CollectionContainsMatch(putThisRound)))`.
 - `handle.asPlayer` (`Player.BoundVariable(name)`) — the player chosen for a named target, read in a
   player-typed slot: `CardSource.FromZone(Zone.HAND, opponent.asPlayer)`,
   `DynamicAmounts.damageReceivedThisTurn(opponent.asPlayer)`. It shares `EffectTarget.BoundVariable`'s

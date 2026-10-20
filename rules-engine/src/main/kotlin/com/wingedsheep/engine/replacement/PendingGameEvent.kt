@@ -129,7 +129,7 @@ sealed interface PendingGameEvent {
                     state.getEntity(it)?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()?.targetId
                 } == playerId
                 Player.You -> playerId == sourceControllerId
-                Player.Each, Player.Any, Player.ActivePlayerFirst -> true
+                Player.Each, Player.Any, Player.ActivePlayerFirst, Player.EachStartingWithYou -> true
                 Player.EachOpponent, Player.AnOpponent, Player.TargetOpponent -> state.isOpponentOf(playerId, sourceControllerId)
                 else -> context?.copy(controllerId = sourceControllerId)?.resolvePlayerTargets(
                     com.wingedsheep.sdk.scripting.targets.EffectTarget.PlayerRef(gain.player), state)?.contains(playerId) == true

@@ -69,6 +69,7 @@ class AnyPlayerMayPayExecutor(
         // "any player may…"), preserving APNAP order. Opponents are relative to the controller.
         val eligible = when (effect.eligiblePlayers) {
             Player.Each, Player.ActivePlayerFirst -> apnapOrder
+            Player.EachStartingWithYou -> state.turnOrderStartingWith(context.controllerId)
             Player.EachOpponent -> state.getOpponents(context.controllerId).toSet()
                 .let { opponents -> apnapOrder.filter { it in opponents } }
             Player.You -> apnapOrder.filter { it == context.controllerId }

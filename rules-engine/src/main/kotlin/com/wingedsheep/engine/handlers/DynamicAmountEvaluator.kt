@@ -1617,10 +1617,8 @@ class DynamicAmountEvaluator(
                 // when the entity itself is the player — mirrors TargetResolutionUtils.
                 listOfNotNull(context.triggeringPlayerId ?: context.triggeringEntityId)
             }
-            is Player.ActivePlayerFirst -> {
-                val activePlayer = state.activePlayerId ?: return state.activePlayers
-                listOf(activePlayer) + state.activePlayers.filter { it != activePlayer }
-            }
+            is Player.ActivePlayerFirst -> state.apnapOrder
+            is Player.EachStartingWithYou -> state.turnOrderStartingWith(context.controllerId)
             is Player.Candidate -> listOfNotNull(context.candidatePlayerId)
             is Player.ChosenOpponent -> listOfNotNull(
                 context.chosenOpponent(state)

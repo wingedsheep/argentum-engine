@@ -170,7 +170,7 @@ object MaximumHandSize {
         when (scope) {
             Player.You -> playerId == controllerId
             Player.EachOpponent -> playerId != controllerId
-            Player.Each, Player.Any, Player.ActivePlayerFirst -> true
+            Player.Each, Player.Any, Player.ActivePlayerFirst, Player.EachStartingWithYou -> true
             // The opponent durably chosen as the source entered (Cursed Rack), read from the
             // source's CastChoicesComponent[OPPONENT].
             Player.ChosenOpponent -> state.getEntity(sourceId)?.chosenOpponent() == playerId

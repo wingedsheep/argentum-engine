@@ -316,6 +316,7 @@ class ForEachExecutor(
             Player.EachDefendingPlayer -> com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state)
             Player.Each -> state.activePlayers
             Player.ActivePlayerFirst -> state.apnapOrder
+            Player.EachStartingWithYou -> state.turnOrderStartingWith(context.controllerId)
             Player.You -> listOf(context.controllerId)
             Player.EachOpponent -> state.getOpponents(context.controllerId)
             // Distinct owners of the cards still in the source's linked-exile pile. Resolve to
