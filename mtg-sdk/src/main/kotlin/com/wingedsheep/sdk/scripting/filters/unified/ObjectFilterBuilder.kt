@@ -79,6 +79,14 @@ interface ObjectFilterBuilder<out Self> {
     /** Match a permanent's current mana abilities, including intrinsic and granted abilities. */
     fun withManaAbility() = withStatePredicate(StatePredicate.HasManaAbility)
 
+    /**
+     * "With an activated ability" / "with activated abilities that aren't mana abilities" — counts
+     * the object's current activated abilities, granted ones included (see
+     * [StatePredicate.HasActivatedAbilities]).
+     */
+    fun withActivatedAbilities(atLeast: Int = 1, excludeManaAbilities: Boolean = false) =
+        withStatePredicate(StatePredicate.HasActivatedAbilities(atLeast, excludeManaAbilities))
+
     /** Add a subtype requirement */
     fun withSubtype(subtype: Subtype) = withCardPredicate(CardPredicate.HasSubtype(subtype))
 

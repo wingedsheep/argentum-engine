@@ -6888,6 +6888,17 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   land types can grant intrinsic mana abilities even to face-down permanents. Requires the
   registry-backed engine evaluator; registry-free layer filters and historical snapshots
   fail closed, so use this predicate for live targeting, gathering, and resolution queries.
+- `.withActivatedAbilities(atLeast = 1, excludeManaAbilities = false)` —
+  `StatePredicate.HasActivatedAbilities`: the object currently has at least `atLeast` activated
+  abilities, counted in any zone — printed and copied, class `Level N` lines, unlocked Room doors,
+  keyword activated abilities (cycling, crew, saddle), intrinsic basic-land mana abilities, and every
+  effect/static/emblem grant — whether or not any can be activated now, or from this zone (a creature
+  with cycling has one on the battlefield). Removed and face-down own abilities don't count.
+  `excludeManaAbilities` reads "activated abilities that aren't mana abilities" ("put all creature
+  cards with activated abilities that aren't mana abilities from among the milled cards into your
+  hand" — Tazri, Stalwart Survivor). Registry-backed like `.withManaAbility()`: fails closed in
+  registry-free layer filters. Unlike the printed-only `CardPredicate.HasActivatedAbility` /
+  `HasNonManaActivatedAbility` flags, it sees granted and removed abilities.
   Power Sink composes a payer-rebinding player loop and optional payment gate; its decline
   branch counters, taps `Land.withManaAbility()`, and loses the payer's unspent mana.
 - `.faceDown()` — face-down state.
@@ -14715,6 +14726,11 @@ that works in both resolution and static-ability (projection) contexts.
 - `SourceHasSubtype(subtype)` — `SourceMatches(GameObjectFilter.Any.withSubtype(...))`;
   Changeling is honored.
 - `SourceHasKeyword(keyword)` — `SourceMatches(GameObjectFilter.Any.withKeyword(...))`.
+- `SourceHasAnotherActivatedAbility` — "Activate only if this creature has another activated
+  ability": `SourceMatches(GameObjectFilter.Any.withActivatedAbilities(atLeast = 2))`. On an
+  ability's own `ActivationRestriction.OnlyIfCondition`, the ability being activated is one of the
+  source's, so a second is "another" (two copies of the same granted ability count for each other).
+  Tazri, Stalwart Survivor's granted mana ability.
 - `SourceHasCounter(counterType)` — `SourceMatches(GameObjectFilter.Any` with the
   corresponding `StatePredicate.HasCounter` / `HasAnyCounter`).
 - `SourceCounterCountAtLeast(counterType, count)` — the threshold form of `SourceHasCounter`: the source has `count`+
@@ -16183,12 +16199,15 @@ restriction matches the spell context.
   hand (exile, graveyard, top of library, command zone, …). Mm'menon, the Right Hand's
   granted artifact mana ability. Generalizes `CastFromExileOnly` by allowing all non-hand
   origins instead of exile alone; rejects ability activations.
-- `ManaRestriction.CardTypeSpellsOrAbilitiesOnly(cardType, allowSpells?, allowAbilities?, negated?)` —
+- `ManaRestriction.CardTypeSpellsOrAbilitiesOnly(cardType, allowSpells?, allowAbilities?, negated?, permanentSourcesOnly?)` —
   Steelswarm Operator shape. Use `cardType = CardType.ENCHANTMENT, allowSpells = true` for
   "spend only to cast an enchantment spell." `negated = true` flips the type test for the
   "non[type]" wordings — The Emperor of Palamecia's "Spend this mana only to cast a noncreature
   spell" is `CardTypeSpellsOrAbilitiesOnly(CardType.CREATURE, negated = true)`; only the type
-  membership is negated, the allowSpells/allowAbilities gating is unchanged.
+  membership is negated, the allowSpells/allowAbilities gating is unchanged. Abilities of
+  `[type]` sources count in any zone (Steelswarm Operator's ruling); `permanentSourcesOnly = true`
+  limits them to sources on the battlefield — "Spend this mana only to activate an ability of a
+  creature" (Tazri, Stalwart Survivor: not a creature card's cycling or unearth).
 - `ManaRestriction.AbilityActivationOnly` — only ability activations (any activated ability of
   any source). Satisfied by `SpellPaymentContext.isAbilityActivation`; unlike
   `CardTypeSpellsOrAbilitiesOnly`, the ability's source card type doesn't matter. Compose with

@@ -40,6 +40,45 @@ sealed interface StatePredicate {
         override val description: String = "with a mana ability"
     }
 
+    /**
+     * The object currently has at least [atLeast] activated abilities — printed, copied, keyword
+     * (cycling, crew, saddle, class levels), intrinsic basic-land mana abilities, and every ability
+     * an effect, static ability or emblem grants it — whether or not any of them can be activated
+     * right now, or even from this zone. Abilities a lose-all-abilities effect removed, and a face-down
+     * permanent's own abilities, don't count. [excludeManaAbilities] narrows the count to "activated
+     * abilities that aren't mana abilities".
+     *
+     * "Has another activated ability" in an ability's own activation restriction is `atLeast = 2`:
+     * the ability being activated is always one of its source's own, so a second one is "another"
+     * (Tazri, Stalwart Survivor's granted mana ability — `Conditions.SourceHasAnotherActivatedAbility`).
+     *
+     * Neither neighbour takes this axis: [HasManaAbility] also counts triggered mana abilities and
+     * answers only yes/no, and `CardPredicate.HasActivatedAbility` / `HasNonManaActivatedAbility`
+     * are precomputed printed-only flags (zone-scoped for craft and Tsabo's Web, and readable without
+     * a game for companion checks), blind to granted and removed abilities.
+     */
+    @SerialName("HasActivatedAbilities")
+    @Serializable
+    data class HasActivatedAbilities(
+        val atLeast: Int = 1,
+        val excludeManaAbilities: Boolean = false,
+    ) : Entity {
+        init {
+            require(atLeast >= 1) { "atLeast must be positive, was $atLeast" }
+        }
+
+        override val description: String
+            get() {
+                val what = if (atLeast == 1) "an activated ability" else "$atLeast or more activated abilities"
+                val nonMana = when {
+                    !excludeManaAbilities -> ""
+                    atLeast == 1 -> " that isn't a mana ability"
+                    else -> " that aren't mana abilities"
+                }
+                return "with $what$nonMana"
+            }
+    }
+
     // =============================================================================
     // Tap State (Entity)
     // =============================================================================

@@ -58,6 +58,8 @@ data class SpellPaymentContext(
     val isAbilityActivation: Boolean = false,
     /** Card types of the source whose ability is being activated (empty for spell-cast contexts). */
     val abilitySourceCardTypes: Set<com.wingedsheep.sdk.core.CardType> = emptySet(),
+    /** True when the source whose ability is being activated is a permanent on the battlefield. */
+    val isAbilitySourceOnBattlefield: Boolean = false,
     /**
      * True when the spell is being cast from the caster's hand. Defaults to `true` because most
      * spell casts originate from hand and the standard [CastSpellEnumerator] path is hand-only;
@@ -185,7 +187,8 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
         !context.isAbilityActivation &&
             subtypes.any { sub -> context.subtypes.any { it.equals(sub, ignoreCase = true) } }
     is ManaRestriction.CardTypeSpellsOrAbilitiesOnly ->
-        if (context.isAbilityActivation) allowAbilities && (cardType in context.abilitySourceCardTypes) != negated
+        if (context.isAbilityActivation) allowAbilities && (!permanentSourcesOnly || context.isAbilitySourceOnBattlefield) &&
+            (cardType in context.abilitySourceCardTypes) != negated
         else allowSpells && (cardType in context.cardTypes) != negated
     // Negative restriction: only a spell cast can ever violate it, so every other kind of
     // payment passes untouched.

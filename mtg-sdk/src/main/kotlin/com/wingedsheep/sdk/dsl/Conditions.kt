@@ -1520,6 +1520,17 @@ object Conditions {
         SourceMatches(com.wingedsheep.sdk.scripting.GameObjectFilter.Any.withKeyword(keyword))
 
     /**
+     * "Activate only if this creature has another activated ability." Placed on an ability's own
+     * activation restriction, the ability being activated is always one of its source's activated
+     * abilities, so "another" is a second one — printed, keyword (cycling counts even on the
+     * battlefield) or granted, activatable now or not. Tazri, Stalwart Survivor's granted mana ability.
+     */
+    val SourceHasAnotherActivatedAbility: ConditionInterface =
+        SourceMatches(
+            com.wingedsheep.sdk.scripting.GameObjectFilter.Any.withActivatedAbilities(atLeast = 2)
+        )
+
+    /**
      * While this creature has a counter of the given type on it — of any kind when [counterType] is
      * `null`. Used for intervening-if triggers like Moonshadow.
      */

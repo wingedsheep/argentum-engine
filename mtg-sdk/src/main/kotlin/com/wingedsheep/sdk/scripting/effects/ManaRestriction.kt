@@ -415,6 +415,11 @@ sealed interface ManaRestriction {
      * any zone (battlefield, hand, graveyard, etc.) — the engine evaluates source type from
      * the activating source's [com.wingedsheep.sdk.core.TypeLine] (plus projected types for
      * battlefield permanents) at payment time.
+     *
+     * [permanentSourcesOnly] narrows the abilities half to sources on the battlefield — "spend this
+     * mana only to activate an ability of a creature", where Tazri, Stalwart Survivor's ruling
+     * (2023-05-12) excludes creature *cards* in other zones (cycling from hand, unearth from a
+     * graveyard).
      */
     @SerialName("CardTypeSpellsOrAbilitiesOnly")
     @Serializable
@@ -423,6 +428,7 @@ sealed interface ManaRestriction {
         val allowSpells: Boolean = true,
         val allowAbilities: Boolean = false,
         val negated: Boolean = false,
+        val permanentSourcesOnly: Boolean = false,
     ) : ManaRestriction {
         init {
             require(allowSpells || allowAbilities) {
@@ -435,7 +441,7 @@ sealed interface ManaRestriction {
             val typeName = (if (negated) "non" else "") + cardType.displayName.lowercase()
             val clauses = buildList {
                 if (allowSpells) add("cast $typeName spells")
-                if (allowAbilities) add("activate abilities of $typeName sources")
+                if (allowAbilities) add(if (permanentSourcesOnly) "activate abilities of ${typeName}s" else "activate abilities of $typeName sources")
             }
             append(clauses.joinToString(" or "))
         }

@@ -536,7 +536,7 @@ class BeginningPhaseManager(
     ): Boolean = when (predicate) {
         // Graveyard-only predicates; untap filters never see a card with the marker.
         // Cast history is cleared before the turn's untap step.
-        StatePredicate.HasManaAbility -> predicateEvaluator.matchesStatePredicate(state, entityId, predicate, projected = projected)
+        StatePredicate.HasManaAbility, is StatePredicate.HasActivatedAbilities -> predicateEvaluator.matchesStatePredicate(state, entityId, predicate, projected = projected)
         StatePredicate.SharesNameWithSpellCastThisTurn -> false
         StatePredicate.PutIntoGraveyardThisTurn -> false
         StatePredicate.MilledThisTurn -> false

@@ -481,7 +481,7 @@ internal class AffectsFilterResolver(
         // is trivially satisfied here; it only does work in PredicateEvaluator, where an object
         // that has left the battlefield can still be asked about.
         // Script introspection needs a card registry, which this projection stage does not carry.
-        StatePredicate.HasManaAbility -> false
+        StatePredicate.HasManaAbility, is StatePredicate.HasActivatedAbilities -> false
         StatePredicate.IsOnBattlefield -> true
         is StatePredicate.InZone -> predicate.zone == com.wingedsheep.sdk.core.Zone.BATTLEFIELD
         StatePredicate.IsTapped -> container.has<TappedComponent>()

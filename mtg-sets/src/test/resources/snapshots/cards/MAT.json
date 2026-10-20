@@ -556,6 +556,156 @@
     ]
 }
 
+// Tazri, Stalwart Survivor
+{
+    "name": "Tazri, Stalwart Survivor",
+    "manaCost": "{2}{W}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "Each creature you control has \"{T}: Add one mana of any of this creature's colors. Spend this mana only to activate an ability of a creature. Activate only if this creature has another activated ability.\"\n{W}{U}{B}{R}{G}, {T}: Mill five cards. Put all creature cards with activated abilities that aren't mana abilities from among the milled cards into your hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tazri, Stalwart Survivor:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}{U}{B}{R}{G}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "HasActivatedAbilities",
+                                        "excludeManaAbilities": true
+                                    }
+                                ]
+                            },
+                            "storeMatching": "matching2"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Mill five cards. Put all creature cards with activated abilities that aren't mana abilities from among the milled cards into your hand."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Tazri, Stalwart Survivor:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddManaOfChoice",
+                        "colorSet": {
+                            "type": "ManaColorSet.ColorsOf",
+                            "entity": "Self"
+                        },
+                        "restriction": {
+                            "type": "CardTypeSpellsOrAbilitiesOnly",
+                            "cardType": "CREATURE",
+                            "allowSpells": false,
+                            "allowAbilities": true,
+                            "permanentSourcesOnly": true
+                        }
+                    },
+                    "timing": "ManaAbility",
+                    "restrictions": [
+                        {
+                            "type": "ActivationOnlyIfCondition",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": {
+                                    "statePredicates": [
+                                        {
+                                            "type": "HasActivatedAbilities",
+                                            "atLeast": 2
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "isManaAbility": true
+                },
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "RARE",
+        "artist": "Manuel Castañón",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/227d0d7d-544b-4736-914d-10d5d752eb42.jpg?1783916528",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "The mana produced by the ability granted by Tazri's first ability may be spent only to activate an ability of a creature on the battlefield. It can't be spent to activate abilities of creature cards in other zones."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "The other activated ability the creature must have can be any activated ability, including one that can't be activated at the moment, or even one that can't be activated while the creature is on the battlefield. For example, you could tap a creature with cycling and Tazri's ability for mana."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Tranquil Frillback
 {
     "name": "Tranquil Frillback",

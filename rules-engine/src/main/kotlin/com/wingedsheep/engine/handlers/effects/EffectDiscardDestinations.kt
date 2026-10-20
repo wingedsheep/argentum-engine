@@ -28,7 +28,7 @@ object EffectDiscardDestinations {
 
     private fun stateForUndefinedCharacteristics(predicate: StatePredicate): StatePredicate? {
         return when (predicate) {
-            StatePredicate.HasManaAbility, StatePredicate.HasMorphAbility, StatePredicate.HasDisguiseAbility,
+            StatePredicate.HasManaAbility, is StatePredicate.HasActivatedAbilities, StatePredicate.HasMorphAbility, StatePredicate.HasDisguiseAbility,
             StatePredicate.HasGreatestPower, StatePredicate.HasLeastPower, StatePredicate.HasLeastPowerAmongAllCreatures,
             StatePredicate.HasGreatestManaValueAmongAllCreatures, StatePredicate.SharesNameWithSpellCastThisTurn,
             is StatePredicate.HasLeastManaValueAmong -> null

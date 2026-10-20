@@ -1794,6 +1794,13 @@ class PredicateEvaluator(
                     state, projected, entityId, it, this
                 )
             } ?: false
+            // Shares HasManaAbility's re-entry guard: a static grant gated on this very predicate
+            // would otherwise re-ask for the same object's granted abilities forever.
+            is StatePredicate.HasActivatedAbilities -> if (entityId in manaAbilityQueries) false else cardRegistry?.let {
+                com.wingedsheep.engine.mechanics.ActivatedAbilityPresence.count(
+                    state, projected, entityId, it, this, predicate.excludeManaAbilities
+                ) >= predicate.atLeast
+            } ?: false
             StatePredicate.IsOnBattlefield -> entityId in state.getBattlefield()
             // The object's current zone — a resolving spell still reads STACK until it has finished
             // resolving, which is when a spell deals its damage.

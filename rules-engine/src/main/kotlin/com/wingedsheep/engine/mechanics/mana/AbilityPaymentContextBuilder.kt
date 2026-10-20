@@ -41,6 +41,7 @@ internal fun buildAbilityPaymentContext(
     return SpellPaymentContext(
         isAbilityActivation = true,
         abilitySourceCardTypes = cardTypes,
+        isAbilitySourceOnBattlefield = sourceId in projected.getBaseState().getBattlefield(),
         subtypes = subtypes,
         isEquipAbilityActivation = ability?.isEquipAbility == true,
         hasXInCost = ability?.cost?.extractManaCost()?.hasX == true,

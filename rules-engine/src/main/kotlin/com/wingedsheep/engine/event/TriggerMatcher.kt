@@ -2699,7 +2699,8 @@ class TriggerMatcher(
             val entity = state.getEntity(entityId) ?: return false
             entity.has<FaceDownComponent>()
         }
-        com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasManaAbility ->
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasManaAbility,
+        is com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasActivatedAbilities ->
             predicateEvaluator.matchesStatePredicate(state, entityId, predicate, projected = state.projectedState)
         // The commander designation stays on the card across zone changes (CR 903.3), so a live
         // read is right even after the permanent has left the battlefield.

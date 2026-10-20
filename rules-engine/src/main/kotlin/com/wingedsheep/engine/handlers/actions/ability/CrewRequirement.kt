@@ -49,6 +49,10 @@ internal object CrewRequirement {
     fun hasAny(state: GameState, projected: ProjectedState, cardRegistry: CardRegistry, vehicleId: EntityId): Boolean =
         all(state, projected, cardRegistry, vehicleId).isNotEmpty()
 
+    /** How many crew abilities [vehicleId] has, printed and granted — each instance is an activated ability. */
+    fun count(state: GameState, projected: ProjectedState, cardRegistry: CardRegistry, vehicleId: EntityId): Int =
+        all(state, projected, cardRegistry, vehicleId).size
+
     private fun all(
         state: GameState,
         projected: ProjectedState,
