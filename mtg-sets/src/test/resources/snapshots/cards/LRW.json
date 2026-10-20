@@ -14326,12 +14326,13 @@
                                 }
                             }
                         },
+                        "stepScope": "AnyMainPhase",
                         "fireOnPlayer": {
                             "type": "PlayerRef",
                             "player": "You"
                         }
                     },
-                    "descriptionOverride": "Clash with an opponent. If you win, create a delayed trigger at the beginning of the next Precombat Main Phase"
+                    "descriptionOverride": "Clash with an opponent. If you win, create a delayed trigger at the beginning of the next main phase"
                 }
             ]
         },

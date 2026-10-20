@@ -631,7 +631,7 @@ class TriggerDetector(
     fun detectDelayedTriggers(state: GameState, step: Step): Pair<List<PendingTrigger>, Set<String>> {
         val matching = state.delayedTriggers.filter { delayed ->
             delayed.trigger == null &&
-                delayed.fireAtStep == step &&
+                delayed.fireAtStep?.let { delayed.stepScope.matches(it, step) } == true &&
                 // "your next end step" is the team's in a shared team turn (CR 805.4) — the
                 // non-representative head is never `activePlayerId`, so equality would strand
                 // every one of their step-keyed delayed triggers.

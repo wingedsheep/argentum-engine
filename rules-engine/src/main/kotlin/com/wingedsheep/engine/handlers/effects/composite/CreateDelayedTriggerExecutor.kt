@@ -176,6 +176,7 @@ class CreateDelayedTriggerExecutor(
             id = delayedTriggerId,
             effect = resolvedEffect,
             fireAtStep = effect.step,
+            stepScope = effect.stepScope,
             sourceId = sourceId,
             // Carries the enclosing loop's iteration binding, if any: a delayed trigger created in a
             // ForEach body still refers to *that* object — "exile each creature; return it at the

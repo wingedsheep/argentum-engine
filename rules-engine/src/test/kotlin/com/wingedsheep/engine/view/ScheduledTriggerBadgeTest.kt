@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.dsl.ExilePatterns
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
+import com.wingedsheep.sdk.scripting.effects.DelayedTriggerStepScope
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.core.spec.style.FunSpec
@@ -70,6 +71,14 @@ class ScheduledTriggerBadgeTest : FunSpec({
             driver.scheduled(Step.BEGIN_COMBAT).copy(repeatAtEachMatchingStep = true, expiry = DelayedTriggerExpiry.EndOfTurn),
             viewer,
         ) shouldBe "At the beginning of each combat this turn: Draw a card."
+    }
+
+    test("a trigger waiting for any main phase names the main phase, not the precombat one") {
+        val driver = createDriver()
+        driver.badgeText(
+            driver.scheduled(Step.PRECOMBAT_MAIN).copy(stepScope = DelayedTriggerStepScope.ANY_MAIN_PHASE, fireOnPlayerId = driver.player1),
+            driver.player2,
+        ) shouldBe "At the beginning of Player 1's next main phase: Draw a card."
     }
 
     test("a one-shot trigger that expires this turn says so, and is gone after cleanup without firing") {

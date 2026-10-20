@@ -738,6 +738,35 @@ enum class DelayedTriggerTiming {
 }
 
 /**
+ * Which beginnings a step-based [CreateDelayedTriggerEffect] waits for: its [step][CreateDelayedTriggerEffect.step]
+ * exactly, or any step of the same kind. A separate axis from [DelayedTriggerTiming] (the earliest
+ * *turn*) and [CreateDelayedTriggerEffect.fireOnPlayer] (*whose* turn), because it decides which
+ * *step* of a turn qualifies.
+ */
+@Serializable
+enum class DelayedTriggerStepScope {
+    /** Only the beginning of the named step itself — "at the beginning of the next end step". */
+    @SerialName("Step")
+    STEP,
+
+    /**
+     * The beginning of whichever main phase comes next — "at the beginning of your next main
+     * phase". The precombat and postcombat main phases are individually and collectively "the main
+     * phase" (CR 505.1), and an additional main phase is a postcombat main phase (CR 505.1a), so
+     * cast during your precombat main phase or your combat phase, the trigger fires in that turn's
+     * postcombat main phase (Mana Drain's ruling). The `step` it pairs with must be a main phase.
+     */
+    @SerialName("AnyMainPhase")
+    ANY_MAIN_PHASE;
+
+    /** Whether the beginning of [current] fires a trigger scheduled for [scheduled] under this scope. */
+    fun matches(scheduled: com.wingedsheep.sdk.core.Step, current: com.wingedsheep.sdk.core.Step): Boolean = when (this) {
+        STEP -> scheduled == current
+        ANY_MAIN_PHASE -> current.isMainPhase
+    }
+}
+
+/**
  * Create a delayed triggered ability that fires at a specific step.
  *
  * When executed, bakes any context-dependent target references (ContextTarget)
@@ -821,6 +850,11 @@ data class CreateDelayedTriggerEffect(
      */
     val timing: DelayedTriggerTiming = DelayedTriggerTiming.CURRENT_TURN_OR_LATER,
     /**
+     * Which step beginnings fire this step-based delayed trigger: [step] exactly (default), or any
+     * main phase ("your next main phase"). See [DelayedTriggerStepScope].
+     */
+    val stepScope: DelayedTriggerStepScope = DelayedTriggerStepScope.STEP,
+    /**
      * Target requirement chosen *each time* the delayed trigger fires. Used for delayed
      * triggers whose effect targets, e.g. "Whenever you cast a noncreature spell this turn,
      * **target** creature you control gains double strike" (Rediscover the Way). The chosen
@@ -863,8 +897,15 @@ data class CreateDelayedTriggerEffect(
      */
     val carryCollections: List<String> = emptyList()
 ) : Effect {
+    init {
+        require(stepScope != DelayedTriggerStepScope.ANY_MAIN_PHASE || step?.isMainPhase == true) {
+            "DelayedTriggerStepScope.ANY_MAIN_PHASE needs a main-phase step, got $step"
+        }
+    }
+
     override val description: String = when {
         trigger != null -> "create a delayed trigger that fires on ${trigger.event::class.simpleName}"
+        stepScope == DelayedTriggerStepScope.ANY_MAIN_PHASE -> "create a delayed trigger at the beginning of the next main phase"
         step != null -> "create a delayed trigger at the beginning of the next ${step.displayName}"
         else -> "create a delayed trigger"
     }

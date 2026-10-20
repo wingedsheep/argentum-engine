@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
+import com.wingedsheep.sdk.scripting.effects.DelayedTriggerStepScope
 import com.wingedsheep.sdk.scripting.effects.Effect
 import kotlinx.serialization.Serializable
 
@@ -67,6 +68,11 @@ data class DelayedTriggeredAbility(
     val fireOnce: Boolean = false,
     /** Whether a step-based delayed trigger remains resident after each matching step. */
     val repeatAtEachMatchingStep: Boolean = false,
+    /**
+     * Which step beginnings match [fireAtStep]: that step exactly, or any main phase ("your next
+     * main phase"). Baked from [com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect.stepScope].
+     */
+    val stepScope: DelayedTriggerStepScope = DelayedTriggerStepScope.STEP,
     /** If set, this trigger won't fire before this turn number. Used for "your next end step" effects. */
     val notBeforeTurn: Int? = null,
     /**

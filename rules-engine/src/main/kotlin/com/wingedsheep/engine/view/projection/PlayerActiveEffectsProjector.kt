@@ -25,6 +25,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
+import com.wingedsheep.sdk.scripting.effects.DelayedTriggerStepScope
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -933,9 +934,11 @@ internal class PlayerActiveEffectsProjector(
      * beginning of Bob's next upkeep", "At the beginning of each combat this turn".
      */
     private fun scheduleText(state: GameState, scheduled: DelayedTriggeredAbility, step: Step): String {
-        val stepName = when (step) {
-            Step.UPKEEP -> "upkeep"
-            Step.BEGIN_COMBAT -> "combat"
+        val stepName = when {
+            // "Your next main phase" waits for precombat and postcombat alike (CR 505.1).
+            scheduled.stepScope == DelayedTriggerStepScope.ANY_MAIN_PHASE -> "main phase"
+            step == Step.UPKEEP -> "upkeep"
+            step == Step.BEGIN_COMBAT -> "combat"
             else -> step.displayName.lowercase()
         }
         // Both seats read this badge, so the player is named rather than called "your".

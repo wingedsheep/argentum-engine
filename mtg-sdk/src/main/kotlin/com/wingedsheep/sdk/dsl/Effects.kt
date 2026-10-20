@@ -4681,13 +4681,14 @@ object Effects {
         fireOnce: Boolean = false,
         repeatAtEachMatchingStep: Boolean = false,
         timing: com.wingedsheep.sdk.scripting.effects.DelayedTriggerTiming = com.wingedsheep.sdk.scripting.effects.DelayedTriggerTiming.CURRENT_TURN_OR_LATER,
+        stepScope: com.wingedsheep.sdk.scripting.effects.DelayedTriggerStepScope = com.wingedsheep.sdk.scripting.effects.DelayedTriggerStepScope.STEP,
         targetRequirement: TargetRequirement? = null,
         additionalTargetRequirements: List<TargetRequirement> = emptyList(),
         fireOnPlayer: EffectTarget? = null,
         carryCollections: List<String> = emptyList()
     ): Effect = com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect(
         step, effect, trigger, watchedTarget, watchedRecipient, expiry, fireOnce, repeatAtEachMatchingStep,
-        timing, targetRequirement, additionalTargetRequirements, fireOnPlayer, carryCollections
+        timing, stepScope, targetRequirement, additionalTargetRequirements, fireOnPlayer, carryCollections
     )
 
     /**
@@ -4703,6 +4704,7 @@ object Effects {
         fireOnce: Boolean = false,
         repeatAtEachMatchingStep: Boolean = false,
         timing: com.wingedsheep.sdk.scripting.effects.DelayedTriggerTiming = com.wingedsheep.sdk.scripting.effects.DelayedTriggerTiming.CURRENT_TURN_OR_LATER,
+        stepScope: com.wingedsheep.sdk.scripting.effects.DelayedTriggerStepScope = com.wingedsheep.sdk.scripting.effects.DelayedTriggerStepScope.STEP,
         fireOnPlayer: EffectTarget? = null,
         carryCollections: List<String> = emptyList(),
         body: TargetedEffectBuilder.() -> Unit
@@ -4711,7 +4713,7 @@ object Effects {
         val requirements = built.declaredTargets
         return com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect(
             step, built.requireEffect("A delayed trigger"), trigger, watchedTarget, watchedRecipient, expiry,
-            fireOnce, repeatAtEachMatchingStep, timing, requirements.firstOrNull(), requirements.drop(1),
+            fireOnce, repeatAtEachMatchingStep, timing, stepScope, requirements.firstOrNull(), requirements.drop(1),
             fireOnPlayer, carryCollections
         )
     }

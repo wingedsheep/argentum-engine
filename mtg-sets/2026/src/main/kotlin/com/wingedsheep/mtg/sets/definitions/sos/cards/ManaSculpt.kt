@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.DelayedTriggerStepScope
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerTiming
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -29,9 +30,9 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * creation is sequenced **before** the counter (the target spell still carries its
  * `SpellOnStackComponent` payment buckets at that point).
  *
- * "Your next main phase" is modeled as the controller's next precombat main phase
- * ([Step.PRECOMBAT_MAIN] gated to [Player.You] via [DelayedTriggerTiming.CURRENT_TURN_OR_LATER]) —
- * the common reading for a "next main phase" mana payoff.
+ * "Your next main phase" is whichever main phase of the controller's comes next
+ * ([DelayedTriggerStepScope.ANY_MAIN_PHASE] gated to [Player.You]) — cast in your precombat main
+ * phase or your combat phase, that is this turn's postcombat main phase (CR 505.1).
  */
 val ManaSculpt = card("Mana Sculpt") {
     manaCost = "{1}{U}{U}"
@@ -48,6 +49,7 @@ val ManaSculpt = card("Mana Sculpt") {
                 step = Step.PRECOMBAT_MAIN,
                 fireOnPlayer = EffectTarget.PlayerRef(Player.You),
                 timing = DelayedTriggerTiming.CURRENT_TURN_OR_LATER,
+                stepScope = DelayedTriggerStepScope.ANY_MAIN_PHASE,
                 effect = Effects.AddColorlessMana(DynamicAmounts.manaSpentToCast(spell)),
             ),
         ) then Effects.CounterSpell()

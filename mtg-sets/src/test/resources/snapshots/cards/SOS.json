@@ -9237,6 +9237,7 @@
                                 "numericProperty": "ManaSpent"
                             }
                         },
+                        "stepScope": "AnyMainPhase",
                         "fireOnPlayer": {
                             "type": "PlayerRef",
                             "player": "You"

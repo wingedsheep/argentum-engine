@@ -9352,6 +9352,13 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
       at end of turn instead of waiting across the boundary, so a turn with no further matching step
       drops it unfired. (Feral Encounter: cast it in a postcombat main phase and the combat ability
       simply never triggers.) `CURRENT_TURN_OR_LATER` is the open-ended cousin.
+  - `stepScope: DelayedTriggerStepScope` — gates *which step* of an eligible turn fires it:
+    - `STEP` (default) — the beginning of `step` itself.
+    - `ANY_MAIN_PHASE` — "at the beginning of your next main phase": whichever main phase comes
+      next, precombat, postcombat or additional (the main phases are collectively "the main phase",
+      CR 505.1). Cast in your precombat main phase or combat, it fires at that turn's postcombat main
+      phase. Pair it with a main-phase `step` (`PRECOMBAT_MAIN` by convention; anything else throws)
+      and `fireOnPlayer = PlayerRef(Player.You)`. (Mana Drain, Mana Sculpt, Scattering Stroke.)
   - `targetRequirement` / `additionalTargetRequirements` — targets chosen *each time* the delayed
     trigger fires (not when it's scheduled), exposed to the inner `effect` as `ContextTarget(0)`,
     `ContextTarget(1)`, … in that order. One requirement is the common case (Rediscover the Way

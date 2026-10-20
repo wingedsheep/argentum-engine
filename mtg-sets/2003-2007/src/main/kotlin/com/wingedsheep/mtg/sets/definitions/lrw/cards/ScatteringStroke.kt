@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.effects.DelayedTriggerStepScope
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerTiming
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -40,8 +41,9 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * "You may" is a resolution-time consent gate on the delayed trigger, not a choice made now: the
  * 2007-10-01 ruling says you decide as the delayed ability resolves, and it is all-or-nothing.
  *
- * "Your next main phase" is modelled as the controller's next precombat main phase
- * ([Step.PRECOMBAT_MAIN] gated to [Player.You]) — the same reading Mana Sculpt uses.
+ * "Your next main phase" is whichever main phase of the controller's comes next
+ * ([DelayedTriggerStepScope.ANY_MAIN_PHASE] gated to [Player.You]) — cast in your precombat main
+ * phase or your combat phase, that is this turn's postcombat main phase (CR 505.1).
  * [DelayedTriggerTiming.CURRENT_TURN_OR_LATER] lets the current turn qualify, which is what an
  * instant cast in your own upkeep wants.
  */
@@ -65,6 +67,7 @@ val ScatteringStroke = card("Scattering Stroke") {
                         step = Step.PRECOMBAT_MAIN,
                         fireOnPlayer = EffectTarget.PlayerRef(Player.You),
                         timing = DelayedTriggerTiming.CURRENT_TURN_OR_LATER,
+                        stepScope = DelayedTriggerStepScope.ANY_MAIN_PHASE,
                         effect = Effects.May(Effects.AddColorlessMana(manaValue.amount))
                     )
                 )
