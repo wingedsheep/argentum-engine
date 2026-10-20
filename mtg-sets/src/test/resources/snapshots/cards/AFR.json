@@ -513,6 +513,55 @@
     ]
 }
 
+// Grim Bounty
+{
+    "name": "Grim Bounty",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target creature or planeswalker. Create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "artist": "Justine Cruz",
+        "flavorText": "Freed from the need to pay tribute to the dragon, the villages gladly paid the dragon-slayers instead.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b98e0ab1-dea8-492b-a712-2057f2b1d020.jpg?1783926494",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "If the target is not legal as Grim Bounty tries to resolve, perhaps because the creature or planeswalker is no longer on the battlefield, it will do nothing. You will not create a Treasure token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Improvised Weaponry
 {
     "name": "Improvised Weaponry",
