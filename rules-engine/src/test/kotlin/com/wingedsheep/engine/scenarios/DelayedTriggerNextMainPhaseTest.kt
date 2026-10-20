@@ -87,7 +87,7 @@ class DelayedTriggerNextMainPhaseTest : FunSpec({
         d.state.activePlayerId shouldBe d.player2
     }
 
-    test("an additional main phase is a main phase: scheduled in the postcombat main, it fires there") {
+    test("an additional main phase is a main phase: scheduled once the postcombat main has begun, it fires at the additional one") {
         val d = createDriver()
         d.passPriorityUntil(Step.POSTCOMBAT_MAIN)
         val turn = d.state.turnNumber

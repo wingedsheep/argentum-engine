@@ -759,7 +759,11 @@ enum class DelayedTriggerStepScope {
     @SerialName("AnyMainPhase")
     ANY_MAIN_PHASE;
 
-    /** Whether the beginning of [current] fires a trigger scheduled for [scheduled] under this scope. */
+    /**
+     * Whether the beginning of [current] fires a trigger scheduled for [scheduled] under this scope.
+     * [ANY_MAIN_PHASE] ignores [scheduled]; [CreateDelayedTriggerEffect]'s `init` guard is what
+     * keeps it a main phase.
+     */
     fun matches(scheduled: com.wingedsheep.sdk.core.Step, current: com.wingedsheep.sdk.core.Step): Boolean = when (this) {
         STEP -> scheduled == current
         ANY_MAIN_PHASE -> current.isMainPhase
