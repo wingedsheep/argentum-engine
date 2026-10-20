@@ -801,6 +801,60 @@
     ]
 }
 
+// Angus Mackenzie
+{
+    "name": "Angus Mackenzie",
+    "manaCost": "{G}{W}{U}",
+    "typeLine": "Legendary Creature — Human Cleric",
+    "oracleText": "{G}{W}{U}, {T}: Prevent all combat damage that would be dealt this turn. Activate only before the combat damage step.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Angus Mackenzie:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{G}{W}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "PreventDamageShield",
+                    "scope": "CombatOnly"
+                },
+                "restrictions": [
+                    {
+                        "type": "BeforeStep",
+                        "step": "FIRST_STRIKE_COMBAT_DAMAGE"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "rarity": "RARE",
+        "artist": "Bryon Wackwitz",
+        "flavorText": "\"Battles no longer served a purpose in Karakas.\" —Angus Mackenzie, *Diary*",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/57264bd9-94f6-4d4d-baff-2b2900585635.jpg?1783948042"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE",
+        "WHITE"
+    ]
+}
+
 // Anti-Magic Aura
 {
     "name": "Anti-Magic Aura",
@@ -898,6 +952,102 @@
     ]
 }
 
+// Arcades Sabboth
+{
+    "name": "Arcades Sabboth",
+    "manaCost": "{2}{G}{W}{U}",
+    "typeLine": "Legendary Creature — Elder Dragon",
+    "oracleText": "Flying\nAt the beginning of your upkeep, sacrifice Arcades Sabboth unless you pay {G}{W}{U}.\nEach untapped creature you control gets +0/+2 as long as it's not attacking.\n{W}: Arcades Sabboth gets +0/+1 until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 8
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Arcades Sabboth:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{G}{W}{U}"
+                        }
+                    },
+                    "suffer": "SacrificeSelf"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Arcades Sabboth:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{W}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "{W}: Arcades Sabboth gets +0/+1 until end of turn."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 0,
+                "toughnessBonus": 2,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsUntapped",
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsAttacking"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "RARE",
+        "artist": "Edward P. Beard, Jr.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2c1dbc62-ceb5-4540-ae38-901e5deafc75.jpg?1783948041"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE",
+        "WHITE"
+    ]
+}
+
 // Arena of the Ancients
 {
     "name": "Arena of the Ancients",
@@ -954,6 +1104,57 @@
         "imageUri": "https://cards.scryfall.io/normal/front/9/3/9337996e-a119-4529-b422-f6d286c78e3f.jpg?1783948029"
     },
     "colorIdentityOverride": []
+}
+
+// Avoid Fate
+{
+    "name": "Avoid Fate",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target instant or Aura spell that targets a permanent you control.",
+    "script": {
+        "spellEffect": "Counter",
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Aura"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "TargetsMatching",
+                                "subfilter": {
+                                    "cardPredicates": [
+                                        "IsPermanent"
+                                    ],
+                                    "controllerPredicate": "ControlledByYou"
+                                }
+                            }
+                        ]
+                    },
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "artist": "Phil Foglio",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/92f1509e-6ed5-4009-a031-ea84b43cbd1b.jpg?1783948051"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Axelrod Gunnarson
@@ -1027,6 +1228,80 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Ayesha Tanaka
+{
+    "name": "Ayesha Tanaka",
+    "manaCost": "{W}{W}{U}{U}",
+    "typeLine": "Legendary Creature — Human Artificer",
+    "oracleText": "Banding (Any creatures with banding, and up to one without, can attack in a band. Bands are blocked as a group. If any creatures with banding you control are blocking or being blocked by a creature, you divide that creature's combat damage, not its controller, among any of the creatures it's being blocked by or is blocking.)\n{T}: Counter target activated ability from an artifact source unless that ability's controller pays {W}. (Mana abilities can't be targeted.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "BANDING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ayesha Tanaka:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Counter",
+                    "target": "CounterTarget.Ability",
+                    "condition": {
+                        "type": "CounterCondition.UnlessPaysMana",
+                        "cost": "{W}"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsActivatedAbility",
+                                    {
+                                        "type": "AbilitySourceMatches",
+                                        "subfilter": {
+                                            "cardPredicates": [
+                                                "IsArtifact"
+                                            ]
+                                        }
+                                    }
+                                ]
+                            },
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}: Counter target activated ability from an artifact source unless that ability's controller pays {W}."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "220",
+        "rarity": "RARE",
+        "artist": "Bryon Wackwitz",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/03bd3d4b-d01a-475d-bf3b-cf96f43bc9ef.jpg?1783948041",
+        "rulings": [
+            {
+                "date": "6/8/2016",
+                "text": "Activated abilities contain a colon. They're generally written \"[Cost]: [Effect].\" Some keywords are activated abilities and will have colons in their reminder text."
+            },
+            {
+                "date": "10/1/2009",
+                "text": "If a creature in combat has banding, its controller assigns damage for creatures blocking or blocked by it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
     ]
 }
 
@@ -1209,6 +1484,43 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Bartel Runeaxe
+{
+    "name": "Bartel Runeaxe",
+    "manaCost": "{3}{B}{R}{G}",
+    "typeLine": "Legendary Creature — Giant Warrior",
+    "oracleText": "Vigilance\nBartel Runeaxe can't be the target of Aura spells.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeTargetedBy",
+                "quality": {
+                    "type": "UntargetableBy.SpellsWithSubtype",
+                    "subtype": "Aura"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "RARE",
+        "artist": "Andi Rusu",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1a42691-98bb-4234-9b56-085e6677f3e4.jpg?1783948040"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED",
+        "GREEN"
     ]
 }
 
@@ -3193,6 +3505,127 @@
     ]
 }
 
+// Elder Land Wurm
+{
+    "name": "Elder Land Wurm",
+    "manaCost": "{4}{W}{W}{W}",
+    "typeLine": "Creature — Dragon Wurm",
+    "oracleText": "Defender, trample\nWhen this creature blocks, it loses defender.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "DEFENDER",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Elder Land Wurm:1",
+                "trigger": "BlockEvent",
+                "effect": {
+                    "type": "RemoveKeyword",
+                    "keyword": "DEFENDER",
+                    "target": "Self",
+                    "duration": "Permanent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "rarity": "UNCOMMON",
+        "artist": "Quinton Hoover",
+        "flavorText": "Sometimes it's best to let sleeping dragons lie.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/369b3ebc-572b-4614-aacb-4990309d8848.jpg?1783942966",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "Another effect can give Elder Land Wurm defender after it has lost it. Blocking again will cause it to lose that instance of defender too."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Elder Spawn
+{
+    "name": "Elder Spawn",
+    "manaCost": "{4}{U}{U}{U}",
+    "typeLine": "Creature — Spawn",
+    "oracleText": "At the beginning of your upkeep, unless you sacrifice an Island, sacrifice this creature and it deals 6 damage to you.\nThis creature can't be blocked by red creatures.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Elder Spawn:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomSacrifice",
+                            "filter": "land Island"
+                        }
+                    },
+                    "suffer": {
+                        "type": "Composite",
+                        "effects": [
+                            "SacrificeSelf",
+                            {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 6
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "You"
+                                }
+                            }
+                        ]
+                    },
+                    "consequenceDescription": "sacrifice Elder Spawn and it deals 6 damage to you"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasColor",
+                            "color": "RED"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "rarity": "RARE",
+        "artist": "Jesper Myrfors",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/99cc045e-01a8-4f14-a86d-0a67ec35d6b7.jpg?1783948077"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Elven Riders
 {
     "name": "Elven Riders",
@@ -3892,6 +4325,28 @@
     ]
 }
 
+// Field of Dreams
+{
+    "name": "Field of Dreams",
+    "manaCost": "{U}",
+    "typeLine": "World Enchantment",
+    "oracleText": "Players play with the top card of their libraries revealed.",
+    "script": {
+        "staticAbilities": [
+            "PlayersRevealTopOfLibrary"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "RARE",
+        "artist": "Kaja Foglio",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6a63e119-3b1b-4964-a4b9-b10170ff542b.jpg?1783948076"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Fire Sprites
 {
     "name": "Fire Sprites",
@@ -4104,6 +4559,72 @@
     ]
 }
 
+// Floral Spuzzem
+{
+    "name": "Floral Spuzzem",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Whenever this creature attacks and isn't blocked, you may destroy target artifact defending player controls. If you do, this creature assigns no combat damage this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Floral Spuzzem:1",
+                "trigger": "BecomesUnblockedEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "ASSIGNS_NO_COMBAT_DAMAGE",
+                                "target": "Self"
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "destroy that artifact. If you do, this creature assigns no combat damage this turn"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsArtifact"
+                            ],
+                            "controllerPredicate": "ControlledByDefendingPlayer"
+                        }
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature attacks and isn't blocked, you may destroy target artifact defending player controls. If you do, this creature assigns no combat damage this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "rarity": "UNCOMMON",
+        "artist": "Rob Alexander",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d141b9e3-7129-41e5-8b44-d3867e1c7e1d.jpg?1783948048"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Force Spike
 {
     "name": "Force Spike",
@@ -4271,6 +4792,81 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Gabriel Angelfire
+{
+    "name": "Gabriel Angelfire",
+    "manaCost": "{3}{G}{G}{W}{W}",
+    "typeLine": "Legendary Creature — Angel",
+    "oracleText": "At the beginning of your upkeep, choose flying, first strike, trample, or rampage 3. Gabriel Angelfire gains that ability until your next upkeep. (Whenever a creature with rampage 3 becomes blocked, it gets +3/+3 until end of turn for each creature blocking it beyond the first.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gabriel Angelfire:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Flying",
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "FLYING",
+                                "target": "Self",
+                                "duration": "UntilYourNextUpkeep"
+                            }
+                        },
+                        {
+                            "label": "First strike",
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "FIRST_STRIKE",
+                                "target": "Self",
+                                "duration": "UntilYourNextUpkeep"
+                            }
+                        },
+                        {
+                            "label": "Trample",
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": "Self",
+                                "duration": "UntilYourNextUpkeep"
+                            }
+                        },
+                        {
+                            "label": "Rampage 3",
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "RAMPAGE_3",
+                                "target": "Self",
+                                "duration": "UntilYourNextUpkeep"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "226",
+        "rarity": "RARE",
+        "artist": "Daniel Gelon",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b4ce350-b6ed-4e0e-8c70-efc6e5f18a5d.jpg?1783948040"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }
 
@@ -5122,6 +5718,41 @@
     ]
 }
 
+// Gosta Dirk
+{
+    "name": "Gosta Dirk",
+    "manaCost": "{3}{W}{W}{U}{U}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "First strike\nCreatures with islandwalk can be blocked as though they didn't have islandwalk.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "SuppressLandwalkForGroup",
+                "landwalks": [
+                    "ISLANDWALK"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "227",
+        "rarity": "RARE",
+        "artist": "Richard Thomas",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/92ef316b-dd22-40d1-82e8-8890976684c0.jpg?1783948040"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Gravity Sphere
 {
     "name": "Gravity Sphere",
@@ -5412,6 +6043,88 @@
     ]
 }
 
+// Gwendlyn Di Corci
+{
+    "name": "Gwendlyn Di Corci",
+    "manaCost": "{U}{B}{B}{R}",
+    "typeLine": "Legendary Creature — Human Rogue",
+    "oracleText": "{T}: Target player discards a card at random. Activate only during your turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Gwendlyn Di Corci:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "Random",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "discarded"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    "OnlyDuringYourTurn"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "RARE",
+        "artist": "Julie Baroh",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/473d70b6-a88c-49f4-9415-19919c4468ae.jpg?1783948039"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Halfdane
 {
     "name": "Halfdane",
@@ -5589,6 +6302,103 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Hazezon Tamar
+{
+    "name": "Hazezon Tamar",
+    "manaCost": "{4}{R}{G}{W}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "When Hazezon enters, create X 1/1 Sand Warrior creature tokens that are red, green, and white at the beginning of your next upkeep, where X is the number of lands you control at that time.\nWhen Hazezon leaves the battlefield, exile all Sand Warriors.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hazezon Tamar:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "step": "UPKEEP",
+                    "effect": {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "land"
+                        },
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "RED",
+                            "GREEN",
+                            "WHITE"
+                        ],
+                        "creatureTypes": [
+                            "Sand",
+                            "Warrior"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/1/7/17812f4e-a10c-472b-970f-35a8f392235a.jpg?1783911123"
+                    },
+                    "fireOnPlayer": {
+                        "type": "PlayerRef",
+                        "player": "You"
+                    }
+                }
+            },
+            {
+                "id": "Hazezon Tamar:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent Sand Warrior"
+                        }
+                    },
+                    "body": {
+                        "type": "MoveToZone",
+                        "target": "IterationEntity",
+                        "destination": "Exile"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "RARE",
+        "artist": "Richard Kane Ferguson",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/17fc3a85-c6b9-4fd2-a6a2-d3210708e5ea.jpg?1783948039",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "When Hazezon Tamar's second ability resolves, all permanents with both the Sand and Warrior creature types are exiled, not just the Sand Warrior creature tokens it created. Permanents that have just one of those types are unaffected."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "The first ability creates a delayed triggered ability that triggers at the beginning of your next upkeep. It doesn't matter who controls Hazezon Tamar at that time, or even if it's on the battlefield. The player who put Hazezon onto the battlefield gets the Sand Warriors."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "Only Sand Warriors that are actually on the battlefield when Hazezon Tamar leaves the battlefield are affected when its second ability resolves. If Hazezon leaves the battlefield after the delayed triggered ability created by its first ability triggers but before that ability resolves, its second ability triggers and resolves first, then the Sand Warriors are put on the battlefield. Those Sand Warriors will remain on the battlefield indefinitely."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "RED",
+        "WHITE"
     ]
 }
 
@@ -8353,6 +9163,45 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Living Plane
+{
+    "name": "Living Plane",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "World Enchantment",
+    "oracleText": "All lands are 1/1 creatures that are still lands.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "AnimateLandGroup",
+                "filter": {
+                    "baseFilter": "land"
+                },
+                "power": 1,
+                "toughness": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "193",
+        "rarity": "RARE",
+        "artist": "Bryon Wackwitz",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/0341da27-3d77-4959-b7fa-5929b2cc7141.jpg?1783948046",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "A noncreature permanent that turns into a creature is subject to the \"summoning sickness\" rule: It can only attack, and its {T} abilities can only be activated, if its controller has continuously controlled that permanent since the beginning of their most recent turn."
+            },
+            {
+                "date": "2008-10-01",
+                "text": "This has the supertype world. When a world permanent enters, any world permanents that were already on the battlefield are put into their owners' graveyards. This is a state-based action called the \"world rule.\" The new world permanent stays on the battlefield. If two world permanents enter at the same time, they're both put into their owners' graveyards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
