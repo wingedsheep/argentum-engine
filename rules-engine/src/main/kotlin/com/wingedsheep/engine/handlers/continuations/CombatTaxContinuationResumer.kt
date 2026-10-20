@@ -236,7 +236,7 @@ class CombatTaxContinuationResumer(
                         // to returning null so the caller errors with a clear message.
                         return null
                     }
-                    val (tappedState, tapEvents) = ManaAbilityLifeCost.tapForManaPayingLife(services.zones, currentState, sourceId, playerId, ManaAbilityLifeCost.creditedProduction(source.producesColors))
+                    val (tappedState, tapEvents) = ManaAbilityLifeCost.tapForManaPayingLife(services.zones, currentState, sourceId, playerId, ManaAbilityLifeCost.creditedProduction(source.producesColors, source.manaAmount))
                     currentState = tappedState
                     events.addAll(tapEvents)
                     pool = when {

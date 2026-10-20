@@ -193,7 +193,10 @@ internal class ActivatedManaAbilityResolver(
             activatedAbility = ability,
         )
 
-        if (currentState.activeManaSpendingScope(action.playerId) != null) {
+        // Runs the effect under a frame that finishes the activation — Damping Sphere, the
+        // ManaAbilityResolvedEvent, the tap bonuses — once *all* its parts have resolved,
+        // however many decisions they pause for.
+        fun runScoped(): ExecutionResult {
             val frame = com.wingedsheep.engine.core.ScopedManaProductionContinuation(
                 action.playerId, action.sourceId, sourceName, cardComponent,
                 currentState.getEntity(action.playerId)?.get<ManaPoolComponent>() ?: ManaPoolComponent(),
@@ -213,15 +216,17 @@ internal class ActivatedManaAbilityResolver(
                 completed, frame, activationEvents + result.events, manaPipeline,
             )
         }
+        if (currentState.activeManaSpendingScope(action.playerId) != null) return runScoped()
         val stateBeforeEffect = currentState
         val effectResult = effectExecutorRegistry.execute(currentState, finalEffect, context).toExecutionResult()
-        // A pause (e.g. choosing colors for "add X mana in any combination of colors") carries
+        // A pause (a color for "add one mana of any color", a split for "add X mana in any
+        // combination of colors") re-runs the effect — a pure function of the same state — under
+        // the scoped frame, so the activation finishes through one path once its last decision
+        // is answered instead of each resumer finishing it (or not) on its own. The pause carries
         // the activation's own events out with it, so the settle boundary queues the triggers
         // they cause (Wizard's Rockets' dies trigger, Ceaseless Searblades' activation trigger)
         // until the ability finishes resolving.
-        if (effectResult.outcome is Outcome.Paused) {
-            return ExecutionResult.propagatePause(effectResult.state, activationEvents + effectResult.events)
-        }
+        if (effectResult.outcome is Outcome.Paused) return runScoped()
         if (effectResult.outcome !is Outcome.Done) {
             return effectResult
         }

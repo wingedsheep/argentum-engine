@@ -1601,7 +1601,7 @@ class ManaPaymentContinuationResumer(
                 events.add(PermanentsSacrificedEvent(sourceController, listOf(sourceId)))
                 events.addAll(transition.events)
             } else {
-                val (tappedState, tapEvents) = ManaAbilityLifeCost.tapForManaPayingLife(services.zones, currentState, sourceId, fallbackControllerId, ManaAbilityLifeCost.creditedProduction(source.producesColors))
+                val (tappedState, tapEvents) = ManaAbilityLifeCost.tapForManaPayingLife(services.zones, currentState, sourceId, fallbackControllerId, ManaAbilityLifeCost.creditedProduction(source.producesColors, source.manaAmount))
                 currentState = tappedState
                 events.addAll(tapEvents)
             }
@@ -1763,7 +1763,7 @@ class ManaPaymentContinuationResumer(
         // Tap the source and each chosen permanent, then credit the source's mana to the pool.
         var currentState = state
         val events = mutableListOf<GameEvent>()
-        val (headTappedState, headTapEvents) = ManaAbilityLifeCost.tapForManaPayingLife(services.zones, currentState, headSourceId, continuation.payingPlayerId, ManaAbilityLifeCost.creditedProduction(sourceOption.producesColors))
+        val (headTappedState, headTapEvents) = ManaAbilityLifeCost.tapForManaPayingLife(services.zones, currentState, headSourceId, continuation.payingPlayerId, ManaAbilityLifeCost.creditedProduction(sourceOption.producesColors, sourceOption.manaAmount))
         currentState = headTappedState
         events.addAll(headTapEvents)
         for (chosen in response.selectedCards) {

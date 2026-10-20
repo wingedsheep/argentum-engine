@@ -153,9 +153,13 @@ object ManaAbilityLifeCost {
         return paid to (tapEvents + lifeEvents)
     }
 
-    /** The mana a player-selected source is credited with: its first color, else colorless. */
-    fun creditedProduction(producesColors: Collection<Color>): ManaProduction =
-        producesColors.firstOrNull()?.let { ManaProduction(color = it) } ?: ManaProduction(color = null, colorless = 1)
+    /**
+     * The mana a player-selected source is credited with: [amount] of its first color, else
+     * [amount] colorless — what "the amount of mana this creature produced" reads (Tyvar).
+     */
+    fun creditedProduction(producesColors: Collection<Color>, amount: Int): ManaProduction =
+        producesColors.firstOrNull()?.let { ManaProduction(color = it, amount = amount) }
+            ?: ManaProduction(color = null, colorless = amount)
 
     private fun abilityProducesColor(ability: ActivatedAbility, color: Color?): Boolean =
         manaSubEffects(ability.effect).any { effect -> effectProduces(effect, color) }

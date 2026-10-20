@@ -206,7 +206,8 @@ object ManaPaymentWindow {
                 val actual = actualSources[sourceId] ?: return FloatResult(state, emptyList(), paid = false)
                 if (spellContext != null && actual.restriction?.isSatisfiedBy(spellContext) == false) return FloatResult(state, emptyList(), paid = false)
                 val tag = ManaProvenanceTracker.sourceTag(current, sourceId)
-                val tapped = tapOrSacrifice(zones, current, sourceId, source, playerId)
+                val tapped = tapOrSacrifice(zones, current, sourceId, source, playerId,
+                    producedAmount = source.manaAmount + actual.compositeBonusMana.values.sum())
                 current = tapped.first
                 events.addAll(tapped.second)
                 val color = neededColor(source.producesColors, source.manaAmount, stillNeeded, spellContext)
@@ -263,10 +264,12 @@ object ManaPaymentWindow {
         state: GameState,
         sourceId: EntityId,
         source: ManaSourceOption,
-        fallbackControllerId: EntityId
+        fallbackControllerId: EntityId,
+        producedAmount: Int,
     ): Pair<GameState, List<GameEvent>> {
         if (!source.requiresSacrifice) {
-            return ManaAbilityLifeCost.tapForManaPayingLife(zones, state, sourceId, fallbackControllerId, ManaAbilityLifeCost.creditedProduction(source.producesColors))
+            return ManaAbilityLifeCost.tapForManaPayingLife(zones, state, sourceId, fallbackControllerId,
+                ManaAbilityLifeCost.creditedProduction(source.producesColors, producedAmount))
         }
         val controller = state.getEntity(sourceId)
             ?.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()?.playerId

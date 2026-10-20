@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.ChooseColorDecision
 import com.wingedsheep.engine.core.ColorChosenResponse
+import com.wingedsheep.engine.core.NumberChosenResponse
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.GameTestDriver
@@ -100,6 +101,21 @@ class ManaAbilityResolvedTriggerTest : FunSpec({
         growsByManaProduced()
     }
 
+    // {T}: Add two mana in any combination of {R} and/or {G} — pauses for the split.
+    val splitDruid = card("Resolver Split Druid") {
+        manaCost = "{G}"
+        typeLine = "Creature — Elf Druid"
+        power = 1
+        toughness = 1
+        activatedAbility {
+            cost = Costs.Tap
+            effect = Effects.AddManaInAnyCombination(2, setOf(Color.RED, Color.GREEN))
+            manaAbility = true
+            timing = TimingRule.ManaAbility
+        }
+        growsByManaProduced()
+    }
+
     // A Mana Flare for creatures: a separate triggered mana ability adding {G}.
     val flare = card("Resolver Creature Flare") {
         manaCost = "{0}"
@@ -127,7 +143,7 @@ class ManaAbilityResolvedTriggerTest : FunSpec({
     }
 
     fun driver(): GameTestDriver = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(twinDruid, bloodDruid, prismDruid, flare, grove, bear))
+        registerCards(TestCards.all + listOf(twinDruid, bloodDruid, prismDruid, splitDruid, flare, grove, bear))
         initMirrorMatch(deck = Deck.of("Island" to 40), startingLife = 20)
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -216,6 +232,20 @@ class ManaAbilityResolvedTriggerTest : FunSpec({
         d.stackSize shouldBe 1
         d.bothPass()
         d.plusOnes(druid) shouldBe 1
+    }
+
+    test("an \"any combination of colors\" ability fires it with the whole amount once the split is chosen") {
+        val d = driver()
+        val you = d.activePlayer!!
+        val druid = d.putPermanentOnBattlefield(you, "Resolver Split Druid")
+
+        d.submit(ActivateAbility(you, druid, splitDruid.activatedAbilities.single().id)).error shouldBe null
+        val decision = d.pendingDecision!!
+        d.submitDecision(you, NumberChosenResponse(decision.id, 1)).error shouldBe null
+
+        d.stackSize shouldBe 1
+        d.bothPass()
+        d.plusOnes(druid) shouldBe 2
     }
 
     test("mana a separate triggered mana ability adds isn't counted") {

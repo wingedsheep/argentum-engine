@@ -2,6 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
@@ -39,6 +40,12 @@ class TyvarTheBellicoseScenarioTest : ScenarioTestBase() {
             g.state.stack.size shouldBe 1
             g.resolveStack()
 
+            g.plusOnes(elves) shouldBe 1
+
+            // The granted ability triggers only once each turn: untapped and tapped again, nothing.
+            g.state = g.state.updateEntity(elves) { it.without<TappedComponent>() }
+            g.tapElves(g.player1Id, elves).error shouldBe null
+            g.state.stack.size shouldBe 0
             g.plusOnes(elves) shouldBe 1
         }
 
