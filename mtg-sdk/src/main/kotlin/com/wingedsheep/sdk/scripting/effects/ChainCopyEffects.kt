@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.effects
 
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
@@ -31,7 +32,8 @@ enum class CopyRecipient {
  * @property action The primary effect to execute (any generic Effect)
  * @property target The target of the primary action
  * @property copyRecipient Who gets offered the copy
- * @property copyCost Cost required to create the copy (null = free)
+ * @property copyCost Cost required to create the copy (null = free): a sacrifice, a discard, or a
+ *   mana cost (Chain Lightning's {R}{R}, paid through a mana-payment window)
  * @property copyTargetRequirement Target requirement for the copy's new target
  */
 @SerialName("ChainCopy")
@@ -52,11 +54,17 @@ data class ChainCopyEffect(
             CopyRecipient.AFFECTED_PLAYER -> append("that player or that permanent's controller")
         }
         append(" may ")
-        if (copyCost != null) {
-            append("${copyCost.description}. If the player does, they may ")
+        if (copyCostText != null) {
+            append("$copyCostText. If the player does, they may ")
         }
         append("copy this spell and may choose a new target for that copy")
     }
+
+    /** The copy cost as an imperative ("sacrifice a land", "pay {R}{R}"), or null when the copy is free. */
+    val copyCostText: String?
+        get() = copyCost?.let { cost ->
+            if ((cost as? PayCost.Atom)?.atom is CostAtom.Mana) "pay ${cost.description}" else cost.description
+        }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newAction = action.applyTextReplacement(replacer)

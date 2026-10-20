@@ -41,14 +41,17 @@ data class ChainCopyDecisionContinuation(
 ) : AnswerContinuation
 
 /**
- * Resume after the copying player selects a cost resource (land to sacrifice / card to discard).
+ * Resume after the copying player pays the copy cost: selects a cost resource (land to sacrifice /
+ * card to discard), or — for a mana copy cost (Chain Lightning's {R}{R}) — picks mana sources in a
+ * mana-payment window.
  *
  * After paying cost, presents target selection for the copy.
  *
  * @property effect The unified chain copy effect
  * @property copyControllerId The player who is creating the copy
  * @property sourceId The source entity of the original spell/ability
- * @property candidateOptions The list of valid cost resource entity IDs (for validation)
+ * @property candidateOptions The list of valid cost resource entity IDs (for validation); empty for a mana cost
+ * @property availableSources The mana-payment window's source menu, for a mana copy cost
  */
 @Serializable
 data class ChainCopyCostContinuation(
@@ -56,6 +59,7 @@ data class ChainCopyCostContinuation(
     val copyControllerId: EntityId,
     val sourceId: EntityId?,
     val candidateOptions: List<EntityId>,
+    val availableSources: List<ManaSourceOption> = emptyList(),
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : AnswerContinuation
 

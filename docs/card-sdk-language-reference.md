@@ -3553,7 +3553,10 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   (Onslaught's Chain of X cycle). `offerTo` is a `CopyRecipient` (`TARGET_CONTROLLER`,
   `TARGET_PLAYER`, `AFFECTED_PLAYER` — the target player, or the target permanent's controller);
   `copyTarget` is the copy's target requirement, normally the same requirement the spell declared.
-  Prompts name the spell from its card, so the effect never repeats the card name.
+  `copyCost` is a `PayCost` the offered player pays: `Costs.pay.Sacrifice(...)` / `Costs.pay.Discard()`
+  (a card selection) or `Costs.pay.Mana("{R}{R}")` (Chain Lightning — the offer only appears when the
+  player can produce it, and paying opens the mana-payment window, so they pick the sources or spend
+  floating mana). Prompts name the spell from its card, so the effect never repeats the card name.
 
 - `CounterEffect(target, condition?, destination?)` — counter a spell/ability; optionally send elsewhere. `CounterDestination.Exile(grantFreeCast?)`: `grantFreeCast` lets the counter's *controller* recast the exiled card for free (Kheru Spellsnatcher). (For "exile it; its owner may recast it" wording that is **not** a counter — e.g. airbending a spell — use `ExileTargetSpell(fixedAlternativeManaCost = …)` below, which bypasses can't-be-countered.) `CounterDestination.Hand` (facade `Effects.CounterSpellToHand()`) is Remand's "put it into its owner's hand instead of into that player's graveyard" — still a real counter, so an uncounterable spell is untouched and "whenever a spell is countered" triggers still fire; `ReturnSpellToOwnersHand` is the non-counter sibling. `CounterDestination.Library(positions)` (facade `Effects.CounterSpellToLibrary(vararg positions)`) counters into the owner's library: one `LibraryChoicePosition` is a fixed spot (Memory Lapse `Top`, Spell Crumple `Bottom`), several are the *counter's controller's* choice (Hinder `Top, Bottom`) — asked only when the spell would really land there (not if it can't be countered or a counter replacement exiles it); `PutOnTopOrBottomOfLibrary` on a spell is the non-counter sibling (Swat Away).
   - `target = CounterTarget.Spell` / `Ability` / `SpellOrAbility` — `SpellOrAbility` dispatches at resolution by inspecting whether the stack entity has a `SpellOnStackComponent`. Used by Teferi's Response.

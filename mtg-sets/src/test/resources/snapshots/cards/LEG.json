@@ -1694,6 +1694,57 @@
     ]
 }
 
+// Chain Lightning
+{
+    "name": "Chain Lightning",
+    "manaCost": "{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Chain Lightning deals 3 damage to any target. Then that player or that permanent's controller may pay {R}{R}. If the player does, they may copy this spell and may choose a new target for that copy.",
+    "script": {
+        "spellEffect": {
+            "type": "ChainCopy",
+            "action": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 3
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "copyRecipient": "AFFECTED_PLAYER",
+            "copyCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{R}{R}"
+                }
+            },
+            "copyTargetRequirement": "AnyTarget"
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "artist": "Sandra Everingham",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5883762-ca0a-4932-8d2a-41a45796a5f8.jpg?1783948058"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Chains of Mephistopheles
 {
     "name": "Chains of Mephistopheles",
