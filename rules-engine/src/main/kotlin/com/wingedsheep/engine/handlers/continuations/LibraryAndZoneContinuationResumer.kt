@@ -664,8 +664,8 @@ class LibraryAndZoneContinuationResumer(
         // Build the updated collections
         val updatedCollections = mutableMapOf(continuation.storeSelected to selected)
         // The chooser just saw these cards, so a later move that would pause only to show them
-        // again — one card back on top, or copies of one card with no order to pick — can skip it
-        // (scry / surveil keeping them on top, or sending identical cards to the bottom).
+        // again — a single card back on top, with no order to pick — can skip it (scry 1 /
+        // surveil 1 keeping it on top). Two or more cards are always asked about (#3340).
         fun publishShown(collection: String, cards: List<EntityId>) {
             val shown = continuation.shownCards?.let { s -> cards.filter { it in s } }.orEmpty()
             if (shown.isNotEmpty()) {

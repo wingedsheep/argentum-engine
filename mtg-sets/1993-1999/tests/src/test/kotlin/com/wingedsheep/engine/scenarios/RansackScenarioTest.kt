@@ -18,7 +18,6 @@ class RansackScenarioTest : ScenarioTestBase() {
                 .withCardInHand(1, "Ransack")
                 .withLandsOnBattlefield(1, "Island", 4)
                 .withCardInLibrary(1, "Island")
-                // Distinct cards: copies of one card have no order to choose, so no prompt.
                 .apply { listOf("Forest", "Island", "Mountain", "Plains", "Swamp", "Grizzly Bears", "Forest").forEach { withCardInLibrary(2, it) } }
                 .withActivePlayer(1)
                 .withPriorityPlayer(1)

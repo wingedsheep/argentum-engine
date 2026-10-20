@@ -115,7 +115,6 @@ class KenessosPriestOfThassaScenarioTest : FunSpec({
         val d = setup()
         val you = d.activePlayer!!
         d.putCreatureOnBattlefield(you, "Kenessos, Priest of Thassa")
-        // Two different cards: copies of one card have no order to choose, so no prompt.
         d.putCardOnTopOfLibrary(you, "Grizzly Bears")
         d.putCardOnTopOfLibrary(you, "Plains")
         val top = d.state.getLibrary(you).take(2)

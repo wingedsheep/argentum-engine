@@ -95,13 +95,18 @@ class SingleCardPutBackPromptTest : FunSpec({
         driver.state.getZone(ZoneKey(player, Zone.LIBRARY)).first() shouldBe top
     }
 
-    // Copies of one card have no order to choose either: every order is the same library.
+    // Two copies of one card are still asked about: whether a question is pending is visible to
+    // the opponent, and which cards are going back is not (#3340).
 
-    test("scry 2 keeping two copies of one card on top skips the reorder prompt") {
+    test("scry 2 keeping two copies of one card on top still asks for their order") {
         val (driver, player, _) = activate("Scry Savant", scry2Ability, listOf("Grizzly Bears", "Grizzly Bears"))
         val select = driver.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
         select.options.size shouldBe 2
         driver.submitDecision(player, CardsSelectedResponse(select.id, emptyList()))
+
+        val order = driver.pendingDecision.shouldBeInstanceOf<ReorderLibraryDecision>()
+        order.cards.size shouldBe 2
+        driver.submitOrderedResponse(player, order.cards)
 
         driver.isPaused shouldBe false
         driver.state.getZone(ZoneKey(player, Zone.LIBRARY)).take(2).map { driver.getCardName(it) } shouldBe

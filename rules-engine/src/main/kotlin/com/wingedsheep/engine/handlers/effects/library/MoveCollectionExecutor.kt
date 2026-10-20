@@ -516,19 +516,20 @@ class MoveCollectionExecutor(
         if ((order == CardOrder.ControllerChooses || order == CardOrder.OwnerChooses) && destZone == Zone.LIBRARY) {
             val isBottom = destination.placement == ZonePlacement.Bottom
             val chooserId = if (order == CardOrder.OwnerChooses) destPlayerId else context.controllerId
-            // One card — or several copies of one card — has no order to choose. The prompt still
-            // runs where it is the player's only *look* at the cards ("look at the top card of
-            // your library", lookAtTopAndReorder), and is skipped only when a selection in this
-            // same pipeline just displayed every one of them to the chooser (scry / surveil
-            // keeping them on top). Skipping therefore never hides anything the chooser
-            // wouldn't otherwise see.
+            // One card has no order to choose. The prompt still runs where it is the player's only
+            // *look* at the card ("look at the top card of your library", lookAtTopAndReorder), and
+            // is skipped only when a selection in this same pipeline just displayed it to the
+            // chooser (scry 1 / surveil 1 keeping it on top). Skipping therefore never hides
+            // anything the chooser wouldn't otherwise see. Two or more cards are always asked
+            // about, even copies of one card: every seat sees whether a question is pending but
+            // not which cards are going back, so skipping for copies would tell the other players
+            // what the library holds (#3340).
             val shown = fromCollection?.let {
                 context.pipeline.storedCollections[
                     com.wingedsheep.engine.handlers.PipelineState.shownKey(it, chooserId)
                 ]
             }.orEmpty()
-            val noOrderToChoose = cards.size == 1 ||
-                com.wingedsheep.engine.mechanics.GraveyardOrdering.allSameCard(state, cards)
+            val noOrderToChoose = cards.size == 1
             val alreadySeen = cards.isNotEmpty() && cards.all { it in shown }
             if ((!isBottom || cards.size > 1) && !(alreadySeen && noOrderToChoose)) {
                 return pauseForOrderDecision(state, context, cards, destZone, destPlayerId, destination.placement, chooserId, revealed)

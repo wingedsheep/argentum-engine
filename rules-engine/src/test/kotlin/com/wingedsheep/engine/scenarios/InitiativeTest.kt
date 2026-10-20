@@ -11,6 +11,7 @@ import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.core.OrderObjectsDecision
 import com.wingedsheep.engine.core.OrderedResponse
 import com.wingedsheep.engine.core.PlayerConfig
+import com.wingedsheep.engine.core.ReorderLibraryDecision
 import com.wingedsheep.engine.core.SearchLibraryDecision
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.event.InitiativeAbilities
@@ -276,8 +277,9 @@ class InitiativeTest : ScenarioTestBase() {
 
     /**
      * Resolve the whole stack and answer the questions on the way: order simultaneous triggers as
-     * offered, fail to find on searches, take the first card of a selection, and pick [roomChoice]
-     * (or the first room) at a fork. Returns every event emitted.
+     * offered, keep the order of cards put back on a library, fail to find on searches, take the
+     * first card of a selection, and pick [roomChoice] (or the first room) at a fork. Returns every
+     * event emitted.
      */
     private fun TestGame.resolveAll(roomChoice: String? = null): List<com.wingedsheep.engine.core.GameEvent> {
         val events = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
@@ -286,6 +288,7 @@ class InitiativeTest : ScenarioTestBase() {
             val result = when (val d = state.pendingDecision) {
                 null -> passPriority()
                 is OrderObjectsDecision -> submitDecision(OrderedResponse(d.id, d.objects))
+                is ReorderLibraryDecision -> submitDecision(OrderedResponse(d.id, d.cards))
                 is SearchLibraryDecision -> submitDecision(CardsSelectedResponse(d.id, emptyList()))
                 is SelectCardsDecision -> submitDecision(CardsSelectedResponse(d.id, d.options.take(d.minSelections)))
                 is ChooseOptionDecision -> submitDecision(

@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.GameAction
 import com.wingedsheep.engine.core.PassPriority
 import com.wingedsheep.engine.core.PlayLand
+import com.wingedsheep.engine.core.ReorderLibraryDecision
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.SubmitDecision
 import com.wingedsheep.engine.core.YesNoDecision
@@ -290,6 +291,36 @@ class HiddenIdentityForkCasesTest : ScenarioTestBase() {
             outcome.leak.shouldBeNull()
             outcome.end shouldBe End.Completed
             outcome.checked shouldBe 2
+        }
+
+        // #3340 group E: whether cards put back on a library ask for their order can't depend on
+        // whether they are copies of one card.
+        test("keeping two cards on top after a scry asks for their order whether or not they are copies") {
+            // P1 keeps both scried cards on top. P2 can't tell two Forests from a Forest and an
+            // Island, so the reorder question must be asked for both.
+            val game = scenario()
+                .withPlayers()
+                .withCardInHand(1, "Preordain")
+                .withCardOnBattlefield(1, "Island")
+                .withCardInLibrary(1, "Forest")
+                .withCardInLibrary(1, "Forest")
+                .withCardInLibrary(1, "Swamp")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val start = game.state
+            val actions = mutableListOf<GameAction>().apply {
+                play(game, CastSpell(game.player1Id, cardIn(start, game.player1Id, "Preordain")))
+                game.state.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
+                play(game, SubmitDecision(game.player1Id, CardsSelectedResponse(game.state.pendingDecision!!.id, emptyList())))
+            }
+
+            val outcome = checker.checkZoneFork(start, start.getLibrary(game.player1Id)[1], cardRegistry.requireCard("Island"), game.player2Id, actions)
+
+            outcome.end shouldBe End.Completed
+            outcome.checked shouldBe actions.size
+            outcome.leak.shouldBeNull()
+            game.state.pendingDecision.shouldBeInstanceOf<ReorderLibraryDecision>()
         }
     }
 }

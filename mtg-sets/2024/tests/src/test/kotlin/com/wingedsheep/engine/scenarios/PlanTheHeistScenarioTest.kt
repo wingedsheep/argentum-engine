@@ -55,8 +55,7 @@ class PlanTheHeistScenarioTest : FunSpec({
         // stack the hand is empty when the spell resolves.
         emptyHand(driver, me)
 
-        // Three known cards on top so surveil presents exactly three. The two kept ones differ,
-        // so they still need ordering (copies of one card would skip that prompt).
+        // Three known cards on top so surveil presents exactly three; the two kept ones need ordering.
         driver.putCardOnTopOfLibrary(me, "Swamp")
         driver.putCardOnTopOfLibrary(me, "Island")
         val surveilTop = driver.putCardOnTopOfLibrary(me, "Island")
