@@ -342,6 +342,50 @@
     ]
 }
 
+// Aisling Leprechaun
+{
+    "name": "Aisling Leprechaun",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Faerie",
+    "oracleText": "Whenever this creature blocks or becomes blocked by a creature, that creature becomes green. (This effect lasts indefinitely.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aisling Leprechaun:1",
+                "trigger": {
+                    "type": "BlocksOrBecomesBlockedByEvent",
+                    "partnerFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "ChangeColor",
+                    "target": "TriggeringEntity",
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "duration": "Permanent"
+                },
+                "descriptionOverride": "Whenever this creature blocks or becomes blocked by a creature, that creature becomes green. (This effect lasts indefinitely.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "173",
+        "artist": "Quinton Hoover",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/640a161d-ad7b-4e5b-8f2d-d3753cb9daa3.jpg?1783948050"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Al-abara's Carpet
 {
     "name": "Al-abara's Carpet",
@@ -2556,6 +2600,33 @@
     ]
 }
 
+// Deadfall
+{
+    "name": "Deadfall",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creatures with forestwalk can be blocked as though they didn't have forestwalk.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "SuppressLandwalkForGroup",
+                "landwalks": [
+                    "FORESTWALK"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "UNCOMMON",
+        "artist": "NéNé Thomas",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0d78f0fc-3ab2-46ee-b5a9-55ae97d08c1a.jpg?1783948049"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Demonic Torment
 {
     "name": "Demonic Torment",
@@ -2935,6 +3006,64 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Elven Riders
+{
+    "name": "Elven Riders",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Elf",
+    "oracleText": "This creature can't be blocked except by Walls and/or creatures with flying.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedExceptBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                {
+                                    "type": "And",
+                                    "predicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "HasSubtype",
+                                            "subtype": "Wall"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "And",
+                                    "predicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "HasKeyword",
+                                            "keyword": "FLYING"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "183",
+        "rarity": "RARE",
+        "artist": "Melissa A. Benson",
+        "flavorText": "\"Sometimes it is better to be swift of foot than strong of swordarm.\"\n—Elven Proverb",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/ad1d349b-b5ab-4b2b-9b39-f8d8f6374aa5.jpg?1783948048"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -4097,6 +4226,44 @@
     ]
 }
 
+// Giant Turtle
+{
+    "name": "Giant Turtle",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Turtle",
+    "oracleText": "This creature can't attack if it attacked during your last turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "CantAttack",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "AttackedLastTurn"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "188",
+        "artist": "Jeff A. Menges",
+        "flavorText": "\"The turtle lives 'twixt plated decks/ Which practically conceal its sex./ I think it clever of the turtle/ In such a fix to be so fertile.\"\n—Ogden Nash, \"The Turtle\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/87e5fc19-3b10-476f-9a73-e8bf4b5fbec0.jpg?1783948047"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Glyph of Delusion
 {
     "name": "Glyph of Delusion",
@@ -4514,6 +4681,33 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Great Wall
+{
+    "name": "Great Wall",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creatures with plainswalk can be blocked as though they didn't have plainswalk.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "SuppressLandwalkForGroup",
+                "landwalks": [
+                    "PLAINSWALK"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "UNCOMMON",
+        "artist": "Sandra Everingham",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd860a1d-aa17-4579-b9b1-d101d2416387.jpg?1783948084"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -5351,6 +5545,75 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Ichneumon Druid
+{
+    "name": "Ichneumon Druid",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Human Druid",
+    "oracleText": "Whenever an opponent casts an instant spell other than the first instant spell that player casts each turn, this creature deals 4 damage to that player.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ichneumon Druid:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsInstant"
+                        ]
+                    },
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "triggerRestriction": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "SpellsCastThisTurn",
+                        "player": "TriggeringPlayer",
+                        "filter": "instant"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "descriptionOverride": "Whenever an opponent casts an instant spell other than the first instant spell that player casts each turn, this creature deals 4 damage to that player."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "rarity": "UNCOMMON",
+        "artist": "Melissa A. Benson",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cf2313bb-6f9b-49d6-b069-9f3b77b6e107.jpg?1783948048",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "It tracks the instant count for each player separately."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -8269,6 +8532,118 @@
     }
 }
 
+// Rabid Wombat
+{
+    "name": "Rabid Wombat",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Wombat",
+    "oracleText": "Vigilance\nThis creature gets +2/+2 for each Aura attached to it.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "AttachmentCount",
+                            "kind": "AURA"
+                        }
+                    },
+                    "multiplier": 2
+                },
+                "toughnessBonus": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "AttachmentCount",
+                            "kind": "AURA"
+                        }
+                    },
+                    "multiplier": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "rarity": "UNCOMMON",
+        "artist": "Kaja Foglio",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d9b9eb8-6367-4ab5-8e00-a9c9e1d69032.jpg?1783948045",
+        "rulings": [
+            {
+                "date": "2005-08-01",
+                "text": "If an Aura is removed from the Wombat, its power and toughness change immediately."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Radjan Spirit
+{
+    "name": "Radjan Spirit",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "{T}: Target creature loses flying until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Radjan Spirit:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "RemoveKeyword",
+                    "keyword": "FLYING",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}: Target creature loses flying until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "rarity": "UNCOMMON",
+        "artist": "Christopher Rush",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/adf3ab1a-5714-4b69-bc51-3752312b2d1f.jpg?1783948045"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Raging Bull
 {
     "name": "Raging Bull",
@@ -9041,6 +9416,75 @@
     ]
 }
 
+// Rubinia Soulsinger
+{
+    "name": "Rubinia Soulsinger",
+    "manaCost": "{2}{G}{W}{U}",
+    "typeLine": "Legendary Creature — Faerie",
+    "oracleText": "You may choose not to untap Rubinia Soulsinger during your untap step.\n{T}: Gain control of target creature for as long as you control Rubinia Soulsinger and Rubinia Soulsinger remains tapped.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "flags": [
+        "MAY_NOT_UNTAP"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Rubinia Soulsinger:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": {
+                        "type": "WhileYouControlSourceAndSourceTapped",
+                        "sourceDescription": "Rubinia Soulsinger"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}: Gain control of target creature for as long as you control Rubinia Soulsinger and Rubinia Soulsinger remains tapped."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "256",
+        "rarity": "RARE",
+        "artist": "Rob Alexander",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f13e8dc9-8d0f-4a2c-8c0e-be70a3a7dc8e.jpg?1783948033",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "If Rubinia Soulsinger leaves the battlefield, you no longer control it, so the duration of its control-change effect ends."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "If Rubinia Soulsinger stops being tapped before its ability resolves — even if it becomes tapped again right away — you won't gain control of the targeted creature at all. The same is true if you lose control of Rubinia Soulsinger before the ability resolves."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "Once the ability resolves, it doesn't care whether the targeted permanent remains a legal target for the ability, only that it's on the battlefield. The effect will continue to apply to it even if it gains shroud, stops being a creature, or would no longer be a legal target for any other reason."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE",
+        "WHITE"
+    ]
+}
+
 // Seafarer's Quay
 {
     "name": "Seafarer's Quay",
@@ -9226,6 +9670,49 @@
         "rarity": "RARE",
         "artist": "Mark Tedin",
         "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c350c38-6cbb-4b8b-823f-45d6a16568cc.jpg?1783948026"
+    }
+}
+
+// Shelkin Brownie
+{
+    "name": "Shelkin Brownie",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Ouphe",
+    "oracleText": "{T}: Target creature loses all \"bands with other\" abilities until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Shelkin Brownie:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "RemoveKeyword",
+                    "keyword": "BANDS_WITH_OTHER",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}: Target creature loses all \"bands with other\" abilities until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "artist": "Douglas Shuler",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fddcc557-871d-425b-b4ee-bc0c9bc717aa.jpg?1783948044"
     }
 }
 
@@ -9682,6 +10169,46 @@
     ]
 }
 
+// Storm Seeker
+{
+    "name": "Storm Seeker",
+    "manaCost": "{3}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Storm Seeker deals damage to target player equal to the number of cards in that player's hand.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "AggregateZone",
+                "player": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "zone": "Hand"
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Poole",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b66d0cc-84d7-41ad-b0e7-74ebf604543f.jpg?1783948044"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Storm World
 {
     "name": "Storm World",
@@ -9729,6 +10256,66 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Subdue
+{
+    "name": "Subdue",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Prevent all combat damage that would be dealt by target creature this turn. That creature gets +0/+X until end of turn, where X is its mana value.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "PreventDamageShield",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "scope": "CombatOnly",
+                    "direction": "FromTarget"
+                },
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "toughnessModifier": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "ManaValue"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "artist": "Brian Snõddy",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/123d6097-8021-46cd-a8c3-01013245e347.jpg?1783948043"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -11169,6 +11756,48 @@
     ]
 }
 
+// Typhoon
+{
+    "name": "Typhoon",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Typhoon deals damage to each opponent equal to the number of Islands that player controls.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Players",
+                "players": "EachOpponent"
+            },
+            "body": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "land Island"
+                },
+                "target": "Controller"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "rarity": "RARE",
+        "artist": "Anson Maddocks",
+        "flavorText": "Fierce winds ripped across the tropical landscape. What they did not destroy with their fiery breath was washed away by torrential rain.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/254e0403-67d8-4e73-8d89-c901ebeba49f.jpg?1783948043",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "Number of Islands is counted on resolution and not on announcement."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Underworld Dreams
 {
     "name": "Underworld Dreams",
@@ -11908,6 +12537,71 @@
     ]
 }
 
+// Whirling Dervish
+{
+    "name": "Whirling Dervish",
+    "manaCost": "{G}{G}",
+    "typeLine": "Creature — Human Monk",
+    "oracleText": "Protection from black\nAt the beginning of each end step, if this creature dealt damage to an opponent this turn, put a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Color",
+                "color": "BLACK"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Whirling Dervish:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "CountPlayersWith",
+                        "scope": "EachOpponent",
+                        "condition": {
+                            "type": "SourceDealtDamageToPlayerThisTurn",
+                            "player": "You"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "211",
+        "rarity": "UNCOMMON",
+        "artist": "Susan Van Camp",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eba294e7-7097-4bc3-b396-72e85dd4f441.jpg?1783948043"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // White Mana Battery
 {
     "name": "White Mana Battery",
@@ -11982,6 +12676,78 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Willow Satyr
+{
+    "name": "Willow Satyr",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Satyr",
+    "oracleText": "You may choose not to untap this creature during your untap step.\n{T}: Gain control of target legendary creature for as long as you control this creature and this creature remains tapped.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "flags": [
+        "MAY_NOT_UNTAP"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Willow Satyr:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": {
+                        "type": "WhileYouControlSourceAndSourceTapped",
+                        "sourceDescription": "Willow Satyr"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsLegendary"
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}: Gain control of target legendary creature for as long as you control this creature and this creature remains tapped."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "RARE",
+        "artist": "Jeff A. Menges",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0c8b1f49-550e-405f-b17c-1d94589494ad.jpg?1783948043",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "If Willow Satyr leaves the battlefield, you no longer control it, so the duration of its control-change effect ends."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "If Willow Satyr stops being tapped before its ability resolves — even if it becomes tapped again right away — you won't gain control of the targeted creature at all. The same is true if you lose control of Willow Satyr before the ability resolves."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "Once the ability resolves, it doesn't care whether the targeted permanent remains a legal target for the ability, only that it's on the battlefield. The effect will continue to apply to it even if it gains shroud, stops being a creature, stops being legendary, or would no longer be a legal target for any other reason."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
