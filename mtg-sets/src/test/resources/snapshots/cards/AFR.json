@@ -84,6 +84,67 @@
     ]
 }
 
+// Boots of Speed
+{
+    "name": "Boots of Speed",
+    "manaCost": "{R}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+0 and has haste.\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Boots of Speed:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE"
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "133",
+        "artist": "Chris Rallis",
+        "flavorText": "Click your heels and become the wind.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/db6d9913-3d4f-4f47-ba3a-6586a50ddbd7.jpg?1783926483"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Deadly Dispute
 {
     "name": "Deadly Dispute",
