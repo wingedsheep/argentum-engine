@@ -17812,7 +17812,7 @@ are their printed spellings (`CounterType.printed`). Text converts back only thr
   `blood`, `cage`, `doom`, `storage`, `divinity` (`CounterType.DIVINITY`, a passive counter used by the Myojin
   cycle), `charm`, `music`, `crumble`, `corpse`, `germ`, `ink`, `growth`,
   `hour`, `energy`, `scry`, `aura`, `chapter`, `citation`, `rune`, `scar`, `crux`, `omen`, `secret`, `feather`,
-  `hourglass`, `hope`, `verse`, `influence`, `burden`, `loot`, `soul`, `bait`, `glyph`, `matrix` — assorted printed counter kinds. (`glyph`: Glyph of Delusion — the creature *gains* a conditional `DOESNT_UNTAP` static and an upkeep remove-a-counter trigger.) (`matrix`: Life Matrix — the creature *gains* a permanent "Remove a matrix counter from this creature: Regenerate this creature" via `Effects.GrantActivatedAbility(..., duration = Duration.Permanent)`.) (`hourglass`: Temporal Distortion
+  `hourglass`, `hope`, `verse`, `influence`, `burden`, `loot`, `soul`, `bait`, `glyph`, `matrix`, `sleep`, `pin`, `carrion` — assorted printed counter kinds. (`glyph`: Glyph of Delusion — the creature *gains* a conditional `DOESNT_UNTAP` static and an upkeep remove-a-counter trigger.) (`matrix`: Life Matrix — the creature *gains* a permanent "Remove a matrix counter from this creature: Regenerate this creature" via `Effects.GrantActivatedAbility(..., duration = Duration.Permanent)`.) (`hourglass`: Temporal Distortion
   — a permanent with one doesn't untap during its controller's untap step; model the restriction with
   `GrantKeyword(AbilityFlag.DOESNT_UNTAP.name, GroupFilter(... .withCounter(CounterType.HOURGLASS)))` so it stays
   projection-scoped.) (`hope` / `verse` / `influence` / `burden`: LTR — Dawn of a New Age / Lost Isle Calling /

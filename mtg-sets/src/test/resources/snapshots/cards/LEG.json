@@ -8989,6 +8989,79 @@
     }
 }
 
+// Osai Vultures
+{
+    "name": "Osai Vultures",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying\nAt the beginning of each end step, if a creature died this turn, put a carrion counter on this creature.\nRemove two carrion counters from this creature: This creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Osai Vultures:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "CARRION",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "interveningIf": "CreatureDiedThisTurn"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Osai Vultures:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomRemoveCounters",
+                        "counterType": "CARRION",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "self": true
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "artist": "Dan Frazier",
+        "flavorText": "A sign of battle, the Vultures circle and wait for the victorious to depart.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f85614b3-62a3-4da9-a74a-7ea40fad1b52.jpg?1783948082"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Palladia-Mors
 {
     "name": "Palladia-Mors",
@@ -14735,6 +14808,96 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Venarian Gold
+{
+    "name": "Venarian Gold",
+    "manaCost": "{X}{U}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, tap enchanted creature and put X sleep counters on it.\nEnchanted creature doesn't untap during its controller's untap step if it has a sleep counter on it.\nAt the beginning of the upkeep of enchanted creature's controller, remove a sleep counter from that creature.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Venarian Gold:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": "EnchantedCreature"
+                        },
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "SLEEP",
+                            "amount": "CastX",
+                            "target": "EnchantedCreature"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this Aura enters, tap enchanted creature and put X sleep counters on it."
+            },
+            {
+                "id": "Venarian Gold:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "RemoveCounters",
+                    "counterType": "SLEEP",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "EnchantedCreature"
+                },
+                "descriptionOverride": "At the beginning of the upkeep of enchanted creature's controller, remove a sleep counter from that creature."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP",
+                "filter": {
+                    "baseFilter": {
+                        "statePredicates": [
+                            "IsAttachedToBySource",
+                            {
+                                "type": "HasCounter",
+                                "counterType": "SLEEP"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "artist": "Daniel Gelon",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11fb92c0-bb1e-463a-a6b6-887a5d0cb873.jpg?1783948070",
+        "rulings": [
+            {
+                "date": "2011-06-01",
+                "text": "The counters are placed on the creature to which it enters attached. If you later move Venarian Gold to a different creature, the counters remain on the original creature and no counters are put on the new creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
