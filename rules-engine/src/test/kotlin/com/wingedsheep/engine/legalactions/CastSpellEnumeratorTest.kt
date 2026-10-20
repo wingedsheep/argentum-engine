@@ -10,6 +10,9 @@ import com.wingedsheep.engine.legalactions.support.shouldNotContainCastOf
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.CantCastSpellsComponent
 import com.wingedsheep.mtg.sets.definitions.dom.cards.StrongholdConfessor
+import com.wingedsheep.mtg.sets.definitions.mat.cards.UndercityUpheaval
+import com.wingedsheep.mtg.sets.definitions.mom.cards.StormTheSeedcore
+import com.wingedsheep.mtg.sets.definitions.mom.cards.WickedSlumber
 import com.wingedsheep.mtg.sets.definitions.ktk.cards.TormentingVoice
 import com.wingedsheep.mtg.sets.definitions.ecl.cards.BrigidsCommand
 import com.wingedsheep.mtg.sets.definitions.ecl.cards.MorningtidesLight
@@ -382,6 +385,55 @@ class CastSpellEnumeratorTest : FunSpec({
         cast.totalDamageToDistribute shouldBe 4
         cast.minDamagePerTarget shouldBe 1
         cast.requiresTargets shouldBe true
+    }
+
+    // -------------------------------------------------------------------------
+    // Counter division announced at cast (CR 601.2d)
+    // -------------------------------------------------------------------------
+
+    test("a spell that distributes counters announces the division at cast, with its unit") {
+        // Storm the Seedcore: "Distribute four +1/+1 counters among up to four target creatures you control."
+        val driver = setupP1(
+            hand = listOf("Storm the Seedcore"),
+            battlefield = listOf("Forest", "Forest", "Forest", "Forest", "Grizzly Bears"),
+            extraSetCards = listOf(StormTheSeedcore)
+        )
+
+        val cast = driver.enumerateFor(driver.player1).castActionsFor("Storm the Seedcore").first()
+
+        cast.requiresDamageDistribution shouldBe true
+        cast.totalDamageToDistribute shouldBe 4
+        cast.minDamagePerTarget shouldBe 1
+        cast.distributionUnit shouldBe "+1/+1 counter"
+    }
+
+    test("a counter pool that is a cast-time capture is priced from the capture's amount") {
+        // Undercity Upheaval: X = creature cards in your graveyard as you cast this spell.
+        val driver = setupP1(
+            hand = listOf("Undercity Upheaval"),
+            battlefield = listOf("Forest", "Forest", "Forest", "Grizzly Bears"),
+            graveyard = listOf("Grizzly Bears", "Grizzly Bears", "Forest"),
+            extraSetCards = listOf(UndercityUpheaval)
+        )
+
+        val cast = driver.enumerateFor(driver.player1).castActionsFor("Undercity Upheaval").first()
+
+        cast.requiresDamageDistribution shouldBe true
+        cast.totalDamageToDistribute shouldBe 2
+    }
+
+    test("a split that lets a target get nothing is made at resolution, not announced") {
+        // Wicked Slumber: "Put a stun counter on either of them. Then put a stun counter on either of them."
+        val driver = setupP1(
+            hand = listOf("Wicked Slumber"),
+            battlefield = listOf("Island", "Island", "Island", "Island", "Grizzly Bears"),
+            extraSetCards = listOf(WickedSlumber)
+        )
+
+        val cast = driver.enumerateFor(driver.player1).castActionsFor("Wicked Slumber").first()
+
+        cast.requiresDamageDistribution shouldBe false
+        cast.distributionUnit shouldBe null
     }
 
     // -------------------------------------------------------------------------

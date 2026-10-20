@@ -16,8 +16,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Distribute four +1/+1 counters among up to four target creatures you control. Creatures you
  * control gain vigilance and trample until end of turn.
  *
- * "Up to four" is a `count = 4, minCount = 0` target range; the controller chooses the division
- * through a `DistributeDecision`, each target getting at least one counter. With zero targets chosen
+ * "Up to four" is a `count = 4, minCount = 0` target range; the controller announces the division
+ * as the spell is cast (CR 601.2d), each target getting at least one counter, and a target that
+ * becomes illegal loses its share. With zero targets chosen
  * the spell still resolves and grants vigilance and trample; if every chosen target is illegal it
  * fizzles entirely (per the rulings).
  */

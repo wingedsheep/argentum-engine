@@ -685,3 +685,90 @@
         "GREEN"
     ]
 }
+
+// Undercity Upheaval
+{
+    "name": "Undercity Upheaval",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Undergrowth — Distribute X +1/+1 counters among any number of target creatures you control, where X is the number of creature cards in your graveyard as you cast this spell. Creatures you control gain vigilance until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DistributeCountersAmongTargets",
+                    "totalCounters": {
+                        "type": "CapturedAtCast",
+                        "captureName": "x"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "VIGILANCE",
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0",
+                "dynamicMaxCount": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "creature"
+                }
+            }
+        ],
+        "castTimeCaptures": [
+            {
+                "captureName": "x",
+                "value": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "rarity": "UNCOMMON",
+        "artist": "Grady Frederick",
+        "flavorText": "Light shone on parts of the undercity for the first time in centuries.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/acfe6957-d971-413f-b075-01b995f1d7a3.jpg?1783916518",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "You choose how many targets Undercity Upheaval has and how the counters will be distributed as you cast the spell. Each target must receive at least one counter."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "If some of the creatures are illegal targets as Undercity Upheaval tries to resolve, the original distribution of counters still applies and the counters that would have been put on the illegal targets are lost. They won't be put instead on a legal target."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "If all of Undercity Upheaval's targets are illegal at the time the spell tries to resolve, it won't resolve and none of its effects will happen. Creatures you control won't gain vigilance."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}

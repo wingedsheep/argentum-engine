@@ -2469,8 +2469,9 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   can respond to).
 - `DistributeCountersFromSelf(type?, count?)` — split source's counters among creatures you control.
 - `DistributeCountersAmongTargets(total, type?, minPerTarget?)` — divvy N counters among chosen
-  targets. `total` is a `DynamicAmount` (an `Int` overload wraps it in `Fixed`), evaluated once at
-  resolution, so the pool can be the spell's X. For "distribute X counters among **any number** of
+  targets. `total` is a `DynamicAmount` (an `Int` overload wraps it in `Fixed`), evaluated when the
+  division is announced (or at resolution when it isn't), so the pool can be the spell's X or a
+  cast-time capture. For "distribute X counters among **any number** of
   target creatures" (Grove's Bounty) pair it with
   `TargetObject(unlimited = true, dynamicMaxCount = DynamicAmount.XValue)` — the dynamic cap
   outranks `unlimited` in `TargetValidator`, enforcing CR 601.2d (no more targets than counters).
@@ -2483,9 +2484,17 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   ("+1/+1 counter"), the client's distribution modal collects it after targeting, and the split rides
   on `ActivateAbility.damageDistribution` onto the stack object — Ajani, Sleeper Agent's −3,
   `DistributeCountersAmongTargets(3) then ForEachTarget(GrantKeyword(VIGILANCE, ContextTarget(0)))`.
-  Both paths find the division through the engine's `AnnouncedDivision` reader, which also covers
-  divided damage. A single target takes the whole pool; a spell, or an activation submitted without a
-  split (the AI), divides at resolution through a `DistributeDecision`. "Any number of target creatures" with a fixed pool is a
+  A **spell** announces it as it is cast (CR 601.2d), the same way: the cast legal action carries
+  the pool, floor and unit, and the split rides on `CastSpell.damageDistribution` — Storm the
+  Seedcore, Undercity Upheaval. A pool that is an "as you cast this spell" capture
+  (`DynamicAmounts.capturedAtCast`) is priced from the capture's own amount, since the division is
+  announced before the capture is recorded; a pool that reads a mana-paid X can't be priced before X
+  is chosen, so such a spell (Grove's Bounty) divides at resolution. A split with `minPerTarget = 0`
+  ("put a counter on either of them" — Wicked Slumber) isn't a division and is always made at
+  resolution among the targets still legal. All three paths find the division through the engine's
+  `AnnouncedDivision` reader, which also covers divided damage. A single target takes the whole pool;
+  a spell or activation submitted without a split (the AI) divides at resolution through a
+  `DistributeDecision`. "Any number of target creatures" with a fixed pool is a
   `count = N, minCount = 0` range — Jugan, the Rising Star: `targets(TargetFilter.Creature, count = 5,
   minCount = 0)`, where choosing no targets is the "may" declined.
 - `DistributeCountersAmongFiltered(total, type?, filter, minPerTarget?)` — distribute N **new** counters among permanents matching `filter`, chosen at resolution (not the spell's targets); `minPerTarget = 0` models "among any number of". `total` is an `Int` or a `DynamicAmount` evaluated once at resolution — Feast of the Victorious Dead's "distribute that many +1/+1 counters" passes `DynamicAmounts.creaturesDiedThisTurn(Player.Each)`. Unlike `DistributeCountersFromSelf` nothing is removed from a source. Crashing Wave: `DistributeCountersAmongFiltered(3, CounterType.STUN, Filters.Creature.tapped().opponentControls())` — "distribute three stun counters among any number of tapped creatures your opponents control."
@@ -15194,7 +15203,9 @@ Other gates available in both contexts:
   The numeric form is
   `captureAtCast("name", amount)` read with `DynamicAmounts.capturedAtCast("name")`
   (`DynamicAmount.CapturedAtCast`) — "for each modified creature you controlled as you cast this
-  spell" (Lethal Exploit) counts the cast-time board:
+  spell" (Lethal Exploit) counts the cast-time board. A capture can also be the pool a spell divides
+  at cast — Undercity Upheaval's `DistributeCountersAmongTargets(DynamicAmounts.capturedAtCast("x"))`
+  (see `DistributeCountersAmongTargets`):
 
   ```kotlin
   spell {

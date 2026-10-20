@@ -670,8 +670,9 @@ data class ProliferateEffect(
  *
  * [totalCounters] is a [DynamicAmount] so the pool can come from the spell's X
  * ("Distribute X +1/+1 counters among any number of target creatures you control" —
- * Grove's Bounty) as well as from a literal (`DynamicAmount.Fixed(2)` — Armament Corps).
- * It is evaluated once, when the effect resolves. Pair an X-scaled pool with
+ * Grove's Bounty), a cast-time capture (`DynamicAmount.CapturedAtCast` — Undercity Upheaval) or a
+ * literal (`DynamicAmount.Fixed(2)` — Armament Corps). It is evaluated when the division is
+ * announced as the spell or ability is put on the stack (CR 601.2d), or at resolution when it isn't. Pair an X-scaled pool with
  * `TargetObject(unlimited = true, dynamicMaxCount = DynamicAmount.XValue)` so the caster
  * can't declare more targets than there are counters to go around (CR 601.2d).
  *

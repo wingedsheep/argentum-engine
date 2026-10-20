@@ -49,6 +49,7 @@ import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.dsl.giftKeyword
+import com.wingedsheep.engine.handlers.effects.AnnouncedDivision
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
@@ -726,21 +727,25 @@ class CastSpellEnumerator(
                     ?.sources?.map { it.entityId }
             }
 
-            // Check for DividedDamageEffect to flag damage distribution requirement
+            // The division the spell announces as it is cast (CR 601.2d) — divided damage, or a
+            // counter division. A board-derived total is known now (a cast-time capture reads its own
+            // amount); one that reads X is re-priced per offer once X is fixed
+            // ([expandSacrificeDefinedX]). A counter pool that reads a mana-paid X can't be priced
+            // before X is chosen, so it isn't offered here and divides at resolution instead.
             val spellEffect = cardDef.script.spellEffect
-            val dividedDamageEffect = spellEffect as? DividedDamageEffect
-            val requiresDamageDistribution = dividedDamageEffect != null
-            // A board-derived `dynamicTotal` is known now; one that reads X is re-priced per offer
-            // once X is fixed ([expandSacrificeDefinedX]).
-            val totalDamageToDistribute = dividedDamageEffect?.let { effect ->
-                effect.dynamicTotal?.let { amount ->
-                    context.predicateEvaluator.amounts.evaluate(
-                        state, amount,
-                        com.wingedsheep.engine.handlers.EffectContext(sourceId = cardId, controllerId = playerId)
-                    ).coerceAtLeast(0)
-                } ?: effect.totalDamage
+            val division = AnnouncedDivision.ofSpell(spellEffect)
+            val totalDamageToDistribute = division?.let {
+                AnnouncedDivision.total(
+                    state, it,
+                    com.wingedsheep.engine.handlers.EffectContext(sourceId = cardId, controllerId = playerId),
+                    context.predicateEvaluator.amounts,
+                    cardDef.script.castTimeCaptures
+                )
             }
-            val minDamagePerTarget = if (dividedDamageEffect != null) 1 else null
+            val requiresDamageDistribution = division is DividedDamageEffect ||
+                (division != null && !cardDef.manaCost.hasX && (totalDamageToDistribute ?: 0) > 0)
+            val minDamagePerTarget = division?.takeIf { requiresDamageDistribution }?.let(AnnouncedDivision::minPerTarget)
+            val distributionUnit = division?.takeIf { requiresDamageDistribution }?.let(AnnouncedDivision::counterUnit)
 
             // Compute alternative cost info for this spell (Jodah-style GrantAlternativeCastingCost).
             // The grant picked above is the affordable one, so its non-mana half is payable too and
@@ -1123,6 +1128,7 @@ class CastSpellEnumerator(
                                 requiresDamageDistribution = requiresDamageDistribution,
                                 totalDamageToDistribute = totalDamageToDistribute,
                                 minDamagePerTarget = minDamagePerTarget,
+                                distributionUnit = distributionUnit,
                                 autoTapPreview = autoTapPreview
                             ))
                         }
@@ -1137,6 +1143,7 @@ class CastSpellEnumerator(
                                 requiresDamageDistribution = requiresDamageDistribution,
                                 totalDamageToDistribute = totalDamageToDistribute,
                                 minDamagePerTarget = minDamagePerTarget,
+                                distributionUnit = distributionUnit,
                                 autoTapPreview = altCostInfo.autoTapPreview
                             ))
                         }
@@ -1151,6 +1158,7 @@ class CastSpellEnumerator(
                                 requiresDamageDistribution = requiresDamageDistribution,
                                 totalDamageToDistribute = totalDamageToDistribute,
                                 minDamagePerTarget = minDamagePerTarget,
+                                distributionUnit = distributionUnit,
                                 autoTapPreview = selfAltCostResult.autoTapPreview
                             ))
                         }
@@ -1183,6 +1191,7 @@ class CastSpellEnumerator(
                                 requiresDamageDistribution = requiresDamageDistribution,
                                 totalDamageToDistribute = totalDamageToDistribute,
                                 minDamagePerTarget = minDamagePerTarget,
+                                distributionUnit = distributionUnit,
                                 autoTapPreview = freeCastResult.autoTapPreview
                             ))
                         }
@@ -1197,6 +1206,7 @@ class CastSpellEnumerator(
                                 requiresDamageDistribution = requiresDamageDistribution,
                                 totalDamageToDistribute = totalDamageToDistribute,
                                 minDamagePerTarget = minDamagePerTarget,
+                                distributionUnit = distributionUnit,
                                 autoTapPreview = path.autoTapPreview
                             ))
                         }
@@ -1230,6 +1240,7 @@ class CastSpellEnumerator(
                                 requiresDamageDistribution = requiresDamageDistribution,
                                 totalDamageToDistribute = totalDamageToDistribute,
                                 minDamagePerTarget = minDamagePerTarget,
+                                distributionUnit = distributionUnit,
                                 autoTapPreview = autoTapPreview
                             ))
                         }
@@ -1255,6 +1266,7 @@ class CastSpellEnumerator(
                                 requiresDamageDistribution = requiresDamageDistribution,
                                 totalDamageToDistribute = totalDamageToDistribute,
                                 minDamagePerTarget = minDamagePerTarget,
+                                distributionUnit = distributionUnit,
                                 autoTapPreview = altCostInfo.autoTapPreview
                             ))
                         }
@@ -1280,6 +1292,7 @@ class CastSpellEnumerator(
                                 requiresDamageDistribution = requiresDamageDistribution,
                                 totalDamageToDistribute = totalDamageToDistribute,
                                 minDamagePerTarget = minDamagePerTarget,
+                                distributionUnit = distributionUnit,
                                 autoTapPreview = selfAltCostResult.autoTapPreview
                             ))
                         }
@@ -1345,6 +1358,7 @@ class CastSpellEnumerator(
                                 requiresDamageDistribution = requiresDamageDistribution,
                                 totalDamageToDistribute = totalDamageToDistribute,
                                 minDamagePerTarget = minDamagePerTarget,
+                                distributionUnit = distributionUnit,
                                 autoTapPreview = freeCastResult.autoTapPreview
                             ))
                         }
@@ -1370,6 +1384,7 @@ class CastSpellEnumerator(
                                 requiresDamageDistribution = requiresDamageDistribution,
                                 totalDamageToDistribute = totalDamageToDistribute,
                                 minDamagePerTarget = minDamagePerTarget,
+                                distributionUnit = distributionUnit,
                                 autoTapPreview = path.autoTapPreview
                             ))
                         }
