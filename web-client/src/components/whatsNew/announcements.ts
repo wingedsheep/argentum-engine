@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-neo',
+    date: '2026-10-20',
+    kind: 'set',
+    setCode: 'NEO',
+    title: 'Kamigawa: Neon Dynasty is complete',
+    body:
+      'Return to a Kamigawa of neon cities and ancient kami: Ninjas slip in with ninjutsu, Samurai and Warriors strike alone, pilots crew mechs, and modified creatures grow with counters, Equipment and Auras. Flipping Sagas, channel lands and artifacts-meet-enchantments decks round out a draft full of tempo and tricks.',
+    tryIf: 'tempo tricks, Vehicles and Equipment, and decks that mix artifacts with enchantments',
+  },
+  {
     id: 'feature-order-your-triggers',
     date: '2026-10-19',
     kind: 'feature',

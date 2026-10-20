@@ -468,6 +468,13 @@ no legendary creatures at all gives a `StandardBooster`. Dominaria United uses `
 `GuaranteedLegendaryBooster` (Dominaria) is the older shape: one legendary picked uniformly across rarities,
 replacing the slot of its rarity.
 
+**Double-faced-slot boosters** — `DoubleFacedSlotBooster(commons, uncommons, doubleFacedUncommonChance, mythicChance)`
+opens one double-faced common or uncommon per pack in its own slot (an uncommon with `doubleFacedUncommonChance`,
+default 1/3), beside `commons` commons, `uncommons` uncommons and a rare/mythic. Ordinary common/uncommon slots
+never hold a double-faced card; double-faced rares and mythics stay in the rare slot. An empty tier (host bans) falls
+back to the other; no double-faced commons or uncommons at all turns the slot into one more common. Kamigawa: Neon
+Dynasty uses `DoubleFacedSlotBooster(commons = 9, uncommons = 3)`.
+
 **Echoed-pair boosters** — override `MtgSet.boosterStrategy` with
 `EchoedPairsPlayBooster(echoedPairs = listOf("First half" to "Second half", ...))`.
 Both halves must be in the pool to open as a pair; the third echoed card excludes the selected pair.

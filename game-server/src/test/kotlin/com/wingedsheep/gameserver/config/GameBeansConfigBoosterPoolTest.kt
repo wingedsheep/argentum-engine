@@ -1,6 +1,7 @@
 package com.wingedsheep.gameserver.config
 
 import com.wingedsheep.gameserver.coverage.SetCoverageService
+import com.wingedsheep.sdk.limited.DoubleFacedSlotBooster
 import com.wingedsheep.sdk.limited.EchoedPairsPlayBooster
 import com.wingedsheep.sdk.limited.LandSlotBooster
 import com.wingedsheep.sdk.limited.LegendarySlotBooster
@@ -81,6 +82,42 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
             mythics += pack.count { it.metadata.rarity == Rarity.MYTHIC }
         }
         // 1 in 8 rare slots upgrades to a mythic.
+        (mythics.toDouble() / packs) shouldBe (0.125 plusOrMinus 0.03)
+    }
+
+    test("Kamigawa: Neon Dynasty draft pack opens one double-faced common or uncommon beside 9 commons, 3 uncommons and a rare") {
+        // Draft Booster (product overview): 1 rare/mythic, 1 double-faced common or uncommon, 3 uncommons,
+        // 9 commons, 1 basic land (an ukiyo-e basic in a third of packs; the generator supplies basics at
+        // deck building) and a foil replacing a common in a third of packs (cosmetic, not modelled).
+        val neo = boosterGenerator.availableSets["NEO"].shouldNotBeNull()
+        neo.fullyImplemented shouldBe true
+        neo.boosterStrategy shouldBe DoubleFacedSlotBooster(commons = 9, uncommons = 3)
+        val eligible = neo.cards.filter { it.metadata.inBooster && !it.typeLine.isBasicLand }
+        // Scryfall `set:neo is:booster -t:basic`.
+        eligible.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 117, Rarity.UNCOMMON to 88, Rarity.RARE to 59, Rarity.MYTHIC to 18,
+        )
+        // Scryfall `set:neo is:booster is:dfc (r:c or r:u)`: 6 commons and 8 uncommons.
+        val dfcSheet = eligible.filter {
+            it.isDoubleFaced && (it.metadata.rarity == Rarity.COMMON || it.metadata.rarity == Rarity.UNCOMMON)
+        }
+        dfcSheet.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(Rarity.COMMON to 6, Rarity.UNCOMMON to 8)
+        val dfcSheetNames = dfcSheet.mapTo(hashSetOf()) { it.name }
+        val eligibleNames = eligible.mapTo(hashSetOf()) { it.name }
+        var mythics = 0
+        val packs = 2000
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("NEO")
+            pack.size shouldBe 14
+            pack.map { it.name }.toSet().size shouldBe 14
+            withClue("pack ${pack.map { it.name }} holds an off-sheet card") {
+                pack.all { it.name in eligibleNames } shouldBe true
+            }
+            pack.count { it.name in dfcSheetNames } shouldBe 1
+            pack.count { it.metadata.rarity == Rarity.COMMON && it.name !in dfcSheetNames } shouldBe 9
+            pack.count { it.metadata.rarity == Rarity.UNCOMMON && it.name !in dfcSheetNames } shouldBe 3
+            mythics += pack.count { it.metadata.rarity == Rarity.MYTHIC }
+        }
         (mythics.toDouble() / packs) shouldBe (0.125 plusOrMinus 0.03)
     }
 

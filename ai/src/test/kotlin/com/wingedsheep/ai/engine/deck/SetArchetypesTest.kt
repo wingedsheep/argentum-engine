@@ -170,6 +170,27 @@ class SetArchetypesTest : StringSpec({
         )
         synergies.archetypes.single { it.name == "Citizens" }.creatureTypes shouldContainExactly listOf("Citizen")
     }
+
+    "Kamigawa: Neon Dynasty exposes one archetype per allied and enemy pair" {
+        val synergies = SetArchetypes.getForSet("NEO")!!
+
+        synergies.setName shouldBe "Kamigawa: Neon Dynasty"
+        synergies.archetypes.associate { it.name to it.colors.toSet() } shouldBe mapOf(
+            "Vehicles" to setOf(Color.WHITE, Color.BLUE),
+            "Ninjas" to setOf(Color.BLUE, Color.BLACK),
+            "Artifact Sacrifice" to setOf(Color.BLACK, Color.RED),
+            "Modified" to setOf(Color.RED, Color.GREEN),
+            "Enchantments" to setOf(Color.GREEN, Color.WHITE),
+            "Artifacts & Enchantments" to setOf(Color.WHITE, Color.BLACK),
+            "Artifacts Tempo" to setOf(Color.BLUE, Color.RED),
+            "Graveyard Value" to setOf(Color.BLACK, Color.GREEN),
+            "Samurai & Warriors" to setOf(Color.RED, Color.WHITE),
+            "Channel Ramp" to setOf(Color.GREEN, Color.BLUE),
+        )
+        synergies.archetypes.single { it.name == "Ninjas" }.creatureTypes shouldContainExactly listOf("Ninja", "Rogue")
+        synergies.archetypes.single { it.name == "Samurai & Warriors" }.creatureTypes shouldContainExactly
+            listOf("Samurai", "Warrior")
+    }
 })
 
 private val ALL_COLOR_PAIRS = linkedSetOf(
