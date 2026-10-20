@@ -134,8 +134,8 @@
         "targetRequirements": [
             {
                 "type": "TargetObject",
-                "optional": true,
                 "unlimited": true,
+                "optional": true,
                 "filter": {
                     "baseFilter": "creature ctrl:you"
                 },

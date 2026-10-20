@@ -92,8 +92,10 @@ sealed interface TargetRequirement : TextReplaceable<TargetRequirement> {
     /**
      * If true, the target count has no upper bound — "any number of target ...".
      * The practical maximum is the number of legal targets, which the engine surfaces
-     * to the client; validation imposes no cap. Implies a minimum of 0, so [count] is
-     * left at its default and ignored. Use this instead of a large placeholder [count].
+     * to the client; validation imposes no cap. [count] is left at its default and ignored.
+     * Use this instead of a large placeholder [count]. The minimum is 0 ("any number"), except
+     * on [TargetObject], whose `minCount` keeps a floor: `minCount = 1` is "one or more target
+     * creatures" (Touch of Darkness).
      */
     val unlimited: Boolean get() = false
     /** Named identifier for this target requirement. When set, enables BoundVariable resolution. */
@@ -433,9 +435,15 @@ data class TargetSpellOrPermanent(
 @Serializable
 data class TargetObject(
     override val count: Int = 1,
-    override val minCount: Int = count,
-    override val optional: Boolean = false,
     override val unlimited: Boolean = false,
+    /**
+     * The fewest targets that may be chosen. Defaults to [count] for a fixed count and to 0 for
+     * [unlimited] ("any number of target …"); an [unlimited] requirement with `minCount = 1` is
+     * "one or more target …" — no upper bound, but it can't be cast or put on the stack without at
+     * least one legal target (CR 601.2c).
+     */
+    override val minCount: Int = if (unlimited) 0 else count,
+    override val optional: Boolean = false,
     val filter: TargetFilter,
     override val id: String? = null,
     val dynamicMaxCount: DynamicAmount? = null,
@@ -561,7 +569,7 @@ data class TargetObject(
      * static floor is 0 — the authoritative sites resolve the real one (see [dynamicMinCount]).
      */
     override val effectiveMinCount: Int
-        get() = if (optional || unlimited || dynamicMinCount != null || ownerDistribution == OwnerDistribution.UP_TO_ONE) 0 else minCount
+        get() = if (optional || dynamicMinCount != null || ownerDistribution == OwnerDistribution.UP_TO_ONE) 0 else minCount
 
     /** True for the exact dynamic shape — "X target creatures": [dynamicMinCount] equals [dynamicMaxCount]. */
     val exactDynamicCount: Boolean get() = dynamicMaxCount != null && dynamicMinCount == dynamicMaxCount
@@ -584,6 +592,7 @@ data class TargetObject(
             ownerDistribution != null -> "${if (ownerDistribution == OwnerDistribution.UP_TO_ONE) "up to one" else "one"} $target $noun per eligible owner"
             onePerCardType -> "up to one $target $noun of each card type"
             onePerColor -> "up to one $target $noun of each color"
+            unlimited && minCount > 0 -> "${numberToWord(minCount)} or more $target $plural"
             unlimited -> "any number of $target $plural"
             // "for each opponent, up to one target creature that player controls"
             perOpponent -> "up to one $target ${noun.removeSuffix(" an opponent controls")} per opponent"
@@ -668,6 +677,7 @@ data class TargetOther(
     override val optional: Boolean = baseRequirement.optional
     override val unlimited: Boolean = baseRequirement.unlimited
     override val chooser: TargetChooser = baseRequirement.chooser
+    override val effectiveMinCount: Int get() = baseRequirement.effectiveMinCount
 
     override fun applyTextReplacement(replacer: TextReplacer): TargetRequirement {
         val newBase = baseRequirement.applyTextReplacement(replacer)

@@ -13,6 +13,7 @@ import com.wingedsheep.mtg.sets.definitions.dom.cards.StrongholdConfessor
 import com.wingedsheep.mtg.sets.definitions.ktk.cards.TormentingVoice
 import com.wingedsheep.mtg.sets.definitions.ecl.cards.BrigidsCommand
 import com.wingedsheep.mtg.sets.definitions.ecl.cards.MorningtidesLight
+import com.wingedsheep.mtg.sets.definitions.leg.cards.TouchOfDarkness
 import com.wingedsheep.sdk.core.Step
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -167,6 +168,23 @@ class CastSpellEnumeratorTest : FunSpec({
         cast.targetCount shouldBe 3
         cast.minTargets shouldBe 0   // "any number" — targeting nothing is legal
         cast.validTargets!! shouldHaveSize 3
+    }
+
+    test("'one or more target creatures' keeps the unlimited cap but a floor of one") {
+        // Touch of Darkness: `unlimited = true, minCount = 1`. CR 601.2c — the spell needs at
+        // least one legal target, so zero is not a legal choice the client may submit.
+        val driver = setupP1(
+            hand = listOf("Touch of Darkness"),
+            battlefield = listOf("Swamp", "Grizzly Bears", "Grizzly Bears"),
+            extraSetCards = listOf(TouchOfDarkness)
+        )
+
+        val cast = driver.enumerateFor(driver.player1).castActionsFor("Touch of Darkness").first()
+
+        cast.requiresTargets shouldBe true
+        cast.targetCount shouldBe 2
+        cast.minTargets shouldBe 1
+        cast.validTargets!! shouldHaveSize 2
     }
 
     test("CastSpell action carries the card's entity id") {

@@ -74,6 +74,8 @@ interface TargetDeclarations {
      * Declare several object targets under one requirement — "up to two target creatures" is
      * `targets(TargetFilter.Creature, count = 2, optional = true)`. Returns one handle per slot;
      * an ability that treats the targets uniformly ignores them and uses `Effects.ForEachTarget`.
+     * "Any number of target creatures" is `unlimited = true`; "one or more target creatures" adds
+     * the floor, `unlimited = true, minCount = 1` (Touch of Darkness).
      *
      * The cross-target constraints are [TargetObject]'s: see its fields for what each enforces.
      *
@@ -87,7 +89,7 @@ interface TargetDeclarations {
     fun targets(
         filter: TargetFilter,
         count: Int = 1,
-        minCount: Int = count,
+        minCount: Int? = null,
         optional: Boolean = false,
         unlimited: Boolean = false,
         dynamicMaxCount: DynamicAmount? = null,
@@ -106,7 +108,7 @@ interface TargetDeclarations {
         chooser: TargetChooser = TargetChooser.Controller,
     ): List<EffectTarget.BoundVariable> {
         require(ownerDistribution == null ||
-            (count == 1 && minCount == 1 && !optional && !unlimited && dynamicMaxCount == null && exactly == null)) {
+            (count == 1 && (minCount ?: count) == 1 && !optional && !unlimited && dynamicMaxCount == null && exactly == null)) {
             "ownerDistribution is the whole target count; use UP_TO_ONE for optional per-owner targets"
         }
         require(exactly == null || (dynamicMaxCount == null && !optional && !unlimited)) {
@@ -115,7 +117,7 @@ interface TargetDeclarations {
         return targets(
             TargetObject(
                 count = count,
-                minCount = minCount,
+                minCount = minCount ?: if (unlimited) 0 else count,
                 optional = optional,
                 unlimited = unlimited,
                 filter = filter,

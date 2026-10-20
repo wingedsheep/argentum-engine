@@ -9562,7 +9562,6 @@
                 "targetRequirements": [
                     {
                         "type": "TargetObject",
-                        "minCount": 0,
                         "unlimited": true,
                         "filter": {
                             "baseFilter": "creature|planeswalker"
@@ -11497,7 +11496,6 @@
         "targetRequirements": [
             {
                 "type": "TargetObject",
-                "minCount": 0,
                 "unlimited": true,
                 "filter": {
                     "baseFilter": "creature"

@@ -159,6 +159,37 @@ class TargetDeclarationsTest : DescribeSpec({
             TargetOther(Targets.Any).description shouldBe "any other target"
         }
 
+        it("an unlimited count has no floor unless it names one") {
+            // "any number of target creatures" — zero is a legal choice
+            val anyNumber = TargetObject(filter = TargetFilter.Creature, unlimited = true)
+            anyNumber.minCount shouldBe 0
+            anyNumber.effectiveMinCount shouldBe 0
+            // "one or more target creatures" — no cap, but at least one
+            val oneOrMore = TargetObject(filter = TargetFilter.Creature, unlimited = true, minCount = 1)
+            oneOrMore.effectiveMinCount shouldBe 1
+            TargetOther(oneOrMore).effectiveMinCount shouldBe 1
+            oneOrMore.withCount(3).effectiveMinCount shouldBe 1
+
+            val declared = card("One or More") {
+                manaCost = "{B}"
+                typeLine = "Instant"
+                spell {
+                    targets(TargetFilter.Creature, unlimited = true, minCount = 1)
+                    effect = Effects.DrawCards(1)
+                }
+            }.script.targetRequirements.single() as TargetObject
+            declared shouldBe oneOrMore.copy(id = declared.id)
+            val anyDeclared = card("Any Number") {
+                manaCost = "{B}"
+                typeLine = "Instant"
+                spell {
+                    targets(TargetFilter.Creature, unlimited = true)
+                    effect = Effects.DrawCards(1)
+                }
+            }.script.targetRequirements.single()
+            anyDeclared.effectiveMinCount shouldBe 0
+        }
+
         it("spells the count the way Oracle text does") {
             TargetObject(filter = TargetFilter.Creature, count = 2).description shouldBe "two target creatures"
             TargetObject(filter = TargetFilter.Creature, count = 2, optional = true).description shouldBe
@@ -169,6 +200,8 @@ class TargetDeclarationsTest : DescribeSpec({
                 "one, two, or three target creatures"
             TargetObject(filter = TargetFilter.CreatureYouControl, unlimited = true).description shouldBe
                 "any number of target creatures you control"
+            TargetObject(filter = TargetFilter.Creature, unlimited = true, minCount = 1).description shouldBe
+                "one or more target creatures"
             TargetObject(filter = TargetFilter.CreatureInYourGraveyard, count = 2, optional = true).description shouldBe
                 "up to two target creature cards in your graveyard"
             TargetObject(filter = TargetFilter.Creature, optional = true, dynamicMaxCount = DynamicAmount.XValue)

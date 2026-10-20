@@ -9636,6 +9636,46 @@
     ]
 }
 
+// Touch of Darkness
+{
+    "name": "Touch of Darkness",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "One or more target creatures become black until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "ChangeColor",
+                "colors": [
+                    "BLACK"
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "minCount": 1,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "UNCOMMON",
+        "artist": "Pete Venters",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/eda7177f-1354-4008-aaaa-2c8b823ed5e9.jpg?1783948061"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Triassic Egg
 {
     "name": "Triassic Egg",

@@ -5770,6 +5770,10 @@ spell {
   onePerCardType, onePerColor, chooser)`, which returns one handle per slot:
   `val (first, second) = targets(TargetFilter.Creature, count = 2)`. An ability that treats the
   targets uniformly ignores the handles and reads them with `Effects.ForEachTarget(…)`.
+  `unlimited = true` is "any number of target …" — no cap and, by default, no floor (`minCount`
+  defaults to 0). Give it a floor for "one or more target creatures": `targets(TargetFilter.Creature,
+  unlimited = true, minCount = 1)` (**Touch of Darkness**) — still uncapped, but the spell can't be
+  cast without a legal target and an empty target list is rejected (CR 601.2c).
 - **Any other shape** — players, "any target", the mixed "X or Y" shapes — is `target(Targets.X)`:
   `Targets.Player`, `Targets.Opponent`, `Targets.Any`, `Targets.Any(filter)`, `Targets.AnyNumber`, `Targets.AnyChosenByOpponent`,
   `Targets.AnyOtherThanEnchantedCreature`, `Targets.CreatureOrPlayer`, `Targets.PermanentOrPlayer`,
