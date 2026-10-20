@@ -9529,6 +9529,53 @@
     ]
 }
 
+// Lord Magnus
+{
+    "name": "Lord Magnus",
+    "manaCost": "{3}{G}{W}{W}",
+    "typeLine": "Legendary Creature — Human Druid",
+    "oracleText": "First strike\nCreatures with plainswalk can be blocked as though they didn't have plainswalk.\nCreatures with forestwalk can be blocked as though they didn't have forestwalk.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "SuppressLandwalkForGroup",
+                "landwalks": [
+                    "PLAINSWALK"
+                ]
+            },
+            {
+                "type": "SuppressLandwalkForGroup",
+                "landwalks": [
+                    "FORESTWALK"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "243",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Tedin",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a02aabb-c464-4672-b37b-d5d713ef8939.jpg?1783948036",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "The statement that creatures with Plainswalk or Forestwalk can be blocked applies to all creatures on the battlefield blocking them, and not just to Lord Magnus."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Lost Soul
 {
     "name": "Lost Soul",
@@ -10043,6 +10090,130 @@
     ]
 }
 
+// Nebuchadnezzar
+{
+    "name": "Nebuchadnezzar",
+    "manaCost": "{3}{U}{B}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "{X}, {T}: Choose a card name. Target opponent reveals X cards at random from their hand. Then that player discards all cards with that name revealed this way. Activate only during your turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nebuchadnezzar:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ChooseOption",
+                            "optionType": "CARD_NAME",
+                            "storeAs": "cardName0"
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "Random",
+                                "count": "XValue"
+                            },
+                            "storeSelected": "selected2"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "selected2"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "selected2",
+                            "selection": "SelectAll",
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "NameEqualsChosen",
+                                        "variableName": "cardName0"
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected4"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected4",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    "OnlyDuringYourTurn"
+                ],
+                "descriptionOverride": "{X}, {T}: Choose a card name. Target opponent reveals X cards at random from their hand. Then that player discards all cards with that name revealed this way."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "245",
+        "rarity": "RARE",
+        "artist": "Richard Kane Ferguson",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e3f17ce3-711b-4bd9-addf-dd440fa7d2b7.jpg?1783948035",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "You don't name a card until the ability resolves. Once you name a card, it's too late for the targeted opponent to respond."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "You may activate the ability only during your turn, but you may do so any time you have priority. (In other words, it's not restricted to only the times you could cast a sorcery.)"
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Nether Void
 {
     "name": "Nether Void",
@@ -10078,6 +10249,95 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Nicol Bolas
+{
+    "name": "Nicol Bolas",
+    "manaCost": "{2}{U}{U}{B}{B}{R}{R}",
+    "typeLine": "Legendary Creature — Elder Dragon",
+    "oracleText": "Flying\nAt the beginning of your upkeep, sacrifice Nicol Bolas unless you pay {U}{B}{R}.\nWhenever Nicol Bolas deals damage to an opponent, that player discards their hand.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nicol Bolas:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{U}{B}{R}"
+                        }
+                    },
+                    "suffer": "SacrificeSelf"
+                }
+            },
+            {
+                "id": "Nicol Bolas:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "EachOpponent"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": "TriggeringPlayer"
+                            },
+                            "storeAs": "discardedHand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discardedHand",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "TriggeringPlayer"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "246",
+        "rarity": "RARE",
+        "artist": "Edward P. Beard, Jr.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/729feb73-4581-4f9d-ba47-bece72481b86.jpg?1783948035",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "Nicol Bolas's third ability triggers whenever it deals damage to an opponent for any reason. It's not limited to combat damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
     ]
 }
 
