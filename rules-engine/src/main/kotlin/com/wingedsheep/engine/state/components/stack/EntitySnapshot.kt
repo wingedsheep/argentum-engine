@@ -206,6 +206,14 @@ data class EntitySnapshot(
      * by that point the live component the defender is normally read off has been torn down.
      */
     val attackedDefenderId: EntityId? = null,
+    /**
+     * True if the permanent was tapped at capture time. Frozen because the zone exit drops the live
+     * `TappedComponent`, so an intervening "if [this] is untapped" read after the permanent has left
+     * the battlefield has to use last-known information (CR 608.2h) — Voodoo Doll destroys itself,
+     * then deals damage, under a check answered as it last existed. Backs the last-known leg of
+     * [com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsTapped] / `IsUntapped`.
+     */
+    val wasTapped: Boolean = false,
     /** True if the leaving entity was a token (CR 704.5d — suppress persist-style return triggers). */
     val wasToken: Boolean = false,
     /**
@@ -405,6 +413,7 @@ fun captureEntitySnapshots(
             ?.get<com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent>()?.timestamp,
         wasToken = container?.has<TokenComponent>() ?: false,
         name = container?.get<CardComponent>()?.name,
+        wasTapped = container?.has<com.wingedsheep.engine.state.components.battlefield.TappedComponent>() ?: false,
         // Copiable values (CR 707.2) as it last existed on the battlefield, so "create a token
         // that's a copy of that [sacrificed] permanent" can still copy it once it is gone — a
         // token has ceased to exist outright (CR 704.5d), and a card in the graveyard is a new

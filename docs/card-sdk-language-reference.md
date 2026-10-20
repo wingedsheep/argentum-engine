@@ -7062,8 +7062,10 @@ work for abilities-on-stack (which carry no `CardComponent`).
 
 ### `StatePredicate` — battlefield state checks
 
-- `IsTapped` — currently tapped.
-- `IsUntapped` — currently untapped.
+- `IsTapped` / `IsUntapped` — currently tapped / untapped. Off the battlefield they answer from the
+  battlefield-exit snapshot's `wasTapped` (CR 608.2h, last-known information), so an intervening
+  "if this artifact is untapped" that resolves after the permanent was destroyed reads how it left
+  (Voodoo Doll's ruling). Add `.onBattlefield()` for a strictly live read.
 - `IsOnBattlefield` (filter builder `onBattlefield()`) — the object is on the battlefield **right
   now**, a strictly live read with no last-known fallback. Its job is to *cancel* the LKI fallbacks
   the predicates below carry: `GameObjectFilter.Any.onBattlefield().attacking()` is "is attacking",

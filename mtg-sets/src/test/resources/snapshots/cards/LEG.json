@@ -16394,6 +16394,138 @@
     ]
 }
 
+// Voodoo Doll
+{
+    "name": "Voodoo Doll",
+    "manaCost": "{6}",
+    "typeLine": "Artifact",
+    "oracleText": "At the beginning of your upkeep, put a pin counter on this artifact.\nAt the beginning of your end step, if this artifact is untapped, destroy this artifact and it deals damage to you equal to the number of pin counters on it.\n{X}{X}, {T}: This artifact deals damage equal to the number of pin counters on it to any target. X is the number of pin counters on this artifact.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Voodoo Doll:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PIN",
+                    "count": 1,
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Voodoo Doll:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": "PIN"
+                                }
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "You"
+                            }
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "untapped"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Voodoo Doll:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}{X}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "PIN"
+                        }
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ],
+                "xDefinedAs": {
+                    "type": "EntityProperty",
+                    "entity": "Self",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": "PIN"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "298",
+        "rarity": "RARE",
+        "artist": "Sandra Everingham",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/0418672d-056e-416d-91b4-8ee6e47201dc.jpg?1783948024",
+        "rulings": [
+            {
+                "date": "2011-01-01",
+                "text": "Voodoo Doll's second ability causes it to be destroyed regardless of whether it actually deals damage to you or not. Voodoo Doll is destroyed even if all the damage is prevented or redirected."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "Voodoo Doll's second ability has an \"intervening 'if' clause.\" That means (1) the ability won't trigger at all unless Voodoo Doll is untapped, and (2) the ability will do nothing if Voodoo Doll is tapped by the time it resolves. If Voodoo Doll is no longer on the battlefield as the ability resolves, its last existence on the battlefield is checked to see if it was tapped or untapped."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "Each X in the cost of Voodoo Doll's third ability is the number of pin counters on Voodoo Doll at the time you activate the ability. The X in the ability's effect is the number of pin counters on Voodoo Doll at the time it resolves, which may not be the same number (if a spell or ability put counters on it or removed counters from it in the meantime). If Voodoo Doll is no longer on the battlefield as the ability resolves, its last existence on the battlefield is checked to see how many pin counters were on it."
+            }
+        ]
+    }
+}
+
 // Walking Dead
 {
     "name": "Walking Dead",

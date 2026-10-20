@@ -77,21 +77,21 @@ class SnapshotCombatStatusMatchTest : FunSpec({
 
     test("a state predicate the snapshot doesn't freeze stays unknown, negated or not") {
         val (driver, dead) = setup()
-        driver.recipientMatches(dead, GameObjectFilter.Creature.tapped(), snapshotOf(dead, wasBlocking = true)) shouldBe false
-        val untappedByNegation = GameObjectFilter.Creature.withStatePredicate(StatePredicate.Not(StatePredicate.IsTapped))
-        driver.recipientMatches(dead, untappedByNegation, snapshotOf(dead, wasBlocking = true)) shouldBe false
+        driver.recipientMatches(dead, GameObjectFilter.Creature.withStatePredicate(StatePredicate.IsPrepared), snapshotOf(dead, wasBlocking = true)) shouldBe false
+        val unpreparedByNegation = GameObjectFilter.Creature.withStatePredicate(StatePredicate.Not(StatePredicate.IsPrepared))
+        driver.recipientMatches(dead, unpreparedByNegation, snapshotOf(dead, wasBlocking = true)) shouldBe false
     }
 
     test("an unknown operand keeps an And unknown, while an Or with a known true matches") {
         val (driver, dead) = setup()
         val snapshot = snapshotOf(dead, wasBlocking = true)
-        val blockingAndTapped = GameObjectFilter.Creature.withStatePredicate(
-            StatePredicate.And(listOf(StatePredicate.IsBlocking, StatePredicate.IsTapped))
+        val blockingAndPrepared = GameObjectFilter.Creature.withStatePredicate(
+            StatePredicate.And(listOf(StatePredicate.IsBlocking, StatePredicate.IsPrepared))
         )
-        val blockingOrTapped = GameObjectFilter.Creature.withStatePredicate(
-            StatePredicate.Or(listOf(StatePredicate.IsBlocking, StatePredicate.IsTapped))
+        val blockingOrPrepared = GameObjectFilter.Creature.withStatePredicate(
+            StatePredicate.Or(listOf(StatePredicate.IsBlocking, StatePredicate.IsPrepared))
         )
-        driver.recipientMatches(dead, blockingAndTapped, snapshot) shouldBe false
-        driver.recipientMatches(dead, blockingOrTapped, snapshot) shouldBe true
+        driver.recipientMatches(dead, blockingAndPrepared, snapshot) shouldBe false
+        driver.recipientMatches(dead, blockingOrPrepared, snapshot) shouldBe true
     }
 })

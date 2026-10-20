@@ -534,6 +534,7 @@ class ZoneTransitionService(
                 blockingOrBlockedByIds = lastKnownBlockingOrBlockedByIds,
                 wasAttacking = lastKnownWasAttacking,
                 wasBlocking = lastKnownWasBlocking,
+                wasTapped = container.has<com.wingedsheep.engine.state.components.battlefield.TappedComponent>(),
                 attackedDefenderId = lastKnownAttackedDefenderId,
                 wasToken = lastKnownWasToken,
                 createdBy = lastKnownCreatedBy,
