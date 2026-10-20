@@ -5407,26 +5407,40 @@ object Effects {
      * [target] widens what may be countered: `CounterTarget.SpellOrAbility` reads "Counter target
      * spell or ability unless its controller pays {3}" (Mirrorshell Crab) — the payer is then the
      * caster of the spell or the controller of the activated/triggered ability.
+     *
+     * [targetSource] = `CounterTargetSource.TriggeringEntity` counters the spell that fired a cast
+     * trigger instead of a chosen target — Nether Void's "Whenever a player casts a spell, counter it
+     * unless that player pays {3}". The payer is still the spell's controller; a spell that already
+     * left the stack is a no-op.
      */
     fun CounterUnlessPays(
         cost: String,
         onPaid: Effect? = null,
-        target: CounterTarget = CounterTarget.Spell
+        target: CounterTarget = CounterTarget.Spell,
+        targetSource: CounterTargetSource = CounterTargetSource.Chosen
     ): Effect =
-        CounterEffect(target = target, condition = CounterCondition.UnlessPaysMana(ManaCost.parse(cost), onPaid))
+        CounterEffect(
+            target = target,
+            targetSource = targetSource,
+            condition = CounterCondition.UnlessPaysMana(ManaCost.parse(cost), onPaid)
+        )
 
     /**
      * Counter target spell unless its controller pays a dynamic generic mana cost.
      * "Counter target spell unless its controller pays {2} for each Wizard on the battlefield."
      *
-     * [onPaid] mirrors [CounterUnlessPays]'s rider.
+     * [onPaid] mirrors [CounterUnlessPays]'s rider, and [targetSource] its triggering-spell form —
+     * In the Eye of Chaos's "counter it unless that player pays {X}, where X is its mana value"
+     * (amount read off `EffectTarget.TriggeringEntity`).
      */
     fun CounterUnlessDynamicPays(
         amount: DynamicAmount,
         exileOnCounter: Boolean = false,
-        onPaid: Effect? = null
+        onPaid: Effect? = null,
+        targetSource: CounterTargetSource = CounterTargetSource.Chosen
     ): Effect =
         CounterEffect(
+            targetSource = targetSource,
             condition = CounterCondition.UnlessPaysDynamic(amount, onPaid),
             counterDestination = if (exileOnCounter) CounterDestination.Exile() else CounterDestination.Graveyard
         )

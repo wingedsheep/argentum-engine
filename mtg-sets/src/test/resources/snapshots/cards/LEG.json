@@ -7368,6 +7368,53 @@
     }
 }
 
+// In the Eye of Chaos
+{
+    "name": "In the Eye of Chaos",
+    "manaCost": "{2}{U}",
+    "typeLine": "World Enchantment",
+    "oracleText": "Whenever a player casts an instant spell, counter it unless that player pays {X}, where X is its mana value.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "In the Eye of Chaos:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsInstant"
+                        ]
+                    },
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Counter",
+                    "targetSource": "CounterTargetSource.TriggeringEntity",
+                    "condition": {
+                        "type": "CounterCondition.UnlessPaysDynamic",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "TriggeringEntity",
+                            "numericProperty": "ManaValue"
+                        }
+                    }
+                },
+                "descriptionOverride": "Whenever a player casts an instant spell, counter it unless that player pays {X}, where X is its mana value."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "RARE",
+        "artist": "Brian Snõddy",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/733933dd-c871-4f75-8b08-d7c010dddbe6.jpg?1783948075"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Indestructible Aura
 {
     "name": "Indestructible Aura",
@@ -9993,6 +10040,44 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Nether Void
+{
+    "name": "Nether Void",
+    "manaCost": "{3}{B}",
+    "typeLine": "World Enchantment",
+    "oracleText": "Whenever a player casts a spell, counter it unless that player pays {3}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nether Void:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Counter",
+                    "targetSource": "CounterTargetSource.TriggeringEntity",
+                    "condition": {
+                        "type": "CounterCondition.UnlessPaysMana",
+                        "cost": "{3}"
+                    }
+                },
+                "descriptionOverride": "Whenever a player casts a spell, counter it unless that player pays {3}."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "rarity": "RARE",
+        "artist": "Harold McNeill",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e72f8cb-5bc3-4711-9b7c-a6eea9a0beaf.jpg?1783948063"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
