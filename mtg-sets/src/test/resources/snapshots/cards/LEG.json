@@ -801,6 +801,44 @@
     ]
 }
 
+// Anti-Magic Aura
+{
+    "name": "Anti-Magic Aura",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature can't be the target of spells and can't be enchanted by other Auras.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "CANT_BE_TARGETED_BY_SPELLS"
+            },
+            {
+                "type": "PreventEnchantment",
+                "exceptSource": true,
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "artist": "Douglas Shuler",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff78eef1-efaa-4a12-bf5d-fec83c14aff8.jpg?1783948078"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Arboria
 {
     "name": "Arboria",
@@ -2986,6 +3024,68 @@
     ]
 }
 
+// Dream Coat
+{
+    "name": "Dream Coat",
+    "manaCost": "{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\n{0}: Enchanted creature becomes the color or colors of your choice. Activate only once each turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dream Coat:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{0}"
+                    }
+                },
+                "effect": {
+                    "type": "ChooseColorThen",
+                    "then": {
+                        "type": "ChangeColorToChosen",
+                        "target": "EnchantedCreature",
+                        "duration": "Permanent"
+                    },
+                    "prompt": "Choose one or more colors",
+                    "maxColors": 5
+                },
+                "restrictions": [
+                    "OncePerTurn"
+                ],
+                "descriptionOverride": "{0}: Enchanted creature becomes the color or colors of your choice. Activate only once each turn."
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "rarity": "UNCOMMON",
+        "artist": "Anthony S. Waters",
+        "flavorText": "\"Adopt the character of the twisting octopus, which takes on the appearance of the nearby rock. Now follow in this direction, now turn a different hue.\"\n—Theognis, *Elegies 1, 215*",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/07edbbf4-c3d6-4ec1-ae9b-4ae202fb6998.jpg?1783948077",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "You can choose any single color or combination of colors. The valid colors are Black, Blue, Green, Red, and White."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "The color change does not wear off at end of turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Durkwood Boars
 {
     "name": "Durkwood Boars",
@@ -3191,6 +3291,183 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Enchantment Alteration
+{
+    "name": "Enchantment Alteration",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Attach target Aura attached to a creature or land to another permanent of that type.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "filter": {
+                        "cardPredicates": [
+                            "IsEnchantment"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "IsAttachedTo",
+                                "filter": "creature"
+                            }
+                        ]
+                    }
+                }
+            },
+            "then": {
+                "type": "Gated",
+                "gate": {
+                    "type": "Gate.WhenCondition",
+                    "condition": {
+                        "type": "EntityMatches",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "filter": {
+                            "cardPredicates": [
+                                "IsEnchantment"
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "IsAttachedTo",
+                                    "filter": "land"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "then": {
+                    "type": "AttachToChosenHost",
+                    "attachment": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "hostFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsCreature",
+                                    "IsLand"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "otherwise": {
+                    "type": "AttachToChosenHost",
+                    "attachment": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            },
+            "otherwise": {
+                "type": "AttachToChosenHost",
+                "attachment": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "hostFilter": {
+                    "cardPredicates": [
+                        "IsLand"
+                    ]
+                }
+            },
+            "descriptionOverride": "Attach target Aura attached to a creature or land to another permanent of that type."
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsEnchantment",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Aura"
+                            }
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "IsAttachedTo",
+                                "filter": "creature|land"
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "artist": "Brian Snõddy",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf52f8a0-d027-47f1-bb91-508ef1a74409.jpg?1783948077"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Energy Tap
+{
+    "name": "Energy Tap",
+    "manaCost": "{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Tap target untapped creature you control. If you do, add an amount of {C} equal to that creature's mana value.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "ManaValue"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature untapped ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "artist": "Daniel Gelon",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/37e69940-bdc8-48ff-a296-540343910adf.jpg?1783948076"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3947,6 +4224,60 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Gaseous Form
+{
+    "name": "Gaseous Form",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nPrevent all combat damage that would be dealt to and dealt by enchanted creature.",
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "statePredicates": [
+                                "IsAttachedToBySource"
+                            ]
+                        }
+                    },
+                    "damageType": "DamageCombat"
+                }
+            },
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "source": {
+                        "statePredicates": [
+                            "IsAttachedToBySource"
+                        ]
+                    },
+                    "damageType": "DamageCombat"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "artist": "Phil Foglio",
+        "flavorText": "\". . . [A]nd gives to airy nothing/ A local habitation and a name.\"\n—William Shakespeare, A Midsummer-Night's Dream",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d0266dd4-31da-480b-9a44-4e217f748f06.jpg?1783948075"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -6102,6 +6433,93 @@
     ]
 }
 
+// Invoke Prejudice
+{
+    "name": "Invoke Prejudice",
+    "manaCost": "{U}{U}{U}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever an opponent casts a creature spell that doesn't share a color with a creature you control, counter that spell unless that player pays {X}, where X is its mana value.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invoke Prejudice:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    },
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayDynamicManaCost",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "ManaValue"
+                            },
+                            "payer": "TriggeringPlayer"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": []
+                    },
+                    "otherwise": {
+                        "type": "Counter",
+                        "targetSource": "CounterTargetSource.TriggeringEntity"
+                    },
+                    "decisionMaker": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "triggerRestriction": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "SharesColorWith",
+                                "entity": "TriggeringEntity"
+                            }
+                        ]
+                    },
+                    "negate": true
+                },
+                "descriptionOverride": "Whenever an opponent casts a creature spell that doesn't share a color with a creature you control, counter that spell unless that player pays {X}, where X is its mana value."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "RARE",
+        "artist": "Harold McNeill",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/903d9fde-d7da-4a0e-a337-b63023c6d74b.jpg?1783948074",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "In a multi-player game, it affects all opposing players."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "This ability triggers when the spell is cast."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ivory Guardians
 {
     "name": "Ivory Guardians",
@@ -6373,6 +6791,194 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Juxtapose
+{
+    "name": "Juxtapose",
+    "manaCost": "{3}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "You and target player exchange control of the creature you each control with the greatest mana value. Then exchange control of artifacts the same way. If two or more permanents a player controls are tied for greatest, their controller chooses one of them.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "ControlledPermanents",
+                        "filter": "creature"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered0",
+                    "collectionFilter": "GreatestManaValue",
+                    "storeMatching": "matching1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "matching1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected2",
+                    "prompt": "Choose your creature with the greatest mana value to exchange",
+                    "useTargetingUI": true
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "ControlledPermanents",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "filter": "creature"
+                    },
+                    "storeAs": "gathered3"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered3",
+                    "collectionFilter": "GreatestManaValue",
+                    "storeMatching": "matching4"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "matching4",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "chooser": "TargetPlayer",
+                    "storeSelected": "selected5",
+                    "prompt": "Choose your creature with the greatest mana value to exchange",
+                    "useTargetingUI": true
+                },
+                {
+                    "type": "ExchangeControl",
+                    "target1": {
+                        "type": "PipelineTarget",
+                        "collectionName": "selected2"
+                    },
+                    "target2": {
+                        "type": "PipelineTarget",
+                        "collectionName": "selected5"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "ControlledPermanents",
+                        "filter": "artifact"
+                    },
+                    "storeAs": "gathered7"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered7",
+                    "collectionFilter": "GreatestManaValue",
+                    "storeMatching": "matching8"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "matching8",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected9",
+                    "prompt": "Choose your artifact with the greatest mana value to exchange",
+                    "useTargetingUI": true
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "ControlledPermanents",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "filter": "artifact"
+                    },
+                    "storeAs": "gathered10"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered10",
+                    "collectionFilter": "GreatestManaValue",
+                    "storeMatching": "matching11"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "matching11",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "chooser": "TargetPlayer",
+                    "storeSelected": "selected12",
+                    "prompt": "Choose your artifact with the greatest mana value to exchange",
+                    "useTargetingUI": true
+                },
+                {
+                    "type": "ExchangeControl",
+                    "target1": {
+                        "type": "PipelineTarget",
+                        "collectionName": "selected9"
+                    },
+                    "target2": {
+                        "type": "PipelineTarget",
+                        "collectionName": "selected12"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "RARE",
+        "artist": "Justin Hampton",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c48d78db-d982-4c28-9308-2d57dc2b947e.jpg?1783948074",
+        "rulings": [
+            {
+                "date": "2007-09-16",
+                "text": "First creatures are exchanged, then artifacts are exchanged. It's possible that the same artifact creature may be involved in both exchanges."
+            },
+            {
+                "date": "2007-09-16",
+                "text": "No permanents are targeted by this effect, so permanents with Shroud may be exchanged this way."
+            },
+            {
+                "date": "2007-09-16",
+                "text": "If one of the players doesn't control a creature at the time the exchange would be made, that part of the effect does nothing, but the exchange of artifacts will still happen. Similarly, if one of the players doesn't control an artifact at the time the exchange would be made, that part of the effect does nothing."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -8272,6 +8878,49 @@
     ]
 }
 
+// Part Water
+{
+    "name": "Part Water",
+    "manaCost": "{X}{X}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "X target creatures gain islandwalk until end of turn. (They can't be blocked as long as defending player controls an Island.)",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "GrantKeyword",
+                "keyword": "ISLANDWALK",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0",
+                "dynamicMaxCount": "XValue",
+                "dynamicMinCount": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "rarity": "UNCOMMON",
+        "artist": "NéNé Thomas",
+        "flavorText": "\". . . and the waters were a wall unto them on their right hand, and on their left.\"\n—Exodus, 14:22",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b659475-c8b7-493d-af63-04f34d8cc3b1.jpg?1783948074"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Pavel Maliki
 {
     "name": "Pavel Maliki",
@@ -8811,6 +9460,66 @@
     ]
 }
 
+// Psionic Entity
+{
+    "name": "Psionic Entity",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Illusion",
+    "oracleText": "{T}: This creature deals 2 damage to any target and 3 damage to itself.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Psionic Entity:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "RARE",
+        "artist": "Justin Hampton",
+        "flavorText": "Creatures of the Æther are notorious for neglecting their own well-being.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ec082062-5394-4340-bc29-0efd2af4b822.jpg?1783948074"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Psychic Purge
 {
     "name": "Psychic Purge",
@@ -8860,6 +9569,89 @@
         "collectorNumber": "68",
         "artist": "Susan Van Camp",
         "imageUri": "https://cards.scryfall.io/normal/front/b/1/b1103d4d-b50a-4e2c-b18a-a181bc819881.jpg?1783948073"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Puppet Master
+{
+    "name": "Puppet Master",
+    "manaCost": "{U}{U}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen enchanted creature dies, return that card to its owner's hand. If that card is returned to its owner's hand this way, you may pay {U}{U}{U}. If you do, return this card to its owner's hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Puppet Master:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "Entity",
+                                "entity": "TriggeringEntity"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "storeMovedAs": "moved1"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "moved1",
+                            "ifNotEmpty": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.MayPay",
+                                    "cost": {
+                                        "type": "PayManaCost",
+                                        "cost": "{U}{U}{U}"
+                                    }
+                                },
+                                "then": {
+                                    "type": "MoveToZone",
+                                    "target": "Self",
+                                    "destination": "Hand"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "UNCOMMON",
+        "artist": "Sandra Everingham",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5d26ddc-ad1e-4a97-85fb-34da685c3142.jpg?1783948073",
+        "rulings": [
+            {
+                "date": "2008-05-01",
+                "text": "You only get the opportunity to pay {U}{U}{U} (and thus to return Puppet Master to its owner's hand) if the creature card actually gets returned to its owner's hand. If it isn't (for instance, if it was removed from the graveyard prior to this ability resolving), you don't get the option to pay."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -9476,6 +10268,97 @@
     ]
 }
 
+// Recall
+{
+    "name": "Recall",
+    "manaCost": "{X}{X}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Discard X cards, then return a card from your graveyard to your hand for each card discarded this way. Exile Recall.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": "XValue"
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "Choose cards to discard"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Discard"
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard"
+                    },
+                    "storeAs": "gathered3"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered3",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "VariableReference",
+                            "variableName": "selected1_count"
+                        }
+                    },
+                    "storeSelected": "selected4",
+                    "prompt": "Choose cards to return to your hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected4",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        },
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "RARE",
+        "artist": "Brian Snõddy",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/33296718-0625-4422-a65c-b21cf99c52ec.jpg?1783948072",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "You don't discard cards until Recall resolves. If you don't have X cards in your hand at that time, you discard all the cards in your hand."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "You don't choose which cards in your graveyard you'll return to your hand until after you discard cards. You choose a card in your graveyard for each card you discarded, then you put all cards chosen this way into your hand at the same time. You may choose to return some or all of the cards you just discarded."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Red Mana Battery
 {
     "name": "Red Mana Battery",
@@ -9590,6 +10473,83 @@
         "imageUri": "https://cards.scryfall.io/normal/front/c/0/c062cbae-ce5e-43be-9932-c81a0a3622e8.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Relic Bind
+{
+    "name": "Relic Bind",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant artifact an opponent controls\nWhenever enchanted artifact becomes tapped, choose one —\n• This Aura deals 1 damage to target player or planeswalker.\n• Target player gains 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Relic Bind:1",
+                "trigger": "TapEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetPlayerOrPlaneswalker",
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "This Aura deals 1 damage to target player or planeswalker"
+                        },
+                        {
+                            "effect": {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetPlayer",
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Target player gains 1 life"
+                        }
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "artifact ctrl:opponent"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "UNCOMMON",
+        "artist": "Christopher Rush",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a9b07dc4-21ad-410b-8f8a-2b034253bfee.jpg?1783948073"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Remove Enchantments
@@ -9775,6 +10735,64 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Reset
+{
+    "name": "Reset",
+    "manaCost": "{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Cast this spell only during an opponent's turn after their upkeep step.\nUntap all lands you control.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "land ctrl:you"
+                }
+            },
+            "body": {
+                "type": "TapUntap",
+                "target": "IterationEntity",
+                "tap": false
+            }
+        },
+        "castRestrictions": [
+            {
+                "type": "CastOnlyIfCondition",
+                "condition": {
+                    "type": "All",
+                    "conditions": [
+                        "IsOpponentsTurn",
+                        {
+                            "type": "IsInStep",
+                            "steps": [
+                                "DRAW",
+                                "PRECOMBAT_MAIN",
+                                "BEGIN_COMBAT",
+                                "DECLARE_ATTACKERS",
+                                "DECLARE_BLOCKERS",
+                                "FIRST_STRIKE_COMBAT_DAMAGE",
+                                "COMBAT_DAMAGE",
+                                "END_COMBAT",
+                                "POSTCOMBAT_MAIN",
+                                "END",
+                                "CLEANUP"
+                            ],
+                            "yoursOnly": false
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "rarity": "UNCOMMON",
+        "artist": "Nicola Leonard",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1c829d83-d5b8-4be7-80f7-55b42f52b309.jpg?1783948073"
+    }
 }
 
 // Revelation
@@ -10175,6 +11193,46 @@
         "GREEN",
         "BLUE",
         "WHITE"
+    ]
+}
+
+// Sea Kings' Blessing
+{
+    "name": "Sea Kings' Blessing",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "One or more target creatures become blue until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "ChangeColor",
+                "colors": [
+                    "BLUE"
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "minCount": 1,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Asplund-Faith",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11d1f02d-533e-4b77-a72a-ff5f91ae0626.jpg?1783948071"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -10701,6 +11759,51 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED",
+        "BLUE"
+    ]
+}
+
+// Spectral Cloak
+{
+    "name": "Spectral Cloak",
+    "manaCost": "{U}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature has shroud as long as it's untapped. (It can't be the target of spells or abilities.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "SHROUD"
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "untapped"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "UNCOMMON",
+        "artist": "Rob Alexander",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/7524fd0d-a675-41d6-bc99-bd3ba336893b.jpg?1783948071",
+        "rulings": [
+            {
+                "date": "2005-08-01",
+                "text": "Does not destroy Auras already on the creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
         "BLUE"
     ]
 }
