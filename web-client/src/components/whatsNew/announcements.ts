@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-leg',
+    date: '2026-10-21',
+    kind: 'set',
+    setCode: 'LEG',
+    title: 'Legends is complete',
+    body:
+      "Magic's first big expansion of all-new cards brought the original legendary creatures: gold heroes and villains like Nicol Bolas and the Elder Dragons, alongside rampaging beasts, banding armies and world enchantments that rewrite the rules for every player. Decks lean on two or three colours and one game-changing legend at the top of the curve.",
+    tryIf: 'old-school Magic, multicolour legends and rules-bending enchantments',
+  },
+  {
     id: 'set-neo',
     date: '2026-10-20',
     kind: 'set',

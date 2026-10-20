@@ -20,7 +20,6 @@ object LegendsSet : MtgSet {
     override val code = "LEG"
     override val displayName = "Legends"
     override val releaseDate = "1994-06-01"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
