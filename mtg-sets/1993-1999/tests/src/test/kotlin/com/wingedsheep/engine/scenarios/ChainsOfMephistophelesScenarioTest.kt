@@ -49,13 +49,13 @@ class ChainsOfMephistophelesScenarioTest : FunSpec({
         val d = driver(); val me = d.player1
         d.putPermanentOnBattlefield(d.player2, "Chains of Mephistopheles")
         val bears = d.putCardInHand(me, "Grizzly Bears")
-        val giant = d.putCardInHand(me, "Centaur Courser")
+        val courser = d.putCardInHand(me, "Centaur Courser")
         d.castSpell(me, d.putCardInHand(me, drawTwo.name)).error shouldBe null
         val hand = d.getHandSize(me); val library = d.library(me).size
         d.bothPass()
 
         d.discard(me, bears)
-        d.discard(me, giant)
+        d.discard(me, courser)
         d.pendingDecision shouldBe null
         d.getHandSize(me) shouldBe hand
         d.library(me).size shouldBe library - 2
@@ -102,17 +102,18 @@ class ChainsOfMephistophelesScenarioTest : FunSpec({
         d.putPermanentOnBattlefield(me, "Chains of Mephistopheles")
         d.putPermanentOnBattlefield(d.player2, "Chains of Mephistopheles")
         val bears = d.putCardInHand(me, "Grizzly Bears")
-        val giant = d.putCardInHand(me, "Centaur Courser")
+        val courser = d.putCardInHand(me, "Centaur Courser")
         d.castSpell(me, d.putCardInHand(me, drawOne.name)).error shouldBe null
         val hand = d.getHandSize(me); val library = d.library(me).size
         d.bothPass()
 
         // The drawing player orders the two Chains (CR 616.1); the second then replaces the
         // first one's draw, and nothing replaces the second one's.
+        // Both Chains are identical, so either order behaves the same.
         val order = d.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>()
         d.submitDecision(me, OptionChosenResponse(order.id, 0)).error shouldBe null
         d.discard(me, bears)
-        d.discard(me, giant)
+        d.discard(me, courser)
         d.pendingDecision shouldBe null
         d.getHandSize(me) shouldBe hand - 1
         d.library(me).size shouldBe library - 1

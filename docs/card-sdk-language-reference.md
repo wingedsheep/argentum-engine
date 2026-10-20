@@ -17557,7 +17557,7 @@ not update an existing copy.
   copied Aura picks its host before those questions. A land played as a copy (Vesuva-style) asks
   the copied land's `EntersWithChoice` after the copy, and an effect-driven entry asks the copied
   card's — see `EntersWithChoice` under "Permanent enters-with-choice".
-- `ReplaceDrawWith(replacementEffect, optional, restrictions, appliesTo)` — a per-card draw replacement
+- `ReplaceDrawWith(replacementEffect, optional, appliesTo, restrictions)` — a per-card draw replacement
   (`EventPattern.DrawEvent`): `replacementEffect` runs instead of that one draw, controlled by the
   drawing player. Draws the effect performs itself are new events it can't replace again (CR 614.5)
   — **even after the effect pauses for a decision**: the draw's `RestoreReplacementChainContinuation`
