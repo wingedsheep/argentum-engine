@@ -756,6 +756,80 @@
     "colorIdentityOverride": []
 }
 
+// Axelrod Gunnarson
+{
+    "name": "Axelrod Gunnarson",
+    "manaCost": "{4}{B}{B}{R}{R}",
+    "typeLine": "Legendary Creature — Giant",
+    "oracleText": "Trample\nWhenever a creature dealt damage by Axelrod Gunnarson this turn dies, you gain 1 life and Axelrod Gunnarson deals 1 damage to target player or planeswalker.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Axelrod Gunnarson:1",
+                "trigger": "CreatureDealtDamageBySourceDiesEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayerOrPlaneswalker",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "RARE",
+        "artist": "Scott Kirschner",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/acce83cf-965b-4e45-8efb-63f814df7a35.jpg?1783948041",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "Each time a creature is put into a graveyard from play, check whether Axelrod Gunnarson had dealt any damage to it at any time during that turn. (This includes combat damage.) If so, Axelrod Gunnarson's second ability will trigger. It doesn't matter who controlled the creature or whose graveyard it was put into."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "If Axelrod Gunnarson and a creature it dealt damage to are both put into a graveyard at the same time, Axelrod Gunnarson's second ability will trigger."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "The player you target with Axelrod Gunnarson's ability doesn't have to be the player that controlled the creature that was put into a graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Azure Drake
 {
     "name": "Azure Drake",
@@ -887,6 +961,59 @@
     },
     "colorIdentityOverride": [
         "BLACK",
+        "RED"
+    ]
+}
+
+// Beasts of Bogardan
+{
+    "name": "Beasts of Bogardan",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Protection from red\nThis creature gets +1/+1 as long as an opponent controls a nontoken white permanent.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Color",
+                "color": "RED"
+            }
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 1,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "EachOpponent",
+                    "zone": "Battlefield",
+                    "filter": "permanent white nontoken"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Gelon",
+        "flavorText": "Bogardan is a land as volatile as the creatures who live there.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f885d776-2953-4ed4-b63f-91dc2b42783b.jpg?1783948059"
+    },
+    "colorIdentityOverride": [
         "RED"
     ]
 }
@@ -1064,6 +1191,77 @@
     ]
 }
 
+// Blood Lust
+{
+    "name": "Blood Lust",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "If target creature has toughness 5 or greater, it gets +4/-4 until end of turn. Otherwise, it gets +4/-X until end of turn, where X is its toughness minus 1.",
+    "script": {
+        "spellEffect": {
+            "type": "ModifyStats",
+            "powerModifier": {
+                "type": "Fixed",
+                "amount": 4
+            },
+            "toughnessModifier": {
+                "type": "Multiply",
+                "amount": {
+                    "type": "Min",
+                    "left": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "right": {
+                        "type": "Subtract",
+                        "left": {
+                            "type": "EntityProperty",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "numericProperty": "Toughness"
+                        },
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "multiplier": -1
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "UNCOMMON",
+        "artist": "Anson Maddocks",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fbbf1a9c-8b94-4ee7-92db-65b531149990.jpg?1783948059",
+        "rulings": [
+            {
+                "date": "2005-11-01",
+                "text": "Has changed slightly in functionality, with the old continuous nature of the toughness reduction gone away; the toughness change remains static. For example, if you have three Swamps and Nightmare on the battlefield and then cast Blood Lust on it, it will become 7/1. If one of your Swamps is subsequently destroyed, your Nightmare will become 6/0 and be put in the graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Blue Mana Battery
 {
     "name": "Blue Mana Battery",
@@ -1174,6 +1372,62 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Boris Devilboon
+{
+    "name": "Boris Devilboon",
+    "manaCost": "{3}{B}{R}",
+    "typeLine": "Legendary Creature — Zombie Wizard",
+    "oracleText": "{2}{B}{R}, {T}: Create a 1/1 black and red Demon creature token named Minor Demon.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Boris Devilboon:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}{R}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK",
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Demon"
+                    ],
+                    "name": "Minor Demon"
+                },
+                "descriptionOverride": "{2}{B}{R}, {T}: Create a 1/1 black and red Demon creature token named Minor Demon."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "RARE",
+        "artist": "Jesper Myrfors",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/82ae30e8-2dcd-46b8-925b-cc24e11fb95d.jpg?1783948040"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -1409,6 +1663,35 @@
         "artist": "Mark Poole",
         "imageUri": "https://cards.scryfall.io/normal/front/e/6/e65356e6-0ead-49fd-b069-be1ea9b1c105.jpg?1783948023"
     }
+}
+
+// Caverns of Despair
+{
+    "name": "Caverns of Despair",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "World Enchantment",
+    "oracleText": "No more than two creatures can attack each combat.\nNo more than two creatures can block each combat.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "AttackerCountLimit",
+                "maxAttackers": 2
+            },
+            {
+                "type": "BlockerCountLimit",
+                "maxBlockers": 2
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "RARE",
+        "artist": "Harold McNeill",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/209f7479-b3a0-4c27-9602-78babb8d2e99.jpg?1783948059"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Chains of Mephistopheles
@@ -1917,6 +2200,33 @@
     ]
 }
 
+// Crevasse
+{
+    "name": "Crevasse",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creatures with mountainwalk can be blocked as though they didn't have mountainwalk.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "SuppressLandwalkForGroup",
+                "landwalks": [
+                    "MOUNTAINWALK"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "UNCOMMON",
+        "artist": "Rob Alexander",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a432d6ae-a17f-484b-ad55-4b4b6674ba8d.jpg?1783948059"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Crimson Kobolds
 {
     "name": "Crimson Kobolds",
@@ -2267,6 +2577,98 @@
     ]
 }
 
+// Disharmony
+{
+    "name": "Disharmony",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Cast this spell only during combat before blockers are declared.\nUntap target attacking creature and remove it from combat. Gain control of that creature until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "RemoveFromCombat",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature attacking"
+                },
+                "id": "t0"
+            }
+        ],
+        "castRestrictions": [
+            {
+                "type": "CastOnlyIfCondition",
+                "condition": {
+                    "type": "IsInStep",
+                    "steps": [
+                        "BEGIN_COMBAT",
+                        "DECLARE_ATTACKERS"
+                    ],
+                    "yoursOnly": false
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "RARE",
+        "artist": "Bryon Wackwitz",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e09a6b9b-eb0e-475d-8558-08e347412790.jpg?1783948057",
+        "rulings": [
+            {
+                "date": "2013-09-20",
+                "text": "If a turn has multiple combat phases, this spell can be cast during any of them as long as it's before the beginning of that phase's Declare Blockers Step."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "If you cast Disharmony during an opponent's turn, you may then block with the creature you gain control of (assuming there's an attacking creature it can block)."
+            },
+            {
+                "date": "2008-10-01",
+                "text": "Disharmony can target a creature you control."
+            },
+            {
+                "date": "2008-10-01",
+                "text": "The current wording explicitly removes the creature from combat. It is no longer an attacking or blocking creature."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "Disharmony works even if the attacker was not tapped to attack."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "The creature untaps (if it was tapped) before you get control of it."
+            }
+        ]
+    }
+}
+
 // Divine Intervention
 {
     "name": "Divine Intervention",
@@ -2442,6 +2844,46 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Dwarven Song
+{
+    "name": "Dwarven Song",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "One or more target creatures become red until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "ChangeColor",
+                "colors": [
+                    "RED"
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "minCount": 1,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Frazier",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/29a50f72-9524-4440-9380-9d3e0b693351.jpg?1783948057"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -2761,6 +3203,101 @@
                 "text": "Only cards touched when it stops moving are affected. Not ones touched while it is moving."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Feint
+{
+    "name": "Feint",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Tap all creatures blocking target attacking creature. Prevent all combat damage that would be dealt this turn by that creature and each creature blocking it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "IsBlockingEntity",
+                                        "reference": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "TapUntap",
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "PreventDamageShield",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "scope": "CombatOnly",
+                    "direction": "FromTarget"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "IsBlockingEntity",
+                                        "reference": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "PreventDamageShield",
+                        "target": "IterationEntity",
+                        "scope": "CombatOnly",
+                        "direction": "FromTarget"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature attacking"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "146",
+        "artist": "Brian Snõddy",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/95b265bc-a94d-403b-8232-8fdfa0f8d9d5.jpg?1783948057"
     },
     "colorIdentityOverride": [
         "RED"
@@ -3637,6 +4174,75 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Glyph of Destruction
+{
+    "name": "Glyph of Destruction",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target blocking Wall you control gets +10/+0 until end of combat. Prevent all damage that would be dealt to it this turn. Destroy it at the beginning of the next end step.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 10
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfCombat"
+                },
+                {
+                    "type": "PreventDamageShield",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": "TriggeringEntity",
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "watchedTarget": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature Wall blocking ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "artist": "Susan Van Camp",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8e9c153c-9224-491b-bc84-8a9f0a83ee5a.jpg?1783948056"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -5906,6 +6512,72 @@
     ]
 }
 
+// Land's Edge
+{
+    "name": "Land's Edge",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "World Enchantment",
+    "oracleText": "Discard a card: If the discarded card was a land card, this enchantment deals 2 damage to target player or planeswalker. Any player may activate this ability.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Land's Edge:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": "AtomDiscard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "DiscardedAsCost",
+                            "filter": "land"
+                        }
+                    },
+                    "then": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayerOrPlaneswalker",
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    "AnyPlayerMay"
+                ],
+                "descriptionOverride": "Discard a card: If it was a land card, deal 2 damage to target player or planeswalker."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "rarity": "RARE",
+        "artist": "Brian Snõddy",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fb3d9b29-948c-4768-b5ea-db2512817c30.jpg?1783948053",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "The damage done when you discard a land only applies to lands which are discarded by choice using the Land's Edge ability. It does not work on forced discards of any type."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Lesser Werewolf
 {
     "name": "Lesser Werewolf",
@@ -7189,6 +7861,106 @@
     ]
 }
 
+// Primordial Ooze
+{
+    "name": "Primordial Ooze",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Ooze",
+    "oracleText": "This creature attacks each combat if able.\nAt the beginning of your upkeep, put a +1/+1 counter on this creature. Then you may pay {X}, where X is the number of +1/+1 counters on it. If you don't, tap this creature and it deals X damage to you.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Primordial Ooze:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.MayPay",
+                                "cost": {
+                                    "type": "PayDynamicManaCost",
+                                    "amount": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "PLUS_ONE_PLUS_ONE"
+                                        }
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": []
+                            },
+                            "otherwise": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "TapUntap",
+                                        "target": "Self"
+                                    },
+                                    {
+                                        "type": "DealDamage",
+                                        "amount": {
+                                            "type": "EntityProperty",
+                                            "entity": "Self",
+                                            "numericProperty": {
+                                                "type": "CounterCount",
+                                                "counterType": "PLUS_ONE_PLUS_ONE"
+                                            }
+                                        },
+                                        "target": {
+                                            "type": "PlayerRef",
+                                            "player": "You"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, put a +1/+1 counter on this creature. Then you may pay {X}, where X is the number of +1/+1 counters on it. If you don't, tap this creature and it deals X damage to you."
+            }
+        ],
+        "staticAbilities": [
+            "MustAttack"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "UNCOMMON",
+        "artist": "Sandra Everingham",
+        "flavorText": "The thick, moving mass from the beginning of evolution swallows and digests the animate and inanimate as it unthinkingly strives to continue its existence.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a46e47e1-8639-48f7-94c4-5f9e9666839a.jpg?1783948053",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "It becomes tapped even if the damage is prevented."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Princess Lucrezia
 {
     "name": "Princess Lucrezia",
@@ -7277,6 +8049,47 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Pyrotechnics
+{
+    "name": "Pyrotechnics",
+    "manaCost": "{4}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Pyrotechnics deals 4 damage divided as you choose among any number of targets.",
+    "script": {
+        "spellEffect": {
+            "type": "DividedDamage",
+            "totalDamage": 4,
+            "maxTargets": 4
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "count": 4,
+                "minCount": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "artist": "Anson Maddocks",
+        "flavorText": "\"Hi! ni! ya! Behold the man of flint, that's me!/ Four lightnings zigzag from me, strike and return.\" —Navajo war chant",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/6/2646284b-a94d-4c99-98d4-7becbb473e2b.jpg?1783948053",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "You choose how the damage is divided as you cast the spell, not as it resolves. Each target must be assigned at least 1 damage."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "If some but not all of Pyrotechnics's targets become illegal, you can't change the division of damage. Damage that would have been dealt to illegal targets simply isn't dealt."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -7993,6 +8806,147 @@
     "colorIdentityOverride": [
         "BLACK",
         "BLUE"
+    ]
+}
+
+// Rohgahh of Kher Keep
+{
+    "name": "Rohgahh of Kher Keep",
+    "manaCost": "{2}{B}{B}{R}{R}",
+    "typeLine": "Legendary Creature — Kobold",
+    "oracleText": "At the beginning of your upkeep, you may pay {R}{R}{R}. If you don't, tap Rohgahh and all creatures named Kobolds of Kher Keep, then an opponent gains control of them.\nCreatures you control named Kobolds of Kher Keep get +2/+2.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rohgahh of Kher Keep:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{R}{R}{R}"
+                        }
+                    },
+                    "suffer": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "TapUntap",
+                                "target": "Self"
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": {
+                                            "cardPredicates": [
+                                                "IsCreature",
+                                                {
+                                                    "type": "NameEquals",
+                                                    "name": "Kobolds of Kher Keep"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                "body": {
+                                    "type": "TapUntap",
+                                    "target": "IterationEntity"
+                                }
+                            },
+                            {
+                                "type": "ChooseOpponentForSource",
+                                "prompt": "Choose an opponent to gain control of Rohgahh and the Kobolds"
+                            },
+                            {
+                                "type": "GiveControlToTargetPlayer",
+                                "permanent": "Self",
+                                "newController": {
+                                    "type": "PlayerRef",
+                                    "player": "ChosenOpponent"
+                                }
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": {
+                                            "cardPredicates": [
+                                                "IsCreature",
+                                                {
+                                                    "type": "NameEquals",
+                                                    "name": "Kobolds of Kher Keep"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                "body": {
+                                    "type": "GiveControlToTargetPlayer",
+                                    "permanent": "IterationEntity",
+                                    "newController": {
+                                        "type": "PlayerRef",
+                                        "player": "ChosenOpponent"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "consequenceDescription": "tap Rohgahh and all creatures named Kobolds of Kher Keep, then an opponent gains control of them"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NameEquals",
+                                "name": "Kobolds of Kher Keep"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "255",
+        "rarity": "RARE",
+        "artist": "Edward P. Beard, Jr.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea0891f0-83ce-4eb7-b0a9-cbc8168bafff.jpg?1783948033",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "Rohgahh's first ability isn't targeted. You don't choose the opponent that will gain control of the creatures until the ability resolves."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "If you don't pay {R}{R}{R} as the first ability resolves, all creatures named Kobolds of Kher Keep become tapped (even the ones you don't control), as does Rohgahh. The chosen opponent gains control of Rohgahh and all creatures named Kobolds of Kher Keep regardless of whether you control them or whether they were tapped by the ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
