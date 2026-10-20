@@ -462,6 +462,49 @@
     }
 }
 
+// Eyes of the Beholder
+{
+    "name": "Eyes of the Beholder",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets -11/-11 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ModifyStats",
+            "powerModifier": {
+                "type": "Fixed",
+                "amount": -11
+            },
+            "toughnessModifier": {
+                "type": "Fixed",
+                "amount": -11
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "artist": "Kari Christensen",
+        "flavorText": "In the end, there was nothing beautiful to be seen.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/f/3f9e5402-690f-497d-ada3-aa41fa900fdd.jpg?1783926497"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Gloom Stalker
 {
     "name": "Gloom Stalker",
