@@ -749,9 +749,8 @@ object CardIntentAnalyzer {
 
     private val EVASION_KEYWORDS = setOf(
         Keyword.FLYING, Keyword.MENACE, Keyword.FEAR, Keyword.INTIMIDATE, Keyword.SHADOW,
-        Keyword.TRAMPLE, Keyword.SWAMPWALK, Keyword.FORESTWALK, Keyword.ISLANDWALK,
-        Keyword.MOUNTAINWALK, Keyword.PLAINSWALK,
-    )
+        Keyword.TRAMPLE,
+    ) + Keyword.LANDWALK
 
     private val PROTECTIVE_KEYWORDS = setOf(
         Keyword.HEXPROOF, Keyword.SHROUD, Keyword.INDESTRUCTIBLE, Keyword.PROTECTION,

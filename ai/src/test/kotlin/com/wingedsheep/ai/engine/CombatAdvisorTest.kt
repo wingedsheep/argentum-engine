@@ -2420,6 +2420,47 @@ class CombatAdvisorTest : FunSpec({
             driver.state, driver.state.projectedState, attacker, smallBlocker, registry
         ) shouldBe true
     }
+    test("block-legality model knows nonbasic, desert and legendary landwalk") {
+        fun walker(name: String, keyword: Keyword) = CardDefinition.creature(
+            name = name, manaCost = ManaCost.parse("{2}"),
+            subtypes = setOf(Subtype("Warrior")), power = 2, toughness = 2, keywords = setOf(keyword)
+        )
+        val land = { name: String, typeLine: String ->
+            CardDefinition(name = name, manaCost = ManaCost.ZERO, typeLine = TypeLine.parse(typeLine), oracleText = "")
+        }
+        val cards = listOf(
+            walker("Legendary Walker", Keyword.LEGENDARY_LANDWALK),
+            walker("Nonbasic Walker", Keyword.NONBASIC_LANDWALK),
+            walker("Desert Walker", Keyword.DESERTWALK),
+            land("Legendary Test Land", "Legendary Land"),
+            land("Plain Test Land", "Land"),
+            land("Test Desert", "Land — Desert"),
+        )
+        val (driver, registry, _) = setup(cards)
+        val p1 = driver.player1
+        val p2 = driver.player2
+        val blocker = driver.putCreatureOnBattlefield(p2, "Grizzly Bears")
+        fun blockable(attackerName: String): Boolean {
+            val attacker = driver.putCreatureOnBattlefield(p1, attackerName)
+            return CombatMath.canBeBlockedBy(driver.state, driver.state.projectedState, attacker, blocker, registry)
+        }
+
+        // Only basics so far: every walker is blockable.
+        blockable("Legendary Walker") shouldBe true
+        blockable("Nonbasic Walker") shouldBe true
+        blockable("Desert Walker") shouldBe true
+
+        driver.putLandOnBattlefield(p2, "Plain Test Land")
+        blockable("Nonbasic Walker") shouldBe false
+        blockable("Legendary Walker") shouldBe true
+
+        driver.putLandOnBattlefield(p2, "Legendary Test Land")
+        blockable("Legendary Walker") shouldBe false
+
+        driver.putLandOnBattlefield(p2, "Test Desert")
+        blockable("Desert Walker") shouldBe false
+    }
+
     test("server multi-block requirement keeps every mandated attacker in the AI plan") {
         val unlimited = CardDefinition.creature(
             name = "Multi Block Advisor Wall", manaCost = ManaCost.parse("{3}"),

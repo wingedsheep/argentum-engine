@@ -114,6 +114,12 @@ object CombatMath {
             if (walks(Keyword.ISLANDWALK, "Island")) return false
             if (walks(Keyword.MOUNTAINWALK, "Mountain")) return false
             if (walks(Keyword.PLAINSWALK, "Plains")) return false
+            if (walks(Keyword.DESERTWALK, "Desert")) return false
+            fun walksAny(keyword: Keyword, land: (EntityId) -> Boolean) =
+                keyword.name in aKeywords && defenderLands.any { projected.hasType(it, "LAND") && land(it) } &&
+                    keyword !in suppressed
+            if (walksAny(Keyword.NONBASIC_LANDWALK) { !projected.hasType(it, "BASIC") }) return false
+            if (walksAny(Keyword.LEGENDARY_LANDWALK) { projected.isLegendary(it) }) return false
         }
 
         // Attacker-side filter restrictions (e.g., "can't be blocked by creatures with power 2 or less")
