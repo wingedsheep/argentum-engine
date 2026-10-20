@@ -81,6 +81,28 @@ class InfiniteAuthorityScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("when the enchanted attacker becomes blocked by a partner that dies in combat, no counter") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Craw Wurm")
+                    .withCardAttachedTo(1, "Infinite Authority", "Craw Wurm")
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Craw Wurm" to 2)).error shouldBe null
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.declareBlockers(mapOf("Grizzly Bears" to listOf("Craw Wurm"))).error shouldBe null
+
+                game.passUntilPhase(Phase.ENDING, Step.END)
+                game.resolveStack()
+                game.isInGraveyard(2, "Grizzly Bears") shouldBe true
+                withClue("combat damage killed the Bears, so the end-of-combat destroy destroyed nothing") {
+                    game.plusOneCounters("Craw Wurm") shouldBe 0
+                }
+            }
+
             test("the first creature still gets the counter after the Aura has left") {
                 val game = blockWithEnchantedWall("Centaur Courser")
 
