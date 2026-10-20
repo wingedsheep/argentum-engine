@@ -9121,7 +9121,10 @@
                 },
                 {
                     "type": "DistributeCountersAmongFiltered",
-                    "totalCounters": 4,
+                    "totalCounters": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
                     "filter": {
                         "cardPredicates": [
                             {

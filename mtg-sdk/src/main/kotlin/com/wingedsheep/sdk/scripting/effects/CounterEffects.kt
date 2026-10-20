@@ -692,9 +692,11 @@ data class DistributeCountersAmongTargetsEffect(
  * Distinct from [DistributeCountersAmongTargetsEffect] (which uses the spell's targets) and from
  * [DistributeCountersFromSelfEffect] (which *moves* existing counters off the source). Used by
  * Crashing Wave: "distribute three stun counters among any number of tapped creatures your opponents
- * control" — `DistributeCountersAmongFilteredEffect(3, CounterType.STUN, Creature.tapped().opponentControls())`.
+ * control" — `DistributeCountersAmongFilteredEffect(Fixed(3), CounterType.STUN, Creature.tapped().opponentControls())`.
+ * The pool is a [DynamicAmount] evaluated once at resolution, like [DistributeCountersAmongTargetsEffect]'s:
+ * Feast of the Victorious Dead distributes "that many" counters, one per creature that died this turn.
  *
- * @property totalCounters How many counters to place in total.
+ * @property totalCounters How many counters to place in total, evaluated at resolution.
  * @property counterType The counter to place (e.g. [CounterType.STUN]).
  * @property filter Which permanents are eligible to receive counters (resolved at execution).
  * @property minPerTarget Minimum counters a chosen recipient must receive (0 = "any number of").
@@ -702,13 +704,14 @@ data class DistributeCountersAmongTargetsEffect(
 @SerialName("DistributeCountersAmongFiltered")
 @Serializable
 data class DistributeCountersAmongFilteredEffect(
-    val totalCounters: Int,
+    val totalCounters: DynamicAmount,
     val counterType: CounterType = CounterType.PLUS_ONE_PLUS_ONE,
     val filter: GameObjectFilter = GameObjectFilter.Creature,
     val minPerTarget: Int = 0,
 ) : Effect {
     override val description: String =
-        "Distribute $totalCounters ${counterType.printed} counter${if (totalCounters != 1) "s" else ""} among ${filter.description}s"
+        "Distribute ${totalCounters.description} ${counterType.printed} " +
+            "counter${if (totalCounters != DynamicAmount.Fixed(1)) "s" else ""} among ${filter.description}s"
 }
 
 /**

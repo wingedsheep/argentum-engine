@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.counters
 
+import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.suspendForDecision
 import com.wingedsheep.engine.core.DecisionContext
@@ -27,9 +28,10 @@ import kotlin.reflect.KClass
  * Crashing Wave: "distribute three stun counters among any number of tapped creatures your opponents
  * control" — the recipients are the tapped opponent creatures at resolution (including any just
  * tapped by the same spell), and `minPerTarget = 0` lets the controller pile all three on one.
+ * The pool is evaluated once, at resolution (Feast of the Victorious Dead's "that many").
  */
 class DistributeCountersAmongFilteredExecutor(
-    private val predicateEvaluator: PredicateEvaluator
+    private val amountEvaluator: DynamicAmountEvaluator
 ) : EffectExecutor<DistributeCountersAmongFilteredEffect> {
 
     override val effectType: KClass<DistributeCountersAmongFilteredEffect> =
@@ -40,11 +42,12 @@ class DistributeCountersAmongFilteredExecutor(
         effect: DistributeCountersAmongFilteredEffect,
         context: EffectContext
     ): EffectResult {
-        if (effect.totalCounters <= 0) {
+        val totalCounters = amountEvaluator.evaluate(state, effect.totalCounters, context)
+        if (totalCounters <= 0) {
             return EffectResult.success(state, emptyList())
         }
 
-        val eligible = BattlefieldFilterUtils.findMatchingOnBattlefield(state, effect.filter, context, predicateEvaluator = predicateEvaluator)
+        val eligible = BattlefieldFilterUtils.findMatchingOnBattlefield(state, effect.filter, context, predicateEvaluator = amountEvaluator.predicates)
         if (eligible.isEmpty()) {
             return EffectResult.success(state, emptyList())
         }
@@ -57,14 +60,14 @@ class DistributeCountersAmongFilteredExecutor(
         val decision = { decisionId: String -> DistributeDecision(
             id = decisionId,
             playerId = context.controllerId,
-            prompt = "Distribute ${effect.totalCounters} ${effect.counterType.printed} " +
-                "counter${if (effect.totalCounters != 1) "s" else ""} among ${effect.filter.description}s",
+            prompt = "Distribute ${totalCounters} ${effect.counterType.printed} " +
+                "counter${if (totalCounters != 1) "s" else ""} among ${effect.filter.description}s",
             context = DecisionContext(
                 sourceId = sourceId,
                 sourceName = sourceName,
                 phase = DecisionPhase.RESOLUTION
             ),
-            totalAmount = effect.totalCounters,
+            totalAmount = totalCounters,
             targets = eligible,
             minPerTarget = effect.minPerTarget,
             // All N must be placed (distribute "three counters", not "up to three").

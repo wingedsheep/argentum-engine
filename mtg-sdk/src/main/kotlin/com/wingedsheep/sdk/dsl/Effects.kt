@@ -2684,6 +2684,19 @@ object Effects {
         counterType: CounterType = CounterType.PLUS_ONE_PLUS_ONE,
         filter: com.wingedsheep.sdk.scripting.GameObjectFilter,
         minPerTarget: Int = 0,
+    ): Effect = DistributeCountersAmongFiltered(DynamicAmount.Fixed(totalCounters), counterType, filter, minPerTarget)
+
+    /**
+     * Distribute a resolution-evaluated number of new counters among permanents matching [filter].
+     * Feast of the Victorious Dead: "distribute that many +1/+1 counters among any number of
+     * creatures you control" — `DistributeCountersAmongFiltered(DynamicAmounts.creaturesDiedThisTurn(Player.Each),
+     * filter = Filters.Creature.youControl())`.
+     */
+    fun DistributeCountersAmongFiltered(
+        totalCounters: DynamicAmount,
+        counterType: CounterType = CounterType.PLUS_ONE_PLUS_ONE,
+        filter: com.wingedsheep.sdk.scripting.GameObjectFilter,
+        minPerTarget: Int = 0,
     ): Effect =
         com.wingedsheep.sdk.scripting.effects.DistributeCountersAmongFilteredEffect(totalCounters, counterType, filter, minPerTarget)
 

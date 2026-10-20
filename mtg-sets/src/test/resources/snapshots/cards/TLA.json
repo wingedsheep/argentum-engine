@@ -4850,7 +4850,10 @@
                 },
                 {
                     "type": "DistributeCountersAmongFiltered",
-                    "totalCounters": 3,
+                    "totalCounters": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
                     "counterType": "STUN",
                     "filter": "creature tapped ctrl:opponent"
                 }

@@ -1,3 +1,69 @@
+// Feast of the Victorious Dead
+{
+    "name": "Feast of the Victorious Dead",
+    "manaCost": "{W}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your end step, if one or more creatures died this turn, you gain that much life and distribute that many +1/+1 counters among any number of creatures you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Feast of the Victorious Dead:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "TurnTracking",
+                                "player": "Each",
+                                "tracker": "CREATURES_DIED"
+                            }
+                        },
+                        {
+                            "type": "DistributeCountersAmongFiltered",
+                            "totalCounters": {
+                                "type": "TurnTracking",
+                                "player": "Each",
+                                "tracker": "CREATURES_DIED"
+                            },
+                            "filter": "creature ctrl:you"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "Each",
+                        "tracker": "CREATURES_DIED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, if one or more creatures died this turn, you gain that much life and distribute that many +1/+1 counters among any number of creatures you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "UNCOMMON",
+        "artist": "Alexey Kruglov",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8a90d613-a327-4dc7-b0c1-0003fe0171ef.jpg?1783916516"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Harnessed Snubhorn
 {
     "name": "Harnessed Snubhorn",

@@ -9451,7 +9451,10 @@
                     },
                     {
                         "type": "DistributeCountersAmongFiltered",
-                        "totalCounters": 3,
+                        "totalCounters": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
                         "filter": "creature ctrl:you"
                     },
                     {
