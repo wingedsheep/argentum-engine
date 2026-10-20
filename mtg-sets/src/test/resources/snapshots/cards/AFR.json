@@ -562,6 +562,46 @@
     ]
 }
 
+// Hoard Robber
+{
+    "name": "Hoard Robber",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Tiefling Rogue",
+    "oracleText": "Whenever this creature deals combat damage to a player, create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hoard Robber:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "artist": "Anna Pavleeva",
+        "flavorText": "\"And to think, a year ago I was picking pockets in Waterdeep.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b723d9cd-05f5-4894-9f2b-52a434a3019c.jpg?1783926493"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Improvised Weaponry
 {
     "name": "Improvised Weaponry",
