@@ -10,9 +10,11 @@ import kotlin.random.Random
  *
  * Double-faced commons and uncommons live only on their own sheet, so the ordinary common and
  * uncommon slots never hold one; double-faced rares and mythics stay in the rare slot. The
- * double-faced slot is an uncommon with [doubleFacedUncommonChance], otherwise a common. When the
- * rolled tier is empty (host bans, a thin pool) the other tier is used; with no double-faced
- * commons or uncommons at all the slot becomes one more ordinary common.
+ * double-faced slot is an uncommon with [doubleFacedUncommonChance], otherwise a common. WotC
+ * doesn't publish that split; the 1/3 default is an estimate from per-card sheet frequency (10 of
+ * 101 commons vs 3 of 80 uncommons per pack). When the rolled tier is empty (host bans, a thin
+ * pool) the other tier is used; with no double-faced commons or uncommons at all the slot becomes
+ * one more ordinary common.
  */
 data class DoubleFacedSlotBooster(
     val commons: Int = 9,

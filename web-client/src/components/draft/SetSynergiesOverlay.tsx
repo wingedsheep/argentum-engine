@@ -1685,7 +1685,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Artifacts & Enchantments',
         colors: ['W', 'B'],
         keyCard: 'Naomi, Pillar of Order',
-        description: 'Keep both an artifact and an enchantment in play to turn on payoffs that make Samurai and drain the opponent. A midrange deck that wins by building a diverse board and grinding value from it.',
+        description: 'Keep both an artifact and an enchantment in play to turn on payoffs that make vigilant Samurai tokens. A midrange deck that wins by building a diverse board and grinding value from it.',
       },
       {
         name: 'Artifacts Tempo',
@@ -1697,7 +1697,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Graveyard Value',
         colors: ['B', 'G'],
         keyCard: 'Gloomshrieker',
-        description: 'Mill and trade creatures freely, then rebuy permanents and enchantments from the graveyard. A grindy midrange deck that out-values the opponent in long games.',
+        description: 'Trade creatures freely, then return permanents and enchantments from the graveyard to hand and battlefield. A grindy midrange deck that out-values the opponent in long games.',
       },
       {
         name: 'Samurai & Warriors',

@@ -470,7 +470,7 @@ replacing the slot of its rarity.
 
 **Double-faced-slot boosters** — `DoubleFacedSlotBooster(commons, uncommons, doubleFacedUncommonChance, mythicChance)`
 opens one double-faced common or uncommon per pack in its own slot (an uncommon with `doubleFacedUncommonChance`,
-default 1/3), beside `commons` commons, `uncommons` uncommons and a rare/mythic. Ordinary common/uncommon slots
+default 1/3 — an estimate from per-card sheet frequency; WotC doesn't publish the split), beside `commons` commons, `uncommons` uncommons and a rare/mythic. Ordinary common/uncommon slots
 never hold a double-faced card; double-faced rares and mythics stay in the rare slot. An empty tier (host bans) falls
 back to the other; no double-faced commons or uncommons at all turns the slot into one more common. Kamigawa: Neon
 Dynasty uses `DoubleFacedSlotBooster(commons = 9, uncommons = 3)`.
