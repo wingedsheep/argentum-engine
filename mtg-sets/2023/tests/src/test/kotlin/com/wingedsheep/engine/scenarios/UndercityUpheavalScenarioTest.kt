@@ -115,6 +115,9 @@ class UndercityUpheavalScenarioTest : ScenarioTestBase() {
                 withClue("a target given zero counters") {
                     game.cast(listOf(bears, giant), mapOf(bears to 3, giant to 0)).error shouldNotBe null
                 }
+                withClue("a single target can't be announced more than X") {
+                    game.cast(listOf(bears), mapOf(bears to 99)).error shouldNotBe null
+                }
                 withClue("the non-creature card doesn't count, so one counter each for three targets is exactly X") {
                     game.cast(listOf(bears, giant, elves), mapOf(bears to 1, giant to 1, elves to 1)).error shouldBe null
                 }

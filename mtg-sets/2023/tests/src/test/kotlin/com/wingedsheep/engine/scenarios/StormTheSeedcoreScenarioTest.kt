@@ -3,6 +3,7 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.DistributeDecision
 import com.wingedsheep.engine.core.DistributionResponse
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
@@ -10,6 +11,7 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
@@ -42,11 +44,12 @@ class StormTheSeedcoreScenarioTest : ScenarioTestBase() {
             fun TestGame.plusOnes(id: EntityId): Int =
                 state.getEntity(id)?.get<CountersComponent>()?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0
 
-            fun TestGame.cast(targets: List<EntityId>) = execute(
+            fun TestGame.cast(targets: List<EntityId>, division: Map<EntityId, Int>? = null) = execute(
                 CastSpell(
                     player1Id,
                     findCardsInHand(1, "Storm the Seedcore").single(),
-                    targets.map { ChosenTarget.Permanent(it) }
+                    targets.map { ChosenTarget.Permanent(it) },
+                    damageDistribution = division
                 )
             )
 
@@ -80,6 +83,32 @@ class StormTheSeedcoreScenarioTest : ScenarioTestBase() {
                     projected.hasKeyword(theirGiant, Keyword.VIGILANCE) shouldBe false
                     projected.hasKeyword(theirGiant, Keyword.TRAMPLE) shouldBe false
                 }
+            }
+
+            test("a division announced at cast is kept; an illegal target's share is lost") {
+                val game = board()
+                val bears = game.findPermanent("Grizzly Bears")!!
+                val elves = game.findPermanent("Llanowar Elves")!!
+
+                game.cast(listOf(bears, elves), mapOf(bears to 3, elves to 1)).error shouldBe null
+                // The elves leave before Storm the Seedcore resolves.
+                game.state = game.state.moveToZone(
+                    elves,
+                    ZoneKey(game.player1Id, Zone.BATTLEFIELD),
+                    ZoneKey(game.player1Id, Zone.GRAVEYARD)
+                )
+                game.resolveStack()
+
+                game.hasPendingDecision() shouldBe false
+                game.plusOnes(bears) shouldBe 3
+            }
+
+            test("an announced split must match the four counters, even for one target") {
+                val game = board()
+                val bears = game.findPermanent("Grizzly Bears")!!
+                val elves = game.findPermanent("Llanowar Elves")!!
+                game.cast(listOf(bears), mapOf(bears to 9)).error shouldNotBe null
+                game.cast(listOf(bears, elves), mapOf(bears to 2, elves to 1)).error shouldNotBe null
             }
 
             test("a single target takes all four counters") {

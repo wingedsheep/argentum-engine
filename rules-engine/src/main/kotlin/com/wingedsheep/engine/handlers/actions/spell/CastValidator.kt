@@ -944,8 +944,8 @@ internal class CastValidator(
     }
 
     /**
-     * A spell that divides among more than one target announces the division as it is cast
-     * (CR 601.2d): the distribution names exactly the chosen targets, sums to the amount divided, and
+     * A spell that divides among its targets announces the division as it is cast (CR 601.2d) —
+     * required for divided damage among two or more targets: the distribution names exactly the chosen targets, sums to the amount divided, and
      * gives each at least the division's floor (1 for damage, the effect's `minPerTarget` for
      * counters). The kicked or cleaved effect is the one divided when that variant is cast. A
      * `dynamicTotal` is evaluated with the announced X — the same value the stack object carries to
@@ -965,13 +965,22 @@ internal class CastValidator(
         } else {
             cardDef?.script?.spellEffect
         }
+        if (cardDef == null) return null
         val division = AnnouncedDivision.ofSpell(spellEffect)
-        if (cardDef == null || division == null || action.targets.size <= 1) return null
+        // Whatever split arrives is checked — even for a single target, since the executors honor
+        // an announced split verbatim — and a spell that divides nothing at cast takes none.
+        val distribution = action.damageDistribution
+        if (division == null) {
+            return if (distribution != null) "This spell does not divide anything among its targets" else null
+        }
         val isDamage = division is DividedDamageEffect
         val unit = if (isDamage) "damage" else "counters"
-        // A counter division submitted without a split divides at resolution, as an activation's does.
-        val distribution = action.damageDistribution
-            ?: return if (isDamage) "Damage distribution required for this spell when targeting multiple creatures" else null
+        if (distribution == null) {
+            // A counter division submitted without a split divides at resolution, as an activation's does.
+            return if (isDamage && action.targets.size > 1) {
+                "Damage distribution required for this spell when targeting multiple creatures"
+            } else null
+        }
         if (distribution.keys != action.targets.map { it.toEntityId() }.toSet()) {
             return "Distribution targets must match chosen targets"
         }
