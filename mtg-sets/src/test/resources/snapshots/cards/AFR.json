@@ -970,6 +970,30 @@
     ]
 }
 
+// Steadfast Paladin
+{
+    "name": "Steadfast Paladin",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Dwarf Knight",
+    "oracleText": "Lifelink",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "metadata": {
+        "collectorNumber": "38",
+        "artist": "Chris Rallis",
+        "flavorText": "\"When I made my oath to Moradin, I left selfishness and cowardice behind. Every battle, I make that commitment anew.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2c06b6e-faf5-467d-bfe1-9ff00be9e2f5.jpg?1783926524"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Treasure Vault
 {
     "name": "Treasure Vault",
