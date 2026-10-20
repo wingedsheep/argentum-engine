@@ -386,6 +386,56 @@
     ]
 }
 
+// Akron Legionnaire
+{
+    "name": "Akron Legionnaire",
+    "manaCost": "{6}{W}{W}",
+    "typeLine": "Creature — Giant Soldier",
+    "oracleText": "Except for creatures named Akron Legionnaire and artifact creatures, creatures you control can't attack.",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsNonartifact",
+                            {
+                                "type": "Not",
+                                "predicate": {
+                                    "type": "NameEquals",
+                                    "name": "Akron Legionnaire"
+                                }
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "RARE",
+        "artist": "Mark Poole",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d074af2-8dbd-42d3-87eb-30f6e7d171ff.jpg?1783948089",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "If you have two or more Legionnaires, they can all attack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Al-abara's Carpet
 {
     "name": "Al-abara's Carpet",
@@ -439,6 +489,64 @@
         "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d5aae6e-fe20-4363-9589-5a54bcbbb77e.jpg?1783948031"
     },
     "colorIdentityOverride": []
+}
+
+// Alabaster Potion
+{
+    "name": "Alabaster Potion",
+    "manaCost": "{X}{W}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Target player gains X life.\n• Prevent the next X damage that would be dealt to any target this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "GainLife",
+                        "amount": "XValue",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Target player gains X life"
+                },
+                {
+                    "effect": {
+                        "type": "PreventDamageShield",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "amount": "XValue"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "AnyTarget",
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Prevent the next X damage that would be dealt to any target this turn"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "artist": "Harold McNeill",
+        "flavorText": "\"Healing is a matter of time, but it is sometimes also a matter of opportunity.\" —D'Avenant proverb",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/2806c7f6-8fdd-4e65-9c71-f2e8b0cdede2.jpg?1783948088"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Alchor's Tomb
@@ -677,6 +785,60 @@
         "artist": "Quinton Hoover",
         "flavorText": "Quick and agile, Amrou Kithkin can usually escape from even the most fearsome opponents.",
         "imageUri": "https://cards.scryfall.io/normal/front/c/b/cbce1c55-123c-4a05-bde4-18a1601fcc5a.jpg?1783948088"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Angelic Voices
+{
+    "name": "Angelic Voices",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creatures you control get +1/+1 as long as you control no nonartifact, nonwhite creatures.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 1,
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsNonartifact",
+                            {
+                                "type": "NotColor",
+                                "color": "WHITE"
+                            }
+                        ]
+                    },
+                    "negate": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "RARE",
+        "artist": "Julie Baroh",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/8068c263-e5fa-4449-8887-418e9d0a4da4.jpg?1783948088",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "You get the bonus if all of your creatures are white or artifact even if they also have other colors or qualities. So, if your only creature is a white and green creature, or a red artifact creature, you would get the bonus."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -3110,6 +3272,53 @@
     ]
 }
 
+// Enchanted Being
+{
+    "name": "Enchanted Being",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Creature — Human",
+    "oracleText": "Prevent all combat damage that would be dealt to this creature by enchanted creatures.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "statePredicates": [
+                                "IsSource"
+                            ]
+                        }
+                    },
+                    "source": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsEnchanted"
+                        ]
+                    },
+                    "damageType": "DamageCombat"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "artist": "Douglas Shuler",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/94c2880d-b37a-43ea-9fee-cd5a8ed75a7e.jpg?1783948086"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Equinox
 {
     "name": "Equinox",
@@ -4684,6 +4893,53 @@
     ]
 }
 
+// Great Defender
+{
+    "name": "Great Defender",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +0/+X until end of turn, where X is its mana value.",
+    "script": {
+        "spellEffect": {
+            "type": "ModifyStats",
+            "powerModifier": {
+                "type": "Fixed",
+                "amount": 0
+            },
+            "toughnessModifier": {
+                "type": "EntityProperty",
+                "entity": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "numericProperty": "ManaValue"
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Poole",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/879a8653-1538-4f78-a3d3-a900a4d9499b.jpg?1783948085"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Great Wall
 {
     "name": "Great Wall",
@@ -4705,6 +4961,62 @@
         "rarity": "UNCOMMON",
         "artist": "Sandra Everingham",
         "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd860a1d-aa17-4579-b9b1-d101d2416387.jpg?1783948084"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Greater Realm of Preservation
+{
+    "name": "Greater Realm of Preservation",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "{1}{W}: The next time a black or red source of your choice would deal damage to you this turn, prevent that damage.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Greater Realm of Preservation:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "PreventDamageShield",
+                    "sourceFilter": {
+                        "type": "PreventFromChosen",
+                        "eligible": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        {
+                                            "type": "HasColor",
+                                            "color": "BLACK"
+                                        },
+                                        {
+                                            "type": "HasColor",
+                                            "color": "RED"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "nextInstanceOnly": true
+                },
+                "descriptionOverride": "{1}{W}: The next time a black or red source of your choice would deal damage to you this turn, prevent that damage."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "UNCOMMON",
+        "artist": "NéNé Thomas",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5e236816-0c49-4b48-b18b-03add5a80d72.jpg?1783948084"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -5039,6 +5351,46 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Heaven's Gate
+{
+    "name": "Heaven's Gate",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "One or more target creatures become white until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "ChangeColor",
+                "colors": [
+                    "WHITE"
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "minCount": 1,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "UNCOMMON",
+        "artist": "Douglas Shuler",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/461d7c11-3a7d-42c2-bb6b-0a43779e6842.jpg?1783948084"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -5855,6 +6207,72 @@
     ]
 }
 
+// Ivory Guardians
+{
+    "name": "Ivory Guardians",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Creature — Giant Cleric",
+    "oracleText": "Protection from red\nCreatures named Ivory Guardians get +1/+1 as long as an opponent controls a nontoken red permanent.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Color",
+                "color": "RED"
+            }
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 1,
+                    "filter": {
+                        "baseFilter": "creature name:Ivory Guardians"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "EachOpponent",
+                    "zone": "Battlefield",
+                    "filter": "permanent red nontoken"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "UNCOMMON",
+        "artist": "Melissa A. Benson",
+        "flavorText": "The elite guard of the Mesa High Priests, the Ivory Guardians, were created to protect the innocent and faithful. Some say their actions are above the law.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9bf9cccd-fe97-4632-a90a-9eeb0d41135e.jpg?1783948084",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "The ability of an Ivory Guardians will affect itself as well as all other creatures named Ivory Guardians (not just the ones you control)."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "Each ability applies a maximum of once, even if an opponent controls multiple nontoken red permanents or multiple opponents each control a nontoken red permanent."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "The abilities from multiple Ivory Guardians are cumulative. For example, if you control two different Ivory Guardians and an opponent controls a nontoken red permanent, each of your Ivory Guardians will be 5/5."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Jacques le Vert
 {
     "name": "Jacques le Vert",
@@ -6261,6 +6679,61 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Kismet
+{
+    "name": "Kismet",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Artifacts, creatures, and lands your opponents control enter tapped.",
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "PermanentsEnterTapped",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "artifact ctrl:opponent",
+                    "to": "Battlefield"
+                }
+            },
+            {
+                "type": "PermanentsEnterTapped",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:opponent",
+                    "to": "Battlefield"
+                }
+            },
+            {
+                "type": "PermanentsEnterTapped",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:opponent",
+                    "to": "Battlefield"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "rarity": "UNCOMMON",
+        "artist": "Kaja Foglio",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7e0651ad-6901-4f9b-8807-d66e53a4ada8.jpg?1783948083",
+        "rulings": [
+            {
+                "date": "2007-02-01",
+                "text": "The appropriate permanents enter tapped. They do not enter untapped and then immediately tap, therefore they do not trigger any effects due to tapping."
+            },
+            {
+                "date": "2007-02-01",
+                "text": "It affects all opponents."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -6831,6 +7304,107 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Land Tax
+{
+    "name": "Land Tax",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, if an opponent controls more lands than you, you may search your library for up to three basic land cards, reveal them, put them into your hand, then shuffle.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Land Tax:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "basicland"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for up to three basic land cards to put into your hand",
+                                "selectedLabel": "Put into your hand"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "EachOpponent",
+                        "filter": "land"
+                    },
+                    "operator": "GT",
+                    "right": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "UNCOMMON",
+        "artist": "Brian Snõddy",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d53b20b0-67bc-4587-817b-efbf21cb2512.jpg?1783948083",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "You shuffle your library if you search, even if you don't put any basic land cards into your hand."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "This ability has an \"intervening 'if' clause.\" That means (1) the ability won't trigger at all unless any one of your opponents controls more lands than you, and (2) the ability will do nothing if you control at least as many lands as each of your opponents by the time it resolves."
+            },
+            {
+                "date": "2006-10-15",
+                "text": "You can fetch any of the \"Snow-Covered\" lands, since they all also have the supertype basic."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -9054,6 +9628,161 @@
     "colorIdentityOverride": []
 }
 
+// Remove Enchantments
+{
+    "name": "Remove Enchantments",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Return to your hand all enchantments you both own and control, all Auras you own attached to permanents you control, and all Auras you own attached to attacking creatures your opponents control. Then destroy all other enchantments you control, all other Auras attached to permanents you control, and all other Auras attached to attacking creatures your opponents control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": {
+                            "anyOf": [
+                                {
+                                    "anyOf": [
+                                        {
+                                            "cardPredicates": [
+                                                "IsEnchantment"
+                                            ],
+                                            "controllerPredicate": {
+                                                "type": "ControllerAnd",
+                                                "predicates": [
+                                                    "OwnedByYou",
+                                                    "ControlledByYou"
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            "cardPredicates": [
+                                                "IsEnchantment",
+                                                {
+                                                    "type": "HasSubtype",
+                                                    "subtype": "Aura"
+                                                }
+                                            ],
+                                            "statePredicates": [
+                                                {
+                                                    "type": "IsAttachedTo",
+                                                    "filter": "permanent ctrl:you"
+                                                }
+                                            ],
+                                            "controllerPredicate": "OwnedByYou"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "cardPredicates": [
+                                        "IsEnchantment",
+                                        {
+                                            "type": "HasSubtype",
+                                            "subtype": "Aura"
+                                        }
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "IsAttachedTo",
+                                            "filter": "creature attacking ctrl:opponent"
+                                        }
+                                    ],
+                                    "controllerPredicate": "OwnedByYou"
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "returnAllToHand_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "returnAllToHand_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "anyOf": [
+                                        {
+                                            "anyOf": [
+                                                {
+                                                    "cardPredicates": [
+                                                        "IsEnchantment"
+                                                    ],
+                                                    "controllerPredicate": "ControlledByYou"
+                                                },
+                                                {
+                                                    "cardPredicates": [
+                                                        "IsEnchantment",
+                                                        {
+                                                            "type": "HasSubtype",
+                                                            "subtype": "Aura"
+                                                        }
+                                                    ],
+                                                    "statePredicates": [
+                                                        {
+                                                            "type": "IsAttachedTo",
+                                                            "filter": "permanent ctrl:you"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "cardPredicates": [
+                                                "IsEnchantment",
+                                                {
+                                                    "type": "HasSubtype",
+                                                    "subtype": "Aura"
+                                                }
+                                            ],
+                                            "statePredicates": [
+                                                {
+                                                    "type": "IsAttachedTo",
+                                                    "filter": "creature attacking ctrl:opponent"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "artist": "Brian Snõddy",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf2e3a8a-b386-474d-b8e9-4c2d56a2b742.jpg?1783948081"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Remove Soul
 {
     "name": "Remove Soul",
@@ -9518,6 +10247,66 @@
         "artist": "Tom Wänerstrand",
         "imageUri": "https://cards.scryfall.io/normal/front/6/6/66641d88-b3f0-4bcd-8d2d-29aa2de69e30.jpg?1783948022"
     }
+}
+
+// Seeker
+{
+    "name": "Seeker",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature can't be blocked except by artifact creatures and/or white creatures.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedExceptBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                {
+                                    "type": "And",
+                                    "predicates": [
+                                        "IsArtifact",
+                                        "IsCreature"
+                                    ]
+                                },
+                                {
+                                    "type": "And",
+                                    "predicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "HasColor",
+                                            "color": "WHITE"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Poole",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/df608b59-cc07-4e1d-b6d6-f15e69b15b92.jpg?1783948080"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Segovian Leviathan
@@ -10073,6 +10862,53 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Spiritual Sanctuary
+{
+    "name": "Spiritual Sanctuary",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of each player's upkeep, if that player controls a Plains, they gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spiritual Sanctuary:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "TriggeringPlayer",
+                    "zone": "Battlefield",
+                    "filter": "land Plains"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "RARE",
+        "artist": "Amy Weber",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/654dd1e0-a91d-44ee-af20-c025bf360c3f.jpg?1783948080"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
