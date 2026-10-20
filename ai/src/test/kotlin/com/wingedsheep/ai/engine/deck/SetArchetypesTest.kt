@@ -35,7 +35,7 @@ class SetArchetypesTest : StringSpec({
             "Legendary Control",
             "Landwalk Aggro",
             "Rampage Stompy",
-            "Selesnya Legends",
+            "Legendary Midrange",
         )
         synergies.archetypes.map { it.colors.toSet() } shouldContainExactly listOf(
             setOf(Color.WHITE, Color.BLUE),

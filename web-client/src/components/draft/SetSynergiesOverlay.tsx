@@ -157,13 +157,13 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Legendary Control',
         colors: ['U', 'B'],
         keyCard: 'Ramirez DePietro',
-        description: "Blue counterspells and bounce plus black removal grind the opponent out of threats. Evasive legends like Ramirez DePietro and Princess Lucrezia close once the board is under control.",
+        description: "Blue counterspells and bounce plus black removal grind the opponent out of threats. Big legends like Ramirez DePietro and Princess Lucrezia close once the board is under control.",
       },
       {
         name: 'Landwalk Aggro',
         colors: ['B', 'R'],
         keyCard: 'Barktooth Warbeard',
-        description: "Aggressive black and red creatures, landwalkers among them, push damage early while burn clears blockers. Tor Wauki and Barktooth Warbeard turn the last few points into lethal.",
+        description: "Aggressive black and red creatures, landwalkers among them, push damage early while burn clears blockers. Tor Wauki picks off blockers so Barktooth Warbeard can finish the game.",
       },
       {
         name: 'Rampage Stompy',
@@ -172,7 +172,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         description: "Big green and red bodies with rampage punish double blocks and trample through defences. Ramp into Marhault Elsdragon and Jerrard of the Closed Fist and attack every turn.",
       },
       {
-        name: 'Selesnya Legends',
+        name: 'Legendary Midrange',
         colors: ['G', 'W'],
         keyCard: 'Sir Shandlar of Eberyn',
         description: "Efficient green creatures and white protection build a sturdy midrange board. Sir Shandlar, Lord Magnus and Torsten Von Ursus outclass the opponent's creatures in the late game.",
