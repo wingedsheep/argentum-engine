@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.scripting.effects.CastFromCollectionWithoutPayingCost
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * The Siege defeat trigger (CR 310.12b) as pure data — the intrinsic ability *every* Siege has,
@@ -22,7 +23,7 @@ import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
  *
  * The ability is a three-step pipeline over primitives that already existed:
  *
- *  1. **[CardSource.Self] → collection.** The battle feeds itself into the pipeline.
+ *  1. **[CardSource.Entity] → collection.** The battle feeds itself into the pipeline.
  *  2. **Move that collection to exile.** Mandatory — "exile it" has no "may" (CR 310.12b), and the
  *     exile is what makes the *cast* legal: the card must be in exile for the free-cast grant to
  *     have a zone to cast from. [MoveCollectionEffect.storeMovedAs] republishes the ids that
@@ -63,7 +64,7 @@ object Sieges {
         activeZones = setOf(Zone.BATTLEFIELD),
         effect = CompositeEffect(
             listOf(
-                GatherCardsEffect(CardSource.Self, storeAs = DEFEAT_COLLECTION),
+                GatherCardsEffect(CardSource.Entity(EffectTarget.Self), storeAs = DEFEAT_COLLECTION),
                 MoveCollectionEffect(
                     from = DEFEAT_COLLECTION,
                     destination = CardDestination.ToZone(Zone.EXILE),

@@ -17,7 +17,7 @@ class MoveEntryCounterSerializationTest : FunSpec({
             Effects.Move(EffectTarget.Self, Zone.BATTLEFIELD,
                 addCounterType = CounterType.FINALITY, addCounterIf = GameObjectFilter.Creature),
             Effects.Pipeline {
-                val cards = gather(com.wingedsheep.sdk.scripting.effects.CardSource.Self)
+                val cards = gather(com.wingedsheep.sdk.scripting.effects.CardSource.Entity(com.wingedsheep.sdk.scripting.targets.EffectTarget.Self))
                 move(cards, com.wingedsheep.sdk.scripting.effects.CardDestination.ToZone(Zone.BATTLEFIELD), addCounterType = CounterType.PLUS_ONE_PLUS_ONE)
             }
         )

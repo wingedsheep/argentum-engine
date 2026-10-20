@@ -319,21 +319,12 @@ class GatherCardsExecutor(
                 }
             }
 
-            is CardSource.Self -> {
-                val sourceId = context.resolveTarget(com.wingedsheep.sdk.scripting.targets.EffectTarget.Self, state)
-                if (sourceId != null && state.getEntity(sourceId) != null) listOf(sourceId) else emptyList()
-            }
-
-            is CardSource.TriggeringEntity -> {
-                // The entity that fired the trigger ("it"); single-element when still in play.
-                // Mirrors EffectTarget.TriggeringEntity for non-targeted gather → move pipelines
-                // (Norin, Swift Survivalist: exile the just-blocked creature you control).
-                val triggeringId = context.resolveTarget(com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity, state)
-                if (triggeringId != null && state.getEntity(triggeringId) != null) {
-                    listOf(triggeringId)
-                } else {
-                    emptyList()
-                }
+            is CardSource.Entity -> {
+                // The one entity the reference names now ("this card", "it", "enchanted creature"),
+                // single-element while it still exists. The state-aware resolve reads relational
+                // references — an Aura's host falls back to the host it last had (CR 608.2h).
+                val id = context.resolveTarget(source.entity, state)
+                if (id != null && state.getEntity(id) != null) listOf(id) else emptyList()
             }
 
             is CardSource.LastKnownCombatPairedWithSource -> {

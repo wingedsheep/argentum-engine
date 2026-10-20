@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Norin, Swift Survivalist
@@ -21,7 +22,7 @@ import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
  * "Can't block" is the [CantBlock] combat static on the source. The blocked-creature trigger uses
  * the ANY-binding `becomesBlocked` factory filtered to creatures you control (same shape as
  * Gustcloak Savior). The optional effect is a gather → exile → grant pipeline over
- * [CardSource.TriggeringEntity] ("it" = the just-blocked creature), granting play-from-exile
+ * [CardSource.Entity] ("it" = the just-blocked creature), granting play-from-exile
  * permission only until end of turn ([MayPlayExpiry.EndOfTurn]) — playing it still costs its mana.
  */
 val NorinSwiftSurvivalist = card("Norin, Swift Survivalist") {
@@ -42,7 +43,7 @@ val NorinSwiftSurvivalist = card("Norin, Swift Survivalist") {
         trigger = Triggers.a(GameObjectFilter.Creature.youControl()).becomesBlocked()
         effect = Effects.May(
             Effects.Pipeline {
-                val exiledBlockedCreature = gather(CardSource.TriggeringEntity)
+                val exiledBlockedCreature = gather(CardSource.Entity(EffectTarget.TriggeringEntity))
                 exile(exiledBlockedCreature)
                 run(Effects.GrantMayPlayFromExile(exiledBlockedCreature, MayPlayExpiry.EndOfTurn))
             }

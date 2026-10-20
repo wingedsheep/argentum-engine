@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Hanabi Blast — Champions of Kamigawa #170
@@ -15,7 +16,7 @@ import com.wingedsheep.sdk.scripting.references.Player
  * Hanabi Blast deals 2 damage to any target. Return Hanabi Blast to its owner's hand, then
  * discard a card at random.
  *
- * - The return happens *during* resolution: `CardSource.Self` gathers the resolving spell off the
+ * - The return happens *during* resolution: `CardSource.Entity(EffectTarget.Self)` gathers the resolving spell off the
  *   stack and moves it to its **owner's** hand (`Player.OwnerOfSource`), so the CR 608.2n
  *   "put it into its owner's graveyard" step then finds nothing to move.
  * - The random discard is by the spell's controller, after the return — Hanabi Blast itself can be
@@ -35,7 +36,7 @@ val HanabiBlast = card("Hanabi Blast") {
         val t = target(Targets.Any)
         effect = Effects.DealDamage(2, t) then
             Effects.Pipeline {
-                toHand(gather(CardSource.Self), Player.OwnerOfSource)
+                toHand(gather(CardSource.Entity(EffectTarget.Self)), Player.OwnerOfSource)
             } then
             Patterns.Hand.discardRandom(1)
     }

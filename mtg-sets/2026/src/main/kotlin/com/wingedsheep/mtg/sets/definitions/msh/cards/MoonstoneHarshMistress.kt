@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Moonstone, Harsh Mistress — Marvel Super Heroes #107
@@ -19,7 +20,7 @@ import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
  * `Triggers.you.discards()` is the per-card (non-batch) discard trigger, so discarding three cards in
  * one resolution fires it three times and each firing binds *its* card as the triggering entity
  * (CR 400.7e — the trigger can find the object the discarded card became in the graveyard). That
- * makes [CardSource.TriggeringEntity] "that card", feeding the Norin, Swift Survivalist
+ * makes [CardSource.Entity] "that card", feeding the Norin, Swift Survivalist
  * gather → exile → grant pipeline wrapped in a [Effects.May] for the optional "you may exile".
  *
  * The permission is granted only on the exiled card, and playing it still costs its mana. Its
@@ -47,7 +48,7 @@ val MoonstoneHarshMistress = card("Moonstone, Harsh Mistress") {
         trigger = Triggers.you.discards()
         effect = Effects.May(
             Effects.Pipeline {
-                val moonstoneDiscarded = gather(CardSource.TriggeringEntity)
+                val moonstoneDiscarded = gather(CardSource.Entity(EffectTarget.TriggeringEntity))
                 exile(moonstoneDiscarded)
                 run(Effects.GrantMayPlayFromExile(
                     moonstoneDiscarded,

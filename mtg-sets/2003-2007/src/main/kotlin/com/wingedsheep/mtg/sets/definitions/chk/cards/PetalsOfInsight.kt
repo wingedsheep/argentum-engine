@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Petals of Insight — Champions of Kamigawa #79
@@ -16,7 +17,7 @@ import com.wingedsheep.sdk.scripting.references.Player
  *
  * - The three looked-at cards move together: the choice is all-or-nothing, so it is a single
  *   `May` over the whole gathered collection rather than a per-card selection.
- * - "If you do" → the return happens *during* resolution: `CardSource.Self` gathers the resolving
+ * - "If you do" → the return happens *during* resolution: `CardSource.Entity(EffectTarget.Self)` gathers the resolving
  *   spell off the stack and moves it to its **owner's** hand, so the CR 608.2n "put it into its
  *   owner's graveyard" step finds nothing to move (the 2013-06-07 ruling: it never goes to a
  *   graveyard). Same shape as Hanabi Blast.
@@ -37,7 +38,7 @@ val PetalsOfInsight = card("Petals of Insight") {
                 Effects.May(
                     effect = Effects.Pipeline {
                         toLibraryBottom(looked)
-                        toHand(gather(CardSource.Self), Player.OwnerOfSource)
+                        toHand(gather(CardSource.Entity(EffectTarget.Self)), Player.OwnerOfSource)
                     },
                     otherwise = Effects.DrawCards(3),
                     prompt = "Put the top three cards of your library on the bottom in any order " +

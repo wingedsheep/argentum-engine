@@ -32,7 +32,7 @@ import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
  * the two halves chain with no card-specific wiring.
  *
  * The gather reads [CardSource.FromZone] scoped to the trigger controller's graveyard and filtered
- * to the source card itself, rather than a bare [CardSource.Self]: the ability says "from **your**
+ * to the source card itself, rather than a bare [CardSource.Entity]: the ability says "from **your**
  * graveyard", so if the card has already left the graveyard (or died under an opponent's control
  * and went to its owner's graveyard elsewhere) the trigger finds nothing and grants nothing, which
  * is what CR 400.7 gives — the object that moved zones is a new object the ability can't see.

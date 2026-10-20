@@ -91,7 +91,7 @@ val EtrataDeadlyFugitive = card("Etrata, Deadly Fugitive") {
                     action = Effects.TurnFaceUp(EffectTarget.Self),
                     then = Effects.Nothing,
                     otherwise = Effects.Pipeline {
-                        val thisCreature = gather(CardSource.Self)
+                        val thisCreature = gather(CardSource.Entity(EffectTarget.Self))
                         val exiled = moveTracked(
                             thisCreature,
                             CardDestination.ToZone(Zone.EXILE),

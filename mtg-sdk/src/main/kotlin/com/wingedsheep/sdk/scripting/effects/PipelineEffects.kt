@@ -389,34 +389,29 @@ sealed interface CardSource {
     }
 
     /**
-     * The ability's own source card ([com.wingedsheep.sdk.scripting.references] sourceId).
+     * A single entity named by an [EffectTarget.SingleEntity] reference, resolved at resolution
+     * time — the gatherable counterpart of that reference. Yields a one-element collection while
+     * the named entity still exists (in any zone), otherwise nothing.
      *
-     * Yields a single-element collection referencing the source, regardless of which zone
-     * it currently occupies. Lets a self-referential ability feed its own card into a
-     * pipeline that expects a collection — e.g. the suspend countdown gathering the exiled
-     * card so [CastFromCollectionWithoutPayingCostEffect] can play it.
-     */
-    @SerialName("Self")
-    @Serializable
-    data object Self : CardSource {
-        override val description: String = "this card"
-    }
-
-    /**
-     * The entity that caused the trigger to fire (`EffectContext.triggeringEntityId`) — the
-     * gatherable counterpart of [com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity].
-     * Yields a single-element collection when that entity is still in play, so a non-targeted "it"
-     * reference (the blocked creature, the dying permanent, …) can feed a gather → move → grant
-     * pipeline. Restricted to entities that still exist; an entity that already left yields nothing.
+     *  - `Entity(EffectTarget.Self)` — the ability's own source card, wherever it is: the suspend
+     *    countdown feeding the exiled card to [CastFromCollectionWithoutPayingCostEffect].
+     *  - `Entity(EffectTarget.TriggeringEntity)` — "it", the creature or permanent the trigger
+     *    names (Norin, Swift Survivalist: exile the just-blocked creature).
+     *  - `Entity(EffectTarget.EnchantedCreature)` — the Aura's host, falling back to the host it
+     *    last had if the Aura has left (Infinite Authority's "the first creature").
      *
-     * Backs "whenever a creature you control becomes blocked, you may exile it. You may play that
-     * card from exile this turn" (Norin, Swift Survivalist): `GatherCards(TriggeringEntity)` →
-     * `MoveCollection(EXILE)` → `GrantMayPlayFromExile(EndOfTurn)`.
+     * Gathering the reference freezes *which object* it named: a later step, or a delayed trigger
+     * that carries the collection (`carryCollections`), still means that object even after
+     * "enchanted creature" or "it" would read differently.
      */
-    @SerialName("TriggeringEntity")
+    @SerialName("Entity")
     @Serializable
-    data object TriggeringEntity : CardSource {
-        override val description: String = "it"
+    data class Entity(val entity: EffectTarget.SingleEntity) : CardSource {
+        override val description: String = when (entity) {
+            EffectTarget.Self -> "this card"
+            EffectTarget.TriggeringEntity -> "it"
+            else -> entity.description
+        }
     }
 
     /**

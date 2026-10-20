@@ -706,7 +706,7 @@ internal class NonPermanentSpellResolver(
                     com.wingedsheep.sdk.scripting.effects.CompositeEffect(
                         listOf(
                             com.wingedsheep.sdk.scripting.effects.GatherCardsEffect(
-                                source = com.wingedsheep.sdk.scripting.effects.CardSource.Self,
+                                source = com.wingedsheep.sdk.scripting.effects.CardSource.Entity(com.wingedsheep.sdk.scripting.targets.EffectTarget.Self),
                                 storeAs = "rebound_recast",
                             ),
                             com.wingedsheep.sdk.scripting.effects.CastFromCollectionWithoutPayingCostEffect(

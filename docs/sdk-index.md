@@ -298,6 +298,7 @@ Families:
 - `CardSource.CreaturesThatConvokedSource` — Each creature that convoked the resolving spell (CR 702.51c), in the order they were tapped — **including any that has since left the battlefield**.
 - `CardSource.CreaturesThatCrewedOrSaddledSource` — The creatures that crewed (CR 702.122) or saddled (CR 702.171c) the effect's source this turn — the union of every creature tapped to pay a Crew or Saddle cost on it, read off the source's `CrewSad…
 - `CardSource.EnteredViaThisResolution` — Every permanent that was put onto the battlefield by *this* resolving spell or ability, read off the `EnteredViaAbilityComponent(sourceId == context.sourceId)` stamp left by a MoveCollectionEffect…
+- `CardSource.Entity(entity: EffectTarget.SingleEntity)` — A single entity named by an EffectTarget.SingleEntity reference, resolved at resolution time — the gatherable counterpart of that reference.
 - `CardSource.ExiledAsCost` — The cards exiled to pay the ability's *activation cost* — the exile counterpart of TappedAsCost, read from `EffectContext.exiledAsCostCards`, which the activation records at cost-payment time (CR 6…
 - `CardSource.FromLinkedExile(count: Int?)`
 - `CardSource.FromMultipleZones(zones: List<Zone>, player: Player, filter: GameObjectFilter)` — Cards from multiple zones matching an optional filter.
@@ -306,11 +307,9 @@ Families:
 - `CardSource.LastKnownCombatPairedWithSource` — The creatures that were blocking, or blocked by, the effect's source at the moment the source last left the battlefield (CR 509 combat pairing, captured as last-known information).
 - `CardSource.LastKnownEquipmentAttachedToSource` — The Equipment that was attached to the effect's source the moment a self-sacrifice / self-exile cost moved it off the battlefield (CR 113.7a last-known information).
 - `CardSource.SacrificedThisWay` — The cards sacrificed "this way" that are still in their owner's graveyard — read from the same `EffectContext.sacrificedPermanents` snapshots that com.wingedsheep.sdk.scripting.values.DynamicAmount…
-- `CardSource.Self` — The ability's own source card (com.wingedsheep.sdk.scripting.references sourceId).
 - `CardSource.SourceLinkedBattlefield(key: String)` — Still-current battlefield objects recorded by this source's original battlefield visit.
 - `CardSource.TappedAsCost` — Permanents that were tapped as part of the ability's activation cost.
 - `CardSource.TopOfLibrary(count: DynamicAmount, player: Player, isMill: Boolean, isScry: Boolean, isSurveil: Boolean)` — Top N cards of a player's library.
-- `CardSource.TriggeringEntity` — The entity that caused the trigger to fire (`EffectContext.triggeringEntityId`) — the gatherable counterpart of com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity.
 
 ## CastRestriction
 

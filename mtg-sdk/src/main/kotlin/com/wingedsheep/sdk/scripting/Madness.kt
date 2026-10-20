@@ -69,7 +69,7 @@ object Madness {
                 Effects.May(
                     CompositeEffect(
                         listOf(
-                            GatherCardsEffect(CardSource.Self, storeAs = CAST_COLLECTION),
+                            GatherCardsEffect(CardSource.Entity(EffectTarget.Self), storeAs = CAST_COLLECTION),
                             CastFromCollectionWithoutPayingCostEffect(
                                 from = CAST_COLLECTION,
                                 payManaCost = true,

@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Add Soulbond (CR 702.95, Avacyn Restored) — the keyword plus the two triggered abilities it
@@ -80,7 +81,7 @@ fun CardBuilder.soulbond() {
             trigger = Triggers.another(GameObjectFilter.Creature.youControl()).enters(),
             effect = Effects.May(
                 Effects.Pipeline {
-                    val partner = gather(CardSource.TriggeringEntity)
+                    val partner = gather(CardSource.Entity(EffectTarget.TriggeringEntity))
                     pairWithSource(partner)
                 }
             ),

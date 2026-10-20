@@ -20,7 +20,7 @@ import io.kotest.matchers.shouldNotBe
  *
  * Exercises (a) the [com.wingedsheep.sdk.scripting.CantBlock] combat static, and (b) the
  * ANY-binding becomes-blocked trigger feeding a gather → exile → grant pipeline over the new
- * [com.wingedsheep.sdk.scripting.effects.CardSource.TriggeringEntity] source, with an
+ * [com.wingedsheep.sdk.scripting.effects.CardSource.Entity(com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity)] source, with an
  * end-of-turn play-from-exile permission.
  */
 class NorinSwiftSurvivalistScenarioTest : FunSpec({

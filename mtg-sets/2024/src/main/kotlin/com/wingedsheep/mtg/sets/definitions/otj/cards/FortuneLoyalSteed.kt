@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Fortune, Loyal Steed
@@ -33,7 +34,7 @@ import com.wingedsheep.sdk.scripting.effects.CardSource
  * The delayed trigger is a linked-exile flicker (CR 603.6e / 707-style blink): it gathers the
  * creatures that saddled Fortune this turn ([CardSource.CreaturesThatCrewedOrSaddledSource], read off
  * Fortune's crew/saddle-contributors record) and lets the controller pick **up to one**; it then
- * exiles that chosen saddler and Fortune itself ([CardSource.Self]) linked to Fortune, and finally
+ * exiles that chosen saddler and Fortune itself ([CardSource.Entity]) linked to Fortune, and finally
  * returns everything from the linked exile to the battlefield under each card's owner's control
  * ([Patterns.Exile.returnLinkedExile] with `underOwnersControl = true`). A creature that already
  * left play is dropped by the saddler gather, and if Fortune itself has left, its linked exile is
@@ -74,7 +75,7 @@ val FortuneLoyalSteed = card("Fortune, Loyal Steed") {
                     prompt = "Choose up to one creature that saddled Fortune this turn to exile with it"
                 )
                 // Exile Fortune itself and the chosen saddler, linked to Fortune.
-                val self = gather(CardSource.Self)
+                val self = gather(CardSource.Entity(EffectTarget.Self))
                 exile(self, linkToSource = true)
                 exile(chosenSaddler, linkToSource = true)
                 // Return everything Fortune exiled, under each card's owner's control.

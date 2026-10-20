@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CastFromCollectionWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Miracle (CR 702.94) as a composable, content-agnostic primitive — the mirror of [Madness].
@@ -56,7 +57,7 @@ object Miracle {
         effect = Effects.May(
             CompositeEffect(
                 listOf(
-                    GatherCardsEffect(CardSource.Self, storeAs = CAST_COLLECTION),
+                    GatherCardsEffect(CardSource.Entity(EffectTarget.Self), storeAs = CAST_COLLECTION),
                     CastFromCollectionWithoutPayingCostEffect(
                         from = CAST_COLLECTION,
                         payManaCost = true,

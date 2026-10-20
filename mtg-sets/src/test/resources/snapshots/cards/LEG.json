@@ -2333,7 +2333,10 @@
                         "effects": [
                             {
                                 "type": "GatherCards",
-                                "source": "Self",
+                                "source": {
+                                    "type": "Entity",
+                                    "entity": "Self"
+                                },
                                 "storeAs": "gathered0"
                             },
                             {
@@ -6204,6 +6207,114 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Infinite Authority
+{
+    "name": "Infinite Authority",
+    "manaCost": "{W}{W}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhenever enchanted creature blocks or becomes blocked by a creature with toughness 3 or less, destroy the other creature at end of combat. At the beginning of the next end step, if that creature was destroyed this way, put a +1/+1 counter on the first creature.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Infinite Authority:1",
+                "trigger": {
+                    "type": "BlocksOrBecomesBlockedByEvent",
+                    "partnerFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "ToughnessAtMost",
+                                "max": 3
+                            }
+                        ]
+                    }
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "Entity",
+                                "entity": "TriggeringEntity"
+                            },
+                            "storeAs": "otherCreature"
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "Entity",
+                                "entity": "EnchantedCreature"
+                            },
+                            "storeAs": "firstCreature"
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "step": "END_COMBAT",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "otherCreature",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Destroy",
+                                        "storeMovedAs": "destroyedThisWay"
+                                    },
+                                    {
+                                        "type": "ConditionalOnCollection",
+                                        "collection": "destroyedThisWay",
+                                        "ifNotEmpty": {
+                                            "type": "CreateDelayedTrigger",
+                                            "step": "END",
+                                            "effect": {
+                                                "type": "AddCounters",
+                                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                                "count": 1,
+                                                "target": {
+                                                    "type": "PipelineTarget",
+                                                    "collectionName": "firstCreature"
+                                                }
+                                            },
+                                            "carryCollections": [
+                                                "firstCreature"
+                                            ]
+                                        }
+                                    }
+                                ]
+                            },
+                            "carryCollections": [
+                                "otherCreature",
+                                "firstCreature"
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever enchanted creature blocks or becomes blocked by a creature with toughness 3 or less, destroy the other creature at end of combat. At the beginning of the next end step, if that creature was destroyed this way, put a +1/+1 counter on the first creature."
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "RARE",
+        "artist": "Douglas Shuler",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dc60077f-d577-4a6c-a78f-697317024c40.jpg?1783948085"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

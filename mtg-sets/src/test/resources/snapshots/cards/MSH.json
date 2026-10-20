@@ -11484,7 +11484,10 @@
                         "effects": [
                             {
                                 "type": "GatherCards",
-                                "source": "TriggeringEntity",
+                                "source": {
+                                    "type": "Entity",
+                                    "entity": "TriggeringEntity"
+                                },
                                 "storeAs": "gathered0"
                             },
                             {

@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.scripting.effects.SuccessCriterion
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Sphinx's Approach — Reality Fracture #41
@@ -24,7 +25,7 @@ import com.wingedsheep.sdk.scripting.references.Player
  *   is four graveyard cards actually exiled (`CollectionNonEmpty(min = 4)`). With fewer than four
  *   other copies in the graveyard the option isn't a legal choice (CR 608.2d), so the gated-effect
  *   executor skips the prompt entirely and the spell goes to the graveyard as usual.
- * - "Exile this spell" happens *during* resolution: `CardSource.Self` gathers the resolving spell
+ * - "Exile this spell" happens *during* resolution: `CardSource.Entity(EffectTarget.Self)` gathers the resolving spell
  *   off the stack and the pipeline exiles it alongside the four graveyard copies. Once it has left
  *   the stack, the CR 608.2n "put it into its owner's graveyard" step finds nothing to move. The
  *   spell is on the stack, not in the graveyard, so it can never be one of the four.
@@ -59,7 +60,7 @@ val SphinxsApproach = card("Sphinx's Approach") {
                             name = "sphinxsApproachExiled"
                         )
                         exile(four)
-                        exile(gather(CardSource.Self))
+                        exile(gather(CardSource.Entity(EffectTarget.Self)))
                     },
                     then = Patterns.Library.searchLibrary(
                         filter = GameObjectFilter.Creature.withSubtype("Sphinx"),

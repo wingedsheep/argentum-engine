@@ -46,7 +46,7 @@ val CosmicHorror = card("Cosmic Horror") {
         effect = Effects.PayOrSuffer(
             cost = Costs.pay.Mana("{3}{B}{B}{B}"),
             suffer = Effects.Pipeline {
-                val self = gather(CardSource.Self)
+                val self = gather(CardSource.Entity(EffectTarget.Self))
                 val destroyed = moveTracked(
                     self,
                     CardDestination.ToZone(Zone.GRAVEYARD),

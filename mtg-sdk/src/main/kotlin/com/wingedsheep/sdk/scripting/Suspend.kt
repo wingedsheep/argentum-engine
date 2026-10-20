@@ -35,7 +35,7 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  *    triggers and treats exiled cards as owner-controlled), removes one time counter, and —
  *    when that empties the pile — grants haste and plays the card for free through the
  *    ordinary [CastFromCollectionWithoutPayingCostEffect] pipeline (which handles target / X
- *    selection). [CardSource.Self] feeds the card itself into that collection.
+ *    selection). [CardSource.Entity] feeds the card itself into that collection.
  *
  * The intervening-if [hasTimeCounter] gate means a stale marker can never re-cast: once the
  * counters are gone the trigger simply stops firing.
@@ -74,7 +74,7 @@ object Suspend {
                     then = Effects.May(
                         CompositeEffect(
                             listOf(
-                                GatherCardsEffect(CardSource.Self, storeAs = PLAY_COLLECTION),
+                                GatherCardsEffect(CardSource.Entity(EffectTarget.Self), storeAs = PLAY_COLLECTION),
                                 CastFromCollectionWithoutPayingCostEffect(from = PLAY_COLLECTION),
                             )
                         ),

@@ -203,7 +203,10 @@
                                     "effects": [
                                         {
                                             "type": "GatherCards",
-                                            "source": "Self",
+                                            "source": {
+                                                "type": "Entity",
+                                                "entity": "Self"
+                                            },
                                             "storeAs": "gathered0"
                                         },
                                         {

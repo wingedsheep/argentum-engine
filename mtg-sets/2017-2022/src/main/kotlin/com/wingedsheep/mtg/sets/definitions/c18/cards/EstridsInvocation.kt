@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CopyExceptions
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CardDestination
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 val EstridsInvocation = card("Estrid's Invocation") {
     manaCost = "{2}{U}"
@@ -21,7 +22,7 @@ val EstridsInvocation = card("Estrid's Invocation") {
             grantedTriggeredAbility {
                 trigger = Triggers.you.beginningOf(Step.UPKEEP)
                 effect = Effects.May(Effects.Pipeline {
-                    val self = gather(CardSource.Self)
+                    val self = gather(CardSource.Entity(EffectTarget.Self))
                     val exiled = moveTracked(self, CardDestination.ToZone(Zone.EXILE))
                     move(exiled, CardDestination.ToZone(Zone.BATTLEFIELD), underOwnersControl = true)
                 })

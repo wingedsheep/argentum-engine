@@ -152,8 +152,8 @@ class SourceZoneIdentityTest : FunSpec({
         current.resolveTarget(EffectTarget.TriggeringEntity, d.state) shouldBe null
         current.resolveTarget(EffectTarget.ControllerOfTriggeringEntity, d.state) shouldBe d.player1
         PredicateEvaluator(cardRegistry = null).amounts.evaluate(d.state, DynamicAmounts.triggeringPower(), current) shouldBe 7
-        for (cardSource in listOf(com.wingedsheep.sdk.scripting.effects.CardSource.Self,
-            com.wingedsheep.sdk.scripting.effects.CardSource.TriggeringEntity)) {
+        for (cardSource in listOf(com.wingedsheep.sdk.scripting.effects.CardSource.Entity(com.wingedsheep.sdk.scripting.targets.EffectTarget.Self),
+            com.wingedsheep.sdk.scripting.effects.CardSource.Entity(com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity))) {
             val gathered = d.services.effectExecutorRegistry.execute(d.state,
                 com.wingedsheep.sdk.scripting.effects.GatherCardsEffect(cardSource, "stale"),
                 current.copy(sourceId = source, objectReferences = current.objectReferences.copy(source = ref)))

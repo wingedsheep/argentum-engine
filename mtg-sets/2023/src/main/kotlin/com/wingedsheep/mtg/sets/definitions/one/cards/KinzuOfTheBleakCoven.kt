@@ -39,7 +39,7 @@ val KinzuOfTheBleakCoven = card("Kinzu of the Bleak Coven") {
             cost = Effects.PayLife(2),
             then = Effects.IfYouDo(
                 action = Effects.Pipeline {
-                    exile(gather(CardSource.TriggeringEntity))
+                    exile(gather(CardSource.Entity(EffectTarget.TriggeringEntity)))
                 },
                 then = Effects.CreateTokenCopyOfTarget(
                     EffectTarget.TriggeringEntity,

@@ -1083,7 +1083,7 @@ object Effects {
      * Airbend the permanent that fired the trigger — "you may airbend **that creature**" (Monk
      * Gyatso: "Whenever another creature you control becomes the target of a spell or ability, you
      * may airbend that creature"). The untargeted sibling of [Airbend]: the object comes from
-     * [CardSource.TriggeringEntity] instead of the chosen targets, and the same exile +
+     * [CardSource.Entity] instead of the chosen targets, and the same exile +
      * fixed-[cost]-recast-to-owner + "whenever you airbend" tail follows (CR 701.65a/b).
      *
      * The gathered entity is kept only while it is **still a permanent on the battlefield**:
@@ -1092,7 +1092,7 @@ object Effects {
      * and "whenever you airbend" does not fire.
      */
     fun AirbendTriggeringPermanent(cost: ManaCost = AIRBEND_COST): Effect = CompositeEffect(listOf(
-        GatherCardsEffect(source = CardSource.TriggeringEntity, storeAs = "airbendTriggering"),
+        GatherCardsEffect(source = CardSource.Entity(EffectTarget.TriggeringEntity), storeAs = "airbendTriggering"),
         FilterCollectionEffect(
             from = "airbendTriggering",
             filter = GameObjectFilter.Permanent.onBattlefield(),

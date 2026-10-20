@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Containment Construct — Kamigawa: Neon Dynasty #243 (canonical printing)
@@ -36,7 +37,7 @@ val ContainmentConstruct = card("Containment Construct") {
         trigger = Triggers.you.discards()
         effect = Effects.May(
             Effects.Pipeline {
-                val discarded = gather(CardSource.TriggeringEntity)
+                val discarded = gather(CardSource.Entity(EffectTarget.TriggeringEntity))
                 val exiled = moveTracked(
                     discarded,
                     CardDestination.ToZone(Zone.EXILE),

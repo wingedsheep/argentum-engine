@@ -5107,18 +5107,25 @@ their library into their graveyard. If it's a creature card, you create a 2/2 bl
 
 **Special `gather` sources** (component-backed, no zone scan):
 
-- `CardSource.Self` — the ability's own source card, in whatever zone it currently sits. For a spell that is the
-  resolving spell itself, on the stack: exiling it mid-resolution ("you may exile this spell and …") is
-  `exile(gather(CardSource.Self))`, and CR 608.2n's final "put it into its owner's graveyard" then finds nothing
-  on the stack to move. **Sphinx's Approach**: `May(IfYouDo(Pipeline { four = chooseExactly(4, gather(graveyard
-  named "Sphinx's Approach")); exile(four); exile(gather(CardSource.Self)) }, searchLibrary(Sphinx → BATTLEFIELD),
-  CollectionNonEmpty(four, min = 4)))` — unlike `spell { selfExile() }`, the exile only happens on the "yes" branch.
-- `CardSource.TriggeringEntity` — the entity that fired the trigger (`EffectContext.triggeringEntityId`),
-  the gatherable counterpart of `EffectTarget.TriggeringEntity`. Yields a single-element collection while
-  that entity still exists (empty once it has left), so a non-targeted "it" reference can feed a
-  gather → move → grant pipeline. Backs "whenever a creature you control becomes blocked, you may exile it.
-  You may play that card from exile this turn" (Norin, Swift Survivalist): `gather(TriggeringEntity)` →
-  `exile(...)` → `GrantMayPlayFromExile(EndOfTurn)`.
+- `CardSource.Entity(entity: EffectTarget.SingleEntity)` — the one entity a reference names at resolution,
+  as a single-element collection while it still exists (empty once it has ceased to). Gathering freezes *which
+  object* that is: later steps — and a delayed trigger that `carryCollections` the slot — keep naming it after
+  the reference would read differently (CR 603.7c).
+  - `Entity(EffectTarget.Self)` — the ability's own source card, in whatever zone it currently sits. For a spell
+    that is the resolving spell itself, on the stack: exiling it mid-resolution ("you may exile this spell and
+    …") is `exile(gather(CardSource.Entity(EffectTarget.Self)))`, and CR 608.2n's final "put it into its owner's
+    graveyard" then finds nothing on the stack to move. **Sphinx's Approach**: `May(IfYouDo(Pipeline { four =
+    chooseExactly(4, gather(graveyard named "Sphinx's Approach")); exile(four); exile(gather(Entity(Self))) },
+    searchLibrary(Sphinx → BATTLEFIELD), CollectionNonEmpty(four, min = 4)))` — unlike `spell { selfExile() }`,
+    the exile only happens on the "yes" branch.
+  - `Entity(EffectTarget.TriggeringEntity)` — "it", the entity that fired the trigger, so a non-targeted "it"
+    can feed a gather → move → grant pipeline. Norin, Swift Survivalist: `gather(Entity(TriggeringEntity))` →
+    `exile(...)` → `GrantMayPlayFromExile(EndOfTurn)`.
+  - `Entity(EffectTarget.EnchantedCreature)` — the Aura's host, or the host it last had if the Aura has left.
+    **Infinite Authority** gathers its partner and "the first creature" in the block trigger, carries both into an
+    end-of-combat delayed trigger that destroys the partner (`moveTracked(…, MoveType.Destroy)`), and only when
+    that destroyed something (`ifNotEmpty`) creates the end-step delayed trigger that counters the first creature
+    — a delayed trigger created by another, each carrying the collections it needs.
 - `CardSource.TappedAsCost` — the permanents tapped to pay the activation cost.
 - `CardSource.ExiledAsCost` — the cards exiled to pay the **activation cost**, the exile counterpart
   of `TappedAsCost`. Recorded at cost-payment time (CR 601.2h: the cost is paid on activation, long
@@ -5137,7 +5144,7 @@ their library into their graveyard. If it's a creature card, you create a 2/2 bl
   graveyard, the sacrifice counterpart of `ExiledAsCost`. Reads the same `EffectContext.sacrificedPermanents`
   snapshots `DynamicAmount.TotalPowerSacrificedThisWay` sums, so it covers a sacrifice cost (fixed,
   "sacrifice all", or the variable-count `Costs.SacrificePermanents`) and an earlier same-resolution
-  sacrifice effect alike. A self-sacrifice cost's source isn't among them — name it with `CardSource.Self`
+  sacrifice effect alike. A self-sacrifice cost's source isn't among them — name it with `CardSource.Entity(EffectTarget.Self)`
   / `EffectTarget.Self`. Tokens (ceased to exist) and cards that have left the graveyard since (new objects,
   CR 400.7) aren't gathered. **Sword of the Ages**: "{T}, Sacrifice this artifact and any number of creatures
   you control: … then exile this artifact and those creature cards" — `MoveToZone(Self, EXILE, fromZone =
@@ -5181,7 +5188,7 @@ their library into their graveyard. If it's a creature card, you create a 2/2 bl
   follows the source off the battlefield for the rest of the turn and is wiped when the card
   re-enters as a new object (CR 400.7). Backs "exile it and up to one creature that saddled it this
   turn, then return those cards" (Fortune, Loyal Steed): `gather(CreaturesThatCrewedOrSaddledSource)`
-  → `chooseUpTo(1)` → exile linked to the Mount alongside `CardSource.Self` →
+  → `chooseUpTo(1)` → exile linked to the Mount alongside `CardSource.Entity(EffectTarget.Self)` →
   `gather(FromLinkedExile())` → return under owners' control. And "exile each creature that crewed
   it this turn, return them tapped at the next end step" (Golden Argosy): gather → `moveTracked` to
   exile → `CreateDelayedTrigger(END)` carrying the moved collection → `move(...,
@@ -8221,7 +8228,7 @@ trigger N times (mirrors how `Triggers.you.draws()` handles multi-card draws). T
 one aggregate `CardsDiscardedEvent` per resolution and fans it out in the detector.
 `Player.TriggeringPlayer` resolves to the discarding player inside the effect, and **each firing
 binds its own discarded card** as the triggering entity — so `EffectTarget.TriggeringEntity` /
-`CardSource.TriggeringEntity` is "it", the card the discard put into the graveyard (CR 400.7e: a
+`CardSource.Entity(EffectTarget.TriggeringEntity)` is "it", the card the discard put into the graveyard (CR 400.7e: a
 trigger can find the new object a card became in a public zone). Tinybones, Bauble Burglar's
 "exile **it** from their graveyard with a stash counter on it" =
 `Effects.Exile(EffectTarget.TriggeringEntity, fromZone = Zone.GRAVEYARD, addCounterType = CounterType.STASH)`.
@@ -13426,7 +13433,7 @@ composite abilities).
     `Triggers.another(GameObjectFilter.Creature.youControl()).enters()` (which already carries the "another creature **you control**" clause) with
     `optional = true` for a plain yes/no, `triggerRestriction = Conditions.SourceIsUnpaired` for the rest of the
     intervening-if (a creature that just entered can never already be paired), and a
-    `Pipeline { gather(CardSource.TriggeringEntity); pairWithSource(…) }` body.
+    `Pipeline { gather(CardSource.Entity(EffectTarget.TriggeringEntity)); pairWithSource(…) }` body.
   The **payoff** clause is an ordinary static ability whose `GroupFilter` is `GroupFilter.soulbondPair()`
   (`Scope.SoulbondPair`) — "both creatures" / "each of those creatures". That scope resolves to `{source, partner}` while
   paired and to the **empty set** while unpaired, so "as long as this creature is paired with another creature" is
@@ -13748,7 +13755,7 @@ composite abilities).
   still see it. As it lands in exile it is stamped `MadnessExiledComponent` plus a
   `PlayWithFixedAlternativeManaCostComponent` carrying the madness cost, and `ZoneTransitionService.moveToZone` emits
   `CardExiledWithMadnessEvent`; `TriggerDetector.detectMadnessCastTriggers` turns that into `Madness.castAbility`, an
-  **owner-controlled** synthesized trigger (`activeZone = EXILE`) composing `Effects.May(GatherCardsEffect(CardSource.Self)
+  **owner-controlled** synthesized trigger (`activeZone = EXILE`) composing `Effects.May(GatherCardsEffect(CardSource.Entity(EffectTarget.Self))
   → CastFromCollectionWithoutPayingCostEffect(payManaCost = true))` with a trailing
   `MoveToZoneEffect(Self, GRAVEYARD, fromZone = EXILE)`. That `fromZone` gate is the whole "if that player doesn't"
   clause: it is a no-op when the card is on the stack (cast) and puts it in the graveyard when it isn't (declined, or
@@ -13773,7 +13780,7 @@ composite abilities).
   and when the last is gone its owner **may play it for free**, with **haste** if it's a creature. The lifecycle is
   **component-driven**, not definition-driven: the engine grants `Suspend.countdownAbility` (a synthesized
   `activeZone = EXILE` upkeep trigger — remove a counter, then a `Effects.May` that gathers the card via
-  `CardSource.Self` and casts it with `CastFromCollectionWithoutPayingCostEffect`) to **any** exiled card carrying the
+  `CardSource.Entity(EffectTarget.Self)` and casts it with `CastFromCollectionWithoutPayingCostEffect`) to **any** exiled card carrying the
   `SuspendedComponent` marker. So an arbitrary card with no printed suspend can be suspended.
   - **Putting a card into suspend** is a chain you compose; `Effects.Suspend(target, timeCounters)` is the reusable
     two-step tail (`AddCounters(TIME, n)` + `GrantSuspendEffect` — the latter sets the marker **and** arms a dormant
@@ -18483,7 +18490,7 @@ Card authors rarely reference these directly; they are created/updated by the ma
   is stripped when the card leaves exile (`StackResolver`), so a recast Airbended permanent doesn't carry a stale cost.
 - **Airbend "that creature"** (untargeted — Monk Gyatso: "Whenever another creature you control becomes the target of a
   spell or ability, you may airbend that creature.") — `Effects.AirbendTriggeringPermanent(cost = {2})`. The same exile +
-  owner-recast + "whenever you airbend" tail as `Airbend`, gathered from `CardSource.TriggeringEntity` and filtered to
+  owner-recast + "whenever you airbend" tail as `Airbend`, gathered from `CardSource.Entity(EffectTarget.TriggeringEntity)` and filtered to
   `GameObjectFilter.Permanent.onBattlefield()` first: `TriggeringEntity` follows the card into any zone, so a creature
   bounced or killed in response is a new object (CR 400.7) and nothing is airbent (no bend event either).
 - **Airbend a spell** (the stack branch — Aang, Swift Savior: "airbend up to one other target creature **or spell**").
