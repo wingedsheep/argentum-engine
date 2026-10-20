@@ -254,8 +254,9 @@ class PredicateEvaluator(
      * [com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent.lastKnownSourceSnapshot],
      * which does exactly that). The second, the `firstEachTurn` gate of
      * [com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost], reads snapshots built by
-     * `activationSourceSnapshot`, which populates every field this function answers directly; a
-     * third caller must do one or the other.
+     * `activationSourceSnapshot`, which populates every field this function answers directly except
+     * the combat and tap status (its filters never ask about those — the snapshot is a per-turn
+     * identity, so it must not vary with tapping); a third caller must do one or the other.
      */
     fun matchesSnapshot(
         state: GameState,
