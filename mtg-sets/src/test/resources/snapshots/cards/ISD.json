@@ -7044,6 +7044,47 @@
     ]
 }
 
+// Unruly Mob
+{
+    "name": "Unruly Mob",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human",
+    "oracleText": "Whenever another creature you control dies, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Unruly Mob:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "artist": "Ryan Pancoast",
+        "flavorText": "\"Who says werewolves are the only ones who can hunt as a pack?\"\n—Kolman, elder of Gatstaf",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/491c6e40-151a-4efd-980c-e6b6a1057c58.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Urgent Exorcism
 {
     "name": "Urgent Exorcism",

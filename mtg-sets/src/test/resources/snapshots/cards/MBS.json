@@ -840,6 +840,41 @@
     "colorIdentityOverride": []
 }
 
+// Vivisection
+{
+    "name": "Vivisection",
+    "manaCost": "{3}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, sacrifice a creature.\nDraw three cards.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 3
+            }
+        },
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "artist": "Anthony Francisco",
+        "flavorText": "Phyrexians research with the grace of surgeons and the finesse of butchers.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/684a3631-f2d6-4a64-a04a-893f452e3a60.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // White Sun's Zenith
 {
     "name": "White Sun's Zenith",
