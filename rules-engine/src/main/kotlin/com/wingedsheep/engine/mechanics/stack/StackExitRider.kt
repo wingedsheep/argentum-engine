@@ -46,9 +46,11 @@ object StackExitRider {
         val name = state.getEntity(spellId)?.get<CardComponent>()?.name ?: "Unknown"
         var newState = com.wingedsheep.engine.mechanics.CastCharacteristics.end(state.removeFromStack(spellId), spellId)
         newState = newState.updateEntity(spellId) { c ->
+            // The rider is spent once the card is off the stack, so a later cast from exile starts clean.
             c.without<SpellOnStackComponent>()
                 .without<TextReplacementComponent>()
                 .without<TargetsComponent>()
+                .without<AfterResolveDestinationComponent>()
         }
         newState = newState.addToZone(ZoneKey(ownerId, zone), spellId)
         return newState to ZoneChangeEvent(
