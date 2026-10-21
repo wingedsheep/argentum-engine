@@ -53,8 +53,8 @@ fun CardBuilder.nightbound() {
 
 /**
  * "If it's neither day nor night, it becomes day as this permanent enters." — the as-enters clause
- * every Innistrad: Midnight Hunt day/night payoff without daybound prints (The Celestus, Firmament
- * Sage), so the game has a designation for its "whenever day becomes night or night becomes day"
+ * every Innistrad: Midnight Hunt day/night payoff without daybound prints (Firmament Sage, Sunstreak
+ * Phoenix), so the game has a designation for its "whenever day becomes night or night becomes day"
  * trigger ([Triggers.dayBecomesNightOrNightBecomesDay]) to watch.
  *
  * A replacement-style "as enters" ability (an [OnEnterRun]), not an enters trigger: it happens as the

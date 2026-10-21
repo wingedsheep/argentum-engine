@@ -9029,8 +9029,8 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   `com.wingedsheep.sdk.dsl.becomesDayAsEntersIfNeither`) — "If it's neither day nor night, it becomes
   day as this permanent enters." An `OnEnterRun(Effects.If(Not(Any(IsDay, IsNight)), BecomeDay))`
   replacement, so it runs on every entry path (cast, effect move) before anything can respond, and —
-  being the first designation — never fires the permanent's own change trigger. Firmament Sage, The
-  Celestus.
+  being the first designation — never fires the permanent's own change trigger. Firmament Sage,
+  Sunstreak Phoenix.
 
 ### Cases (CR 719)
 
