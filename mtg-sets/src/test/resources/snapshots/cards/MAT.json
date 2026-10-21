@@ -1,3 +1,88 @@
+// Animist's Might
+{
+    "name": "Animist's Might",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "This spell costs {2} less to cast if it targets a legendary creature you control.\nTarget creature you control deals damage equal to twice its power to target creature or planeswalker you don't control.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Multiply",
+                "amount": {
+                    "type": "EntityProperty",
+                    "entity": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "numericProperty": "Power"
+                },
+                "multiplier": 2
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t1"
+            },
+            "damageSource": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker ctrl:opponent"
+                },
+                "id": "t1"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfAnyTargetMatches",
+                        "amount": 2,
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "IsLegendary"
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "rarity": "UNCOMMON",
+        "artist": "John Tedrick",
+        "flavorText": "The creature was unlike any Nissa had seen, but she dealt with it as she would any threat.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/5/8525ae50-7438-492a-98ae-53f0ffeaab51.jpg?1783916520",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "The cost-reduction ability of Animist's Might doesn't change its mana cost or mana value, only the total cost you pay. Specifically, the mana value of Animist's Might is always 3."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Arni Metalbrow
 {
     "name": "Arni Metalbrow",
@@ -317,6 +402,197 @@
     ]
 }
 
+// Calix, Guided by Fate
+{
+    "name": "Calix, Guided by Fate",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Legendary Enchantment Creature — Human Druid",
+    "oracleText": "Constellation — Whenever Calix or another enchantment you control enters, put a +1/+1 counter on target creature.\nWhenever Calix or an enchanted creature you control deals combat damage to a player, you may create a token that's a copy of a nonlegendary enchantment you control. Do this only once each turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Calix, Guided by Fate:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Constellation — Whenever Calix or another enchantment you control enters, put a +1/+1 counter on target creature."
+            },
+            {
+                "id": "Calix, Guided by Fate:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    },
+                    "sourceFilter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "CreateTokenCopyOfChosenPermanent",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsEnchantment",
+                                "IsNonlegendary"
+                            ]
+                        }
+                    }
+                },
+                "triggerRestriction": {
+                    "type": "EntityMatches",
+                    "entity": "TriggeringEntity",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "StateOr",
+                                "predicates": [
+                                    "IsSource",
+                                    "IsEnchanted"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "effectOncePerTurn": true,
+                "descriptionOverride": "Whenever Calix or an enchanted creature you control deals combat damage to a player, you may create a token that's a copy of a nonlegendary enchantment you control. Do this only once each turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "MYTHIC",
+        "artist": "PINDURSKI",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a707ab3-b9b5-422a-8b0f-e963d3ad6606.jpg?1783916516",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "Calix may be the target of its own constellation ability. This includes when Calix itself enters the battlefield."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "Calix's last ability doesn't target any permanent. You choose which nonlegendary enchantment you control you're creating a token copy of, if any, as the ability resolves."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "Once you choose to create a token using the last ability, that ability won't trigger again that turn. Additional instances of the ability that are already on the stack will resolve but will have no effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
+// Campus Renovation
+{
+    "name": "Campus Renovation",
+    "manaCost": "{3}{R}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return up to one target artifact or enchantment card from your graveyard to the battlefield. Exile the top two cards of your library. Until the end of your next turn, you may play those cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeAs": "impulseExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "impulseExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "impulseExiled",
+                            "expiry": {
+                                "type": "UntilControllerStep",
+                                "step": "CLEANUP",
+                                "includeCurrentTurn": false
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "artifact|enchantment own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "UNCOMMON",
+        "artist": "Robin Olausson",
+        "flavorText": "Reconstructing the past is Lorehold's specialty.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d925d13-fcd6-417b-b2b2-bbdd114aae78.jpg?1783916518"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Coppercoat Vanguard
 {
     "name": "Coppercoat Vanguard",
@@ -359,6 +635,175 @@
         "imageUri": "https://cards.scryfall.io/normal/front/d/7/d786f05d-78a2-41b6-a185-111e8c1b216b.jpg?1783916531"
     },
     "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Cosmic Rebirth
+{
+    "name": "Cosmic Rebirth",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Choose target permanent card in your graveyard. If it has mana value 3 or less, you may put it onto the battlefield. If you don't put it onto the battlefield, put it into your hand.\nYou gain 3 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "numericProperty": "ManaValue"
+                            },
+                            "operator": "LTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.MayDecide",
+                            "prompt": "Put the card onto the battlefield? (If you don't, put it into your hand.)"
+                        },
+                        "then": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Battlefield",
+                            "fromZone": "Graveyard"
+                        },
+                        "otherwise": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Hand",
+                            "fromZone": "Graveyard"
+                        }
+                    },
+                    "otherwise": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand",
+                        "fromZone": "Graveyard"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "permanent own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "UNCOMMON",
+        "artist": "Marta Nael",
+        "flavorText": "\"When all the stories find their ends, a new one shall begin.\"\n—The Endsaga",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7fcb225c-d18f-4b84-b2fc-91ed84ec30aa.jpg?1783916516",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "You put the card into your hand if you didn't put it onto the battlefield because you chose not to or because its mana value was 4 or greater."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
+// Danitha, New Benalia's Light
+{
+    "name": "Danitha, New Benalia's Light",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Legendary Creature — Human Knight",
+    "oracleText": "Vigilance, trample, lifelink\nOnce during each of your turns, you may cast an Aura or Equipment spell from your graveyard.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE",
+        "TRAMPLE",
+        "LIFELINK"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MayCastFromGraveyard",
+                "filter": "Aura|Equipment",
+                "duringYourTurnOnly": true,
+                "oncePerTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "RARE",
+        "artist": "Randy Vargas",
+        "flavorText": "Danitha had spent her whole life preparing to lead House Capashen, but she mourned that the opportunity had come so soon.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/039e43f2-cf3b-4c60-ac55-d2aafb20eb34.jpg?1783916517",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "You must follow the normal timing permissions and restrictions of the spell you cast from your graveyard."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "You must pay the costs to cast that spell. If it has an alternative cost, you may cast it for that cost instead."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "Once you begin to cast the spell, losing control of Danitha won't affect the spell."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "If you cast a spell from your graveyard using another permission, Danitha's effect doesn't apply. You can cast another Aura or Equipment spell from your graveyard."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "If you cast one Aura or Equipment spell from your graveyard and then have a new Danitha come under your control in the same turn, you may cast another Aura or Equipment spell from your graveyard that turn."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "If an Aura or Equipment card is put into your graveyard during your main phase and the stack is empty, you have a chance to cast it before any player may attempt to remove that card from your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
         "WHITE"
     ]
 }
@@ -716,6 +1161,59 @@
     ]
 }
 
+// Gold-Forged Thopteryx
+{
+    "name": "Gold-Forged Thopteryx",
+    "manaCost": "{W}{U}",
+    "typeLine": "Artifact Creature — Dinosaur Thopter",
+    "oracleText": "Flying, lifelink\nEach legendary permanent you control has ward {2}. (Whenever it becomes the target of a spell or ability an opponent controls, counter it unless that player pays {2}.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "LIFELINK"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantWard",
+                "cost": {
+                    "type": "WardCost.Mana",
+                    "manaCost": "{2}"
+                },
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsPermanent",
+                            "IsLegendary"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "UNCOMMON",
+        "artist": "Titus Lunter",
+        "flavorText": "Worlds apart, Huatli built a device Saheeli would have been proud of.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/6917d51b-eb61-4e7e-8336-8b4adf8d1e39.jpg?1783916516",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "Once a ward ability has triggered, causing that legendary permanent to lose ward by removing Gold-Forged Thopteryx won't affect that ability. The appropriate player will still have to pay {2} or see their spell or ability countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Harnessed Snubhorn
 {
     "name": "Harnessed Snubhorn",
@@ -770,6 +1268,274 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Jirina, Dauntless General
+{
+    "name": "Jirina, Dauntless General",
+    "manaCost": "{W}{B}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "When Jirina enters, exile target player's graveyard.\nSacrifice Jirina: Humans you control gain hexproof and indestructible until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jirina, Dauntless General:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Jirina, Dauntless General:2",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent Human ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HEXPROOF",
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "INDESTRUCTIBLE",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "rarity": "RARE",
+        "artist": "Cristi Balanescu",
+        "flavorText": "\"Our strength lies not in our walls, but in our people.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c0c3860-1dab-4897-8f36-f9be263bba03.jpg?1783916517",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "The set of creatures affected by Jirina's last ability is determined as the ability resolves. Humans you begin to control later in the turn, non-Human creatures you control that become Human, and noncreature permanents that become Human creatures later in the turn won't gain hexproof and indestructible."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Jolrael, Voice of Zhalfir
+{
+    "name": "Jolrael, Voice of Zhalfir",
+    "manaCost": "{2}{G}{U}",
+    "typeLine": "Legendary Creature — Human Druid",
+    "oracleText": "At the beginning of combat on your turn, up to one target land you control becomes an X/X green and blue Bird creature with flying and haste until end of turn, where X is the number of cards in your hand. It's still a land.\nWhenever a land creature you control deals combat damage to a player, draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jolrael, Voice of Zhalfir:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "BecomeCreature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "power": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    },
+                    "toughness": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    },
+                    "keywords": [
+                        "FLYING",
+                        "HASTE"
+                    ],
+                    "creatureTypes": [
+                        "Bird"
+                    ],
+                    "colors": [
+                        "GREEN",
+                        "BLUE"
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "land ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, up to one target land you control becomes an X/X green and blue Bird creature with flying and haste until end of turn, where X is the number of cards in your hand. It's still a land."
+            },
+            {
+                "id": "Jolrael, Voice of Zhalfir:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    },
+                    "sourceFilter": "land creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "RARE",
+        "artist": "Lorenzo Mastroianni",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fcb93216-885c-4ec5-8b88-6cd51f593c8b.jpg?1783916516",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "Use the number of cards in your hand as Jolrael's first ability resolves to determine the value of X. Once the ability resolves, that value is locked in. The power and toughness of the land creature won't change if the number of cards in your hand changes later in the turn."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "Jolrael's last ability applies to any land creature you control that deals combat damage to a player, not only lands that become land creatures because of Jolrael's first ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
+// Karn, Legacy Reforged
+{
+    "name": "Karn, Legacy Reforged",
+    "manaCost": "{5}",
+    "typeLine": "Legendary Artifact Creature — Golem",
+    "oracleText": "Karn's power and toughness are each equal to the greatest mana value among artifacts you control.\nAt the beginning of your upkeep, add {C} for each artifact you control. This mana can't be spent to cast nonartifact spells. Until end of turn, you don't lose this mana as steps and phases end.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "artifact",
+                "aggregation": "MAX",
+                "property": "MANA_VALUE"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "artifact",
+                "aggregation": "MAX",
+                "property": "MANA_VALUE"
+            }
+        }
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Karn, Legacy Reforged:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "artifact"
+                    },
+                    "restriction": {
+                        "type": "CannotCastSpellsOtherThan",
+                        "cardTypes": [
+                            "ARTIFACT"
+                        ]
+                    },
+                    "expiry": "KEPT_UNTIL_END_OF_TURN"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "MYTHIC",
+        "artist": "Grzegorz Rutkowski",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/4219b5ea-a252-4d76-a60a-9674340e8ed3.jpg?1783916509"
+    },
+    "colorIdentityOverride": []
 }
 
 // Kolaghan Warmonger
@@ -852,6 +1618,70 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Leyline Immersion
+{
+    "name": "Leyline Immersion",
+    "manaCost": "{3}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant legendary creature\nEnchanted creature has ward {2} and \"{T}: Add five mana in any combination of colors. Spend this mana only to cast spells.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantWard",
+                "cost": {
+                    "type": "WardCost.Mana",
+                    "manaCost": "{2}"
+                }
+            },
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Leyline Immersion:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddDynamicMana",
+                        "amountSource": {
+                            "type": "Fixed",
+                            "amount": 5
+                        },
+                        "allowedColors": [
+                            "WHITE",
+                            "BLUE",
+                            "BLACK",
+                            "RED",
+                            "GREEN"
+                        ],
+                        "restriction": "SpellsOnly"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        "IsLegendary"
+                    ]
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "RARE",
+        "artist": "Wisnu Tan",
+        "flavorText": "When Nissa tapped into Zhalfir's leylines, she was shocked to feel not a piece of Dominaria, but a plane all its own.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/197f5adc-e14b-4c84-896f-ef5f01f7ff57.jpg?1783916521"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -941,6 +1771,337 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Nahiri's Resolve
+{
+    "name": "Nahiri's Resolve",
+    "manaCost": "{3}{R}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creatures you control get +1/+0 and have haste.\nAt the beginning of your end step, exile any number of nontoken artifacts and/or creatures you control. Return those cards to the battlefield under their owner's control at the beginning of your next upkeep.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nahiri's Resolve:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "artifact|creature nontoken",
+                                "player": "You"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "Exile any number of nontoken artifacts and/or creatures you control (they return at the beginning of your next upkeep)",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "storeMovedAs": "nahirisResolveExiled"
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "step": "UPKEEP",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "nahirisResolveExiled",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        },
+                                        "underOwnersControl": true
+                                    }
+                                ]
+                            },
+                            "fireOnPlayer": {
+                                "type": "PlayerRef",
+                                "player": "You"
+                            },
+                            "carryCollections": [
+                                "nahirisResolveExiled"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "rarity": "RARE",
+        "artist": "Alexey Kruglov",
+        "flavorText": "\"Zendikar is *my* home!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/df9acf30-b4f4-4e99-9763-a3055e91fefb.jpg?1783916513"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Nahiri, Forged in Fury
+{
+    "name": "Nahiri, Forged in Fury",
+    "manaCost": "{4}{R}{W}",
+    "typeLine": "Legendary Creature — Kor Artificer",
+    "oracleText": "Affinity for Equipment (This spell costs {1} less to cast for each Equipment you control.)\nWhenever an equipped creature you control attacks, exile the top card of your library. You may play that card this turn. You may cast Equipment spells this way without paying their mana costs.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "AFFINITY"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "AffinityForSubtype",
+            "forSubtype": "Equipment"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nahiri, Forged in Fury:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsEquipped"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "gathered0"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "Equipment",
+                            "storeMatching": "matching3"
+                        },
+                        {
+                            "type": "GrantPlayWithoutPayingCost",
+                            "from": "matching3"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "MYTHIC",
+        "artist": "Marta Nael",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/90eb0859-d24e-4703-8930-1cd4ac1fb3b6.jpg?1783916513",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "Nahiri's last ability will trigger once for each equipped creature you control that attacks, no matter how many Equipment are attached to any of them."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "You may play the card exiled with Nahiri's ability even if Nahiri or the equipped creature leaves the battlefield or you lose control of them."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "Playing the exiled card follows the normal rules for playing that card. Unless you're casting an Equipment spell this way, you must pay the spell's costs, and you must follow all applicable timing rules."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "Unless an effect allows you to play additional lands that turn, you can play a land card exiled with Nahiri only if you haven't played a land yet that turn."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "If you don't play the card, it will remain exiled."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Nissa, Resurgent Animist
+{
+    "name": "Nissa, Resurgent Animist",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Elf Scout",
+    "oracleText": "Landfall — Whenever a land you control enters, add one mana of any color. Then if this is the second time this ability has resolved this turn, reveal cards from the top of your library until you reveal an Elf or Elemental card. Put that card into your hand and the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nissa, Resurgent Animist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        "IncrementAbilityResolutionCount",
+                        "AddManaOfChoice",
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": "AbilityResolutionsThisTurn"
+                                    },
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherUntilMatch",
+                                        "filter": "Elf|Elemental",
+                                        "storeMatch": "ignored",
+                                        "storeRevealed": "revealed"
+                                    },
+                                    {
+                                        "type": "RevealCollection",
+                                        "from": "revealed"
+                                    },
+                                    {
+                                        "type": "FilterCollection",
+                                        "from": "revealed",
+                                        "filter": "Elf|Elemental",
+                                        "storeMatching": "matchedToHand",
+                                        "storeNonMatching": "rest"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "matchedToHand",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "rest",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Library",
+                                            "placement": "Bottom"
+                                        },
+                                        "order": "Random"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Landfall — Whenever a land you control enters, add one mana of any color. Then if this is the second time this ability has resolved this turn, reveal cards from the top of your library until you reveal an Elf or Elemental card. Put that card into your hand and the rest on the bottom of your library in a random order."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "MYTHIC",
+        "artist": "Tuan Duong Chu",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/248c76d3-b5cb-4582-be17-7cd1d0cb0f58.jpg?1783916520",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "Nissa's landfall ability isn't a mana ability, even though it causes you to add mana. It uses the stack and can be responded to."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "Each time the landfall ability resolves in a turn after the second time, you'll just add mana."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "If you reveal your entire library and don't reveal an Elf or Elemental card, you'll put all revealed cards back in a random order. This uses the same physical action as shuffling, although it isn't technically a \"shuffle.\""
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -1402,6 +2563,58 @@
     ]
 }
 
+// Sigarda, Font of Blessings
+{
+    "name": "Sigarda, Font of Blessings",
+    "manaCost": "{2}{G}{W}",
+    "typeLine": "Legendary Creature — Angel",
+    "oracleText": "Flying\nOther permanents you control have hexproof.\nYou may look at the top card of your library any time.\nYou may cast Angel spells and Human spells from the top of your library.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HEXPROOF",
+                "filter": {
+                    "baseFilter": "permanent ctrl:you",
+                    "excludeSelf": true
+                }
+            },
+            "LookAtTopOfLibrary",
+            {
+                "type": "CastSpellTypesFromTopOfLibrary",
+                "filter": "Angel|Human"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "RARE",
+        "artist": "Justyna Dura",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cba71725-d6df-44d7-a93b-934573759711.jpg?1783916509",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "Sigarda lets you look at the top card of your library whenever you want (with one restriction—see below), even if you don't have priority. This action doesn't use the stack. Knowing what that card is becomes part of the information you have access to, just like you can look at the cards in your hand."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "If the top card of your library changes while you're casting a spell, playing a land, or activating an ability, you can't look at the new top card until you finish doing so. This means that if you cast the top card of your library, you can't look at the next one until you're done paying for that spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Spark Rupture
 {
     "name": "Spark Rupture",
@@ -1691,6 +2904,123 @@
         "BLACK",
         "RED",
         "GREEN"
+    ]
+}
+
+// The Kenriths' Royal Funeral
+{
+    "name": "The Kenriths' Royal Funeral",
+    "manaCost": "{2}{W}{B}",
+    "typeLine": "Legendary Enchantment",
+    "oracleText": "When The Kenriths' Royal Funeral enters, exile up to two target legendary creature cards from your graveyard. You draw X cards and you lose X life, where X is the greatest mana value among cards exiled this way.\nLegendary spells you cast cost {1} less to cast for each card exiled with The Kenriths' Royal Funeral.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "The Kenriths' Royal Funeral:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true,
+                            "storeMovedAs": "moved1"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "moved1",
+                            "collectionFilter": "GreatestManaValue",
+                            "storeMatching": "matching2"
+                        },
+                        {
+                            "type": "StoreNumber",
+                            "name": "number3",
+                            "amount": {
+                                "type": "StoredCardManaValue",
+                                "collectionName": "matching2"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "VariableReference",
+                                "variableName": "number3"
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "VariableReference",
+                                "variableName": "number3"
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "IsLegendary"
+                            ],
+                            "controllerPredicate": "OwnedByYou"
+                        },
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsLegendary"
+                        ]
+                    }
+                },
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": {
+                            "type": "ContextProperty",
+                            "key": "LINKED_EXILE_CARD_COUNT"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "RARE",
+        "artist": "Manuel Castañón",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/4569fb73-3555-4eb8-933a-130770dd56d1.jpg?1783916514"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 
