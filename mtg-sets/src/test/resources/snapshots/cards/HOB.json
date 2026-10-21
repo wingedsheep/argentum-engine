@@ -1577,7 +1577,7 @@
                         "type": "MayCastFromGraveyard",
                         "filter": "artifact|instant|sorcery",
                         "oncePerTurn": true,
-                        "exileInsteadOfGraveyard": true
+                        "exileCastThisWay": "INSTEAD_OF_GRAVEYARD"
                     },
                     "target": "Self"
                 },

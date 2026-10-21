@@ -226,6 +226,11 @@ data class PlayWithFixedAlternativeManaCostComponent(
  *   applied to a self-cast spell as it resolves rather than to a targeted spell. Used by Lilah,
  *   Undefeated Slickshot: "exile that spell instead of putting it into your graveyard as it
  *   resolves. If you do, it becomes plotted." Only applied when the card actually lands in exile.
+ * @param everyStackExit When true, the rider covers *every* way the spell leaves the stack, not just
+ *   the graveyard-bound ones — a bounce to hand or a put-into-library is sent to [destination] too.
+ *   That is the "instead of putting it anywhere else any time it would leave the stack" clause of
+ *   aftermath (CR 702.127a) and a granted jump-start (CR 702.133a); read through
+ *   [com.wingedsheep.engine.mechanics.stack.StackExitRider].
  */
 @Serializable
 data class AfterResolveDestinationComponent(
@@ -239,7 +244,8 @@ data class AfterResolveDestinationComponent(
      */
     val onlyIfResolved: Boolean = false,
     val linkedSourceId: EntityId? = null,
-    val makePlotted: Boolean = false
+    val makePlotted: Boolean = false,
+    val everyStackExit: Boolean = false
 ) : Component {
     /** The zone [destination] names — the two members differ in placement, not only in zone. */
     val zone: com.wingedsheep.sdk.core.Zone

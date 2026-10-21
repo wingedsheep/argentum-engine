@@ -29,7 +29,7 @@ import io.kotest.matchers.shouldNotBe
  * Pins the front face's cast trigger (1 damage to target opponent, add {R}), its "three or more
  * instant and/or sorcery spells this turn" transform gate, chapter I's "target opponent and each
  * creature they control", and — the new capability — chapter III's player-anchored
- * `MayCastFromGraveyard(fromAnyGraveyard = true, exileInsteadOfGraveyard = true)`: instants and
+ * `MayCastFromGraveyard(fromAnyGraveyard = true, exileCastThisWay = INSTEAD_OF_GRAVEYARD)`: instants and
  * sorceries castable out of *any* graveyard until end of turn, exiled instead of returning to their
  * owner's graveyard, still usable after the Saga has exiled itself and come back as Urabrask.
  */

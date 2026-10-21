@@ -2522,6 +2522,85 @@
     ]
 }
 
+// Niv-Mizzet, Supreme
+{
+    "name": "Niv-Mizzet, Supreme",
+    "manaCost": "{W}{U}{B}{R}{G}",
+    "typeLine": "Legendary Creature — Dragon Avatar",
+    "oracleText": "Flying, hexproof from monocolored\nEach instant and sorcery card in your graveyard that's exactly two colors has jump-start. (You may cast that card from your graveyard by discarding a card in addition to paying its other costs. Then exile it.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Hexproof",
+            "scope": "ProtectionScope.Monocolored"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MayCastFromGraveyard",
+                "filter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                "IsInstant",
+                                "IsSorcery"
+                            ]
+                        },
+                        {
+                            "type": "HasExactlyColors",
+                            "count": 2
+                        }
+                    ]
+                },
+                "exileCastThisWay": "ON_ANY_STACK_EXIT",
+                "additionalCost": {
+                    "type": "AdditionalAtom",
+                    "atom": "AtomDiscard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "rarity": "RARE",
+        "artist": "Joshua Raphael",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/da1ff886-d3c8-43e5-8bf0-ba4f0b259781.jpg?1783916512",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "You must still follow any timing restrictions and permissions, including those based on the card's type. For instance, you can cast a sorcery using jump-start only when you could normally cast a sorcery."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "A spell cast using jump-start will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "If an effect allows you to pay an alternative cost rather than a spell's mana cost, you may pay that alternative cost when you jump-start a spell. You'll still discard a card as an additional cost to cast it."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "If an instant or sorcery card is put into your graveyard during your turn, you'll be able to cast it right away if it's legal to do so, before any player may attempt to remove that card from your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Ob Nixilis, Captive Kingpin
 {
     "name": "Ob Nixilis, Captive Kingpin",

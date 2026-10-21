@@ -288,7 +288,9 @@ internal class SpellCaster(
             )
         ) {
             newState = newState.updateEntity(cardId) { c ->
-                c.with(com.wingedsheep.engine.state.components.identity.AfterResolveDestinationComponent(onlyIfResolved = false))
+                c.with(com.wingedsheep.engine.state.components.identity.AfterResolveDestinationComponent(
+                    onlyIfResolved = false, everyStackExit = true
+                ))
             }
         }
 

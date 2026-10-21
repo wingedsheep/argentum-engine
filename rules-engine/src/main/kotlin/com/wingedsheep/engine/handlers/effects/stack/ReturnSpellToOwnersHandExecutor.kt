@@ -1,16 +1,13 @@
 package com.wingedsheep.engine.handlers.effects.stack
 
-import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.core.EffectResult
-import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.mechanics.stack.StackExitRider
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
-import com.wingedsheep.engine.state.components.stack.TargetsComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.effects.ReturnSpellToOwnersHandEffect
 import kotlin.reflect.KClass
@@ -18,7 +15,8 @@ import kotlin.reflect.KClass
 /**
  * Executor for [ReturnSpellToOwnersHandEffect].
  *
- * Removes the targeted spell from the stack and puts it into its owner's hand.
+ * Removes the targeted spell from the stack and puts it into its owner's hand — or exile, when it
+ * was cast with flashback, aftermath or jump-start ([StackExitRider]).
  * This is not a counter — "can't be countered" protections do not block it.
  */
 class ReturnSpellToOwnersHandExecutor : EffectExecutor<ReturnSpellToOwnersHandEffect> {
@@ -48,27 +46,10 @@ class ReturnSpellToOwnersHandExecutor : EffectExecutor<ReturnSpellToOwnersHandEf
             ?: spellComponent?.casterId
             ?: return EffectResult.error(state, "Cannot determine spell owner")
 
-        var newState = com.wingedsheep.engine.mechanics.CastCharacteristics.end(state.removeFromStack(spellId), spellId)
-        newState = newState.addToZone(ZoneKey(ownerId, Zone.HAND), spellId)
-        newState = newState.updateEntity(spellId) { c ->
-            c.without<SpellOnStackComponent>()
-                .without<TextReplacementComponent>()
-                .without<TargetsComponent>()
-        }
-
-        return EffectResult.success(
-            newState,
-            listOf(
-                ZoneChangeEvent(
-                    spellId,
-                    cardComponent?.name ?: "Unknown",
-                    Zone.STACK,
-                    Zone.HAND,
-                    ownerId,
-                    oldObject = state.objectRef(spellId),
-                    newObject = newState.objectRef(spellId)
-                )
-            )
-        )
+        // Flashback / aftermath / jump-start: exiled instead of returning to hand (CR 702.34a).
+        val destZone = StackExitRider.overrideZone(container) ?: Zone.HAND
+        val (newState, event) = StackExitRider.moveOffStack(state, spellId, ownerId, destZone)
+            ?: return EffectResult.success(state)
+        return EffectResult.success(newState, listOf(event))
     }
 }

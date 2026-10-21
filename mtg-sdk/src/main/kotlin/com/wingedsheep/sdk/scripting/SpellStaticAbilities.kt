@@ -645,18 +645,26 @@ data class GraveyardCardsHaveDredge(
  * no unlimited grant could have authorized the same cast. Pair with [duringYourTurnOnly] for
  * "once during each of your turns".
  *
- * [exileInsteadOfGraveyard] is the third member of the cast-this-way rider family, but it applies to
- * the *instant and sorcery* half rather than the permanent half: an instant or sorcery cast from the
- * graveyard under this grant is exiled instead of being put into its owner's graveyard (Bilbo, Thief
- * in the Night — "If an instant or sorcery spell cast this way would be put into your graveyard,
- * exile it instead"). Unlike the "exile it as it resolves" triggers (Lilah, Goliath Daydreamer), this
- * is a true replacement on the *would be put into your graveyard* event, so it also catches a spell
- * that is countered or fizzles — per Bilbo's Adventure ruling.
+ * [exileCastThisWay] is the third member of the cast-this-way rider family, but it applies to
+ * the *instant and sorcery* half rather than the permanent half — see [CastThisWayExile]:
+ *  - [CastThisWayExile.INSTEAD_OF_GRAVEYARD]: an instant or sorcery cast from the graveyard under
+ *    this grant is exiled instead of being put into its owner's graveyard (Bilbo, Thief in the
+ *    Night — "If an instant or sorcery spell cast this way would be put into your graveyard, exile
+ *    it instead"). Unlike the "exile it as it resolves" triggers (Lilah, Goliath Daydreamer), this
+ *    is a true replacement on the *would be put into your graveyard* event, so it also catches a
+ *    spell that is countered or fizzles — per Bilbo's Adventure ruling.
+ *  - [CastThisWayExile.ON_ANY_STACK_EXIT]: exiled instead of going *anywhere* else whenever it
+ *    would leave the stack — bounced to hand or put into a library too. With
+ *    `additionalCost = Costs.additional.DiscardCards(1)` this is a granted jump-start (CR 702.133a:
+ *    "cast this card from your graveyard … by discarding a card as an additional cost" and "exile
+ *    this card instead of putting it anywhere else any time it would leave the stack") — Niv-Mizzet,
+ *    Supreme's "Each instant and sorcery card in your graveyard that's exactly two colors has
+ *    jump-start".
  *
  * [fromAnyGraveyard] widens *which graveyards* the permission reaches: by default only the holder's
  * own graveyard, and with it every player's (The Great Work, chapter III — "Until end of turn, you
  * may cast instant and sorcery spells from any graveyard"). A card cast from another player's
- * graveyard is still owned by that player, so it returns to (or, under [exileInsteadOfGraveyard], is
+ * graveyard is still owned by that player, so it returns to (or, under [exileCastThisWay], is
  * exiled instead of going to) *its owner's* graveyard. Narrow it to opponents' graveyards through
  * [filter]'s ownership predicate rather than with another flag.
  *
@@ -694,8 +702,9 @@ data class GraveyardCardsHaveDredge(
  * @property entersWithCounter If set, a permanent cast this way enters with one such counter
  * @property addedSubtypeOnEntry If set, a permanent cast this way gains this subtype on entry
  * @property oncePerTurn If true, this grant authorizes at most one graveyard cast per turn
- * @property exileInsteadOfGraveyard If true, an instant or sorcery cast this way is exiled rather
- *   than put into its owner's graveyard — whether it resolves, is countered, or fizzles
+ * @property exileCastThisWay Whether an instant or sorcery cast this way is exiled instead of going
+ *   to its owner's graveyard (whether it resolves, is countered, or fizzles), or instead of going
+ *   anywhere else as it leaves the stack
  * @property fromAnyGraveyard If true, the permission covers every player's graveyard, not just yours
  * @property additionalCost If set, a non-mana cost a cast under this grant owes on top of its other costs
  * @property playsLands If true, land cards matching [filter] may also be played from the graveyard
@@ -710,7 +719,7 @@ data class MayCastFromGraveyard(
     val entersWithCounter: com.wingedsheep.sdk.core.CounterType? = null,
     val addedSubtypeOnEntry: String? = null,
     val oncePerTurn: Boolean = false,
-    val exileInsteadOfGraveyard: Boolean = false,
+    val exileCastThisWay: CastThisWayExile = CastThisWayExile.NONE,
     val fromAnyGraveyard: Boolean = false,
     val additionalCost: AdditionalCost? = null,
     val playsLands: Boolean = false,
@@ -743,10 +752,15 @@ data class MayCastFromGraveyard(
         if (grantedAbilityOnEntry != null) {
             append(". If you do, it gains \"${grantedAbilityOnEntry.description}\"")
         }
-        if (exileInsteadOfGraveyard) {
-            append(". If an instant or sorcery spell cast this way would be put into ")
-            append(if (fromAnyGraveyard) "a graveyard" else "your graveyard")
-            append(", exile it instead")
+        when (exileCastThisWay) {
+            CastThisWayExile.NONE -> {}
+            CastThisWayExile.INSTEAD_OF_GRAVEYARD -> {
+                append(". If an instant or sorcery spell cast this way would be put into ")
+                append(if (fromAnyGraveyard) "a graveyard" else "your graveyard")
+                append(", exile it instead")
+            }
+            CastThisWayExile.ON_ANY_STACK_EXIT ->
+                append(". If a spell cast this way would leave the stack, exile it instead of putting it anywhere else")
         }
     }
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
@@ -754,6 +768,26 @@ data class MayCastFromGraveyard(
         val newCost = additionalCost?.applyTextReplacement(replacer)
         return if (newFilter !== filter || newCost != additionalCost) copy(filter = newFilter, additionalCost = newCost) else this
     }
+}
+
+/**
+ * Where an instant or sorcery cast through a [MayCastFromGraveyard] grant goes instead of where it
+ * would otherwise go as it leaves the stack.
+ */
+@Serializable
+enum class CastThisWayExile {
+    /** No rider — the spell goes wherever it normally would. */
+    NONE,
+
+    /** "If it would be put into your graveyard, exile it instead" — resolve, counter or fizzle (Bilbo). */
+    INSTEAD_OF_GRAVEYARD,
+
+    /**
+     * "Exile it instead of putting it anywhere else any time it would leave the stack" — the
+     * graveyard-cast clause of flashback (CR 702.34a), aftermath (CR 702.127a) and jump-start
+     * (CR 702.133a), so a bounce to hand or a put-into-library is exiled too.
+     */
+    ON_ANY_STACK_EXIT
 }
 
 /**

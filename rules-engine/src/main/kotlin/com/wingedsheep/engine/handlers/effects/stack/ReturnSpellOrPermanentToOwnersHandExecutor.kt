@@ -1,19 +1,15 @@
 package com.wingedsheep.engine.handlers.effects.stack
 
-import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.core.EffectResult
-import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.handlers.effects.zones.MoveToZoneEffectExecutor
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
-import com.wingedsheep.engine.state.components.stack.TargetsComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnSpellOrPermanentToOwnersHandEffect
@@ -73,28 +69,11 @@ class ReturnSpellOrPermanentToOwnersHandExecutor(
                 ?: spellComponent?.casterId
                 ?: return EffectResult.error(state, "Cannot determine spell owner")
 
-            var newState = com.wingedsheep.engine.mechanics.CastCharacteristics.end(state.removeFromStack(targetId), targetId)
-            newState = newState.addToZone(ZoneKey(ownerId, Zone.HAND), targetId)
-            newState = newState.updateEntity(targetId) { c ->
-                c.without<SpellOnStackComponent>()
-                .without<TextReplacementComponent>()
-                .without<TargetsComponent>()
-            }
-
-            return EffectResult.success(
-                newState,
-                listOf(
-                    ZoneChangeEvent(
-                        targetId,
-                        cardComponent?.name ?: "Unknown",
-                        Zone.STACK,
-                        Zone.HAND,
-                        ownerId,
-                        oldObject = state.objectRef(targetId),
-                        newObject = newState.objectRef(targetId)
-                    )
-                )
-            )
+            // Flashback / aftermath / jump-start: exiled instead of returning to hand (CR 702.34a).
+            val destZone = com.wingedsheep.engine.mechanics.stack.StackExitRider.overrideZone(container) ?: Zone.HAND
+            val (newState, event) = com.wingedsheep.engine.mechanics.stack.StackExitRider
+                .moveOffStack(state, targetId, ownerId, destZone) ?: return EffectResult.success(state)
+            return EffectResult.success(newState, listOf(event))
         }
 
         // Otherwise it is a permanent — delegate to the standard bounce executor.

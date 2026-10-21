@@ -23,7 +23,7 @@ import io.kotest.matchers.shouldNotBe
  *    exile it instead."
  *
  * The second ability is a turn-long `MayCastFromGraveyard` grant (the Forgotten Cellar path) plus
- * the new `exileInsteadOfGraveyard` cast-this-way rider. These tests pin the three things that could
+ * the new `exileCastThisWay = INSTEAD_OF_GRAVEYARD` cast-this-way rider. These tests pin the three things that could
  * silently regress: the zone scope of the cost reduction, the attack gate on the permission, and the
  * fact that the exile rider follows the *authorizing grant* rather than the graveyard zone.
  */

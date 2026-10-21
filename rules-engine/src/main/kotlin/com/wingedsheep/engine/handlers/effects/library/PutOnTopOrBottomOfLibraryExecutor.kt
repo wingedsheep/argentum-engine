@@ -41,6 +41,16 @@ class PutOnTopOrBottomOfLibraryExecutor : EffectExecutor<PutOnLibraryPositionOfC
             ?: cardComponent.ownerId
             ?: return EffectResult.error(state, "Cannot determine card owner")
 
+        // A flashback / aftermath / jump-start spell is exiled instead of going to the library at all
+        // (CR 702.34a), so its owner has no position to choose.
+        if (targetId in state.stack) {
+            com.wingedsheep.engine.mechanics.stack.StackExitRider.overrideZone(container)?.let { zone ->
+                val (moved, event) = com.wingedsheep.engine.mechanics.stack.StackExitRider
+                    .moveOffStack(state, targetId, ownerId, zone) ?: return EffectResult.success(state)
+                return EffectResult.success(moved, listOf(event))
+            }
+        }
+
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
 
         val positions = effect.positions.ifEmpty {

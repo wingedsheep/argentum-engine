@@ -9913,7 +9913,7 @@
                 "filter": "instant|sorcery",
                 "duringYourTurnOnly": true,
                 "oncePerTurn": true,
-                "exileInsteadOfGraveyard": true,
+                "exileCastThisWay": "INSTEAD_OF_GRAVEYARD",
                 "additionalCost": {
                     "type": "AdditionalAtom",
                     "atom": {

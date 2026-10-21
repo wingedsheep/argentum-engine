@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.CastThisWayExile
 import com.wingedsheep.sdk.scripting.MayCastFromGraveyard
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
@@ -91,7 +92,7 @@ class GraveyardCastScopeTest : FunSpec({
         val opp = driver.getOpponent(you)
         grantToPlayer(
             driver, you,
-            MayCastFromGraveyard(GameObjectFilter.InstantOrSorcery, exileInsteadOfGraveyard = true, fromAnyGraveyard = true)
+            MayCastFromGraveyard(GameObjectFilter.InstantOrSorcery, exileCastThisWay = CastThisWayExile.INSTEAD_OF_GRAVEYARD, fromAnyGraveyard = true)
         )
         val theirs = driver.putCardInGraveyard(opp, "Scope Test Sorcery")
 

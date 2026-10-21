@@ -3626,7 +3626,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   outranks the card-intrinsic exile reasons (flashback, rebound, an Adventure face), being the only
   one of them that can name a zone other than exile. Leave it `null` for the ordinary destination.
   `GrantMayPlayFromExile` and `GrantFreeCastTargetFromExile` take the same `insteadOfGraveyard`
-  parameter and stamp the same component; `MayCastFromGraveyard(exileInsteadOfGraveyard)` stamps it
+  parameter and stamp the same component; `MayCastFromGraveyard(exileCastThisWay)` stamps it
   with its default `EXILE` — one mechanism, one destination vocabulary.
 
   `caster` answers the one question a per-player iteration raises. Inside
@@ -11554,7 +11554,7 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   `PlayersCantPayLifeForCosts(excludeManaAbilities = true)`. Stamped as a battlefield marker and read by
   `GameState.canPayLife(player, amount, LifePaymentPurpose)` — every payment site names its purpose; stops when the
   source loses its abilities. Unconditional only (not read behind a `ConditionalStaticAbility`).
-- `MayCastFromGraveyard(filter, lifeCost = 0, duringYourTurnOnly = false, entersWithCounter = null, addedSubtypeOnEntry = null, oncePerTurn = false, exileInsteadOfGraveyard = false, fromAnyGraveyard = false, additionalCost = null, playsLands = false, grantedAbilityOnEntry = null)`
+- `MayCastFromGraveyard(filter, lifeCost = 0, duringYourTurnOnly = false, entersWithCounter = null, addedSubtypeOnEntry = null, oncePerTurn = false, exileCastThisWay = CastThisWayExile.NONE, fromAnyGraveyard = false, additionalCost = null, playsLands = false, grantedAbilityOnEntry = null)`
   — cast spells matching `filter` from your graveyard following normal timing, optionally paying
   `lifeCost` life. Free for Yawgmoth's Agenda (`MayCastFromGraveyard(Nonland)`); `lifeCost = 1,
   duringYourTurnOnly = true` for Festival of Embers. **`oncePerTurn`** limits the grant to one cast
@@ -11619,27 +11619,35 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   TriggeredAbility.create(trigger = Triggers.self.dies(), effect = Effects.Move(EffectTarget.Self,
   Zone.EXILE, fromZone = Zone.GRAVEYARD) then Effects.GainLife(2)))` — a land's mana value is 0, so
   the one filter covers both halves.
-  **Cast-this-way exile rider:** `exileInsteadOfGraveyard = true` is the instant/sorcery half of the
-  same rider family — "if an instant or sorcery spell cast this way would be put into your graveyard,
-  exile it instead" (Bilbo, Thief in the Night). `CastSpellHandler` stamps
-  `ExileAfterResolveComponent(onlyIfResolved = false)` on an instant/sorcery cast under a grant
+  **Cast-this-way exile rider:** `exileCastThisWay = CastThisWayExile.INSTEAD_OF_GRAVEYARD` is the
+  instant/sorcery half of the same rider family — "if an instant or sorcery spell cast this way would
+  be put into your graveyard, exile it instead" (Bilbo, Thief in the Night). `CastSpellHandler` stamps
+  `AfterResolveDestinationComponent(onlyIfResolved = false)` on an instant/sorcery cast under a grant
   carrying it, so the spell is exiled whether it resolves, is countered, or fizzles — unlike the
   "exile it as it resolves" *triggers* (`Effects.MarkSpellPlotOnResolve`,
   `Effects.MarkSpellExileWithCounters`), which leave a spell that failed to resolve in the graveyard.
   Because the rider rides the authorizing grant rather than a zone-scoped trigger, it never leaks onto
   a spell cast under a different graveyard-cast permission that happens to be active at the same time.
   Bilbo = `GrantStaticAbility(MayCastFromGraveyard(Artifact or InstantOrSorcery, oncePerTurn = true,
-  exileInsteadOfGraveyard = true), EffectTarget.Self, Duration.EndOfTurn)` off an attack trigger.
+  exileCastThisWay = INSTEAD_OF_GRAVEYARD), EffectTarget.Self, Duration.EndOfTurn)` off an attack trigger.
+  **`CastThisWayExile.ON_ANY_STACK_EXIT`** widens the rider to "exile it instead of putting it
+  anywhere else any time it would leave the stack" — a bounce to hand (`ReturnSpellToOwnersHand`) or
+  a put-into-library (`PutOnTopOrBottomOfLibrary`, which then asks no position) is exiled too, the
+  same `StackExitRider` path printed flashback (CR 702.34a) and aftermath (CR 702.127a) take. With a
+  discard-a-card `additionalCost` it is a granted **jump-start** (CR 702.133a). Niv-Mizzet, Supreme's
+  "Each instant and sorcery card in your graveyard that's exactly two colors has jump-start" =
+  `MayCastFromGraveyard(InstantOrSorcery.withCardPredicate(CardPredicate.HasExactlyColors(2)),
+  additionalCost = Costs.additional.DiscardCards(1), exileCastThisWay = ON_ANY_STACK_EXIT)`.
   **Any graveyard + player-anchored grants:** `fromAnyGraveyard = true` widens the permission from
   your own graveyard to every player's; narrow it to opponents' through `filter`'s ownership
   predicate, not another flag. A card cast from another player's graveyard is still owned by them, so
-  it goes back to (or, with `exileInsteadOfGraveyard`, is exiled from) *its owner's* graveyard, and it
+  it goes back to (or, with `exileCastThisWay`, is exiled from) *its owner's* graveyard, and it
   is recorded as cast from a graveyard (`castFromZone = GRAVEYARD`). A durational grant can be anchored
   to the **player** (`EffectTarget.Controller`) rather than a permanent: it is the same player-wide
   permission, with no permanent it has to outlive. The Great Work (Urabrask's back face), chapter III,
   "Until end of turn, you may cast instant and sorcery spells from any graveyard. If a spell cast this
   way would be put into a graveyard, exile it instead. Exile this Saga, then return it …" =
-  `Effects.GrantStaticAbility(MayCastFromGraveyard(InstantOrSorcery, exileInsteadOfGraveyard = true,
+  `Effects.GrantStaticAbility(MayCastFromGraveyard(InstantOrSorcery, exileCastThisWay = INSTEAD_OF_GRAVEYARD,
   fromAnyGraveyard = true), EffectTarget.Controller, Duration.EndOfTurn) then
   Effects.ExileAndReturnTransformed(Self, ReturnFace.FRONT)`. The client ghosts castable cards from
   other players' graveyards next to your hand, the same as your own.

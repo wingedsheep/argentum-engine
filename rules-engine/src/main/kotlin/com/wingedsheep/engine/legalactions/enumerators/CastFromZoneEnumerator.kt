@@ -2720,7 +2720,7 @@ class CastFromZoneEnumerator(
             // applies exactly the permission the player chose, and surfaced in the action text so the
             // options read differently when riders differ.
             val riderSelection = GraveyardCastRiderSelection(
-                permission.entersWithCounter, permission.addedSubtypeOnEntry, permission.exileInsteadOfGraveyard,
+                permission.entersWithCounter, permission.addedSubtypeOnEntry, permission.exileCastThisWay,
                 permission.additionalCost, permission.grantedAbilityOnEntry
             )
             val riderSuffix = graveyardRiderSuffix(permission)
@@ -2771,7 +2771,7 @@ class CastFromZoneEnumerator(
                 if (!canPayGrantCost) continue
 
                 // Collapse permissions indistinguishable to the player (same card, life cost, rider, extra cost).
-                if (!emitted.add("$cardId|$lifeCost|${permission.entersWithCounter}|${permission.addedSubtypeOnEntry}|${permission.exileInsteadOfGraveyard}|${permission.additionalCost}|${permission.grantedAbilityOnEntry}")) continue
+                if (!emitted.add("$cardId|$lifeCost|${permission.entersWithCounter}|${permission.addedSubtypeOnEntry}|${permission.exileCastThisWay}|${permission.additionalCost}|${permission.grantedAbilityOnEntry}")) continue
 
                 val pricing = context.costCalculator.priceByTargets(
                     state, cardDef, playerId, cardId, withTable = !context.skipAutoTapPreview, fromZone = Zone.GRAVEYARD,

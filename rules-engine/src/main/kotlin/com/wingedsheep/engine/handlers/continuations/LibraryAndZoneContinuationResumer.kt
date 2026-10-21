@@ -897,6 +897,14 @@ class LibraryAndZoneContinuationResumer(
             ?: return checkForMore(state, emptyList())
         val spellName = spellContainer.get<CardComponent>()?.name ?: "Unknown"
 
+        // A flashback / aftermath / jump-start spell is exiled instead (CR 702.34a). The executor
+        // already skips the position prompt for one; this keeps the resumed move honest too.
+        com.wingedsheep.engine.mechanics.stack.StackExitRider.overrideZone(spellContainer)?.let { zone ->
+            val (moved, event) = com.wingedsheep.engine.mechanics.stack.StackExitRider
+                .moveOffStack(state, spellId, ownerId, zone) ?: return checkForMore(state, emptyList())
+            return checkForMore(moved, listOf(event))
+        }
+
         var newState = com.wingedsheep.engine.mechanics.CastCharacteristics.end(state.removeFromStack(spellId), spellId)
         newState = newState.updateEntity(spellId) { c ->
             c.without<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>()

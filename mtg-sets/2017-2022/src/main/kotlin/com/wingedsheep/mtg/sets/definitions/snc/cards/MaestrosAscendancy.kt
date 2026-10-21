@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.CastThisWayExile
 import com.wingedsheep.sdk.scripting.MayCastFromGraveyard
 
 /**
@@ -32,7 +33,7 @@ val MaestrosAscendancy = card("Maestros Ascendancy") {
             filter = GameObjectFilter.InstantOrSorcery,
             duringYourTurnOnly = true,
             oncePerTurn = true,
-            exileInsteadOfGraveyard = true,
+            exileCastThisWay = CastThisWayExile.INSTEAD_OF_GRAVEYARD,
             additionalCost = Costs.additional.SacrificePermanent(GameObjectFilter.Creature)
         )
     }

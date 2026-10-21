@@ -834,6 +834,14 @@ object ZoneMovementUtils {
     ): ZoneChangeRedirectResult {
         val container = state.getEntity(entityId) ?: return ZoneChangeRedirectResult(toZone)
 
+        // A spell cast with flashback, aftermath or jump-start is exiled instead of going anywhere
+        // else as it leaves the stack (CR 702.34a / 702.127a / 702.133a).
+        if (fromZone == Zone.STACK) {
+            com.wingedsheep.engine.mechanics.stack.StackExitRider.overrideZone(container)
+                ?.takeIf { it != toZone }
+                ?.let { return ZoneChangeRedirectResult(it) }
+        }
+
         // Card-intrinsic "would be put into [zone] from anywhere → redirect instead" self-replacement
         // (Darksteel Colossus, Progenitus). It says "from anywhere", so it functions from every
         // zone (CR 113.6b), and it is read off

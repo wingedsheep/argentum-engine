@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.CastThisWayExile
 import com.wingedsheep.sdk.scripting.MayCastFromGraveyard
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.ReturnFace
@@ -39,7 +40,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *   to the battlefield (front face up).
  *
  * Chapter III's permission is a [MayCastFromGraveyard] with `fromAnyGraveyard` and
- * `exileInsteadOfGraveyard`, granted to the *controller* rather than the Saga: the same resolution
+ * `exileCastThisWay = INSTEAD_OF_GRAVEYARD`, granted to the *controller* rather than the Saga: the same resolution
  * exiles the Saga and returns it as a new object, and a permission anchored to the Saga would not
  * outlive that. The trigger's "Add {R}" is not a mana ability — it rides the stack (ruling).
  */
@@ -74,7 +75,7 @@ private val TheGreatWork = card("The Great Work") {
         effect = Effects.GrantStaticAbility(
             MayCastFromGraveyard(
                 filter = GameObjectFilter.InstantOrSorcery,
-                exileInsteadOfGraveyard = true,
+                exileCastThisWay = CastThisWayExile.INSTEAD_OF_GRAVEYARD,
                 fromAnyGraveyard = true
             ),
             target = EffectTarget.Controller,

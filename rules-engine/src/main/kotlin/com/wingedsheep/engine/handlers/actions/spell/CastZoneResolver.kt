@@ -399,7 +399,7 @@ class CastZoneResolver(
             matches.firstOrNull {
                 it.entersWithCounter == selection.entersWithCounter &&
                     it.addedSubtypeOnEntry == selection.addedSubtype &&
-                    it.exileInsteadOfGraveyard == selection.exileInsteadOfGraveyard &&
+                    it.exileCastThisWay == selection.exileCastThisWay &&
                     it.additionalCost == selection.additionalCost &&
                     it.grantedAbilityOnEntry == selection.grantedAbilityOnEntry
             }?.let { return it }

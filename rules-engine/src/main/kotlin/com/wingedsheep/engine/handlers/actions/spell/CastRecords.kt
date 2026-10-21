@@ -17,6 +17,7 @@ import com.wingedsheep.engine.state.components.battlefield.MayCastFromGraveyardU
 import com.wingedsheep.engine.state.components.battlefield.MayCastFromLinkedExileUsedThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.MayCastWithoutPayingCostUsedThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.AfterResolveDestinationComponent
+import com.wingedsheep.sdk.scripting.CastThisWayExile
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.CardsDiscardedThisTurnComponent
 import com.wingedsheep.engine.state.components.stack.GraveyardCastRiderComponent
@@ -239,9 +240,13 @@ internal class CastRecords(
                 ))
             }
         }
-        if (grant?.exileInsteadOfGraveyard == true && cardComponent.typeLine.let { it.isInstant || it.isSorcery }) {
+        val exileRider = grant?.exileCastThisWay ?: CastThisWayExile.NONE
+        if (exileRider != CastThisWayExile.NONE && cardComponent.typeLine.let { it.isInstant || it.isSorcery }) {
             newState = newState.updateEntity(action.cardId) { c ->
-                c.with(AfterResolveDestinationComponent(onlyIfResolved = false))
+                c.with(AfterResolveDestinationComponent(
+                    onlyIfResolved = false,
+                    everyStackExit = exileRider == CastThisWayExile.ON_ANY_STACK_EXIT
+                ))
             }
         }
         return newState

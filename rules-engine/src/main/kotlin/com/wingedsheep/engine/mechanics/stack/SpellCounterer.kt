@@ -202,11 +202,7 @@ class SpellCounterer(
      */
     private fun counterRiderZone(container: ComponentContainer): Zone? {
         container.get<AfterResolveDestinationComponent>()?.takeIf { !it.onlyIfResolved }?.let { return it.zone }
-        val spell = container.get<SpellOnStackComponent>() ?: return null
-        return Zone.EXILE.takeIf {
-            spell.castFromZone == Zone.GRAVEYARD &&
-                spell.alternativeCost == com.wingedsheep.engine.core.AlternativeCostType.FLASHBACK
-        }
+        return StackExitRider.overrideZone(container)
     }
 
     /**

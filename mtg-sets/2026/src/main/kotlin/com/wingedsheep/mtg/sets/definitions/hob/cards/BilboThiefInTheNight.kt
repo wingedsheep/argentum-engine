@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CostModification
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.CastThisWayExile
 import com.wingedsheep.sdk.scripting.MayCastFromGraveyard
 import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.SpellCostTarget
@@ -30,7 +31,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *    [Effects.GrantStaticAbility]. The cast enumerator already reads durational graveyard-cast
  *    grants out of `grantedStaticAbilities` (the Forgotten Cellar path), so no new permission
  *    machinery is needed. `oncePerTurn` caps it at the single spell the trigger offers.
- *  - **"cast this way … exile it instead"** is the `exileInsteadOfGraveyard` rider on that grant.
+ *  - **"cast this way … exile it instead"** is the `exileCastThisWay = INSTEAD_OF_GRAVEYARD` rider on that grant.
  *    `CastSpellHandler` captures the *specific* grant authorizing each graveyard cast, so the rider
  *    can't leak onto a spell cast under some other permission the player happens to have active.
  *    It stamps `AfterResolveDestinationComponent(onlyIfResolved = false)`, which also catches a countered
@@ -85,7 +86,7 @@ val BilboThiefInTheNight = card("Bilbo, Thief in the Night") {
             ability = MayCastFromGraveyard(
                 filter = GameObjectFilter.Artifact or GameObjectFilter.InstantOrSorcery,
                 oncePerTurn = true,
-                exileInsteadOfGraveyard = true,
+                exileCastThisWay = CastThisWayExile.INSTEAD_OF_GRAVEYARD,
             ),
             target = EffectTarget.Self,
         )

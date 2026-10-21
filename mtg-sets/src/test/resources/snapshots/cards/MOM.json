@@ -23963,7 +23963,7 @@
                                 "ability": {
                                     "type": "MayCastFromGraveyard",
                                     "filter": "instant|sorcery",
-                                    "exileInsteadOfGraveyard": true,
+                                    "exileCastThisWay": "INSTEAD_OF_GRAVEYARD",
                                     "fromAnyGraveyard": true
                                 },
                                 "target": "Controller"
