@@ -1,3 +1,111 @@
+// Arni Metalbrow
+{
+    "name": "Arni Metalbrow",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Creature — Human Berserker",
+    "oracleText": "Whenever a creature you control attacks or enters attacking, you may pay {1}{R}. If you do, you may put a creature card with mana value less than that creature's mana value from your hand onto the battlefield tapped and attacking.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Arni Metalbrow:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "AttackEvent",
+                            "filter": "creature ctrl:you"
+                        },
+                        {
+                            "type": "ZoneChangeEvent",
+                            "filter": "creature attacking ctrl:you",
+                            "to": "Battlefield"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}{R}"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsCreature",
+                                            {
+                                                "type": "ManaValueAtMostDynamic",
+                                                "amount": {
+                                                    "type": "Subtract",
+                                                    "left": {
+                                                        "type": "EntityProperty",
+                                                        "entity": "TriggeringEntity",
+                                                        "numericProperty": "ManaValue"
+                                                    },
+                                                    "right": {
+                                                        "type": "Fixed",
+                                                        "amount": 1
+                                                    }
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "put_candidates"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "put_candidates",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "putting",
+                                "prompt": "You may put a creature card with lesser mana value onto the battlefield tapped and attacking"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "putting",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield",
+                                    "placement": "TappedAndAttacking"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "RARE",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/aeb3069f-5f5a-4e11-8a63-46399eb85a95.jpg?1783916524"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ayara's Oathsworn
 {
     "name": "Ayara's Oathsworn",

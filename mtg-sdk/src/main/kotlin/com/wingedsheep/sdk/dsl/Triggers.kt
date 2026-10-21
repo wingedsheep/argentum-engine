@@ -152,6 +152,16 @@ class ObjectTriggerSubject internal constructor(
         spec(ZoneChangeEvent(filter = filterOrAny, from = from, to = Zone.BATTLEFIELD))
 
     /**
+     * "enters attacking" — the subject is put onto the battlefield attacking (CR 508.4), e.g. a
+     * token created "tapped and attacking" or a card put from hand "tapped and attacking" (Arni
+     * Metalbrow). A creature that enters attacking was never declared as an attacker, so this never
+     * overlaps [attacks]; "attacks or enters attacking" is `Triggers.or(subject.attacks(),
+     * subject.entersAttacking())`.
+     */
+    fun entersAttacking(): TriggerSpec =
+        spec(ZoneChangeEvent(filter = filterOrAny.attacking(), to = Zone.BATTLEFIELD))
+
+    /**
      * "leaves the battlefield", to [to] (any zone when null), or anywhere but [excludeTo] ("leaves
      * without dying" is `excludeTo = Zone.GRAVEYARD`). [excludeSacrifice] skips a leave caused by a
      * sacrifice. [asCraftMaterial] is "is exiled from the battlefield while you're activating a craft

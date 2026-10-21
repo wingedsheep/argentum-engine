@@ -7592,7 +7592,9 @@ put on the player by anyone: "whenever you get one or more {E}", `CountersPlaced
 
 A verb whose event has no room for the subject's filter (`crews`, …) rejects a
 filtered subject rather than dropping the filter; SELF-only verbs (`isCast`, `becomesPlotted`, …)
-reject other subjects. `Triggers.or(a, b, …)` still joins same-binding triggers. The catalog below
+reject other subjects. `Triggers.or(a, b, …)` still joins same-binding triggers; each event fires it
+through the atom it matched, so an ANY-bound `Triggers.a(f).attacks()` inside the disjunction still fires
+once per attacker with that attacker as the triggering entity. The catalog below
 keeps the engine notes for each shape, written in these spellings.
 
 **`interveningIf` vs `triggerRestriction` — a trigger's condition, and which of the two checks it
@@ -7823,6 +7825,12 @@ The shapes in this family, with their engine notes.
   entrant's **projected** types, like its subtypes and keywords: a noncreature artifact animated by March
   of the Machines enters as a creature, so Wingmantle Chaplain's "another creature you control with
   defender enters" sees it. An entrant already gone again falls back to its printed type line.
+- `Triggers.a(filter).entersAttacking()` — "whenever a creature you control **enters attacking**": the
+  enters trigger with `.attacking()` folded into the filter. The entrant's `AttackingComponent` is read
+  live at detection (a permanent put onto the battlefield tapped and attacking carries it from the moment
+  it enters, CR 508.4), so creatures entering outside combat don't match. A creature that enters attacking
+  was never declared as an attacker, so it never fires `attacks()`; "attacks or enters attacking" (Arni
+  Metalbrow) is `Triggers.or(Triggers.a(f).attacks(), Triggers.a(f).entersAttacking())`.
 
 **Leaves / dies**
 

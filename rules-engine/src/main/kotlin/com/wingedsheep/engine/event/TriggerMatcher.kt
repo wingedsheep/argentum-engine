@@ -1818,6 +1818,28 @@ class TriggerMatcher(
     }
 
     /**
+     * The atom of [trigger] that [event] matched: the first matching constituent of an
+     * [EventPattern.AnyOf] (recursively), or [trigger] itself when it isn't a disjunction. The
+     * per-object expansions in [TriggerDetector] key on the atom's shape, so a `Triggers.or` trigger
+     * fires per attacker / blocker exactly like its bare atom. Call only after [matchesTrigger]
+     * returned true.
+     */
+    fun matchedAtom(
+        trigger: EventPattern,
+        binding: TriggerBinding,
+        event: EngineGameEvent,
+        sourceId: EntityId,
+        controllerId: EntityId,
+        state: GameState
+    ): EventPattern = when (trigger) {
+        is EventPattern.AnyOf -> trigger.events
+            .firstOrNull { matchesTrigger(it, binding, event, sourceId, controllerId, state) }
+            ?.let { matchedAtom(it, binding, event, sourceId, controllerId, state) }
+            ?: trigger
+        else -> trigger
+    }
+
+    /**
      * The battlefield-exit atoms of [trigger]: the trigger itself when it is a
      * [EventPattern.ZoneChangeEvent] from the battlefield, or every such member of an
      * [EventPattern.AnyOf] (`Triggers.or(self.transforms(), self.dies())`). The look-back detectors
@@ -2665,9 +2687,15 @@ class TriggerMatcher(
         // `PredicateEvaluator` already falls back to `wasAttacking` for the resolution-time reading
         // (Garna, Bloodfist of Keld); without this arm the trigger path would fail open and fire
         // for every matching creature that dies, attacking or not.
+        // Any other zone change — an arrival in particular — reads the live combat state: a
+        // permanent put onto the battlefield "tapped and attacking" carries its
+        // `AttackingComponent` from the moment it enters (CR 508.4), so "whenever a creature you
+        // control enters attacking" (Arni Metalbrow) gates exactly instead of failing open for
+        // every creature that enters.
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsAttacking -> {
             if (event.isBattlefieldDeparture) event.lastKnown?.wasAttacking == true
-            else matchesStatePredicateForTrigger(predicate, state, event.entityId)
+            else state.getEntity(event.entityId)
+                ?.has<com.wingedsheep.engine.state.components.combat.AttackingComponent>() == true
         }
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.Or ->
             predicate.predicates.any { matchesStatePredicateForZoneChangeTrigger(it, state, event, sourceId) }
