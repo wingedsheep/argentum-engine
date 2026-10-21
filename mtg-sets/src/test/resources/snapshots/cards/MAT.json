@@ -3120,6 +3120,141 @@
     ]
 }
 
+// Rocco, Street Chef
+{
+    "name": "Rocco, Street Chef",
+    "manaCost": "{R}{G}{W}",
+    "typeLine": "Legendary Creature — Elf Druid",
+    "oracleText": "At the beginning of your end step, each player exiles the top card of their library. Until your next end step, each player may play the card they exiled this way.\nWhenever a player plays a land from exile or casts a spell from exile, you put a +1/+1 counter on target creature and create a Food token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rocco, Street Chef:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "ActivePlayerFirst"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            },
+                            {
+                                "type": "GrantMayPlayFromExile",
+                                "from": "gathered0",
+                                "expiry": {
+                                    "type": "UntilControllerStep",
+                                    "step": "END"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, each player exiles the top card of their library. Until your next end step, each player may play the card they exiled this way."
+            },
+            {
+                "id": "Rocco, Street Chef:2",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "LandPlayedEvent",
+                            "player": "Each",
+                            "fromZone": "Exile"
+                        },
+                        {
+                            "type": "SpellCastEvent",
+                            "player": "Each",
+                            "requires": [
+                                {
+                                    "type": "SpellCastFromZone",
+                                    "zone": "Exile"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Food"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever a player plays a land from exile or casts a spell from exile, you put a +1/+1 counter on target creature and create a Food token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "RARE",
+        "artist": "Bram Sels",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cdb53ce7-845c-4c62-98a9-4fc33c67a07b.jpg?1783916509",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "Unless an effect allows you to play additional lands that turn, you can play a land card you exiled with Rocco only if you haven't played a land yet that turn."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "A player may play the card they exiled with Rocco even if Rocco leaves the battlefield before the duration expires."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Samut, Vizier of Naktamun
 {
     "name": "Samut, Vizier of Naktamun",

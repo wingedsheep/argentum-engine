@@ -125,13 +125,16 @@ data class ForetoldComponent(
  *   [com.wingedsheep.engine.state.permissions.MayPlayPermission.expiresAfterTurn] uses, so a free
  *   play granted "until the end of your next turn" (Ignite the Future) ends with its permission.
  * @param expiryControllerId The player whose turns measure [expiresAfterTurn], when not [controllerId].
+ * @param expiresAtStep The step whose beginning ends the waiver on its qualifying turn, mirroring
+ *   [com.wingedsheep.engine.state.permissions.MayPlayPermission.expiresAtStep].
  */
 @Serializable
 data class PlayWithoutPayingCostComponent(
     val controllerId: EntityId,
     val permanent: Boolean = false,
     val expiresAfterTurn: Int? = null,
-    val expiryControllerId: EntityId? = null
+    val expiryControllerId: EntityId? = null,
+    val expiresAtStep: com.wingedsheep.sdk.core.Step? = null
 ) : Component
 
 /**

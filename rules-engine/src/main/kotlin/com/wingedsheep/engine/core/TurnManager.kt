@@ -746,6 +746,8 @@ class TurnManager(
             phase = nextPhase,
             priorityPassedBy = emptySet()
         )
+        // "Until your next end step" may-play windows close as their step begins (Rocco).
+        newState = cleanupPhaseManager.expireStepKeyedPermissions(newState, nextStep)
 
         val events = mutableListOf<GameEvent>()
 

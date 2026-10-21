@@ -346,8 +346,9 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
                 value - "playedThisTurn"
             } else if ("colorlessAsAnyColor" in value && "playsRemaining" in value) {
                 // MayPlayPermission's any-color, colorless-as-any-color, face-down, once-per-turn,
-                // color-count and play-cap riders postdate the capture.
+                // color-count, play-cap and step-keyed expiry riders postdate the capture.
                 value.getValue("playsRemaining") shouldBe JsonNull
+                value.getValue("expiresAtStep") shouldBe JsonNull
                 value.getValue("withAnyManaColor") shouldBe JsonPrimitive(false)
                 value.getValue("colorlessAsAnyColor") shouldBe JsonPrimitive(false)
                 value.getValue("castFaceDown") shouldBe JsonPrimitive(false)
@@ -355,7 +356,7 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
                 value.getValue("oncePerTurn") shouldBe JsonPrimitive(false)
                 value.getValue("castColorCount") shouldBe JsonNull
                 value - "withAnyManaColor" - "colorlessAsAnyColor" - "castFaceDown" - "turnsFaceUpInstead" - "oncePerTurn" -
-                    "castColorCount" - "playsRemaining"
+                    "castColorCount" - "playsRemaining" - "expiresAtStep"
             } else if (value["type"] == JsonPrimitive(
                     "com.wingedsheep.engine.state.components.stack.SpellOnStackComponent"
                 )) {
@@ -372,10 +373,11 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
             } else if (value["type"] == JsonPrimitive(
                     "com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent"
                 )) {
-                // The turn-keyed waiver expiry (Ignite the Future) postdates the capture.
+                // The turn-keyed waiver expiry (Ignite the Future) and its step key postdate the capture.
                 value.getValue("expiresAfterTurn") shouldBe JsonNull
                 value.getValue("expiryControllerId") shouldBe JsonNull
-                value - "expiresAfterTurn" - "expiryControllerId"
+                value.getValue("expiresAtStep") shouldBe JsonNull
+                value - "expiresAfterTurn" - "expiryControllerId" - "expiresAtStep"
             } else if (value["type"] == JsonPrimitive("MoveToZone")) {
                 // The entering-attack defender choice (ninjutsu, CR 702.49c) postdates the capture.
                 value.getValue("attackDefender") shouldBe JsonPrimitive("JOIN_SOURCE")

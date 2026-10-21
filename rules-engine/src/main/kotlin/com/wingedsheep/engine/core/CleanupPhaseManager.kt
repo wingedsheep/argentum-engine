@@ -112,6 +112,7 @@ import com.wingedsheep.engine.state.components.player.PlayerTurnHijackedComponen
 import com.wingedsheep.engine.state.components.player.SkippedTurnPartsComponent
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.DamagePersistsThroughCleanup
@@ -379,6 +380,40 @@ class CleanupPhaseManager(
      * upkeep-triggered ability, which resolves after this expiry; the freshly granted effect then
      * carries the new turn's timestamp and survives this same-step expiry on the following turn.
      */
+    /**
+     * End the may-play windows keyed to the *beginning* of [step] — "until your next end step"
+     * (MayPlayPermission.expiresAtStep, and its paired PlayWithoutPayingCostComponent waiver).
+     * Invoked by TurnManager as each step is entered, before the step's triggers are detected, so
+     * Rocco, Street Chef's old cards stop being playable as the end step begins and only the cards
+     * its new trigger exiles are offered. The window uses the same floor plus active-player guard
+     * as cleanup (a skipped step still ends at that turn's cleanup).
+     */
+    fun expireStepKeyedPermissions(state: GameState, step: Step): GameState {
+        fun due(atStep: Step?, floor: Int?, player: EntityId): Boolean =
+            atStep == step && floor != null && state.turnNumber >= floor && state.isActiveTurnFor(player)
+
+        var newState = state
+        if (state.mayPlayPermissions.any { it.expiresAtStep == step }) {
+            newState = newState.copy(
+                mayPlayPermissions = newState.mayPlayPermissions.filterNot { permission ->
+                    !permission.permanent && due(
+                        permission.expiresAtStep, permission.expiresAfterTurn,
+                        permission.expiryControllerId ?: permission.controllerId
+                    )
+                }
+            )
+        }
+        for ((entityId, container) in state.entities) {
+            val waiver = container.get<PlayWithoutPayingCostComponent>() ?: continue
+            if (!waiver.permanent &&
+                due(waiver.expiresAtStep, waiver.expiresAfterTurn, waiver.expiryControllerId ?: waiver.controllerId)
+            ) {
+                newState = newState.updateEntity(entityId) { it.without<PlayWithoutPayingCostComponent>() }
+            }
+        }
+        return newState
+    }
+
     fun expireUntilYourNextUpkeepEffects(state: GameState, activePlayer: EntityId): GameState {
         // The team's upkeep is each head's upkeep in a shared team turn (CR 805.4).
         val activeTeam = state.sharedTurnTeam(activePlayer).toHashSet()

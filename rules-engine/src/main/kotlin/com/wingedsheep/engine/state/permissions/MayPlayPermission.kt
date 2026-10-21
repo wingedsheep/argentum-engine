@@ -66,6 +66,16 @@ data class MayPlayPermission(
     val permanent: Boolean = false,
     val expiresAfterTurn: Int? = null,
     /**
+     * When set together with [expiresAfterTurn], the window closes as this step *begins* on the
+     * first qualifying turn — the same floor plus active-player guard cleanup uses — rather than
+     * at that turn's cleanup. "Until your next end step" (Rocco, Street Chef; Ob Nixilis, Captive
+     * Kingpin) ends as the end step starts, so the card can't be played during it. Removed by
+     * [com.wingedsheep.engine.core.CleanupPhaseManager.expireStepKeyedPermissions] on entry to the
+     * step; cleanup still removes it if the step was skipped that turn. Null for windows that end
+     * at cleanup.
+     */
+    val expiresAtStep: com.wingedsheep.sdk.core.Step? = null,
+    /**
      * When set, playing a card granted by this permission emits a
      * [com.wingedsheep.engine.core.CardPlayedFromPermissionEvent] carrying this id, which
      * fires a linked event-based delayed triggered ability — the "When you play a card this

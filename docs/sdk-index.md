@@ -1412,7 +1412,7 @@ Families:
 
 - `MayPlayExpiry.EndOfTurn` — Permission ends at the cleanup step of the current turn.
 - `MayPlayExpiry.Permanent` — Permission persists for as long as the card remains exiled.
-- `MayPlayExpiry.UntilControllerStep(step: Step, includeCurrentTurn: Boolean)` — Permission ends at the controller's next step.
+- `MayPlayExpiry.UntilControllerStep(step: Step, includeCurrentTurn: Boolean)` — Permission ends as the controller's next step begins.
 - `MayPlayExpiry.UntilSourceExilesAnother` — Permission persists indefinitely — across turns, and it survives the granting source leaving play (the permission's lifecycle is owned by the game state, not the source) — EXCEPT that it is revoked…
 - `MayPlayExpiry.WhileSourceOnBattlefield(sourceDescription: String)` — Permission lasts for as long as the **granting permanent stays on the battlefield** — regardless of who controls it, and regardless of who holds the permission.
 - `MayPlayExpiry.WhileYouControlSource(sourceDescription: String)` — Permission lasts for as long as the grant's controller controls the **granting permanent** — "you may cast it for as long as you control this creature" (Taster of Wares).

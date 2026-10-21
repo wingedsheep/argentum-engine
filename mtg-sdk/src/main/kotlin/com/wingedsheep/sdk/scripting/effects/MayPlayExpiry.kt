@@ -15,10 +15,9 @@ import kotlinx.serialization.Serializable
  *  - "until end of your next turn" → `UntilControllerStep(Step.CLEANUP, includeCurrentTurn = false)`
  *  - "until your next upkeep" → `UntilControllerStep(Step.UPKEEP, includeCurrentTurn = false)`
  *
- * Implementation note: removal of expired permissions is currently driven by the cleanup
- * step (see CleanupPhaseManager). [UntilControllerStep] therefore behaves correctly for
- * end-of-turn-aligned steps (END, CLEANUP); other steps still expire at the cleanup of the
- * matching turn but not at the precise moment the step is entered.
+ * [UntilControllerStep] ends as its step *begins* on the controller's qualifying turn ("until your
+ * next end step" can't be used during that end step); a `Step.CLEANUP` window ends at that turn's
+ * cleanup. A step skipped that turn still ends the window at its cleanup.
  */
 @Serializable
 sealed interface MayPlayExpiry {
@@ -57,7 +56,7 @@ sealed interface MayPlayExpiry {
     }
 
     /**
-     * Permission ends at the controller's next [step]. When the trigger fires on the
+     * Permission ends as the controller's next [step] begins. When the trigger fires on the
      * controller's own turn and that step has not yet been reached, [includeCurrentTurn]
      * decides whether THIS turn's instance counts as "next":
      *  - `true` (default) — this turn's matching step counts. Use for "your next [step]" wording.
