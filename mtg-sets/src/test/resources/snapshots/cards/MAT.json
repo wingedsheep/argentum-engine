@@ -1,3 +1,349 @@
+// Ayara's Oathsworn
+{
+    "name": "Ayara's Oathsworn",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Menace\nWhenever this creature deals combat damage to a player, if it has fewer than four +1/+1 counters on it, put a +1/+1 counter on it. Then if it has exactly four +1/+1 counters on it, search your library for a card, put it into your hand, then shuffle.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ayara's Oathsworn:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "PLUS_ONE_PLUS_ONE"
+                                        }
+                                    },
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 4
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Library"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library for a card to put into your hand",
+                                        "selectedLabel": "Put into your hand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        }
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    },
+                    "operator": "LT",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "rarity": "RARE",
+        "artist": "Johann Bodin",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/5330e6b7-eca3-46a4-8905-8f1de16f76af.jpg?1783916526",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "If Ayara's Oathsworn has four or more +1/+1 counters on it as it deals combat damage to a player, its ability won't trigger at all. None of its effects will happen. You won't put a +1/+1 counter on Ayara's Oathsworn and you won't search for a card."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "If the triggered ability does trigger, that ability will check Ayara's Oathsworn again as it tries to resolve. If Ayara's Oathsworn has four or more +1/+1 counters on it at that time, the ability won't resolve. None of its effects will happen. You won't put a +1/+1 counter on Ayara's Oathsworn and you won't search for a card."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "If Ayara's Oathsworn isn't on the battlefield as its ability tries to resolve, you won't search for a card, even if Ayara's Oathsworn had three +1/+1 counters on it before if left the battlefield, because it won't be around to have the fourth +1/+1 counter put on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Blot Out
+{
+    "name": "Blot Out",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target opponent exiles a creature or planeswalker they control with the greatest mana value among creatures and planeswalkers they control.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Players",
+                "players": "TargetOpponent"
+            },
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "ControlledPermanents",
+                            "filter": "creature|planeswalker"
+                        },
+                        "storeAs": "gathered0"
+                    },
+                    {
+                        "type": "FilterCollection",
+                        "from": "gathered0",
+                        "collectionFilter": "GreatestManaValue",
+                        "storeMatching": "matching1"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "matching1",
+                        "selection": {
+                            "type": "ChooseExactly",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "storeSelected": "selected2",
+                        "prompt": "Choose a creature or planeswalker with the greatest mana value to exile",
+                        "useTargetingUI": true
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "selected2",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Exile"
+                        }
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            "TargetOpponent"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Cold",
+        "flavorText": "After the invasion, many wanted to leave a life of violence. But once you're a Reckoner, you die a Reckoner.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/424eb4c7-647e-4168-9471-f299e8e77f5f.jpg?1783916525"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Coppercoat Vanguard
+{
+    "name": "Coppercoat Vanguard",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Each other Human you control gets +1/+0 and has ward {1}. (Whenever it becomes the target of a spell or ability an opponent controls, counter it unless that player pays {1}.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": "permanent Human ctrl:you",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "GrantWard",
+                "cost": {
+                    "type": "WardCost.Mana",
+                    "manaCost": "{1}"
+                },
+                "filter": {
+                    "baseFilter": "permanent Human ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "UNCOMMON",
+        "artist": "Bruno Biazotto",
+        "flavorText": "It was a time for rebuilding, but first Ikoria's wrecked cities had to be cleared of monsters.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d786f05d-78a2-41b6-a185-111e8c1b216b.jpg?1783916531"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Death-Rattle Oni
+{
+    "name": "Death-Rattle Oni",
+    "manaCost": "{6}{B}",
+    "typeLine": "Creature — Demon Spirit",
+    "oracleText": "Flash\nThis spell costs {2} less to cast for each creature that died this turn.\nWhen this creature enters, destroy all other creatures that were dealt damage this turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Death-Rattle Oni:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        "WasDealtDamageThisTurn",
+                                        {
+                                            "type": "StateNot",
+                                            "predicate": "IsSource"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": {
+                            "type": "Multiply",
+                            "amount": {
+                                "type": "TurnTracking",
+                                "player": "Each",
+                                "tracker": "CREATURES_DIED"
+                            },
+                            "multiplier": 2
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "UNCOMMON",
+        "artist": "Wayne Reynolds",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d5e0b5cf-39e8-454f-a942-f7865416ef81.jpg?1783916523"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Deification
 {
     "name": "Deification",
@@ -70,6 +416,82 @@
     ]
 }
 
+// Drannith Ruins
+{
+    "name": "Drannith Ruins",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{2}, {T}: Put two +1/+1 counters on target non-Human creature that entered this turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Drannith Ruins:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Drannith Ruins:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotSubtype",
+                                        "subtype": "Human"
+                                    }
+                                ],
+                                "statePredicates": [
+                                    "EnteredThisTurn"
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "RARE",
+        "artist": "Martin de Diego Sádaba",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c07dda8-06dd-499a-9825-dc6b9a73e455.jpg?1783916506"
+    }
+}
+
 // Feast of the Victorious Dead
 {
     "name": "Feast of the Victorious Dead",
@@ -133,6 +555,56 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLACK"
+    ]
+}
+
+// Filter Out
+{
+    "name": "Filter Out",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Return all noncreature, nonland permanents to their owners' hands.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsNonland",
+                                "IsPermanent",
+                                {
+                                    "type": "Not",
+                                    "predicate": "IsCreature"
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "returnAllToHand_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "returnAllToHand_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "UNCOMMON",
+        "artist": "Julia Metzger",
+        "flavorText": "The glistening oil had been rendered inert, but planes wouldn't begin to truly heal until every last drop was purged.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a81a9eb1-240b-40fd-9282-0f5abec63449.jpg?1783916527"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -317,6 +789,50 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Metropolis Reformer
+{
+    "name": "Metropolis Reformer",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Angel Cleric",
+    "oracleText": "Flying, vigilance\nYou have hexproof.\nWhenever this creature is dealt damage, you gain that much life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Metropolis Reformer:1",
+                "trigger": "DamageReceivedEvent",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            "GrantHexproofToController"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "flavorText": "With their ancient enemy vanquished, the angels of New Capenna turned their eyes to their former captors: demons.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a61a3ba1-af6c-4ddc-aa82-34bfc30867d0.jpg?1783916528"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -552,6 +1068,370 @@
     },
     "colorIdentityOverride": [
         "RED",
+        "WHITE"
+    ]
+}
+
+// Plargg and Nassari
+{
+    "name": "Plargg and Nassari",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Legendary Creature — Orc Efreet",
+    "oracleText": "At the beginning of your upkeep, each player exiles cards from the top of their library until they exile a nonland card. An opponent chooses a nonland card exiled this way. You may cast up to two spells from among the other cards exiled this way without paying their mana costs.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Plargg and Nassari:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherUntilMatch",
+                            "player": "Each",
+                            "filter": "nonland",
+                            "storeMatch": "matched0",
+                            "storeRevealed": "revealed0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "revealed0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matched0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "Opponent",
+                            "storeSelected": "selected2",
+                            "storeRemainder": "remainder2",
+                            "prompt": "Choose a nonland card exiled this way"
+                        },
+                        {
+                            "type": "CastAnyNumberFromCollectionWithoutPayingCost",
+                            "from": "remainder2",
+                            "maxCasts": 2
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, each player exiles cards from the top of their library until they exile a nonland card. An opponent chooses a nonland card exiled this way. You may cast up to two spells from among the other cards exiled this way without paying their mana costs."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "RARE",
+        "artist": "Yigit Koroglu",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/179a0525-a142-46f6-9b5b-06a2fbb25556.jpg?1783916524",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "In a multiplayer game, you choose an opponent to choose a nonland card exiled with Plargg and Nassari."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "In a two-player game, assuming each player eventually exiles a nonland card, your opponent will choose one of them, and you'll be able to cast the other one."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "If a spell has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "All the spells you cast due to the triggered ability are cast during the resolution of that ability. You can cast them in any order."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "Cards not cast this way, including any land cards, remain in exile."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Reckless Handling
+{
+    "name": "Reckless Handling",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for an artifact card, reveal it, put it into your hand, shuffle, then discard a card at random. If an artifact card was discarded this way, Reckless Handling deals 2 damage to each opponent.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "artifact"
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for an artifact card to put into your hand",
+                    "selectedLabel": "Put into your hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent",
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "Random",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "selected1",
+                                    "filter": "artifact"
+                                }
+                            },
+                            "then": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "EachOpponent"
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "UNCOMMON",
+        "artist": "Miguel Mercado",
+        "flavorText": "The relic shattered, and something in Nahiri broke as well.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/239165bb-7819-4d54-a84c-2911934253d6.jpg?1783916521",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "You can't do anything between putting the artifact card you found in your hand and discarding. You may end up discarding that card. But hey, if you do, 2 damage!"
+            },
+            {
+                "date": "2023-05-12",
+                "text": "You discard a card at random even if you didn't find an artifact card in your library."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Spark Rupture
+{
+    "name": "Spark Rupture",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, draw a card.\nEach planeswalker with one or more loyalty counters on it loses all abilities and is a creature with power and toughness each equal to the number of loyalty counters on it.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spark Rupture:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CompositeStaticAbility",
+                "abilities": [
+                    {
+                        "type": "RemoveCardType",
+                        "cardType": "PLANESWALKER",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsPlaneswalker"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "LOYALTY"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "type": "GrantCardType",
+                        "cardType": "CREATURE",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsPlaneswalker"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "LOYALTY"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "type": "LoseAllAbilities",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsPlaneswalker"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "LOYALTY"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "type": "SetBasePowerToughnessDynamicStatic",
+                        "power": {
+                            "type": "EntityProperty",
+                            "entity": "AffectedEntity",
+                            "numericProperty": {
+                                "type": "CounterCount",
+                                "counterType": "LOYALTY"
+                            }
+                        },
+                        "toughness": {
+                            "type": "EntityProperty",
+                            "entity": "AffectedEntity",
+                            "numericProperty": {
+                                "type": "CounterCount",
+                                "counterType": "LOYALTY"
+                            }
+                        },
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsPlaneswalker"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "LOYALTY"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "RARE",
+        "artist": "Viko Menezes",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a027a75f-4faf-4e96-9035-d1f622b9b607.jpg?1783916528",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "A planeswalker that becomes a creature due to Spark Rupture is no longer a planeswalker. It can no longer be attacked, and damage dealt to it won't cause it to lose loyalty counters."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "A planeswalker affected by Spark Rupture loses all abilities it has, not only loyalty abilities. The resulting creature may gain abilities after Spark Rupture enters the battlefield."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "The resulting creature's power and toughness will change if the number of loyalty counters on it changes."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "If a planeswalker-turned-creature has all loyalty counters removed from it, Spark Rupture's effect will stop applying to it. It will momentarily return to being a planeswalker, but as it has no loyalty counters, it will soon find itself in the graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
         "WHITE"
     ]
 }
@@ -992,5 +1872,253 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Urborg Scavengers
+{
+    "name": "Urborg Scavengers",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Whenever this creature enters or attacks, exile target card from a graveyard. Put a +1/+1 counter on this creature.\nThis creature has flying as long as a card exiled with it has flying. The same is true for first strike, double strike, deathtouch, haste, hexproof, indestructible, lifelink, menace, reach, trample, and vigilance.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Urborg Scavengers:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile",
+                            "linkToSource": true
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {},
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature enters, exile target card from a graveyard. Put a +1/+1 counter on this creature."
+            },
+            {
+                "id": "Urborg Scavengers:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "destination": "Exile",
+                            "linkToSource": true
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {},
+                        "zone": "Graveyard"
+                    },
+                    "id": "t1"
+                },
+                "descriptionOverride": "Whenever this creature attacks, exile target card from a graveyard. Put a +1/+1 counter on this creature."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GainKeywordsOfCards",
+                "keywords": [
+                    "FLYING",
+                    "FIRST_STRIKE",
+                    "DOUBLE_STRIKE",
+                    "DEATHTOUCH",
+                    "HASTE",
+                    "INDESTRUCTIBLE",
+                    "LIFELINK",
+                    "MENACE",
+                    "REACH",
+                    "TRAMPLE",
+                    "VIGILANCE"
+                ],
+                "families": [
+                    "HEXPROOF"
+                ],
+                "cards": "CARDS_EXILED_WITH_SOURCE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4dbb4d8f-8ae3-4052-9c6a-e56e96cec832.jpg?1783916524",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "If the target of the first ability is an illegal target at the time the ability tries to resolve (likely because it left the graveyard in response), the ability won't resolve and none of its effects will happen. You won't put a +1/+1 counter on Urborg Scavengers."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Vesuvan Drifter
+{
+    "name": "Vesuvan Drifter",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Shapeshifter",
+    "oracleText": "Flying\nYou may look at the top card of your library any time.\nAt the beginning of each combat, you may reveal the top card of your library. If you reveal a creature card this way, this creature becomes a copy of that card until end of turn, except it has flying.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vesuvan Drifter:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Reveal the top card of your library?"
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "RevealCollection",
+                                "from": "gathered0"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "gathered0",
+                                "filter": "creature",
+                                "storeMatching": "matching2"
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "CollectionContainsMatch",
+                                        "collection": "matching2",
+                                        "filter": "creature"
+                                    }
+                                },
+                                "then": {
+                                    "type": "EachPermanentBecomesCopyOfTarget",
+                                    "target": {
+                                        "type": "PipelineTarget",
+                                        "collectionName": "matching2"
+                                    },
+                                    "duration": "EndOfTurn",
+                                    "affected": "Self",
+                                    "sourceFromAnyZone": true,
+                                    "exceptions": {
+                                        "addedKeywords": [
+                                            "FLYING"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "At the beginning of each combat, you may reveal the top card of your library. If you reveal a creature card this way, this creature becomes a copy of that card until end of turn, except it has flying."
+            }
+        ],
+        "staticAbilities": [
+            "LookAtTopOfLibrary"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "RARE",
+        "artist": "Julia Metzger",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2785902-2757-406b-bc75-6f05e0edc98d.jpg?1783916526",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "Vesuvan Drifter lets you look at the top card of your library whenever you want (with one restriction—see below), even if you don't have priority. This action doesn't use the stack. Knowing what that card is becomes part of the information you have access to, just like you can look at the cards in your hand."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "If the top card of your library changes while you're casting a spell, playing a land, or activating an ability, you can't look at the new top card until you finish doing so. This means that if you cast the top card of your library, you can't look at the next one until you're done paying for that spell."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "Notably, while Vesuvan Drifter is a copy of another card, it doesn't have its own abilities. You won't be able to look at the top card of your library unless another effect allows you to do so."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "Vesuvan Drifter copies exactly what was printed on the original creature card and nothing else, except it has flying."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "If the copied creature card has {X} in its mana cost, X is 0."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "Any non-copy effect that began to apply to Vesuvan Drifter before it became a copy of a creature card will continue to apply to it after it becomes a copy. Auras and Equipment attached to Vesuvan Drifter will continue to work, as well as counters that change its power and toughness."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
