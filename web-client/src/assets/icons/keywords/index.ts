@@ -217,4 +217,5 @@ export const counterManaClass: Record<string, string> = {
   BRAIN: 'counter-charge',
   HATCHING: 'counter-charge',
   INTERVENTION: 'counter-time',
+  REJECTION: 'counter-doom',
 }

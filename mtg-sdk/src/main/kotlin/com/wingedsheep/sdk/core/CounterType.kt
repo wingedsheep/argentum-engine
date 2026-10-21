@@ -788,6 +788,13 @@ value class CounterType(val name: String) {
          */
         val INTERVENTION = CounterType("INTERVENTION")
 
+        /**
+         * Rejection counter (MAT — Tolarian Contempt). A mark with no inherent rule: the enchantment's
+         * enters trigger puts one on each opposing creature, and its end-step trigger may only target
+         * creatures that carry one.
+         */
+        val REJECTION = CounterType("REJECTION")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -930,6 +937,7 @@ value class CounterType(val name: String) {
             BRAIN,
             HATCHING,
             INTERVENTION,
+            REJECTION,
         )
 
         /**

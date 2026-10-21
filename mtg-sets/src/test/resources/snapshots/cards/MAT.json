@@ -1586,6 +1586,89 @@
     ]
 }
 
+// Tolarian Contempt
+{
+    "name": "Tolarian Contempt",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, put a rejection counter on each creature your opponents control.\nAt the beginning of your end step, for each opponent, choose up to one target creature they control with a rejection counter on it. That creature's owner puts it on their choice of the top or bottom of their library.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tolarian Contempt:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "REJECTION",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            },
+            {
+                "id": "Tolarian Contempt:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "PutOnLibraryPositionOfChoice",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "HasCounter",
+                                    "counterType": "REJECTION"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByOpponent"
+                        }
+                    },
+                    "id": "t0",
+                    "dynamicMaxCount": "PlayerCount",
+                    "differentControllers": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "UNCOMMON",
+        "artist": "Tuan Duong Chu",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f72a9deb-9329-4930-a906-136c26490d52.jpg?1783916526"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Tranquil Frillback
 {
     "name": "Tranquil Frillback",
