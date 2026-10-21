@@ -7696,8 +7696,11 @@ each trigger spends one, whether or not anything came of it, and simultaneous fi
 the two through `TriggeredAbility.perTurnTriggerCap`. **A capped ability granted by a lord static
 (`GrantTriggeredAbility` over a group) counts per granting permanent**: each granter's grant is a
 separate ability with its own allowance, so two granters give a creature two allowances, and a
-granter that leaves and returns grants a fresh one (Nadu rulings). The engine re-stamps such a
-granted ability's id per granter; uncapped grants keep the printed id.
+granter that leaves and returns is a new object granting a new ability with a fresh allowance, even
+to a creature whose ability from the old object already triggered that turn (Nadu and Tyvar the
+Bellicose rulings; CR 400.7). The engine re-stamps such a granted ability's id per granting *object* —
+the granter's entity id plus its zone-change generation, since entity ids survive zone changes;
+uncapped grants keep the printed id.
 
 **Backup (CR 702.165) — `isBackup = true`.** "Backup N" has no bespoke effect: it is an enters trigger
 the card composes — `val c = target(TargetFilter.Creature)`, `AddCounters(PLUS_ONE_PLUS_ONE, N, c) then

@@ -450,7 +450,7 @@ class TriggerAbilityResolver(
                 // condition of its own).
                 if (entry.grant.filter.scope is Scope.SoulbondPair) {
                     if (SoulbondPairing.isInPairOf(state, entry.sourceEntityId, entityId)) {
-                        add(perGranter(entry.grant.ability, entry.sourceEntityId))
+                        add(perGranter(state, entry.grant.ability, entry.sourceEntityId))
                     }
                     continue
                 }
@@ -459,7 +459,7 @@ class TriggerAbilityResolver(
                 if (entry.grant.filter.excludeSelf && entityId == entry.sourceEntityId) continue
                 val context = PredicateContext(controllerId = entry.sourceControllerId, sourceId = entry.sourceEntityId)
                 if (predicateEvaluator.matches(state, projected, entityId, entry.grant.filter.baseFilter, context)) {
-                    add(perGranter(entry.grant.ability, entry.sourceEntityId))
+                    add(perGranter(state, entry.grant.ability, entry.sourceEntityId))
                 }
             }
         }
@@ -469,14 +469,21 @@ class TriggerAbilityResolver(
      * Give a firing-capped granted ability ("This ability triggers only twice each turn") an id of
      * its own per granting permanent. The cap trackers are keyed by `(source, AbilityId)`, and every
      * copy of the granting card prints the same id — so without this, two Nadus' grants on one
-     * creature would share one allowance, and a Nadu that left and came back would inherit the old
-     * one's spent count. Per the Nadu, Winged Wisdom rulings each grant is a separate ability with
-     * its own count, and a new granting object grants a new ability (CR 400.7). Uncapped grants keep
-     * the printed id: nothing counts them.
+     * creature would share one allowance. Per the Nadu, Winged Wisdom rulings each grant is a
+     * separate ability with its own count.
+     *
+     * The id also names the granter's object *generation*: an [EntityId] survives zone changes, but
+     * a permanent that leaves and returns is a new object (CR 400.7), and the ability the new object
+     * grants is a different ability from the old one's. So a Tyvar the Bellicose or Nadu that leaves
+     * and comes back the same turn grants a fresh "only once/twice each turn" allowance, even to a
+     * creature whose ability from the old object already triggered (the Tyvar rulings). Uncapped
+     * grants keep the printed id: nothing counts them.
      */
-    private fun perGranter(ability: TriggeredAbility, granterId: EntityId): TriggeredAbility =
-        if (ability.perTurnTriggerCap == null && !ability.triggersOnce) ability
-        else ability.copy(id = AbilityId("granted_${granterId.value}_${ability.id.value}"))
+    private fun perGranter(state: GameState, ability: TriggeredAbility, granterId: EntityId): TriggeredAbility {
+        if (ability.perTurnTriggerCap == null && !ability.triggersOnce) return ability
+        val generation = state.objectRef(granterId)?.generation ?: 0
+        return ability.copy(id = AbilityId("granted_${granterId.value}_g${generation}_${ability.id.value}"))
+    }
 
     /**
      * The permanents whose `GrantTriggeredAbility` static granted the triggered ability [abilityId]

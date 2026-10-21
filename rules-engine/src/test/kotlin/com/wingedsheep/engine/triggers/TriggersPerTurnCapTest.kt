@@ -3,6 +3,7 @@ package com.wingedsheep.engine.triggers
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -11,6 +12,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
 import com.wingedsheep.sdk.scripting.events.Recipient
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
@@ -23,7 +25,8 @@ import io.kotest.matchers.shouldBe
  *    **two** instances on the stack (the same-pass collapse), and later damage that turn adds none.
  *  - *Twice Granter* grants the capped trigger to creatures. Each granter's grant is its own ability
  *    with its own count (the Nadu rulings: "These abilities are not redundant"), so two granters
- *    give one creature four triggers a turn, not two.
+ *    give one creature four triggers a turn, not two. A granter that leaves and returns is a new
+ *    object granting a new ability, so its fresh grant comes with a fresh count (CR 400.7).
  */
 private val TwiceWarden = card("Twice Warden") {
     manaCost = "{2}"
@@ -66,10 +69,26 @@ private val TwiceGranter = card("Twice Granter") {
     }
 }
 
+private val GranterRecall = card("Granter Recall") {
+    manaCost = "{0}"
+    typeLine = "Instant"
+    oracleText = "Return target permanent to its owner's hand."
+
+    spell {
+        val t = target(TargetFilter.Permanent)
+        effect = Effects.Move(t, Zone.HAND)
+    }
+
+    metadata {
+        rarity = Rarity.COMMON
+        collectorNumber = "T3"
+    }
+}
+
 class TriggersPerTurnCapTest : ScenarioTestBase() {
 
     init {
-        cardRegistry.register(listOf(TwiceWarden, TwiceGranter))
+        cardRegistry.register(listOf(TwiceWarden, TwiceGranter, GranterRecall))
 
         fun growthGame(granters: Int) = scenario()
             .withPlayers("Player1", "Player2")
@@ -128,6 +147,35 @@ class TriggersPerTurnCapTest : ScenarioTestBase() {
             withClue("each grant triggers twice — four triggers, not two shared") {
                 game.getLifeTotal(1) shouldBe 24
             }
+        }
+
+        test("a granter that leaves and returns grants a new ability with a fresh count") {
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(1, "Twice Granter")
+                .withCardOnBattlefield(1, "Grizzly Bears")
+                .withCardsInHand(1, "Giant Growth", 3)
+                .withCardInHand(1, "Granter Recall")
+                .withLandsOnBattlefield(1, "Forest", 5)
+                .withLifeTotal(1, 20)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val bears = game.findPermanent("Grizzly Bears")!!
+            repeat(2) {
+                game.castSpell(1, "Giant Growth", targetId = bears).error shouldBe null
+                game.resolveStack()
+            }
+            withClue("the first granter's ability has spent its two triggers") { game.getLifeTotal(1) shouldBe 22 }
+
+            game.castSpell(1, "Granter Recall", targetId = game.findPermanent("Twice Granter")!!).error shouldBe null
+            game.resolveStack()
+            game.castSpell(1, "Twice Granter").error shouldBe null
+            game.resolveStack()
+
+            game.castSpell(1, "Giant Growth", targetId = bears).error shouldBe null
+            game.resolveStack()
+            withClue("the returned granter's ability is a new one and triggers") { game.getLifeTotal(1) shouldBe 23 }
         }
 
         test("the cap is two or more, and does not combine with oncePerTurn") {

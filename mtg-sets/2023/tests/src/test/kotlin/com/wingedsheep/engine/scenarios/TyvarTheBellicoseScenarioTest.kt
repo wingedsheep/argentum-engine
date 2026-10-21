@@ -49,6 +49,33 @@ class TyvarTheBellicoseScenarioTest : ScenarioTestBase() {
             g.plusOnes(elves) shouldBe 1
         }
 
+        test("a Tyvar that leaves and returns grants a new ability that can trigger again this turn") {
+            val g = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(1, "Tyvar the Bellicose")
+                .withCardOnBattlefield(1, "Llanowar Elves")
+                .withCardInHand(1, "Cloudshift")
+                .withLandsOnBattlefield(1, "Plains", 1)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val elves = g.findPermanent("Llanowar Elves")!!
+
+            g.tapElves(g.player1Id, elves).error shouldBe null
+            g.resolveStack()
+            g.plusOnes(elves) shouldBe 1
+
+            // Flickered, Tyvar is a new object; the ability it now grants is a different one.
+            g.castSpell(1, "Cloudshift", targetId = g.findPermanent("Tyvar the Bellicose")!!).error shouldBe null
+            g.resolveStack()
+
+            g.state = g.state.updateEntity(elves) { it.without<TappedComponent>() }
+            g.tapElves(g.player1Id, elves).error shouldBe null
+            g.state.stack.size shouldBe 1
+            g.resolveStack()
+            g.plusOnes(elves) shouldBe 2
+        }
+
         test("an opponent's creature doesn't have the ability") {
             val g = scenario()
                 .withPlayers("Player1", "Player2")
