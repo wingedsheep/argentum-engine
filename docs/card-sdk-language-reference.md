@@ -6888,9 +6888,13 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
 - `.monocolored()` — restrict to monocolored objects (exactly one color, CR 105.2); colorless objects don't match. ("for each color among monocolored permanents you control" — Tarnation Vista.)
 - `.exactlyColors(n)` / `.notExactlyColors(n)` — objects that are (or aren't) exactly `n` colors (CR 105.2; `CardPredicate.HasExactlyColors(n)`). Colorless is zero colors, so it passes `notExactlyColors(2)`. ("a spell that's exactly two colors" — Guildpact Paragon; "target nonland permanent an opponent controls that isn't exactly two colors" — Invasion of Ravnica.) For one color prefer `.monocolored()`.
 - `.exactlyColors(amount: DynamicAmount)` — exactly `amount` colors, resolved when the filter is checked (`CompareNumericProperty(COLOR_COUNT, EQ, amount)`; projected colors on the battlefield, printed ones elsewhere). "a creature card that's exactly that many colors plus one" — Evolving Door: `GameObjectFilter.Creature.exactlyColors(DynamicAmounts.colorCountOf(EffectTarget.SacrificedAsCost(0)) + 1)`; the sacrificed creature's colors come from its cost-time snapshot, so a sacrificed token counts as it last existed.
-- `.withManaAbility()` — `StatePredicate.HasManaAbility`: current battlefield mana-ability
-  presence, including projected basic land types, active printed abilities, triggered mana
-  abilities, and runtime/static/emblem grants. Costs, tapped state, activation prohibitions,
+- `.withManaAbility()` — `StatePredicate.HasManaAbility`: mana-ability presence. On the
+  battlefield: current presence, including projected basic land types, active printed abilities,
+  triggered mana abilities, and runtime/static/emblem grants. In any other zone a card answers from
+  its printed activated and triggered mana abilities and printed basic land types, plus abilities
+  granted to it there — "Search your library for an artifact card with a mana ability or a basic
+  land card" is `GameObjectFilter.Artifact.withManaAbility() or GameObjectFilter.BasicLand`
+  (Moonsilver Key). Costs, tapped state, activation prohibitions,
   and whether the ability currently produces mana do not affect presence. Hidden printed
   abilities, phased-out permanents, and removed own abilities do not count. Projected basic
   land types can grant intrinsic mana abilities even to face-down permanents. Requires the

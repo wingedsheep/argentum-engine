@@ -33,7 +33,11 @@ sealed interface StatePredicate {
     @Serializable
     sealed interface History : StatePredicate
 
-    /** A battlefield permanent currently has a mana ability, whether or not it can be activated. */
+    /**
+     * The object has a mana ability, whether or not it can be activated. A permanent answers from
+     * its current state; a card in another zone from its printed abilities and printed basic land
+     * types ("an artifact card with a mana ability" — Moonsilver Key).
+     */
     @SerialName("HasManaAbility")
     @Serializable
     data object HasManaAbility : Entity {

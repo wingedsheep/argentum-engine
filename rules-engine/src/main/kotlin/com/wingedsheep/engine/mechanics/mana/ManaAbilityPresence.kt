@@ -6,6 +6,7 @@ import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
+import com.wingedsheep.engine.state.components.battlefield.PhasedOutComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.RoomComponent
@@ -17,7 +18,15 @@ import com.wingedsheep.sdk.scripting.AdditionalManaOnSourceTap
 import com.wingedsheep.sdk.scripting.AdditionalManaOnTap
 import com.wingedsheep.sdk.scripting.StaticAbility
 
-/** Presence of an ability is independent of costs, activation locks, and current production. */
+/**
+ * Presence of an ability is independent of costs, activation locks, and current production.
+ *
+ * On the battlefield the answer reads projected state (basic land types, lost abilities, every
+ * grant). Off the battlefield a card still has its printed abilities, though they don't function
+ * there — Moonsilver Key searches the library for "an artifact card with a mana ability" — so it
+ * answers from the card's printed type line and definition, plus abilities an effect or static
+ * ability grants it in that zone.
+ */
 object ManaAbilityPresence {
     fun hasAbility(
         state: GameState,
@@ -26,13 +35,18 @@ object ManaAbilityPresence {
         registry: CardRegistry,
         predicates: PredicateEvaluator,
     ): Boolean {
-        if (entityId !in state.getBattlefield()) return false
         val container = state.getEntity(entityId) ?: return false
+        // A phased-out permanent is treated as though it doesn't exist; it isn't a card elsewhere.
+        if (container.has<PhasedOutComponent>()) return false
         val card = container.get<CardComponent>() ?: return false
+        val onBattlefield = entityId in state.getBattlefield()
         val faceDown = container.has<FaceDownComponent>()
-        val removed = projected.hasLostAllAbilities(entityId)
-        val intrinsic = projected.hasType(entityId, "LAND") &&
-            projected.getSubtypes(entityId).any { it in basicLandTypes }
+        val removed = onBattlefield && projected.hasLostAllAbilities(entityId)
+        val intrinsic = if (onBattlefield) {
+            projected.hasType(entityId, "LAND") && projected.getSubtypes(entityId).any { it in basicLandTypes }
+        } else {
+            IntrinsicManaAbilities.forCard(card).isNotEmpty()
+        }
         if (intrinsic && (!removed || projected.hasBasicLandTypesSetByEffect(entityId))) return true
 
         if (!faceDown && !removed) {
@@ -65,7 +79,7 @@ object ManaAbilityPresence {
         return permissions.getStaticGrantedAbilitiesWithGranter(entityId, state, projected).any {
             it.ability.isManaAbility && it.ability.activateFromZone == Zone.BATTLEFIELD &&
                 !projected.hasLostAllAbilities(it.granterId)
-        } || permissions.getEmblemGrantedActivatedAbilities(entityId, state, projected).any {
+        } || onBattlefield && permissions.getEmblemGrantedActivatedAbilities(entityId, state, projected).any {
             it.isManaAbility && it.activateFromZone == Zone.BATTLEFIELD
         }
     }

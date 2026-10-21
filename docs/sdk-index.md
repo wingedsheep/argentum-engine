@@ -1696,7 +1696,7 @@ Families:
 - `StatePredicate.HasLeastPower` — Has the least power among creatures its controller controls
 - `StatePredicate.HasLeastPowerAmongAllCreatures` — Has the least power among *all* creatures on the battlefield (global scope, both players), not just the ones its controller controls.
 - `StatePredicate.HasLockedDoor` — A Room permanent (CR 709.5) that currently has at least one locked door — i.e. at least one half without its "unlocked" designation (CR 709.5c).
-- `StatePredicate.HasManaAbility` — A battlefield permanent currently has a mana ability, whether or not it can be activated.
+- `StatePredicate.HasManaAbility` — The object has a mana ability, whether or not it can be activated.
 - `StatePredicate.HasMorphAbility` — Has a morph ability (has MorphDataComponent)
 - `StatePredicate.HasSingleTarget` — A spell or ability on the stack with exactly one chosen target — the "with a single target" qualifier (Hydroelectric Specimen's "target instant or sorcery spell with a single target").
 - `StatePredicate.InSameBandAsSource` — In the same combat band as the effect's source — i.e. the source creature itself, or a creature sharing the source's band id (CR 702.22).

@@ -4062,6 +4062,99 @@
     ]
 }
 
+// Moonsilver Key
+{
+    "name": "Moonsilver Key",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{1}, {T}, Sacrifice this artifact: Search your library for an artifact card with a mana ability or a basic land card, reveal it, put it into your hand, then shuffle.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Moonsilver Key:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": {
+                                    "anyOf": [
+                                        {
+                                            "cardPredicates": [
+                                                "IsArtifact"
+                                            ],
+                                            "statePredicates": [
+                                                "HasManaAbility"
+                                            ]
+                                        },
+                                        {
+                                            "cardPredicates": [
+                                                "IsBasicLand"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for an artifact card with a mana ability or basic land to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "255",
+        "rarity": "UNCOMMON",
+        "artist": "Joseph Meehan",
+        "flavorText": "To restore the day-night balance, the Celestus mechanism's Sungold Lock must be reunited with its long-lost key.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/87778e37-af92-402e-b037-5fbd6112b682.jpg?1783925547"
+    },
+    "colorIdentityOverride": []
+}
+
 // Morbid Opportunist
 {
     "name": "Morbid Opportunist",
