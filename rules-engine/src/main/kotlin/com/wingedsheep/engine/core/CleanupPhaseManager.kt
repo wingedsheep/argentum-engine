@@ -392,17 +392,16 @@ class CleanupPhaseManager(
         fun due(atStep: Step?, floor: Int?, player: EntityId): Boolean =
             atStep == step && floor != null && state.turnNumber >= floor && state.isActiveTurnFor(player)
 
-        var newState = state
-        if (state.mayPlayPermissions.any { it.expiresAtStep == step }) {
-            newState = newState.copy(
-                mayPlayPermissions = newState.mayPlayPermissions.filterNot { permission ->
-                    !permission.permanent && due(
-                        permission.expiresAtStep, permission.expiresAfterTurn,
-                        permission.expiryControllerId ?: permission.controllerId
-                    )
-                }
-            )
-        }
+        // A step-keyed waiver is only ever granted alongside a step-keyed permission.
+        if (state.mayPlayPermissions.none { it.expiresAtStep == step }) return state
+        var newState = state.copy(
+            mayPlayPermissions = state.mayPlayPermissions.filterNot { permission ->
+                !permission.permanent && due(
+                    permission.expiresAtStep, permission.expiresAfterTurn,
+                    permission.expiryControllerId ?: permission.controllerId
+                )
+            }
+        )
         for ((entityId, container) in state.entities) {
             val waiver = container.get<PlayWithoutPayingCostComponent>() ?: continue
             if (!waiver.permanent &&

@@ -698,6 +698,7 @@ class TurnManager(
                 // off now, on entry to this additional one (CR 500.9).
                 val beforeCopyExpiry = redirectedState
                 redirectedState = cleanupPhaseManager.performNextEndStepExpiry(redirectedState)
+                redirectedState = cleanupPhaseManager.expireStepKeyedPermissions(redirectedState, Step.END)
 
                 // Phase is unchanged (END and CLEANUP both live in the ending phase), so only the
                 // step-changed event is emitted — that re-fires the end-step triggers.

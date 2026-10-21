@@ -26,9 +26,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * - "Attacking" is gated in the dies-trigger filter, which reads the zone-change event's last-known
  *   `wasAttacking` — a dead token is gone before the trigger resolves, so a resolution-time check
  *   would miss it.
- * - "Until end of combat on your next turn" has no single [MayPlayExpiry]: may-play windows are
- *   removed only at cleanup, so `UntilControllerStep(END_COMBAT)` would leave the card playable in
- *   the next turn's postcombat main phase. The window is composed from two grants on the same card:
+ * - "Until end of combat on your next turn" has no single [MayPlayExpiry]: an `UntilControllerStep`
+ *   window closes as its step *begins*, so `UntilControllerStep(END_COMBAT)` would end it before the
+ *   end of combat step rather than as that step ends. The window is composed from two grants on the same card:
  *     1. [MayPlayExpiry.EndOfTurn] — the rest of this turn (the trigger resolves in your postcombat
  *        main phase, so the gate on grant 2 is closed for now).
  *     2. [MayPlayExpiry.UntilEndOfNextTurn] gated by "it's not your turn, or it's your beginning
