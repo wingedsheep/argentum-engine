@@ -4483,6 +4483,62 @@
     ]
 }
 
+// Rite of Oblivion
+{
+    "name": "Rite of Oblivion",
+    "manaCost": "{W}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, sacrifice a nonland permanent.\nExile target nonland permanent.\nFlashback {2}{W}{B} (You may cast this card from your graveyard for its flashback cost and any additional costs. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{2}{W}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Exile"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "nonland permanent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "rarity": "UNCOMMON",
+        "artist": "Martina Pilcerova",
+        "flavorText": "Revenge is a circle without end.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fe1f8d52-565e-4900-8357-fd29f2022dc1.jpg?1783925555"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Rockfall Vale
 {
     "name": "Rockfall Vale",
@@ -4541,6 +4597,142 @@
     },
     "colorIdentityOverride": [
         "RED",
+        "GREEN"
+    ]
+}
+
+// Sacred Fire
+{
+    "name": "Sacred Fire",
+    "manaCost": "{R}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Sacred Fire deals 2 damage to any target and you gain 2 life.\nFlashback {4}{R}{W} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{4}{R}{W}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "239",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"Do not confuse justice with mercy.\"\n—Odric, Order of Saint Traft",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c0b1dcd7-6dd9-4134-bc6c-9dc7754006a2.jpg?1783925554"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Saryth, the Viper's Fang
+{
+    "name": "Saryth, the Viper's Fang",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Legendary Creature — Human Warlock",
+    "oracleText": "Other tapped creatures you control have deathtouch.\nOther untapped creatures you control have hexproof.\n{1}, {T}: Untap another target creature or land you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Saryth, the Viper's Fang:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature|land ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DEATHTOUCH",
+                "filter": {
+                    "baseFilter": "creature tapped ctrl:you",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HEXPROOF",
+                "filter": {
+                    "baseFilter": "creature untapped ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "rarity": "RARE",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc8b3a09-75e8-428c-91f7-8fac62fadc98.jpg?1783925573"
+    },
+    "colorIdentityOverride": [
         "GREEN"
     ]
 }
@@ -4630,6 +4822,46 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Shadowbeast Sighting
+{
+    "name": "Shadowbeast Sighting",
+    "manaCost": "{3}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a 4/4 green Beast creature token.\nFlashback {6}{G} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{6}{G}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "power": 4,
+            "toughness": 4,
+            "colors": [
+                "GREEN"
+            ],
+            "creatureTypes": [
+                "Beast"
+            ],
+            "imageUri": "https://cards.scryfall.io/normal/front/f/5/f55c70b8-0fa5-4d08-9061-f53d6f949908.jpg?1783925222"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "artist": "Piotr Foksowicz",
+        "flavorText": "\"Werewolves leave tracks. Vampires leave wrung-out corpses. This is something else.\"\n—Paulin, trapper of Somberwald",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1b12e978-4deb-4ccc-8ae6-462bc4598c90.jpg?1783925573"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -4742,6 +4974,59 @@
     ]
 }
 
+// Skaab Wrangler
+{
+    "name": "Skaab Wrangler",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Tap three untapped creatures you control: Tap target creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Skaab Wrangler:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "count": 3,
+                        "filter": "creature"
+                    }
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "UNCOMMON",
+        "artist": "Billy Christian",
+        "flavorText": "After Uda's hat boutique in Selhoff was destroyed by werewolves, she relocated outside of town and took up a new type of sewing.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/9771d9e8-97d5-44af-8612-dc5c44d65ceb.jpg?1783925630"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Snarling Wolf
 {
     "name": "Snarling Wolf",
@@ -4844,6 +5129,84 @@
     ]
 }
 
+// Storm the Festival
+{
+    "name": "Storm the Festival",
+    "manaCost": "{3}{G}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top five cards of your library. You may put up to two permanent cards with mana value 5 or less from among them onto the battlefield. Put the rest on the bottom of your library in a random order.\nFlashback {7}{G}{G}{G} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{7}{G}{G}{G}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 5
+                        }
+                    },
+                    "storeAs": "looked"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "looked",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "filter": "permanent mv<=5",
+                    "storeSelected": "kept",
+                    "storeRemainder": "rest",
+                    "prompt": "Put up to two permanent cards with mana value 5 or less from among them onto the battlefield",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "kept",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "Random"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "RARE",
+        "artist": "Yigit Koroglu",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b4f1f69c-122d-472a-b82d-fed7c253a4cd.jpg?1783925572"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Stromkirk Bloodthief
 {
     "name": "Stromkirk Bloodthief",
@@ -4904,6 +5267,167 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Stuffed Bear
+{
+    "name": "Stuffed Bear",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}: This artifact becomes a 4/4 green Bear artifact creature until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Stuffed Bear:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "creatureTypes": [
+                        "Bear"
+                    ],
+                    "addTypes": [
+                        "ARTIFACT"
+                    ],
+                    "colors": [
+                        "GREEN"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "259",
+        "artist": "Joe Slucher",
+        "flavorText": "It takes a taxidermist of unusual skill to cleanly stuff and mount a beast without severing its primal, predatory drive.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4cd40276-016b-475f-906f-74d31dceaf70.jpg?1783925545"
+    }
+}
+
+// Sungold Barrage
+{
+    "name": "Sungold Barrage",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature with toughness 4 or greater.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature tou>=4"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "artist": "Leanna Crossan",
+        "flavorText": "Heida allowed herself a moment of satisfaction as she watched the beast fall, then turned to seek another foe. It would be a long, long night.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/ee507688-9890-47c4-bb04-43c51eb48e22.jpg?1783925650"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Tapping at the Window
+{
+    "name": "Tapping at the Window",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top three cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest into your graveyard.\nFlashback {2}{G} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{2}{G}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    "storeAs": "looked"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "looked",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "creature",
+                    "storeSelected": "kept",
+                    "storeRemainder": "rest",
+                    "prompt": "You may reveal a creature card from among them and put it into your hand",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "kept",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "artist": "Nils Hamm",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba75dc52-7ab2-43ec-afac-0a9bcf24cde9.jpg?1783925573"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -5257,6 +5781,62 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Willow Geist
+{
+    "name": "Willow Geist",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Treefolk Spirit",
+    "oracleText": "Trample\nWhenever one or more cards leave your graveyard, put a +1/+1 counter on this creature.\nWhen this creature dies, you gain life equal to its power.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Willow Geist:1",
+                "trigger": "CardsLeftYourGraveyardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Willow Geist:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "RARE",
+        "artist": "Ryan Yee",
+        "flavorText": "Die beneath a tree, wake up a part of it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1c40c71c-4cdc-4a28-8ea3-4636c936f8aa.jpg?1783925568"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
