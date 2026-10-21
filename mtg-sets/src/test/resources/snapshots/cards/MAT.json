@@ -1538,6 +1538,166 @@
     "colorIdentityOverride": []
 }
 
+// Kiora, Sovereign of the Deep
+{
+    "name": "Kiora, Sovereign of the Deep",
+    "manaCost": "{3}{G}{U}",
+    "typeLine": "Legendary Creature — Merfolk Noble",
+    "oracleText": "Vigilance, ward {3}\nWhenever you cast a Kraken, Leviathan, Octopus, or Serpent spell from your hand, look at the top X cards of your library, where X is that spell's mana value. You may cast a spell with mana value less than X from among them without paying its mana cost. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "VIGILANCE",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{3}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kiora, Sovereign of the Deep:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Kraken"
+                                    },
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Leviathan"
+                                    },
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Octopus"
+                                    },
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Serpent"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "requires": [
+                        {
+                            "type": "SpellCastFromZone",
+                            "zone": "Hand"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "EntityProperty",
+                                    "entity": "TriggeringEntity",
+                                    "numericProperty": "ManaValue"
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsNonland",
+                                    {
+                                        "type": "ManaValueAtMostDynamic",
+                                        "amount": {
+                                            "type": "Subtract",
+                                            "left": {
+                                                "type": "EntityProperty",
+                                                "entity": "TriggeringEntity",
+                                                "numericProperty": "ManaValue"
+                                            },
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "You may cast a spell with mana value less than X without paying its mana cost.",
+                            "selectedLabel": "Cast for free",
+                            "remainderLabel": "Put on bottom",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        },
+                        {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "selected1"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you cast a Kraken, Leviathan, Octopus, or Serpent spell from your hand, look at the top X cards of your library, where X is that spell's mana value. You may cast a spell with mana value less than X from among them without paying its mana cost. Put the rest on the bottom of your library in a random order."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b599f53-614c-4b1f-9899-15d5d1e35879.jpg?1783916513",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "The spell you cast without paying its mana cost is cast during the resolution of the triggered ability. Timing restrictions of that spell based on card type are ignored. It will resolve before the spell that caused the ability to trigger."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "If you cast a spell \"without paying its mana cost,\" you can't pay any alternative costs. You can, however, pay additional costs. If the spell has any mandatory additional costs, those must be paid to cast it."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "If the spell has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Kolaghan Warmonger
 {
     "name": "Kolaghan Warmonger",
@@ -1989,6 +2149,263 @@
     ]
 }
 
+// Narset, Enlightened Exile
+{
+    "name": "Narset, Enlightened Exile",
+    "manaCost": "{1}{U}{R}{W}",
+    "typeLine": "Legendary Creature — Human Monk",
+    "oracleText": "Creatures you control have prowess.\nWhenever Narset attacks, exile target noncreature, nonland card with mana value less than Narset's power from a graveyard and copy it. You may cast the copy without paying its mana cost.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Narset, Enlightened Exile:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "CopyCardIntoCollection",
+                            "source": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "storeAs": "copy1"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "CastFromCollectionWithoutPayingCost",
+                                "from": "copy1"
+                            },
+                            "descriptionOverride": "You may cast the copy without paying its mana cost."
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsNoncreature",
+                                "IsNonland",
+                                {
+                                    "type": "CompareNumericProperty",
+                                    "property": "MANA_VALUE",
+                                    "operator": "LT",
+                                    "amount": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": "Power"
+                                    }
+                                }
+                            ]
+                        },
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever Narset attacks, exile target noncreature, nonland card with mana value less than Narset's power from a graveyard and copy it. You may cast the copy without paying its mana cost."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "PROWESS",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Narset, Enlightened Exile:1",
+                    "trigger": {
+                        "type": "SpellCastEvent",
+                        "spellFilter": {
+                            "cardPredicates": [
+                                "IsNoncreature"
+                            ]
+                        }
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Self"
+                    }
+                },
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "MYTHIC",
+        "artist": "Marie Magny",
+        "flavorText": "They called her unique insight a \"gift.\" Then she saw the truth, and suddenly it was a \"threat.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/827ecc44-0b00-4515-8953-bc91fa03705a.jpg?1783916515",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "Once a prowess ability triggers, causing the creature to lose prowess by removing Narset, Enlightened Exile won't affect that ability. The creature will still get +1/+1 until end of turn."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "You cast the copy while the ability is resolving and still on the stack. You can't wait to cast it later in the turn."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "If the spell you cast has {X} in its mana cost, you must choose 0 as the value of X."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "If another effect causes Narset's power to be less than or equal to the mana value of the target card as the ability tries to resolve, the target is illegal. The card won't be exiled, and you won't get to cast a copy."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Nashi, Moon's Legacy
+{
+    "name": "Nashi, Moon's Legacy",
+    "manaCost": "{B}{G}{U}",
+    "typeLine": "Legendary Creature — Rat Shaman",
+    "oracleText": "Menace, ward {1}\nWhenever Nashi attacks, exile up to one target legendary or Rat card from your graveyard and copy it. You may cast the copy. (You still pay its costs. A copy of a permanent spell becomes a token.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "MENACE",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{1}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nashi, Moon's Legacy:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "CopyCardIntoCollection",
+                            "source": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "storeAs": "copy1"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "CastFromCollectionWithoutPayingCost",
+                                "from": "copy1",
+                                "payManaCost": true
+                            },
+                            "descriptionOverride": "You may cast the copy."
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        "IsLegendary",
+                                        {
+                                            "type": "HasSubtype",
+                                            "subtype": "Rat"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "controllerPredicate": "OwnedByYou"
+                        },
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever Nashi attacks, exile up to one target legendary or Rat card from your graveyard and copy it. You may cast the copy."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "rarity": "RARE",
+        "artist": "Patrik Hell",
+        "flavorText": "The story circle continues.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8ebd7ce4-550d-41ab-8559-97efb234a0a1.jpg?1783916512",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "You cast the copy while the ability is resolving and still on the stack. You can't wait to cast it later in the turn."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "Because you're paying the spell's costs, if the spell has {X} in its mana cost, you may choose its value as normal."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "If you don't want to cast the copy, you can choose not to; the copy ceases to exist the next time state-based actions are performed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Nissa, Resurgent Animist
 {
     "name": "Nissa, Resurgent Animist",
@@ -2437,6 +2854,67 @@
     ]
 }
 
+// Rebuild the City
+{
+    "name": "Rebuild the City",
+    "manaCost": "{3}{B}{R}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose target land. Create three tokens that are copies of it, except they're 3/3 creatures in addition to their other types and they have vigilance and menace. (They're affected by summoning sickness.)",
+    "script": {
+        "spellEffect": {
+            "type": "CreateTokenCopyOfTarget",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "count": {
+                "type": "Fixed",
+                "amount": 3
+            },
+            "overridePower": 3,
+            "overrideToughness": 3,
+            "addedKeywords": [
+                "VIGILANCE",
+                "MENACE"
+            ],
+            "addCardTypes": [
+                "CREATURE"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "land"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "rarity": "RARE",
+        "artist": "Sergey Glushakov",
+        "flavorText": "The Phyrexian design had to go, but the materials could be put to good use.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e7651eb7-3cbe-43de-8800-085be19e7f77.jpg?1783916509",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "Each of the tokens copy exactly what was printed on the original land and nothing else (unless that land is copying something else or is a token). It doesn't copy whether that land is tapped or untapped, whether it has any counters on it or Auras and Equipment attached to it, or any non-copy effects that have changed its types, color, and so on. However, if the original land has an ability that says it enters the battlefield tapped, the copies will also enter tapped."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "Any enters-the-battlefield abilities of the copied land will trigger when the token enters the battlefield. Any \"as [this land] enters the battlefield\" or \"[this land] enters the battlefield with\" abilities of the copied land will also work."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Reckless Handling
 {
     "name": "Reckless Handling",
@@ -2559,6 +3037,165 @@
         ]
     },
     "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Samut, Vizier of Naktamun
+{
+    "name": "Samut, Vizier of Naktamun",
+    "manaCost": "{1}{R}{G}",
+    "typeLine": "Legendary Creature — Human Warrior Cleric",
+    "oracleText": "First strike, vigilance, haste\nWhenever a creature you control deals combat damage to a player, if that creature entered this turn, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "VIGILANCE",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Samut, Vizier of Naktamun:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    },
+                    "sourceFilter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "TriggeringEntity",
+                    "filter": {
+                        "statePredicates": [
+                            "EnteredThisTurn"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "MYTHIC",
+        "artist": "Jarel Threat",
+        "flavorText": "\"Try to keep up, Djeru. We have lots of work to do.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0f3fdb0-47ad-4df6-a95c-a2c81aaf7af5.jpg?1783916508"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
+// Sarkhan, Soul Aflame
+{
+    "name": "Sarkhan, Soul Aflame",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Legendary Creature — Human Shaman",
+    "oracleText": "Dragon spells you cast cost {1} less to cast.\nWhenever a Dragon you control enters, you may have Sarkhan become a copy of it until end of turn, except its name is Sarkhan, Soul Aflame and it's legendary in addition to its other types.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sarkhan, Soul Aflame:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Dragon ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Have Sarkhan become a copy of that Dragon until end of turn?"
+                    },
+                    "then": {
+                        "type": "EachPermanentBecomesCopyOfTarget",
+                        "target": "TriggeringEntity",
+                        "duration": "EndOfTurn",
+                        "affected": "Self",
+                        "exceptions": {
+                            "nameOverride": "Sarkhan, Soul Aflame",
+                            "addedSupertypes": [
+                                "LEGENDARY"
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "Whenever a Dragon you control enters, you may have Sarkhan become a copy of it until end of turn, except its name is Sarkhan, Soul Aflame and it's legendary in addition to its other types."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "Dragon"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "MYTHIC",
+        "artist": "Eric Wilkerson",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/6225f139-f6eb-4eb5-9776-159a599d8255.jpg?1783916508",
+        "rulings": [
+            {
+                "date": "2023-05-12",
+                "text": "Sarkhan's first ability doesn't change the mana cost or mana value of any Dragon spell. It changes only the total cost you pay."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "That ability can't reduce the amount of colored mana you pay for a Dragon spell. It reduces only the generic component of that cost."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "Sarkhan copies exactly what was printed on the original Dragon and nothing else, with the noted exceptions (unless that creature is a token; see below). It doesn't copy whether that creature is tapped or untapped, whether it has any counters on it or Auras and Equipment attached to it, or any non-copy effects that have changed its power, toughness, types, color, and so on in response to Sarkhan's ability."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "If the copied Dragon has {X} in its mana cost, X is 0."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "If the copied Dragon is a token, Sarkhan copies the original characteristics of that token as stated by the effect that created that token, with the noted exceptions."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "In some unusual cases, the Dragon that entered the battlefield will be copying something else by the time Sarkhan's ability resolves. In such a case, Sarkhan will copy whatever the Dragon is copying, with the noted exceptions."
+            },
+            {
+                "date": "2023-05-12",
+                "text": "If the Dragon that enters the battlefield is legendary and you have Sarkhan copy it, the two Dragons will have different names (unless the entering Dragon is somehow named Sarkhan, Soul Aflame). The \"legend rule\" won't apply."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
         "RED"
     ]
 }
