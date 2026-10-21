@@ -71,6 +71,45 @@
     ]
 }
 
+// Direct Hit
+{
+    "name": "Direct Hit",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Direct Hit deals 5 damage to target creature.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 5
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "artist": "David Szabo",
+        "flavorText": "Beware a Klingon with a short temper and a big grudge.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/97388288-9254-4fa8-bcae-c2e2a55ef92b.jpg?1785981126"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Gorn Captain
 {
     "name": "Gorn Captain",
