@@ -10,7 +10,7 @@ import com.wingedsheep.sdk.model.Printing
  *
  * A 50-card epilogue set to March of the Machine, sold in its own Set and Collector Boosters.
  * Scaffolded to hold the canonical definitions of cards it printed first. It is an extension
- * set — too thin to carry a limited pool on its own — and is incomplete until all 50 are in.
+ * set — too thin to carry a limited pool on its own.
  *
  * Set Code: MAT
  * Release Date: May 12, 2023
@@ -21,7 +21,6 @@ object MarchOfTheMachineTheAftermathSet : MtgSet {
     override val displayName = "March of the Machine: The Aftermath"
     override val releaseDate = "2023-05-12"
     override val extensionSet = true
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
