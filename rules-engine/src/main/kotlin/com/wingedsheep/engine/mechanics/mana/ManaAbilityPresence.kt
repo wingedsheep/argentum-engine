@@ -45,7 +45,7 @@ object ManaAbilityPresence {
         val intrinsic = if (onBattlefield) {
             projected.hasType(entityId, "LAND") && projected.getSubtypes(entityId).any { it in basicLandTypes }
         } else {
-            IntrinsicManaAbilities.forCard(card).isNotEmpty()
+            !faceDown && IntrinsicManaAbilities.forCard(card).isNotEmpty()
         }
         if (intrinsic && (!removed || projected.hasBasicLandTypesSetByEffect(entityId))) return true
 

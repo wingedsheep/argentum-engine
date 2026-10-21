@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.state.components.battlefield.PhasedOutComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Phase
@@ -97,6 +99,20 @@ class HasManaAbilityOffBattlefieldTest : ScenarioTestBase() {
             g.has(g.library("Forest")) shouldBe true
             g.has(g.library(dual.name)) shouldBe true
             g.has(g.library(wasteland.name)) shouldBe false
+        }
+
+        test("a face-down card off the battlefield has no abilities; a phased-out permanent doesn't exist") {
+            val g = board()
+            val forest = g.library("Forest")
+            val rockInLibrary = g.library(rock.name)
+            val onField = g.findPermanent(rock.name)!!
+            g.state = g.state
+                .updateEntity(forest) { it.with(FaceDownComponent) }
+                .updateEntity(rockInLibrary) { it.with(FaceDownComponent) }
+                .updateEntity(onField) { it.with(PhasedOutComponent(g.player1Id)) }
+            g.has(forest) shouldBe false
+            g.has(rockInLibrary) shouldBe false
+            g.has(onField) shouldBe false
         }
 
         test("the battlefield reading is unchanged") {
