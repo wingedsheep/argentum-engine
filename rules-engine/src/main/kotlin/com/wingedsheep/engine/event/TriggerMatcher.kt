@@ -2274,7 +2274,8 @@ class TriggerMatcher(
      * trigger declares must hold.
      *
      * [state] is threaded for predicates that must read **projected** creature stats across the
-     * attacking band (Training's [AttackPredicate.AttackedAlongsideGreaterPower]); count-only and
+     * attacking band (Training's [AttackPredicate.AttackedAlongsideGreaterPower], pack tactics'
+     * [AttackPredicate.AttackersTotalPowerAtLeast]); count-only and
      * stamped-set predicates ignore it.
      */
     internal fun matchesAttackPredicate(
@@ -2285,6 +2286,12 @@ class TriggerMatcher(
     ): Boolean = when (predicate) {
         AttackPredicate.Alone -> event.attackers.size == 1
         is AttackPredicate.AttackerCountAtLeast -> event.attackers.size >= predicate.n
+        // Pack tactics: the declared attackers' total PROJECTED power, read at declaration (the
+        // matcher runs when the trigger is detected, before any priority window).
+        is AttackPredicate.AttackersTotalPowerAtLeast -> {
+            val projected = state.projectedState
+            event.attackers.sumOf { projected.getPower(it) ?: 0 } >= predicate.n
+        }
         // Per-attacker: the trigger's own source (SELF / the attached creature) is among the
         // creatures attacking for the first time this turn. Stamped on the event at declaration
         // (post-declaration state can't tell, since the per-turn attacker set already includes it).

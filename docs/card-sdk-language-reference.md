@@ -8060,6 +8060,14 @@ Adding a new attack-time mechanic is one new sealed-case + one matcher branch
 - `AttackPredicate.AttackerCountAtLeast(n)` — at least N creatures total were
   declared as attackers (counting the trigger's attacker). Battalion shape:
   `Triggers.<subject>.attacks(requires)` on a `SELF` binding.
+- `AttackPredicate.AttackersTotalPowerAtLeast(n)` — the creatures declared as attackers this
+  combat have total **projected** power N or greater (counting the trigger's attacker). Pack
+  tactics (AFR): `Triggers.self.attacks(setOf(AttackPredicate.AttackersTotalPowerAtLeast(6)))` —
+  "Whenever this creature attacks, if you attacked with creatures with total power 6 or greater
+  this combat, …". Read once, at declaration: a creature put onto the battlefield attacking never
+  counts, and a power change after declaration neither adds the trigger nor stops one that already
+  triggered — which is why this is a predicate and not a `sumPower()` intervening-if (that would be
+  rechecked against the creatures attacking at resolution). Negative powers lower the total.
 - `AttackPredicate.FirstTimeEachTurn` — the trigger's own attacker is attacking for
   the **first time this turn** (it had not been declared as an attacker in an earlier
   combat phase this turn). Per-attacker, so use it on a `SELF` binding. Fires once on

@@ -1104,6 +1104,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          *
          * Current cases: [AttackPredicate.Alone],
          * [AttackPredicate.AttackerCountAtLeast],
+         * [AttackPredicate.AttackersTotalPowerAtLeast],
          * [AttackPredicate.FirstTimeEachTurn],
          * [AttackPredicate.DefenderIsPlayer].
          */

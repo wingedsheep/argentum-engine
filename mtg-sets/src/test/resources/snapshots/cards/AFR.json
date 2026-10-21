@@ -1115,6 +1115,49 @@
     ]
 }
 
+// Gnoll Hunter
+{
+    "name": "Gnoll Hunter",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Gnoll",
+    "oracleText": "Pack tactics — Whenever this creature attacks, if you attacked with creatures with total power 6 or greater this combat, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gnoll Hunter:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        {
+                            "type": "AttackersTotalPowerAtLeast",
+                            "n": 6
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "artist": "Jesper Ejsing",
+        "flavorText": "Yipping and cackling, the hunters tore through the village, leaving nothing but snapped bones and burning homes in their wake.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1d0634cb-e973-4f05-965e-d39b09fe57a9.jpg?1783926462"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Grazilaxx, Illithid Scholar
 {
     "name": "Grazilaxx, Illithid Scholar",
@@ -1350,6 +1393,48 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Hobgoblin Captain
+{
+    "name": "Hobgoblin Captain",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Goblin Barbarian",
+    "oracleText": "Pack tactics — Whenever this creature attacks, if you attacked with creatures with total power 6 or greater this combat, this creature gains first strike until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hobgoblin Captain:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        {
+                            "type": "AttackersTotalPowerAtLeast",
+                            "n": 6
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "artist": "Karl Kopinski",
+        "flavorText": "Hobgoblins do not fear death, for those who fall in battle have gained glory eternal.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7c0aa86-fd3b-4e0f-9d37-ce1ea8922243.jpg?1783926478"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

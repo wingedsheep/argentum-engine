@@ -559,6 +559,25 @@ sealed interface AttackPredicate {
     }
 
     /**
+     * The creatures declared as attackers this combat have a total **projected** power of at least
+     * [n] — the pack tactics condition (AFR: "Whenever this creature attacks, if you attacked with
+     * creatures with total power 6 or greater this combat, …"). The power-sum sibling of
+     * [AttackerCountAtLeast]: same band (every declared attacker, counting the trigger's own), summed
+     * instead of counted.
+     *
+     * The sum is read when attackers are declared (the trigger checks it then), so a creature put onto
+     * the battlefield attacking never contributes, and a power change after declaration neither adds a
+     * trigger nor stops one that already triggered. Powers are summed as they are, so a negative power
+     * lowers the total, as `sumPower()` does. Not per-attacker: it reads the whole band, so it works on
+     * any binding, though pack tactics uses `SELF`.
+     */
+    @SerialName("AttackersTotalPowerAtLeast")
+    @Serializable
+    data class AttackersTotalPowerAtLeast(val n: Int) : AttackPredicate {
+        override val description = "with creatures with total power $n or greater"
+    }
+
+    /**
      * The attacker is attacking *for the first time this turn* — it had not been
      * declared as an attacker in any earlier combat phase this turn. The matcher
      * consults the per-turn attacker set (the same union that backs raid / "you

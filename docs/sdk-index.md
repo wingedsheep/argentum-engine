@@ -155,6 +155,7 @@ Families:
 - `AttackPredicate.Alone` — The attacker is the only declared attacker this combat.
 - `AttackPredicate.AttackedAlongsideGreaterPower` — The attacker was declared as attacking **and** at least one *other* declared attacker has strictly greater **projected** power than the attacker's own projected power.
 - `AttackPredicate.AttackerCountAtLeast(n: Int)` — At least n creatures total were declared as attackers this combat (counting the attacker the trigger fires for).
+- `AttackPredicate.AttackersTotalPowerAtLeast(n: Int)` — The creatures declared as attackers this combat have a total **projected** power of at least n — the pack tactics condition (AFR: "Whenever this creature attacks, if you attacked with creatures wit…
 - `AttackPredicate.DefenderIsBattle` — The attacker was declared as attacking a **battle** — the defender-kind sibling of DefenderIsPlayer (CR 508.1: an attacker is declared as attacking a player, planeswalker, or battle).
 - `AttackPredicate.DefenderIsPlayer` — The attacker was declared as attacking a **player** — not a planeswalker or a battle.
 - `AttackPredicate.FirstTimeEachTurn` — The attacker is attacking *for the first time this turn* — it had not been declared as an attacker in any earlier combat phase this turn.
