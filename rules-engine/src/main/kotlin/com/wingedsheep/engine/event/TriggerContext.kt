@@ -57,6 +57,8 @@ data class TriggerContext(
     val damageAmount: Int? = null,
     /** Final result captured for a die-roll observer, independent of later rolls. */
     val dieResult: Int? = null,
+    /** Every final result of the roll instruction behind a one-or-more-dice trigger. */
+    val dieResults: List<Int> = emptyList(),
     val step: Step? = null,
     val xValue: Int? = null,
     /**
@@ -644,6 +646,10 @@ data class TriggerContext(
                 is com.wingedsheep.engine.core.DieRolledEvent -> TriggerContext(
                     triggeringPlayerId = event.playerId,
                     dieResult = event.result,
+                )
+                is com.wingedsheep.engine.core.DiceRolledEvent -> TriggerContext(
+                    triggeringPlayerId = event.playerId,
+                    dieResults = event.results,
                 )
                 else -> TriggerContext()
             }

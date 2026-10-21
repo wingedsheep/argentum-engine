@@ -794,7 +794,10 @@ class TriggerMatcher(
                 if (trigger.requireNontokenExploited && event.sacrificedWasToken) return false
                 true
             }
-            is EventPattern.DieRolledEvent -> {
+            is EventPattern.DieRolledEvent -> if (trigger.batch) {
+                event is com.wingedsheep.engine.core.DiceRolledEvent &&
+                    matchesPlayer(state, trigger.player, event.playerId, controllerId)
+            } else {
                 event is com.wingedsheep.engine.core.DieRolledEvent &&
                     matchesPlayer(state, trigger.player, event.playerId, controllerId, sourceId) &&
                     (trigger.minimumResult?.let { event.result >= it } ?: true) &&

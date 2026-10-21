@@ -272,6 +272,51 @@
     ]
 }
 
+// Brazen Dwarf
+{
+    "name": "Brazen Dwarf",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Dwarf Shaman",
+    "oracleText": "Whenever you roll one or more dice, this creature deals 1 damage to each opponent.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Brazen Dwarf:1",
+                "trigger": {
+                    "type": "DieRolledEvent",
+                    "player": "You",
+                    "batch": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "artist": "Gabor Szikszai",
+        "flavorText": "\"My grandmother saved the life of a brass dragon, and in return she was given a glimpse of the fire in its heart—a glimpse she passed down to me.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/3658e65b-df54-4327-9104-c2f3dd65df85.jpg?1783926483"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Bulette
 {
     "name": "Bulette",
@@ -1061,6 +1106,133 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Farideh, Devil's Chosen
+{
+    "name": "Farideh, Devil's Chosen",
+    "manaCost": "{2}{U}{R}",
+    "typeLine": "Legendary Creature — Tiefling Warlock",
+    "oracleText": "Dark One's Own Luck — Whenever you roll one or more dice, Farideh gains flying and menace until end of turn. If any of those results was 10 or higher, draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Farideh, Devil's Chosen:1",
+                "trigger": {
+                    "type": "DieRolledEvent",
+                    "player": "You",
+                    "batch": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FLYING",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "MENACE",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "ContextProperty",
+                                        "key": "TRIGGER_HIGHEST_DIE_RESULT"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 10
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "221",
+        "rarity": "UNCOMMON",
+        "artist": "Magali Villeneuve",
+        "flavorText": "\"A pact is a tool, not a damnation.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1b2ff142-029b-4446-960a-2ff200fb9aee.jpg?1783926449"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
+// Feywild Trickster
+{
+    "name": "Feywild Trickster",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Gnome Warlock",
+    "oracleText": "Whenever you roll one or more dice, create a 1/1 blue Faerie Dragon creature token with flying.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Feywild Trickster:1",
+                "trigger": {
+                    "type": "DieRolledEvent",
+                    "player": "You",
+                    "batch": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Faerie",
+                        "Dragon"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/7/8/78eb6e0c-3630-46bf-b124-1ff2ddddf63e.jpg?1783926346"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "rarity": "UNCOMMON",
+        "artist": "Iris Compiet",
+        "flavorText": "Unlike most warlocks, those who make pacts with archfey are drawn to pranks and whimsy moreso than death and darkness.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c93e0296-69e0-45e0-a1c2-0214a53c52d0.jpg?1783926514"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

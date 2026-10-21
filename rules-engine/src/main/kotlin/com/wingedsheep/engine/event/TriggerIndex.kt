@@ -447,6 +447,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.PermanentConnivedEvent -> CONNIVED_LIST
             is com.wingedsheep.engine.core.ExploitedEvent -> EXPLOITED_LIST
             is com.wingedsheep.engine.core.DieRolledEvent -> DIE_ROLLED_LIST
+            is com.wingedsheep.engine.core.DiceRolledEvent -> DIE_ROLLED_LIST
             is com.wingedsheep.engine.core.TrainedEvent -> TRAINED_LIST
             is com.wingedsheep.engine.core.EvolvedEvent -> EVOLVED_LIST
             is com.wingedsheep.engine.core.EnlistedEvent -> ENLISTED_LIST

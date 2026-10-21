@@ -1233,6 +1233,7 @@ class DynamicAmountEvaluator(
         ContextPropertyKey.X_VALUE_OF_TRIGGERING_SPELL -> context.triggerContext?.xValueOfTriggeringSpell ?: 0
 
         ContextPropertyKey.TRIGGER_DIE_RESULT -> context.triggerContext?.dieResult ?: 0
+        ContextPropertyKey.TRIGGER_HIGHEST_DIE_RESULT -> context.triggerContext?.dieResults?.maxOrNull() ?: 0
         ContextPropertyKey.TRIGGER_SCRY_COUNT -> context.triggerContext?.scryCount ?: 0
 
         ContextPropertyKey.TRIGGER_SCRY_BOTTOM_COUNT -> context.triggerContext?.scryBottomCount ?: 0

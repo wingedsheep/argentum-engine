@@ -842,6 +842,15 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
         return spec(EventPattern.DieRolledEvent(player, minimumResult, maximumResult))
     }
 
+    /**
+     * "Whenever [player] roll(s) one or more dice" — one trigger per roll instruction, however many
+     * dice it rolled. Read the batch with `DynamicAmounts.triggerHighestDieResult()`.
+     */
+    fun rollsDice(): TriggerSpec {
+        only("rollsDice", Player.You, Player.EachOpponent, Player.Each, Player.Any)
+        return spec(EventPattern.DieRolledEvent(player, batch = true))
+    }
+
     private fun spec(event: EventPattern, binding: TriggerBinding = TriggerBinding.ANY) =
         TriggerSpec(event = event, binding = binding)
 

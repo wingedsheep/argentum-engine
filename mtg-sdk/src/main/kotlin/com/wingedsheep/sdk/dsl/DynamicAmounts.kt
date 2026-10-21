@@ -212,6 +212,10 @@ object DynamicAmounts {
     /** The final result of the die roll that triggered this ability. */
     fun triggerDieResult(): DynamicAmount = DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_DIE_RESULT)
 
+    /** Highest result of the roll behind a one-or-more-dice trigger (`Triggers.you.rollsDice()`). */
+    fun triggerHighestDieResult(): DynamicAmount =
+        DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_HIGHEST_DIE_RESULT)
+
     /** The number the triggering scry looked at. */
     fun triggerScryCount(): DynamicAmount = DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_SCRY_COUNT)
 

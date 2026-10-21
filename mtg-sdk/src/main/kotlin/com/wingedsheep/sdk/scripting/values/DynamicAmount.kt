@@ -474,6 +474,11 @@ enum class TurnTracker {
 enum class ContextPropertyKey(val description: String) {
     /** The final result of the individual die roll that caused this trigger. */
     TRIGGER_DIE_RESULT("the die roll's result"),
+    /**
+     * The highest final result among the dice of the roll that caused a one-or-more-dice trigger
+     * (`DieRolledEvent(batch = true)`) — "if any of those results was 10 or higher" compares it.
+     */
+    TRIGGER_HIGHEST_DIE_RESULT("the highest result among those dice"),
     /** The amount of damage in the current trigger payload (Tephraderm, Wall of Hope, …). */
     TRIGGER_DAMAGE_AMOUNT("the damage dealt"),
     /**

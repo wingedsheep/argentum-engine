@@ -2814,3 +2814,18 @@ data class DieRolledEvent(
     val sourceId: EntityId? = null,
     val sourceName: String = "Ability",
 ) : GameEvent
+
+/**
+ * One roll instruction finished for [playerId]: every die it rolled for them, emitted once after
+ * that player's [DieRolledEvent]s. The "whenever you roll one or more dice" trigger observes this,
+ * so it fires once per instruction however many dice were rolled. Not animated — the per-die
+ * events already are.
+ */
+@Serializable
+@SerialName("DiceRolledEvent")
+data class DiceRolledEvent(
+    val playerId: EntityId,
+    val sides: Int,
+    val results: List<Int>,
+    val sourceId: EntityId? = null,
+) : GameEvent

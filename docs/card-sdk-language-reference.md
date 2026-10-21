@@ -15439,7 +15439,7 @@ forbids `DynamicAmount.X` in card definitions.
   `lifeTotal(player)`, `yourLifeTotal()`, `startingLifeTotal(player)`, `playerCount(scope)`,
   `countPlayersWith(scope, condition)`, `greatestAmongPlayers(inner, players)`,
   `leastAmongPlayers(inner, players)`, `fewestControlledBySinglePlayer(filter, players)`, `totalManaSpent()`,
-  `manaSpentOnX(color)`, `manaSpentFromSubtype(subtype, payment)`, `triggerDieResult()`, `unspentMana(player)`,
+  `manaSpentOnX(color)`, `manaSpentFromSubtype(subtype, payment)`, `triggerDieResult()`, `triggerHighestDieResult()`, `unspentMana(player)`,
   `largestSharedCreatureTypeCount(player)`, `craftedMaterialsTotalPower() / TotalManaValue() /
   ColorCount()`, the entity readers `powerOf / toughnessOf / manaValueOf / countersOn /
   manaSpentToCast / propertyOf(entity, property)` (plus the `source…` / `triggering…` shortcuts), and
@@ -19420,6 +19420,15 @@ in result-set order. Luck Bobblehead creates tapped Treasures from `evens.amount
 `anyPlayer`) observes each individual numerical roll with inclusive result bounds. The roller is
 `TriggeringPlayer`; `ContextProperty(TRIGGER_DIE_RESULT)` reads its captured result. The engine
 emits public `DieRolledEvent`s and detects observers at the settle boundary, after resolution.
+
+`Triggers.you.rollsDice()` (same subjects) is "whenever you roll one or more dice"
+(`DieRolledEvent(batch = true)`): it fires **once per roll instruction** for each matching roller,
+however many dice that instruction rolled — Feywild Trickster, Brazen Dwarf. The engine emits one
+`DiceRolledEvent` per player after that player's per-die events; it carries every result, and
+`DynamicAmounts.triggerHighestDieResult()` (`ContextProperty(TRIGGER_HIGHEST_DIE_RESULT)`) reads the
+highest, so "if any of those results was 10 or higher" is
+`Conditions.CompareAmounts(DynamicAmounts.triggerHighestDieResult(), ComparisonOperator.GTE, 10)`
+(Farideh, Devil's Chosen). A batch trigger takes no result interval.
 No new die decision is needed; server results appear in the game log. Roll replacements, extra
 ignored dice, rerolls and result modifiers are not part of this primitive's current surface.
 

@@ -103,4 +103,45 @@ class RollDiceEffectTest : FunSpec({
         d.getLifeTotal(player) shouldBe life+matches.sumOf { it.result }
         d.getLifeTotal(opponent) shouldBe 20
     }
+    test("each roll instruction closes with one DiceRolledEvent per roller carrying all its results") {
+        val d=setup(); val player=d.activePlayer!!; val opponent=d.getOpponent(player)
+        val result=executor(d).execute(d.state,RollDiceEffect(DynamicAmount.Fixed(3),20,EffectTarget.PlayerRef(com.wingedsheep.sdk.scripting.references.Player.Each)),EffectContext(null,player))
+        val summaries=result.events.filterIsInstance<DiceRolledEvent>()
+        summaries.map { it.playerId }.toSet() shouldBe setOf(player,opponent)
+        for (summary in summaries) {
+            summary.results shouldBe result.events.filterIsInstance<DieRolledEvent>().filter { it.playerId==summary.playerId }.map { it.result }
+            summary.sides shouldBe 20
+            // The summary trails its roller's dice, so a batch observer sees the finished roll.
+            result.events.indexOf(summary) shouldBe result.events.indexOfLast { it is DieRolledEvent && it.playerId==summary.playerId }+1
+        }
+        com.wingedsheep.engine.view.ClientEventTransformer.transform(summaries,player) shouldBe emptyList()
+        val ctx=EffectContext(null,player,triggerContext=TriggerContext.fromEvent(DiceRolledEvent(player,20,listOf(4,17,9))))
+        PredicateEvaluator(d.cardRegistry).conditions.amounts.evaluate(d.state,DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_HIGHEST_DIE_RESULT),ctx) shouldBe 17
+        ctx.triggerContext!!.triggeringPlayerId shouldBe player
+    }
+    test("a one-or-more-dice observer triggers once per roll instruction, for its roller only") {
+        val observer=card("Test Dice Batch Observer") {
+            typeLine="Enchantment"
+            triggeredAbility {
+                trigger=Triggers.you.rollsDice()
+                effect=Effects.GainLife(DynamicAmount.Fixed(1))
+            }
+        }
+        val roller=card("Test Batch Roller") {
+            typeLine="Artifact"
+            activatedAbility { cost=Costs.Tap; effect=Effects.RollDice(DynamicAmount.Fixed(5),6) then Effects.RollDice(DynamicAmount.Fixed(2),6) then Effects.RollDice(DynamicAmount.Fixed(0),6) }
+        }
+        val d=setup(); d.registerCards(listOf(observer,roller));d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val player=d.activePlayer!!;val opponent=d.getOpponent(player)
+        d.putPermanentOnBattlefield(player,observer.name)
+        d.putPermanentOnBattlefield(opponent,observer.name)
+        val source=d.putPermanentOnBattlefield(player,roller.name)
+        d.submit(ActivateAbility(player,source,roller.script.activatedAbilities.single().id)).outcome shouldBe Outcome.Done
+        d.bothPass()
+        // Two instructions rolled dice; the zero-dice roll is not a roll.
+        d.state.stack.size shouldBe 2
+        d.bothPass(); d.bothPass()
+        d.getLifeTotal(player) shouldBe 22
+        d.getLifeTotal(opponent) shouldBe 20
+    }
 })

@@ -1606,6 +1606,9 @@ object ClientEventTransformer {
                 count = event.change
             )
 
+            // The per-die events animate the roll; the instruction summary only feeds triggers.
+            is DiceRolledEvent -> null
+
             is DieRolledEvent -> ClientEvent.DieRolled(event.playerId, event.sides, event.result, event.sourceId, event.sourceName, event.playerId == viewingPlayerId)
 
             is CoinFlipEvent -> ClientEvent.CoinFlipped(
