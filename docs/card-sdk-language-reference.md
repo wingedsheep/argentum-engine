@@ -18102,6 +18102,17 @@ are their printed spellings (`CounterType.printed`). Text converts back only thr
   creature that bears one. `StateProjector` projects the `DECAYED` keyword (initial pass and the post-Layer-6
   re-apply), and the engine realizes Decayed off that keyword like any other source of it (see `Decayed` above).
   Add via `AddCounters(CounterType.DECAYED, n, target)` (Rot-Curse Rakshasa's Renew).
+
+Counter effects live in §4 (`AddCounters`, `RemoveCounters`, `Proliferate`, `MoveAllLastKnownCounters`, etc.).
+
+---
+
+## 17. Zones & movement
+
+**Zones** — `BATTLEFIELD`, `HAND`, `LIBRARY`, `GRAVEYARD`, `EXILE`, `STACK`.
+
+**Primitives**
+
 - `MoveToZoneEffect(target, zone, faceDown?, byDestruction?, linked?)` — single-target move. Card
   definitions construct it via the facade `Effects.Move(target, destination, …)` (or the named
   shortcuts `Effects.Destroy/Exile/ReturnToHand/PutOnTopOfLibrary/ShuffleIntoLibrary/…`).
