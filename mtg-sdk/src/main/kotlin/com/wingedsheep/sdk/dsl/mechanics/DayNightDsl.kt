@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.dsl
 
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.scripting.OnEnterRun
 
 /**
  * Add **Daybound** (CR 702.145, Innistrad: Midnight Hunt / Crimson Vow) to a transforming
@@ -48,4 +49,27 @@ fun CardBuilder.daybound() {
  */
 fun CardBuilder.nightbound() {
     keywords(Keyword.NIGHTBOUND)
+}
+
+/**
+ * "If it's neither day nor night, it becomes day as this permanent enters." — the as-enters clause
+ * every Innistrad: Midnight Hunt day/night payoff without daybound prints (The Celestus, Firmament
+ * Sage), so the game has a designation for its "whenever day becomes night or night becomes day"
+ * trigger ([Triggers.dayBecomesNightOrNightBecomesDay]) to watch.
+ *
+ * A replacement-style "as enters" ability (an [OnEnterRun]), not an enters trigger: it happens as the
+ * permanent enters, so nothing can respond in between. Making it day here is the game's first
+ * designation, which is not "night becomes day" (CR 731.1a), so the permanent's own day/night trigger
+ * does not fire off it.
+ */
+fun CardBuilder.becomesDayAsEntersIfNeither() {
+    replacementEffect(
+        OnEnterRun(
+            Effects.If(
+                condition = Conditions.Not(Conditions.Any(Conditions.IsDay, Conditions.IsNight)),
+                then = Effects.BecomeDay,
+                descriptionOverride = "if it's neither day nor night, it becomes day"
+            )
+        )
+    )
 }

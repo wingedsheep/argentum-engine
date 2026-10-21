@@ -90,6 +90,7 @@ enum class TriggerCategory {
     FORAGED,
     INVESTIGATED,
     CASE_SOLVED,
+    DAY_NIGHT_CHANGED,
     EXPLORED,
     CONNIVED,
     EXPLOITED,
@@ -330,6 +331,7 @@ class TriggerIndex(
                 is SdkGameEvent.ForagedEvent -> FORAGED_LIST
                 is SdkGameEvent.InvestigatedEvent -> INVESTIGATED_LIST
                 is SdkGameEvent.CaseSolvedEvent -> CASE_SOLVED_LIST
+                is SdkGameEvent.DayNightChangedEvent -> DAY_NIGHT_CHANGED_LIST
                 is SdkGameEvent.ExploredEvent -> EXPLORED_LIST
                 is SdkGameEvent.ConnivedEvent -> CONNIVED_LIST
                 is SdkGameEvent.ExploitedEvent -> EXPLOITED_LIST
@@ -440,6 +442,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.ForagedEvent -> FORAGED_LIST
             is com.wingedsheep.engine.core.InvestigatedEvent -> INVESTIGATED_LIST
             is com.wingedsheep.engine.core.CaseSolvedEvent -> CASE_SOLVED_LIST
+            is com.wingedsheep.engine.core.DayNightChangedEvent -> DAY_NIGHT_CHANGED_LIST
             is com.wingedsheep.engine.core.PermanentExploredEvent -> EXPLORED_LIST
             is com.wingedsheep.engine.core.PermanentConnivedEvent -> CONNIVED_LIST
             is com.wingedsheep.engine.core.ExploitedEvent -> EXPLOITED_LIST
@@ -510,7 +513,6 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.CreaturesPairedEvent,
             is com.wingedsheep.engine.core.CreaturesUnpairedEvent,
             is com.wingedsheep.engine.core.DamageAssignedEvent,
-            is com.wingedsheep.engine.core.DayNightChangedEvent,
             is com.wingedsheep.engine.core.DecisionRequestedEvent,
             is com.wingedsheep.engine.core.DecisionSubmittedEvent,
             is com.wingedsheep.engine.core.DiscardRequiredEvent,
@@ -601,6 +603,7 @@ class TriggerIndex(
         private val FORAGED_LIST = listOf(TriggerCategory.FORAGED)
         private val INVESTIGATED_LIST = listOf(TriggerCategory.INVESTIGATED)
         private val CASE_SOLVED_LIST = listOf(TriggerCategory.CASE_SOLVED)
+        private val DAY_NIGHT_CHANGED_LIST = listOf(TriggerCategory.DAY_NIGHT_CHANGED)
         private val SCRIED_OR_SURVEILED_LIST = listOf(TriggerCategory.SCRIED, TriggerCategory.SURVEILED)
         private val EXPLORED_LIST = listOf(TriggerCategory.EXPLORED)
         private val CONNIVED_LIST = listOf(TriggerCategory.CONNIVED)

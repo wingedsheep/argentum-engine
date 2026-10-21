@@ -4004,6 +4004,8 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   designation change reconciles out-of-step daybound/nightbound permanents (CR 702.145c/f), one
   `TransformedEvent` per permanent the flip cascades through `DayNightService.applyTransformCascade`.
   Read the designation back with `Conditions.IsDay` / `Conditions.IsNight`.
+  Pair with `becomesDayAsEntersIfNeither()` (the as-enters designation start) and
+  `Triggers.dayBecomesNightOrNightBecomesDay` (the change trigger) — see Day/night under Triggers.
 - `GatedEffect(gate, then, otherwise?, decisionMaker?)` — **the unified resolution frame for the
   optional / gated-effect cluster** (phase-rs Lesson 1). A `Gate` decides whether `then` runs; if it
   fails, `otherwise` runs. One executor + one continuation/resumer own the canonical unwind order, so
@@ -9011,6 +9013,24 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   for "This ability triggers only once each turn." Used by Curator of Sun's Creation. The event is
   emitted from a completed resolution (not the paused may-cast batch), so watchers fire reliably; it
   fires even when the library was empty or no matching card was found.
+
+### Day / night (CR 731)
+
+- `Triggers.dayBecomesNightOrNightBecomesDay` — "whenever day becomes night or night becomes day"
+  (CR 731.1a: the game *loses* one designation and gains the other). Backed by the subject-less
+  `EventPattern.DayNightChangedEvent` (binding `TriggerBinding.ANY`) over the engine's
+  `DayNightChangedEvent`; the matcher rejects the game's **first** designation (`oldDesignation ==
+  null` — neither → day/night is not a change between the two), and re-declaring the current
+  designation emits nothing. Fires off every writer — the untap-step check (CR 731.2), an "it becomes
+  day/night" effect, the daybound/nightbound designation start — and the werewolf transforms the
+  change cascades sit in the same event batch. A card that functions from another zone declares it
+  with `triggerZone` (Sunstreak Phoenix: `triggerZone = Zone.GRAVEYARD`, CR 113.6m).
+- `becomesDayAsEntersIfNeither()` (`CardBuilder` extension in `DayNightDsl.kt`, import
+  `com.wingedsheep.sdk.dsl.becomesDayAsEntersIfNeither`) — "If it's neither day nor night, it becomes
+  day as this permanent enters." An `OnEnterRun(Effects.If(Not(Any(IsDay, IsNight)), BecomeDay))`
+  replacement, so it runs on every entry path (cast, effect move) before anything can respond, and —
+  being the first designation — never fires the permanent's own change trigger. Firmament Sage, The
+  Celestus.
 
 ### Cases (CR 719)
 

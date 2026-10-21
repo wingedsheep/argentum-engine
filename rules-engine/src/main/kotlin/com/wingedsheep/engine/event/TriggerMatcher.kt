@@ -410,6 +410,11 @@ class TriggerMatcher(
                 event is CommitCrimeEvent &&
                     matchesPlayer(state, trigger.player, event.playerId, controllerId)
             }
+            is EventPattern.DayNightChangedEvent -> {
+                // CR 731.1a: "day becomes night or night becomes day" means losing one designation
+                // and gaining the other — the game's first designation (from neither) is not one.
+                event is com.wingedsheep.engine.core.DayNightChangedEvent && event.oldDesignation != null
+            }
             is EventPattern.BecomesPlottedEvent -> {
                 // "When this card becomes plotted" triggers fire on a card that is now in exile,
                 // not on the battlefield, so the index-driven main loop never reaches them.

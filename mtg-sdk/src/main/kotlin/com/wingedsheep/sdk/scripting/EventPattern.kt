@@ -1810,6 +1810,22 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
+     * "Whenever day becomes night or night becomes day" (CR 731.1a) — the game *loses* one day/night
+     * designation and gains the other. The game's first designation (neither → day, or neither →
+     * night) is not a change between the two, so it never fires this.
+     *
+     * A game-level event with no subject: every permanent with this trigger sees the same change, and
+     * a card that functions from another zone (Sunstreak Phoenix in a graveyard) declares that zone
+     * via `triggerZone`. The daybound/nightbound transforms the change entails (CR 702.145b/e) happen
+     * in the same event batch, so the trigger sees the post-transform board.
+     */
+    @SerialName("DayNightChangedEvent")
+    @Serializable
+    data object DayNightChangedEvent : EventPattern {
+        override val description: String = "day becomes night or night becomes day"
+    }
+
+    /**
      * When this card becomes plotted (Outlaws of Thunder Junction). A Plot card's controller
      * pays the plot cost and exiles it from hand face up as a special action — the card is then
      * marked plotted (CR 718). This is a SELF-scoped trigger: it fires only for the very card

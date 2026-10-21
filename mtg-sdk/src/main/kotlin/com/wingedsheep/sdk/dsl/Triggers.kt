@@ -99,6 +99,13 @@ object Triggers {
     /** Any other player reference as the subject. Prefer the named subjects above. */
     fun player(player: Player): PlayerTriggerSubject = PlayerTriggerSubject(player)
 
+    /**
+     * "Whenever day becomes night or night becomes day" (CR 731.1a) — a game-level event with no
+     * subject, so it has no subject/verb spelling. Never fires for the game's first designation.
+     */
+    val dayBecomesNightOrNightBecomesDay: TriggerSpec =
+        TriggerSpec(event = DayNightChangedEvent, binding = TriggerBinding.ANY)
+
     /** Combines trigger atoms that use the same binding into one disjunctive trigger. */
     fun or(first: TriggerSpec, second: TriggerSpec, vararg others: TriggerSpec): TriggerSpec {
         val triggers = listOf(first, second) + others
