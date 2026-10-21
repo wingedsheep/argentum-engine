@@ -13438,15 +13438,14 @@ composite abilities).
   player mills three … mills ten instead"). The rendered ability text is auto-composed from the base/bonus effect
   descriptions unless `description` overrides the whole string.
 - `Decayed` — "This creature can't block, and when it attacks, sacrifice it at end of combat" (CR 702.147,
-  Innistrad: Midnight Hunt). Display-only; wire the behavior with the `card { decayed() }` builder helper, which adds
-  the keyword plus a `CantBlock(GroupFilter.source())` static ability and a "whenever this attacks" triggered
-  `CreateDelayedTriggerEffect(step = Step.END_COMBAT, effect = Effects.SacrificeTarget(EffectTarget.Self))` (mirrors
-  Mardu Blazebringer's end-of-combat self-sacrifice). No parameter. The **decayed counter** (`CounterType.DECAYED`,
-  Tarkir: Dragonstorm) grants the same Decayed ability to *any* creature that bears one (CR 702.147a) — put it with
-  `AddCounters(CounterType.DECAYED, n, target)` (Rot-Curse Rakshasa's Renew). The engine realizes the behavior off the
-  counter directly: `StateProjector` projects the `DECAYED` keyword + `cantBlock = true`, and `TriggerDetector`
-  schedules the end-of-combat self-sacrifice when a decayed-countered creature is declared as an attacker — no
-  per-card static/trigger needed for the counter form.
+  Innistrad: Midnight Hunt). Author only the keyword — `card { decayed() }` on a printed creature, `keywords =
+  setOf(Keyword.DECAYED)` on `Effects.CreateToken` for a token "with decayed" (Falcon Abomination, Jadar), or the
+  **decayed counter** (`CounterType.DECAYED`, Tarkir: Dragonstorm) via `AddCounters(CounterType.DECAYED, n, target)`
+  to grant it to *any* creature (Rot-Curse Rakshasa's Renew, CR 702.147a). The engine realizes the ability off the
+  projected `DECAYED` keyword whatever granted it: `StateProjector` sets `cantBlock` from the final (post-Layer-6)
+  keyword set, and `TriggerDetector` schedules the end-of-combat self-sacrifice
+  (`CreateDelayedTriggerEffect(step = END_COMBAT, SacrificeTarget(Self))`) when such a creature is declared as an
+  attacker. A creature that loses all abilities loses both halves. No per-card static/trigger is needed.
 - `CumulativeUpkeep` — "Cumulative upkeep [cost] (At the beginning of your upkeep, put an age counter on this
   permanent, then sacrifice it unless you pay its upkeep cost for each age counter on it.)" (CR 702.24).
   Display-only keyword; wire it with the `card { cumulativeUpkeep(ManaCost.parse("{1}")) }` builder helper, which
@@ -18100,20 +18099,9 @@ are their printed spellings (`CounterType.printed`). Text converts back only thr
   `Costs.PayPlayerCounters(ENERGY, 2)` → `AddCounters(CounterType.EXALTED, 1, creature)`.
 - **Ability counters beyond single keywords** — `decayed` (`CounterType.DECAYED`, CR 702.147a, Tarkir: Dragonstorm) grants
   the whole **Decayed** ability (a "can't block" static **and** an attack-triggered end-of-combat sacrifice) to any
-  creature that bears one. `StateProjector` projects the `DECAYED` keyword + `cantBlock = true` (initial pass and the
-  post-Layer-6 re-apply), and `TriggerDetector.detectDecayedCounterAttackTriggers` schedules the self-sacrifice when a
-  decayed-countered creature attacks. Add via `AddCounters(CounterType.DECAYED, n, target)` (Rot-Curse Rakshasa's Renew).
-
-Counter effects live in §4 (`AddCounters`, `RemoveCounters`, `Proliferate`, `MoveAllLastKnownCounters`, etc.).
-
----
-
-## 17. Zones & movement
-
-**Zones** — `BATTLEFIELD`, `HAND`, `LIBRARY`, `GRAVEYARD`, `EXILE`, `STACK`.
-
-**Primitives**
-
+  creature that bears one. `StateProjector` projects the `DECAYED` keyword (initial pass and the post-Layer-6
+  re-apply), and the engine realizes Decayed off that keyword like any other source of it (see `Decayed` above).
+  Add via `AddCounters(CounterType.DECAYED, n, target)` (Rot-Curse Rakshasa's Renew).
 - `MoveToZoneEffect(target, zone, faceDown?, byDestruction?, linked?)` — single-target move. Card
   definitions construct it via the facade `Effects.Move(target, destination, …)` (or the named
   shortcuts `Effects.Destroy/Exile/ReturnToHand/PutOnTopOfLibrary/ShuffleIntoLibrary/…`).

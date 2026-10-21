@@ -13107,24 +13107,9 @@
         "RENEW"
     ],
     "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Rot-Curse Rakshasa:1",
-                "trigger": "AttackEvent",
-                "effect": {
-                    "type": "CreateDelayedTrigger",
-                    "step": "END_COMBAT",
-                    "effect": {
-                        "type": "SacrificeTarget",
-                        "target": "Self"
-                    }
-                },
-                "descriptionOverride": "Decayed (This creature can't block, and when it attacks, sacrifice it at end of combat.)"
-            }
-        ],
         "activatedAbilities": [
             {
-                "id": "Rot-Curse Rakshasa:2",
+                "id": "Rot-Curse Rakshasa:1",
                 "cost": {
                     "type": "CostComposite",
                     "costs": [
@@ -13166,9 +13151,6 @@
                 "activateFromZone": "Graveyard",
                 "descriptionOverride": "Renew — {X}{B}{B}, Exile this card from your graveyard: For each target, put a decayed counter on target Activate only as a sorcery."
             }
-        ],
-        "staticAbilities": [
-            "CantBlock"
         ]
     },
     "metadata": {

@@ -1,7 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.mid.cards
 
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -17,14 +17,8 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
  *
  * The batched death trigger (`Triggers.oneOrMore(filter.anyController()).die()` over nontoken creatures) fires at
  * most once per death batch (CR 603.3b) and is further capped to once per turn (`oncePerTurn`).
- * The token gets Decayed via a decayed counter ([CounterType.DECAYED]) — the engine realizes "can't
- * block" + "when it attacks, sacrifice it at end of combat" off the counter (CR 702.147a).
- *
- * That counter is why Assay's differential reports this card: the printed "with decayed" is a
- * keyword on the token, so the grammar reads `CreateTokenEffect.keywords`, and the engine does not
- * realize Decayed from there. Deliberately left as it is — this spelling is the one that works, and
- * closing the gap is engine work rather than a card edit. See `Tokens.createToken`'s KDoc in
- * `:oracle-assay`.
+ * The token is created with the Decayed keyword (`keywords`), which the engine realizes as "can't
+ * block" + "when it attacks, sacrifice it at end of combat" (CR 702.147a).
  */
 val GhoulishProcession = card("Ghoulish Procession") {
     manaCost = "{1}{B}"
@@ -42,7 +36,7 @@ val GhoulishProcession = card("Ghoulish Procession") {
             toughness = 2,
             colors = setOf(Color.BLACK),
             creatureTypes = setOf("Zombie"),
-            initialCounters = mapOf(CounterType.DECAYED to 1),
+            keywords = setOf(Keyword.DECAYED),
         )
         description = "Whenever one or more nontoken creatures die, create a 2/2 black Zombie creature " +
             "token with decayed."

@@ -155,14 +155,10 @@ class StateProjector {
                             projectedValues[entityId]?.keywords?.add(keywordName)
                         }
                     }
-                    // CR 702.147a: a decayed counter grants the Decayed keyword ability — the
-                    // "can't block" static half is realized here (the attack-triggered "sacrifice
-                    // at end of combat" half is detected by TriggerDetector off the counter).
+                    // CR 702.147a: a decayed counter grants the Decayed keyword ability, which is
+                    // realized off the projected keyword after Layer 6 like any other source of it.
                     if (countersComponent.getCount(CounterType.DECAYED) > 0) {
-                        projectedValues[entityId]?.let {
-                            it.keywords.add(Keyword.DECAYED.name)
-                            it.cantBlock = true
-                        }
+                        projectedValues[entityId]?.keywords?.add(Keyword.DECAYED.name)
                     }
                 }
 
@@ -425,8 +421,15 @@ class StateProjector {
             // (a "loses all abilities" effect must not wipe a counter-granted ability).
             if (countersComponent.getCount(CounterType.DECAYED) > 0) {
                 values.keywords.add(Keyword.DECAYED.name)
-                values.cantBlock = true
             }
+        }
+
+        // CR 702.147a: Decayed's "can't block" half, realized off the final keyword set — so a
+        // printed Decayed, a token created "with decayed", a decayed counter and a granted Decayed
+        // all behave alike, and a creature that lost all abilities in Layer 6 can block again.
+        // The attack-triggered "sacrifice it at end of combat" half is TriggerDetector's.
+        for (values in projectedValues.values) {
+            if (Keyword.DECAYED.name in values.keywords) values.cantBlock = true
         }
 
         // Resolve CDAs (Layer 7a) - evaluate dynamic power/toughness

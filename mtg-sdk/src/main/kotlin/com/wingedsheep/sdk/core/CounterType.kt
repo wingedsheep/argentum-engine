@@ -204,9 +204,9 @@ value class CounterType(val name: String) {
          * Decayed counter (Tarkir: Dragonstorm). A keyword-ability counter (CR 702.147a): a creature
          * with one or more decayed counters has Decayed — "This creature can't block" and "When this
          * creature attacks, sacrifice it at end of combat." Granted to *any* creature, independent of
-         * its printed abilities (e.g. Rot-Curse Rakshasa's Renew). The behavior is realized by the
-         * engine off the counter, mirroring how the printed [com.wingedsheep.sdk.dsl.card]`.decayed()`
-         * helper composes the same static + triggered ability.
+         * its printed abilities (e.g. Rot-Curse Rakshasa's Renew). The counter projects the
+         * [Keyword.DECAYED] keyword, and the engine realizes the ability off that keyword exactly as
+         * it does for a printed or token Decayed.
          */
         val DECAYED = CounterType("DECAYED")
 

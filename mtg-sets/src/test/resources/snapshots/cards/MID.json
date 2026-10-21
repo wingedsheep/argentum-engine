@@ -2287,6 +2287,55 @@
     ]
 }
 
+// Falcon Abomination
+{
+    "name": "Falcon Abomination",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Zombie Bird",
+    "oracleText": "Flying\nWhen this creature enters, create a 2/2 black Zombie creature token with decayed. (It can't block. When it attacks, sacrifice it at end of combat.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Falcon Abomination:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "keywords": [
+                        "DECAYED"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "artist": "Brent Hollowell",
+        "flavorText": "The foulest of fowl.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0668413-859d-4ec4-a4d8-17ec7f5b1b8b.jpg?1783925641"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Falkenrath Pit Fighter
 {
     "name": "Falkenrath Pit Fighter",
@@ -2809,9 +2858,9 @@
                     "creatureTypes": [
                         "Zombie"
                     ],
-                    "initialCounters": {
-                        "DECAYED": 1
-                    }
+                    "keywords": [
+                        "DECAYED"
+                    ]
                 },
                 "oncePerTurn": true,
                 "descriptionOverride": "Whenever one or more nontoken creatures die, create a 2/2 black Zombie creature token with decayed."
@@ -3498,6 +3547,61 @@
         "artist": "Naomi Baker",
         "flavorText": "Ancient evils dwell within the burning chasm called the Ashmouth, ever ready to devour those foolish enough to travel alone.",
         "imageUri": "https://cards.scryfall.io/normal/front/1/7/17824929-f131-4b8d-addb-66c25323155e.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Jadar, Ghoulcaller of Nephalia
+{
+    "name": "Jadar, Ghoulcaller of Nephalia",
+    "manaCost": "{1}{B}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "At the beginning of your end step, if you control no creatures with decayed, create a 2/2 black Zombie creature token with decayed. (It can't block. When it attacks, sacrifice it at end of combat.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jadar, Ghoulcaller of Nephalia:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "keywords": [
+                        "DECAYED"
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "creature kw:decayed",
+                    "negate": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "rarity": "RARE",
+        "artist": "Yongjae Choi",
+        "flavorText": "\"Rise, my pretty thing. Why rot in the river when you can serve at my bidding?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff971ba7-68b8-482a-9cb1-741f6893550c.jpg?1783925615"
     },
     "colorIdentityOverride": [
         "BLACK"

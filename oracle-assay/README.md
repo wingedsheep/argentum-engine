@@ -3197,7 +3197,8 @@ token with decayed" is a keyword on the token per CR 702.147, so the grammar rea
 attack-sacrifice trigger only off `CounterType.DECAYED`, so the keyword alone is inert and the card
 writes `initialCounters = {decayed: 1}`. The card's spelling is the one that *works* and the
 grammar's is the one the text states; neither is right to change on its own, so the gap is reported.
-Same shape as the display-only keywords the report's bottom table already ranks.
+Same shape as the display-only keywords the report's bottom table already ranks. *(Closed since: the engine now
+realizes Decayed off the projected keyword, and the card writes `keywords = [DECAYED]`.)*
 
 ## The fronted duration
 

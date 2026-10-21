@@ -54,6 +54,7 @@ import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
@@ -66,7 +67,6 @@ import com.wingedsheep.sdk.scripting.predicates.evaluateWith
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.events.Recipient
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.dsl.decayed
 
 /**
  * Detects triggered abilities that should fire based on game events.
@@ -502,9 +502,9 @@ class TriggerDetector(
         // create a "sacrifice self" delayed trigger (CR 702.74)
         detectEvokeSacrificeTriggers(state, events, triggers)
 
-        // Detect the Decayed counter's attack trigger (CR 702.147a): when a creature with a
-        // decayed counter is declared as an attacker, it must be sacrificed at end of combat.
-        detectDecayedCounterAttackTriggers(state, events, triggers)
+        // Detect Decayed's attack trigger (CR 702.147a): when a creature with Decayed is declared
+        // as an attacker, it must be sacrificed at end of combat.
+        detectDecayedAttackTriggers(state, events, triggers)
 
         // Torpor Orb family (SuppressEntersTriggers): remove every pending trigger that a
         // matching permanent entering the battlefield caused (CR 603.6 enters-the-battlefield
@@ -914,14 +914,14 @@ class TriggerDetector(
     }
 
     /**
-     * CR 702.147a — Decayed's triggered half, driven by a decayed counter rather than a printed
-     * ability. When a creature with one or more decayed counters is declared as an attacker, fire
-     * an attack-triggered ability that schedules a "sacrifice it at end of combat" delayed trigger
-     * (via [CreateDelayedTriggerEffect], step [Step.END_COMBAT]) — the exact composition the
-     * printed `card { decayed() }` helper uses. The "can't block" static half is handled in
-     * projection ([StateProjector]).
+     * CR 702.147a — Decayed's triggered half, driven by the projected [Keyword.DECAYED] whatever
+     * granted it: a printed `card { decayed() }`, a token created "with decayed"
+     * (`CreateTokenEffect.keywords`), a decayed counter, or a gained-keyword effect. When such a
+     * creature is declared as an attacker, fire an attack-triggered ability that schedules a
+     * "sacrifice it at end of combat" delayed trigger (via [CreateDelayedTriggerEffect], step
+     * [Step.END_COMBAT]). The "can't block" static half is handled in projection ([StateProjector]).
      */
-    private fun detectDecayedCounterAttackTriggers(
+    private fun detectDecayedAttackTriggers(
         state: GameState,
         events: List<EngineGameEvent>,
         triggers: MutableList<PendingTrigger>
@@ -930,9 +930,8 @@ class TriggerDetector(
             .flatMap { it.attackers }
             .distinct()
         for (attackerId in declaredAttackers) {
+            if (!state.projectedState.hasKeyword(attackerId, Keyword.DECAYED)) continue
             val entity = state.getEntity(attackerId) ?: continue
-            val counters = entity.get<CountersComponent>() ?: continue
-            if (counters.getCount(com.wingedsheep.sdk.core.CounterType.DECAYED) <= 0) continue
             val cardComponent = entity.get<CardComponent>() ?: continue
             val controllerId = entity.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()
                 ?.playerId ?: continue

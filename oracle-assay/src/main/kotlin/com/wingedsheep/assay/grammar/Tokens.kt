@@ -288,15 +288,9 @@ object Tokens {
      * trample" and "token with flying and trample", which is the whole reason that run is a shared
      * phrase rather than a rule inside one family.
      *
-     * **Finding: `CreateTokenEffect.keywords` does not realize Decayed.** "Create a 2/2 black Zombie
-     * creature token with decayed" reads into `keywords = [DECAYED]`, which is what CR 702.147 says
-     * the token has — but the engine grants Decayed's "can't block" and its attack-sacrifice trigger
-     * only off `CounterType.DECAYED` (`StateProjector`, `TriggerDetector`), so the keyword alone is
-     * inert. Ghoulish Procession therefore writes `initialCounters = {decayed: 1}` and stands as the
-     * differential's one divergence here. The card is the reading that *works* and the grammar is
-     * the reading the text states; neither is wrong to change unilaterally, so the rule keeps saying
-     * what the card says and the gap is reported. Fixing it is engine work: realize the keyword on a
-     * created token the way the counter is realized.
+     * "Create a 2/2 black Zombie creature token with decayed" reads into `keywords = [DECAYED]`,
+     * which is what CR 702.147 says the token has; the engine realizes Decayed off the projected
+     * keyword, so the token keyword is the whole spelling (Ghoulish Procession, Falcon Abomination).
      */
     private fun createToken(
         count: Count,

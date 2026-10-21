@@ -684,11 +684,10 @@ enum class Keyword(val displayName: String) {
      * triggered ability: "This creature can't block" and "When this creature
      * attacks, sacrifice it at end of combat."
      *
-     * The keyword itself is display-only; the behavior is composed by the
-     * `decayed()` DSL helper on [com.wingedsheep.sdk.dsl.CardBuilder] — a
-     * [com.wingedsheep.sdk.scripting.CantBlock] static ability plus an
-     * attack-triggered [com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect]
-     * that sacrifices the source at the end-of-combat step.
+     * The engine realizes both halves off the projected keyword, whatever granted it
+     * (printed via `decayed()`, a token created "with decayed", a decayed counter, a
+     * gained-keyword effect): projection sets "can't block", and the trigger detector
+     * schedules the end-of-combat self-sacrifice when the creature attacks.
      */
     DECAYED("Decayed"),
 
