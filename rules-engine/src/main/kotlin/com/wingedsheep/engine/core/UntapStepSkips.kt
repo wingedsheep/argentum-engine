@@ -101,10 +101,11 @@ internal fun <T : StaticAbility> standingStatics(
         collect(grant.ability, source, controller, found)
     }
     // An emblem's own statics (CR 114.4: they function in the command zone) — always controlled
-    // by the player who got it.
+    // by the player who got it, and gone with them when they leave the game (CR 800.4a).
     for ((emblemId, container) in state.entities) {
         val statics = container.get<EmblemStaticAbilityComponent>() ?: continue
         val controller = container.get<ControllerComponent>()?.playerId ?: continue
+        if (controller !in state.activePlayers) continue
         for (ability in statics.abilities) collect(ability, emblemId, controller, found)
     }
     return found
