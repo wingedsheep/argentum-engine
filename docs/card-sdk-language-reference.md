@@ -16241,6 +16241,12 @@ restriction matches the spell context.
   variant). Maelstrom of the Spirit Dragon: `SubtypeSpellsOnly(setOf("Dragon", "Omen"))`
   ("a Dragon spell or an Omen spell").
 - `ManaRestriction.CastFromExileOnly` — only spells cast from exile.
+- `ManaRestriction.CastFromGraveyardOnly` — only spells cast from **your own** graveyard
+  (flashback, disturb, harmonize, escape, a graveyard-cast permission); a card cast out of an
+  opponent's graveyard doesn't qualify; rejects ability activations. Rootcoil Creeper.
+- `ManaRestriction.DisturbCostOnly` — only a spell cast for its disturb cost (CR 702.146a); a
+  hand cast or a flashback cast of the same card doesn't qualify; rejects ability activations.
+  Unblinking Observer: `AnyOf(listOf(DisturbCostOnly, InstantOrSorceryOnly))`.
 - `ManaRestriction.CastFromNonHandOnly` — only spells cast from anywhere other than
   hand (exile, graveyard, top of library, command zone, …). Mm'menon, the Right Hand's
   granted artifact mana ability. Generalizes `CastFromExileOnly` by allowing all non-hand

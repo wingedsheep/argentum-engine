@@ -2,6 +2,7 @@ package com.wingedsheep.engine.view
 
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.handlers.actions.spell.altAllows
 import com.wingedsheep.engine.legalactions.*
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
@@ -64,7 +65,12 @@ class LegalActionEnricher(
                     isKicked = gameAction.declaredCostSlot == ChoiceSlot.KICKED,
                     isFromExile = action.sourceZone == "EXILE",
                     // Null sourceZone means the standard hand cast.
-                    isFromHand = action.sourceZone == null || action.sourceZone == "HAND"
+                    isFromHand = action.sourceZone == null || action.sourceZone == "HAND",
+                    isFromGraveyard = gameAction.cardId in state.getZone(
+                        com.wingedsheep.engine.state.ZoneKey(gameAction.playerId, com.wingedsheep.sdk.core.Zone.GRAVEYARD)
+                    ),
+                    isDisturbCast = gameAction.useAlternativeCost &&
+                        gameAction.altAllows(com.wingedsheep.engine.core.AlternativeCostType.DISTURB),
                 )
             }
             is ActivateAbility -> state.getEntity(gameAction.sourceId)?.get<CardComponent>()?.let { card ->

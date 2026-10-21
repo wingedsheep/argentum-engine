@@ -36,7 +36,9 @@ internal fun spellPaymentContextFor(
     cardComponent: CardComponent,
     isKicked: Boolean = false,
     isFromExile: Boolean = false,
-    isFromHand: Boolean = true
+    isFromHand: Boolean = true,
+    isFromGraveyard: Boolean = false,
+    isDisturbCast: Boolean = false,
 ): SpellPaymentContext = SpellPaymentContext(
     isInstantOrSorcery = cardComponent.typeLine.isInstant || cardComponent.typeLine.isSorcery,
     isKicked = isKicked,
@@ -49,5 +51,7 @@ internal fun spellPaymentContextFor(
     subtypes = paymentSubtypesOf(cardComponent),
     isFromExile = isFromExile,
     isFromHand = isFromHand,
+    isFromGraveyard = isFromGraveyard,
+    isDisturbCast = isDisturbCast,
     cardTypes = cardComponent.typeLine.cardTypes,
 )

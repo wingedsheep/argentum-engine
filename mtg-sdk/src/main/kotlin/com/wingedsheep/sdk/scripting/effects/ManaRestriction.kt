@@ -175,6 +175,30 @@ sealed interface ManaRestriction {
     }
 
     /**
+     * "Spend this mana only to cast spells from your graveyard." Satisfied by casting a spell
+     * from the caster's **own** graveyard — by flashback, disturb, harmonize, escape, or a
+     * graveyard-cast permission alike. A card cast out of an opponent's graveyard doesn't
+     * qualify ("your graveyard"), and ability activations never do. Rootcoil Creeper.
+     */
+    @SerialName("CastFromGraveyardOnly")
+    @Serializable
+    data object CastFromGraveyardOnly : ManaRestriction {
+        override val description: String = "Spend this mana only to cast spells from your graveyard"
+    }
+
+    /**
+     * "Spend this mana only to pay a disturb cost." Satisfied only by casting a spell for its
+     * disturb alternative cost (CR 702.146a — cast transformed from the graveyard). A plain cast
+     * of the same card from hand, a flashback cast, and ability activations don't qualify.
+     * Compose with [AnyOf] — Unblinking Observer is `AnyOf(DisturbCostOnly, InstantOrSorceryOnly)`.
+     */
+    @SerialName("DisturbCostOnly")
+    @Serializable
+    data object DisturbCostOnly : ManaRestriction {
+        override val description: String = "Spend this mana only to pay a disturb cost"
+    }
+
+    /**
      * "Spend this mana only to turn permanents face up."
      *
      * Satisfied by the turn-face-up special action (disguise/morph face-up, CR 707.9 / 702.37e),

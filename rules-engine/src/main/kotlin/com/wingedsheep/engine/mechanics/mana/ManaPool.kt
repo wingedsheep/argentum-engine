@@ -71,6 +71,17 @@ data class SpellPaymentContext(
      */
     val isFromHand: Boolean = true,
     /**
+     * True when the spell is being cast from the caster's **own** graveyard (flashback, disturb,
+     * harmonize, a graveyard-cast permission, …). A card cast out of an opponent's graveyard
+     * leaves it false. Read by [ManaRestriction.CastFromGraveyardOnly].
+     */
+    val isFromGraveyard: Boolean = false,
+    /**
+     * True when the spell is being cast for its disturb alternative cost (CR 702.146a). Read by
+     * [ManaRestriction.DisturbCostOnly].
+     */
+    val isDisturbCast: Boolean = false,
+    /**
      * True when the payment is for the turn-face-up special action (CR 707.9 / disguise's
      * turn-up). Lets restrictions like [ManaRestriction.TurnPermanentsFaceUpOnly] recognize
      * "spend this mana only to turn permanents face up" (Overgrown Zealot, Creeping Peeper).
@@ -174,6 +185,8 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
         (!creatureOnly || (!context.isAbilityActivation && context.isCreature)) &&
             context.subtypes.any { it.equals(subtype, ignoreCase = true) }
     is ManaRestriction.CastFromExileOnly -> !context.isAbilityActivation && context.isFromExile
+    is ManaRestriction.CastFromGraveyardOnly -> !context.isAbilityActivation && context.isFromGraveyard
+    is ManaRestriction.DisturbCostOnly -> !context.isAbilityActivation && context.isDisturbCast
     is ManaRestriction.CastFromNonHandOnly -> !context.isAbilityActivation && !context.isFromHand
     is ManaRestriction.TurnPermanentsFaceUpOnly -> context.isTurnFaceUpAction
     is ManaRestriction.FaceDownSpellsOnly -> !context.isAbilityActivation && context.isFaceDownCast

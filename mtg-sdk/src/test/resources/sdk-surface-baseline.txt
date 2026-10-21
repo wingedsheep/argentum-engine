@@ -1113,10 +1113,12 @@ ManaRestriction.CannotCastSpellsFromHand — ManaRestriction
 ManaRestriction.CannotCastSpellsOtherThan — ManaRestriction
 ManaRestriction.CardTypeSpellsOrAbilitiesOnly — ManaRestriction
 ManaRestriction.CastFromExileOnly — ManaRestriction
+ManaRestriction.CastFromGraveyardOnly — ManaRestriction
 ManaRestriction.CastFromNonHandOnly — ManaRestriction
 ManaRestriction.ColorlessSpellsOnly — ManaRestriction
 ManaRestriction.CostsContainingXOnly — ManaRestriction
 ManaRestriction.CreatureSpellsOnly — ManaRestriction
+ManaRestriction.DisturbCostOnly — ManaRestriction
 ManaRestriction.EquipAbilityActivationOnly — ManaRestriction
 ManaRestriction.FaceDownSpellsOnly — ManaRestriction
 ManaRestriction.InstantOrSorceryOnly — ManaRestriction

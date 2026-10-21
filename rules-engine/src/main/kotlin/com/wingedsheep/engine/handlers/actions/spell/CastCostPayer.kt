@@ -481,6 +481,9 @@ internal class CastCostPayer(
                 isKicked = action.declaredCostSlot == ChoiceSlot.KICKED,
                 isFromExile = isCastFrom(state, action.cardId, Zone.EXILE),
                 isFromHand = isCastFrom(state, action.cardId, Zone.HAND),
+                // "your graveyard" — the caster's own, not an opponent's (CastFromGraveyardOnly).
+                isFromGraveyard = action.cardId in state.getZone(ZoneKey(action.playerId, Zone.GRAVEYARD)),
+                isDisturbCast = action.useAlternativeCost && action.altAllows(AlternativeCostType.DISTURB),
             ).copy(colorlessAsAnyColor = isCastWithColorlessAsAnyColor(state, action))
         } else null
 

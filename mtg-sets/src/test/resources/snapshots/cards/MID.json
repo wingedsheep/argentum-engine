@@ -4766,6 +4766,88 @@
     ]
 }
 
+// Rootcoil Creeper
+{
+    "name": "Rootcoil Creeper",
+    "manaCost": "{G}{U}",
+    "typeLine": "Creature — Plant Horror",
+    "oracleText": "{T}: Add one mana of any color.\n{T}: Add two mana of any one color. Spend this mana only to cast spells from your graveyard.\n{G}{U}, {T}, Exile this creature: Return target card with flashback you own from exile to your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Rootcoil Creeper:1",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Rootcoil Creeper:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "restriction": "CastFromGraveyardOnly"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Rootcoil Creeper:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{G}{U}"
+                            }
+                        },
+                        "CostTap",
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "kw:flashback own:you",
+                            "zone": "Exile"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "238",
+        "rarity": "UNCOMMON",
+        "artist": "Iris Compiet",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/3743cf9c-226f-43a3-b385-375a25414792.jpg?1783925554"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Sacred Fire
 {
     "name": "Sacred Fire",
@@ -5834,6 +5916,47 @@
                 "text": "Triskaidekaphile's triggered ability will trigger only if you have exactly thirteen cards in your hand as your upkeep starts. If you have fewer cards in your hand, you won't be able to draw cards during your upkeep in time to cause the ability to trigger."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Unblinking Observer
+{
+    "name": "Unblinking Observer",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Homunculus",
+    "oracleText": "{T}: Add {U}. Spend this mana only to pay a disturb cost or cast an instant or sorcery spell.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Unblinking Observer:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE",
+                    "restriction": {
+                        "type": "AnyOf",
+                        "restrictions": [
+                            "DisturbCostOnly",
+                            "InstantOrSorceryOnly"
+                        ]
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "artist": "Filip Burburan",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/8148063c-a509-43ac-a291-c9410c30c2f2.jpg?1783925626"
     },
     "colorIdentityOverride": [
         "BLUE"

@@ -113,7 +113,8 @@ class AnnouncedCharacteristicsCastEnumerator(private val kind: CharacteristicsAn
                     colorCount = card.colors.size,
                     subtypes = card.typeLine.subtypes.mapTo(mutableSetOf()) { it.value }, cardTypes = card.typeLine.cardTypes,
                     isFromHand = inHand,
-                    isFromExile = state.turnOrder.any { id in state.getZone(ZoneKey(it, Zone.EXILE)) }
+                    isFromExile = state.turnOrder.any { id in state.getZone(ZoneKey(it, Zone.EXILE)) },
+                    isFromGraveyard = id in state.getZone(ZoneKey(player, Zone.GRAVEYARD)),
                 )
                 fun hasKeyword(keyword: Keyword) =
                     context.grantedKeywordResolver.hasKeyword(state, player, def, keyword, id)

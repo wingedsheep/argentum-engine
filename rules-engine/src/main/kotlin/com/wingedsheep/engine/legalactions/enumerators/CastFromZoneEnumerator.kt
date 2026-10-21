@@ -633,7 +633,8 @@ class CastFromZoneEnumerator(
                     val spellContext = spellPaymentContextFor(
                         cardComponent,
                         isFromExile = sourceZoneLabel == "EXILE",
-                        isFromHand = false
+                        isFromHand = false,
+                        isFromGraveyard = cardId in state.getGraveyard(playerId),
                     ).copy(colorlessAsAnyColor = permissions.any { it.colorlessAsAnyColor })
                     // Convoke (CR 702.51) — printed, or granted by a zone-scoped grant keyed to the
                     // zone this card is cast from. A free cast has nothing for convoke to pay.
@@ -1439,7 +1440,12 @@ class CastFromZoneEnumerator(
             val effectiveCost = pricing.min
             val costString = effectiveCost.toString()
             val costByTargetCount = pricing.byCountStrings()
-            val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
+            // Flashback casts from the caster's own graveyard, so conditional mana is judged with
+            // that origin (Rootcoil Creeper's "cast spells from your graveyard").
+            val spellContext = spellPaymentContextFor(cardComponent, isFromHand = false, isFromGraveyard = true)
+            val canAfford = context.manaSolver.canPay(
+                state, playerId, effectiveCost, precomputedSources = context.availableManaSources, spellContext = spellContext
+            )
 
             // A flashback cast owes the card's printed additional costs as well as flashback's own
             // bundled one ("its flashback cost and any additional costs").
@@ -1469,8 +1475,9 @@ class CastFromZoneEnumerator(
             }
 
             val autoTapPreview = if (context.skipAutoTapPreview) null else {
-                context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
-                    ?.sources?.map { it.entityId }
+                context.manaSolver.solve(
+                    state, playerId, effectiveCost, precomputedSources = context.availableManaSources, spellContext = spellContext
+                )?.sources?.map { it.entityId }
             }
 
             if (targetReqs.isNotEmpty()) {
@@ -1841,8 +1848,14 @@ class CastFromZoneEnumerator(
             val effectiveCost = pricing.min
             val costString = effectiveCost.toString()
             val costByTargetCount = pricing.byCountStrings()
+            // Cast from the caster's own graveyard for its disturb cost — the facts "spend this
+            // mana only to pay a disturb cost" / "cast spells from your graveyard" are judged by.
+            // Built from the card's own component exactly as the payment path builds it.
+            val spellContext = spellPaymentContextFor(
+                cardComponent, isFromHand = false, isFromGraveyard = true, isDisturbCast = true
+            )
             val canAfford = context.manaSolver.canPay(
-                state, playerId, effectiveCost, precomputedSources = context.availableManaSources
+                state, playerId, effectiveCost, precomputedSources = context.availableManaSources, spellContext = spellContext
             )
 
             if (!canAfford) {
@@ -1868,8 +1881,9 @@ class CastFromZoneEnumerator(
             }
 
             val autoTapPreview = if (context.skipAutoTapPreview) null else {
-                context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
-                    ?.sources?.map { it.entityId }
+                context.manaSolver.solve(
+                    state, playerId, effectiveCost, precomputedSources = context.availableManaSources, spellContext = spellContext
+                )?.sources?.map { it.entityId }
             }
 
             if (targetReqs.isNotEmpty()) {
@@ -1971,7 +1985,7 @@ class CastFromZoneEnumerator(
             val harmonizeCreatures = context.costUtils.findHarmonizeCreatures(state, playerId)
             // Harmonize casts from the graveyard, so eligible conditional mana is judged with
             // isFromHand = false (a "cast from a non-hand zone only" restriction applies here).
-            val harmonizeSpellContext = spellPaymentContextFor(cardComponent, isFromHand = false)
+            val harmonizeSpellContext = spellPaymentContextFor(cardComponent, isFromHand = false, isFromGraveyard = true)
             val canAfford = context.costUtils.canAffordWithHarmonize(
                 state, playerId, effectiveCost, harmonizeCreatures,
                 precomputedSources = context.availableManaSources, spellContext = harmonizeSpellContext
@@ -2941,7 +2955,8 @@ class CastFromZoneEnumerator(
                         cardComponent,
                         isKicked = declaredSlot == ChoiceSlot.KICKED,
                         isFromExile = sourceZone == "EXILE",
-                        isFromHand = false
+                        isFromHand = false,
+                        isFromGraveyard = cardId in state.getGraveyard(playerId),
                     ).copy(
                         colorlessAsAnyColor = state.activeMayPlayFor(cardId, playerId, context.conditionEvaluator, context.cardRegistry)
                             .any { it.colorlessAsAnyColor }
