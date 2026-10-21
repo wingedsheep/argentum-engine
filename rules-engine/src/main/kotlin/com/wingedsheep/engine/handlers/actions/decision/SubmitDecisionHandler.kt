@@ -73,14 +73,27 @@ class SubmitDecisionHandler(
         val answer = (state.continuationStack.lastOrNull() as? Suspension)?.answer
         val finishedBlockerPiles = answer is BlockerPilesContinuation || answer is BlockerPileRestrictionChoiceContinuation
         val finishedResolution = state.continuationStack.any { it is EndResolutionControlContinuation }
+        val finishedDrawStepDraw = answer.isDrawStepDraw() || state.continuationStack.any {
+            it is DrawStepTeamDrawsContinuation || it is DrawStepOtherDrawsContinuation ||
+                (it is DrawReplacementRemainingDrawsContinuation && it.isDrawStep)
+        }
         val recipient = when {
             finishedResolution -> result.state.activePlayerId ?: action.playerId
+            // A question asked inside the draw step's turn-based draws (a miracle reveal, an
+            // optional draw replacement) — even one a non-active player answers, drawing through
+            // "You draw a card during each opponent's draw step" — leaves priority with the active
+            // player once those draws are dealt with (CR 117.3a).
+            finishedDrawStepDraw -> result.state.activePlayerId ?: action.playerId
             answer.placesTrigger() -> state.priorityPlayerId ?: result.state.activePlayerId ?: action.playerId
             else -> action.playerId
         }
         val settled = if (finishedInStep && !finishedBlockerPiles) result.state.withPriority(recipient) else result.state
         return ExecutionResult.success(settled, events)
     }
+
+    /** The answer is an optional replacement of one of the draw step's draws (CR 504.1 and its followers). */
+    private fun AnswerContinuation?.isDrawStepDraw(): Boolean =
+        this is StaticDrawReplacementContinuation && isDrawStep
 
     /** The answer belongs to putting a triggered ability on the stack (CR 603.3), not to an announcement. */
     private fun AnswerContinuation?.placesTrigger(): Boolean = when (this) {

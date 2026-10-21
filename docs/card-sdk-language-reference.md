@@ -10163,12 +10163,21 @@ staticAbility {
     "during **your** untap step" wording. Stacks after the stun-counter replacement (CR 122.1d, checked first).
 - Untap-during-other-players'-untap-steps statics (read by `BeginningPhaseManager.performUntapStep`,
   which untaps the chosen permanents for each non-active player after the active player's normal untap):
-  - `UntapDuringOtherUntapSteps` — untap **all** permanents you control (Seedborn Muse).
+  - `UntapDuringOtherUntapSteps(duringStepsOf = Player.Each)` — untap **all** permanents you control
+    (Seedborn Muse). `duringStepsOf = Player.EachOpponent` narrows it to each *opponent's* untap step
+    (Teferi, Who Slows the Sunset's emblem) — the two differ only for a Team vs. Team teammate's own turn.
+    Also read off an emblem's own statics (`CreatePermanentEmblem(ownedStaticAbilities = …)`).
   - `UntapFilteredDuringOtherUntapSteps(filter)` — untap each permanent you control matching `filter`
     (Ivorytusk Fortress).
   - `UntapSelfDuringOtherUntapSteps` — untap **only the source permanent itself** ("Untap this artifact
     during each other player's untap step" — Bender's Waterskin). Guarded on the source still being tapped,
     so it never double-untaps / double-consumes a stun counter alongside the broad/filtered variants.
+- `DrawDuringOtherDrawSteps(duringStepsOf = Player.Each)` — "You draw a card during each other player's
+  draw step"; `Player.EachOpponent` for "each opponent's" (Teferi, Who Slows the Sunset's emblem). A standing
+  static, not a trigger: `DrawPhaseManager` draws for its controller right after the active player's
+  turn-based draw, before anyone gets priority, one card per instance, controllers in APNAP order. A
+  skipped draw step (first-turn skip, `SkipStepOrPhase`, a skip marker) has no draw to follow. Read through
+  `standingStatics`, so it works printed on a permanent, granted, or on an emblem.
 - `UntapLimitPerStep(filter, max)` — global untap-count cap, "Players can't untap more than `max` `filter`
   permanents during their untap steps" (Damping Field: artifacts, one). `max = 0` is "`filter` don't
   untap during their controllers' untap steps" (Meekstone: `Creature.powerAtLeast(3)`): the matching

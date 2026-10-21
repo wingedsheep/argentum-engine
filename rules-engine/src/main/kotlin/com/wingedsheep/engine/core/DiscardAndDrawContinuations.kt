@@ -143,6 +143,18 @@ data class DrawStepTeamDrawsContinuation(
 ) : AutomaticContinuation
 
 /**
+ * The rest of the draw step's draws by players other than the active one — "You draw a card during
+ * each opponent's draw step" ([com.wingedsheep.sdk.scripting.DrawDuringOtherDrawSteps]): one card
+ * per entry of [remainingDrawers], then priority to [activePlayer]. Pushed beneath each draw-step
+ * draw that precedes them so a pause in it still leads to these draws.
+ */
+@Serializable
+data class DrawStepOtherDrawsContinuation(
+    val activePlayer: EntityId,
+    val remainingDrawers: List<EntityId>
+) : AutomaticContinuation
+
+/**
  * Resume after a player answers whether to reveal a card with miracle as they draw it (CR 702.94a:
  * "you may reveal this card from your hand as you draw it if it's the first card you've drawn this
  * turn").

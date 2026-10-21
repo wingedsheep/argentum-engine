@@ -1273,6 +1273,7 @@ class StaticAbilityHandler(
             is RetainUnspentColoredMana,
             is com.wingedsheep.sdk.scripting.LegendRuleDoesNotApplyTo,
             is UntapDuringOtherUntapSteps,
+            is com.wingedsheep.sdk.scripting.DrawDuringOtherDrawSteps,
             is UntapFilteredDuringOtherUntapSteps,
             is UntapSelfDuringOtherUntapSteps,
             is UntapLimitPerStep,

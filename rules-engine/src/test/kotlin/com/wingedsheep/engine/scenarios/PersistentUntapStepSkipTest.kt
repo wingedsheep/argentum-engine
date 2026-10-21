@@ -36,7 +36,7 @@ class PersistentUntapStepSkipTest : FunSpec({
             effect = Effects.ModifyStats(2, 2, t, Duration.UntilAfterAffectedControllersNextUntap()) } }
     val optionalUntap = card("Skip Optional Untap") { typeLine = "Artifact"
         flags(com.wingedsheep.sdk.core.AbilityFlag.MAY_NOT_UNTAP) }
-    val seedborn = card("Skip Other Untap") { typeLine = "Artifact"; staticAbility { ability = UntapDuringOtherUntapSteps } }
+    val seedborn = card("Skip Other Untap") { typeLine = "Artifact"; staticAbility { ability = UntapDuringOtherUntapSteps() } }
     fun driver() = GameTestDriver().apply {
         registerCards(TestCards.all + listOf(all, own, enemy, conditional, mute, seedborn, steal, buff, optionalUntap))
         initMirrorMatch(Deck.of("Forest" to 40)); passPriorityUntil(Step.PRECOMBAT_MAIN)

@@ -20,7 +20,7 @@ val SeedbornMuse = card("Seedborn Muse") {
     oracleText = "Untap all permanents you control during each other player's untap step."
 
     staticAbility {
-        ability = UntapDuringOtherUntapSteps
+        ability = UntapDuringOtherUntapSteps()
     }
 
     metadata {

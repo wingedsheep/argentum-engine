@@ -29,6 +29,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.UntapDuringOtherUntapSteps
+import com.wingedsheep.engine.state.components.identity.emblemStaticAbilitiesOf
 import com.wingedsheep.sdk.scripting.UntapFilteredDuringOtherUntapSteps
 import com.wingedsheep.sdk.scripting.UntapSelfDuringOtherUntapSteps
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -285,12 +286,20 @@ class BeginningPhaseManager(
                 val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
                 for (ability in cardDef.script.staticAbilities) {
                     when (ability) {
-                        is UntapDuringOtherUntapSteps -> untapAll = true
+                        is UntapDuringOtherUntapSteps ->
+                            if (actsInStepOf(newState, ability.duringStepsOf, playerId, activePlayer)) untapAll = true
                         is UntapFilteredDuringOtherUntapSteps -> filteredUntapFilters.add(ability.filter)
                         is UntapSelfDuringOtherUntapSteps -> selfUntapIds.add(permanentId)
                         else -> {}
                     }
                 }
+            }
+            // An emblem's own "Untap all permanents you control during each opponent's untap step"
+            // (Teferi, Who Slows the Sunset) — emblems sit in no zone, so the battlefield scan misses them.
+            for ((_, ability) in newState.emblemStaticAbilitiesOf(playerId)) {
+                if (ability is UntapDuringOtherUntapSteps &&
+                    actsInStepOf(newState, ability.duringStepsOf, playerId, activePlayer)
+                ) untapAll = true
             }
 
             if (untapAll) {

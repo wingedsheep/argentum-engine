@@ -1825,6 +1825,7 @@ Families:
 - `DamagePersistsThroughCleanup` — Marked damage isn't removed from this permanent during cleanup steps — an exception to the CR 514.2 turn-based action that normally removes all marked damage.
 - `DampLandManaProduction` — Replaces land mana production when a land would produce two or more mana.
 - `DivideCombatDamageFreely(filter: GroupFilter)` — This creature's combat damage may be divided as its controller chooses among the defending player and/or any number of creatures they control.
+- `DrawDuringOtherDrawSteps(duringStepsOf: Player)` — "You draw a card during each opponent's draw step." (Teferi, Who Slows the Sunset's emblem.) The draw-step sibling of UntapDuringOtherUntapSteps: a standing static, not a trigger — the controller d…
 - `Enlist` — Enlist (CR 702.154): each instance offers its own optional attack-declaration tap cost and creates its own linked power-boost trigger.
 - `EquipAbilitiesAtInstantSpeed` — The controller may activate equip abilities any time they could cast an instant (instant-speed equip).
 - `EquipmentAttachRestriction(filter: GameObjectFilter)` — "This Equipment can be attached only to filter." — a printed restriction on what the Equipment carrying it may equip (Konda's Banner: "can be attached only to a legendary creature"; Gate Smasher, O…
@@ -1957,7 +1958,7 @@ Families:
 - `SuppressLandwalkForGroup(landwalks: Set<Keyword>, filter: GroupFilter)` — Creatures matching filter can be blocked as though they didn't have landwalks — the landwalk evasion of CR 702.14 is ignored for them, and nothing else about the keywords changes.
 - `SuppressWardForGroup(filter: GroupFilter)` — Ward abilities of creatures matching filter don't trigger.
 - `TransformPermanent(setCardTypes: Set<String>, setSubtypes: Set<String>, setColors: Set<Color>?, setName: String?, clearSubtypes: Boolean, filter: GroupFilter)` — Transforms the enchanted permanent into a completely different card type identity.
-- `UntapDuringOtherUntapSteps` — Untap all permanents you control during each other player's untap step.
+- `UntapDuringOtherUntapSteps(duringStepsOf: Player)` — Untap all permanents you control during each other player's untap step — Seedborn Muse — or, with duringStepsOf = Player.EachOpponent, during each *opponent's* untap step (Teferi, Who Slows the Sun…
 - `UntapFilteredDuringOtherUntapSteps(filter: GameObjectFilter)` — Untap permanents matching a filter you control during each other player's untap step.
 - `UntapLimitPerStep(filter: GameObjectFilter, max: Int)` — Caps how many permanents matching filter a player may untap during their own untap step (CR 502.3 — "effects can keep one or more of a player's permanents from untapping").
 - `UntapSelfDuringOtherUntapSteps` — Untap only the source permanent itself during each other player's untap step.

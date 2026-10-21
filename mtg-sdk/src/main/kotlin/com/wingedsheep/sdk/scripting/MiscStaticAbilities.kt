@@ -1549,17 +1549,58 @@ data object DampLandManaProduction : StaticAbility {
 }
 
 /**
- * Untap all permanents you control during each other player's untap step.
- * Used for Seedborn Muse and similar effects.
+ * Untap all permanents you control during each other player's untap step — Seedborn Muse — or,
+ * with [duringStepsOf] = [Player.EachOpponent], during each *opponent's* untap step (Teferi, Who
+ * Slows the Sunset's emblem; the two differ only for a teammate taking its own turn).
  *
  * The engine checks for this static ability during the untap step. When the active
- * player is not the controller of a permanent with this ability, all permanents
+ * player is not the controller of a permanent (or emblem) with this ability, all permanents
  * controlled by the ability's controller are untapped as well.
+ *
+ * @property duringStepsOf whose untap steps it acts in, relative to its controller:
+ *     [Player.Each] (each other player's) or [Player.EachOpponent].
  */
 @SerialName("UntapDuringOtherUntapSteps")
 @Serializable
-data object UntapDuringOtherUntapSteps : StaticAbility {
-    override val description: String = "Untap all permanents you control during each other player's untap step"
+data class UntapDuringOtherUntapSteps(
+    val duringStepsOf: Player = Player.Each
+) : StaticAbility {
+    init {
+        require(duringStepsOf == Player.Each || duringStepsOf == Player.EachOpponent) {
+            "UntapDuringOtherUntapSteps acts in each other player's or each opponent's untap step, not $duringStepsOf"
+        }
+    }
+
+    override val description: String = "Untap all permanents you control during " +
+        (if (duringStepsOf == Player.EachOpponent) "each opponent's" else "each other player's") + " untap step"
+}
+
+/**
+ * "You draw a card during each opponent's draw step." (Teferi, Who Slows the Sunset's emblem.)
+ * The draw-step sibling of [UntapDuringOtherUntapSteps]: a standing static, not a trigger — the
+ * controller draws in that step right after the active player's turn-based draw, with no priority
+ * between the two draws. Each instance draws one card, so two emblems draw two.
+ *
+ * Closest types: [UntapDuringOtherUntapSteps] acts on the untap step, not the draw step, and
+ * [SkipStepOrPhase] removes a step's action rather than adding one; a draw *trigger* ("at the
+ * beginning of each opponent's draw step, draw a card") would use the stack and give priority first.
+ *
+ * @property duringStepsOf whose draw steps it acts in, relative to its controller:
+ *     [Player.Each] (each other player's) or [Player.EachOpponent].
+ */
+@SerialName("DrawDuringOtherDrawSteps")
+@Serializable
+data class DrawDuringOtherDrawSteps(
+    val duringStepsOf: Player = Player.Each
+) : StaticAbility {
+    init {
+        require(duringStepsOf == Player.Each || duringStepsOf == Player.EachOpponent) {
+            "DrawDuringOtherDrawSteps acts in each other player's or each opponent's draw step, not $duringStepsOf"
+        }
+    }
+
+    override val description: String = "You draw a card during " +
+        (if (duringStepsOf == Player.EachOpponent) "each opponent's" else "each other player's") + " draw step"
 }
 
 /**

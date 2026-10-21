@@ -1109,7 +1109,7 @@ object Statics {
         chosenColourProtection("all ", canonicalForm = false),
         // "Untap all permanents you control during each other player's untap step." — Seedborn Muse.
         // A `data object`, so the whole sentence is one value and the rule is a constant.
-        constant<StaticAbility>("untap all permanents you control during each other player's untap step.", UntapDuringOtherUntapSteps),
+        constant<StaticAbility>("untap all permanents you control during each other player's untap step.", UntapDuringOtherUntapSteps()),
         // Goblin Goon's two lines. `Conditions.ControlMoreCreatures` compares your creature count
         // against your opponents' and says nothing about combat, so the printed noun — "defending
         // player" on the attack half, "attacking player" on the block half — is a fact about *which

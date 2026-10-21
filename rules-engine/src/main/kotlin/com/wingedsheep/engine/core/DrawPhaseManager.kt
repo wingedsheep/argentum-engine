@@ -17,6 +17,7 @@ import com.wingedsheep.engine.state.components.player.SkipDrawStepComponent
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.core.TurnPart
+import com.wingedsheep.sdk.scripting.DrawDuringOtherDrawSteps
 import com.wingedsheep.sdk.scripting.SkipStepOrPhase
 import com.wingedsheep.sdk.scripting.effects.Effect
 
@@ -146,13 +147,64 @@ class DrawPhaseManager(
             )
         }
 
-        val drawResult = drawCards(s, activePlayer, 1)
+        // "You draw a card during each opponent's draw step" (Teferi, Who Slows the Sunset's emblem):
+        // those draws follow the active player's, with no priority in between. Their frame sits
+        // beneath the active player's draw too, so a pause there still leads to them.
+        val otherDraws = otherPlayersDrawStepDraws(s, activePlayer)
+        val otherFrame = DrawStepOtherDrawsContinuation(activePlayer, otherDraws)
+        val drawResult = drawCards(if (otherDraws.isEmpty()) s else s.pushContinuation(otherFrame), activePlayer, 1)
         if (drawResult.outcome !is Outcome.Done) {
             return drawResult
         }
+        if (otherDraws.isEmpty()) {
+            val newState = drawResult.newState.withPriority(activePlayer)
+            return ExecutionResult.success(newState, teammateEvents + drawResult.events + StepChangedEvent(Step.DRAW))
+        }
+        val (popped, afterPop) = drawResult.newState.popContinuation()
+        check(popped == otherFrame) { "A completed draw-step draw must leave the other players' frame on top" }
+        val rest = drawForOthers(afterPop, activePlayer, otherDraws)
+        return rest.copy(events = teammateEvents + drawResult.events + rest.events)
+    }
 
-        val newState = drawResult.newState.withPriority(activePlayer)
-        return ExecutionResult.success(newState, teammateEvents + drawResult.events + StepChangedEvent(Step.DRAW))
+    /**
+     * The draw step's draws by players other than the active one, one card per entry of [drawers]
+     * in order, then priority to [activePlayer]. Each draw sits above a [DrawStepOtherDrawsContinuation]
+     * holding the ones after it — including an empty one beneath the last, so a draw that pauses
+     * (a miracle reveal: an opponent's draw step is their first draw that turn) still hands priority
+     * back to the active player rather than to the drawer.
+     */
+    fun drawForOthers(state: GameState, activePlayer: EntityId, drawers: List<EntityId>): ExecutionResult {
+        var s = state
+        val events = mutableListOf<GameEvent>()
+        for ((index, drawer) in drawers.withIndex()) {
+            val rest = DrawStepOtherDrawsContinuation(activePlayer, drawers.drop(index + 1))
+            val r = drawCards(s.pushContinuation(rest), drawer, 1)
+            if (r.outcome is Outcome.Paused) {
+                return ExecutionResult.propagatePause(r.newState, events + r.events)
+            }
+            if (r.outcome !is Outcome.Done) return r
+            val (popped, afterPop) = r.newState.popContinuation()
+            check(popped == rest) { "A completed draw-step draw must leave the other players' frame on top" }
+            s = afterPop
+            events.addAll(r.events)
+        }
+        return ExecutionResult.success(s.withPriority(activePlayer), events + StepChangedEvent(Step.DRAW))
+    }
+
+    /**
+     * One entry per card a non-active player draws during [activePlayer]'s draw step through a
+     * [DrawDuringOtherDrawSteps] they control, in APNAP order (CR 101.4) — the active team itself
+     * excluded, since it is that team's own draw step. Empty, after one scan, in the usual game.
+     */
+    private fun otherPlayersDrawStepDraws(state: GameState, activePlayer: EntityId): List<EntityId> {
+        val activeTeam = state.sharedTurnTeam(activePlayer)
+        fun countFor(drawer: (EntityId) -> Boolean) =
+            standingStatics(state, cardRegistry, predicateEvaluator, DrawDuringOtherDrawSteps::class) { ability, _, controller ->
+                drawer(controller) && controller !in activeTeam &&
+                    actsInStepOf(state, ability.duringStepsOf, controller, activePlayer)
+            }.size
+        if (countFor { true } == 0) return emptyList()
+        return state.apnapOrder.flatMap { player -> List(countFor { it == player }) { player } }
     }
 
     /**

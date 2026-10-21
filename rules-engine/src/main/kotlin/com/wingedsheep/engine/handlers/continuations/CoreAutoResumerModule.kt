@@ -107,6 +107,14 @@ class CoreAutoResumerModule(
             mergeAndContinue(drawResult, events, checkForMore)
         },
 
+        autoResumer(DrawStepOtherDrawsContinuation::class) { state, continuation, events, checkForMore ->
+            // The draw before these is complete; the other players' draw-step draws follow it.
+            val drawResult = services.turnManager.drawPhaseManager.drawForOthers(
+                state, continuation.activePlayer, continuation.remainingDrawers
+            )
+            mergeAndContinue(drawResult, events, checkForMore)
+        },
+
         autoResumer(CycleDrawContinuation::class) { state, continuation, events, checkForMore ->
             val drawExecutor = com.wingedsheep.engine.handlers.effects.drawing.DrawCardsExecutor(
                 cardRegistry = services.cardRegistry,

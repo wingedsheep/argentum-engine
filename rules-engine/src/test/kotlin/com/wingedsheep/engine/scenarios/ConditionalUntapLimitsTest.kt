@@ -52,7 +52,7 @@ class ConditionalUntapLimitsTest : FunSpec({
     val artifactLand = card("Cap Artifact Land") { typeLine = "Artifact Land" }
     val seedborn = card("Cap Other Untap") {
         manaCost = "{1}"; typeLine = "Artifact"
-        staticAbility { ability = UntapDuringOtherUntapSteps }
+        staticAbility { ability = UntapDuringOtherUntapSteps() }
     }
     val mute = card("Mute Cap") {
         manaCost = "{0}"; typeLine = "Instant"

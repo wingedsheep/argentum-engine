@@ -6,6 +6,8 @@ import com.wingedsheep.engine.mechanics.durations.GrantDurationGate
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.EmblemStaticAbilityComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.engine.state.components.identity.RoomFaceStatics
@@ -13,6 +15,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.StaticAbility
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.sdk.core.TurnPart
 import com.wingedsheep.sdk.scripting.SkipStepOrPhase
@@ -97,5 +100,20 @@ internal fun <T : StaticAbility> standingStatics(
         val controller = if (isPlayer) source else projected.getController(source) ?: continue
         collect(grant.ability, source, controller, found)
     }
+    // An emblem's own statics (CR 114.4: they function in the command zone) — always controlled
+    // by the player who got it.
+    for ((emblemId, container) in state.entities) {
+        val statics = container.get<EmblemStaticAbilityComponent>() ?: continue
+        val controller = container.get<ControllerComponent>()?.playerId ?: continue
+        for (ability in statics.abilities) collect(ability, emblemId, controller, found)
+    }
     return found
 }
+
+/**
+ * Whether an "each other player's / each opponent's <step>" static ([duringStepsOf] =
+ * `Player.Each` or `Player.EachOpponent`) controlled by [controller] acts in [activePlayer]'s step.
+ */
+internal fun actsInStepOf(state: GameState, duringStepsOf: Player, controller: EntityId, activePlayer: EntityId): Boolean =
+    controller != activePlayer &&
+        (duringStepsOf != Player.EachOpponent || state.isOpponentOf(activePlayer, controller))
