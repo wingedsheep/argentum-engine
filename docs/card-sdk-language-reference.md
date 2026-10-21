@@ -475,6 +475,12 @@ never hold a double-faced card; double-faced rares and mythics stay in the rare 
 back to the other; no double-faced commons or uncommons at all turns the slot into one more common. Kamigawa: Neon
 Dynasty uses `DoubleFacedSlotBooster(commons = 9, uncommons = 3)`.
 
+**Play Booster wildcard odds** — `PlayBooster(commons, uncommons, wildcards, raresOrMythics, mythicChance, wildcardWeights)`
+rolls each wildcard slot's rarity from `wildcardWeights` (relative odds per `Rarity`, default 50% C / 30% U / 17.5% R /
+2.5% M); a rolled rarity the pool lacks falls through common → uncommon → rare → mythic. March of the Machine: The
+Aftermath's 5-card Epilogue Booster is `PlayBooster(commons = 0, uncommons = 2, raresOrMythics = 1, wildcards = 2,
+wildcardWeights = …)` with each wildcard a rare or mythic about 1 time in 6.
+
 **Echoed-pair boosters** — override `MtgSet.boosterStrategy` with
 `EchoedPairsPlayBooster(echoedPairs = listOf("First half" to "Second half", ...))`.
 Both halves must be in the pool to open as a pair; the third echoed card excludes the selected pair.

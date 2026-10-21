@@ -858,6 +858,20 @@ object SetArchetypes {
                     "Turn your creatures into artifact-mana sources and ramp into expensive artifacts that draw cards as they're cast. A ramp deck that wins with the biggest machines in the set."),
             )
         ),
+        "MAT" to SetSynergies(
+            setCode = "MAT",
+            setName = "March of the Machine: The Aftermath",
+            archetypes = listOf(
+                Archetype("Legends Matter", listOf(Color.WHITE, Color.BLUE),
+                    "Play legendary creatures and protect them with ward from Gold-Forged Thopteryx while flyers with lifelink keep you ahead. A midrange deck whose legends are hard to answer and hit hard once they stick."),
+                Archetype("Death Rewards", listOf(Color.WHITE, Color.BLACK),
+                    "Trade creatures off in combat and turn every death into life and +1/+1 counters at your end step. An attrition deck that comes out of each exchange with a bigger, healthier board."),
+                Archetype("Artifact & Enchantment Value", listOf(Color.RED, Color.WHITE),
+                    "Lean on artifacts and enchantments, rebuy them from the graveyard and dig with impulse draw. A value-rich midrange deck that keeps replaying its best permanents."),
+                Archetype("Graveyard Recursion", listOf(Color.GREEN, Color.WHITE),
+                    "Let cheap permanents trade or die, then bring them back with recursion while gaining life. A grindy midrange deck that wins the long game by refusing to run out of threats."),
+            )
+        ),
         "MOM" to SetSynergies(
             setCode = "MOM",
             setName = "March of the Machine",

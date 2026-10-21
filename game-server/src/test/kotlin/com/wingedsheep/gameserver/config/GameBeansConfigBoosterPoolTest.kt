@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.limited.DoubleFacedSlotBooster
 import com.wingedsheep.sdk.limited.EchoedPairsPlayBooster
 import com.wingedsheep.sdk.limited.LandSlotBooster
 import com.wingedsheep.sdk.limited.LegendarySlotBooster
+import com.wingedsheep.sdk.limited.PlayBooster
 import com.wingedsheep.sdk.limited.StandardBooster
 import com.wingedsheep.sdk.model.Rarity
 import io.kotest.assertions.withClue
@@ -119,6 +120,42 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
             mythics += pack.count { it.metadata.rarity == Rarity.MYTHIC }
         }
         (mythics.toDouble() / packs) shouldBe (0.125 plusOrMinus 0.03)
+    }
+
+    test("March of the Machine: The Aftermath opens a 5-card Epilogue Booster from its 50-card pool") {
+        // 2 uncommons, a rare/mythic and two any-rarity wildcards (foil + Booster Fun) that are each a
+        // rare or mythic about 1 time in 6; the ad card/token slot is not modelled, so 5 playable cards.
+        val mat = boosterGenerator.availableSets["MAT"].shouldNotBeNull()
+        mat.fullyImplemented shouldBe true
+        mat.extensionSet shouldBe true
+        mat.boosterStrategy.shouldBeInstanceOf<PlayBooster>()
+        val eligible = mat.cards.filter { it.metadata.inBooster && !it.typeLine.isBasicLand }
+        eligible.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.UNCOMMON to 15, Rarity.RARE to 25, Rarity.MYTHIC to 10,
+        )
+        val eligibleNames = eligible.map { it.name }.toSet()
+        val packs = 2000
+        var extraRares = 0
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("MAT")
+            pack.size shouldBe 5
+            pack.map { it.name }.toSet().size shouldBe 5
+            withClue("pack ${pack.map { it.name }} holds an off-sheet card") {
+                pack.all { it.name in eligibleNames } shouldBe true
+            }
+            val uncommons = pack.count { it.metadata.rarity == Rarity.UNCOMMON }
+            (uncommons >= 2) shouldBe true
+            extraRares += 4 - uncommons
+        }
+        (extraRares.toDouble() / (packs * 2)) shouldBe (1.0 / 6 plusOrMinus 0.03)
+
+        // Host bans thin the pool: with every rare banned the rare slot falls through, no banned card opens.
+        val bannedRares = eligible.filter { it.metadata.rarity == Rarity.RARE }.map { it.name }.toSet()
+        repeat(200) {
+            val pack = boosterGenerator.generateBooster("MAT", bannedCardNames = bannedRares)
+            pack.size shouldBe 5
+            pack.none { it.name in bannedRares } shouldBe true
+        }
     }
 
     test("Legends draft pack is the classic 11 commons, 3 uncommons and a rare from its full pool") {

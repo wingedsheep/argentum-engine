@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-mat',
+    date: '2026-10-21',
+    kind: 'set',
+    setCode: 'MAT',
+    title: 'March of the Machine: The Aftermath is complete',
+    body:
+      "The epilogue to the Phyrexian invasion: 50 cards, nearly all of them gold legends of the multiverse picking up the pieces, from Nahiri and Sarkhan to a five-colour Niv-Mizzet. Its 5-card Epilogue Boosters mix into March of the Machine or any other set, adding a rare-heavy layer of legends, recursion and death-and-counters payoffs to a draft.",
+    tryIf: 'multicolour legends and a rare-rich bonus pack mixed into another set',
+  },
+  {
     id: 'set-leg',
     date: '2026-10-21',
     kind: 'set',

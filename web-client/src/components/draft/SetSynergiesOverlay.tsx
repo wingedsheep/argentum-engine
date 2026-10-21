@@ -1950,6 +1950,36 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  MAT: {
+    setCode: 'MAT',
+    setName: 'March of the Machine: The Aftermath',
+    archetypes: [
+      {
+        name: 'Legends Matter',
+        colors: ['W', 'U'],
+        keyCard: 'Gold-Forged Thopteryx',
+        description: 'Play legendary creatures and protect them with ward from Gold-Forged Thopteryx while flyers with lifelink keep you ahead. A midrange deck whose legends are hard to answer and hit hard once they stick.',
+      },
+      {
+        name: 'Death Rewards',
+        colors: ['W', 'B'],
+        keyCard: 'Feast of the Victorious Dead',
+        description: 'Trade creatures off in combat and turn every death into life and +1/+1 counters at your end step. An attrition deck that comes out of each exchange with a bigger, healthier board.',
+      },
+      {
+        name: 'Artifact & Enchantment Value',
+        colors: ['R', 'W'],
+        keyCard: 'Campus Renovation',
+        description: 'Lean on artifacts and enchantments, rebuy them from the graveyard and dig with impulse draw. A value-rich midrange deck that keeps replaying its best permanents.',
+      },
+      {
+        name: 'Graveyard Recursion',
+        colors: ['G', 'W'],
+        keyCard: 'Cosmic Rebirth',
+        description: 'Let cheap permanents trade or die, then bring them back with recursion while gaining life. A grindy midrange deck that wins the long game by refusing to run out of threats.',
+      },
+    ],
+  },
   MOM: {
     setCode: 'MOM',
     setName: 'March of the Machine',

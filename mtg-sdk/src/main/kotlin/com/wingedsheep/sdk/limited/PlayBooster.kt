@@ -22,7 +22,8 @@ import kotlin.random.Random
  *
  * Wildcard rarity weights approximate WotC's published pack-level odds (~37% of
  * packs carry a second rare/mythic and ~4% a third → ~20% rare-or-mythic per
- * wildcard, split 7:1 rare:mythic).
+ * wildcard, split 7:1 rare:mythic). Products with other published wildcard odds (e.g.
+ * March of the Machine: The Aftermath's Epilogue Booster) pass their own [wildcardWeights].
  *
  * No card name is duplicated within a single pack.
  */
@@ -32,6 +33,8 @@ data class PlayBooster(
     val wildcards: Int = 2,
     val raresOrMythics: Int = 1,
     val mythicChance: Double = 0.125,
+    /** Relative odds of each rarity in a wildcard slot; a rarity the pool lacks falls through. */
+    val wildcardWeights: Map<Rarity, Double> = DEFAULT_WILDCARD_WEIGHTS,
 ) : BoosterStrategy {
 
     override fun generate(pool: List<CardDefinition>, random: Random): List<CardDefinition> {
@@ -61,14 +64,22 @@ data class PlayBooster(
         return booster
     }
 
-    /** Wildcard slot rarity mix: 50% C, 30% U, 17.5% R, 2.5% M. */
     private fun rollWildcardRarity(random: Random): Rarity {
-        val roll = random.nextDouble()
-        return when {
-            roll < 0.50 -> Rarity.COMMON
-            roll < 0.80 -> Rarity.UNCOMMON
-            roll < 0.975 -> Rarity.RARE
-            else -> Rarity.MYTHIC
+        var roll = random.nextDouble() * wildcardWeights.values.sum()
+        for ((rarity, weight) in wildcardWeights) {
+            roll -= weight
+            if (roll < 0) return rarity
         }
+        return wildcardWeights.keys.last()
+    }
+
+    companion object {
+        /** Wildcard slot rarity mix: 50% C, 30% U, 17.5% R, 2.5% M. */
+        val DEFAULT_WILDCARD_WEIGHTS: Map<Rarity, Double> = linkedMapOf(
+            Rarity.COMMON to 0.50,
+            Rarity.UNCOMMON to 0.30,
+            Rarity.RARE to 0.175,
+            Rarity.MYTHIC to 0.025,
+        )
     }
 }

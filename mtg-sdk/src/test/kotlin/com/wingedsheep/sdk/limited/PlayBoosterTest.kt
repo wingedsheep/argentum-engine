@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.model.ScryfallMetadata
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.doubles.shouldBeLessThan
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
@@ -69,6 +70,31 @@ class PlayBoosterTest : DescribeSpec({
                 pack shouldHaveSize 13
                 pack.count { it.metadata.rarity == Rarity.MYTHIC } shouldBe 0
             }
+        }
+
+        it("rolls wildcard rarities from custom weights, falling through rarities the pool lacks") {
+            // An Epilogue-style pack: no commons, 2 uncommons, a rare/mythic, two 1-in-6 rare wildcards.
+            val strategy = PlayBooster(
+                commons = 0, uncommons = 2, raresOrMythics = 1, wildcards = 2,
+                wildcardWeights = linkedMapOf(Rarity.UNCOMMON to 40.0, Rarity.RARE to 7.0, Rarity.MYTHIC to 1.0),
+            )
+            val pool = uncommonsPool(15) + raresPool(25) + mythicsPool(10)
+            val runs = 3000
+            var wildcardRares = 0
+            repeat(runs) { seed ->
+                val pack = strategy.generate(pool, Random(seed.toLong()))
+                pack shouldHaveSize 5
+                pack.map { it.name }.toSet().size shouldBe 5
+                val uncommons = pack.count { it.metadata.rarity == Rarity.UNCOMMON }
+                uncommons shouldBeGreaterThanOrEqual 2
+                wildcardRares += 4 - uncommons
+            }
+            // Each of 2 wildcards per pack is a rare or mythic 1 time in 6.
+            (wildcardRares.toDouble() / (runs * 2)) shouldBe (1.0 / 6 plusOrMinus 0.02)
+        }
+
+        it("keeps the default wildcard odds when none are given") {
+            PlayBooster().wildcardWeights shouldBe PlayBooster.DEFAULT_WILDCARD_WEIGHTS
         }
 
         it("fills wildcard slots from other rarities when commons run dry") {

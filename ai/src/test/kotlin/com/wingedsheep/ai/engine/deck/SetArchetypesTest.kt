@@ -211,6 +211,19 @@ class SetArchetypesTest : StringSpec({
         synergies.archetypes.single { it.name == "Samurai & Warriors" }.creatureTypes shouldContainExactly
             listOf("Samurai", "Warrior")
     }
+
+    "March of the Machine: The Aftermath exposes one archetype per gold signpost uncommon" {
+        val synergies = SetArchetypes.getForSet("MAT")!!
+
+        synergies.setName shouldBe "March of the Machine: The Aftermath"
+        synergies.archetypes.associate { it.name to it.colors.toSet() } shouldBe mapOf(
+            "Legends Matter" to setOf(Color.WHITE, Color.BLUE),
+            "Death Rewards" to setOf(Color.WHITE, Color.BLACK),
+            "Artifact & Enchantment Value" to setOf(Color.RED, Color.WHITE),
+            "Graveyard Recursion" to setOf(Color.GREEN, Color.WHITE),
+        )
+        synergies.archetypes.all { it.creatureTypes.isEmpty() } shouldBe true
+    }
 })
 
 private val ALL_COLOR_PAIRS = linkedSetOf(
