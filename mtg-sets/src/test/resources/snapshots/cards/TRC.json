@@ -71,6 +71,30 @@
     ]
 }
 
+// Gorn Captain
+{
+    "name": "Gorn Captain",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Gorn Soldier",
+    "oracleText": "Trample (This creature can deal excess combat damage to the player it's attacking.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "metadata": {
+        "collectorNumber": "172",
+        "artist": "Jason Pastrana",
+        "flavorText": "\"I weary of the chase. Wait for me. I shall be merciful and quick.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/061dc7da-c803-49eb-b50a-a0801f09b5c0.jpg?1785981152"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Kirk, Enterprising Captain
 {
     "name": "Kirk, Enterprising Captain",
