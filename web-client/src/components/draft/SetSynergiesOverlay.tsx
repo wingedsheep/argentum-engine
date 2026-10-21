@@ -1958,7 +1958,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Legends Matter',
         colors: ['W', 'U'],
         keyCard: 'Gold-Forged Thopteryx',
-        description: 'Play legendary creatures and protect them with ward from Gold-Forged Thopteryx while flyers with lifelink keep you ahead. A midrange deck whose legends are hard to answer and hit hard once they stick.',
+        description: 'Play legendary creatures and protect them with ward from Gold-Forged Thopteryx while the lifelinking Thopteryx keeps you ahead. A midrange deck whose legends are hard to answer and hit hard once they stick.',
       },
       {
         name: 'Death Rewards',

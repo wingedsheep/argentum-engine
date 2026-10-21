@@ -863,7 +863,7 @@ object SetArchetypes {
             setName = "March of the Machine: The Aftermath",
             archetypes = listOf(
                 Archetype("Legends Matter", listOf(Color.WHITE, Color.BLUE),
-                    "Play legendary creatures and protect them with ward from Gold-Forged Thopteryx while flyers with lifelink keep you ahead. A midrange deck whose legends are hard to answer and hit hard once they stick."),
+                    "Play legendary creatures and protect them with ward from Gold-Forged Thopteryx while the lifelinking Thopteryx keeps you ahead. A midrange deck whose legends are hard to answer and hit hard once they stick."),
                 Archetype("Death Rewards", listOf(Color.WHITE, Color.BLACK),
                     "Trade creatures off in combat and turn every death into life and +1/+1 counters at your end step. An attrition deck that comes out of each exchange with a bigger, healthier board."),
                 Archetype("Artifact & Enchantment Value", listOf(Color.RED, Color.WHITE),

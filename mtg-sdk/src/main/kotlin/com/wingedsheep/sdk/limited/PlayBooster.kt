@@ -37,6 +37,12 @@ data class PlayBooster(
     val wildcardWeights: Map<Rarity, Double> = DEFAULT_WILDCARD_WEIGHTS,
 ) : BoosterStrategy {
 
+    init {
+        require(wildcardWeights.isNotEmpty() && wildcardWeights.values.all { it >= 0.0 } && wildcardWeights.values.sum() > 0.0) {
+            "wildcardWeights must be non-empty, non-negative and sum above zero: $wildcardWeights"
+        }
+    }
+
     override fun generate(pool: List<CardDefinition>, random: Random): List<CardDefinition> {
         val picker = RarityPicker(pool, random)
         val booster = mutableListOf<CardDefinition>()
