@@ -870,6 +870,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.MUSTER,
   // Divine Intervention's countdown: the game is a draw when the last one comes off.
   CounterType.INTERVENTION,
+  // Tolarian Contempt's mark: its end-step trigger may only target creatures carrying one.
+  CounterType.REJECTION,
   CounterType.PLUS_ONE_PLUS_TWO,
   CounterType.PLUS_TWO_PLUS_TWO,
   CounterType.MINUS_TWO_MINUS_TWO,
