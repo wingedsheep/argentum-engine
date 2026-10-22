@@ -4509,7 +4509,8 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   The non-interactive sibling of `ChooseNumberForSource` (a player's choice) and the durable sibling of `StoreNumber`
   (pipeline-scoped). For "as ~ enters, note …" wrap it in `OnEnterRun`; re-run it from a later ability to re-note. The
   note belongs to the object — a permanent that left and returned has no note until it notes again; with no current
-  source the effect does nothing. Sigarda's Splendor: `OnEnterRun(NoteNumberForSource(YourLifeTotal))`, and an upkeep
+  source the effect does nothing. An ability whose source has left before it resolves reads the note as the source
+  last existed (CR 113.7a — the snapshot carries the bag's numbers). Sigarda's Splendor: `OnEnterRun(NoteNumberForSource(YourLifeTotal))`, and an upkeep
   trigger `Composite(If(CompareAmounts(YourLifeTotal, GTE, CastChoice(NOTED_NUMBER)), DrawCards(1)),
   NoteNumberForSource(YourLifeTotal))`.
 - `Effects.ChooseOpponent(prompt)` — the controller picks an opponent, **stored durably on the

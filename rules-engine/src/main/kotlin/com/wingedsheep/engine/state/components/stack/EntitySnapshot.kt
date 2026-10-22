@@ -247,6 +247,15 @@ data class EntitySnapshot(
      */
     val chosenCreature: com.wingedsheep.engine.state.components.battlefield.ChoiceValue.EntityChoice? = null,
     /**
+     * The numbers locked into the cast-choices bag (`ChoiceValue.NumberChoice`, e.g.
+     * `ChoiceSlot.CHOSEN_NUMBER` / `NOTED_NUMBER`), frozen at departure because the bag is stripped
+     * then (CR 400.7). An ability whose source has left reads "the last noted life total for this
+     * enchantment" (Sigarda's Splendor) from here — as the source last existed (CR 113.7a).
+     */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val numberChoices: Map<com.wingedsheep.sdk.scripting.ChoiceSlot, Int> = emptyMap(),
+    /**
      * True if this permanent was face down (CR 708) when it left the battlefield.
      *
      * Frozen because a card put into a graveyard is always turned face up (CR 708.4), so by the
@@ -350,10 +359,18 @@ data class EntitySnapshot(
                 lostAllAbilities = projected.hasLostAllAbilities(entityId),
                 wasSuspected = projected.isSuspected(entityId),
                 name = state.getEntity(entityId)?.get<CardComponent>()?.name,
+                numberChoices = numberChoicesOf(state, entityId),
             )
         }
     }
 }
+
+/** The numbers in [entityId]'s cast-choices bag, by slot. */
+internal fun numberChoicesOf(state: GameState, entityId: EntityId): Map<com.wingedsheep.sdk.scripting.ChoiceSlot, Int> =
+    state.getEntity(entityId)?.get<com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent>()
+        ?.chosen.orEmpty().mapNotNull { (slot, value) ->
+            (value as? com.wingedsheep.engine.state.components.battlefield.ChoiceValue.NumberChoice)?.let { slot to it.amount }
+        }.toMap()
 
 /** The non-zero counters on [entityId]. */
 private fun countersOf(state: GameState, entityId: EntityId): Map<CounterType, Int> =
@@ -478,6 +495,8 @@ fun captureLastKnown(state: GameState, entityId: EntityId): EntitySnapshot {
             state.projectedState.getController(it)
         },
         attachmentIds = attachmentIdsOf(state, entityId),
+        // The cost strips the cast-choices bag too; "the last noted …" reads it from here.
+        numberChoices = numberChoicesOf(state, entityId),
     )
 }
 

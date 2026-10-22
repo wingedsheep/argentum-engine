@@ -522,6 +522,7 @@ class ZoneTransitionService(
                 lostAllAbilities = lastKnownLostAllAbilities,
                 typeLine = lastKnownTypeLine,
                 cardDefinitionId = cardComponent.cardDefinitionId,
+                numberChoices = com.wingedsheep.engine.state.components.stack.numberChoicesOf(state, entityId),
                 copiableCard = container.copiableCardComponent(),
                 copiableNumericKeywords = container.copiableNumericKeywords(cardRegistry),
                 copiableDoubleFaced = container.copiableDoubleFacedComponent { it },

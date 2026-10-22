@@ -36,8 +36,24 @@ class NoteNumberForSourceScenarioTest : ScenarioTestBase() {
         }
     }
 
+    /** Sacrifices itself and gains life equal to its note — read as the source last existed. */
+    private val spentLedger = card("Test Spent Ledger") {
+        manaCost = "{1}"
+        typeLine = "Artifact"
+        oracleText = "As this artifact enters, note your life total.\n" +
+            "Sacrifice this artifact: You gain life equal to the last noted life total for this artifact."
+
+        replacementEffect(OnEnterRun(Effects.NoteNumberForSource(DynamicAmount.YourLifeTotal)))
+
+        activatedAbility {
+            cost = Costs.SacrificeSelf
+            effect = Effects.GainLife(DynamicAmount.CastChoice(ChoiceSlot.NOTED_NUMBER))
+        }
+    }
+
     init {
         cardRegistry.register(ledger)
+        cardRegistry.register(spentLedger)
 
         fun TestGame.noted(): Int? =
             state.getEntity(findPermanent("Test Life Ledger")!!)?.numberChoice(ChoiceSlot.NOTED_NUMBER)
@@ -87,6 +103,33 @@ class NoteNumberForSourceScenarioTest : ScenarioTestBase() {
                 ).error shouldBe null
                 game.resolveStack()
                 game.noted() shouldBe 14
+            }
+
+            test("an ability whose source has left reads the note as the source last existed") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardInHand(1, "Test Spent Ledger")
+                    .withLandsOnBattlefield(1, "Mountain", 1)
+                    .withLifeTotal(1, 6)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Test Spent Ledger").error shouldBe null
+                game.resolveStack()
+                val ledgerId = game.findPermanent("Test Spent Ledger")!!
+                game.execute(
+                    ActivateAbility(
+                        playerId = game.player1Id,
+                        sourceId = ledgerId,
+                        abilityId = spentLedger.activatedAbilities.first().id
+                    )
+                ).error shouldBe null
+                game.findPermanent("Test Spent Ledger") shouldBe null
+                game.resolveStack()
+                withClue("the sacrificed ledger's note (6) is last-known information, not 0") {
+                    game.getLifeTotal(1) shouldBe 12
+                }
             }
         }
     }

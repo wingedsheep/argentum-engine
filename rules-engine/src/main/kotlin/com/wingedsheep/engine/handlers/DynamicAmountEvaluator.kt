@@ -320,8 +320,11 @@ class DynamicAmountEvaluator(
                             ?: source?.get<SpellOnStackComponent>()?.convokedCreatures?.size
                             ?: 0
                     // Any other numeric slot (e.g. CHOSEN_NUMBER for Shapeshifter) is read
-                    // generically off the durable cast-choices bag as a NumberChoice.
-                    else -> source?.numberChoice(amount.slot) ?: 0
+                    // generically off the durable cast-choices bag as a NumberChoice — or, once an
+                    // ability's source has left the battlefield, off its last-known snapshot
+                    // (CR 113.7a), never off a new object that has since returned.
+                    else -> context.lastKnownSourceSnapshot?.let { it.numberChoices[amount.slot] ?: 0 }
+                        ?: source?.numberChoice(amount.slot) ?: 0
                 }
             }
 

@@ -79,6 +79,29 @@ class SigardasSplendorScenarioTest : ScenarioTestBase() {
                 withClue("draw step card + the upkeep draw (11 >= 11)") { game.handSize(1) shouldBe 2 }
             }
 
+            test("destroyed in response to its upkeep trigger, it compares against its last-known note") {
+                val game = builder()
+                    .withLifeTotal(1, 14)
+                    .withCardInHand(1, "Lightning Bolt")
+                    .withCardInHand(1, "Disenchant")
+                    .withLandsOnBattlefield(1, "Mountain", 1)
+                    .build()
+                game.castSplendor()
+                game.castSpellTargetingPlayer(1, "Lightning Bolt", 1).error shouldBe null
+                game.resolveStack()
+                game.getLifeTotal(1) shouldBe 11
+
+                game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
+                game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
+                game.state.stack.size shouldBe 1
+                game.castSpell(1, "Disenchant", game.findPermanent("Sigarda's Splendor")!!).error shouldBe null
+                game.resolveStack()
+
+                game.findPermanent("Sigarda's Splendor") shouldBe null
+                withClue("11 < last noted 14: no draw, even with the enchantment gone") { game.handSize(1) shouldBe 0 }
+            }
+
             test("gaining life since the last note still draws") {
                 val game = builder()
                     .withLifeTotal(1, 14)
