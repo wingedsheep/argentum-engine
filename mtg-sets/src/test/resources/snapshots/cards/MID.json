@@ -5380,6 +5380,146 @@
     }
 }
 
+// Flame Channeler
+{
+    "name": "Flame Channeler",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When a spell you control deals damage, transform this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Flame Channeler:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "sourceFilter": "instant|sorcery ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": "Transform"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Embodiment of Flame",
+        "manaCost": "",
+        "typeLine": "Creature — Elemental Wizard",
+        "oracleText": "Whenever a spell you control deals damage, put a flame counter on this creature.\n{1}, Remove a flame counter from this creature: Exile the top card of your library. You may play that card this turn.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Embodiment of Flame:1",
+                    "trigger": {
+                        "type": "DealsDamageEvent",
+                        "sourceFilter": "instant|sorcery ctrl:you"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "AddCounters",
+                        "counterType": "FLAME",
+                        "count": 1,
+                        "target": "Self"
+                    }
+                }
+            ],
+            "activatedAbilities": [
+                {
+                    "id": "Embodiment of Flame:2",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{1}"
+                                }
+                            },
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomRemoveCounters",
+                                    "counterType": "FLAME",
+                                    "self": true
+                                }
+                            }
+                        ]
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeAs": "impulseExiled"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "impulseExiled",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            },
+                            {
+                                "type": "GrantMayPlayFromExile",
+                                "from": "impulseExiled"
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "{1}, Remove a flame counter from this creature: Exile the top card of your library. You may play that card this turn."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "141",
+            "rarity": "UNCOMMON",
+            "artist": "Véronique Meignaud",
+            "imageUri": "https://cards.scryfall.io/normal/back/b/e/be91fcba-4599-4ecb-824d-55112096c34a.jpg?1783925605"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "141",
+        "rarity": "UNCOMMON",
+        "artist": "Véronique Meignaud",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/be91fcba-4599-4ecb-824d-55112096c34a.jpg?1783925605",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "Some spells cause other objects to deal damage, such as spells that have two creatures fight. In those cases, it's those other objects that are dealing damage, not the spell itself, and this will not cause Flame Channeler's abilities to trigger."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "\"A spell you control\" means a spell on the stack. Usually, spells on the stack can deal damage only as part of their own resolution."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "A spell that becomes a permanent and then deals damage, such as one that has a triggered ability when it enters the battlefield, will not cause Flame Channeler's abilities to trigger."
+            }
+        ]
+    }
+}
+
 // Flare of Faith
 {
     "name": "Flare of Faith",
@@ -12253,6 +12393,160 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Smoldering Egg
+{
+    "name": "Smoldering Egg",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Dragon Egg",
+    "oracleText": "Defender\nWhenever you cast an instant or sorcery spell, put a number of ember counters on this creature equal to the amount of mana spent to cast that spell. Then if this creature has seven or more ember counters on it, remove them and transform this creature.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Smoldering Egg:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "EMBER",
+                            "amount": {
+                                "type": "ContextProperty",
+                                "key": "MANA_SPENT_ON_TRIGGERING_SPELL"
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "EMBER"
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 7
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "RemoveAllCountersOfType",
+                                        "counterType": "EMBER",
+                                        "target": "Self"
+                                    },
+                                    "Transform"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you cast an instant or sorcery spell, put a number of ember counters on this creature equal to the amount of mana spent to cast that spell. Then if this creature has seven or more ember counters on it, remove them and transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Ashmouth Dragon",
+        "manaCost": "",
+        "typeLine": "Creature — Dragon",
+        "oracleText": "Flying\nWhenever you cast an instant or sorcery spell, this creature deals 2 damage to any target.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Ashmouth Dragon:1",
+                    "trigger": {
+                        "type": "SpellCastEvent",
+                        "spellFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        "IsInstant",
+                                        "IsSorcery"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirement": {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "159",
+            "rarity": "RARE",
+            "artist": "Simon Dominic",
+            "imageUri": "https://cards.scryfall.io/normal/back/4/1/41b6381f-4ff8-49e9-bf00-cfe32851318b.jpg?1783925599"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "RARE",
+        "artist": "Simon Dominic",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/41b6381f-4ff8-49e9-bf00-cfe32851318b.jpg?1783925599"
+    }
 }
 
 // Snarling Wolf

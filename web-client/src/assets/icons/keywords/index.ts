@@ -220,4 +220,6 @@ export const counterManaClass: Record<string, string> = {
   REJECTION: 'counter-doom',
   VALOR: 'counter-shield',
   RITUAL: 'counter-skull',
+  FLAME: 'counter-flame',
+  EMBER: 'counter-flame',
 }

@@ -808,6 +808,18 @@ value class CounterType(val name: String) {
          */
         val RITUAL = CounterType("RITUAL")
 
+        /**
+         * Flame counter (MID — Embodiment of Flame). A mark with no inherent rule: a spell you
+         * control dealing damage adds one, and its impulse-draw ability removes one as a cost.
+         */
+        val FLAME = CounterType("FLAME")
+
+        /**
+         * Ember counter (MID — Smoldering Egg). A mark with no inherent rule: each instant or
+         * sorcery cast adds the mana spent on it, and at seven or more they're removed and it transforms.
+         */
+        val EMBER = CounterType("EMBER")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -953,6 +965,8 @@ value class CounterType(val name: String) {
             REJECTION,
             VALOR,
             RITUAL,
+            FLAME,
+            EMBER,
         )
 
         /**
