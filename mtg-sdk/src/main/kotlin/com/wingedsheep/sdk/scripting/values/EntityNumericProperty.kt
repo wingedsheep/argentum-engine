@@ -155,8 +155,9 @@ sealed interface EntityNumericProperty {
      * Equipment, and Fortifications alike — matching the historical behaviour;
      * [AttachmentKind.EQUIPMENT] / [AttachmentKind.AURA] count only that kind (Shagrat, Loot
      * Bearer: "X is the number of Equipment attached to Shagrat"); [AttachmentKind.CURSE] counts
-     * the Curses, which only a player can be enchanted by (Curse of Surveillance: "the number of
-     * Curses attached to that player" — read off a `PlayerRef`, since players carry attachments too).
+     * the Curses, the Auras that enchant players (Curse of Surveillance: "the number of
+     * Curses attached to that player" — read off `EffectTarget.EnchantedPermanent`, the player the
+     * source Curse is attached to, since players carry attachments too).
      */
     @SerialName("AttachmentCount")
     @Serializable
