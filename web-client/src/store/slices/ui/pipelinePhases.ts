@@ -392,7 +392,9 @@ export function mergeResult(
         // flashback) has no fixed total: the counters removed announce X.
         return {
           ...action,
-          ...(actionInfo.hasXCost ? { xValue: result.xValue } : {}),
+          ...(actionInfo.hasXCost && !actionInfo.additionalCostInfo?.distributedCounterRemovalTotal
+            ? { xValue: result.xValue }
+            : {}),
           additionalCostPayment: {
             ...action.additionalCostPayment,
             distributedCounterRemovals: [...result.distributedCounterRemovals],

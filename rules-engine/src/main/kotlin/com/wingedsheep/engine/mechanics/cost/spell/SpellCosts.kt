@@ -148,7 +148,6 @@ object SpellCosts {
         return null
     }
 
-    /** Expand [AdditionalCost.Composite] wrappers so every cost in the list stands on its own. */
     /**
      * The X ceiling [costs] put on the cast's announcement when they themselves read X — "pay X
      * energy", "remove X counters from among …" — independent of any `{X}` in the mana cost; null
@@ -164,6 +163,7 @@ object SpellCosts {
         RemoveCountersCostKind.maxX(state, payer, costs, predicateEvaluator),
     ).minOrNull()
 
+    /** Expand [AdditionalCost.Composite] wrappers so every cost in the list stands on its own. */
     fun flattenComposites(costs: List<AdditionalCost>): List<AdditionalCost> =
         costs.flatMap { if (it is AdditionalCost.Composite) flattenComposites(it.steps) else listOf(it) }
 
