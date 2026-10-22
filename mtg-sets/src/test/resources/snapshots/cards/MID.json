@@ -547,6 +547,76 @@
     ]
 }
 
+// Augur of Autumn
+{
+    "name": "Augur of Autumn",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Human Druid",
+    "oracleText": "You may look at the top card of your library any time.\nYou may play lands from the top of your library.\nCoven — As long as you control three or more creatures with different powers, you may cast creature spells from the top of your library.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            "LookAtTopOfLibrary",
+            {
+                "type": "PlayLandsAndCastFilteredFromTopOfLibrary",
+                "spellFilter": null
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "PlayLandsAndCastFilteredFromTopOfLibrary",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature",
+                        "aggregation": "DISTINCT_VALUES",
+                        "property": "POWER"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "rarity": "RARE",
+        "artist": "Billy Christian",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6aa98767-ae27-4cf0-98ea-93e659f160f4.jpg?1783925586",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "Augur of Autumn doesn't change the times when you can play a land card from the top of your library. You can play a land only during your main phase when you have priority and the stack is empty. Doing so counts as your land play for the turn."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "For three creatures to have different powers from one another, each of their powers needs to be different. A 1/1 creature, a 2/1 creature, and another 2/1 creature aren't three creatures with different powers."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "You still pay all costs for that spell, including additional costs. You may also pay alternative costs."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Baithook Angler
 {
     "name": "Baithook Angler",
@@ -1016,6 +1086,56 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Bird Admirer
+{
+    "name": "Bird Admirer",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Archer Werewolf",
+    "oracleText": "Reach\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "REACH",
+        "DAYBOUND"
+    ],
+    "backFace": {
+        "name": "Wing Shredder",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "Reach\nNightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 5
+        },
+        "keywords": [
+            "REACH",
+            "NIGHTBOUND"
+        ],
+        "metadata": {
+            "collectorNumber": "169",
+            "artist": "Slawomir Maniak",
+            "imageUri": "https://cards.scryfall.io/normal/back/7/1/71ccc444-54c8-4f7c-a425-82bc3eea1eb0.jpg?1783925590"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/71ccc444-54c8-4f7c-a425-82bc3eea1eb0.jpg?1783925590"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -1645,6 +1765,62 @@
     ]
 }
 
+// Briarbridge Tracker
+{
+    "name": "Briarbridge Tracker",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Scout",
+    "oracleText": "Vigilance (Attacking doesn't cause this creature to tap.)\nWhen this creature enters, investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")\nAs long as you control a token, this creature gets +2/+0.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Briarbridge Tracker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": "Investigate"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 0,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "token"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "rarity": "RARE",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e215a7bd-112f-4228-a99e-5a8cb4be5cee.jpg?1783925585"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Brimstone Vandal
 {
     "name": "Brimstone Vandal",
@@ -1756,6 +1932,76 @@
         "artist": "Slawomir Maniak",
         "flavorText": "Travelers in the Somberwald scan the ground for werewolves and other threats, unaware of what lurks above.",
         "imageUri": "https://cards.scryfall.io/normal/front/e/2/e24e2f49-70f9-445f-af03-2ef43798004a.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Burly Breaker
+{
+    "name": "Burly Breaker",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Human Werewolf",
+    "oracleText": "Ward {1} (Whenever this creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {1}.)\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "keywords": [
+        "DAYBOUND",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{1}"
+            }
+        }
+    ],
+    "backFace": {
+        "name": "Dire-Strain Demolisher",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "Ward {3} (Whenever this creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {3}.)\nNightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)",
+        "creatureStats": {
+            "power": 8,
+            "toughness": 7
+        },
+        "keywords": [
+            "NIGHTBOUND",
+            "WARD"
+        ],
+        "keywordAbilities": [
+            {
+                "type": "Ward",
+                "cost": {
+                    "type": "WardCost.Mana",
+                    "manaCost": "{3}"
+                }
+            }
+        ],
+        "metadata": {
+            "collectorNumber": "174",
+            "rarity": "UNCOMMON",
+            "artist": "Justine Cruz",
+            "imageUri": "https://cards.scryfall.io/normal/back/3/8/3849ad37-f80d-4ffc-9240-25a63326b3dd.jpg?1783925591"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "rarity": "UNCOMMON",
+        "artist": "Justine Cruz",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/3849ad37-f80d-4ffc-9240-25a63326b3dd.jpg?1783925591"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -1987,6 +2233,59 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Candlelit Cavalry
+{
+    "name": "Candlelit Cavalry",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Coven — At the beginning of combat on your turn, if you control three or more creatures with different powers, this creature gains trample until end of turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Candlelit Cavalry:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature",
+                        "aggregation": "DISTINCT_VALUES",
+                        "property": "POWER"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "artist": "Viko Menezes",
+        "flavorText": "\"On this night, the dark will fear us.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4c3bd60-1ff6-4136-9188-d0620fd299a7.jpg?1783925584"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -2704,6 +3003,198 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Consuming Blob
+{
+    "name": "Consuming Blob",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Ooze",
+    "oracleText": "Consuming Blob's power is equal to the number of card types among cards in your graveyard and its toughness is equal to that number plus 1.\nAt the beginning of your end step, create a green Ooze creature token with \"This token's power is equal to the number of card types among cards in your graveyard and its toughness is equal to that number plus 1.\"",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateZone",
+                "player": "You",
+                "zone": "Graveyard",
+                "aggregation": "DISTINCT_TYPES"
+            }
+        },
+        "toughness": {
+            "type": "DynamicWithOffset",
+            "source": {
+                "type": "AggregateZone",
+                "player": "You",
+                "zone": "Graveyard",
+                "aggregation": "DISTINCT_TYPES"
+            },
+            "offset": 1
+        }
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Consuming Blob:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Ooze"
+                    ],
+                    "staticAbilities": [
+                        {
+                            "type": "SetBasePowerToughnessDynamicStatic",
+                            "power": {
+                                "type": "AggregateZone",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "aggregation": "DISTINCT_TYPES"
+                            },
+                            "toughness": {
+                                "type": "Add",
+                                "left": {
+                                    "type": "AggregateZone",
+                                    "player": "You",
+                                    "zone": "Graveyard",
+                                    "aggregation": "DISTINCT_TYPES"
+                                },
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "rarity": "MYTHIC",
+        "artist": "Simon Dominic",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/4540fa4b-93e8-4749-a839-9a6e816c1145.jpg?1783925582",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "The card types that can be in a graveyard are artifact, battle, creature, enchantment, instant, kindred, land, planeswalker, and sorcery. Legendary, basic, and snow are supertypes, not card types."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "Consuming Blob counts card types, not individual cards. If the only card in your graveyard is an artifact creature card, Consuming Blob will be 2/3. If the only cards in your graveyard are ten artifact creature cards, Consuming Blob will still be 2/3."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "The ability that defines Consuming Blob's power and toughness works in all zones, not just the battlefield. If Consuming Blob is in your graveyard, it will count itself."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "If an instant or sorcery spell deals damage to Consuming Blob or reduces its toughness to 0, that spell is put into its owner's graveyard before state-based actions are performed. If that card is the first of its type to enter the graveyard of Consuming Blob's controller, it will raise Consuming Blob's toughness before the game checks to see if it dies."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "The above rulings are also true for Consuming Blob's children (except the first one, as Junior tends to not hang out in graveyards)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Contortionist Troupe
+{
+    "name": "Contortionist Troupe",
+    "manaCost": "{X}{G}",
+    "typeLine": "Creature — Human",
+    "oracleText": "This creature enters with X +1/+1 counters on it.\nCoven — At the beginning of your end step, if you control three or more creatures with different powers, put a +1/+1 counter on target creature you control.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Contortionist Troupe:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature",
+                        "aggregation": "DISTINCT_VALUES",
+                        "property": "POWER"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Ejsing",
+        "flavorText": "\"Welcome to the greatest show in Kessig!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c81da535-04e4-4dc8-9e12-7b417aba2f39.jpg?1783925581",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "Many coven abilities, such as that of Dawnhart Wardens above, are triggered abilities with intervening if clauses. You must control three or more creatures with different powers at the time the ability triggers and at the time the ability tries to resolve. They do not, however, need to be the same set of creatures in both cases."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "A creature has different power from another if their powers are different numbers. For example, a 1/1 creature and a 2/1 creature have different powers."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "For three creatures to have different powers from one another, each of their powers needs to be different. A 1/1 creature, a 2/1 creature, and another 2/1 creature aren't three creatures with different powers, even though both 2/1 creatures have different power than the 1/1 creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -3433,6 +3924,130 @@
     ]
 }
 
+// Dawnhart Mentor
+{
+    "name": "Dawnhart Mentor",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Warlock",
+    "oracleText": "When this creature enters, create a 1/1 white Human creature token.\nCoven — {5}{G}: Target creature you control gets +3/+3 and gains trample until end of turn. Activate only if you control three or more creatures with different powers.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dawnhart Mentor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Human"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/7/b7667345-e11b-4cad-ac4c-84eb1c5656c5.jpg?1783925225"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Dawnhart Mentor:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "TRAMPLE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "creature",
+                                "aggregation": "DISTINCT_VALUES",
+                                "property": "POWER"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Coven — {5}{G}: Target creature you control gets +3/+3 and gains trample until end of turn. Activate only if you control three or more creatures with different powers."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "rarity": "UNCOMMON",
+        "artist": "Fariba Khamseh",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/234a09dd-a202-4487-899f-348744143ba5.jpg?1783925582",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "A creature has different power from another if their powers are different numbers. For example, a 1/1 creature and a 2/1 creature have different powers."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "For three creatures to have different powers from one another, each of their powers needs to be different. A 1/1 creature, a 2/1 creature, and another 2/1 creature aren't three creatures with different powers, even though both 2/1 creatures have different power than the 1/1 creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Dawnhart Rejuvenator
 {
     "name": "Dawnhart Rejuvenator",
@@ -3566,6 +4181,207 @@
     "colorIdentityOverride": [
         "GREEN",
         "WHITE"
+    ]
+}
+
+// Deathbonnet Sprout
+{
+    "name": "Deathbonnet Sprout",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Fungus",
+    "oracleText": "At the beginning of your upkeep, mill a card. Then if there are three or more creature cards in your graveyard, transform this creature.\n(To mill a card, put the top card of your library into your graveyard.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Deathbonnet Sprout:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "Count",
+                                        "player": "You",
+                                        "zone": "Graveyard",
+                                        "filter": "creature"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
+                                }
+                            },
+                            "then": "Transform"
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, mill a card. Then if there are three or more creature cards in your graveyard, transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Deathbonnet Hulk",
+        "manaCost": "",
+        "typeLine": "Creature — Fungus Horror",
+        "oracleText": "At the beginning of your upkeep, you may exile a card from a graveyard. If a creature card was exiled this way, put a +1/+1 counter on this creature.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Deathbonnet Hulk:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Graveyard",
+                                    "player": "Each"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected1",
+                                "prompt": "You may exile a card from a graveyard",
+                                "selectedLabel": "Exile",
+                                "useTargetingUI": true
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                },
+                                "storeMovedAs": "moved2"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "moved2",
+                                "ifNotEmpty": {
+                                    "type": "AddCounters",
+                                    "counterType": "PLUS_ONE_PLUS_ONE",
+                                    "count": 1,
+                                    "target": "Self"
+                                },
+                                "filter": "creature"
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "At the beginning of your upkeep, you may exile a card from a graveyard. If a creature card was exiled this way, put a +1/+1 counter on this creature."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "181",
+            "rarity": "UNCOMMON",
+            "artist": "Filip Burburan",
+            "flavorText": "They grow up so fast.",
+            "imageUri": "https://cards.scryfall.io/normal/back/a/2/a2cda10b-7cd5-4cf5-87bd-c3b8c6aa2b47.jpg?1783925585"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "UNCOMMON",
+        "artist": "Filip Burburan",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2cda10b-7cd5-4cf5-87bd-c3b8c6aa2b47.jpg?1783925585"
+    }
+}
+
+// Defend the Celestus
+{
+    "name": "Defend the Celestus",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Distribute three +1/+1 counters among one, two, or three target creatures you control.",
+    "script": {
+        "spellEffect": {
+            "type": "DistributeCountersAmongTargets",
+            "totalCounters": {
+                "type": "Fixed",
+                "amount": 3
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 3,
+                "minCount": 1,
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "rarity": "UNCOMMON",
+        "artist": "Andrey Kuzinskiy",
+        "flavorText": "Witch, werewolf, and cathar stood shoulder to shoulder around the Sungold Lock at the center of the ritual, ready to stop Tovolar's assault—or die trying.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c11e4420-06f3-48e2-91d1-a9199483add2.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -6671,6 +7487,140 @@
     ]
 }
 
+// Harvesttide Infiltrator
+{
+    "name": "Harvesttide Infiltrator",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Werewolf",
+    "oracleText": "Trample\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "TRAMPLE",
+        "DAYBOUND"
+    ],
+    "backFace": {
+        "name": "Harvesttide Assailant",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "Trample\nNightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "keywords": [
+            "TRAMPLE",
+            "NIGHTBOUND"
+        ],
+        "metadata": {
+            "collectorNumber": "143",
+            "artist": "Mathias Kollros",
+            "flavorText": "When Tovolar's howl sounded from the woods, it was answered from the heart of the festival.",
+            "imageUri": "https://cards.scryfall.io/normal/back/3/5/35fdb976-291c-4824-9518-dd8c9f93fcde.jpg?1783925603"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "artist": "Mathias Kollros",
+        "flavorText": "He was one masked stranger among many. Blending in was child's play.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/35fdb976-291c-4824-9518-dd8c9f93fcde.jpg?1783925603"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Harvesttide Sentry
+{
+    "name": "Harvesttide Sentry",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Coven — At the beginning of combat on your turn, if you control three or more creatures with different powers, this creature can't be blocked by creatures with power 2 or less this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Harvesttide Sentry:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GrantStaticAbility",
+                    "ability": {
+                        "type": "CantBeBlockedBy",
+                        "blockerFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerAtMost",
+                                    "max": 2
+                                }
+                            ]
+                        }
+                    },
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature",
+                        "aggregation": "DISTINCT_VALUES",
+                        "property": "POWER"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "artist": "Livia Prima",
+        "flavorText": "She patrols the darkness so that others can forget their worries for one bright evening.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/9543cf53-8cf5-49d0-9c60-8b11e21da953.jpg?1783925579",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "Harvesttide Sentry's triggered ability checks your creatures' powers both when it triggers and as it tries to resolve. If you somehow don't have enough creatures with different powers as it tries to resolve, nothing happens and Harvesttide Sentry can be blocked as normal."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "Once its ability resolves, removing one of the creatures with different powers won't allow a player to block Harvesttide Sentry with creatures with power 2 or less."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "The blocking restriction is applied only when blockers are declared. After the coven ability resolves, if a player blocks Harvesttide Sentry with a creature with power greater than 2, reducing that creature's power won't make Harvesttide Sentry unblocked."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "For three creatures to have different powers from one another, each of their powers needs to be different. A 1/1 creature, a 2/1 creature, and another 2/1 creature aren't three creatures with different powers, even though both 2/1 creatures have different power than the 1/1 creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Haunted Ridge
 {
     "name": "Haunted Ridge",
@@ -7374,6 +8324,145 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Hound Tamer
+{
+    "name": "Hound Tamer",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Werewolf",
+    "oracleText": "Trample\n{3}{G}: Put a +1/+1 counter on target creature.\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE",
+        "DAYBOUND"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hound Tamer:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Untamed Pup",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "Trample\nOther Wolves and Werewolves you control have trample.\n{3}{G}: Put a +1/+1 counter on target creature.\nNightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "keywords": [
+            "TRAMPLE",
+            "NIGHTBOUND"
+        ],
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Untamed Pup:1",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{3}{G}"
+                        }
+                    },
+                    "effect": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ]
+                }
+            ],
+            "staticAbilities": [
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "HasAnyOfSubtypes",
+                                    "subtypes": [
+                                        "Wolf",
+                                        "Werewolf"
+                                    ]
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        },
+                        "excludeSelf": true
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "187",
+            "rarity": "UNCOMMON",
+            "artist": "Randy Vargas",
+            "imageUri": "https://cards.scryfall.io/normal/back/2/8/28e2119b-ed78-4b98-a956-f2b453d0b164.jpg?1783925584"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "flavorText": "\"You and me, we're not built for captivity.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/28e2119b-ed78-4b98-a956-f2b453d0b164.jpg?1783925584"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -8798,6 +9887,88 @@
     ]
 }
 
+// Might of the Old Ways
+{
+    "name": "Might of the Old Ways",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+2 until end of turn.\nCoven — Then if you control three or more creatures with different powers, draw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "creature",
+                                "aggregation": "DISTINCT_VALUES",
+                                "property": "POWER"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "artist": "Zezhou Chen",
+        "flavorText": "Brimming with power from their disrupted ritual, the Dawnhart witches lashed out at the werewolf intruders.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6a853679-e9dd-4c05-8688-248de8f12760.jpg?1783925577",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "The effects of Might of the Old Ways happen in the listed order, so the +2/+2 bonus happens before you check the powers of creatures you control. For example, if you control two 2/2 creatures and a 5/5 creatures, choosing one of the 2/2 creatures as the target will allow you to draw a card. Conversely, if you control a 1/1 creature, a 3/3 creature, and a 5/5 creature, targeting either of the two smaller creatures will not allow you to draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Moonrager's Slash
 {
     "name": "Moonrager's Slash",
@@ -9990,6 +11161,166 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Outland Liberator
+{
+    "name": "Outland Liberator",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Werewolf",
+    "oracleText": "{1}, Sacrifice this creature: Destroy target artifact or enchantment.\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DAYBOUND"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Outland Liberator:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact|enchantment"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Frenzied Trapbreaker",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "{1}, Sacrifice this creature: Destroy target artifact or enchantment.\nWhenever this creature attacks, destroy target artifact or enchantment defending player controls.\nNightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "keywords": [
+            "NIGHTBOUND"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Frenzied Trapbreaker:2",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsArtifact",
+                                            "IsEnchantment"
+                                        ]
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByDefendingPlayer"
+                            }
+                        },
+                        "id": "t1"
+                    }
+                }
+            ],
+            "activatedAbilities": [
+                {
+                    "id": "Frenzied Trapbreaker:1",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{1}"
+                                }
+                            },
+                            "CostSacrificeSelf"
+                        ]
+                    },
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact|enchantment"
+                            },
+                            "id": "t0"
+                        }
+                    ]
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "190",
+            "rarity": "UNCOMMON",
+            "artist": "Randy Vargas",
+            "imageUri": "https://cards.scryfall.io/normal/back/6/0/60e53d61-fcc3-4def-8206-052b46f62deb.jpg?1783925581"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "flavorText": "\"Just hold still. I'll help you.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/60e53d61-fcc3-4def-8206-052b46f62deb.jpg?1783925581"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
