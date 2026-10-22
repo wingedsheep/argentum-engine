@@ -1140,6 +1140,134 @@
     ]
 }
 
+// Blood Pact
+{
+    "name": "Blood Pact",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target player draws two cards and loses 2 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "artist": "Sam White",
+        "flavorText": "Griselbrand's defeat did not mark the end of the Skirsdag cult. They simply turned their worship to the next demon to emerge from the shadows bearing offers of power.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/607b1066-1ca0-45e1-a55c-30aed77cc8dc.jpg?1783925625"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Bloodline Culling
+{
+    "name": "Bloodline Culling",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Target creature gets -5/-5 until end of turn.\n• Creature tokens get -2/-2 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -5
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -5
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Target creature gets -5/-5 until end of turn"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature token"
+                            }
+                        },
+                        "body": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": -2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": -2
+                            },
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "description": "Creature tokens get -2/-2 until end of turn"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "rarity": "RARE",
+        "artist": "Liiga Smilshkalne",
+        "flavorText": "\"Forget your human ancestors. You're part of my family now.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fac827f7-a587-4adf-8408-2d9ccd9c1343.jpg?1783925624"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Bloodtithe Collector
 {
     "name": "Bloodtithe Collector",
@@ -2145,6 +2273,129 @@
     ]
 }
 
+// Covert Cutpurse
+{
+    "name": "Covert Cutpurse",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "When this creature enters, destroy target creature you don't control that was dealt damage this turn.\nDisturb {4}{B} (You may cast this card from your graveyard transformed for its disturb cost.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "DISTURB"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Disturb",
+            "cost": "{4}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Covert Cutpurse:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                "WasDealtDamageThisTurn"
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControllerNot",
+                                "predicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Covetous Geist",
+        "manaCost": "",
+        "typeLine": "Creature — Spirit Rogue",
+        "oracleText": "Flying, deathtouch\nIf Covetous Geist would be put into a graveyard from anywhere, exile it instead.",
+        "creatureStats": {
+            "power": 2,
+            "toughness": 2
+        },
+        "keywords": [
+            "FLYING",
+            "DEATHTOUCH"
+        ],
+        "script": {
+            "replacementEffects": [
+                {
+                    "type": "RedirectZoneChange",
+                    "newDestination": "Exile",
+                    "appliesTo": {
+                        "type": "ZoneChangeEvent",
+                        "to": "Graveyard"
+                    },
+                    "selfOnly": true
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "92",
+            "rarity": "UNCOMMON",
+            "artist": "John Stanko",
+            "flavorText": "\"It has no need of wealth in the afterlife. It steals and kills purely for its own spiteful amusement.\"\n—Kaya",
+            "imageUri": "https://cards.scryfall.io/normal/back/5/d/5db99746-8aee-42b8-acb0-ed69933d0ff8.jpg?1783925627"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "UNCOMMON",
+        "artist": "John Stanko",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5db99746-8aee-42b8-acb0-ed69933d0ff8.jpg?1783925627",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "When you cast a spell using a card's disturb ability, the card is put onto the stack with its back face up. The resulting spell has all the characteristics of that face."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "The mana value of a spell cast using disturb is determined by the mana cost on the front face of the card, no matter what the total cost to cast the spell was."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "The back face of each card with disturb has an ability that instructs its controller to exile it if it would be put into a graveyard from anywhere. This includes going to the graveyard from the stack, so if the spell is countered after you cast it using the disturb ability, it will be put into exile."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Covetous Castaway
 {
     "name": "Covetous Castaway",
@@ -3005,6 +3256,84 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLUE"
+    ]
+}
+
+// Diregraf Horde
+{
+    "name": "Diregraf Horde",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "When this creature enters, create two 2/2 black Zombie creature tokens with decayed. When you do, exile up to two target cards from graveyards. (A creature with decayed can't block. When it attacks, sacrifice it at end of combat.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Diregraf Horde:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "power": 2,
+                        "toughness": 2,
+                        "colors": [
+                            "BLACK"
+                        ],
+                        "creatureTypes": [
+                            "Zombie"
+                        ],
+                        "keywords": [
+                            "DECAYED"
+                        ]
+                    },
+                    "optional": false,
+                    "reflexiveEffect": {
+                        "type": "ForEach",
+                        "space": "IterationSpace.Targets",
+                        "body": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "destination": "Exile"
+                        }
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "count": 2,
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": {},
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "Create two 2/2 black Zombie creature tokens with decayed. When you do, exile up to two target cards from graveyards."
+                },
+                "descriptionOverride": "When this creature enters, create two 2/2 black Zombie creature tokens with decayed. When you do, exile up to two target cards from graveyards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "artist": "Alex Negrea",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/153be768-ddad-44f2-bcdd-c40353c807d7.jpg?1783925620"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -5623,6 +5952,56 @@
     ]
 }
 
+// Hobbling Zombie
+{
+    "name": "Hobbling Zombie",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "Deathtouch\nWhen this creature dies, create a 2/2 black Zombie creature token with decayed. (It can't block. When it attacks, sacrifice it at end of combat.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hobbling Zombie:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "keywords": [
+                        "DECAYED"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "artist": "Josh Hass",
+        "flavorText": "\"I see someone tried to stop you, my pet. How delightful.\"\n—Ghoulcaller Gisa",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/68284193-a38e-40d2-8d15-92d223756751.jpg?1783925616"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Homestead Courage
 {
     "name": "Homestead Courage",
@@ -5679,6 +6058,265 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Hostile Hostel
+{
+    "name": "Hostile Hostel",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{1}, {T}, Sacrifice a creature: Put a soul counter on this land. Then if there are three or more soul counters on it, remove those counters, transform it, then untap it. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hostile Hostel:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Hostile Hostel:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "SOUL",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "SOUL"
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "RemoveAllCountersOfType",
+                                        "counterType": "SOUL",
+                                        "target": "Self"
+                                    },
+                                    "Transform",
+                                    {
+                                        "type": "TapUntap",
+                                        "target": "Self",
+                                        "tap": false
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "{1}, {T}, Sacrifice a creature: Put a soul counter on this land. Then if there are three or more soul counters on it, remove those counters, transform it, then untap it."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Creeping Inn",
+        "manaCost": "",
+        "typeLine": "Artifact Creature — Horror Construct",
+        "oracleText": "Whenever this creature attacks, you may exile a creature card from your graveyard. If you do, each opponent loses X life and you gain X life, where X is the number of creature cards exiled with this creature.\n{4}: This creature phases out.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 7
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Creeping Inn:1",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Graveyard",
+                                    "filter": "creature"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected1",
+                                "prompt": "You may exile a creature card from your graveyard",
+                                "selectedLabel": "Exile",
+                                "alwaysPrompt": true
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                },
+                                "linkToSource": true
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "selected1",
+                                "ifNotEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "LoseLife",
+                                            "amount": {
+                                                "type": "Count",
+                                                "player": "Each",
+                                                "zone": "Exile",
+                                                "filter": {
+                                                    "cardPredicates": [
+                                                        "IsCreature"
+                                                    ],
+                                                    "statePredicates": [
+                                                        "ExiledWithSource"
+                                                    ]
+                                                }
+                                            },
+                                            "target": {
+                                                "type": "PlayerRef",
+                                                "player": "EachOpponent"
+                                            }
+                                        },
+                                        {
+                                            "type": "GainLife",
+                                            "amount": {
+                                                "type": "Count",
+                                                "player": "Each",
+                                                "zone": "Exile",
+                                                "filter": {
+                                                    "cardPredicates": [
+                                                        "IsCreature"
+                                                    ],
+                                                    "statePredicates": [
+                                                        "ExiledWithSource"
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "Whenever this creature attacks, you may exile a creature card from your graveyard. If you do, each opponent loses X life and you gain X life, where X is the number of creature cards exiled with this creature."
+                }
+            ],
+            "activatedAbilities": [
+                {
+                    "id": "Creeping Inn:2",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{4}"
+                        }
+                    },
+                    "effect": "PhaseOut",
+                    "descriptionOverride": "{4}: This creature phases out."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "264",
+            "rarity": "MYTHIC",
+            "artist": "Daniel Ljunggren",
+            "imageUri": "https://cards.scryfall.io/normal/back/a/c/ac83c27f-55d6-4e5a-93a4-febb0c183289.jpg?1783925549"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "264",
+        "rarity": "MYTHIC",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac83c27f-55d6-4e5a-93a4-febb0c183289.jpg?1783925549",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "While Creeping Inn is phased out, it's treated as though it doesn't exist. It can't be the target of spells or abilities, its static abilities have no effect on the game, its triggered abilities can't trigger, it can't attack or block, and so on."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "If Creeping Inn is attacking or blocking when it phases out, it is removed from combat."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "Creeping Inn will phase in during its controller's untap step. It will be able to attack the same turn."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "When Creeping Inn phases in, it still remembers what cards were previously exiled with it."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "Phasing out or phasing in doesn't affect which face of a double-faced card is face up."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -6863,6 +7501,110 @@
     ]
 }
 
+// Mask of Griselbrand
+{
+    "name": "Mask of Griselbrand",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Legendary Artifact — Equipment",
+    "oracleText": "Equipped creature has flying and lifelink.\nWhenever equipped creature dies, you may pay X life, where X is its power. If you do, draw X cards.\nEquip {3}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mask of Griselbrand:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayDynamicLife",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "TriggeringEntity",
+                                "numericProperty": "Power"
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "EntityProperty",
+                            "entity": "TriggeringEntity",
+                            "numericProperty": "Power"
+                        }
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Mask of Griselbrand:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "LIFELINK"
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "111",
+        "rarity": "RARE",
+        "artist": "Jason Felix",
+        "flavorText": "The legacy of evil lives on.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/829786e2-260b-4bc6-935b-1868b37e2d33.jpg?1783925614",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "Use the equipped creature's power as it last existed on the battlefield to determine the value of X."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "You must pay exactly X life or nothing. You can't pay less life to draw fewer cards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Memory Deluge
 {
     "name": "Memory Deluge",
@@ -7066,6 +7808,45 @@
         "rarity": "UNCOMMON",
         "artist": "Tyler Walpole",
         "imageUri": "https://cards.scryfall.io/normal/front/5/a/5a53982e-3d66-4808-bcb5-46ff40567872.jpg?1782703660"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Morkrut Behemoth
+{
+    "name": "Morkrut Behemoth",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Zombie Giant",
+    "oracleText": "As an additional cost to cast this spell, sacrifice a creature or pay {1}{B}.\nMenace (This creature can't be blocked except by two or more creatures.)",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 6
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "additionalCosts": [
+            {
+                "type": "OrPay",
+                "cost": {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "creature"
+                    }
+                },
+                "alternativeManaCost": "{1}{B}"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "artist": "Milivoj Ćeran",
+        "flavorText": "\"Let's see my brother's stitched-up little toys compete with this.\"\n—Ghoulcaller Gisa",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/318fe8a2-a68a-4c7e-9581-ae6800826164.jpg?1783925611"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -7377,6 +8158,120 @@
     ]
 }
 
+// Necrosynthesis
+{
+    "name": "Necrosynthesis",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature has \"Whenever another creature dies, put a +1/+1 counter on this creature.\"\nWhen enchanted creature dies, look at the top X cards of your library, where X is its power. Put one of those cards into your hand and the rest on the bottom of your library in a random order.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Necrosynthesis:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "EntityProperty",
+                                    "entity": "TriggeringEntity",
+                                    "numericProperty": "Power"
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Put on bottom"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Necrosynthesis:1",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "filter": "creature",
+                        "from": "Battlefield",
+                        "to": "Graveyard"
+                    },
+                    "binding": "OTHER",
+                    "effect": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "Self"
+                    },
+                    "descriptionOverride": "Whenever another creature dies, put a +1/+1 counter on this creature."
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "rarity": "UNCOMMON",
+        "artist": "Isis",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b75b89f1-e032-4d8c-b2b6-1b76e8644801.jpg?1783925612",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "Use the enchanted creature's power as it last existed on the battlefield to determine the value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Neonate's Rush
 {
     "name": "Neonate's Rush",
@@ -7447,6 +8342,90 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// No Way Out
+{
+    "name": "No Way Out",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent discards two cards. You create a 2/2 black Zombie creature token with decayed. (It can't block. When it attacks, sacrifice it at end of combat.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "hand"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "hand",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "chooser": "TargetPlayer",
+                    "storeSelected": "discarded",
+                    "prompt": "Choose 2 cards to discard"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "discarded",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "keywords": [
+                        "DECAYED"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/6/a/6adb8607-1066-451d-a719-74ad32358278.jpg?1783925226"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "artist": "Sebastian Giacobino",
+        "flavorText": "In the maze-like passages of the Erdwal, a wrong turn can be fatal.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d9ef6a68-60a4-4a20-8b57-8b7a7c5ed0c6.jpg?1783925611"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -7552,6 +8531,70 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Olivia's Midnight Ambush
+{
+    "name": "Olivia's Midnight Ambush",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets -2/-2 until end of turn. If it's night, that creature gets -13/-13 until end of turn instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "IsNight"
+            },
+            "then": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": -13
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": -13
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            },
+            "otherwise": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": -2
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": -2
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c1adede-22ad-4c1c-9501-ad731fbe1742.jpg?1783925610"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -8867,6 +9910,73 @@
     ]
 }
 
+// Rotten Reunion
+{
+    "name": "Rotten Reunion",
+    "manaCost": "{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile up to one target card from a graveyard. Create a 2/2 black Zombie creature token with decayed. (It can't block. When it attacks, sacrifice it at end of combat.)\nFlashback {1}{B} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{1}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "keywords": [
+                        "DECAYED"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/6/a/6adb8607-1066-451d-a719-74ad32358278.jpg?1783925226"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "artist": "Aaron Miller",
+        "flavorText": "Aunt and Uncle Greyfeld loved dinner guests.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/97398ad2-675b-4a34-aab7-935dd6714f1c.jpg?1783925610"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Sacred Fire
 {
     "name": "Sacred Fire",
@@ -9226,6 +10336,58 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Shady Traveler
+{
+    "name": "Shady Traveler",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Werewolf",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENACE",
+        "DAYBOUND"
+    ],
+    "backFace": {
+        "name": "Stalking Predator",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nNightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "keywords": [
+            "MENACE",
+            "NIGHTBOUND"
+        ],
+        "metadata": {
+            "collectorNumber": "120",
+            "artist": "Lie Setiawan",
+            "flavorText": "Tomorrow a new village, and new victims.",
+            "imageUri": "https://cards.scryfall.io/normal/back/5/5/55f0666a-5c3e-492b-b4ea-42fa7f24661b.jpg?1783925615"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "artist": "Lie Setiawan",
+        "flavorText": "The stranger spoke to no one, and the townspeople gladly returned the favor.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/55f0666a-5c3e-492b-b4ea-42fa7f24661b.jpg?1783925615"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -9631,6 +10793,71 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Slaughter Specialist
+{
+    "name": "Slaughter Specialist",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Vampire Warrior",
+    "oracleText": "When this creature enters, each opponent creates a 1/1 white Human creature token.\nWhenever a creature an opponent controls dies, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Slaughter Specialist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Human"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/7/b7667345-e11b-4cad-ac4c-84eb1c5656c5.jpg?1783925225",
+                    "controller": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            },
+            {
+                "id": "Slaughter Specialist:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:opponent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "RARE",
+        "artist": "Kari Christensen",
+        "flavorText": "From every kill, a gruesome trophy.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cb83e33c-810e-4de3-800d-2038f38a1eda.jpg?1783925610"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -10560,6 +11787,93 @@
         "artist": "Brian Valeza",
         "imageUri": "https://cards.scryfall.io/normal/front/9/7/97de6e92-e0e8-444e-baba-09c97510b1ab.jpg?1783925590"
     }
+}
+
+// Tainted Adversary
+{
+    "name": "Tainted Adversary",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "Deathtouch\nWhen this creature enters, you may pay {2}{B} any number of times. When you pay this cost one or more times, put that many +1/+1 counters on this creature, then create twice that many 2/2 black Zombie creature tokens with decayed. (A creature with decayed can't block. When it attacks, sacrifice it at end of combat.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tainted Adversary:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "PayManaCostRepeatedly",
+                        "cost": "{2}{B}"
+                    },
+                    "reflexiveEffect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": {
+                                    "type": "VariableReference",
+                                    "variableName": "times_paid"
+                                },
+                                "target": "Self"
+                            },
+                            {
+                                "type": "CreateToken",
+                                "count": {
+                                    "type": "Multiply",
+                                    "amount": {
+                                        "type": "VariableReference",
+                                        "variableName": "times_paid"
+                                    },
+                                    "multiplier": 2
+                                },
+                                "power": 2,
+                                "toughness": 2,
+                                "colors": [
+                                    "BLACK"
+                                ],
+                                "creatureTypes": [
+                                    "Zombie"
+                                ],
+                                "keywords": [
+                                    "DECAYED"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/6/a/6adb8607-1066-451d-a719-74ad32358278.jpg?1783925226"
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "You may pay {2}{B} any number of times. When you pay this cost one or more times, put that many +1/+1 counters on this creature, then create twice that many 2/2 black Zombie creature tokens with decayed."
+                },
+                "descriptionOverride": "When this creature enters, you may pay {2}{B} any number of times. When you pay this cost one or more times, put that many +1/+1 counters on this creature, then create twice that many 2/2 black Zombie creature tokens with decayed."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "MYTHIC",
+        "artist": "Tuan Duong Chu",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e6b9b8fc-c30d-49e7-bb6c-219380d73a82.jpg?1783925608",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "After you pay the {2}{B} cost one or more times, a second ability triggers. Players may respond to the new ability at that point. As that ability resolves, Tainted Adversary gets its counters and the tokens are created."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Tapping at the Window
