@@ -640,7 +640,10 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   creature gets -X/-X") has none and the selection is free (0..matching cards); **Necropolis Fiend**
   ("{X}, {T}, Exile X cards from your graveyard") pays X in mana too, so the mana-X picker fixes the
   count first and the selection is pinned to exactly that many. Selecting nothing is legal and
-  settles as X = 0.
+  settles as X = 0. `linkToSource = true` puts the exiled cards in the source permanent's linked-exile
+  pile so another ability printed on it can name "the cards exiled with it" (CR 607.2a) — Ludevic,
+  Necrogenius's `{X}{U}{U}{B}{B}, Exile X creature cards from your graveyard: Transform Ludevic` feeds
+  Olag's `BecomesCopyAsTransforms`.
 - `Costs.DiscardX(filter = Any)` — **variable-count** "discard X cards" (`AbilityCost.DiscardX`),
   the hand-side twin of `Costs.ExileXFromGraveyard`: activating raises one `SelectCardsDecision` over
   the matching hand cards (never the ability's own source) and the number discarded becomes the
@@ -17976,6 +17979,22 @@ not update an existing copy.
   player's upkeep trigger sees the attachment that turn; otherwise in the first state-based action pass,
   ahead of CR 704.5m. Entering the battlefield face up is not a transform and doesn't apply it. Put it on
   the Aura face: `replacementEffect(AttachToPlayerAsTransforms())`.
+- `BecomesCopyAsTransforms(copyFilter = Creature, copyFromZone = EXILE, exceptions = CopyExceptions.None,
+  counterType = PLUS_ONE_PLUS_ONE, counterCount = null)` — "As this creature transforms into [this face], it
+  becomes a copy of a [copyFilter] card …, except …. Put [counterCount] [counterType] counters on it" on a
+  transforming card's back face (Olag, Ludevic's Hubris). Applied while the permanent transforms (CR
+  712.20): `flipDfcInPlace` marks it and the first state-based action pass (`TransformCopyCheck`, ahead of
+  every real SBA) settles it — the candidates are the cards in `copyFromZone` matching `copyFilter`, read
+  with the transforming permanent as the source, so `GameObjectFilter.Creature.exiledWithSource()` is "a
+  creature card exiled with it" (CR 607.2a). One candidate is copied without asking; several raise a
+  `SelectCardsDecision` for its controller; none leaves the printed face. The copy is baked in like every
+  in-place copy (`becomeCopyInPlace`, shared with `EachPermanentBecomesCopyOfTargetEffect`) with
+  `exceptions` applied, lasts after the copied card leaves exile, and `counterCount` (evaluated with the
+  permanent as the source) is put on it afterwards, copy or not. Entering transformed is not a transform
+  and doesn't apply it. A permanent under a lasting copy effect that later transforms turns over (its
+  `DoubleFacedComponent` face and the printed face the copy reverts to change, and "whenever this
+  transforms" triggers fire) but keeps the copy's characteristics and gains none of the new face's
+  abilities. Ludevic's cost feeds the pile with `Costs.ExileXFromGraveyard(Creature, linkToSource = true)`.
 - `LoyaltyDamageFloor(floor = 1, restrictions, appliesTo)` — the planeswalker counterpart of
   `LifeLossFloor`: damage matching `appliesTo` (a `DamageEvent`; its `recipient` names which
   planeswalkers, its `damageType`/`source` gate as usual) that would leave a planeswalker with fewer than

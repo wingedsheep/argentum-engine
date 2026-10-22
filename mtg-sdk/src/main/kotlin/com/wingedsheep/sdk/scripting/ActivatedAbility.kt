@@ -537,11 +537,18 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
      * Used for abilities like Necropolis Fiend: "{X}, {T}, Exile X cards from your graveyard"
      *
      * @property filter Which cards can be exiled
+     * @property linkToSource When true, the exiled cards join the *source permanent's* linked-exile
+     *   pile ([com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent]), so another
+     *   ability printed on it can name "the cards exiled with it" (CR 607.2a) — Ludevic,
+     *   Necrogenius's transform cost feeds Olag's "becomes a copy of a creature card exiled with
+     *   it". The [com.wingedsheep.sdk.scripting.costs.CostAtom.CollectEvidence.linkToSource] twin;
+     *   off by default, so an ordinary cost exiles the cards and forgets them.
      */
     @SerialName("CostExileXFromGraveyard")
     @Serializable
     data class ExileXFromGraveyard(
-        val filter: GameObjectFilter = GameObjectFilter.Any
+        val filter: GameObjectFilter = GameObjectFilter.Any,
+        val linkToSource: Boolean = false,
     ) : AbilityCost {
         override val description: String = "Exile X ${filter.description}s from your graveyard"
 

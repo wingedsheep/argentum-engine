@@ -355,9 +355,15 @@ object Costs {
 
     /**
      * Exile X cards from graveyard, where X is the ability's X value.
+     *
+     * Set [linkToSource] when another ability on the same permanent reads the cards this payment
+     * exiled — "a creature card exiled with it" (Ludevic, Necrogenius).
      */
-    fun ExileXFromGraveyard(filter: GameObjectFilter = GameObjectFilter.Any): AbilityCost =
-        AbilityCost.ExileXFromGraveyard(filter)
+    fun ExileXFromGraveyard(
+        filter: GameObjectFilter = GameObjectFilter.Any,
+        linkToSource: Boolean = false,
+    ): AbilityCost =
+        AbilityCost.ExileXFromGraveyard(filter, linkToSource)
 
     /**
      * Discard X cards, where X is the ability's X value — chosen by how many cards are discarded

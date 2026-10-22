@@ -4548,6 +4548,203 @@
     ]
 }
 
+// Ludevic, Necrogenius
+{
+    "name": "Ludevic, Necrogenius",
+    "manaCost": "{U}{B}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "Whenever Ludevic enters or attacks, mill a card.\n{X}{U}{U}{B}{B}, Exile X creature cards from your graveyard: Transform Ludevic. X can't be 0. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ludevic, Necrogenius:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Ludevic enters or attacks, mill a card."
+            },
+            {
+                "id": "Ludevic, Necrogenius:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Ludevic enters or attacks, mill a card."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Ludevic, Necrogenius:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}{U}{U}{B}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostExileXFromGraveyard",
+                            "filter": "creature",
+                            "linkToSource": true
+                        }
+                    ]
+                },
+                "effect": "Transform",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "{X}{U}{U}{B}{B}, Exile X creature cards from your graveyard: Transform Ludevic. X can't be 0. Activate only as a sorcery.",
+                "minimumXValue": 1
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Olag, Ludevic's Hubris",
+        "manaCost": "",
+        "typeLine": "Legendary Creature — Zombie",
+        "oracleText": "As this creature transforms into Olag, Ludevic's Hubris, it becomes a copy of a creature card exiled with it, except its name is Olag, Ludevic's Hubris, it's 4/4, and it's a legendary blue and black Zombie in addition to its other colors and types. Put a number of +1/+1 counters on Olag equal to the number of creature cards exiled with it.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "script": {
+            "replacementEffects": [
+                {
+                    "type": "BecomesCopyAsTransforms",
+                    "copyFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "ExiledWithSource"
+                        ]
+                    },
+                    "exceptions": {
+                        "nameOverride": "Olag, Ludevic's Hubris",
+                        "addedSupertypes": [
+                            "LEGENDARY"
+                        ],
+                        "addedSubtypes": [
+                            "Zombie"
+                        ],
+                        "addedColors": [
+                            "BLUE",
+                            "BLACK"
+                        ],
+                        "powerOverride": 4,
+                        "toughnessOverride": 4
+                    },
+                    "counterCount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Exile",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                "ExiledWithSource"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "233",
+            "rarity": "RARE",
+            "artist": "Ryan Pancoast",
+            "imageUri": "https://cards.scryfall.io/normal/back/7/8/788288f6-7944-48f4-91b0-f452e209c9ce.jpg?1783925561"
+        },
+        "colorIdentityOverride": [
+            "BLUE",
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLUE",
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "233",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/788288f6-7944-48f4-91b0-f452e209c9ce.jpg?1783925561",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "You choose which exiled creature card Olag is copying as it transforms. It doesn't transform and then become a copy."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "Olag remains a copy of the creature card you choose even if that card later leaves exile."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "If there are no creature cards exiled with Ludevic as it transforms, perhaps because those cards were removed from exile in response to its activated ability or it transformed another way, Olag won't be a copy of anything. Olag will simply be its 4/4 self with no +1/+1 counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Lunarch Veteran
 {
     "name": "Lunarch Veteran",

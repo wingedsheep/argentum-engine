@@ -93,7 +93,7 @@ Families:
 - `AbilityCost.Exert` — Exert this permanent (CR 701.43a) — choose to have it not untap during your next untap step.
 - `AbilityCost.ExileGrantingPermanent` — Exile the permanent that granted this activated ability to the source.
 - `AbilityCost.ExileSelf` — Exile self (the permanent with this ability)
-- `AbilityCost.ExileXFromGraveyard(filter: GameObjectFilter)` — Exile X cards from graveyard, where X is the ability's X value.
+- `AbilityCost.ExileXFromGraveyard(filter: GameObjectFilter, linkToSource: Boolean)` — Exile X cards from graveyard, where X is the ability's X value.
 - `AbilityCost.Forage` — Forage: exile three cards from your graveyard or sacrifice a Food.
 - `AbilityCost.Free` — No cost ({0}) — the ability is free to activate
 - `AbilityCost.Loyalty(change: Int)` — Loyalty cost for planeswalker abilities
@@ -1528,6 +1528,7 @@ Families:
 ## ReplacementEffect
 
 - `AttachToPlayerAsTransforms(appliesTo: EventPattern)` — "As this permanent transforms into this face, attach it to a player." — the as-transforms replacement of a transforming card's **Aura** face that enchants a player (Curse of Leeches).
+- `BecomesCopyAsTransforms(copyFilter: GameObjectFilter, copyFromZone: Zone, exceptions: CopyExceptions, counterType: CounterType, counterCount: DynamicAmount?, appliesTo: EventPattern)` — "As this creature transforms into this face, it becomes a copy of a copyFilter card …, except ….
 - `CapCounterPlacementThisTurn(amount: Int, appliesTo: EventPattern)` — Cap a counter placement at amount and lock the recipient out of further counters of that kind for the rest of the turn — "If you would get one or more poison counters, instead you get one poison co…
 - `CapDamage(maxAmount: Int, appliesTo: EventPattern)` — Cap damage at a maximum amount.
 - `CreateAdditionalToken(additionalTokenType: String, additionalTokenCount: Int, inheritTapped: Boolean, appliesTo: EventPattern, restrictions: List<Condition>, scale: AdditionalTokenScale)` — When a player would create one or more tokens matching appliesTo, also create additionalTokenCount predefined token(s) of a *different* type (additionalTokenType).

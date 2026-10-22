@@ -18,6 +18,8 @@ import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSour
 import com.wingedsheep.engine.mechanics.layers.ContinuousEffectSourceComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.CopyHistoryComponent
+import com.wingedsheep.engine.state.components.identity.CopyOfComponent
 import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.identity.ProtectionComponent
@@ -29,8 +31,10 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardLayout
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AttachToPlayerAsTransforms
+import com.wingedsheep.sdk.scripting.BecomesCopyAsTransforms
 import com.wingedsheep.sdk.scripting.RedirectZoneChange
 import com.wingedsheep.engine.state.components.battlefield.PendingTransformAttachComponent
+import com.wingedsheep.engine.state.components.battlefield.PendingTransformCopyComponent
 import com.wingedsheep.sdk.scripting.effects.TransformEffect
 import kotlin.reflect.KClass
 
@@ -173,17 +177,24 @@ internal fun flipDfcInPlace(
     // CR 712.20 — an "As this permanent transforms into …, attach it to a player" ability of the new
     // face applies while it transforms. The player is chosen as soon as the engine can ask (see
     // TransformAttachToPlayer); until then the mark keeps the 704.5m check off the Aura.
-    val faceDefinition = copiedFace?.let { cardRegistry.getCard(it.cardDefinitionId) } ?: nextCardDef
-    val attachesToPlayer = faceDefinition?.script?.replacementEffects
-        ?.any { it is AttachToPlayerAsTransforms } == true
+    // A permanent under a copy effect doesn't gain its new face's abilities (setDfcFace), so they
+    // don't apply as it transforms either.
+    val underCopy = newState.getEntity(entityId)?.has<CopyOfComponent>() == true && copiedFace == null
+    val faceDefinition = (copiedFace?.let { cardRegistry.getCard(it.cardDefinitionId) } ?: nextCardDef)
+        ?.takeUnless { underCopy }
+    val faceReplacements = faceDefinition?.script?.replacementEffects.orEmpty()
+    val attachesToPlayer = faceReplacements.any { it is AttachToPlayerAsTransforms }
+    // Same for "As this creature transforms into …, it becomes a copy of …" (TransformCopy).
+    val becomesCopy = faceReplacements.any { it is BecomesCopyAsTransforms }
     val marked = newState.updateEntity(entityId) {
-        if (attachesToPlayer) it.with(PendingTransformAttachComponent) else it.without<PendingTransformAttachComponent>()
+        val attachMarked = if (attachesToPlayer) it.with(PendingTransformAttachComponent) else it.without<PendingTransformAttachComponent>()
+        if (becomesCopy) attachMarked.with(PendingTransformCopyComponent) else attachMarked.without<PendingTransformCopyComponent>()
     }
 
     return marked to TransformedEvent(
         entityId = entityId,
         intoBackFace = intoBackFace,
-        newFaceName = copiedFace?.name ?: nextCardDef!!.name,
+        newFaceName = marked.getEntity(entityId)?.get<CardComponent>()?.name ?: copiedFace?.name ?: nextCardDef!!.name,
         controllerId = controllerId
     )
 }
@@ -237,6 +248,30 @@ internal fun setDfcFace(
         }
     }
     val nextCardDef = cardRegistry.getCard(nextDefinitionId) ?: return null
+    val faceChanges = dfc.faceChanges + if (nextFace == dfc.currentFace) 0 else 1
+
+    // A permanent under a copy effect turns over like any other, but the copy effect keeps setting
+    // its copiable values (CR 707.2, layer 1), so its characteristics don't change: only the printed
+    // face the copy sits on — what it reverts to when the copy ends or it leaves — does. Olag,
+    // Ludevic's Hubris copying a Delver of Secrets that transforms stays that copy and never becomes
+    // Ludevic again (the card's ruling).
+    val copyOf = container.get<CopyOfComponent>()
+    val copiedOver = copyOf?.originalCardComponent
+    if (copyOf != null && copiedOver != null && container.get<CopyHistoryComponent>() == null) {
+        val printedFace = buildCardComponentForDfcFace(copiedOver, nextCardDef, manaValueOverride)
+        val turnedOver = when (nextFace) {
+            DoubleFacedComponent.Face.BACK ->
+                dfc.copy(currentFace = nextFace, frontFaceCard = copiedOver, faceChanges = faceChanges)
+            DoubleFacedComponent.Face.FRONT ->
+                dfc.copy(currentFace = nextFace, frontFaceCard = null, faceChanges = faceChanges)
+        }
+        return state.updateEntity(entityId) {
+            it.with(turnedOver).with(copyOf.copy(
+                originalCardDefinitionId = nextDefinitionId,
+                originalCardComponent = printedFace
+            ))
+        }
+    }
 
     val swappedCard = buildCardComponentForDfcFace(currentCard, nextCardDef, manaValueOverride)
 
@@ -244,7 +279,6 @@ internal fun setDfcFace(
     // without a registry lookup when the DFC leaves the battlefield on its back face.
     // The face-change tally advances on every real swap — CR 701.28f's clock, see
     // [DoubleFacedComponent.faceChanges].
-    val faceChanges = dfc.faceChanges + if (nextFace == dfc.currentFace) 0 else 1
     val updatedDfc = when (nextFace) {
         DoubleFacedComponent.Face.BACK ->
             dfc.copy(currentFace = nextFace, frontFaceCard = currentCard, faceChanges = faceChanges)

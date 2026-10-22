@@ -340,7 +340,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
                 if (xCount == 0) {
                     CostPaymentResult.success(state, manaPool)
                 } else {
-                    exileCardsFromZone(
+                    val paid = exileCardsFromZone(
                         state,
                         controllerId,
                         sourceId,
@@ -348,6 +348,17 @@ class CostHandler(private val zones: ZoneTransitionService) {
                         choices.exileChoices,
                         manaPool,
                     )
+                    // "Exiled with it" (CR 607.2a): tether the paid cards to the source's
+                    // linked-exile pile so the permanent's other abilities can name them.
+                    val paidState = paid.newState
+                    if (!cost.linkToSource || !paid.success || paidState == null) paid
+                    else paid.copy(newState = paid.events
+                        .filterIsInstance<com.wingedsheep.engine.core.ZoneChangeEvent>()
+                        .filter { it.toZone == Zone.EXILE }
+                        .fold(paidState) { acc, event ->
+                            com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
+                                .linkExiledToSource(acc, event.entityId, sourceId)
+                        })
                 }
             }
             is AbilityCost.DiscardX -> {

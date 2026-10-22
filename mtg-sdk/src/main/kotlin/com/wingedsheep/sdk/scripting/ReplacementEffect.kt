@@ -633,6 +633,61 @@ data class AttachToPlayerAsTransforms(
     }
 }
 
+/**
+ * "As this creature transforms into [this face], it becomes a copy of a [copyFilter] card …, except
+ * …. Put a number of [counterType] counters on it equal to [counterCount]." — the as-transforms copy
+ * of Olag, Ludevic's Hubris, the back face of Ludevic, Necrogenius.
+ *
+ * CR 712.20: an "As [this permanent] transforms …" ability of the face it transforms into is applied
+ * *while* it transforms — the permanent never exists as its plain printed face first. Its controller
+ * chooses one card in [copyFromZone] matching [copyFilter], read with the transforming permanent as
+ * the source (so `GameObjectFilter.Creature.exiledWithSource()` is "a creature card exiled with
+ * it", CR 607.2a), and the permanent becomes a copy of it (CR 707.2) for as long as it remains on
+ * the battlefield — even after the copied card leaves exile, and across a later transform, which
+ * turns the card over without changing the characteristics the copy effect sets. [exceptions] is the
+ * shared CR 707.9b "except …" vocabulary. With no card to choose it isn't a copy of anything and keeps
+ * its printed face. [counterCount] (when non-null) is then evaluated with the permanent as the source
+ * and that many [counterType] counters are put on it, copy or not.
+ *
+ * Read off the face's own definition at the moment of the transform and never consulted otherwise;
+ * entering the battlefield transformed is not a transform, so it doesn't apply then. [appliesTo] is
+ * nominal, as on [AttachToPlayerAsTransforms].
+ *
+ * Not [EntersAsCopy]: that is an entry replacement, read on every path a permanent enters by, and a
+ * transform is not an entry. Not [AttachToPlayerAsTransforms]: that one's choice is a player to
+ * attach to, not a card to copy. Both as-transforms replacements share one settle point — the choice
+ * is asked at the first moment the engine can ask after the flip (see `TransformAsReplacements`).
+ */
+@SerialName("BecomesCopyAsTransforms")
+@Serializable
+data class BecomesCopyAsTransforms(
+    val copyFilter: GameObjectFilter = GameObjectFilter.Creature,
+    val copyFromZone: Zone = Zone.EXILE,
+    val exceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions =
+        com.wingedsheep.sdk.scripting.effects.CopyExceptions.None,
+    val counterType: CounterType = CounterType.PLUS_ONE_PLUS_ONE,
+    val counterCount: DynamicAmount? = null,
+    override val appliesTo: EventPattern = EventPattern.TransformEvent()
+) : ReplacementEffect {
+    override val description: String = buildString {
+        append("As this creature transforms, it becomes a copy of a ${copyFilter.description} card")
+        if (copyFromZone != Zone.EXILE) append(" in a ${copyFromZone.name.lowercase()}")
+        val clauses = exceptions.clauses()
+        if (clauses.isNotEmpty()) append(", except ${clauses.joinToString(" and ")}")
+        counterCount?.let {
+            val plusOne = counterType == CounterType.PLUS_ONE_PLUS_ONE
+            append(". Put ${it.description} ${if (plusOne) "+1/+1" else counterType.printed} counters on it")
+        }
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val newFilter = copyFilter.applyTextReplacement(replacer)
+        val newExceptions = exceptions.applyTextReplacement(replacer)
+        return if (newFilter !== copyFilter || newExceptions !== exceptions)
+            copy(copyFilter = newFilter, exceptions = newExceptions) else this
+    }
+}
+
 @SerialName("EntersTapped")
 @Serializable
 data class EntersTapped(

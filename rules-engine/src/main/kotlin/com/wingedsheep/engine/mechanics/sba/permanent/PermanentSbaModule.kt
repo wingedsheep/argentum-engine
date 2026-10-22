@@ -13,6 +13,7 @@ class PermanentSbaModule(
 ) : StateBasedActionModule {
     override fun checks(): List<StateBasedActionCheck> = listOf(
         DayNightCheck(cardRegistry),
+        TransformCopyCheck(cardRegistry, zones.predicateEvaluator),
         TransformAttachCheck(cardRegistry, zones.predicateEvaluator),
         EndedDurationExpiryCheck(),
         AttachedCopyExpiryCheck(cardRegistry),

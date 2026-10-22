@@ -139,53 +139,10 @@ class EachPermanentBecomesCopyOfTargetExecutor(
         var newState = state
         val events = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
         for (entityId in affected) {
-            val container = newState.getEntity(entityId) ?: continue
-            val currentCard = container.get<CardComponent>() ?: continue
-
-            // Preserve the original ownership; only copiable card characteristics change.
-            // The "except …" clause (CR 707.9) is applied by the shared [CopyExceptionApplier],
-            // the same helper the token-copy path uses, so it rides on the copy's own
-            // CardComponent and lasts exactly as long as the copy does.
-            // `isDoubleFaced` stays the copying permanent's own: layout is not a copiable value
-            // (CR 707.2), and CR 712.9's Clone/Kruin Outlaw examples turn on the copy's *own* card
-            // being double-faced, not the copied one's.
-            val copier = container.copiableCardComponent()!!
-            val copiedCard = CopyExceptionApplier.apply(targetCard, effect.exceptions, context.resolvingTriggeredAbility,
-                copier.colors, copier.baseStats)
-                .copy(ownerId = currentCard.ownerId, isDoubleFaced = currentCard.isDoubleFaced)
-
-            // If this permanent is already a copy, keep the existing pre-copy snapshot
-            // so a chain of copy effects still reverts to the printed identity on exit.
-            val existingCopyOf = container.get<CopyOfComponent>()
-            val originalCardSnapshot = existingCopyOf?.originalCardComponent ?: container.get<com.wingedsheep.engine.state.components.identity.FlippedComponent>()?.unflippedCard ?: currentCard
-            val originalDefinitionId =
-                existingCopyOf?.originalCardDefinitionId ?: currentCard.cardDefinitionId
-
-            newState = newState.updateEntity(entityId) { c ->
-                var updated = c.recordCopyLayer(copiedCard, effect.duration, context.controllerId, attachedSourceId)
-                    .withCopyIdentity(copiedCard, cardRegistry)
-                    .with(
-                        CopyOfComponent(
-                            originalCardDefinitionId = originalDefinitionId,
-                            copiedCardDefinitionId = targetCard.cardDefinitionId,
-                            originalCardComponent = originalCardSnapshot
-                        )
-                    )
-                // Tag the temporary-copy revert marker. Branch with concrete types so each is stored
-                // under its own component key (`with` is a reified generic).
-                when (effect.duration) {
-                    Duration.EndOfTurn -> updated = updated.with(RevertCopyAtEndOfTurnComponent)
-                    Duration.UntilNextEndStep -> updated = updated.with(RevertCopyAtNextEndStepComponent)
-                    Duration.UntilYourNextTurn -> updated = updated.with(
-                        RevertCopyAtYourNextTurnComponent(context.controllerId)
-                    )
-                    Duration.WhileSourceAttachedToAffected -> if (attachedSourceId != null) {
-                        updated = updated.with(CopyWhileAttachedComponent(attachedSourceId))
-                    }
-                    else -> {}
-                }
-                updated
-            }
+            newState = becomeCopyInPlace(
+                newState, entityId, targetCard, effect.exceptions, effect.duration, context.controllerId,
+                cardRegistry, context.resolvingTriggeredAbility, attachedSourceId,
+            ) ?: continue
 
             events.add(com.wingedsheep.engine.core.CopiableCharacteristicsChangedEvent(entityId))
 
@@ -208,5 +165,69 @@ class EachPermanentBecomesCopyOfTargetExecutor(
         }
 
         return EffectResult.success(newState, events)
+    }
+}
+
+/**
+ * Make the battlefield permanent [entityId] a copy of [targetCard]'s copiable values (CR 707.2),
+ * baked into its [CardComponent] the way every in-place copy is — the shared body of
+ * [EachPermanentBecomesCopyOfTargetExecutor] and the as-transforms copy
+ * ([com.wingedsheep.sdk.scripting.BecomesCopyAsTransforms]). Returns null when [entityId] has no
+ * card. Emits nothing: callers add the [com.wingedsheep.engine.core.CopiableCharacteristicsChangedEvent].
+ *
+ * The "except …" clause (CR 707.9) is applied by the shared [CopyExceptionApplier], so it rides on
+ * the copy's own CardComponent and lasts exactly as long as the copy does. `isDoubleFaced` stays the
+ * copying permanent's own: layout is not a copiable value (CR 707.2), and CR 712.9's Clone/Kruin
+ * Outlaw examples turn on the copy's *own* card being double-faced, not the copied one's.
+ */
+internal fun becomeCopyInPlace(
+    state: GameState,
+    entityId: com.wingedsheep.sdk.model.EntityId,
+    targetCard: CardComponent,
+    exceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions,
+    duration: Duration,
+    controllerId: com.wingedsheep.sdk.model.EntityId,
+    cardRegistry: CardRegistry,
+    resolvingTriggeredAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null,
+    attachedSourceId: com.wingedsheep.sdk.model.EntityId? = null,
+): GameState? {
+    val container = state.getEntity(entityId) ?: return null
+    val currentCard = container.get<CardComponent>() ?: return null
+    val copier = container.copiableCardComponent()!!
+    val copiedCard = CopyExceptionApplier.apply(targetCard, exceptions, resolvingTriggeredAbility,
+        copier.colors, copier.baseStats)
+        .copy(ownerId = currentCard.ownerId, isDoubleFaced = currentCard.isDoubleFaced)
+
+    // If this permanent is already a copy, keep the existing pre-copy snapshot
+    // so a chain of copy effects still reverts to the printed identity on exit.
+    val existingCopyOf = container.get<CopyOfComponent>()
+    val originalCardSnapshot = existingCopyOf?.originalCardComponent ?: container.get<com.wingedsheep.engine.state.components.identity.FlippedComponent>()?.unflippedCard ?: currentCard
+    val originalDefinitionId =
+        existingCopyOf?.originalCardDefinitionId ?: currentCard.cardDefinitionId
+
+    return state.updateEntity(entityId) { c ->
+        var updated = c.recordCopyLayer(copiedCard, duration, controllerId, attachedSourceId)
+            .withCopyIdentity(copiedCard, cardRegistry)
+            .with(
+                CopyOfComponent(
+                    originalCardDefinitionId = originalDefinitionId,
+                    copiedCardDefinitionId = targetCard.cardDefinitionId,
+                    originalCardComponent = originalCardSnapshot
+                )
+            )
+        // Tag the temporary-copy revert marker. Branch with concrete types so each is stored
+        // under its own component key (`with` is a reified generic).
+        when (duration) {
+            Duration.EndOfTurn -> updated = updated.with(RevertCopyAtEndOfTurnComponent)
+            Duration.UntilNextEndStep -> updated = updated.with(RevertCopyAtNextEndStepComponent)
+            Duration.UntilYourNextTurn -> updated = updated.with(
+                RevertCopyAtYourNextTurnComponent(controllerId)
+            )
+            Duration.WhileSourceAttachedToAffected -> if (attachedSourceId != null) {
+                updated = updated.with(CopyWhileAttachedComponent(attachedSourceId))
+            }
+            else -> {}
+        }
+        updated
     }
 }

@@ -610,6 +610,21 @@ data class TransformAttachToPlayerContinuation(
 ) : AnswerContinuation
 
 /**
+ * Resume after a permanent's controller chooses the card its
+ * [com.wingedsheep.sdk.scripting.BecomesCopyAsTransforms] face becomes a copy of as it transforms
+ * (Olag, Ludevic's Hubris). Raised by the state-based action pass; the resumer makes the copy, then
+ * settles any other pending transform copy before carrying on.
+ *
+ * @property permanentId The transformed permanent awaiting its copy.
+ * @property candidateIds The cards it could copy, captured at prompt time.
+ */
+@Serializable
+data class TransformCopyContinuation(
+    val permanentId: EntityId,
+    val candidateIds: List<EntityId>
+) : AnswerContinuation
+
+/**
  * Resume after a player picks X for an activated ability with an X-variable cost
  * (currently [com.wingedsheep.sdk.scripting.AbilityCost.TapXPermanents]).
  *
