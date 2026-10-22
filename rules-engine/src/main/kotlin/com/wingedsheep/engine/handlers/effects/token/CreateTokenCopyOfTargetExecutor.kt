@@ -348,11 +348,20 @@ class CreateTokenCopyOfTargetExecutor(
         // before the first one is created, one question per token. The answers re-run the whole
         // effect from the top (EnteringAttackDefenderContinuation), so an Aura copy — whose host
         // continuation re-enters here directly — keeps the default.
+        // With a named player the choice narrows to "that player or a planeswalker they control".
+        val namedDefendingPlayer = effect.attackedPlayer?.let {
+            com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
+                .resolvePlayerTarget(it, context, state)
+                ?.takeIf { player -> player in state.getOpponents(controllerId) }
+        }
         val chosenDefenders = if (effect.attacking && tokenCard.typeLine.isCreature && auraHostId == null &&
             effect.attackDefender == com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender.CONTROLLER_CHOOSES
         ) {
-            EnteringAttackDefenderChooser.defenders(state, context, controllerId, cappedCount)
-                ?: return EnteringAttackDefenderChooser.pause(state, effect, context, controllerId, cappedCount, tokenCard.name)
+            if (effect.attackedPlayer != null && namedDefendingPlayer == null) List(cappedCount) { null }
+            else EnteringAttackDefenderChooser.defenders(state, context, controllerId, cappedCount, namedDefendingPlayer)
+                ?: return EnteringAttackDefenderChooser.pause(
+                    state, effect, context, controllerId, cappedCount, tokenCard.name, namedDefendingPlayer
+                )
         } else null
         for (index in 0 until cappedCount) {
             val stateBeforeToken = newState

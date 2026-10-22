@@ -48,6 +48,72 @@
     ]
 }
 
+// Adeline, Resplendent Cathar
+{
+    "name": "Adeline, Resplendent Cathar",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Legendary Creature — Human Knight",
+    "oracleText": "Vigilance\nAdeline's power is equal to the number of creatures you control.\nWhenever you attack, for each opponent, create a 1/1 white Human creature token that's tapped and attacking that player or a planeswalker they control.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature"
+            }
+        },
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Adeline, Resplendent Cathar:1",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "WHITE"
+                        ],
+                        "creatureTypes": [
+                            "Human"
+                        ],
+                        "controller": {
+                            "type": "PlayerRef",
+                            "player": "ControllerOfSource"
+                        },
+                        "tapped": true,
+                        "attacking": true,
+                        "attackDefender": "CONTROLLER_CHOOSES",
+                        "attackedPlayer": "Controller"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "RARE",
+        "artist": "Bryan Sola",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/18092f68-b96e-4084-9eba-b240d2195d81.jpg?1783925668"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ambitious Farmhand
 {
     "name": "Ambitious Farmhand",

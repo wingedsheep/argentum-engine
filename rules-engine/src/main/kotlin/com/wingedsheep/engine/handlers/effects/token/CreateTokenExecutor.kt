@@ -150,6 +150,7 @@ class CreateTokenExecutor(
             tapped = riders.tapped,
             attacking = riders.attacking,
             attackDefender = riders.attackDefender,
+            attackedPlayer = riders.attackedPlayer,
             exileAtStep = riders.exileAtStep,
             sacrificeAtStep = riders.sacrificeAtStep,
             stampCreator = riders.stampCreator,
@@ -254,11 +255,22 @@ class CreateTokenExecutor(
 
         // CR 508.4: "its controller chooses ... as it enters" — every token's defender is settled
         // before the first one is created, one question per token. Null when an answer is owed.
+        // A named player ("attacking that player [or a planeswalker they control]") resolves once;
+        // one who left the game or isn't an opponent of the token controller is attacked by nothing.
+        val namesDefendingPlayer = effect.attacking && effect.attackedPlayer != null
+        val namedDefendingPlayer = if (namesDefendingPlayer) {
+            com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
+                .resolvePlayerTarget(effect.attackedPlayer!!, context, state)
+                ?.takeIf { it in state.getOpponents(tokenControllerId) }
+        } else null
         val chosenDefenders = if (effect.attacking &&
             effect.attackDefender == com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender.CONTROLLER_CHOOSES
         ) {
-            EnteringAttackDefenderChooser.defenders(state, context, tokenControllerId, count)
-                ?: return EnteringAttackDefenderChooser.pause(state, rootEffect, context, tokenControllerId, count, tokenName)
+            if (namesDefendingPlayer && namedDefendingPlayer == null) List(count) { null }
+            else EnteringAttackDefenderChooser.defenders(state, context, tokenControllerId, count, namedDefendingPlayer)
+                ?: return EnteringAttackDefenderChooser.pause(
+                    state, rootEffect, context, tokenControllerId, count, tokenName, namedDefendingPlayer
+                )
         } else null
 
         var newState = state
@@ -309,6 +321,7 @@ class CreateTokenExecutor(
             // combat-derived contexts.
             val defenderId = if (!effect.attacking) null
                 else if (chosenDefenders != null) chosenDefenders[indexInBatch]
+                else if (namesDefendingPlayer) namedDefendingPlayer
                 else com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
                     .defenderForEnteringAttacker(context, newState, tokenControllerId)
             if (defenderId != null) {

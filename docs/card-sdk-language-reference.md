@@ -2705,7 +2705,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   counters, abilities, tapped state and cleanup riders. Event-scoped additions (Peregrin Took's
   Food) and attached-copy replacement choices apply once to the whole batch, including across
   a paused decision. Use this for “create [token] and [token]”; `then` creates separate events.
-- `CreateToken(p, t, colors?, creatureTypes, keywords?, count?, controller?, imageUri?, name?, legendary?, tapped?, artifactToken?, enchantmentToken?, staticAbilities?, exileAtStep?, sacrificeAtStep?, attacking?, attackDefender?)` — make N creature tokens.
+- `CreateToken(p, t, colors?, creatureTypes, keywords?, count?, controller?, imageUri?, name?, legendary?, tapped?, artifactToken?, enchantmentToken?, staticAbilities?, exileAtStep?, sacrificeAtStep?, attacking?, attackDefender?, attackedPlayer?)` — make N creature tokens.
   `exileAtStep: Step?` arms the exile counterpart of the delayed trigger described below. Both the fixed
   and dynamic-count overloads expose both delayed zone-change options.
   `attacking = true` (usually with `tapped = true`) puts the tokens onto the battlefield attacking, and
@@ -2718,7 +2718,16 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   players, their planeswalkers and the battles they protect, so two tokens may attack different defenders.
   One legal choice is taken without asking; none (outside combat, or a token controller who isn't the
   attacking player — CR 506.3b) means the tokens enter but aren't attacking. It needs `attacking = true`
-  and `controller = null`, and isn't accepted inside a `CreateTokenBatch`.
+  and isn't accepted inside a `CreateTokenBatch`.
+  `attackedPlayer: EffectTarget?` (requires `attacking`) names the player: alone it is "attacking **that
+  player**" exactly; with `CONTROLLER_CHOOSES` it is "attacking that player **or a planeswalker they
+  control**" — the choice narrows to that player and their planeswalkers (silent when there's one). A
+  named player who left the game or isn't an opponent of the token controller gets no attacker (CR 508.4a).
+  "For each opponent, create a token that's tapped and attacking that player or a planeswalker they
+  control" (Adeline, Resplendent Cathar) is `ForEachPlayer(Player.EachOpponent, CreateToken(…, controller =
+  EffectTarget.PlayerRef(Player.ControllerOfSource), attacking = true, attackDefender = CONTROLLER_CHOOSES,
+  attackedPlayer = EffectTarget.Controller))` — the loop rebinds `Controller` to the visited opponent, so the
+  token's controller is named off the source.
   A third value, `RETURNED_ATTACKER`, belongs to `MoveToZoneEffect` only (token effects reject it) — see that entry.
   `numericKeywords: List<KeywordAbility.Numeric>` gives the token keywords that carry an N, which a bare
   `Keyword` in `keywords` can't — "two 3/3 green Phyrexian Beast creature tokens with toxic 1" (Goliath
@@ -2837,7 +2846,8 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   CR 508.4 default (the source's defending player, else an opponent already defending). A named player
   who has left the game or isn't one of the creator's opponents gets no attacker: the copy enters but
   never attacking (CR 508.4a). `attackDefender = EnteringAttackDefender.CONTROLLER_CHOOSES` (requires
-  `attacking`, no `attackedPlayer`, no `controller`) is CR 508.4 as printed for a bare "tapped and attacking"
+  `attacking`; with `attackedPlayer` it narrows to "that player or a planeswalker they control", as on
+  `CreateToken`) is CR 508.4 as printed for a bare "tapped and attacking"
   copy (Shaun, Father of Synths): before any copy exists, its controller picks a defending player,
   planeswalker or battle per token — the same chooser as `CreateTokenEffect.attackDefender`; one legal
   choice is taken silently, none leaves the copy unattacking. An Aura copy keeps the default.

@@ -185,16 +185,29 @@ data class CreateTokenEffect(
      * source's attack against a player and asks nothing; [EnteringAttackDefender.CONTROLLER_CHOOSES]
      * is the plain CR 508.4 reading of "tapped and attacking" with no "that player": the token's
      * controller picks a player, planeswalker or battle for each token as it enters (Caesar,
-     * Legion's Emperor). Requires [attacking] and the effect's own controller as the tokens'
-     * controller ([controller] null).
+     * Legion's Emperor). With [attackedPlayer] set, that choice narrows to "that player or a
+     * planeswalker they control". Requires [attacking]. A token controller who isn't an attacking
+     * player gets no defender at all (CR 506.3b) — the token enters but isn't attacking.
      */
     val attackDefender: EnteringAttackDefender = EnteringAttackDefender.JOIN_SOURCE,
+    /**
+     * The player an [attacking] token attacks, when the effect names one. Alone (the default
+     * [attackDefender]) it is "tapped and attacking **that player**": a player who is no longer in
+     * the game or isn't an opponent of the token's controller gets no attacker — the token enters,
+     * never attacking (CR 508.4a). With [EnteringAttackDefender.CONTROLLER_CHOOSES] it is "attacking
+     * **that player or a planeswalker they control**" (Adeline, Resplendent Cathar, inside a
+     * `ForEachPlayer(EachOpponent)` loop where it is the visited opponent): the controller picks per
+     * token among that player and their planeswalkers, and isn't asked when there's one choice.
+     * Requires [attacking].
+     */
+    val attackedPlayer: EffectTarget? = null,
 ) : Effect {
     init {
         require(attackDefender != EnteringAttackDefender.RETURNED_ATTACKER) { "RETURNED_ATTACKER is for MoveToZoneEffect only" }
-        require(attackDefender == EnteringAttackDefender.JOIN_SOURCE || (attacking && controller == null)) {
-            "attackDefender = CONTROLLER_CHOOSES needs attacking = true and the effect controller as token controller"
+        require(attackDefender == EnteringAttackDefender.JOIN_SOURCE || attacking) {
+            "attackDefender = CONTROLLER_CHOOSES needs attacking = true"
         }
+        require(attackedPlayer == null || attacking) { "attackedPlayer needs attacking = true" }
     }
 
     constructor(
@@ -696,7 +709,9 @@ data class CreateTokenCopyOfTargetEffect(
      * the engine's CR 508.4 default: the source's defending player when that is one of the
      * creator's opponents, else an opponent already defending. A specified player who is no longer
      * in the game, or who isn't one of the creator's opponents, gets no attacker — the copy still
-     * enters, but never attacking (CR 508.4a). Requires [attacking].
+     * enters, but never attacking (CR 508.4a). With [attackDefender] =
+     * [EnteringAttackDefender.CONTROLLER_CHOOSES] it reads "that player or a planeswalker they
+     * control", as on [CreateTokenEffect.attackedPlayer]. Requires [attacking].
      */
     val attackedPlayer: EffectTarget? = null,
     /**
@@ -704,9 +719,9 @@ data class CreateTokenCopyOfTargetEffect(
      * [EnteringAttackDefender]. The default joins the source's attack against a player and asks
      * nothing; [EnteringAttackDefender.CONTROLLER_CHOOSES] is CR 508.4 as printed for a bare
      * "tapped and attacking" (Shaun, Father of Synths): the copy's controller picks a defending
-     * player, planeswalker or battle per token. Needs [attacking], no [attackedPlayer], and the
-     * effect's controller as the token controller. An Aura copy (whose host is chosen first)
-     * keeps the default.
+     * player, planeswalker or battle per token, narrowed by [attackedPlayer] when set. Needs
+     * [attacking]; a copy controller who isn't an attacking player gets no defender (CR 506.3b).
+     * An Aura copy (whose host is chosen first) keeps the default.
      */
     val attackDefender: EnteringAttackDefender = EnteringAttackDefender.JOIN_SOURCE,
     /**
@@ -726,9 +741,8 @@ data class CreateTokenCopyOfTargetEffect(
     init {
         require(attackedPlayer == null || attacking) { "attackedPlayer needs attacking = true" }
         require(attackDefender != EnteringAttackDefender.RETURNED_ATTACKER) { "RETURNED_ATTACKER is for MoveToZoneEffect only" }
-        require(attackDefender == EnteringAttackDefender.JOIN_SOURCE ||
-            (attacking && attackedPlayer == null && controller == null)) {
-            "attackDefender = CONTROLLER_CHOOSES needs attacking = true, no attackedPlayer and the effect controller as token controller"
+        require(attackDefender == EnteringAttackDefender.JOIN_SOURCE || attacking) {
+            "attackDefender = CONTROLLER_CHOOSES needs attacking = true"
         }
         require((basePower == null) == (baseToughness == null)) {
             "basePower and baseToughness are set together"
