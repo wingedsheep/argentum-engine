@@ -726,6 +726,12 @@ class StaticAbilityHandler(
                 modification = Modification.GrantStaticAbility(ability),
                 affectsFilter = AffectsFilter.Self,
             )
+            // Read at every targeting site from the holder's projected statics
+            // (UntargetableByRules.zoneLocks), so losing all abilities lifts the lock.
+            is com.wingedsheep.sdk.scripting.CardsInZonesCantBeTargeted -> ContinuousEffectData(
+                modification = Modification.GrantStaticAbility(ability),
+                affectsFilter = AffectsFilter.Self,
+            )
             is com.wingedsheep.sdk.scripting.GrantStaticAbility -> ContinuousEffectData(
                 modification = Modification.GrantStaticAbility(ability.ability),
                 affectsFilter = convertGroupFilter(ability.filter),

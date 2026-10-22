@@ -1175,8 +1175,8 @@ Families:
 - `EventPattern.CardRevealedFromDrawEvent(cardFilter: GameObjectFilter?)` — When a card is revealed from the first draw of a turn.
 - `EventPattern.CardsLeftYourGraveyardEvent(filter: GameObjectFilter)` — Whenever one or more cards matching filter leave your graveyard.
 - `EventPattern.CardsPutIntoExileEvent(fromZones: Set<Zone>, filter: GameObjectFilter, includeTokens: Boolean)` — Whenever one or more cards matching filter are put into exile from any of fromZones.
+- `EventPattern.CardsPutIntoGraveyardEvent(filter: GameObjectFilter, firstTimeEachTurn: Boolean, player: Player)` — Whenever one or more cards matching filter are put into your graveyard from anywhere.
 - `EventPattern.CardsPutIntoGraveyardFromLibraryEvent(filter: GameObjectFilter)` — Whenever one or more cards matching filter are put into your graveyard from your library.
-- `EventPattern.CardsPutIntoYourGraveyardEvent(filter: GameObjectFilter, firstTimeEachTurn: Boolean)` — Whenever one or more cards matching filter are put into your graveyard from anywhere.
 - `EventPattern.CaseSolvedEvent(player: Player)` — Whenever player solves a Case (CR 719.3a) — fires as that Case's "To solve" trigger resolves and the designation is stamped, which is exactly what the printed ruling for Case File Auditor says ("tr…
 - `EventPattern.CastThisSpellEvent` — When you cast this spell — a "cast trigger" (CR 603.2) that fires on the spell's *own* cast while it is on the stack; the ability travels with the spell.
 - `EventPattern.ChampionedEvent` — When a permanent is championed with this permanent (CR 702.72c) — "a permanent is 'championed' by another permanent if the latter exiles the former as the direct result of a champion ability." Mist…
@@ -1818,6 +1818,7 @@ Families:
 - `CantCastSpellsSharingColorWithLastCast` — Players can't cast a spell that shares a color with the spell most recently cast this turn.
 - `CantEnterTheBattlefield(filter: GameObjectFilter, fromZones: Set<Zone>?)` — Cards matching filter can't enter the battlefield from fromZones — an entry prohibition (CR 101.2: the "can't" wins over whatever effect directs the move).
 - `CantReceiveCounters(filter: GroupFilter)` — Prevents a permanent from having counters put on it.
+- `CardsInZonesCantBeTargeted(zones: Set<Zone>, filter: GameObjectFilter)` — Cards matching filter in zones can't be the targets of spells or abilities — "Cards in graveyards can't be the targets of spells or abilities" (Ground Seal; Dennick, Pious Apprentice).
 - `CastSpellTypesFromTopOfLibrary(filter: GameObjectFilter, maxCastsPerTurn: Int?, additionalCost: AdditionalCost?)` — You may cast spells matching a filter from the top of your library.
 - `ChangeAllColorWordsToChosenColor` — "All instances of color words in the text of spells and permanents are changed to the chosen color word." (Swirl the Mists) A global Layer 3 text-changing effect (CR 613.1c, CR 612).
 - `CompositeStaticAbility(abilities: List<StaticAbility>)` — A single static ability whose one continuous effect spans multiple Rule 613 layers, expressed as a bundle of component static abilities that share one identity (CR 613.6).

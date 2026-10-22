@@ -4,7 +4,10 @@ import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.CardsInZonesCantBeTargeted
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.UntargetableBy
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
@@ -93,6 +96,54 @@ object UntargetableByRules {
         if (!isBlocked(state, targetId, keywords)) return null
         val name = state.getEntity(targetId)?.get<CardComponent>()?.name ?: "That permanent"
         return "$name can't be the target of this ${if (targetingSourceType == TargetingSourceType.SPELL) "spell" else "ability"}"
+    }
+
+    /**
+     * The zone locks in force — every [CardsInZonesCantBeTargeted] ("Cards in graveyards can't be
+     * the targets of spells or abilities") among the battlefield's projected static abilities,
+     * with the permanent that holds it. Read off projection, so a printed lock, a granted one and
+     * ability loss are all handled the way projection handles them. Empty in the common case;
+     * callers compute it once per targeting attempt and only consult it for off-battlefield cards.
+     */
+    fun zoneLocks(state: GameState): List<Pair<EntityId, CardsInZonesCantBeTargeted>> {
+        val projected = state.projectedState
+        var locks: MutableList<Pair<EntityId, CardsInZonesCantBeTargeted>>? = null
+        for (id in state.getBattlefield()) {
+            for (ability in projected.getStaticAbilities(id)) {
+                if (ability is CardsInZonesCantBeTargeted) {
+                    (locks ?: mutableListOf<Pair<EntityId, CardsInZonesCantBeTargeted>>().also { locks = it })
+                        .add(id to ability)
+                }
+            }
+        }
+        return locks ?: emptyList()
+    }
+
+    /**
+     * True when one of [locks] (from [zoneLocks]) forbids targeting the card [cardId] where it
+     * is now. Players, battlefield permanents and spells are never in a locked zone.
+     */
+    fun isZoneLocked(
+        state: GameState,
+        cardId: EntityId,
+        locks: List<Pair<EntityId, CardsInZonesCantBeTargeted>>,
+        predicateEvaluator: PredicateEvaluator
+    ): Boolean {
+        if (locks.isEmpty()) return false
+        val zone = state.logicalZone(cardId)?.zoneType ?: return false
+        return locks.any { (holderId, lock) ->
+            zone in lock.zones && (lock.filter == GameObjectFilter.Any || predicateEvaluator.matches(
+                state, state.projectedState, cardId, lock.filter,
+                PredicateContext(controllerId = state.projectedState.getController(holderId) ?: holderId, sourceId = holderId)
+            ))
+        }
+    }
+
+    /** Why the card [cardId] can't be targeted where it is, or null — [zoneLocks] and [isZoneLocked] in one. */
+    fun zoneLockError(state: GameState, cardId: EntityId, predicateEvaluator: PredicateEvaluator): String? {
+        if (!isZoneLocked(state, cardId, zoneLocks(state), predicateEvaluator)) return null
+        val name = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "That card"
+        return "$name can't be the target of spells or abilities where it is"
     }
 
     /**

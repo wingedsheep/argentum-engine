@@ -944,7 +944,7 @@ class TriggerMatcher(
             // Batching trigger — handled in detectLibraryToGraveyardBatchTriggers
             is EventPattern.CardsPutIntoGraveyardFromLibraryEvent -> false
             // Batching trigger handled separately by detectAnyToGraveyardBatchTriggers
-            is EventPattern.CardsPutIntoYourGraveyardEvent -> false
+            is EventPattern.CardsPutIntoGraveyardEvent -> false
             // Leave-graveyard batch triggers are handled by detectCardsLeftGraveyardBatchTriggers
             is EventPattern.CardsLeftYourGraveyardEvent -> false
             // Exile batch triggers are handled by detectCardsPutIntoExileBatchTriggers

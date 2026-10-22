@@ -4867,7 +4867,7 @@
             {
                 "id": "Crawling Infestation:2",
                 "trigger": {
-                    "type": "CardsPutIntoYourGraveyardEvent",
+                    "type": "CardsPutIntoGraveyardEvent",
                     "filter": "creature"
                 },
                 "binding": "ANY",

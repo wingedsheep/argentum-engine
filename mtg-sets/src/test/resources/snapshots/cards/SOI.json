@@ -1392,7 +1392,7 @@
             {
                 "id": "Crawling Sensation:2",
                 "trigger": {
-                    "type": "CardsPutIntoYourGraveyardEvent",
+                    "type": "CardsPutIntoGraveyardEvent",
                     "filter": "land",
                     "firstTimeEachTurn": true
                 },
@@ -6571,7 +6571,7 @@
             {
                 "id": "The Gitrog Monster:2",
                 "trigger": {
-                    "type": "CardsPutIntoYourGraveyardEvent",
+                    "type": "CardsPutIntoGraveyardEvent",
                     "filter": "land"
                 },
                 "binding": "ANY",

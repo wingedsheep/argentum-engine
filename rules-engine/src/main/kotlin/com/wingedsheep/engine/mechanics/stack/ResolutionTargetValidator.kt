@@ -429,6 +429,8 @@ internal class ResolutionTargetValidator(
         predicateContext: PredicateContext
     ): Boolean {
         if (target.cardId !in state.getZone(ZoneKey(target.ownerId, target.zone))) return false
+        // CardsInZonesCantBeTargeted (Ground Seal) entering after the target was chosen (CR 608.2b).
+        if (UntargetableByRules.zoneLockError(state, target.cardId, predicateEvaluator) != null) return false
         val filter = extractTargetFilter(getRequirementForTargetIndex(index, targetRequirements)) ?: return true
         val cardContext = predicateContext.copy(
             ownerId = target.ownerId,

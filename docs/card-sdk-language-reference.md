@@ -7608,7 +7608,7 @@ only, `beginningOf(step)` (the enchanted creature's controller's step) and
 
 **Batch verbs** (`oneOrMore` / `oneOrMoreOther`): `enter()`, `die()`, `leaveWithoutDying()`,
 `dealCombatDamageToAPlayer()`, `dealCombatDamageToAPlayerOrBattle()`, `dealCombatDamageToYou()`, `becomeTapped(reason?)`, `becomeUntapped()`,
-`putIntoYourGraveyard(fromLibrary?, firstTimeEachTurn?)`, `leaveYourGraveyard()`, `putIntoExile(from, includeTokens)`.
+`putIntoYourGraveyard(fromLibrary?, firstTimeEachTurn?)`, `putIntoGraveyards()`, `leaveYourGraveyard()`, `putIntoExile(from, includeTokens)`.
 For `enter()` and `die()`, a filter with no controller predicate means "you control"; say
 `.youControl()` anyway.
 
@@ -8291,6 +8291,10 @@ in the repo today):
 - `Triggers.you.revealsFirstDraw()` — generic reveal-from-draw trigger.
 - `Triggers.oneOrMore(filter).putIntoYourGraveyard()` — when matching cards enter your yard.
 - `Triggers.oneOrMore(GameObjectFilter.Permanent).putIntoYourGraveyard()` — only permanent cards.
+- `Triggers.oneOrMore(GameObjectFilter.Creature).putIntoGraveyards()` — "… are put into **graveyards** from anywhere":
+  any player's graveyard, still one trigger per batch however many graveyards it touched (Dennick, Pious Apparition,
+  with `oncePerTurn = true`). Both are `CardsPutIntoGraveyardEvent`, whose `player` axis is `Player.You` (default),
+  `Player.Any` or `Player.EachOpponent`; tokens never count (they aren't cards).
 - `Triggers.oneOrMore(GameObjectFilter.Land).putIntoYourGraveyard(firstTimeEachTurn = true)` — "… from anywhere for the first
   time each turn" (Crawling Sensation): only the batch carrying the turn's first matching card into your graveyard. Turn
   history, not a cap — a land that arrived earlier in the turn, even before the source was on the battlefield, closes the
@@ -9908,6 +9912,15 @@ staticAbility {
   Not controller-gated (binds its own controller's spells and abilities too). Projected as one keyword per
   quality; enforced at legal-target enumeration, cast/activation validation and the resolution re-check by
   the shared engine helper `UntargetableByRules`.
+- `CardsInZonesCantBeTargeted(zones = setOf(Zone.GRAVEYARD), filter = GameObjectFilter.Any)` — "Cards in
+  graveyards can't be the targets of spells or abilities" (Ground Seal; Dennick, Pious Apprentice): cards
+  matching `filter` in `zones` can't be chosen as targets by anything — spells or abilities, its own
+  controller's included. Only *targeting* is stopped: an effect that picks a graveyard card without
+  targeting it, or a cast from a graveyard (flashback, disturb), is unaffected. A graveyard card has no
+  projection entry to carry a keyword, so unlike `CantBeTargetedBy` this is read off the holder's
+  projected statics (`UntargetableByRules.zoneLocks`) at the same three sites — legal-target enumeration,
+  cast/activation validation, and the resolution re-check (a lock arriving after targeting makes that
+  target illegal, CR 608.2b) — and lifts when the holder loses all its abilities.
 - `GrantCardType(cardType, filter)` / `RemoveCardType(cardType, filter)` — Layer 4 type-changing statics that add or
   remove a card type (e.g. `"CREATURE"`). `RemoveCardType` backs Impending's "isn't a creature while it has a time
   counter" (wrapped in a `ConditionalStaticAbility`); reuse it for any "it's no longer a [type]" effect — the Theros

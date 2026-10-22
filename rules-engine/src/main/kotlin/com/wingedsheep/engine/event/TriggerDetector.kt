@@ -2717,7 +2717,8 @@ class TriggerDetector(
      * Detect "whenever one or more [filter] cards are put into your graveyard from anywhere"
      * batching triggers. Groups all to-graveyard zone changes by the owner of the moved card
      * and fires matching triggers at most once per controller, regardless of how many cards
-     * were moved or from which source zones.
+     * were moved or from which source zones. The trigger's `player` picks whose graveyards
+     * count: yours, any ("graveyards" — still once per batch), or an opponent's.
      */
     private fun detectAnyToGraveyardBatchTriggers(
         state: GameState,
@@ -2737,10 +2738,15 @@ class TriggerDetector(
         for (entry in index.getEntitiesForCategory(TriggerCategory.ANY_TO_GRAVEYARD)) {
             for (ability in entry.abilities) {
                 val trigger = ability.trigger
-                if (trigger !is EventPattern.CardsPutIntoYourGraveyardEvent) continue
+                if (trigger !is EventPattern.CardsPutIntoGraveyardEvent) continue
 
                 val controllerId = entry.controllerId
-                val ownerEvents = toGravByOwner[controllerId] ?: continue
+                val ownerEvents = when (trigger.player) {
+                    Player.Any -> toGravByOwner.values.flatten()
+                    Player.EachOpponent -> toGravByOwner.filterKeys { state.isOpponentOf(it, controllerId) }.values.flatten()
+                    else -> toGravByOwner[controllerId] ?: continue
+                }
+                if (ownerEvents.isEmpty()) continue
 
                 // Check if any of the moved cards match the filter
                 val hasMatch = ownerEvents.any { event ->

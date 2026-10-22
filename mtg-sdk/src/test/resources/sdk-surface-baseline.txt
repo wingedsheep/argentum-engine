@@ -952,8 +952,8 @@ EventPattern.CardPlayedFromPermissionEvent — EventPattern
 EventPattern.CardRevealedFromDrawEvent — EventPattern
 EventPattern.CardsLeftYourGraveyardEvent — EventPattern
 EventPattern.CardsPutIntoExileEvent — EventPattern
+EventPattern.CardsPutIntoGraveyardEvent — EventPattern
 EventPattern.CardsPutIntoGraveyardFromLibraryEvent — EventPattern
-EventPattern.CardsPutIntoYourGraveyardEvent — EventPattern
 EventPattern.CaseSolvedEvent — EventPattern
 EventPattern.CastThisSpellEvent — EventPattern
 EventPattern.ChampionedEvent — EventPattern
@@ -1639,6 +1639,7 @@ CardPredicate.SharesColorWithTriggeringMana — CardPredicate — C.A.M.P. — C
 CardPredicate.WouldDestroy — CardPredicate — Equinox — CardPredicate.TargetsMatching, CardPredicate.TargetsPlayer — both read only a stack object's chosen targets; "would destroy" reads what its effect does (a "destroy all lands" sweep has no target, and "destroy target artifact or land" aimed at an artifact targets nothing it destroys as a land), so it previews the effect tree rather than the TargetsComponent
 CardSource.Entity — CardSource — Infinite Authority — CardSource.Self, CardSource.TriggeringEntity (both migrated here and deleted) — each gathered one fixed reference; the reference is the axis, so "the first creature" (EffectTarget.EnchantedCreature, read with the Aura's last-known host) is a value of it rather than a third sibling (no net new leaf)
 CardSource.SacrificedThisWay — CardSource — Sword of the Ages — CardSource.ExiledAsCost, CardSource.FromZone — ExiledAsCost reads the exile-cost record and filters to exile, a different list and zone; FromZone scans a whole zone and can only exclude the sacrificed cards, never select them
+CardsInZonesCantBeTargeted — StaticAbility — Dennick, Pious Apprentice — CantBeTargetedBy, CantEnterTheBattlefield — CantBeTargetedBy is projected as a keyword onto battlefield permanents through a GroupFilter, and a graveyard card has no projection entry to carry one; CantEnterTheBattlefield is the same printer-owned zone lock for a different action (entering the battlefield), and "can't be targeted" isn't an axis of entry
 ChangeOwnershipEffect — Effect — Darkpact — GainControlEffect, ExchangeControlEffect — both change control, a Layer 2 continuous effect on a permanent with a duration; ownership is no layer, reaches cards in any zone (Darkpact's is in the ante) and never reverts, and only the ante cards change it (CR 407.3)
 ChooseSpellCastThisTurnEffect — Effect — Backdraft — StoreNumberEffect, ChooseOptionEffect — StoreNumber evaluates a DynamicAmount with no player choice, and ChooseOption picks a string from a fixed option family into chosenValues; choosing one of a player's cast spells this turn and storing a number off its cast record is neither
 CompanionCondition.DeckSizeAboveMinimum — CompanionCondition — none yet (Yorion, Sky Nomad prints it) — CompanionCondition.EachCard, CompanionCondition.DistinctNames — Yorion counts the starting deck against the format's minimum size, a property of the deck as a whole that no per-card filter can read

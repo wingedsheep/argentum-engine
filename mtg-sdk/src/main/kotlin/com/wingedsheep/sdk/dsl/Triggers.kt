@@ -794,8 +794,17 @@ class BatchTriggerSubject internal constructor(
         }
         return spec(
             if (fromLibrary) CardsPutIntoGraveyardFromLibraryEvent(filter = filter)
-            else CardsPutIntoYourGraveyardEvent(filter = filter, firstTimeEachTurn = firstTimeEachTurn)
+            else CardsPutIntoGraveyardEvent(filter = filter, firstTimeEachTurn = firstTimeEachTurn)
         )
+    }
+
+    /**
+     * "are put into graveyards from anywhere" — any player's graveyard, one trigger per batch
+     * (Dennick, Pious Apparition). [CardsPutIntoGraveyardEvent] with `player = Player.Any`.
+     */
+    fun putIntoGraveyards(): TriggerSpec {
+        noOther("putIntoGraveyards")
+        return spec(CardsPutIntoGraveyardEvent(filter = filter, player = Player.Any))
     }
 
     /**

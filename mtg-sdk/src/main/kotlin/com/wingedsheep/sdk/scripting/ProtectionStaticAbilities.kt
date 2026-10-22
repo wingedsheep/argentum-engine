@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.effects.protectionDescription
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.text.TextReplacer
@@ -527,6 +528,39 @@ data class CantBeTargetedBy(
         val newQuality = quality.applyTextReplacement(replacer)
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newQuality !== quality || newFilter !== filter) copy(quality = newQuality, filter = newFilter) else this
+    }
+}
+
+/**
+ * Cards matching [filter] in [zones] can't be the targets of spells or abilities — "Cards in
+ * graveyards can't be the targets of spells or abilities" (Ground Seal; Dennick, Pious Apprentice).
+ *
+ * Closest neighbours: [CantBeTargetedBy] is projected as a keyword onto *battlefield permanents*
+ * (a [GroupFilter] scope) and scoped by a [UntargetableBy] quality, and [CantEnterTheBattlefield]
+ * is the same zone-scoped, printer-owned shape for a different action (entering the battlefield).
+ * A card in a graveyard has no projection entry to carry a keyword, so this lock is read off the
+ * printing permanent's projected statics at each targeting site instead — which is also why it
+ * stops working when that permanent loses its abilities. Not controller-gated, and covers every
+ * graveyard, its controller's own included. Choosing a card without targeting it ("return a card
+ * from your graveyard") is untouched.
+ *
+ * @property zones The zones whose cards are untargetable.
+ * @property filter Which cards in those zones, matched where they are.
+ */
+@SerialName("CardsInZonesCantBeTargeted")
+@Serializable
+data class CardsInZonesCantBeTargeted(
+    val zones: Set<Zone> = setOf(Zone.GRAVEYARD),
+    val filter: GameObjectFilter = GameObjectFilter.Any
+) : StaticAbility {
+    override val description: String = buildString {
+        append(if (filter == GameObjectFilter.Any) "Cards" else "${filter.description.replaceFirstChar { it.uppercase() }} cards")
+        append(" in ${zonePhrase(zones, "and")} can't be the targets of spells or abilities")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
     }
 }
 

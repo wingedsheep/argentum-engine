@@ -755,7 +755,7 @@ object Triggers {
                 "whenever one or more cards are put into your graveyard from anywhere",
                 Filters.pluralCards,
                 // The first-time-each-turn variant is a different sentence; this row doesn't read it.
-                { (it as? EventPattern.CardsPutIntoYourGraveyardEvent)?.takeUnless { e -> e.firstTimeEachTurn }?.filter },
+                { (it as? EventPattern.CardsPutIntoGraveyardEvent)?.takeUnless { e -> e.firstTimeEachTurn || e.player != Player.You }?.filter },
             ) { SdkTriggers.oneOrMore(it).putIntoYourGraveyard() },
             // The library variant publishes only two fixed vals rather than a function of the
             // filter, so this row writes the `TriggerSpec` the way the two hand-written cards do.

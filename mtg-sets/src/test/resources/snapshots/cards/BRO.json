@@ -17965,7 +17965,7 @@
             {
                 "id": "Titania, Voice of Gaea:1",
                 "trigger": {
-                    "type": "CardsPutIntoYourGraveyardEvent",
+                    "type": "CardsPutIntoGraveyardEvent",
                     "filter": "land"
                 },
                 "binding": "ANY",

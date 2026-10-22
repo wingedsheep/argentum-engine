@@ -21,7 +21,7 @@ import io.kotest.matchers.shouldBe
  *   Whenever one or more permanent cards are put into your graveyard from anywhere
  *   while this creature has a -1/-1 counter on it, remove a -1/-1 counter from this creature.
  *
- * Exercises the new batching trigger event CardsPutIntoYourGraveyardEvent,
+ * Exercises the new batching trigger event CardsPutIntoGraveyardEvent,
  * its IsPermanent filter, and the SourceHasCounter intervening-if condition.
  */
 class MoonshadowTest : FunSpec({

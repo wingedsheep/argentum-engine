@@ -509,6 +509,11 @@ class TargetValidator(
             )?.let { return it }
         }
 
+        // CardsInZonesCantBeTargeted (Ground Seal) — a card in a locked zone.
+        if (target is ChosenTarget.Card) {
+            UntargetableByRules.zoneLockError(state, target.cardId, predicateEvaluator)?.let { return it }
+        }
+
         // Check hexproof from a quality — color, non-color, card type (Rule 702.11d)
         val hexproofError = checkHexproofFrom(state, target, casterId, sourceColors, sourceId)
         if (hexproofError != null) return hexproofError

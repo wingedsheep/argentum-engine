@@ -13947,7 +13947,7 @@
             {
                 "id": "Robot Domination:1",
                 "trigger": {
-                    "type": "CardsPutIntoYourGraveyardEvent",
+                    "type": "CardsPutIntoGraveyardEvent",
                     "filter": "creature"
                 },
                 "binding": "ANY",

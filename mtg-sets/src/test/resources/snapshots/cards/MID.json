@@ -1913,6 +1913,104 @@
     ]
 }
 
+// Dennick, Pious Apprentice
+{
+    "name": "Dennick, Pious Apprentice",
+    "manaCost": "{W}{U}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Lifelink\nCards in graveyards can't be the targets of spells or abilities.\nDisturb {2}{W}{U} (You may cast this card from your graveyard transformed for its disturb cost.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "LIFELINK",
+        "DISTURB"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Disturb",
+            "cost": "{2}{W}{U}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            "CardsInZonesCantBeTargeted"
+        ]
+    },
+    "backFace": {
+        "name": "Dennick, Pious Apparition",
+        "manaCost": "",
+        "typeLine": "Legendary Creature — Spirit Soldier",
+        "oracleText": "Flying\nWhenever one or more creature cards are put into graveyards from anywhere, investigate. This ability triggers only once each turn. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")\nIf Dennick would be put into a graveyard from anywhere, exile it instead.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 2
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Dennick, Pious Apparition:1",
+                    "trigger": {
+                        "type": "CardsPutIntoGraveyardEvent",
+                        "filter": "creature",
+                        "player": "Any"
+                    },
+                    "binding": "ANY",
+                    "effect": "Investigate",
+                    "oncePerTurn": true,
+                    "descriptionOverride": "Whenever one or more creature cards are put into graveyards from anywhere, investigate. This ability triggers only once each turn."
+                }
+            ],
+            "replacementEffects": [
+                {
+                    "type": "RedirectZoneChange",
+                    "newDestination": "Exile",
+                    "appliesTo": {
+                        "type": "ZoneChangeEvent",
+                        "to": "Graveyard"
+                    },
+                    "selfOnly": true
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "217",
+            "rarity": "RARE",
+            "artist": "Chris Rallis",
+            "imageUri": "https://cards.scryfall.io/normal/back/3/5/35cf2d72-931f-47b1-a1b4-916f0383551a.jpg?1783925570"
+        },
+        "colorIdentityOverride": [
+            "WHITE",
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "WHITE",
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "rarity": "RARE",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/35cf2d72-931f-47b1-a1b4-916f0383551a.jpg?1783925570",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "The second ability of Dennick, Pious Apprentice affects only spells and abilities that actually target cards in graveyards. Spells and abilities that affect cards in graveyards without targeting them may still affect them, move them to other zones, and so on."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Deserted Beach
 {
     "name": "Deserted Beach",

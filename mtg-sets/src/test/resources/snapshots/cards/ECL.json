@@ -12407,7 +12407,7 @@
             {
                 "id": "Moonshadow:1",
                 "trigger": {
-                    "type": "CardsPutIntoYourGraveyardEvent",
+                    "type": "CardsPutIntoGraveyardEvent",
                     "filter": "permanent"
                 },
                 "binding": "ANY",
