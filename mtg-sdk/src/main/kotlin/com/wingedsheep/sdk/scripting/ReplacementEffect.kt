@@ -1936,6 +1936,59 @@ data class LifeLossFloor(
 }
 
 /**
+ * "If your life total would be reduced to 0 or less, instead [instead]" — Enduring Angel.
+ *
+ * Replaces **every** reduction of a matching player's life total that would leave it at 0 or less:
+ * damage (combat and noncombat, CR 120.3a), "loses N life" effects, life payments, and effects that
+ * set or exchange a life total (CR 119.5 — setting a life total lower is a loss of life). The whole
+ * reduction is replaced: the life total doesn't change, and [instead] runs in its place as part of
+ * the same replacement — no stack, no priority, before state-based actions — with this permanent as
+ * its source and its controller as "you". The damage itself is still dealt, so lifelink and
+ * damage-dealt triggers see it in full. Simultaneous reductions (several attackers' combat damage)
+ * are one event: once it has applied, the rest of that event's reductions of the same player are
+ * absorbed too, and [instead] runs once.
+ *
+ * Enduring Angel: `ReplaceLifeReductionToZero(instead = IfYouDo(Transform(Self), SetLifeTotal(3),
+ * otherwise = SetLifeTotal(3) then LoseGame, successCriterion = Transformed))`.
+ *
+ * Why not an existing type: [LifeLossFloor] caps only damage-caused loss and writes a number — it
+ * can't run an effect or see payments and set-life effects; [ModifyLifeLoss] scales an amount that
+ * still happens. Neither has a threshold on the *resulting* life total.
+ *
+ * @param instead What happens in place of the reduction.
+ * @param restrictions Additional [Condition]s gating when this applies, evaluated against the
+ *        source's controller; ALL must hold.
+ * @param appliesTo Life-loss event filter (whose life total is protected; default "your").
+ */
+@SerialName("ReplaceLifeReductionToZero")
+@Serializable
+data class ReplaceLifeReductionToZero(
+    val instead: Effect,
+    override val restrictions: List<Condition> = emptyList(),
+    override val appliesTo: EventPattern = EventPattern.LifeLossEvent(Player.You)
+) : ReplacementEffect {
+    override val description: String = buildString {
+        append("If ")
+        when ((appliesTo as? EventPattern.LifeLossEvent)?.player) {
+            Player.You -> append("your")
+            Player.EachOpponent -> append("an opponent's")
+            else -> append("a player's")
+        }
+        append(" life total would be reduced to 0 or less, instead ")
+        append(instead.description.replaceFirstChar { it.lowercase() })
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val newInstead = instead.applyTextReplacement(replacer)
+        val newAppliesTo = appliesTo.applyTextReplacement(replacer)
+        val newRestrictions = restrictions.map { it.applyTextReplacement(replacer) }
+        val anyChanged = newInstead !== instead || newAppliesTo !== appliesTo ||
+            newRestrictions.zip(restrictions).any { (n, o) -> n !== o }
+        return if (anyChanged) copy(instead = newInstead, appliesTo = newAppliesTo, restrictions = newRestrictions) else this
+    }
+}
+
+/**
  * Floor the loyalty a planeswalker keeps when damage would remove its loyalty counters (CR 120.3c,
  * CR 306.8): if damage matching [appliesTo] would leave the planeswalker with fewer than [floor]
  * loyalty counters, only enough counters are removed to leave [floor] (none, if it already has

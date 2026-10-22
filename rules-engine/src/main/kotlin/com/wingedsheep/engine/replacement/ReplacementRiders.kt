@@ -28,6 +28,9 @@ import kotlinx.serialization.Serializable
  * @property amount how much damage this application prevented; 0 where nothing is counted
  * @property countersRemoved how many counters this application removed
  *   ([com.wingedsheep.sdk.scripting.PreventDamageByRemovingCounter.onRemoved]); 0 elsewhere
+ * @property replacesLifeReduction this rider is a [com.wingedsheep.sdk.scripting.ReplaceLifeReductionToZero]
+ *   application whose [subjectId] is the player whose life total was protected; while it is pending,
+ *   further reductions of that total are part of the same replaced event
  */
 @Serializable
 data class PendingReplacementRider(
@@ -37,6 +40,7 @@ data class PendingReplacementRider(
     val subjectId: EntityId,
     val amount: Int = 0,
     val countersRemoved: Int = 0,
+    val replacesLifeReduction: Boolean = false,
     val replacementChain: Set<ReplacementEffectIdentity>? = null
 )
 

@@ -65,7 +65,10 @@ class SetLifeTotalExecutor(
                 continue
             }
             if (newLife != currentLife) {
-                newState = newState.withLifeTotal(playerId, newLife)
+                val (written, writtenLife) = DamageUtils.writeLifeReduction(newState, playerId, currentLife, newLife,
+                    amountEvaluator.predicates)
+                newState = written
+                if (writtenLife == currentLife) continue
 
                 val reason = if (newLife > currentLife) LifeChangeReason.LIFE_GAIN else LifeChangeReason.LIFE_LOSS
                 events.add(LifeChangedEvent(playerId, currentLife, newLife, reason))

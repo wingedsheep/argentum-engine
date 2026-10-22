@@ -1579,6 +1579,7 @@ Families:
 - `ReplaceDrawWith(replacementEffect: Effect, optional: Boolean, appliesTo: EventPattern, restrictions: List<Condition>)` — Replace drawing with another effect.
 - `ReplaceLifeGainWith(replacementEffect: Effect, appliesTo: EventPattern.LifeGainEvent, restrictions: List<Condition>)` — Replace a life-gain event with an effect, without gaining life or using the stack.
 - `ReplaceLifePaymentWithLibraryExile(appliesTo: EventPattern)` — A life *payment* becomes an exile of that many cards off the top of the payer's library, so long as the library is deep enough to cover it.
+- `ReplaceLifeReductionToZero(instead: Effect, restrictions: List<Condition>, appliesTo: EventPattern)` — "If your life total would be reduced to 0 or less, instead instead" — Enduring Angel.
 - `ReplaceTokenCreationWithAttachedCopy(optional: Boolean, oncePerTurn: Boolean, attachmentVerb: String, appliesTo: EventPattern)` — Replace token creation with creating token copies of the permanent this source is attached to.
 - `ReplaceTokenCreationWithToken(tokens: List<Effect>, appliesTo: EventPattern, optional: Boolean)` — "If one or more filtered tokens would be created under your control, that many token are created instead." Substitutes a *different* token for every token of the creation event the appliesTo filter…
 - `SetMinimumDamage(minAmount: Int, dynamicMinimum: DynamicAmount?, appliesTo: EventPattern)` — Raise damage to a minimum amount — the floor mirror of CapDamage.
@@ -1976,6 +1977,7 @@ Families:
 - `SuccessCriterion.CountersRemoved` — Action succeeded iff the gated action actually *removed a counter* — at least one `CountersRemovedEvent` with a positive amount was emitted during the action.
 - `SuccessCriterion.DamageDealt(recipient: DamageRecipient)` — Action succeeded iff the gated action actually *dealt damage* — at least one point of damage was dealt by the effect's source during the action (a `DamageDealtEvent` with `amount > 0` whose source…
 - `SuccessCriterion.PermanentsSacrificed` — Action succeeded iff the gated action actually *sacrificed a permanent* — at least one `PermanentsSacrificedEvent` carrying a non-empty permanent list was emitted during the action.
+- `SuccessCriterion.Transformed` — Action succeeded iff the gated action actually *transformed a permanent* — a `TransformedEvent` was emitted during the action (CR 701.27).
 - `SuccessCriterion.TurnedFaceUp` — Action succeeded iff the gated action actually *turned a permanent face up* — a `TurnFaceUpEvent` was emitted during the action.
 
 ## TargetRequirement

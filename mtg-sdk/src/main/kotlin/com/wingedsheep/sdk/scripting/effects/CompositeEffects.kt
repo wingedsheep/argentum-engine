@@ -536,6 +536,21 @@ sealed interface SuccessCriterion {
     @SerialName("SuccessCriterion.TurnedFaceUp")
     @Serializable
     data object TurnedFaceUp : SuccessCriterion
+
+    /**
+     * Action succeeded iff the gated action actually *transformed a permanent* — a
+     * `TransformedEvent` was emitted during the action (CR 701.27). Transforming is not a zone move,
+     * so [Auto] can't infer it, and [Always] would report success for the cases the rules call
+     * failures: a permanent that isn't a transforming double-faced permanent (a token or
+     * single-faced copy) doesn't transform (CR 701.27b), and a daybound/nightbound permanent can't
+     * transform except by its own keyword.
+     *
+     * Enduring Angel: "instead transform this creature and your life total becomes 3. Then if this
+     * creature didn't transform this way, you lose the game."
+     */
+    @SerialName("SuccessCriterion.Transformed")
+    @Serializable
+    data object Transformed : SuccessCriterion
 }
 
 /**

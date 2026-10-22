@@ -162,7 +162,7 @@ class DiscardAndDrawContinuationResumer(
 
         // All players have discarded - apply life loss
         val lifeLossResult = EachPlayerDiscardsOrLoseLifeExecutor.applyLifeLoss(
-            newState, newDiscardedCreature, continuation.lifeLoss
+            newState, newDiscardedCreature, continuation.lifeLoss, services.predicateEvaluator
         )
 
         return ExecutionResult(
@@ -181,7 +181,7 @@ class DiscardAndDrawContinuationResumer(
         if (continuation.remainingPlayers.isEmpty()) {
             // All done - apply life loss
             val lifeLossResult = EachPlayerDiscardsOrLoseLifeExecutor.applyLifeLoss(
-                state, continuation.discardedCreature, continuation.lifeLoss
+                state, continuation.discardedCreature, continuation.lifeLoss, services.predicateEvaluator
             )
             return ExecutionResult(
                 lifeLossResult.state,

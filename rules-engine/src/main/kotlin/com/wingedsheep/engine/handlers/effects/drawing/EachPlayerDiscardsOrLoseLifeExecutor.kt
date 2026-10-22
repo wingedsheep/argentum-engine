@@ -71,30 +71,20 @@ class EachPlayerDiscardsOrLoseLifeExecutor(
         fun applyLifeLoss(
             state: GameState,
             discardedCreature: Map<EntityId, Boolean>,
-            lifeLoss: Int
+            lifeLoss: Int,
+            predicateEvaluator: com.wingedsheep.engine.handlers.PredicateEvaluator
         ): EffectResult {
             var currentState = state
             val events = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
 
             for ((playerId, discardedCreatureCard) in discardedCreature) {
-                if (!discardedCreatureCard) {
-                    if (currentState.getEntity(playerId)
-                            ?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>() == null
-                    ) continue
-                    // A player whose life total is locked cannot lose life.
-                    if (currentState.isLifeLossLocked(playerId)) continue
-                    // Shared-team games apply life loss to the team total.
-                    val currentLife = currentState.lifeTotal(playerId)
-                    val newLife = currentLife - lifeLoss
-                    currentState = currentState.withLifeTotal(playerId, newLife)
-                    events.add(
-                        com.wingedsheep.engine.core.LifeChangedEvent(
-                            playerId, currentLife, newLife,
-                            com.wingedsheep.engine.core.LifeChangeReason.LIFE_LOSS
-                        )
-                    )
-                    currentState = com.wingedsheep.engine.handlers.effects.DamageUtils.markLifeLostThisTurn(currentState, playerId, currentLife - newLife)
-                }
+                if (discardedCreatureCard) continue
+                val (afterLoss, event) = com.wingedsheep.engine.handlers.effects.DamageUtils.loseLife(
+                    currentState, playerId, lifeLoss, com.wingedsheep.engine.core.LifeChangeReason.LIFE_LOSS,
+                    predicateEvaluator = predicateEvaluator
+                )
+                currentState = afterLoss
+                if (event != null) events.add(event)
             }
 
             return EffectResult.success(currentState, events)

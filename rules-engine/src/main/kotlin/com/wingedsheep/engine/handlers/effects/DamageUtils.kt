@@ -79,6 +79,7 @@ import com.wingedsheep.sdk.scripting.HealOtherDamage
 import com.wingedsheep.sdk.scripting.ModifyDamageAmount
 import com.wingedsheep.sdk.scripting.GainLifeInsteadOfLosingLife
 import com.wingedsheep.sdk.scripting.LifeLossFloor
+import com.wingedsheep.sdk.scripting.ReplaceLifeReductionToZero
 import com.wingedsheep.sdk.scripting.LoyaltyDamageFloor
 import com.wingedsheep.sdk.scripting.ModifyLifeLoss
 import com.wingedsheep.sdk.scripting.effects.LifeLossOrigin
@@ -485,9 +486,8 @@ object DamageUtils {
             val currentLife = newState.lifeTotal(targetId)
             var lifeLossAmount = applyStaticLifeLossModification(newState, targetId, effectiveAmount, predicateEvaluator = zones.predicateEvaluator)
             lifeLossAmount = applyLifeLossFloors(newState, targetId, currentLife, lifeLossAmount, predicateEvaluator = zones.predicateEvaluator)
-            val newLife = currentLife - lifeLossAmount
-            newState = newState.withLifeTotal(targetId, newLife)
-            newState = trackDamageReceivedByPlayer(newState, targetId, effectiveAmount, sourceId, isCombatDamage)
+            val (written, newLife) = writeLifeReduction(newState, targetId, currentLife, currentLife - lifeLossAmount, zones.predicateEvaluator)
+            newState = trackDamageReceivedByPlayer(written, targetId, effectiveAmount, sourceId, isCombatDamage)
             events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
         } else if (projected.isPlaneswalker(targetId)) {
             // It's a planeswalker - remove loyalty counters equal to damage dealt
@@ -916,9 +916,9 @@ object DamageUtils {
             }
             return gainLife(state, playerId, gain, predicateEvaluator = predicateEvaluator)
         }
-        val newLife = currentLife - lossAmount
-        var newState = state.withLifeTotal(playerId, newLife)
-        newState = markLifeLostThisTurn(newState, playerId, lossAmount)
+        val (written, newLife) = writeLifeReduction(state, playerId, currentLife, currentLife - lossAmount, predicateEvaluator)
+        if (newLife == currentLife && lossAmount > 0) return written to null
+        val newState = markLifeLostThisTurn(written, playerId, currentLife - newLife)
         return newState to LifeChangedEvent(playerId, currentLife, newLife, reason)
     }
 
@@ -3044,6 +3044,60 @@ object DamageUtils {
             if (modifiedAmount > maxLossAllowed) modifiedAmount = maxLossAllowed
         }
         return modifiedAmount
+    }
+
+    /**
+     * Write a **reduction** of [playerId]'s life total from [currentLife] to [newLife], honouring
+     * [ReplaceLifeReductionToZero] (Enduring Angel): a reduction that would leave the total at 0 or
+     * less is replaced whole — the total stays at [currentLife] and the replacement's `instead` is
+     * queued as a [com.wingedsheep.engine.replacement.PendingReplacementRider], run before the next
+     * instruction / state-based actions. While that rider is pending, further reductions of the same
+     * player (the rest of one simultaneous combat-damage event) are absorbed by it too.
+     *
+     * Every life-reducing write site goes through here: damage, `loseLife` (lose-life effects,
+     * payments, exchanges), and set-life effects. Returns the new state and the life total actually
+     * written — callers emit their `LifeChangedEvent` / life-lost tracking only when it differs from
+     * [currentLife]. A non-reduction ([newLife] ≥ [currentLife]) is written as is.
+     */
+    fun writeLifeReduction(
+        state: GameState,
+        playerId: EntityId,
+        currentLife: Int,
+        newLife: Int,
+        predicateEvaluator: PredicateEvaluator
+    ): Pair<GameState, Int> {
+        if (newLife >= currentLife) return state.withLifeTotal(playerId, newLife) to newLife
+        val lifeOwner = state.teamLifeOwnerOf(playerId)
+        if (state.pendingReplacementRiders.any { it.replacesLifeReduction && it.subjectId == lifeOwner }) {
+            return state to currentLife
+        }
+        if (newLife > 0) return state.withLifeTotal(playerId, newLife) to newLife
+        val projected = state.projectedState
+        for (active in com.wingedsheep.engine.replacement.ActiveReplacements.all(state)) {
+            val effect = active.effect as? ReplaceLifeReductionToZero ?: continue
+            if (!active.granted && (projected.hasLostAllAbilities(active.sourceId) || projected.isFaceDown(active.sourceId))) continue
+            val pattern = effect.appliesTo as? EventPattern.LifeLossEvent ?: continue
+            val playerMatches = when (pattern.player) {
+                Player.Each, Player.Any -> true
+                Player.You -> state.teamLifeOwnerOf(active.controllerId) == lifeOwner
+                Player.EachOpponent -> state.isOpponentOf(playerId, active.controllerId)
+                else -> false
+            }
+            if (!playerMatches) continue
+            if (effect.restrictions.isNotEmpty()) {
+                val context = EffectContext(sourceId = active.sourceId, controllerId = active.controllerId)
+                if (effect.restrictions.any { !predicateEvaluator.conditions.evaluate(state, it, context) }) continue
+            }
+            val rider = com.wingedsheep.engine.replacement.PendingReplacementRider(
+                effect = effect.instead,
+                hostId = active.sourceId,
+                controllerId = active.controllerId,
+                subjectId = lifeOwner,
+                replacesLifeReduction = true
+            )
+            return state.copy(pendingReplacementRiders = state.pendingReplacementRiders + rider) to currentLife
+        }
+        return state.withLifeTotal(playerId, newLife) to newLife
     }
 
     /**

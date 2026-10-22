@@ -4114,6 +4114,11 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
     count = 1, target = PlayerRef(Player.You)), Patterns.Library.searchLibrary(Creature, HAND,
     reveal = true), successCriterion = PermanentsSacrificed)` — the ability doesn't target, and an
     empty board means no sacrifice and no search.
+    `SuccessCriterion.Transformed` gates on whether the action **actually transformed a permanent**
+    (a `TransformedEvent`) — a token or single-faced copy can't transform (CR 701.27b) and a
+    daybound/nightbound permanent can't by any other cause, so neither emits one. Enduring Angel's
+    "transform this creature … Then if this creature didn't transform this way, you lose the game"
+    puts the loss in `otherwise`.
     `SuccessCriterion.TurnedFaceUp` gates on whether the action **actually turned a permanent face
     up** (a `TurnFaceUpEvent`). Turning face up is not a zone move, so `Auto` can't infer it, and
     `Always` would report success for the two cases the rules call failures: a manifested or cloaked
@@ -17902,6 +17907,18 @@ not update an existing copy.
   and damage-dealt triggers see the full damage. Multiple instances pick the strictest floor. Used by
   Ali from Cairo (`LifeLossFloor(floor = 1, appliesTo = LifeLossEvent(Player.You))`); Worship adds a
   `restrictions = listOf(YouControlACreature)` gate.
+- `ReplaceLifeReductionToZero(instead, restrictions, appliesTo)` — "If your life total would be reduced
+  to 0 or less, instead …" (Enduring Angel). Replaces **every** reduction of a matching player's life
+  total that would leave it at 0 or less — combat and noncombat damage, `LoseLife` and its siblings,
+  life payments (cast and activation costs), and `SetLifeTotal` / exchange effects (CR 119.5) — whole:
+  the total doesn't change, and `instead` runs as a replacement rider (no stack, before SBAs; `Self` is
+  the host, "you" its controller). The damage is still dealt, so lifelink and damage triggers see it.
+  Reductions of the same player while the rider is pending — the rest of one simultaneous combat-damage
+  step — are absorbed into the same replacement, so `instead` runs once. `appliesTo` is a
+  `LifeLossEvent` (default `Player.You`); `restrictions` gate it against the source's controller.
+  Every life-reducing write goes through `DamageUtils.writeLifeReduction`. Enduring Angel:
+  `instead = Effects.IfYouDo(Transform(Self), SetLifeTotal(3), otherwise = SetLifeTotal(3) then
+  LoseGame(Controller), successCriterion = SuccessCriterion.Transformed)`.
 - `LoyaltyDamageFloor(floor = 1, restrictions, appliesTo)` — the planeswalker counterpart of
   `LifeLossFloor`: damage matching `appliesTo` (a `DamageEvent`; its `recipient` names which
   planeswalkers, its `damageType`/`source` gate as usual) that would leave a planeswalker with fewer than

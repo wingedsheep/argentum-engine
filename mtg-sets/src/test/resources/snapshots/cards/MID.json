@@ -2293,6 +2293,122 @@
     ]
 }
 
+// Enduring Angel
+{
+    "name": "Enduring Angel",
+    "manaCost": "{2}{W}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying, double strike\nYou have hexproof.\nIf your life total would be reduced to 0 or less, instead transform this creature and your life total becomes 3. Then if this creature didn't transform this way, you lose the game.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "DOUBLE_STRIKE"
+    ],
+    "script": {
+        "staticAbilities": [
+            "GrantHexproofToController"
+        ],
+        "replacementEffects": [
+            {
+                "type": "ReplaceLifeReductionToZero",
+                "instead": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": "Transform",
+                        "successCriterion": "SuccessCriterion.Transformed"
+                    },
+                    "then": {
+                        "type": "SetLifeTotal",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    "otherwise": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SetLifeTotal",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "LoseGame"
+                        ]
+                    },
+                    "descriptionOverride": "transform this creature and your life total becomes 3. Then if this creature didn't transform this way, you lose the game"
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Angelic Enforcer",
+        "manaCost": "",
+        "typeLine": "Creature — Angel",
+        "oracleText": "Flying\nYou have hexproof.\nAngelic Enforcer's power and toughness are each equal to your life total.\nWhenever this creature attacks, double your life total.",
+        "creatureStats": {
+            "power": {
+                "type": "Dynamic",
+                "source": "YourLifeTotal"
+            },
+            "toughness": {
+                "type": "Dynamic",
+                "source": "YourLifeTotal"
+            }
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Angelic Enforcer:1",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "SetLifeTotal",
+                        "amount": {
+                            "type": "Multiply",
+                            "amount": "YourLifeTotal",
+                            "multiplier": 2
+                        }
+                    },
+                    "descriptionOverride": "Double your life total."
+                }
+            ],
+            "staticAbilities": [
+                "GrantHexproofToController"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "17",
+            "rarity": "MYTHIC",
+            "artist": "Irina Nordsol",
+            "imageUri": "https://cards.scryfall.io/normal/back/a/2/a204c2a3-a899-4b70-8825-7e085b655ed0.jpg?1783925664"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ],
+        "colorIndicator": [
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "MYTHIC",
+        "artist": "Irina Nordsol",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a204c2a3-a899-4b70-8825-7e085b655ed0.jpg?1783925664"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Fading Hope
 {
     "name": "Fading Hope",

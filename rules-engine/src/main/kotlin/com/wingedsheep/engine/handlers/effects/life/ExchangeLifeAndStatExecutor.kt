@@ -94,7 +94,9 @@ class ExchangeLifeAndStatExecutor(
             return EffectResult.success(gained, listOfNotNull(event))
         }
         if (currentStat != currentLife && !lifeSideBlocked) {
-            newState = newState.withLifeTotal(playerId, currentStat)
+            val (written, writtenLife) = DamageUtils.writeLifeReduction(newState, playerId, currentLife, currentStat, predicateEvaluator)
+            newState = written
+            if (writtenLife == currentLife) return EffectResult.success(newState, events)
 
             val reason = if (currentStat > currentLife) LifeChangeReason.LIFE_GAIN else LifeChangeReason.LIFE_LOSS
             events.add(LifeChangedEvent(playerId, currentLife, currentStat, reason))

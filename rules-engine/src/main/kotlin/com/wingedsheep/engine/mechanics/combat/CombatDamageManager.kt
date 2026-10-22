@@ -1303,8 +1303,8 @@ internal class CombatDamageManager(
         val currentLife = newState.lifeTotal(targetId)
         var lifeLossAmount = DamageUtils.applyStaticLifeLossModification(newState, targetId, effectiveAmount, predicateEvaluator = predicateEvaluator)
         lifeLossAmount = DamageUtils.applyLifeLossFloors(newState, targetId, currentLife, lifeLossAmount, predicateEvaluator = predicateEvaluator)
-        val newLife = currentLife - lifeLossAmount
-        newState = newState.withLifeTotal(targetId, newLife)
+        val (written, newLife) = DamageUtils.writeLifeReduction(newState, targetId, currentLife, currentLife - lifeLossAmount, predicateEvaluator)
+        newState = written
         newState = DamageUtils.trackDamageReceivedByPlayer(newState, targetId, effectiveAmount, sourceId, isCombatDamage = true)
 
         // Track combat damage: source dealt damage + dealt combat damage to player
@@ -1561,8 +1561,9 @@ internal class CombatDamageManager(
             // CR 810.9 — applies to the team's shared total (isPlayer already guards presence).
             val currentLife = newState.lifeTotal(targetId)
             // CR 119.8 — damage to a player who can't lose life leaves the total unchanged.
-            val newLife = if (newState.isLifeLossLocked(targetId)) currentLife else currentLife - amount
-            newState = newState.withLifeTotal(targetId, newLife)
+            val (written, newLife) = if (newState.isLifeLossLocked(targetId)) newState to currentLife
+                else DamageUtils.writeLifeReduction(newState, targetId, currentLife, currentLife - amount, predicateEvaluator)
+            newState = written
             newState = DamageUtils.trackDamageReceivedByPlayer(newState, targetId, amount, sourceId, isCombatDamage = true)
             // Track combat damage: source dealt damage + dealt combat damage to player
             newState = DamageUtils.trackDamageDealt(newState, sourceId, amount, isCombatDamage = true)
@@ -1790,8 +1791,9 @@ internal class CombatDamageManager(
         // CR 810.9 — applies to the attacking player's team's shared total.
         val attackerControllerLife = state.lifeTotal(attackerController)
         // CR 119.8 — a player who can't lose life takes the reflected damage without losing life.
-        val newLife = if (state.isLifeLossLocked(attackerController)) attackerControllerLife else attackerControllerLife - originalAmount
-        var newState = state.withLifeTotal(attackerController, newLife)
+        val (written, newLife) = if (state.isLifeLossLocked(attackerController)) state to attackerControllerLife
+            else DamageUtils.writeLifeReduction(state, attackerController, attackerControllerLife, attackerControllerLife - originalAmount, predicateEvaluator)
+        var newState = written
         newState = DamageUtils.trackDamageReceivedByPlayer(newState, attackerController, originalAmount, sourceId)
         // Reflection is an additional damage event from the attacking creature, so it adds
         // its full amount to the same source's damage history.

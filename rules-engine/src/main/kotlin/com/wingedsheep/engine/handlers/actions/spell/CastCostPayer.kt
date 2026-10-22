@@ -395,8 +395,9 @@ internal class CastCostPayer(
         val lifeCost = ledger.action.graveyardLifeCost
         if (lifeCost <= 0) return
         val currentLife = ledger.state.lifeTotal(ledger.playerId) // CR 810.9a — team's shared total
-        val newLife = currentLife - lifeCost
-        ledger.state = ledger.state.withLifeTotal(ledger.playerId, newLife)
+        val (written, newLife) = DamageUtils.writeLifeReduction(ledger.state, ledger.playerId, currentLife, currentLife - lifeCost, predicateEvaluator)
+        ledger.state = written
+        if (newLife == currentLife) return
         ledger.events.add(LifeChangedEvent(ledger.playerId, currentLife, newLife, LifeChangeReason.LIFE_LOSS))
         ledger.state = DamageUtils.markLifeLostThisTurn(ledger.state, ledger.playerId, lifeCost)
     }
