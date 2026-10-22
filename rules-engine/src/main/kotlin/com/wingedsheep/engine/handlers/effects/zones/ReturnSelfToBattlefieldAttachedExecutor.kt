@@ -39,7 +39,9 @@ import kotlin.reflect.KClass
  * cycle's Aura follows its creature, which is the only sensible reading of "attached to that
  * creature" with no controller clause. A *player* host leaves it under the ability's controller:
  * "return this card to the battlefield transformed **under your control** attached to target
- * opponent" would otherwise hand the curse to the very player it curses.
+ * opponent" would otherwise hand the curse to the very player it curses. A permanent host whose
+ * text says "under your control" (Vengeful Strangler, attached to an opponent's creature) names
+ * its controller explicitly through [ReturnSelfToBattlefieldAttachedEffect.controllerOverride].
  *
  * The face swap happens **before** the move, so the battlefield entry registers the back face's
  * static abilities and replacement effects rather than the front's. Per the standing ruling a
@@ -92,12 +94,14 @@ class ReturnSelfToBattlefieldAttachedExecutor(
             return EffectResult.success(state)
         }
 
-        // "under your control" for a player host; an Aura on a permanent follows its host.
-        val newControllerId = if (hostIsPlayer) {
-            context.controllerId
-        } else {
-            state.getEntity(attachTargetId)?.get<ControllerComponent>()?.playerId ?: ownerId
-        }
+        // An explicit "under your control" wins; otherwise a player host keeps the Aura under the
+        // ability's controller and an Aura on a permanent follows its host.
+        val newControllerId = effect.controllerOverride?.let { context.resolveTarget(it, state) }
+            ?: if (hostIsPlayer) {
+                context.controllerId
+            } else {
+                state.projectedState.getController(attachTargetId) ?: ownerId
+            }
 
         // Flip to the back face while the card is still in its old zone, so the entry below sees
         // the face that is actually going to be up.

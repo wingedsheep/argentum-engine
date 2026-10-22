@@ -478,10 +478,16 @@ data class ExileAndGrantOwnerPlayPermissionEffect(
 data class ReturnSelfToBattlefieldAttachedEffect(
     val target: EffectTarget = EffectTarget.TriggeringEntity,
     val transformed: Boolean = false,
+    /**
+     * When set, the Aura enters under this player's control ("under your control") instead of the
+     * default: a permanent host's controller, or the ability's controller for a player host.
+     */
+    val controllerOverride: EffectTarget? = null,
 ) : Effect {
     override val description: String = buildString {
         append("Return this card from your graveyard to the battlefield")
         if (transformed) append(" transformed")
+        if (controllerOverride != null) append(" under your control")
         append(" attached to ${target.description}")
     }
 }

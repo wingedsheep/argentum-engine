@@ -12737,6 +12737,139 @@
     ]
 }
 
+// Vengeful Strangler
+{
+    "name": "Vengeful Strangler",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "This creature can't block.\nWhen this creature dies, return it to the battlefield transformed under your control attached to target creature or planeswalker an opponent controls.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vengeful Strangler:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "ReturnSelfToBattlefieldAttached",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "transformed": true,
+                    "controllerOverride": "Controller"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|planeswalker ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature dies, return it to the battlefield transformed under your control attached to target creature or planeswalker an opponent controls."
+            }
+        ],
+        "staticAbilities": [
+            "CantBlock"
+        ]
+    },
+    "backFace": {
+        "name": "Strangling Grasp",
+        "manaCost": "",
+        "typeLine": "Enchantment — Aura",
+        "oracleText": "Enchant creature or planeswalker an opponent controls\nAt the beginning of your upkeep, enchanted permanent's controller sacrifices a nonland permanent of their choice, then that player loses 1 life.",
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Strangling Grasp:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsPermanent"
+                                    ],
+                                    "statePredicates": [
+                                        "IsAttachedToBySource"
+                                    ]
+                                }
+                            }
+                        },
+                        "body": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "ForceSacrifice",
+                                    "filter": "nonland permanent",
+                                    "target": {
+                                        "type": "PlayerRef",
+                                        "player": "ControllerOfIterationEntity"
+                                    }
+                                },
+                                {
+                                    "type": "LoseLife",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "target": {
+                                        "type": "PlayerRef",
+                                        "player": "ControllerOfIterationEntity"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "descriptionOverride": "At the beginning of your upkeep, enchanted permanent's controller sacrifices a nonland permanent of their choice, then that player loses 1 life."
+                }
+            ],
+            "auraTarget": {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker ctrl:opponent"
+                }
+            }
+        },
+        "metadata": {
+            "collectorNumber": "126",
+            "rarity": "UNCOMMON",
+            "artist": "Sean Sevestre",
+            "flavorText": "The next day, the executioner was found with ashen handprints on his throat.",
+            "imageUri": "https://cards.scryfall.io/normal/back/d/4/d4054ae6-0227-4d99-8cb5-72e8b5d0b726.jpg?1783925614"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "rarity": "UNCOMMON",
+        "artist": "Sean Sevestre",
+        "flavorText": "As the flames consumed the killer, his eyes remained fixed on the executioner's face, his hands twitching like angry spiders.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d4054ae6-0227-4d99-8cb5-72e8b5d0b726.jpg?1783925614"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Voldaren Ambusher
 {
     "name": "Voldaren Ambusher",

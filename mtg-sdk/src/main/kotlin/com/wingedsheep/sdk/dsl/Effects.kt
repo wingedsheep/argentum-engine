@@ -1882,12 +1882,15 @@ object Effects {
      * [target] may name a **player** as well as a permanent — "attached to target opponent" for a
      * Curse — and [transformed] returns the card back face up (Radiant Grace's
      * "return this card to the battlefield transformed under your control attached to target
-     * opponent").
+     * opponent"). [controllerOverride] names who controls the returned Aura when the printed text
+     * says "under your control" and the host is a permanent another player may control (Vengeful
+     * Strangler: `controllerOverride = EffectTarget.Controller`).
      */
     fun ReturnSelfToBattlefieldAttached(
         target: EffectTarget = EffectTarget.TriggeringEntity,
         transformed: Boolean = false,
-    ): Effect = ReturnSelfToBattlefieldAttachedEffect(target, transformed)
+        controllerOverride: EffectTarget? = null,
+    ): Effect = ReturnSelfToBattlefieldAttachedEffect(target, transformed, controllerOverride)
 
     /**
      * "Return it to the battlefield. It's an Aura enchantment with enchant [enchant] and \"…\", and

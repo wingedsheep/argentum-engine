@@ -1958,12 +1958,16 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   attach step when the card is still in the graveyard: `PutOntoBattlefieldAsNonAura(listOf(TriggeredAbility.create(
   Triggers.player(Player.ChosenPlayer).beginningOf(UPKEEP), Effects.DealDamage(1, PlayerRef(Player.TriggeringPlayer)))),
   chosenPlayer = EffectTarget.ControllerOfTriggeringEntity)`.
-- `ReturnSelfToBattlefieldAttached(target, transformed = false)` — return source attached to target
-  (Aura recursion). [target] may resolve to a **player** as well as a permanent, and the two cases
-  differ in who controls the returned Aura: a *permanent* host hands control to that permanent's
-  controller (the Dragon-aura cycle's "attached to that creature"), a *player* host leaves it under
-  the **ability's** controller — the only reading "under your control attached to target opponent"
-  allows. `transformed = true` returns it back face up (CR 712.8); the face swap happens while the
+- `ReturnSelfToBattlefieldAttached(target, transformed = false, controllerOverride = null)` — return
+  source attached to target (Aura recursion). [target] may resolve to a **player** as well as a
+  permanent, and the two cases differ in who controls the returned Aura: a *permanent* host hands
+  control to that permanent's controller (the Dragon-aura cycle's "attached to that creature"), a
+  *player* host leaves it under the **ability's** controller — the only reading "under your control
+  attached to target opponent" allows. `controllerOverride` names the controller outright when the
+  text says "under your control" and the host is a permanent: Vengeful Strangler's "return it to the
+  battlefield transformed under your control attached to target creature or planeswalker an opponent
+  controls" is `ReturnSelfToBattlefieldAttached(ContextTarget(0), transformed = true,
+  controllerOverride = EffectTarget.Controller)`. `transformed = true` returns it back face up (CR 712.8); the face swap happens while the
   card is still in its old zone, so the entry registers the back face's statics and replacements.
   A single-faced card told to enter transformed doesn't move at all (standing ruling), so it is a
   quiet no-op. Radiant Grace: `ReturnSelfToBattlefieldAttached(target = cursed, transformed = true)`.
