@@ -27,7 +27,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * part of its own resolution (rulings below) — so the source filter is Bloodfeather Phoenix's
  * `InstantOrSorcery.youControl()`. A fight spell's creatures and a permanent's enters trigger are
  * other sources and never match. Two triggers from one spell transform the Channeler only once:
- * the engine's CR 701.28f face-change clock stops the second.
+ * the engine's face-change clock (CR 701.27f) stops the second.
  */
 
 private const val CHANNELER_TEXT = "When a spell you control deals damage, transform this creature."
