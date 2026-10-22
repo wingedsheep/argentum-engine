@@ -34,6 +34,7 @@ val HobblingZombie = card("Hobbling Zombie") {
             colors = setOf(Color.BLACK),
             creatureTypes = setOf("Zombie"),
             keywords = setOf(Keyword.DECAYED),
+            imageUri = "https://cards.scryfall.io/normal/front/6/a/6adb8607-1066-451d-a719-74ad32358278.jpg?1783925226",
         )
     }
 

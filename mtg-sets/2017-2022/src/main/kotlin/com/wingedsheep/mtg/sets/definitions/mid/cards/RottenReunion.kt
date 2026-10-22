@@ -11,14 +11,14 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 /**
  * Rotten Reunion
  * {B}
- * Sorcery
+ * Instant
  * Exile up to one target card from a graveyard. Create a 2/2 black Zombie creature token with decayed.
  * Flashback {1}{B}
  */
 val RottenReunion = card("Rotten Reunion") {
     manaCost = "{B}"
     colorIdentity = "B"
-    typeLine = "Sorcery"
+    typeLine = "Instant"
     oracleText = "Exile up to one target card from a graveyard. Create a 2/2 black Zombie creature token with decayed. " +
         "(It can't block. When it attacks, sacrifice it at end of combat.)\n" +
         "Flashback {1}{B} (You may cast this card from your graveyard for its flashback cost. Then exile it.)"

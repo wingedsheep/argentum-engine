@@ -3295,7 +3295,8 @@
                         ],
                         "keywords": [
                             "DECAYED"
-                        ]
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6adb8607-1066-451d-a719-74ad32358278.jpg?1783925226"
                     },
                     "optional": false,
                     "reflexiveEffect": {
@@ -5986,7 +5987,8 @@
                     ],
                     "keywords": [
                         "DECAYED"
-                    ]
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/6/a/6adb8607-1066-451d-a719-74ad32358278.jpg?1783925226"
                 }
             }
         ]
@@ -9914,7 +9916,7 @@
 {
     "name": "Rotten Reunion",
     "manaCost": "{B}",
-    "typeLine": "Sorcery",
+    "typeLine": "Instant",
     "oracleText": "Exile up to one target card from a graveyard. Create a 2/2 black Zombie creature token with decayed. (It can't block. When it attacks, sacrifice it at end of combat.)\nFlashback {1}{B} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
     "keywords": [
         "FLASHBACK"
