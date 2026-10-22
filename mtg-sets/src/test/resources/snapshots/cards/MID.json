@@ -840,6 +840,185 @@
     ]
 }
 
+// Beloved Beggar
+{
+    "name": "Beloved Beggar",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Peasant",
+    "oracleText": "Disturb {4}{W}{W} (You may cast this card from your graveyard transformed for its disturb cost.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "keywords": [
+        "DISTURB"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Disturb",
+            "cost": "{4}{W}{W}"
+        }
+    ],
+    "backFace": {
+        "name": "Generous Soul",
+        "manaCost": "",
+        "typeLine": "Creature — Spirit",
+        "oracleText": "Flying, vigilance\nIf Generous Soul would be put into a graveyard from anywhere, exile it instead.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "keywords": [
+            "FLYING",
+            "VIGILANCE"
+        ],
+        "script": {
+            "replacementEffects": [
+                {
+                    "type": "RedirectZoneChange",
+                    "newDestination": "Exile",
+                    "appliesTo": {
+                        "type": "ZoneChangeEvent",
+                        "to": "Graveyard"
+                    },
+                    "selfOnly": true
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "3",
+            "rarity": "UNCOMMON",
+            "artist": "Francisco Miyara",
+            "flavorText": "As long as evil threatens his town, the Blessed Sleep can wait.",
+            "imageUri": "https://cards.scryfall.io/normal/back/6/1/6109b54e-56c5-4014-9f6d-d5f7a0fd725d.jpg?1783925674"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ],
+        "colorIndicator": [
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "UNCOMMON",
+        "artist": "Francisco Miyara",
+        "flavorText": "Charity is rare on Innistrad, but kindness is always repaid.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/6109b54e-56c5-4014-9f6d-d5f7a0fd725d.jpg?1783925674",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "When you cast a spell using a card's disturb ability, the card is put onto the stack with its back face up. The resulting spell has all the characteristics of that face."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "The mana value of a spell cast using disturb is determined by the mana cost on the front face of the card, no matter what the total cost to cast the spell was."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "The back face of each card with disturb has an ability that instructs its controller to exile it if it would be put into a graveyard from anywhere. This includes going to the graveyard from the stack, so if the spell is countered after you cast it using the disturb ability, it will be put into exile."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Bereaved Survivor
+{
+    "name": "Bereaved Survivor",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Peasant",
+    "oracleText": "When another creature you control dies, transform this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bereaved Survivor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": "Transform"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Dauntless Avenger",
+        "manaCost": "",
+        "typeLine": "Creature — Human Soldier",
+        "oracleText": "Whenever this creature attacks, return target creature card with mana value 2 or less from your graveyard to the battlefield tapped and attacking.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 2
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Dauntless Avenger:1",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Battlefield",
+                        "placement": "TappedAndAttacking",
+                        "fromZone": "Graveyard"
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature mv<=2 own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "4",
+            "rarity": "UNCOMMON",
+            "artist": "Zara Alfonso",
+            "flavorText": "\"It was Sigarda who lifted me from despair and gave me the strength to fight on.\"",
+            "imageUri": "https://cards.scryfall.io/normal/back/4/a/4adee830-62fd-4ab4-b1c6-a8bbe15331d1.jpg?1783925673"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ],
+        "colorIndicator": [
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "UNCOMMON",
+        "artist": "Zara Alfonso",
+        "flavorText": "\"With Avacyn gone, I no longer knew who to pray to. Alone, I wept for a sister who would never return.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4adee830-62fd-4ab4-b1c6-a8bbe15331d1.jpg?1783925673",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "Multiple creatures dying will cause Bereaved Survivor to transform only once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Bladestitched Skaab
 {
     "name": "Bladestitched Skaab",
@@ -1547,6 +1726,107 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Celestus Sanctifier
+{
+    "name": "Celestus Sanctifier",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "If it's neither day nor night, it becomes day as this creature enters.\nWhenever day becomes night or night becomes day, look at the top two cards of your library. Put one of them into your graveyard.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Celestus Sanctifier:1",
+                "trigger": "DayNightChangedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "selectedLabel": "Put in graveyard",
+                            "remainderLabel": "Put on top"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever day becomes night or night becomes day, look at the top two cards of your library. Put one of them into your graveyard."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "OnEnterRunEffect",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "Any",
+                                "conditions": [
+                                    "IsDay",
+                                    "IsNight"
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "SetDayNight",
+                        "designation": "DAY"
+                    },
+                    "descriptionOverride": "if it's neither day nor night, it becomes day"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "artist": "Irina Nordsol",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/67547253-ab98-4d3a-bf95-3e109cf60a85.jpg?1783925663"
+    }
 }
 
 // Champion of the Perished
@@ -3606,6 +3886,90 @@
     ]
 }
 
+// Faithful Mending
+{
+    "name": "Faithful Mending",
+    "manaCost": "{W}{U}",
+    "typeLine": "Instant",
+    "oracleText": "You gain 2 life, draw two cards, then discard two cards.\nFlashback {1}{W}{U} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{1}{W}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 2 cards to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "221",
+        "rarity": "UNCOMMON",
+        "artist": "Caroline Gariba",
+        "flavorText": "\"What has been looted can be restored. The church lives on within us.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50752ca9-ea85-4c4b-9bf5-4f8759a7dcec.jpg?1783925563"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Falcon Abomination
 {
     "name": "Falcon Abomination",
@@ -4369,6 +4733,122 @@
     ]
 }
 
+// Gavony Dawnguard
+{
+    "name": "Gavony Dawnguard",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Ward {1}\nIf it's neither day nor night, it becomes day as this creature enters.\nWhenever day becomes night or night becomes day, look at the top four cards of your library. You may reveal a creature card with mana value 3 or less from among them and put it into your hand. Put the rest on the bottom of your library in any order.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{1}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gavony Dawnguard:1",
+                "trigger": "DayNightChangedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "creature mv<=3",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal a creature card with mana value 3 or less from among them and put it into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "OnEnterRunEffect",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "Any",
+                                "conditions": [
+                                    "IsDay",
+                                    "IsNight"
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "SetDayNight",
+                        "designation": "DAY"
+                    },
+                    "descriptionOverride": "if it's neither day nor night, it becomes day"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "rarity": "UNCOMMON",
+        "artist": "Micah Epstein",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/58891dae-1c59-4f53-82ec-5b4c47133182.jpg?1783925658"
+    }
+}
+
 // Gavony Silversmith
 {
     "name": "Gavony Silversmith",
@@ -4591,6 +5071,49 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Grafted Identity
+{
+    "name": "Grafted Identity",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "As an additional cost to cast this spell, sacrifice a creature.\nEnchant creature\nYou control enchanted creature.\nEnchanted creature gets +1/+1.",
+    "script": {
+        "staticAbilities": [
+            "ControlEnchantedPermanent",
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "creature"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "rarity": "RARE",
+        "artist": "Manuel Castañón",
+        "flavorText": "Autonomy is only skin deep.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/2559846b-03d6-4a2c-97e1-c71f107e9f24.jpg?1783925642"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -6595,6 +7118,91 @@
     ]
 }
 
+// Mourning Patrol
+{
+    "name": "Mourning Patrol",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Vigilance\nDisturb {3}{W} (You may cast this card from your graveyard transformed for its disturb cost.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE",
+        "DISTURB"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Disturb",
+            "cost": "{3}{W}"
+        }
+    ],
+    "backFace": {
+        "name": "Morning Apparition",
+        "manaCost": "",
+        "typeLine": "Creature — Spirit Soldier",
+        "oracleText": "Flying, vigilance\nIf Morning Apparition would be put into a graveyard from anywhere, exile it instead.",
+        "creatureStats": {
+            "power": 2,
+            "toughness": 1
+        },
+        "keywords": [
+            "FLYING",
+            "VIGILANCE"
+        ],
+        "script": {
+            "replacementEffects": [
+                {
+                    "type": "RedirectZoneChange",
+                    "newDestination": "Exile",
+                    "appliesTo": {
+                        "type": "ZoneChangeEvent",
+                        "to": "Graveyard"
+                    },
+                    "selfOnly": true
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "28",
+            "artist": "Greg Opalinski",
+            "flavorText": "\"You could see the spirits all along, couldn't you? Well, now I can too.\"",
+            "imageUri": "https://cards.scryfall.io/normal/back/2/d/2d3687e2-09e0-4753-aa02-88a19bde3330.jpg?1783925661"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ],
+        "colorIndicator": [
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "artist": "Greg Opalinski",
+        "flavorText": "\"It's creepy out here, isn't it, boy? I always feel like someone's watching us.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d3687e2-09e0-4753-aa02-88a19bde3330.jpg?1783925661",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "When you cast a spell using a card's disturb ability, the card is put onto the stack with its back face up. The resulting spell has all the characteristics of that face."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "The mana value of a spell cast using disturb is determined by the mana cost on the front face of the card, no matter what the total cost to cast the spell was."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "The back face of each card with disturb has an ability that instructs its controller to exile it if it would be put into a graveyard from anywhere. This includes going to the graveyard from the stack, so if the spell is countered after you cast it using the disturb ability, it will be put into exile."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Mysterious Tome
 {
     "name": "Mysterious Tome",
@@ -7582,6 +8190,148 @@
     ]
 }
 
+// Poppet Stitcher
+{
+    "name": "Poppet Stitcher",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Whenever you cast an instant or sorcery spell, create a 2/2 black Zombie creature token with decayed. (It can't block. When it attacks, sacrifice it at end of combat.)\nAt the beginning of your upkeep, if you control three or more creature tokens, you may transform this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Poppet Stitcher:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "keywords": [
+                        "DECAYED"
+                    ]
+                }
+            },
+            {
+                "id": "Poppet Stitcher:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": "Transform"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature token"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Poppet Factory",
+        "manaCost": "",
+        "typeLine": "Artifact",
+        "oracleText": "Creature tokens you control lose all abilities and have base power and toughness 3/3.\nAt the beginning of your upkeep, you may transform this artifact.",
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Poppet Factory:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": "Transform"
+                    }
+                }
+            ],
+            "staticAbilities": [
+                {
+                    "type": "LoseAllAbilities",
+                    "filter": {
+                        "baseFilter": "creature token ctrl:you"
+                    }
+                },
+                {
+                    "type": "SetBasePowerToughnessStatic",
+                    "power": 3,
+                    "toughness": 3,
+                    "filter": {
+                        "baseFilter": "creature token ctrl:you"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "71",
+            "rarity": "MYTHIC",
+            "artist": "Simon Dominic",
+            "flavorText": "It may have been a mistake to give them minds of their own.",
+            "imageUri": "https://cards.scryfall.io/normal/back/9/9/999038b3-7d64-4554-b341-0675d4af8d8b.jpg?1783925638"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "MYTHIC",
+        "artist": "Simon Dominic",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/999038b3-7d64-4554-b341-0675d4af8d8b.jpg?1783925638",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "Once a creature with decayed attacks, it will be sacrificed at end of combat, even if it no longer has decayed at that time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Raze the Effigy
 {
     "name": "Raze the Effigy",
@@ -7651,6 +8401,61 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Revenge of the Drowned
+{
+    "name": "Revenge of the Drowned",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature's owner puts it on their choice of the top or bottom of their library. You create a 2/2 black Zombie creature token with decayed. (It can't block. When it attacks, sacrifice it at end of combat.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "PutOnLibraryPositionOfChoice",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "keywords": [
+                        "DECAYED"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/6/a/6adb8607-1066-451d-a719-74ad32358278.jpg?1783925226"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "artist": "Chris Cold",
+        "flavorText": "A heavy net doesn't always mean a good catch.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/93be7d72-927a-40ce-8de4-04a3f21c134b.jpg?1783925632"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -8250,6 +9055,52 @@
     ]
 }
 
+// Secrets of the Key
+{
+    "name": "Secrets of the Key",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Investigate. If this spell was cast from a graveyard, investigate twice instead. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")\nFlashback {3}{U}",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{3}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "WasCastFromZone",
+                    "zone": "Graveyard"
+                }
+            },
+            "then": {
+                "type": "Investigate",
+                "count": {
+                    "type": "Fixed",
+                    "amount": 2
+                }
+            },
+            "otherwise": "Investigate"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "artist": "Alix Branwyn",
+        "flavorText": "As Sigarda and Sorin battled, Arlinn and Teferi recovered the key from the Markov catacombs.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9b022ba8-07b6-4993-99c8-89c6dcb19e60.jpg?1783925633"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Seize the Storm
 {
     "name": "Seize the Storm",
@@ -8437,6 +9288,99 @@
     "colorIdentityOverride": [
         "BLUE",
         "BLACK"
+    ]
+}
+
+// Shipwreck Sifters
+{
+    "name": "Shipwreck Sifters",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "When this creature enters, draw a card, then discard a card.\nWhenever you discard a Spirit card or a card with disturb, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shipwreck Sifters:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Shipwreck Sifters:2",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "cardFilter": "Spirit|kw:disturb"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "artist": "Svetlin Velinov",
+        "flavorText": "A loyal crew sticks together, even after death.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8f295833-a83e-4b18-8007-c7f5d78e5624.jpg?1783925631"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -8690,6 +9634,133 @@
     ]
 }
 
+// Sludge Monster
+{
+    "name": "Sludge Monster",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Horror",
+    "oracleText": "Whenever this creature enters or attacks, put a slime counter on up to one other target creature.\nNon-Horror creatures with slime counters on them lose all abilities and have base power and toughness 2/2.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sludge Monster:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "SLIME",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Sludge Monster:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "SLIME",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t1"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "LoseAllAbilities",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Horror"
+                            }
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "SLIME"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "type": "SetBasePowerToughnessStatic",
+                "power": 2,
+                "toughness": 2,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Horror"
+                            }
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "SLIME"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "flavorText": "Tracking it isn't the hard part.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/57fa9aa8-86d2-4f1e-ac65-ace7e73a853c.jpg?1783925630",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "If a non-Horror creature with a slime counter on it somehow becomes a Horror, the effect making it 2/2 and making it lose its abilities ends. Its base power and toughness will revert to whatever it was before that effect started applying, although other effects that modify power and/or toughness, such as ones created by Auras, counters, and the like may still apply. It'll also have whatever abilities it had before it lost them."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "Sludge Monster's last ability affects all non-Horror creatures with slime counters on them, not just creatures that had slime counters put on them with Sludge Monster's first ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Snarling Wolf
 {
     "name": "Snarling Wolf",
@@ -8789,6 +9860,165 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Spectral Adversary
+{
+    "name": "Spectral Adversary",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flash\nFlying\nWhen this creature enters, you may pay {1}{U} any number of times. When you pay this cost one or more times, put that many +1/+1 counters on this creature, then up to that many other target artifacts, creatures, and/or enchantments phase out.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spectral Adversary:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "PayManaCostRepeatedly",
+                        "cost": "{1}{U}"
+                    },
+                    "reflexiveEffect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": {
+                                    "type": "VariableReference",
+                                    "variableName": "times_paid"
+                                },
+                                "target": "Self"
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": "IterationSpace.Targets",
+                                "body": {
+                                    "type": "PhaseOut",
+                                    "target": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": "artifact|creature|enchantment",
+                                "excludeSelf": true
+                            },
+                            "dynamicMaxCount": {
+                                "type": "VariableReference",
+                                "variableName": "times_paid"
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "You may pay {1}{U} any number of times. When you pay this cost one or more times, put that many +1/+1 counters on this creature, then up to that many other target artifacts, creatures, and/or enchantments phase out."
+                },
+                "descriptionOverride": "When this creature enters, you may pay {1}{U} any number of times. When you pay this cost one or more times, put that many +1/+1 counters on this creature, then up to that many other target artifacts, creatures, and/or enchantments phase out."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "rarity": "MYTHIC",
+        "artist": "Uriah Voth",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c67fe04-814f-4051-bd13-7c8ee40a6c08.jpg?1783925630",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "After you pay the {1}{U} cost one or more times, a second ability triggers and you choose the targets for it. Players may respond to the new ability at that point. As that ability resolves, Spectral Adversary gets its +1/+1 counters and the target permanents phase out."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Startle
+{
+    "name": "Startle",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets -2/-0 until end of turn. Create a 2/2 black Zombie creature token with decayed. (It can't block. When it attacks, sacrifice it at end of combat.)\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "keywords": [
+                        "DECAYED"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/6/a/6adb8607-1066-451d-a719-74ad32358278.jpg?1783925226"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "artist": "Craig J Spearing",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/35f68eb3-9b40-4967-a52e-f95aec6e3fbf.jpg?1783925628"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -9667,6 +10897,82 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Thraben Exorcism
+{
+    "name": "Thraben Exorcism",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target Spirit, creature with disturb, or enchantment.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Exile"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            {
+                                                "type": "And",
+                                                "predicates": [
+                                                    "IsPermanent",
+                                                    {
+                                                        "type": "HasSubtype",
+                                                        "subtype": "Spirit"
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "And",
+                                                "predicates": [
+                                                    "IsCreature",
+                                                    {
+                                                        "type": "HasKeyword",
+                                                        "keyword": "DISTURB"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    "IsEnchantment"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "artist": "Matt Stewart",
+        "flavorText": "Chandra, Teferi, and Arlinn sought clues to the Moonsilver Key's whereabouts while Kaya dispatched the spirits obstructing their path.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0700298-30d2-45a6-bd64-4fd7fa4d7d30.jpg?1783925649",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "A creature with disturb is one that has the disturb keyword ability in its text box. Notably, permanents that were cast using the disturb ability rarely end up having disturb on the battlefield. Barring some very weird circumstances with copy effects, if a card's front face has disturb but its back face is on the battlefield, that permanent doesn't have disturb."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
