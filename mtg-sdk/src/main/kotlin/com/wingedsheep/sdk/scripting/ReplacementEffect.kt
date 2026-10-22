@@ -598,6 +598,38 @@ data class OnEnterRun(
     }
 }
 
+/**
+ * "As this permanent transforms into [this face], attach it to a player." — the as-transforms
+ * replacement of a transforming card's **Aura** face that enchants a player (Curse of Leeches).
+ * CR 712.20: an "As [this permanent] transforms …" ability of the face it transforms into is applied
+ * *while* it transforms, not afterward — so the Aura is never an unattached Aura that the CR 704.5m
+ * state-based action would put into the graveyard.
+ *
+ * The permanent's controller chooses any player the Aura could enchant. Attaching doesn't target
+ * (a player with hexproof can be chosen), but player protection from the Aura still rules a player
+ * out (CR 702.16c); with no player to choose the Aura stays unattached and 704.5m applies.
+ * Read off the face's own definition at the moment of the transform and never consulted for other
+ * permanents; entering the battlefield face up is not a transform (the card's own ruling), so it
+ * doesn't apply then.
+ *
+ * Not [OnEnterRun]: that runs an effect *as the permanent enters*, through the resolving effect
+ * pipeline, and a daybound transform happens in the untap step's turn-based day/night change, where
+ * no effect is resolving. Not [com.wingedsheep.sdk.scripting.effects.AttachToChosenHostEffect]:
+ * that one-shot moves an attachment onto a chosen *permanent* at resolution and has no player hosts.
+ */
+@SerialName("AttachToPlayerAsTransforms")
+@Serializable
+data class AttachToPlayerAsTransforms(
+    override val appliesTo: EventPattern = EventPattern.TransformEvent()
+) : ReplacementEffect {
+    override val description: String = "As this permanent transforms into this face, attach it to a player"
+
+    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val newAppliesTo = appliesTo.applyTextReplacement(replacer)
+        return if (newAppliesTo !== appliesTo) copy(appliesTo = newAppliesTo) else this
+    }
+}
+
 @SerialName("EntersTapped")
 @Serializable
 data class EntersTapped(

@@ -594,6 +594,22 @@ data class BattleProtectorChoiceContinuation(
 ) : AnswerContinuation
 
 /**
+ * Resume after a permanent's controller chooses the player its
+ * [com.wingedsheep.sdk.scripting.AttachToPlayerAsTransforms] face is attached to as it transforms
+ * (Curse of Leeches). Raised at the end of the untap step or by the state-based action pass; the
+ * resumer attaches the Aura, then settles any other pending transform attachment before carrying on.
+ *
+ * @property auraId The transformed permanent awaiting its player.
+ * @property candidateIds The players it could enchant, positionally aligned with the decision's
+ *   options, captured at prompt time.
+ */
+@Serializable
+data class TransformAttachToPlayerContinuation(
+    val auraId: EntityId,
+    val candidateIds: List<EntityId>
+) : AnswerContinuation
+
+/**
  * Resume after a player picks X for an activated ability with an X-variable cost
  * (currently [com.wingedsheep.sdk.scripting.AbilityCost.TapXPermanents]).
  *

@@ -170,6 +170,9 @@ class UnattachedAurasCheck(
 
             val attachedTo = container.get<AttachedToComponent>()
             if (attachedTo == null) {
+                // Transformed into an attach-to-a-player Aura face whose player isn't chosen yet
+                // (CR 712.20) — TransformAttachCheck attaches it; it isn't an unattached Aura.
+                if (container.has<com.wingedsheep.engine.state.components.battlefield.PendingTransformAttachComponent>()) continue
                 if (isAura) {
                     // Aura not attached to anything - goes to graveyard
                     val result = SbaZoneMovementHelper.putPermanentInGraveyard(

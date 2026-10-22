@@ -1,0 +1,55 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Curse of Leeches"
+      },
+      {
+        "name": "Swamp"
+      },
+      {
+        "name": "Swamp"
+      }
+    ],
+    "library": [
+      "Swamp",
+      "Swamp",
+      "Swamp"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [
+      "Grizzly Bears"
+    ],
+    "battlefield": [
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      }
+    ],
+    "library": [
+      "Forest",
+      "Forest",
+      "Forest"
+    ],
+    "spellsCastThisTurn": 1
+  },
+  "dayNight": "NIGHT",
+  "phase": "PRECOMBAT_MAIN",
+  "step": "PRECOMBAT_MAIN",
+  "activePlayer": 2,
+  "priorityPlayer": 2,
+  "player1StopAtSteps": [
+    "UPKEEP"
+  ],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

@@ -1593,6 +1593,94 @@
     ]
 }
 
+// Curse of Leeches
+{
+    "name": "Curse of Leeches",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment — Aura Curse",
+    "oracleText": "Enchant player\nAs this permanent transforms into Curse of Leeches, attach it to a player.\nAt the beginning of enchanted player's upkeep, they lose 1 life and you gain 1 life.\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)",
+    "keywords": [
+        "DAYBOUND"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Curse of Leeches:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "EnchantedPlayer"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EnchantedPlayer"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of enchanted player's upkeep, they lose 1 life and you gain 1 life."
+            }
+        ],
+        "replacementEffects": [
+            "AttachToPlayerAsTransforms"
+        ],
+        "auraTarget": "TargetPlayer"
+    },
+    "backFace": {
+        "name": "Leeching Lurker",
+        "manaCost": "",
+        "typeLine": "Creature — Leech Horror",
+        "oracleText": "Lifelink\nNightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "keywords": [
+            "LIFELINK",
+            "NIGHTBOUND"
+        ],
+        "metadata": {
+            "collectorNumber": "94",
+            "rarity": "RARE",
+            "artist": "Uriah Voth",
+            "imageUri": "https://cards.scryfall.io/normal/back/0/a/0a3c8532-92f5-41db-92b4-a871aa05e0c7.jpg?1783925627"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "RARE",
+        "artist": "Uriah Voth",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a3c8532-92f5-41db-92b4-a871aa05e0c7.jpg?1783925627"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Curse of Silence
 {
     "name": "Curse of Silence",

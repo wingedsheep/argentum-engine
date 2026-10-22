@@ -109,6 +109,8 @@ data class ScenarioRequest(
     val monarch: Int? = null,
     /** 1-based seat that starts with the initiative (CR 726), or null for nobody. Staged, so nothing triggers. */
     val initiative: Int? = null,
+    /** The game's day/night designation (CR 731), or null for neither. Staged: nothing transforms until state-based actions are next checked. */
+    val dayNight: com.wingedsheep.sdk.core.DayNight? = null,
 ) {
     /** The effective mode, deriving from [aiPlayer] when [mode] is unset. */
     val effectiveMode: ScenarioMode
@@ -161,7 +163,12 @@ data class PlayerConfig(
      */
     val dungeon: DungeonConfig? = null,
     /** Dungeons this player has already completed (CR 309.7), by name. */
-    val completedDungeons: List<String>? = null
+    val completedDungeons: List<String>? = null,
+    /**
+     * Spells this player has cast this turn — read by the untap step's day/night check (CR 731.2)
+     * when the turn passes, so a staged turn can make it day or night next turn.
+     */
+    val spellsCastThisTurn: Int? = null
 )
 
 /** A staged dungeon: its name and the room (by name; the topmost room when omitted) the marker is on. */

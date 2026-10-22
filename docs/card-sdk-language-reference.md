@@ -17943,6 +17943,14 @@ not update an existing copy.
   Every life-reducing write goes through `DamageUtils.writeLifeReduction`. Enduring Angel:
   `instead = Effects.IfYouDo(Transform(Self), SetLifeTotal(3), otherwise = SetLifeTotal(3) then
   LoseGame(Controller), successCriterion = SuccessCriterion.Transformed)`.
+- `AttachToPlayerAsTransforms()` — "As this permanent transforms into [this face], attach it to a
+  player" on a transforming card's **Aura** face that enchants a player (Curse of Leeches). Applied while
+  the permanent transforms (CR 712.20): `flipDfcInPlace` marks it, and its controller chooses among the
+  players it could enchant (not a target — hexproof doesn't matter, protection does) before anything can
+  see it unattached — still inside the untap step for a daybound/nightbound transform, so the enchanted
+  player's upkeep trigger sees the attachment that turn; otherwise in the first state-based action pass,
+  ahead of CR 704.5m. Entering the battlefield face up is not a transform and doesn't apply it. Put it on
+  the Aura face: `replacementEffect(AttachToPlayerAsTransforms())`.
 - `LoyaltyDamageFloor(floor = 1, restrictions, appliesTo)` — the planeswalker counterpart of
   `LifeLossFloor`: damage matching `appliesTo` (a `DamageEvent`; its `recipient` names which
   planeswalkers, its `damageType`/`source` gate as usual) that would leave a planeswalker with fewer than

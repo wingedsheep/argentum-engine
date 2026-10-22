@@ -111,6 +111,10 @@ Create a valid `ScenarioRequest` JSON matching this schema:
 - **battlefield cards**: Can specify `tapped`, `summoningSickness`, `counters`, `attachedTo`
 - **counters**: Map of counter type to count. Types: `PLUS_ONE_PLUS_ONE`, `MINUS_ONE_MINUS_ONE`, `CHARGE`, `LOYALTY`, etc.
 - **stopAtSteps**: Steps where auto-pass is disabled (useful for testing upkeep triggers, combat phases, etc.)
+- **dayNight** (optional, top level): `DAY` or `NIGHT` (CR 731); omit for neither. Daybound/nightbound
+  faces out of step with it transform the next time state-based actions are checked
+- **spellsCastThisTurn** (optional, per player): spells that player has cast this turn — with `dayNight`
+  and the active player at `END`, passing the turn runs the untap step's day/night check (0 → night, 2+ → day)
 - **library**: IMPORTANT — always include at least 1-2 cards per player to prevent draw-from-empty game loss
 
 ### Design guidelines

@@ -183,6 +183,7 @@ class ScenarioBuilderService(
         }
         request.monarch?.let { builder.withDesignation(it, com.wingedsheep.sdk.core.PlayerDesignation.MONARCH) }
         request.initiative?.let { builder.withDesignation(it, com.wingedsheep.sdk.core.PlayerDesignation.INITIATIVE) }
+        request.dayNight?.let { builder.withDayNight(it) }
 
         val (state, playerIds) = builder.build()
         return ScenarioBuildResult(state, playerIds, registry)
@@ -191,6 +192,7 @@ class ScenarioBuilderService(
     private fun applyPlayer(builder: ScenarioBuilder, n: Int, config: PlayerConfig?) {
         config ?: return
         config.lifeTotal?.let { builder.withLifeTotal(n, it) }
+        config.spellsCastThisTurn?.let { builder.withSpellsCastThisTurn(n, it) }
         config.counters?.let { builder.withPlayerCounters(n, it) }
         config.commanders?.forEach { builder.withCommander(n, it) }
         config.hand?.forEach { builder.withCardInHand(n, it) }
@@ -527,6 +529,22 @@ class ScenarioBuilderService(
             state = state.copy(
                 format = if (teamVsTeam) com.wingedsheep.sdk.core.Format.TeamVsTeam()
                 else com.wingedsheep.sdk.core.Format.TwoHeadedGiant()
+            )
+            return this
+        }
+
+        /** Stage the game's day/night designation (CR 731). */
+        fun withDayNight(designation: com.wingedsheep.sdk.core.DayNight): ScenarioBuilder {
+            state = state.copy(dayNight = designation)
+            return this
+        }
+
+        /** Stage how many spells a seat has cast this turn (the CR 731.2 day/night check reads it). */
+        fun withSpellsCastThisTurn(playerNumber: Int, count: Int): ScenarioBuilder {
+            val playerId = playerFor(playerNumber)
+            state = state.copy(
+                playerSpellsCastThisTurn = state.playerSpellsCastThisTurn + (playerId to count),
+                spellsCastThisTurn = state.spellsCastThisTurn + count,
             )
             return this
         }

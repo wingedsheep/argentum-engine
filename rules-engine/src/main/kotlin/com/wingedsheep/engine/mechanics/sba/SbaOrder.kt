@@ -6,6 +6,7 @@ package com.wingedsheep.engine.mechanics.sba
  */
 object SbaOrder {
     const val DAY_NIGHT = 40                 // 702.145c/d/f/g (daybound/nightbound designation + transform)
+    const val TRANSFORM_ATTACH = 45         // 712.20 ("as this transforms into …, attach it to a player")
     const val START_YOUR_ENGINES = 50       // 704.5aa (Aetherdrift speed)
     const val ASCEND_CITYS_BLESSING = 60    // 702.131b (ascend on a permanent is a static ability)
     const val STORIED_ENDURING_STORY = 70   // 702.195a (storied is a static ability)

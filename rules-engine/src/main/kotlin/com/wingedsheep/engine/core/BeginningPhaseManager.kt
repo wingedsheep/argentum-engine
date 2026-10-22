@@ -398,6 +398,13 @@ class BeginningPhaseManager(
             }
         }
 
+        // CR 712.20 — a permanent the day/night change above turned into an "attach it to a player"
+        // Aura face gets its player now, still inside the untap step: no one has priority and the
+        // enchanted player's upkeep triggers must see the attachment. May pause for the choice;
+        // every caller parks the rest of the turn beneath it.
+        com.wingedsheep.engine.handlers.effects.permanent.attachments.TransformAttachToPlayer
+            .settle(newState, predicateEvaluator, events)?.let { return it }
+
         return ExecutionResult.success(newState, events)
     }
 

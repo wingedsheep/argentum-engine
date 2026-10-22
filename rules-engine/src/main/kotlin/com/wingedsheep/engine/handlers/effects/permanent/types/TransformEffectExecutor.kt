@@ -28,7 +28,9 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardLayout
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.AttachToPlayerAsTransforms
 import com.wingedsheep.sdk.scripting.RedirectZoneChange
+import com.wingedsheep.engine.state.components.battlefield.PendingTransformAttachComponent
 import com.wingedsheep.sdk.scripting.effects.TransformEffect
 import kotlin.reflect.KClass
 
@@ -168,7 +170,16 @@ internal fun flipDfcInPlace(
     )?.let { LayerTimestamps.renew(it, entityId) } // CR 613.7g
         ?: return null
 
-    return newState to TransformedEvent(
+    // CR 712.20 — an "As this permanent transforms into …, attach it to a player" ability of the new
+    // face applies while it transforms. The player is chosen as soon as the engine can ask (see
+    // TransformAttachToPlayer); until then the mark keeps the 704.5m check off the Aura.
+    val attachesToPlayer = copiedFace == null &&
+        nextCardDef!!.script.replacementEffects.any { it is AttachToPlayerAsTransforms }
+    val marked = newState.updateEntity(entityId) {
+        if (attachesToPlayer) it.with(PendingTransformAttachComponent) else it.without<PendingTransformAttachComponent>()
+    }
+
+    return marked to TransformedEvent(
         entityId = entityId,
         intoBackFace = intoBackFace,
         newFaceName = copiedFace?.name ?: nextCardDef!!.name,

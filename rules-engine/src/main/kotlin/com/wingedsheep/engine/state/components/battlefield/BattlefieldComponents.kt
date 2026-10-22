@@ -562,6 +562,20 @@ data class AttachedToComponent(
 ) : Component
 
 /**
+ * A permanent that has just transformed into a face with
+ * [com.wingedsheep.sdk.scripting.AttachToPlayerAsTransforms] ("As this permanent transforms into
+ * Curse of Leeches, attach it to a player") and is waiting for its controller to choose that player.
+ * The choice belongs to the transform itself (CR 712.20), so it is made before anything else can see
+ * the Aura unattached: at the end of the untap step for a day/night transform, or by the first
+ * state-based action pass otherwise — both through
+ * `com.wingedsheep.engine.handlers.effects.permanent.attachments.TransformAttachToPlayer`. The CR
+ * 704.5m check leaves an Aura carrying it alone. Set and cleared by `flipDfcInPlace`; stripped when
+ * the permanent leaves the battlefield.
+ */
+@Serializable
+data object PendingTransformAttachComponent : Component
+
+/**
  * The enchant ability an Aura *gained* in place of its printed one — "it loses 'enchant creature
  * card in a graveyard' and gains 'enchant creature put onto the battlefield with this Aura'"
  * (Animate Dead), set by `EnchantPutOntoBattlefieldEffect`. While present it is the Aura's whole
