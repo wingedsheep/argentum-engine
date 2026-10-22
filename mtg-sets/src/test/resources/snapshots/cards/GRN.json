@@ -899,6 +899,101 @@
     ]
 }
 
+// Devious Cover-Up
+{
+    "name": "Devious Cover-Up",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell. If that spell is countered this way, exile it instead of putting it into its owner's graveyard. You may shuffle up to four target cards from your graveyard into your library.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Counter",
+                    "counterDestination": "CounterDestination.Exile"
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1[0]"
+                    },
+                    "destination": "Library"
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1[1]"
+                    },
+                    "destination": "Library"
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1[2]"
+                    },
+                    "destination": "Library"
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1[3]"
+                    },
+                    "destination": "Library"
+                },
+                "ShuffleLibrary"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "count": 4,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "artist": "Micah Epstein",
+        "flavorText": "First, dispose of the evidence. Then dispose of your knowledge of its disposal.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21ac6b0a-b1a5-439d-b65e-5f04e1826c80.jpg?1783934190",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "Devious Cover-Up can't target itself at all. You can't try to counter it with itself and shuffle cards in, and you can't use its effect to shuffle itself into your library."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "You may target zero cards in your graveyard and still shuffle your library."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "A spell that can't be countered is a legal target for Devious Cover-Up. The spell won't be countered when Devious Cover-Up resolves, but you'll still shuffle cards into your library."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Devkarin Dissident
 {
     "name": "Devkarin Dissident",

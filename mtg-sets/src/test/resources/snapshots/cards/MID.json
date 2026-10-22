@@ -547,6 +547,89 @@
     ]
 }
 
+// Baithook Angler
+{
+    "name": "Baithook Angler",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Peasant",
+    "oracleText": "Disturb {1}{U} (You may cast this card from your graveyard transformed for its disturb cost.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "DISTURB"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Disturb",
+            "cost": "{1}{U}"
+        }
+    ],
+    "backFace": {
+        "name": "Hook-Haunt Drifter",
+        "manaCost": "",
+        "typeLine": "Creature — Spirit",
+        "oracleText": "Flying\nIf Hook-Haunt Drifter would be put into a graveyard from anywhere, exile it instead.",
+        "creatureStats": {
+            "power": 1,
+            "toughness": 2
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "script": {
+            "replacementEffects": [
+                {
+                    "type": "RedirectZoneChange",
+                    "newDestination": "Exile",
+                    "appliesTo": {
+                        "type": "ZoneChangeEvent",
+                        "to": "Graveyard"
+                    },
+                    "selfOnly": true
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "42",
+            "artist": "Uriah Voth",
+            "flavorText": "Even in death, he casts his lines, forever fishing for reasons long forgotten.",
+            "imageUri": "https://cards.scryfall.io/normal/back/3/6/36e71d16-0964-489d-bea2-9cec7991fc99.jpg?1783925653"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "artist": "Uriah Voth",
+        "flavorText": "Geor was determined to stay out until he got a bite from something big.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/36e71d16-0964-489d-bea2-9cec7991fc99.jpg?1783925653",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "When you cast a spell using a card's disturb ability, the card is put onto the stack with its back face up. The resulting spell has all the characteristics of that face."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "The mana value of a spell cast using disturb is determined by the mana cost on the front face of the card, no matter what the total cost to cast the spell was."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "The back face of each card with disturb has an ability that instructs its controller to exile it if it would be put into a graveyard from anywhere. This includes going to the graveyard from the stack, so if the spell is countered after you cast it using the disturb ability, it will be put into exile."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Baneblade Scoundrel
 {
     "name": "Baneblade Scoundrel",
@@ -1655,6 +1738,98 @@
     ]
 }
 
+// Component Collector
+{
+    "name": "Component Collector",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Homunculus",
+    "oracleText": "If it's neither day nor night, it becomes day as this creature enters.\nWhenever day becomes night or night becomes day, you may tap or untap target nonland permanent.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Component Collector:1",
+                "trigger": "DayNightChangedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Modal",
+                        "modes": [
+                            {
+                                "effect": {
+                                    "type": "TapUntap",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "description": "Tap that permanent"
+                            },
+                            {
+                                "effect": {
+                                    "type": "TapUntap",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "tap": false
+                                },
+                                "description": "Untap that permanent"
+                            }
+                        ],
+                        "countsAsModalSpell": false
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever day becomes night or night becomes day, you may tap or untap target nonland permanent."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "OnEnterRunEffect",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "Any",
+                                "conditions": [
+                                    "IsDay",
+                                    "IsNight"
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "SetDayNight",
+                        "designation": "DAY"
+                    },
+                    "descriptionOverride": "if it's neither day nor night, it becomes day"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "artist": "Mark Behm",
+        "flavorText": "\"Keep master busy with new bits or else maybe she wonders if I'm made of bits too.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/956b74fc-1355-4668-838b-e8927794608c.jpg?1783925648"
+    }
+}
+
 // Consider
 {
     "name": "Consider",
@@ -1918,6 +2093,70 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Croaking Counterpart
+{
+    "name": "Croaking Counterpart",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a token that's a copy of target non-Frog creature, except it's a 1/1 green Frog.\nFlashback {3}{G}{U} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{3}{G}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateTokenCopyOfTarget",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "exceptions": {
+                "overrideSubtypes": [
+                    "Frog"
+                ],
+                "overrideColors": [
+                    "GREEN"
+                ],
+                "powerOverride": 1,
+                "toughnessOverride": 1
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Frog"
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "215",
+        "rarity": "RARE",
+        "artist": "Yeong-Hao Han",
+        "flavorText": "Frog is the sincerest form of flattery.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/9847b22f-6660-4654-91a9-e0adb8606bab.jpg?1783925565"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
     ]
 }
 
@@ -3910,6 +4149,67 @@
     ]
 }
 
+// Flip the Switch
+{
+    "name": "Flip the Switch",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell unless its controller pays {4}. Create a 2/2 black Zombie creature token with decayed. (It can't block. When it attacks, sacrifice it at end of combat.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Counter",
+                    "condition": {
+                        "type": "CounterCondition.UnlessPaysMana",
+                        "cost": "{4}"
+                    }
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "keywords": [
+                        "DECAYED"
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "artist": "Campbell White",
+        "flavorText": "\"Works every time! Well, every time they don't explode, anyway.\"\n—Barton, stitcher",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5cdbe4e3-f030-46fa-ae84-edf261b61706.jpg?1783925640",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "You will create a Zombie creature token even if the spell's controller pays {4}."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Foul Play
 {
     "name": "Foul Play",
@@ -3951,6 +4251,90 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Galedrifter
+{
+    "name": "Galedrifter",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Hippogriff",
+    "oracleText": "Flying\nDisturb {4}{U} (You may cast this card from your graveyard transformed for its disturb cost.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "DISTURB"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Disturb",
+            "cost": "{4}{U}"
+        }
+    ],
+    "backFace": {
+        "name": "Waildrifter",
+        "manaCost": "",
+        "typeLine": "Creature — Hippogriff Spirit",
+        "oracleText": "Flying\nIf Waildrifter would be put into a graveyard from anywhere, exile it instead.",
+        "creatureStats": {
+            "power": 2,
+            "toughness": 2
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "script": {
+            "replacementEffects": [
+                {
+                    "type": "RedirectZoneChange",
+                    "newDestination": "Exile",
+                    "appliesTo": {
+                        "type": "ZoneChangeEvent",
+                        "to": "Graveyard"
+                    },
+                    "selfOnly": true
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "55",
+            "artist": "Daniel Ljunggren",
+            "flavorText": "\"Wait! That's no gryff—at least not anymore.\"\n—Geor, Havengul fisher",
+            "imageUri": "https://cards.scryfall.io/normal/back/e/b/eb34c472-c6ff-4d83-ac8b-a8f279593f98.jpg?1783925646"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "\"If you're lost in a storm, follow a gryff. They always know which way calmer waters lie.\"\n—Geor, Havengul fisher",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb34c472-c6ff-4d83-ac8b-a8f279593f98.jpg?1783925646",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "When you cast a spell using a card's disturb ability, the card is put onto the stack with its back face up. The resulting spell has all the characteristics of that face."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "The mana value of a spell cast using disturb is determined by the mana cost on the front face of the card, no matter what the total cost to cast the spell was."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "The back face of each card with disturb has an ability that instructs its controller to exile it if it would be put into a graveyard from anywhere. This includes going to the graveyard from the stack, so if the spell is countered after you cast it using the disturb ability, it will be put into exile."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4091,6 +4475,76 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Geistwave
+{
+    "name": "Geistwave",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Return target nonland permanent to its owner's hand. If you controlled that permanent, draw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "filter": "nonland permanent ctrl:you"
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    },
+                    {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "destination": "Hand"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "artist": "Olena Richards",
+        "flavorText": "Necro-alchemists gained popular support during the Travails, when geist-fueled weapons helped defend towns against mad cultists and Eldrazi monstrosities.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0e3d1ac-bec2-4bba-a6cf-a823996dde2d.jpg?1783925641"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -5085,6 +5539,58 @@
     ]
 }
 
+// Lier, Disciple of the Drowned
+{
+    "name": "Lier, Disciple of the Drowned",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "Spells can't be countered.\nEach instant and sorcery card in your graveyard has flashback. The flashback cost is equal to that card's mana cost.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantCantBeCountered",
+                "filter": {}
+            },
+            {
+                "type": "GraveyardCardsHaveFlashback",
+                "filter": "instant|sorcery"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "MYTHIC",
+        "artist": "Ekaterina Burmak",
+        "flavorText": "Beneath the waves, lost gods stir in their slumber.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/78fb8900-d28d-4e33-96a7-66fcbc117adf.jpg?1783925638",
+        "rulings": [
+            {
+                "date": "2025-06-06",
+                "text": "If a card with no mana cost gains flashback, it has no flashback cost. It can't be cast this way."
+            },
+            {
+                "date": "2025-06-06",
+                "text": "If you cast an instant or sorcery with {X} in its mana cost this way, you still choose the value of X as part of casting the spell and pay that cost."
+            },
+            {
+                "date": "2025-06-06",
+                "text": "You must still follow any timing restrictions and permissions, including those based on the card's type. For instance, you can cast a sorcery using flashback only when you could normally cast a sorcery."
+            },
+            {
+                "date": "2025-06-06",
+                "text": "A spell cast using flashback will always be exiled afterward, whether it resolves, is countered, or leaves the stack in some other way."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Liesa, Forgotten Archangel
 {
     "name": "Liesa, Forgotten Archangel",
@@ -5707,6 +6213,133 @@
     ]
 }
 
+// Malevolent Hermit
+{
+    "name": "Malevolent Hermit",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{U}, Sacrifice this creature: Counter target noncreature spell unless its controller pays {3}.\nDisturb {2}{U} (You may cast this card from your graveyard transformed for its disturb cost.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "DISTURB"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Disturb",
+            "cost": "{2}{U}"
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Malevolent Hermit:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{U}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Counter",
+                    "condition": {
+                        "type": "CounterCondition.UnlessPaysMana",
+                        "cost": "{3}"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "noncreature",
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Benevolent Geist",
+        "manaCost": "",
+        "typeLine": "Creature — Spirit Wizard",
+        "oracleText": "Flying\nNoncreature spells you control can't be countered.\nIf Benevolent Geist would be put into a graveyard from anywhere, exile it instead.",
+        "creatureStats": {
+            "power": 2,
+            "toughness": 2
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "script": {
+            "staticAbilities": [
+                {
+                    "type": "GrantCantBeCountered",
+                    "filter": "noncreature ctrl:you"
+                }
+            ],
+            "replacementEffects": [
+                {
+                    "type": "RedirectZoneChange",
+                    "newDestination": "Exile",
+                    "appliesTo": {
+                        "type": "ZoneChangeEvent",
+                        "to": "Graveyard"
+                    },
+                    "selfOnly": true
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "61",
+            "rarity": "RARE",
+            "artist": "Daarken",
+            "flavorText": "All his old grudges suddenly seemed laughably petty. So he laughed.",
+            "imageUri": "https://cards.scryfall.io/normal/back/e/7/e79269af-63eb-43d2-afee-c38fa14a0c5b.jpg?1783925642"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e79269af-63eb-43d2-afee-c38fa14a0c5b.jpg?1783925642",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "When you cast a spell using a card's disturb ability, the card is put onto the stack with its back face up. The resulting spell has all the characteristics of that face."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "The mana value of a spell cast using disturb is determined by the mana cost on the front face of the card, no matter what the total cost to cast the spell was."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "The back face of each card with disturb has an ability that instructs its controller to exile if it would be put into a graveyard from anywhere. This includes going to the graveyard from the stack, so if the spell is countered after you cast it using the disturb ability, it will be put into exile."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Memory Deluge
 {
     "name": "Memory Deluge",
@@ -5962,6 +6595,121 @@
     ]
 }
 
+// Mysterious Tome
+{
+    "name": "Mysterious Tome",
+    "manaCost": "{2}{U}",
+    "typeLine": "Artifact — Book",
+    "oracleText": "{2}, {T}: Draw a card. Transform this artifact.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mysterious Tome:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "Transform"
+                    ]
+                },
+                "descriptionOverride": "{2}, {T}: Draw a card. Transform this artifact."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Chilling Chronicle",
+        "manaCost": "",
+        "typeLine": "Artifact — Book",
+        "oracleText": "{1}, {T}: Tap target nonland permanent. Transform this artifact.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Chilling Chronicle:1",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{1}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "Transform"
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "nonland permanent"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "{1}, {T}: Tap target nonland permanent. Transform this artifact."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "63",
+            "rarity": "UNCOMMON",
+            "artist": "David Auden Nash",
+            "flavorText": "But every story ended the same way: the countryside was captured in the icy grip of winter and darkened by eternal night.",
+            "imageUri": "https://cards.scryfall.io/normal/back/c/a/caa57b63-bb11-45e8-8795-de92ca61f4f1.jpg?1783925645"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "UNCOMMON",
+        "artist": "David Auden Nash",
+        "flavorText": "The villagers pored through the old storybook, hoping that one of the tales within might hold some clue to saving the fading sun.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/caa57b63-bb11-45e8-8795-de92ca61f4f1.jpg?1783925645"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Nebelgast Intruder
 {
     "name": "Nebelgast Intruder",
@@ -6199,6 +6947,185 @@
     ]
 }
 
+// Ominous Roost
+{
+    "name": "Ominous Roost",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters and whenever you cast a spell from your graveyard, create a 1/1 blue Bird creature token with flying and \"This token can block only creatures with flying.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ominous Roost:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Bird"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0f7b2f0-16d3-4db0-a737-c7b8dcb9d5de.jpg?1783925225",
+                    "staticAbilities": [
+                        {
+                            "type": "CanOnlyBlockCreaturesWith",
+                            "blockerFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "HasKeyword",
+                                        "keyword": "FLYING"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Ominous Roost:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        {
+                            "type": "SpellCastFromZone",
+                            "zone": "Graveyard"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Bird"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0f7b2f0-16d3-4db0-a737-c7b8dcb9d5de.jpg?1783925225",
+                    "staticAbilities": [
+                        {
+                            "type": "CanOnlyBlockCreaturesWith",
+                            "blockerFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "HasKeyword",
+                                        "keyword": "FLYING"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "rarity": "UNCOMMON",
+        "artist": "Josu Hernaiz",
+        "flavorText": "\"One raven is a bad omen. Two are a curse. I don't know what this is, but it can't be good.\"\n—Verna, priest of Sigarda",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/daf2b49a-56f9-4093-960f-9ec7af8983b5.jpg?1783925636"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Organ Hoarder
+{
+    "name": "Organ Hoarder",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "When this creature enters, look at the top three cards of your library, then put one of them into your hand and the rest into your graveyard.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Organ Hoarder:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Put in graveyard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "artist": "Nicholas Gregory",
+        "flavorText": "The stitcher died years ago, but her dutiful assistant still keeps the laboratory well stocked.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/9716d384-88d1-415e-882f-7fed9be1adc6.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Otherworldly Gaze
 {
     "name": "Otherworldly Gaze",
@@ -6292,6 +7219,250 @@
     ]
 }
 
+// Overwhelmed Archivist
+{
+    "name": "Overwhelmed Archivist",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When this creature enters, draw a card, then discard a card.\nDisturb {3}{U} (You may cast this card from your graveyard transformed for its disturb cost.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "DISTURB"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Disturb",
+            "cost": "{3}{U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Overwhelmed Archivist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Archive Haunt",
+        "manaCost": "",
+        "typeLine": "Creature — Spirit Wizard",
+        "oracleText": "Flying\nWhenever this creature attacks, draw a card, then discard a card.\nIf Archive Haunt would be put into a graveyard from anywhere, exile it instead.",
+        "creatureStats": {
+            "power": 2,
+            "toughness": 1
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Archive Haunt:1",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ],
+            "replacementEffects": [
+                {
+                    "type": "RedirectZoneChange",
+                    "newDestination": "Exile",
+                    "appliesTo": {
+                        "type": "ZoneChangeEvent",
+                        "to": "Graveyard"
+                    },
+                    "selfOnly": true
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "68",
+            "rarity": "UNCOMMON",
+            "artist": "Cristi Balanescu",
+            "flavorText": "Cleaning up his life's work was his afterlife's work.",
+            "imageUri": "https://cards.scryfall.io/normal/back/8/3/832288fd-8031-4c2b-ad3e-b1ec9f94d379.jpg?1783925639"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "UNCOMMON",
+        "artist": "Cristi Balanescu",
+        "flavorText": "\"Bah! As if I had time to preserve everything.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/3/832288fd-8031-4c2b-ad3e-b1ec9f94d379.jpg?1783925639",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "When you cast a spell using a card's disturb ability, the card is put onto the stack with its back face up. The resulting spell has all the characteristics of that face."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "The mana value of a spell cast using disturb is determined by the mana cost on the front face of the card, no matter what the total cost to cast the spell was."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "The back face of each card with disturb has an ability that instructs its controller to exile if it would be put into a graveyard from anywhere. This includes going to the graveyard from the stack, so if the spell is countered after you cast it using the disturb ability, it will be put into exile."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Patrician Geist
+{
+    "name": "Patrician Geist",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Spirit Knight",
+    "oracleText": "Flying\nOther Spirits you control get +1/+1.\nSpells you cast from your graveyard cost {1} less to cast.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "permanent Spirit ctrl:you",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCastFromZones",
+                    "zones": [
+                        "Graveyard"
+                    ]
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "RARE",
+        "artist": "Marta Nael",
+        "flavorText": "He rides in agitated circles, snapping orders at servants who've long since found their peace.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/de2b0c63-c929-42ec-aada-dddb2a26550c.jpg?1783925634"
+    }
+}
+
 // Pestilent Wolf
 {
     "name": "Pestilent Wolf",
@@ -6329,6 +7500,85 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Phantom Carriage
+{
+    "name": "Phantom Carriage",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying\nWhen this creature enters, you may search your library for a card with flashback or disturb, put it into your graveyard, then shuffle.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Phantom Carriage:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "kw:flashback|kw:disturb"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a card with flashback or with disturb to put into your graveyard",
+                                "selectedLabel": "Put into your graveyard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                }
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "flavorText": "Passage to the abyss is free, but the return trip will cost you.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/1990ed41-3739-40f6-8797-359f88af05f9.jpg?1783925633"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
