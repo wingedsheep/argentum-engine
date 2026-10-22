@@ -3,7 +3,12 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.core.PassPriority
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
+import com.wingedsheep.engine.state.components.player.PlayerHexproofComponent
+import com.wingedsheep.engine.state.components.player.PlayerProtectionComponent
+import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.scripting.ProtectionScope
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.DayNight
@@ -34,6 +39,23 @@ class CurseOfLeechesScenarioTest : ScenarioTestBase() {
         state.getBattlefield().single {
             state.getEntity(it)?.get<CardComponent>()?.name in setOf("Curse of Leeches", "Leeching Lurker")
         }
+
+    /**
+     * Leeching Lurker on the battlefield during the day, so the next settle (after casting Grizzly
+     * Bears) transforms it into Curse of Leeches outside the untap step.
+     */
+    private fun lurkerAtDaybreak(): TestGame {
+        val game = scenario()
+            .withPlayers("Player", "Opponent")
+            .withCardOnBattlefield(1, "Leeching Lurker")
+            .withCardInHand(1, "Grizzly Bears")
+            .withLandsOnBattlefield(1, "Forest", 2)
+            .withActivePlayer(1)
+            .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+            .build()
+        game.state = game.state.copy(dayNight = DayNight.DAY)
+        return game
+    }
 
     private fun TestGame.attachedTo(): EntityId? = state.getEntity(permanentId())?.get<AttachedToComponent>()?.targetId
 
@@ -109,8 +131,8 @@ class CurseOfLeechesScenarioTest : ScenarioTestBase() {
                     .withActivePlayer(1)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
-                // A nightbound face up during the day is transformed by the day/night state-based sweep
-                // (CR 702.145) the next time state-based actions are checked — after this cast.
+                // A nightbound face up during the day is out of step with the designation; the engine
+                // reconciles it (CR 702.145f) the next time it settles — after this cast.
                 game.state = game.state.copy(dayNight = DayNight.DAY)
 
                 game.castSpell(1, "Grizzly Bears").error shouldBe null
@@ -154,7 +176,49 @@ class CurseOfLeechesScenarioTest : ScenarioTestBase() {
                     game.state.stack.size shouldBe 0
                     game.getLifeTotal(2) shouldBe 20
                 }
-                game.state.getZone(com.wingedsheep.engine.state.ZoneKey(game.player1Id, Zone.GRAVEYARD)).size shouldBe 0
+                game.state.getZone(ZoneKey(game.player1Id, Zone.GRAVEYARD)).size shouldBe 0
+            }
+
+            test("attaching doesn't target, so an opponent with hexproof can still be chosen") {
+                val game = lurkerAtDaybreak()
+                game.state = game.state.updateEntity(game.player2Id) { it.with(PlayerHexproofComponent()) }
+
+                game.castSpell(1, "Grizzly Bears").error shouldBe null
+
+                val decision = game.state.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>()
+                decision.options shouldBe listOf("Opponent", "Player (you)")
+                game.submitDecision(OptionChosenResponse(decision.id, 0))
+                game.attachedTo() shouldBe game.player2Id
+            }
+
+            test("a player with protection from black can't be chosen, leaving its controller") {
+                val game = lurkerAtDaybreak()
+                game.state = game.state.updateEntity(game.player2Id) {
+                    it.with(PlayerProtectionComponent(listOf(ProtectionScope.Color(Color.BLACK))))
+                }
+
+                game.castSpell(1, "Grizzly Bears").error shouldBe null
+
+                withClue("one legal player is no choice at all (CR 702.16c)") {
+                    game.state.pendingDecision shouldBe null
+                }
+                game.attachedTo() shouldBe game.player1Id
+                game.isOnBattlefield("Curse of Leeches") shouldBe true
+            }
+
+            test("with no player it could enchant, it's an unattached Aura and goes to the graveyard") {
+                val game = lurkerAtDaybreak()
+                for (player in listOf(game.player1Id, game.player2Id)) {
+                    game.state = game.state.updateEntity(player) {
+                        it.with(PlayerProtectionComponent(listOf(ProtectionScope.Color(Color.BLACK))))
+                    }
+                }
+
+                game.castSpell(1, "Grizzly Bears").error shouldBe null
+
+                game.state.pendingDecision shouldBe null
+                game.isOnBattlefield("Curse of Leeches") shouldBe false
+                game.state.getZone(ZoneKey(game.player1Id, Zone.GRAVEYARD)).size shouldBe 1
             }
         }
     }

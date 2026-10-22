@@ -100,7 +100,11 @@ object DayNightService {
         if (withDfc.dayNight != DayNight.NIGHT) return withDfc
         val dfc = withDfc.getEntity(entityId)?.get<DoubleFacedComponent>() ?: return withDfc
         if (dfc.currentFace != DoubleFacedComponent.Face.FRONT) return withDfc
-        return flipDfcInPlace(withDfc, cardRegistry, entityId)?.first ?: withDfc
+        // Entering transformed isn't transforming, so an "as this transforms" attach doesn't apply.
+        val entered = flipDfcInPlace(withDfc, cardRegistry, entityId)?.first ?: return withDfc
+        return entered.updateEntity(entityId) {
+            it.without<com.wingedsheep.engine.state.components.battlefield.PendingTransformAttachComponent>()
+        }
     }
 
     /** "It becomes day" (CR 731.1 / 702.145). */

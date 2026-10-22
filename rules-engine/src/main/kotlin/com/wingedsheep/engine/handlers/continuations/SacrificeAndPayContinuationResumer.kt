@@ -1152,7 +1152,7 @@ class SacrificeAndPayContinuationResumer(
         // CR 712.20 — an "attach it to a player" Aura face the untap step's day/night change
         // transformed into gets its player before the step ends (TransformAttachToPlayer).
         com.wingedsheep.engine.handlers.effects.permanent.attachments.TransformAttachToPlayer
-            .settle(newState, services.zones.predicateEvaluator)?.let { settled ->
+            .settle(newState, services.cardRegistry, services.zones.predicateEvaluator)?.let { settled ->
                 if (settled.outcome !is Outcome.Done) return settled.copy(events = events + settled.events)
                 return checkForMore(settled.state, events + settled.events)
             }

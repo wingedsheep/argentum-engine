@@ -38,7 +38,7 @@ class StateBasedContinuationResumer(
         val playerId = continuation.candidateIds.getOrNull(response.optionIndex)
             ?: return ExecutionResult.error(state, "Invalid player option index ${response.optionIndex}")
         val (attached, events) = TransformAttachToPlayer.attach(state, continuation.auraId, playerId)
-        val settled = TransformAttachToPlayer.settle(attached, services.zones.predicateEvaluator, events)
+        val settled = TransformAttachToPlayer.settle(attached, services.cardRegistry, services.zones.predicateEvaluator, events)
         if (settled != null && settled.outcome !is Outcome.Done) return settled
         return checkForMore(settled?.state ?: attached, settled?.events ?: events)
     }

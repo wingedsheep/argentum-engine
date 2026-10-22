@@ -15,10 +15,13 @@ import com.wingedsheep.engine.state.GameState
  * point after it where the engine can ask. It runs right after the day/night sweep and well before
  * the CR 704.5m check, so the Aura is attached before anything treats it as unattached.
  */
-class TransformAttachCheck(private val predicateEvaluator: PredicateEvaluator) : StateBasedActionCheck {
+class TransformAttachCheck(
+    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry,
+    private val predicateEvaluator: PredicateEvaluator
+) : StateBasedActionCheck {
     override val name = "712.20 Attach as it transforms"
     override val order = SbaOrder.TRANSFORM_ATTACH
 
     override fun check(state: GameState): ExecutionResult =
-        TransformAttachToPlayer.settle(state, predicateEvaluator) ?: ExecutionResult.success(state)
+        TransformAttachToPlayer.settle(state, cardRegistry, predicateEvaluator) ?: ExecutionResult.success(state)
 }

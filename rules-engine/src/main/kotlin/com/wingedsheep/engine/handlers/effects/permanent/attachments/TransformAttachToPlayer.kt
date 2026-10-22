@@ -8,7 +8,9 @@ import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.TransformAttachToPlayerContinuation
 import com.wingedsheep.engine.core.suspendForDecision
 import com.wingedsheep.engine.handlers.PredicateEvaluator
-import com.wingedsheep.engine.mechanics.targeting.PlayerProtectionRules
+import com.wingedsheep.engine.handlers.TargetFinder
+import com.wingedsheep.engine.handlers.effects.copy.CopyAuraEntry
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.PendingTransformAttachComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -31,8 +33,8 @@ import com.wingedsheep.sdk.model.EntityId
  *    CR 704.5m check would put an unattached Aura into the graveyard.
  *
  * Attaching doesn't target, so hexproof doesn't stop it; a player the Aura can't legally enchant —
- * one with protection from it (CR 702.16c) — can't be chosen. With nobody to choose, the mark is
- * dropped and 704.5m applies.
+ * one its enchant ability excludes, or one with protection from it (CR 702.16c) — can't be chosen.
+ * With nobody to choose, the mark is dropped and 704.5m applies.
  */
 object TransformAttachToPlayer {
 
@@ -43,6 +45,7 @@ object TransformAttachToPlayer {
      */
     fun settle(
         state: GameState,
+        cardRegistry: CardRegistry,
         predicateEvaluator: PredicateEvaluator,
         events: List<GameEvent> = emptyList()
     ): ExecutionResult? {
@@ -52,7 +55,7 @@ object TransformAttachToPlayer {
         var newState = state
         val allEvents = events.toMutableList()
         for (auraId in pending) {
-            val candidates = candidates(newState, auraId, predicateEvaluator)
+            val candidates = candidates(newState, auraId, cardRegistry, predicateEvaluator)
             when (candidates.size) {
                 0 -> newState = newState.updateEntity(auraId) { it.without<PendingTransformAttachComponent>() }
                 1 -> {
@@ -81,17 +84,25 @@ object TransformAttachToPlayer {
     }
 
     /**
-     * The players [auraId] could be attached to, opponents first in turn order from its controller,
-     * then its controller. Players who have left the game and players protected from the Aura are out.
+     * The players [auraId] could legally enchant (CR 303.4) — its enchant ability and player
+     * protection, but not targeting restrictions such as hexproof, since attaching doesn't target —
+     * opponents first in turn order from its controller, then its controller. The same host test an
+     * Aura put onto the battlefield without being cast gets ([CopyAuraEntry.legalHosts]).
      */
-    fun candidates(state: GameState, auraId: EntityId, predicateEvaluator: PredicateEvaluator): List<EntityId> {
+    fun candidates(
+        state: GameState,
+        auraId: EntityId,
+        cardRegistry: CardRegistry,
+        predicateEvaluator: PredicateEvaluator
+    ): List<EntityId> {
         val controllerId = state.projectedState.getController(auraId) ?: return emptyList()
+        val card = state.getEntity(auraId)?.get<CardComponent>() ?: return emptyList()
+        val legal = CopyAuraEntry.legalHosts(
+            state, auraId, card, controllerId, cardRegistry, TargetFinder(predicateEvaluator), predicateEvaluator
+        ).toSet()
         val players = state.activePlayers
         val start = players.indexOf(controllerId).coerceAtLeast(0)
-        val ordered = (players.drop(start + 1) + players.take(start + 1))
-        return ordered.filter {
-            !PlayerProtectionRules.isProtectedFromSource(state, it, auraId, controllerId, predicateEvaluator)
-        }
+        return (players.drop(start + 1) + players.take(start + 1)).filter { it in legal }
     }
 
     private fun ask(

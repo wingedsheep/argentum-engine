@@ -173,8 +173,9 @@ internal fun flipDfcInPlace(
     // CR 712.20 — an "As this permanent transforms into …, attach it to a player" ability of the new
     // face applies while it transforms. The player is chosen as soon as the engine can ask (see
     // TransformAttachToPlayer); until then the mark keeps the 704.5m check off the Aura.
-    val attachesToPlayer = copiedFace == null &&
-        nextCardDef!!.script.replacementEffects.any { it is AttachToPlayerAsTransforms }
+    val faceDefinition = copiedFace?.let { cardRegistry.getCard(it.cardDefinitionId) } ?: nextCardDef
+    val attachesToPlayer = faceDefinition?.script?.replacementEffects
+        ?.any { it is AttachToPlayerAsTransforms } == true
     val marked = newState.updateEntity(entityId) {
         if (attachesToPlayer) it.with(PendingTransformAttachComponent) else it.without<PendingTransformAttachComponent>()
     }

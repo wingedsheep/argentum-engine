@@ -403,7 +403,7 @@ class BeginningPhaseManager(
         // enchanted player's upkeep triggers must see the attachment. May pause for the choice;
         // every caller parks the rest of the turn beneath it.
         com.wingedsheep.engine.handlers.effects.permanent.attachments.TransformAttachToPlayer
-            .settle(newState, predicateEvaluator, events)?.let { return it }
+            .settle(newState, cardRegistry, predicateEvaluator, events)?.let { return it }
 
         return ExecutionResult.success(newState, events)
     }

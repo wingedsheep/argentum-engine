@@ -612,6 +612,9 @@ data class OnEnterRun(
  * permanents; entering the battlefield face up is not a transform (the card's own ruling), so it
  * doesn't apply then.
  *
+ * [appliesTo] is nominal: the engine reads the ability off the face as `flipDfcInPlace` turns it over
+ * and never matches it against events.
+ *
  * Not [OnEnterRun]: that runs an effect *as the permanent enters*, through the resolving effect
  * pipeline, and a daybound transform happens in the untap step's turn-based day/night change, where
  * no effect is resolving. Not [com.wingedsheep.sdk.scripting.effects.AttachToChosenHostEffect]:
