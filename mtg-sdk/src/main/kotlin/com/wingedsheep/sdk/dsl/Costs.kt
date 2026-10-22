@@ -1032,6 +1032,17 @@ object Costs {
             filter: GameObjectFilter = GameObjectFilter.Permanent
         ): AdditionalCost = AdditionalCost.Atom(CostAtom.RemoveCounters(counterType, DynamicAmount.Fixed(count), filter))
 
+        /**
+         * "Remove X [counterType] counters from among [filter]s you control" as an additional cost
+         * to cast a spell (Light Up the Night's flashback). The caster announces X with the cast,
+         * independent of any `{X}` in the mana cost, and the counters removed must total exactly X;
+         * X is bounded by the matching counters on those permanents and becomes the spell's X.
+         */
+        fun RemoveXCounters(
+            counterType: CounterType? = null,
+            filter: GameObjectFilter = GameObjectFilter.Permanent
+        ): AdditionalCost = AdditionalCost.Atom(CostAtom.RemoveCounters(counterType, DynamicAmount.XValue, filter))
+
         /** Tap [count] untapped permanents matching [filter] you control. */
         fun TapPermanents(count: Int = 1, filter: GameObjectFilter = GameObjectFilter.Creature): AdditionalCost =
             AdditionalCost.Atom(CostAtom.TapPermanents(count, filter))

@@ -2,7 +2,6 @@ package com.wingedsheep.engine.legalactions.enumerators
 
 import com.wingedsheep.engine.mechanics.cost.spell.AnyNumberForCostReductionCostKind
 import com.wingedsheep.engine.legalactions.surfacedRequirements
-import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
@@ -635,7 +634,7 @@ class CastSpellEnumerator(
 
             // Calculate X cost info if the spell has X in its cost (printed, or the waterbend {X}
             // folded in above).
-            val counterMaxX = PlayerCounterPayment.spellMaxX(state, playerId, additionalCosts)
+            val counterMaxX = SpellCosts.additionalCostMaxX(state, playerId, additionalCosts, context.predicateEvaluator)
             val hasXCost = effectiveCost.hasX || counterMaxX != null
             val manaMaxX: Int? = if (effectiveCost.hasX) {
                 // Pass the spell context so floating restricted mana this spell may spend

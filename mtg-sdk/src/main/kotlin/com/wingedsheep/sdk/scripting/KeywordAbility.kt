@@ -639,13 +639,20 @@ sealed interface KeywordAbility {
      * this card has flashback {2}{G}."). It is evaluated with the card as the source and its owner
      * as the controller whenever the graveyard cast is enumerated or paid for; a spell already cast
      * with flashback is still exiled when it leaves the stack even if the condition has lapsed.
+     *
+     * [minimumXValue] is the floor on the spell's X when it is cast this way — "If you cast this
+     * spell this way, X can't be 0" (Light Up the Night) is `1`. It mirrors
+     * [com.wingedsheep.sdk.scripting.ActivatedAbility.minimumXValue]: the X choice offered with the
+     * flashback cast starts there, and a cast announcing less is rejected. It constrains only the
+     * flashback route; a hand cast keeps the full X range.
      */
     @SerialName("Flashback")
     @Serializable
     data class Flashback(
         val cost: ManaCost,
         val additionalCost: AdditionalCost? = null,
-        val condition: @Serializable Condition? = null
+        val condition: @Serializable Condition? = null,
+        val minimumXValue: Int = 0
     ) : KeywordAbility {
         override val keyword: Keyword = Keyword.FLASHBACK
         override val description: String =
@@ -1621,8 +1628,8 @@ sealed interface KeywordAbility {
         /**
          * Create Flashback with a mana cost and an additional cost (e.g., "Flashback—{1}{R}, Behold three Elementals").
          */
-        fun flashback(cost: String, additionalCost: AdditionalCost): KeywordAbility =
-            Flashback(ManaCost.parse(cost), additionalCost)
+        fun flashback(cost: String, additionalCost: AdditionalCost, minimumXValue: Int = 0): KeywordAbility =
+            Flashback(ManaCost.parse(cost), additionalCost, minimumXValue = minimumXValue)
 
         /**
          * Create a Flashback the card has only while [condition] holds

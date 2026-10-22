@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.mechanics.cost.spell
 
 import com.wingedsheep.engine.handlers.CostHandler
+import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
 import com.wingedsheep.engine.legalactions.AdditionalCostData
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.core.ManaCost
@@ -147,6 +149,21 @@ object SpellCosts {
     }
 
     /** Expand [AdditionalCost.Composite] wrappers so every cost in the list stands on its own. */
+    /**
+     * The X ceiling [costs] put on the cast's announcement when they themselves read X — "pay X
+     * energy", "remove X counters from among …" — independent of any `{X}` in the mana cost; null
+     * when none does. The tighter of the player-counter and permanent-counter pools.
+     */
+    fun additionalCostMaxX(
+        state: GameState,
+        payer: EntityId,
+        costs: List<AdditionalCost>,
+        predicateEvaluator: PredicateEvaluator,
+    ): Int? = listOfNotNull(
+        PlayerCounterPayment.spellMaxX(state, payer, costs),
+        RemoveCountersCostKind.maxX(state, payer, costs, predicateEvaluator),
+    ).minOrNull()
+
     fun flattenComposites(costs: List<AdditionalCost>): List<AdditionalCost> =
         costs.flatMap { if (it is AdditionalCost.Composite) flattenComposites(it.steps) else listOf(it) }
 

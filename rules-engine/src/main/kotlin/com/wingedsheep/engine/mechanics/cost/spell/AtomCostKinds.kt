@@ -10,6 +10,7 @@ import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.tap
 import com.wingedsheep.engine.handlers.CostHandler
 import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver
 import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
 import com.wingedsheep.engine.handlers.costs.GraveyardTotalExileResolver
@@ -898,22 +899,40 @@ internal object RevealFromHandCostKind : SpellCostKind<CostAtom.RevealFromHand> 
  * client sends the typed per-entity, per-counter-type removals
  * ([AdditionalCostPayment.distributedCounterRemovals]), so the player explicitly picks which counter
  * types come off each creature.
+ *
+ * A `count` of [DynamicAmount.XValue] ("remove X loyalty counters from among planeswalkers you
+ * control", Light Up the Night's flashback) owes exactly the announced X: the cast offer carries
+ * [maxX] as its X ceiling, and the removals must total `action.xValue`.
  */
 internal object RemoveCountersCostKind : SpellCostKind<CostAtom.RemoveCounters> {
     private fun fixedCount(cost: CostAtom.RemoveCounters): Int = (cost.count as? DynamicAmount.Fixed)?.amount ?: 0
 
+    private fun isX(cost: CostAtom.RemoveCounters) = cost.count is DynamicAmount.XValue && !cost.self
+
+    /** Counters this cost may take: matching counters on the matching permanents [payerId] controls. */
+    private fun available(state: GameState, payerId: EntityId, cost: CostAtom.RemoveCounters, predicateEvaluator: PredicateEvaluator): Int {
+        val projected = state.projectedState
+        val ctx = PredicateContext(controllerId = payerId)
+        return projected.getBattlefieldControlledBy(payerId).sumOf { entityId ->
+            if (!predicateEvaluator.matches(state, projected, entityId, cost.filter, ctx)) return@sumOf 0
+            val counters = state.getEntity(entityId)?.get<CountersComponent>() ?: return@sumOf 0
+            if (cost.counterType != null) counters.getCount(cost.counterType!!) else counters.counters.values.sum()
+        }
+    }
+
+    /**
+     * The X ceiling the "remove X counters" costs among [costs] put on the cast's announcement, or
+     * null when none of them reads X. Each such cost alone can take every matching counter.
+     */
+    fun maxX(state: GameState, payerId: EntityId, costs: List<AdditionalCost>, predicateEvaluator: PredicateEvaluator): Int? =
+        SpellCosts.flattenComposites(costs)
+            .mapNotNull { ((it as? AdditionalCost.Atom)?.atom as? CostAtom.RemoveCounters)?.takeIf(::isX) }
+            .minOfOrNull { available(state, payerId, it, predicateEvaluator) }
+
     override fun canPay(state: GameState, payerId: EntityId, cost: CostAtom.RemoveCounters, costHandler: CostHandler): Boolean {
         val needed = fixedCount(cost)
         if (needed <= 0) return true
-        val counterType = cost.counterType?.let { it }
-        val projected = state.projectedState
-        val ctx = PredicateContext(controllerId = payerId)
-        val total = projected.getBattlefieldControlledBy(payerId).sumOf { entityId ->
-            if (!costHandler.predicateEvaluator.matches(state, projected, entityId, cost.filter, ctx)) return@sumOf 0
-            val counters = state.getEntity(entityId)?.get<CountersComponent>() ?: return@sumOf 0
-            if (counterType != null) counters.getCount(counterType) else counters.counters.values.sum()
-        }
-        return total >= needed
+        return available(state, payerId, cost, costHandler.predicateEvaluator) >= needed
     }
 
     // The pool is counters, not objects, so affordability sums what the matching permanents carry
@@ -937,9 +956,15 @@ internal object RemoveCountersCostKind : SpellCostKind<CostAtom.RemoveCounters> 
     override fun validate(check: SpellCostCheck, cost: CostAtom.RemoveCounters): String? {
         val state = check.state
         val projected = state.projectedState
-        val needed = fixedCount(cost)
         val removals = check.payment?.distributedCounterRemovals ?: emptyList()
         val total = removals.sumOf { it.count }
+        if (isX(cost)) {
+            val x = check.action.xValue ?: 0
+            if (total != x) {
+                return "You must remove exactly $x counters from among ${cost.filter.description}s you control to cast this spell"
+            }
+        }
+        val needed = fixedCount(cost)
         if (total < needed) {
             val phrase = if (needed == 1) "1 counter from a" else "$needed counters from among"
             val plural = if (needed == 1) "" else "s"

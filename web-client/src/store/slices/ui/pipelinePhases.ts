@@ -353,7 +353,7 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
 
 export function mergeResult(
   action: GameAction,
-  _actionInfo: LegalActionInfo,
+  actionInfo: LegalActionInfo,
   result: PhaseResult,
   gameState: ClientGameState,
 ): GameAction {
@@ -388,9 +388,11 @@ export function mergeResult(
       if (action.type === 'CastSpell') {
         // Fixed distributed counter cost (Dawnhand Dissident's linked-exile cost) —
         // send the typed payload so the engine knows exactly which counter type
-        // came off each creature.
+        // came off each creature. A "remove X counters" cost (Light Up the Night's
+        // flashback) has no fixed total: the counters removed announce X.
         return {
           ...action,
+          ...(actionInfo.hasXCost ? { xValue: result.xValue } : {}),
           additionalCostPayment: {
             ...action.additionalCostPayment,
             distributedCounterRemovals: [...result.distributedCounterRemovals],
@@ -577,7 +579,7 @@ export function mergeResult(
         // each tapping its own creature (the engine slices `tappedPermanents` per activation).
         if (
           costType === 'TapPermanents' &&
-          (_actionInfo.additionalCostInfo?.tapBatchMaxActivations ?? 1) > 1
+          (actionInfo.additionalCostInfo?.tapBatchMaxActivations ?? 1) > 1
         ) {
           return {
             ...action,
@@ -694,15 +696,20 @@ export function enterPhase(
         }
       }
       const fixedTotal = actionInfo.additionalCostInfo?.distributedCounterRemovalTotal
+      // A counter-removal cost names itself ("Remove X loyalty counters from among planeswalkers
+      // you control"). Other payloads only carry counterRemovalCreatures alongside a different
+      // cost (an ability's "Sacrifice …"), so they keep the panel's default label.
+      const costDescription = actionInfo.additionalCostInfo?.costType === 'RemoveCounters'
+        ? actionInfo.additionalCostInfo.description
+        : undefined
       store.startCounterDistribution({
         actionInfo,
         cardName: actionInfo.description,
         xValue: 0,
         creatures: counterCreatures,
         distribution,
-        ...(fixedTotal && fixedTotal > 0
-          ? { requiredTotal: fixedTotal, description: actionInfo.additionalCostInfo!.description }
-          : {}),
+        ...(costDescription ? { description: costDescription } : {}),
+        ...(fixedTotal && fixedTotal > 0 ? { requiredTotal: fixedTotal } : {}),
       })
       break
     }

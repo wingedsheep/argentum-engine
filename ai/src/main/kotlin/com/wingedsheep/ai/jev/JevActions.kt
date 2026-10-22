@@ -73,7 +73,7 @@ internal class JevActions(
             )) else emptyList(), x)
         val costs = listOfNotNull(info.additionalCostInfo) + info.additionalCostInfo?.alsoRequired.orEmpty() + modes.mapNotNull { it.additionalCostInfo } +
             List((modes.size - 1).coerceAtLeast(0)) { modal?.additionalCostPerExtraMode }.filterNotNull()
-        val payment = costs.map(::cost).reduceOrNull(::combine)
+        val payment = costs.map { cost(it, x.takeIf { action is CastSpell }) }.reduceOrNull(::combine)
         val manaPayment = manaPayment(info)
         val alternative = alternative(info)
         val damage = if (info.requiresDamageDistribution && info.totalDamageToDistribute != null) {
@@ -127,11 +127,12 @@ internal class JevActions(
         }
     }
 
-    private fun cost(c: AdditionalCostInfo): AdditionalCostPayment {
+    /** [x] is the cast's announced X, which a "remove X counters" cost (no fixed total) owes exactly. */
+    private fun cost(c: AdditionalCostInfo, x: Int? = null): AdditionalCostPayment {
         fun select(prompt: String, ids: List<EntityId>, min: Int, max: Int = min) =
             if (ids.isEmpty()) emptyList() else cards(prompt, ids, min, max)
         val removals = mutableListOf<DistributedCounterRemoval>()
-        var remaining = c.distributedCounterRemovalTotal
+        var remaining = c.distributedCounterRemovalTotal.takeIf { it > 0 || c.costType != "RemoveCounters" } ?: (x ?: 0)
         for (creature in c.counterRemovalCreatures) {
             for ((type, available) in creature.availableCountersByType) {
                 val amount = q.number("Remove $type counters from ${label(creature.entityId)} ($remaining required)", 0, minOf(remaining, available))

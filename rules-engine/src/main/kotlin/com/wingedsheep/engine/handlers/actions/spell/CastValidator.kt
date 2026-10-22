@@ -637,6 +637,12 @@ internal class CastValidator(
         legality.spellXMaximum(state, action.playerId, action.cardId, cardDef.script)?.let { cap ->
             if ((action.xValue ?: 0) > cap) return "X can't be greater than $cap"
         }
+        if (action.useAlternativeCost && action.altAllows(AlternativeCostType.FLASHBACK)) {
+            val minX = FlashbackGrants.effectiveFlashback(
+                state, action.cardId, cardDef, action.playerId, cardRegistry, predicateEvaluator
+            )?.minimumXValue ?: 0
+            if ((action.xValue ?: 0) < minX) return "X can't be less than $minX when cast with flashback"
+        }
         if (action.chosenModes.isNotEmpty()) {
             val modalEffect = cardDef.script.spellEffect as? ModalEffect
             if (modalEffect != null) {

@@ -123,11 +123,21 @@ class CastFromZoneEnumerator(
             val card = state.getEntity(action.cardId)?.get<CardComponent>() ?: return@map offer
             val cardDef = context.cardRegistry.getCard(card.cardDefinitionId)
             val owed = costs.owedAdditionalCosts(state, action, cardDef)
-            val counterMaxX = PlayerCounterPayment.spellMaxX(state, playerId, owed)
+            val counterMaxX = SpellCosts.additionalCostMaxX(state, playerId, owed, context.predicateEvaluator)
+            val hasXCost = offer.hasXCost || counterMaxX != null
+            val maxAffordableX = listOfNotNull(offer.maxAffordableX.takeIf { offer.hasXCost }, counterMaxX).minOrNull()
+            // "If you cast this spell this way, X can't be 0" (Light Up the Night): the flashback
+            // route floors X, so an offer whose ceiling is below the floor can't be cast.
+            val minX = if (action.alternativeCostType == AlternativeCostType.FLASHBACK && cardDef != null) {
+                FlashbackGrants.effectiveFlashback(state, action.cardId, cardDef, playerId, context.cardRegistry, context.predicateEvaluator)
+                    ?.minimumXValue ?: 0
+            } else offer.minX
             offer.copy(
-                affordable = offer.affordable && PlayerCounterPayment.canAffordSpell(state, playerId, owed, action.cardId),
-                hasXCost = offer.hasXCost || counterMaxX != null,
-                maxAffordableX = listOfNotNull(offer.maxAffordableX.takeIf { offer.hasXCost }, counterMaxX).minOrNull()
+                affordable = offer.affordable && PlayerCounterPayment.canAffordSpell(state, playerId, owed, action.cardId) &&
+                    (!hasXCost || (maxAffordableX ?: 0) >= minX),
+                hasXCost = hasXCost,
+                maxAffordableX = maxAffordableX,
+                minX = minX,
             )
         }
     }
