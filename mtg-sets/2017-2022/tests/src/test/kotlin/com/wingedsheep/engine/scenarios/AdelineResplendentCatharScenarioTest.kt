@@ -78,6 +78,20 @@ class AdelineResplendentCatharScenarioTest : FunSpec({
         withClue("Adeline (2) and the Human (1) connect") { d.getLifeTotal(p2) shouldBe 17 }
     }
 
+    test("whenever you attack: one trigger per combat, not one per attacker") {
+        val (d, p) = driver(2)
+        val (p1, p2) = p
+        val adeline = d.putCreatureOnBattlefield(p1, "Adeline, Resplendent Cathar").also { d.removeSummoningSickness(it) }
+        val bears = d.putCreatureOnBattlefield(p1, "Centaur Courser").also { d.removeSummoningSickness(it) }
+
+        d.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        d.declareAttackers(p1, listOf(adeline, bears), p2).error shouldBe null
+        d.resolveUntilDecision()
+
+        d.humans(p1) shouldHaveSize 1
+        withClue("Adeline, Centaur Courser and the Human") { d.state.projectedState.getPower(adeline) shouldBe 3 }
+    }
+
     test("multiplayer: one Human per opponent; an opponent's planeswalker can be chosen instead of them") {
         val (d, p) = driver(3)
         val (p1, p2, p3) = p

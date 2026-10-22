@@ -87,10 +87,14 @@ class CreateTokenExecutor(
             ?.split(',')?.filter { it.isNotEmpty() }?.toSet().orEmpty()
         val allCreatedTokens = context.pipeline.chosenValues[FAN_OUT_CREATED_KEY]
             ?.split(',')?.filter { it.isNotEmpty() }?.map(::EntityId)?.toMutableList() ?: mutableListOf()
+        // CR 508.4 defender answers belong to the first player still owed tokens; once that
+        // player's tokens exist, the next player starts without any.
+        var defenderAnswers = context.entryAttackDefenders
         for (tokenControllerId in tokenControllerIds) {
             if (tokenControllerId.value in alreadyCreatedFor) continue
             val done = tokenControllerIds.takeWhile { it != tokenControllerId }.joinToString(",") { it.value }
             val playerContext = if (done.isEmpty()) context else context.copy(
+                entryAttackDefenders = defenderAnswers,
                 pipeline = context.pipeline.copy(
                     chosenValues = context.pipeline.chosenValues + mapOf(
                         FAN_OUT_DONE_KEY to done,
@@ -107,6 +111,7 @@ class CreateTokenExecutor(
             currentState = result.state
             allEvents.addAll(result.events)
             allCreatedTokens.addAll(result.updatedCollections[CREATED_TOKENS].orEmpty())
+            defenderAnswers = emptyList()
         }
         return EffectResult(
             state = currentState,

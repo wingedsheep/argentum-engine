@@ -193,8 +193,8 @@ data class CreateTokenEffect(
     /**
      * The player an [attacking] token attacks, when the effect names one. Alone (the default
      * [attackDefender]) it is "tapped and attacking **that player**": a player who is no longer in
-     * the game or isn't an opponent of the token's controller gets no attacker — the token enters,
-     * never attacking (CR 508.4a). With [EnteringAttackDefender.CONTROLLER_CHOOSES] it is "attacking
+     * the game (CR 508.4a) or isn't an opponent of the token's controller gets no attacker — the
+     * token enters, never attacking. With [EnteringAttackDefender.CONTROLLER_CHOOSES] it is "attacking
      * **that player or a planeswalker they control**" (Adeline, Resplendent Cathar, inside a
      * `ForEachPlayer(EachOpponent)` loop where it is the visited opponent): the controller picks per
      * token among that player and their planeswalkers, and isn't asked when there's one choice.

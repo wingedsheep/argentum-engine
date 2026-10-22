@@ -49,7 +49,7 @@ internal object EnteringAttackDefenderChooser {
         val chosen = context.entryAttackDefenders
         if (chosen.size < count) return null
         return chosen.take(count).map { defender ->
-            defender.takeIf { it in legalDefenders(state, controllerId, restrictTo) }
+            defender.takeIf { it in legal }
         }
     }
 

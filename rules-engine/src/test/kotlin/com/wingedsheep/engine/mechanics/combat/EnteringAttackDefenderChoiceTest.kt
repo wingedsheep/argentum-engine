@@ -8,6 +8,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BeingAttackedComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
@@ -351,6 +352,49 @@ class EnteringAttackDefenderChoiceTest : FunSpec({
         d.pendingDecision shouldBe null
         val tokens = d.getCreatures(p1).filter { d.state.getEntity(it)?.has<TokenComponent>() == true }
         tokens.map { d.attackedBy(it) } shouldContainExactlyInAnyOrder listOf(p2Walker, p3)
+    }
+
+    test("each opponent's question starts fresh: answers for one never carry to the next") {
+        val (d, p) = multiplayer()
+        val (p1, p2, p3) = p
+        val p2Walker = d.walkerFor(p2)
+        val p3Walker = d.walkerFor(p3)
+        val cathar = d.putCreatureOnBattlefield(p1, "Test Rallying Cathar").also { d.removeSummoningSickness(it) }
+        d.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        d.declareAttackers(p1, listOf(cathar), p2).error shouldBe null
+        d.resolveUntilDecision()
+
+        d.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>().legalTargets[0]!! shouldContainExactly listOf(p2, p2Walker)
+        d.submitTargetSelection(p1, listOf(p2Walker)).error shouldBe null
+        withClue("p3 is asked too, among p3 and p3's planeswalker") {
+            d.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>().legalTargets[0]!! shouldContainExactly listOf(p3, p3Walker)
+        }
+        d.submitTargetSelection(p1, listOf(p3)).error shouldBe null
+
+        d.pendingDecision shouldBe null
+        val tokens = d.getCreatures(p1).filter { d.state.getEntity(it)?.has<TokenComponent>() == true }
+        withClue("exactly one token per opponent — none created twice across the pause") {
+            tokens.map { d.attackedBy(it) } shouldContainExactlyInAnyOrder listOf(p2Walker, p3)
+        }
+    }
+
+    test("a named player alone (JOIN_SOURCE) is attacked exactly — no question, never their planeswalker") {
+        val (d, p) = multiplayer()
+        val (p1, _, p3) = p
+        d.walkerFor(p3)
+        d.passPriorityUntil(Step.BEGIN_COMBAT)
+        val result = d.services.effectExecutorRegistry.execute(
+            d.state,
+            Effects.CreateToken(
+                power = 1, toughness = 1, colors = setOf(Color.WHITE), creatureTypes = setOf("Human"),
+                tapped = true, attacking = true, attackedPlayer = EffectTarget.ContextTarget(0),
+            ),
+            EffectContext(sourceId = null, controllerId = p1, targets = listOf(ChosenTarget.Player(p3)))
+        )
+        d.replaceState(result.state)
+        d.pendingDecision shouldBe null
+        d.getCreatures(p1).filter { d.state.getEntity(it)?.has<TokenComponent>() == true }
+            .map { d.attackedBy(it) } shouldContainExactly listOf(p3)
     }
 
     test("the default (JOIN_SOURCE) is unchanged: no question, the tokens join the source's attack") {

@@ -2722,7 +2722,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `attackedPlayer: EffectTarget?` (requires `attacking`) names the player: alone it is "attacking **that
   player**" exactly; with `CONTROLLER_CHOOSES` it is "attacking that player **or a planeswalker they
   control**" — the choice narrows to that player and their planeswalkers (silent when there's one). A
-  named player who left the game or isn't an opponent of the token controller gets no attacker (CR 508.4a).
+  named player who left the game (CR 508.4a) or isn't an opponent of the token controller gets no attacker.
   "For each opponent, create a token that's tapped and attacking that player or a planeswalker they
   control" (Adeline, Resplendent Cathar) is `ForEachPlayer(Player.EachOpponent, CreateToken(…, controller =
   EffectTarget.PlayerRef(Player.ControllerOfSource), attacking = true, attackDefender = CONTROLLER_CHOOSES,

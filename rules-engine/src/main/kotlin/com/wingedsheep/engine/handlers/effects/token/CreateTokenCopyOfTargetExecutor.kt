@@ -131,7 +131,7 @@ class CreateTokenCopyOfTargetExecutor(
                         state, lookup, context, tokenCount, controllerId,
                         riders = TokenRiders(
                             tapped = effect.tapped, attacking = effect.attacking,
-                            attackDefender = effect.attackDefender,
+                            attackDefender = effect.attackDefender, attackedPlayer = effect.attackedPlayer,
                         ),
                         rootEffect = effect
                     )
