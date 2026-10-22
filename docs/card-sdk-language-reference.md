@@ -8293,8 +8293,8 @@ in the repo today):
 - `Triggers.oneOrMore(GameObjectFilter.Permanent).putIntoYourGraveyard()` — only permanent cards.
 - `Triggers.oneOrMore(GameObjectFilter.Creature).putIntoGraveyards()` — "… are put into **graveyards** from anywhere":
   any player's graveyard, still one trigger per batch however many graveyards it touched (Dennick, Pious Apparition,
-  with `oncePerTurn = true`). Both are `CardsPutIntoGraveyardEvent`, whose `player` axis is `Player.You` (default),
-  `Player.Any` or `Player.EachOpponent`; tokens never count (they aren't cards).
+  with `oncePerTurn = true`). Both are `CardsPutIntoGraveyardEvent`, whose `player` axis is `Player.You` (default)
+  or `Player.Any`; tokens never count (they aren't cards).
 - `Triggers.oneOrMore(GameObjectFilter.Land).putIntoYourGraveyard(firstTimeEachTurn = true)` — "… from anywhere for the first
   time each turn" (Crawling Sensation): only the batch carrying the turn's first matching card into your graveyard. Turn
   history, not a cap — a land that arrived earlier in the turn, even before the source was on the battlefield, closes the

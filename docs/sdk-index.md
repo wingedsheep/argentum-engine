@@ -1175,7 +1175,7 @@ Families:
 - `EventPattern.CardRevealedFromDrawEvent(cardFilter: GameObjectFilter?)` — When a card is revealed from the first draw of a turn.
 - `EventPattern.CardsLeftYourGraveyardEvent(filter: GameObjectFilter)` — Whenever one or more cards matching filter leave your graveyard.
 - `EventPattern.CardsPutIntoExileEvent(fromZones: Set<Zone>, filter: GameObjectFilter, includeTokens: Boolean)` — Whenever one or more cards matching filter are put into exile from any of fromZones.
-- `EventPattern.CardsPutIntoGraveyardEvent(filter: GameObjectFilter, firstTimeEachTurn: Boolean, player: Player)` — Whenever one or more cards matching filter are put into your graveyard from anywhere.
+- `EventPattern.CardsPutIntoGraveyardEvent(filter: GameObjectFilter, firstTimeEachTurn: Boolean, player: Player)` — Whenever one or more cards matching filter are put into a graveyard from anywhere — yours by default; player picks whose.
 - `EventPattern.CardsPutIntoGraveyardFromLibraryEvent(filter: GameObjectFilter)` — Whenever one or more cards matching filter are put into your graveyard from your library.
 - `EventPattern.CaseSolvedEvent(player: Player)` — Whenever player solves a Case (CR 719.3a) — fires as that Case's "To solve" trigger resolves and the designation is stamped, which is exactly what the printed ruling for Case File Auditor says ("tr…
 - `EventPattern.CastThisSpellEvent` — When you cast this spell — a "cast trigger" (CR 603.2) that fires on the spell's *own* cast while it is on the stack; the ability travels with the spell.

@@ -66,7 +66,7 @@ class DennickPiousApprenticeScenarioTest : FunSpec({
         while (state.stack.isNotEmpty()) bothPass()
     }
 
-    test("front face: cards in any graveyard can't be targeted, by either player") {
+    test("front face: an opponent's Dennick stops your spell targeting a card in your graveyard") {
         val d = driver()
         d.putCreatureOnBattlefield(d.player2, "Dennick, Pious Apprentice")
         val bear = d.putCardInGraveyard(d.player1, "Grizzly Bears")
@@ -79,6 +79,8 @@ class DennickPiousApprenticeScenarioTest : FunSpec({
 
     test("disturb still casts it from the graveyard — casting doesn't target") {
         val d = driver()
+        // An opponent's Dennick locks every graveyard; a disturb cast isn't a targeting.
+        d.putCreatureOnBattlefield(d.player2, "Dennick, Pious Apprentice")
         val dennick = d.putCardInGraveyard(d.player1, "Dennick, Pious Apprentice")
         d.giveMana(d.player1, Color.WHITE, 1)
         d.giveMana(d.player1, Color.BLUE, 1)

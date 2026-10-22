@@ -5,6 +5,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.mechanics.ControllerGrants
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CardsInZonesCantBeTargeted
@@ -27,6 +28,10 @@ import com.wingedsheep.sdk.scripting.targets.TargetRequirement
  * would block it once ([blockingKeywords]) — from the kind of source (spell or ability), the
  * spell's subtypes, and the subtypes the target requirement structurally demands — and each
  * candidate is then a set lookup. Not controller-gated: it binds the permanent's own controller.
+ *
+ * It also reads [CardsInZonesCantBeTargeted] ("Cards in graveyards can't be the targets of spells
+ * or abilities") — the off-battlefield counterpart, read off the holder's projected statics
+ * ([zoneLocks]) because a card in a graveyard has no projection entry to carry a keyword.
  */
 object UntargetableByRules {
 
@@ -132,10 +137,13 @@ object UntargetableByRules {
         if (locks.isEmpty()) return false
         val zone = state.logicalZone(cardId)?.zoneType ?: return false
         return locks.any { (holderId, lock) ->
-            zone in lock.zones && (lock.filter == GameObjectFilter.Any || predicateEvaluator.matches(
+            if (zone !in lock.zones) return@any false
+            if (lock.filter == GameObjectFilter.Any) return@any true
+            val controller = ControllerGrants.granterController(state, holderId) ?: return@any false
+            predicateEvaluator.matches(
                 state, state.projectedState, cardId, lock.filter,
-                PredicateContext(controllerId = state.projectedState.getController(holderId) ?: holderId, sourceId = holderId)
-            ))
+                PredicateContext(controllerId = controller, sourceId = holderId)
+            )
         }
     }
 

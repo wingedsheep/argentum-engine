@@ -3076,7 +3076,8 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
-     * Whenever one or more cards matching [filter] are put into your graveyard from anywhere.
+     * Whenever one or more cards matching [filter] are put into a graveyard from anywhere —
+     * yours by default; [player] picks whose.
      *
      * This is a **batching trigger** — it fires at most once per event batch, regardless of
      * how many matching cards entered the graveyard, and regardless of which zone they came
@@ -3098,10 +3099,9 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * graveyard earlier in the turn — even before the source was on the battlefield — closes the
      * window, which is what separates it from `oncePerTurn`.
      *
-     * [player] is whose graveyard: [Player.You] ("your graveyard", the default), [Player.Any]
+     * [player] is whose graveyard: [Player.You] ("your graveyard", the default) or [Player.Any]
      * ("graveyards" — Dennick, Pious Apparition's "one or more creature cards are put into
-     * graveyards from anywhere", one trigger per batch however many graveyards it touched) or
-     * [Player.EachOpponent] ("an opponent's graveyard").
+     * graveyards from anywhere", one trigger per batch however many graveyards it touched).
      */
     @SerialName("CardsPutIntoGraveyardEvent")
     @Serializable
@@ -3111,8 +3111,8 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         val player: Player = Player.You
     ) : EventPattern {
         init {
-            require(player == Player.You || player == Player.Any || player == Player.EachOpponent) {
-                "CardsPutIntoGraveyardEvent: player must be You, Any or EachOpponent, was $player"
+            require(player == Player.You || player == Player.Any) {
+                "CardsPutIntoGraveyardEvent: player must be You or Any, was $player"
             }
             require(!firstTimeEachTurn || player == Player.You) {
                 "CardsPutIntoGraveyardEvent: firstTimeEachTurn is only modelled for your graveyard"
@@ -3125,11 +3125,10 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
                 append(filter.cardPredicates.joinToString(" ") { it.description })
                 append(" ")
             }
-            append(when (player) {
-                Player.Any -> "cards are put into graveyards from anywhere"
-                Player.EachOpponent -> "cards are put into an opponent's graveyard from anywhere"
-                else -> "cards are put into your graveyard from anywhere"
-            })
+            append(
+                if (player == Player.Any) "cards are put into graveyards from anywhere"
+                else "cards are put into your graveyard from anywhere"
+            )
             if (firstTimeEachTurn) append(" for the first time each turn")
         }
 
