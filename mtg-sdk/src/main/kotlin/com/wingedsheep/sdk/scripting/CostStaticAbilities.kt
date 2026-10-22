@@ -294,7 +294,7 @@ sealed interface SpellCostTarget {
      * [player] must resolve to a single player recorded on the source:
      * [Player.EnchantedPlayer] (the player the source Aura is attached to),
      * [Player.ChosenOpponent] or [Player.ChosenPlayer] (the player chosen as the source entered).
-     * Any other reference matches no caster — "you" and "your opponents" are [YouCast] and
+     * Any other reference is rejected — "you" and "your opponents" are [YouCast] and
      * [OpponentsCast]. A source that doesn't currently name a player taxes nobody.
      */
     @SerialName("PlayerCasts")
@@ -303,6 +303,12 @@ sealed interface SpellCostTarget {
         val player: Player,
         val filter: GameObjectFilter = GameObjectFilter.Any,
     ) : SpellCostTarget {
+        init {
+            require(player == Player.EnchantedPlayer || player == Player.ChosenOpponent || player == Player.ChosenPlayer) {
+                "PlayerCasts names a source-recorded player (EnchantedPlayer, ChosenOpponent, ChosenPlayer), not $player"
+            }
+        }
+
         override fun applyTextReplacement(replacer: TextReplacer): SpellCostTarget {
             val newFilter = filter.applyTextReplacement(replacer)
             return if (newFilter !== filter) copy(filter = newFilter) else this

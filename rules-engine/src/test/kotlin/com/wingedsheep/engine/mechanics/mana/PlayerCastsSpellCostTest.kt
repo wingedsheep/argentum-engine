@@ -16,6 +16,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.references.Player
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -23,7 +24,7 @@ import io.kotest.matchers.shouldBe
 /**
  * [SpellCostTarget.PlayerCasts]: a tax on the one player its source names — the player an Aura
  * enchants, or the opponent / player chosen as it entered — never on anyone else, and on nobody
- * while the source names no one.
+ * while the source names no one. Any other player reference is rejected at construction.
  */
 class PlayerCastsSpellCostTest : FunSpec({
 
@@ -41,13 +42,12 @@ class PlayerCastsSpellCostTest : FunSpec({
     val enchantedTaxer = taxer(Player.EnchantedPlayer)
     val chosenOpponentTaxer = taxer(Player.ChosenOpponent)
     val chosenPlayerTaxer = taxer(Player.ChosenPlayer)
-    val youTaxer = taxer(Player.You)
     val bear = card("Test Bear") { manaCost = "{1}{G}"; typeLine = "Creature — Bear"; power = 2; toughness = 2 }
     val ritual = card("Test Ritual") { manaCost = "{G}"; typeLine = "Sorcery" }
     val taxed = ManaCost.parse("{3}{G}")
 
     fun driver(): GameTestDriver = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(enchantedTaxer, chosenOpponentTaxer, chosenPlayerTaxer, youTaxer, bear, ritual))
+        registerCards(TestCards.all + listOf(enchantedTaxer, chosenOpponentTaxer, chosenPlayerTaxer, bear, ritual))
         initMirrorMatch(deck = Deck.of("Forest" to 40))
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -101,12 +101,9 @@ class PlayerCastsSpellCostTest : FunSpec({
         }
     }
 
-    test("a reference the source doesn't record taxes nobody") {
-        val d = driver()
-        d.putPermanentOnBattlefield(d.player1, youTaxer.name)
-        val calc = d.calculator()
-        calc.calculateEffectiveCost(d.state, bear, d.player1) shouldBe bear.manaCost
-        calc.calculateEffectiveCost(d.state, bear, d.player2) shouldBe bear.manaCost
+    test("a reference the source doesn't record is rejected") {
+        shouldThrow<IllegalArgumentException> { SpellCostTarget.PlayerCasts(Player.You) }
+        shouldThrow<IllegalArgumentException> { SpellCostTarget.PlayerCasts(Player.EachOpponent) }
     }
 
     test("description names the player") {
