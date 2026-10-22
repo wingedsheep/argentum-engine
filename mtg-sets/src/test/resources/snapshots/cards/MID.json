@@ -6948,6 +6948,58 @@
     ]
 }
 
+// Search Party Captain
+{
+    "name": "Search Party Captain",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "This spell costs {1} less to cast for each creature you attacked with this turn.\nWhen this creature enters, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Search Party Captain:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "CreaturesThatAttackedThisTurn",
+                        "yoursOnly": true
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "artist": "Mike Bierek",
+        "flavorText": "\"Werewolves leave messy trails. Easy to follow. Hard to forget.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cb9006c1-2e6f-4bca-a1c4-3cf2a8b6e964.jpg?1783925652"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Seize the Storm
 {
     "name": "Seize the Storm",

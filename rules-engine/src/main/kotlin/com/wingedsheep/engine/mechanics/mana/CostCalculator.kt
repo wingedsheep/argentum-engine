@@ -709,7 +709,8 @@ class CostCalculator(
             is CostReductionSource.PermanentsSacrificedThisTurn ->
                 state.permanentsSacrificedThisTurn * source.amountPerPermanent
             is CostReductionSource.CreaturesThatAttackedThisTurn ->
-                countCreaturesThatAttackedThisTurn(state) * source.amountPerCreature
+                countCreaturesThatAttackedThisTurn(state, if (source.yoursOnly) playerId else null) *
+                    source.amountPerCreature
             is CostReductionSource.CardTypesInYourGraveyard ->
                 countGraveyardCardTypes(state, playerId) * source.amountPerType
             is CostReductionSource.SharedCardTypesWithLinkedExile ->
@@ -758,7 +759,8 @@ class CostCalculator(
             .size
 
     /**
-     * The number of creatures declared as attackers this turn by any player, across every combat
+     * The number of creatures declared as attackers this turn by any player — or only by
+     * [onlyPlayer] ("creatures you attacked with"), when given — across every combat
      * phase. Reads the per-player `PlayerAttackersThisTurnComponent` sets that
      * `AttackPhaseManager` unions at each declare-attackers step, so an attacker that has since
      * died, been exiled, or been bounced still counts — the count is turn history, not a
@@ -767,8 +769,8 @@ class CostCalculator(
      * A creature can only be declared as an attacker once per combat and the sets are per
      * controller, so no de-duplication across players is needed.
      */
-    private fun countCreaturesThatAttackedThisTurn(state: GameState): Int =
-        state.turnOrder.sumOf { playerId ->
+    private fun countCreaturesThatAttackedThisTurn(state: GameState, onlyPlayer: EntityId?): Int =
+        (onlyPlayer?.let(::listOf) ?: state.turnOrder).sumOf { playerId ->
             state.getEntity(playerId)
                 ?.get<PlayerAttackersThisTurnComponent>()
                 ?.attackerIds

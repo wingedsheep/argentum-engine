@@ -10861,7 +10861,9 @@ staticAbility {
   attackers this turn by *any* player, across every combat phase — Witchstalker Frenzy. Turn
   *history*, from the union of each player's `PlayerAttackersThisTurnComponent.attackerIds`, not a
   battlefield scan: an attacker that has since died still counts, which
-  `PermanentsOnBattlefieldMatching(Creature.attackedThisTurn())` would miss),
+  `PermanentsOnBattlefieldMatching(Creature.attackedThisTurn())` would miss; `yoursOnly = true`
+  narrows it to the caster's own declarations — Search Party Captain's "for each creature you
+  attacked with this turn" — still counting an attacker that has since died),
   `YourSpeed` (the casting player's speed, 0–4, CR 702.179 — Samut, the Driving Force's "Noncreature
   spells you cast cost {X} less to cast, where X is your speed"; "no speed" reads as 0 per CR
   702.179f, so a player who never started their engines simply gets no reduction),
