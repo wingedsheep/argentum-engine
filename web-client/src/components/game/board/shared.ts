@@ -872,6 +872,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.INTERVENTION,
   // Tolarian Contempt's mark: its end-step trigger may only target creatures carrying one.
   CounterType.REJECTION,
+  // Intrepid Adversary's anthem: creatures you control get +1/+1 for each one on it.
+  CounterType.VALOR,
   CounterType.PLUS_ONE_PLUS_TWO,
   CounterType.PLUS_TWO_PLUS_TWO,
   CounterType.MINUS_TWO_MINUS_TWO,

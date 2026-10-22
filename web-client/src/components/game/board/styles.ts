@@ -2512,6 +2512,7 @@ const passiveCounterPalette: Record<string, CounterBadgePalette> = {
   HATCHING: { bg: 'rgba(22, 44, 26, 0.95)', border: 'rgba(130, 200, 120, 0.7)', color: '#b8e6ae' },
   INTERVENTION: { bg: 'rgba(50, 46, 30, 0.95)', border: 'rgba(240, 220, 150, 0.75)', color: '#f6ecc4', glow: 'rgba(240, 220, 150, 0.55)' },
   REJECTION: { bg: 'rgba(18, 30, 52, 0.95)', border: 'rgba(110, 150, 220, 0.7)', color: '#b4c8ee' },
+  VALOR: { bg: 'rgba(52, 44, 18, 0.95)', border: 'rgba(235, 200, 110, 0.75)', color: '#f4e2b0', glow: 'rgba(235, 200, 110, 0.5)' },
   TRAINING: { bg: 'rgba(48, 40, 22, 0.95)', border: 'rgba(214, 170, 90, 0.7)', color: '#ecd09a' },
   MINUS_ZERO_MINUS_ONE: { bg: 'rgba(60, 20, 20, 0.95)', border: 'rgba(220, 120, 120, 0.7)', color: '#e09c9c' },
   MINUS_ZERO_MINUS_TWO: { bg: 'rgba(60, 20, 20, 0.95)', border: 'rgba(220, 120, 120, 0.7)', color: '#e09c9c' },

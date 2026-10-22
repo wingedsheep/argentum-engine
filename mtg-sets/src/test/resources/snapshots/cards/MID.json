@@ -4814,6 +4814,83 @@
     ]
 }
 
+// Intrepid Adversary
+{
+    "name": "Intrepid Adversary",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Scout",
+    "oracleText": "Lifelink\nWhen this creature enters, you may pay {1}{W} any number of times. When you pay this cost one or more times, put that many valor counters on this creature.\nCreatures you control get +1/+1 for each valor counter on this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Intrepid Adversary:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "PayManaCostRepeatedly",
+                        "cost": "{1}{W}"
+                    },
+                    "reflexiveEffect": {
+                        "type": "AddDynamicCounters",
+                        "counterType": "VALOR",
+                        "amount": {
+                            "type": "VariableReference",
+                            "variableName": "times_paid"
+                        },
+                        "target": "Self"
+                    },
+                    "descriptionOverride": "You may pay {1}{W} any number of times. When you pay this cost one or more times, put that many valor counters on this creature."
+                },
+                "descriptionOverride": "When this creature enters, you may pay {1}{W} any number of times. When you pay this cost one or more times, put that many valor counters on this creature."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "powerBonus": {
+                    "type": "EntityProperty",
+                    "entity": "Self",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": "VALOR"
+                    }
+                },
+                "toughnessBonus": {
+                    "type": "EntityProperty",
+                    "entity": "Self",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": "VALOR"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "rarity": "MYTHIC",
+        "artist": "Viktor Titov",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/7/773199f9-c83b-4a77-8342-9f1552ecf595.jpg?1783925657"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Jadar, Ghoulcaller of Nephalia
 {
     "name": "Jadar, Ghoulcaller of Nephalia",

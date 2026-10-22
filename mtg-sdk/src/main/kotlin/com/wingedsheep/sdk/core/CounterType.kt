@@ -795,6 +795,13 @@ value class CounterType(val name: String) {
          */
         val REJECTION = CounterType("REJECTION")
 
+        /**
+         * Valor counter (MID — Intrepid Adversary). A mark with no inherent rule: the creature's
+         * enters trigger puts one on it per repeated payment, and its static anthem gives creatures
+         * you control +1/+1 for each one on it.
+         */
+        val VALOR = CounterType("VALOR")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -938,6 +945,7 @@ value class CounterType(val name: String) {
             HATCHING,
             INTERVENTION,
             REJECTION,
+            VALOR,
         )
 
         /**
