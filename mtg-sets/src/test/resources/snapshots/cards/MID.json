@@ -1938,6 +1938,171 @@
     ]
 }
 
+// Brutal Cathar
+{
+    "name": "Brutal Cathar",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier Werewolf",
+    "oracleText": "Whenever this creature enters or transforms into Brutal Cathar, exile target creature an opponent controls until this creature leaves the battlefield.\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DAYBOUND"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Brutal Cathar:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ExileUntilLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature enters or transforms into Brutal Cathar, exile target creature an opponent controls until this creature leaves the battlefield."
+            },
+            {
+                "id": "Brutal Cathar:2",
+                "trigger": {
+                    "type": "TransformEvent",
+                    "intoBackFace": false
+                },
+                "effect": {
+                    "type": "ExileUntilLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t1"
+                },
+                "descriptionOverride": "Whenever this creature enters or transforms into Brutal Cathar, exile target creature an opponent controls until this creature leaves the battlefield."
+            },
+            {
+                "id": "Brutal Cathar:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Moonrage Brute",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "First strike\nWard—Pay 3 life.\nNightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "keywords": [
+            "FIRST_STRIKE",
+            "NIGHTBOUND",
+            "WARD"
+        ],
+        "keywordAbilities": [
+            {
+                "type": "Ward",
+                "cost": {
+                    "type": "WardCost.Life",
+                    "amount": 3
+                }
+            }
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Moonrage Brute:1",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "from": "Battlefield"
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": "FromLinkedExile",
+                                "storeAs": "linked_return"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "linked_return",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                },
+                                "underOwnersControl": true
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "7",
+            "rarity": "RARE",
+            "artist": "Karl Kopinski",
+            "imageUri": "https://cards.scryfall.io/normal/back/0/d/0dbac7ce-a6fa-466e-b6ba-173cf2dec98e.jpg?1783925670"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ],
+        "colorIndicator": [
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "RARE",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0dbac7ce-a6fa-466e-b6ba-173cf2dec98e.jpg?1783925670"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Burly Breaker
 {
     "name": "Burly Breaker",
@@ -4587,6 +4752,177 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLUE"
+    ]
+}
+
+// Dire-Strain Rampage
+{
+    "name": "Dire-Strain Rampage",
+    "manaCost": "{1}{R}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target artifact, enchantment, or land. If a land was destroyed this way, its controller may search their library for up to two basic land cards, put them onto the battlefield tapped, then shuffle. Otherwise, its controller may search their library for a basic land card, put it onto the battlefield tapped, then shuffle.\nFlashback {3}{R}{G} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{3}{R}{G}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy",
+                    "storeMovedAs": "moved1"
+                },
+                {
+                    "type": "ConditionalOnCollection",
+                    "collection": "moved1",
+                    "ifNotEmpty": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Players",
+                            "players": {
+                                "type": "ControllerOf",
+                                "targetDescription": "target artifact, enchantment, or land"
+                            }
+                        },
+                        "body": {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Library",
+                                            "filter": "basicland"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 2
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library for up to two basic land cards to put onto the battlefield tapped",
+                                        "selectedLabel": "Put onto the battlefield tapped"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield",
+                                            "placement": "Tapped"
+                                        }
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        }
+                    },
+                    "ifEmpty": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Players",
+                            "players": {
+                                "type": "ControllerOf",
+                                "targetDescription": "target artifact, enchantment, or land"
+                            }
+                        },
+                        "body": {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Library",
+                                            "filter": "basicland"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library for a basic land card to put onto the battlefield tapped",
+                                        "selectedLabel": "Put onto the battlefield tapped"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield",
+                                            "placement": "Tapped"
+                                        }
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        }
+                    },
+                    "filter": "land"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|enchantment|land"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "RARE",
+        "artist": "Darek Zabrocki",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f4a7c01-95ca-43bf-bc53-875cfb4bffa1.jpg?1783925563"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
     ]
 }
 
@@ -8752,6 +9088,143 @@
     ]
 }
 
+// Kessig Naturalist
+{
+    "name": "Kessig Naturalist",
+    "manaCost": "{R}{G}",
+    "typeLine": "Creature — Human Werewolf",
+    "oracleText": "Whenever this creature attacks, add {R} or {G}. Until end of turn, you don't lose this mana as steps and phases end.\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DAYBOUND"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kessig Naturalist:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Add {R}",
+                            "effect": {
+                                "type": "AddMana",
+                                "color": "RED",
+                                "expiry": "KEPT_UNTIL_END_OF_TURN"
+                            }
+                        },
+                        {
+                            "label": "Add {G}",
+                            "effect": {
+                                "type": "AddMana",
+                                "color": "GREEN",
+                                "expiry": "KEPT_UNTIL_END_OF_TURN"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature attacks, add {R} or {G}. Until end of turn, you don't lose this mana as steps and phases end."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Lord of the Ulvenwald",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "Other Wolves and Werewolves you control get +1/+1.\nWhenever this creature attacks, add {R} or {G}. Until end of turn, you don't lose this mana as steps and phases end.\nNightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "keywords": [
+            "NIGHTBOUND"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Lord of the Ulvenwald:1",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "ChooseAction",
+                        "choices": [
+                            {
+                                "label": "Add {R}",
+                                "effect": {
+                                    "type": "AddMana",
+                                    "color": "RED",
+                                    "expiry": "KEPT_UNTIL_END_OF_TURN"
+                                }
+                            },
+                            {
+                                "label": "Add {G}",
+                                "effect": {
+                                    "type": "AddMana",
+                                    "color": "GREEN",
+                                    "expiry": "KEPT_UNTIL_END_OF_TURN"
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "Whenever this creature attacks, add {R} or {G}. Until end of turn, you don't lose this mana as steps and phases end."
+                }
+            ],
+            "staticAbilities": [
+                {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 1,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "HasAnyOfSubtypes",
+                                    "subtypes": [
+                                        "Wolf",
+                                        "Werewolf"
+                                    ]
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        },
+                        "excludeSelf": true
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "231",
+            "rarity": "UNCOMMON",
+            "artist": "Johan Grenier",
+            "imageUri": "https://cards.scryfall.io/normal/back/8/a/8ab5f2e6-0e0a-4f7d-a959-3d07948ff317.jpg?1783925563"
+        },
+        "colorIdentityOverride": [
+            "RED",
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "RED",
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "231",
+        "rarity": "UNCOMMON",
+        "artist": "Johan Grenier",
+        "flavorText": "\"Far from home, little one? I know the feeling.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8ab5f2e6-0e0a-4f7d-a959-3d07948ff317.jpg?1783925563"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Lambholt Harrier
 {
     "name": "Lambholt Harrier",
@@ -10128,6 +10601,112 @@
     "colorIdentityOverride": []
 }
 
+// Moonveil Regent
+{
+    "name": "Moonveil Regent",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhenever you cast a spell, you may discard your hand. If you do, draw a card for each of that spell's colors.\nWhen this creature dies, it deals X damage to any target, where X is the number of colors among permanents you control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Moonveil Regent:1",
+                "trigger": "SpellCastEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "discardedHand"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discardedHand",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "EntityProperty",
+                                    "entity": "TriggeringEntity",
+                                    "numericProperty": "ColorCount"
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "id": "Moonveil Regent:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent",
+                        "aggregation": "DISTINCT_COLORS"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "rarity": "MYTHIC",
+        "artist": "Joshua Raphael",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9fc55fd-161a-4d77-82f0-27075210e7e7.jpg?1783925597",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "If you have no cards in hand as Moonveil Regent's first ability resolves, you may still choose to discard your hand. You'll just draw a card for each of that spell's colors."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "If you cast a colorless spell, you may choose to discard your hand and draw no cards."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "Moonveil Regent's last ability triggers even if you control no permanents that are one or more colors when it dies. The amount of damage is calculated as the ability resolves. Consider only the permanents you control at that time to determine how much damage Moonveil Regent deals."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Morbid Opportunist
 {
     "name": "Morbid Opportunist",
@@ -10836,6 +11415,103 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Obsessive Astronomer
+{
+    "name": "Obsessive Astronomer",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "If it's neither day nor night, it becomes day as this creature enters.\nWhenever day becomes night or night becomes day, discard up to two cards, then draw that many cards.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Obsessive Astronomer:1",
+                "trigger": "DayNightChangedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "discarded_candidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "discarded_candidates",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeSelected": "discarded",
+                            "prompt": "Discard up to 2 cards"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "VariableReference",
+                                "variableName": "discarded_count"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever day becomes night or night becomes day, discard up to two cards, then draw that many cards."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "OnEnterRunEffect",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "Any",
+                                "conditions": [
+                                    "IsDay",
+                                    "IsNight"
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "SetDayNight",
+                        "designation": "DAY"
+                    },
+                    "descriptionOverride": "if it's neither day nor night, it becomes day"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "UNCOMMON",
+        "artist": "Josu Hernaiz",
+        "flavorText": "\"Sleep? I can sleep when I'm dead!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4f6e0cb6-283b-448e-89c6-8b6e8e21e38b.jpg?1783925594"
+    }
 }
 
 // Odric's Outrider
@@ -11582,6 +12258,170 @@
     ]
 }
 
+// Pack's Betrayal
+{
+    "name": "Pack's Betrayal",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of target creature until end of turn. Untap that creature. It gains haste until end of turn. If you control a Wolf or Werewolf, scry 2. (Look at the top two cards of your library, then put any number of them on the bottom and the rest on top in any order.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "permanent Wolf|Werewolf"
+                        }
+                    },
+                    "then": {
+                        "type": "Scry",
+                        "count": 2
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "artist": "Sam Rowan",
+        "flavorText": "Tovolar's howl of command was too much to resist, even for Arlinn's own loyal pack.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7ebadb1e-32cd-41d6-b26e-49134973d05c.jpg?1783925594"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Path to the Festival
+{
+    "name": "Path to the Festival",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for a basic land card, put that card onto the battlefield tapped, then shuffle. Then if there are three or more basic land types among lands you control, scry 1. (Look at the top card of your library. You may put that card on the bottom.)\nFlashback {4}{G} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{4}{G}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "basicland"
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for a basic land card to put onto the battlefield tapped",
+                    "selectedLabel": "Put onto the battlefield tapped"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent",
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land",
+                                "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Scry",
+                        "count": 1
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "artist": "Darek Zabrocki",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/153f545d-bdbf-42c7-837a-a7076bbe5027.jpg?1783925576"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Patrician Geist
 {
     "name": "Patrician Geist",
@@ -11956,6 +12796,193 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Primal Adversary
+{
+    "name": "Primal Adversary",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Wolf",
+    "oracleText": "Trample\nWhen this creature enters, you may pay {1}{G} any number of times. When you pay this cost one or more times, put that many +1/+1 counters on this creature, then up to that many target lands you control become 3/3 Wolf creatures with haste that are still lands.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Primal Adversary:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "PayManaCostRepeatedly",
+                        "cost": "{1}{G}"
+                    },
+                    "reflexiveEffect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": {
+                                    "type": "VariableReference",
+                                    "variableName": "times_paid"
+                                },
+                                "target": "Self"
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": "IterationSpace.Targets",
+                                "body": {
+                                    "type": "BecomeCreature",
+                                    "target": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    },
+                                    "power": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    },
+                                    "toughness": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    },
+                                    "keywords": [
+                                        "HASTE"
+                                    ],
+                                    "creatureTypes": [
+                                        "Wolf"
+                                    ],
+                                    "duration": "Permanent"
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": "land ctrl:you"
+                            },
+                            "dynamicMaxCount": {
+                                "type": "VariableReference",
+                                "variableName": "times_paid"
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "You may pay {1}{G} any number of times. When you pay this cost one or more times, put that many +1/+1 counters on this creature, then up to that many target lands you control become 3/3 Wolf creatures with haste that are still lands."
+                },
+                "descriptionOverride": "When this creature enters, you may pay {1}{G} any number of times. When you pay this cost one or more times, put that many +1/+1 counters on this creature, then up to that many target lands you control become 3/3 Wolf creatures with haste that are still lands."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "rarity": "MYTHIC",
+        "artist": "Ilse Gort",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf3ce5c5-ea31-4f6d-84dd-430f52c49c4e.jpg?1783925576",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "Any land that becomes a Wolf creature this way will retain any supertypes, card types, subtypes, and abilities it had."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "After you pay the {1}{G} cost one or more times, a second ability triggers and you choose the targets for it. Players may respond to the new ability at that point. As that ability resolves, Primal Adversary gets its +1/+1 counters and the target lands become Wolf creatures."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Purifying Dragon
+{
+    "name": "Purifying Dragon",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhenever this creature attacks, it deals 1 damage to target creature defending player controls. If that creature is a Zombie, this creature deals 2 damage to it instead.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Purifying Dragon:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "creature Zombie"
+                        }
+                    },
+                    "then": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "otherwise": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": "ControlledByDefendingPlayer"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "rarity": "UNCOMMON",
+        "artist": "Zezhou Chen",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9db384e-9555-4ccc-a305-ee448252e685.jpg?1783925591"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -15350,6 +16377,451 @@
     ]
 }
 
+// Tireless Hauler
+{
+    "name": "Tireless Hauler",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Human Werewolf",
+    "oracleText": "Vigilance\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "VIGILANCE",
+        "DAYBOUND"
+    ],
+    "backFace": {
+        "name": "Dire-Strain Brawler",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "Vigilance\nNightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)",
+        "creatureStats": {
+            "power": 6,
+            "toughness": 6
+        },
+        "keywords": [
+            "VIGILANCE",
+            "NIGHTBOUND"
+        ],
+        "metadata": {
+            "collectorNumber": "203",
+            "artist": "Forrest Imel",
+            "flavorText": "A few townsfolk had their suspicions, but none dared accuse him openly.",
+            "imageUri": "https://cards.scryfall.io/normal/back/3/e/3e96f9a6-c215-42b1-aa02-8e6143fe5bd7.jpg?1783925578"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "artist": "Forrest Imel",
+        "flavorText": "The new hire proved more than enough to replace the three farmhands who disappeared the week before.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3e96f9a6-c215-42b1-aa02-8e6143fe5bd7.jpg?1783925578"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Tovolar's Huntmaster
+{
+    "name": "Tovolar's Huntmaster",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Human Werewolf",
+    "oracleText": "When this creature enters, create two 2/2 green Wolf creature tokens.\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "DAYBOUND"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tovolar's Huntmaster:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Wolf"
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, create two 2/2 green Wolf creature tokens."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Tovolar's Packleader",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "Whenever this creature enters or attacks, create two 2/2 green Wolf creature tokens.\n{2}{G}{G}: Another target Wolf or Werewolf you control fights target creature you don't control.\nNightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)",
+        "creatureStats": {
+            "power": 7,
+            "toughness": 7
+        },
+        "keywords": [
+            "NIGHTBOUND"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Tovolar's Packleader:1",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "to": "Battlefield"
+                    },
+                    "effect": {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "power": 2,
+                        "toughness": 2,
+                        "colors": [
+                            "GREEN"
+                        ],
+                        "creatureTypes": [
+                            "Wolf"
+                        ]
+                    },
+                    "descriptionOverride": "Whenever this creature enters or attacks, create two 2/2 green Wolf creature tokens."
+                },
+                {
+                    "id": "Tovolar's Packleader:2",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "power": 2,
+                        "toughness": 2,
+                        "colors": [
+                            "GREEN"
+                        ],
+                        "creatureTypes": [
+                            "Wolf"
+                        ]
+                    },
+                    "descriptionOverride": "Whenever this creature enters or attacks, create two 2/2 green Wolf creature tokens."
+                }
+            ],
+            "activatedAbilities": [
+                {
+                    "id": "Tovolar's Packleader:3",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{2}{G}{G}"
+                        }
+                    },
+                    "effect": {
+                        "type": "Fight",
+                        "target1": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "target2": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "permanent Wolf|Werewolf ctrl:you",
+                                "excludeSelf": true
+                            },
+                            "id": "t0"
+                        },
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:opponent"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "descriptionOverride": "{2}{G}{G}: Another target Wolf or Werewolf you control fights target creature you don't control."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "204",
+            "rarity": "RARE",
+            "artist": "Cristi Balanescu",
+            "imageUri": "https://cards.scryfall.io/normal/back/3/9/3983a304-5040-4b8d-945a-bf4ede3104a8.jpg?1783925575"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "rarity": "RARE",
+        "artist": "Cristi Balanescu",
+        "flavorText": "\"Do you smell that, friends? Fear and despair.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/3983a304-5040-4b8d-945a-bf4ede3104a8.jpg?1783925575"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Tovolar, Dire Overlord
+{
+    "name": "Tovolar, Dire Overlord",
+    "manaCost": "{1}{R}{G}",
+    "typeLine": "Legendary Creature — Human Werewolf",
+    "oracleText": "Whenever a Wolf or Werewolf you control deals combat damage to a player, draw a card.\nAt the beginning of your upkeep, if you control three or more Wolves and/or Werewolves, it becomes night. Then transform any number of Human Werewolves you control.\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DAYBOUND"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tovolar, Dire Overlord:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    },
+                    "sourceFilter": "permanent Wolf|Werewolf ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever a Wolf or Werewolf you control deals combat damage to a player, draw a card."
+            },
+            {
+                "id": "Tovolar, Dire Overlord:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "SetDayNight",
+                            "designation": "NIGHT"
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "filter": "permanent Human Werewolf"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected2",
+                            "prompt": "Transform any number of Human Werewolves you control",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "selected2"
+                            },
+                            "body": {
+                                "type": "Transform",
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "It becomes night. Then transform any number of Human Werewolves you control."
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent Wolf|Werewolf"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, if you control three or more Wolves and/or Werewolves, it becomes night. Then transform any number of Human Werewolves you control."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Tovolar, the Midnight Scourge",
+        "manaCost": "",
+        "typeLine": "Legendary Creature — Werewolf",
+        "oracleText": "Whenever a Wolf or Werewolf you control deals combat damage to a player, draw a card.\n{X}{R}{G}: Target Wolf or Werewolf you control gets +X/+0 and gains trample until end of turn.\nNightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "keywords": [
+            "NIGHTBOUND"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Tovolar, the Midnight Scourge:1",
+                    "trigger": {
+                        "type": "DealsDamageEvent",
+                        "damageType": "DamageCombat",
+                        "recipient": {
+                            "type": "RecipientPlayer",
+                            "player": "Any"
+                        },
+                        "sourceFilter": "permanent Wolf|Werewolf ctrl:you"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "descriptionOverride": "Whenever a Wolf or Werewolf you control deals combat damage to a player, draw a card."
+                }
+            ],
+            "activatedAbilities": [
+                {
+                    "id": "Tovolar, the Midnight Scourge:2",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{X}{R}{G}"
+                        }
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": "XValue",
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "permanent Wolf|Werewolf ctrl:you"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "{X}{R}{G}: Target Wolf or Werewolf you control gets +X/+0 and gains trample until end of turn."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "246",
+            "rarity": "RARE",
+            "artist": "Chris Rahn",
+            "imageUri": "https://cards.scryfall.io/normal/back/f/9/f953fad3-0cd1-48aa-8ed9-d7d2e293e6e2.jpg?1783925557"
+        },
+        "colorIdentityOverride": [
+            "RED",
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "RED",
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "246",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f953fad3-0cd1-48aa-8ed9-d7d2e293e6e2.jpg?1783925557",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "The second ability of Tovolar, Dire Overlord seems a little strange because Tovolar and other Human Werewolf creatures in this set transform when it becomes night anyway. Tovolar, however, isn't content to transform Werewolf creatures from just one set. This ability will allow you to transform Human Werewolf creatures from previous visits to Innistrad as well."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "If a creature you control that's a Wolf and a Werewolf deals combat damage to a player, the first ability triggers only once."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "The first ability of each of Tovolar's faces triggers once for each Wolf or Werewolf you control that deals combat damage to a player. For example, if you attack with three Wolf creatures and they all deal combat damage to a player, the ability triggers three times."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "Permanents with daybound and nightbound can't transform via any means other than their daybound and nightbound abilities. Notably, older cards such as Moonmist that instruct a player to transform permanents don't affect permanents with daybound or nightbound."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Triskaidekaphile
 {
     "name": "Triskaidekaphile",
@@ -15426,6 +16898,90 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Turn the Earth
+{
+    "name": "Turn the Earth",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Choose up to three target cards in graveyards. The owners of those cards shuffle them into their libraries. You gain 2 life.\nFlashback {1}{G} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{1}{G}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "ConditionalOnCollection",
+                    "collection": "gathered0",
+                    "ifNotEmpty": {
+                        "type": "MoveCollection",
+                        "from": "gathered0",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Library",
+                            "placement": "Shuffled"
+                        }
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 3,
+                "optional": true,
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "UNCOMMON",
+        "artist": "Alayna Danner",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/4/34076a93-9e8f-45d4-a1d7-31f40210a5b6.jpg?1783925569",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "You may choose no targets for Turn the Earth. In that case, no libraries will be shuffled and you'll just gain 2 life."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "Each affected library is shuffled only once, even if multiple cards are being shuffled into it."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "If you choose target cards in graveyards and all of those targets are somehow illegal as Turn the Earth tries to resolve (perhaps because your opponent responded with a Turn the Earth of their own), the spell will not resolve and you will gain no life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -15535,6 +17091,101 @@
         ]
     },
     "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Unnatural Moonrise
+{
+    "name": "Unnatural Moonrise",
+    "manaCost": "{R}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "It becomes night. Until end of turn, target creature gets +1/+0 and gains trample and \"Whenever this creature deals combat damage to a player, draw a card.\"\nFlashback {2}{R}{G} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{2}{R}{G}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "SetDayNight",
+                    "designation": "NIGHT"
+                },
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantTriggeredAbility",
+                    "ability": {
+                        "id": "Unnatural Moonrise:1",
+                        "trigger": {
+                            "type": "DealsDamageEvent",
+                            "damageType": "DamageCombat",
+                            "recipient": {
+                                "type": "RecipientPlayer",
+                                "player": "Any"
+                            }
+                        },
+                        "effect": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "247",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bfdd9df1-6a3b-4f03-8eca-00ed22c02566.jpg?1783925550"
+    },
+    "colorIdentityOverride": [
+        "RED",
         "GREEN"
     ]
 }
@@ -15723,6 +17374,70 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Village Watch
+{
+    "name": "Village Watch",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Human Werewolf",
+    "oracleText": "Haste\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "HASTE",
+        "DAYBOUND"
+    ],
+    "backFace": {
+        "name": "Village Reavers",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "Wolves and Werewolves you control have haste.\nNightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)",
+        "creatureStats": {
+            "power": 5,
+            "toughness": 4
+        },
+        "keywords": [
+            "NIGHTBOUND"
+        ],
+        "script": {
+            "staticAbilities": [
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "filter": {
+                        "baseFilter": "creature Wolf|Werewolf ctrl:you"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "165",
+            "rarity": "UNCOMMON",
+            "artist": "Néstor Ossandón Leal",
+            "flavorText": "With no guards to be seen, the cobbled streets of Gatstaf echoed with howls.",
+            "imageUri": "https://cards.scryfall.io/normal/back/1/b/1bf48d2b-eb68-4f47-a80a-4751a4fa20a7.jpg?1783925593"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "UNCOMMON",
+        "artist": "Néstor Ossandón Leal",
+        "flavorText": "\"You have my word. You'll see no wolf attacks while we're around!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1bf48d2b-eb68-4f47-a80a-4751a4fa20a7.jpg?1783925593"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
