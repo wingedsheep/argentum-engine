@@ -1307,6 +1307,7 @@ SpellCostTarget.MorphActivation — SpellCostTarget
 SpellCostTarget.OpponentsCast — SpellCostTarget
 SpellCostTarget.OpponentsCastFromZones — SpellCostTarget
 SpellCostTarget.OpponentsCastTargeting — SpellCostTarget
+SpellCostTarget.PlayerCasts — SpellCostTarget
 SpellCostTarget.SelfCast — SpellCostTarget
 SpellCostTarget.YouCast — SpellCostTarget
 SpellCostTarget.YouCastFromZones — SpellCostTarget

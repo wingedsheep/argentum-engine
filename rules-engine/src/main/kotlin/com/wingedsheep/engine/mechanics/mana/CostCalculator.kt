@@ -52,6 +52,9 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
+import com.wingedsheep.engine.state.components.battlefield.chosenPlayer
 
 /**
  * Calculates effective spell costs after applying cost reductions.
@@ -395,6 +398,9 @@ class CostCalculator(
             }
             is SpellCostTarget.AnyCaster -> matchesCardDefinition(cardDef, target.filter, sourceId, state, state.projectedState)
             is SpellCostTarget.OpponentsCast -> opponentsCastMatches(target, cardDef, casterId, sourceId, state)
+            is SpellCostTarget.PlayerCasts ->
+                namedPlayerOf(state, sourceId, target.player) == casterId &&
+                    matchesCardDefinition(cardDef, target.filter, sourceId, state, state.projectedState)
             is SpellCostTarget.OpponentsCastTargeting ->
                 opponentsCastTargetingMatches(state, casterId, sourceId, target.targetFilter, chosenTargets)
             is SpellCostTarget.OpponentsCastFromZones -> {
@@ -418,6 +424,25 @@ class CostCalculator(
             // calculateFaceDownCost / calculateMorphCostIncrease.
             SpellCostTarget.FaceDownYouCast -> false
             SpellCostTarget.MorphActivation -> false
+        }
+    }
+
+    /**
+     * The single player [player] names on the cost modifier's source, for
+     * [SpellCostTarget.PlayerCasts]: the player an "enchant player" Aura is attached to, or the
+     * opponent / player recorded as the source entered. Null — no caster is taxed — when the
+     * source names nobody right now, or [player] isn't one of those source-recorded references.
+     */
+    private fun namedPlayerOf(state: GameState, sourceId: EntityId, player: Player): EntityId? {
+        val source = state.getEntity(sourceId) ?: return null
+        return when (player) {
+            Player.EnchantedPlayer -> source
+                .get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+                ?.targetId
+                ?.takeIf { it in state.turnOrder }
+            Player.ChosenOpponent -> source.chosenOpponent()
+            Player.ChosenPlayer -> source.chosenPlayer()
+            else -> null
         }
     }
 
@@ -514,6 +539,7 @@ class CostCalculator(
         is SpellCostTarget.YouCast -> target.filter
         is SpellCostTarget.AnyCaster -> target.filter
         is SpellCostTarget.OpponentsCast -> target.filter
+        is SpellCostTarget.PlayerCasts -> target.filter
         else -> null  // Gating requires a filter to know what "of type" means.
     }
 

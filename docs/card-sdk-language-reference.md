@@ -5491,7 +5491,9 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
 - `Player.EnchantedPlayer` — the player the source Aura is attached to ("enchant player", CR 303),
   read from the source's `AttachedToComponent` when its target is a player. Use it both for the payoff
   (`DynamicAmount.LifeTotal(EnchantedPlayer)`, `EffectTarget.PlayerRef(EnchantedPlayer)`) and to scope a
-  `PreventLifeGain` (`LifeGainEvent(player = EnchantedPlayer)`). Resolves to nothing if the source isn't
+  `PreventLifeGain` (`LifeGainEvent(player = EnchantedPlayer)`), a cast trigger
+  (`Triggers.player(Player.EnchantedPlayer).casts(filter)` — "whenever enchanted player casts …", Curse of
+  Silence) or a spell tax (`SpellCostTarget.PlayerCasts(EnchantedPlayer, filter)`). Resolves to nothing if the source isn't
   an Aura attached to a player. Once the Aura has left the battlefield, effects and group filters
   (`controlledByEnchantedPlayer()`) read the player it was last attached to (CR 608.2h), so an
   enters trigger still pays off when the Aura is destroyed in response. (Grievous Wound, Overencumbered.)
@@ -10749,10 +10751,11 @@ staticAbility {
 ```
 
 - `target: SpellCostTarget` — `SelfCast`, `YouCast(filter)`, `AnyCaster(filter)`, `OpponentsCast(filter)`,
-  `OpponentsCastTargeting(GroupFilter)`, `OpponentsCastFromZones(zones, filter?)`, `YouCastFromZones(zones, filter?)`, `FaceDownYouCast`, `MorphActivation`.
+  `OpponentsCastTargeting(GroupFilter)`, `OpponentsCastFromZones(zones, filter?)`, `YouCastFromZones(zones, filter?)`, `PlayerCasts(player, filter?)`, `FaceDownYouCast`, `MorphActivation`.
   - `OpponentsCast(filter = Any)` — spells matching `filter` cast by an **opponent** of the source's controller, from any zone; the controller's own spells are untouched. Thalia, the Survivor: `OpponentsCast(Noncreature)` + `IncreaseGeneric(1)`. Like `AnyCaster`, it also taxes alternative costs such as flashback (CR 118.9d).
   - `OpponentsCastFromZones(zones, filter = Any)` — spells the source-controller's opponents cast **from one of `zones`** (matched against the spell's actual cast zone, threaded as `fromZone`), matching `filter`. Pair with `CostModification.IncreaseGeneric(n)` for the Aven Interrupter shape: `OpponentsCastFromZones(setOf(Zone.GRAVEYARD, Zone.EXILE))` + `IncreaseGeneric(2)` = "Spells your opponents cast from graveyards or from exile cost {2} more to cast."
   - `YouCastFromZones(zones, filter = Any)` — the you-cast analogue: spells the **source's controller** casts **from one of `zones`**, matching `filter`. Pair with `CostModification.ReduceGeneric(n)` for Doc Aurlock, Grizzled Genius: `YouCastFromZones(setOf(Zone.GRAVEYARD, Zone.EXILE))` + `ReduceGeneric(2)` = "Spells you cast from your graveyard or from exile cost {2} less to cast." (Only the normal-cast path threads `fromZone`; alternative-cost casts such as flashback compute their own base cost and are unaffected.)
+  - `PlayerCasts(player, filter = Any)` — spells matching `filter` cast by the **one player the source names**: `Player.EnchantedPlayer` (the player an "enchant player" Aura is attached to), `Player.ChosenOpponent` or `Player.ChosenPlayer` (recorded as the source entered). Any other reference taxes nobody — "you" / "your opponents" are `YouCast` / `OpponentsCast` — and so does a source that names no player right now. Curse of Silence: `PlayerCasts(Player.EnchantedPlayer, GameObjectFilter.Any.namedFromChosenComponent())` + `IncreaseGeneric(2)` = "Spells with the chosen name enchanted player casts cost {2} more to cast."
 - `optionalLifePayment: Int? = null` — an optional additional life cost declared once per source
   instance while casting. Paying it enables this modifier; declining leaves the cost unchanged.
   `YouCast(Permanent.withColor(BLUE))` + `ReduceColored("{U}")` + `optionalLifePayment = 2`

@@ -1443,6 +1443,80 @@
     ]
 }
 
+// Curse of Silence
+{
+    "name": "Curse of Silence",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment — Aura Curse",
+    "oracleText": "Enchant player\nAs this Aura enters, choose a card name.\nSpells with the chosen name enchanted player casts cost {2} more to cast.\nWhenever enchanted player casts a spell with the chosen name, you may sacrifice this Aura. If you do, draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Curse of Silence:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "NameEqualsChosenComponent"
+                        ]
+                    },
+                    "player": "EnchantedPlayer"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": "SacrificeSelf"
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "PlayerCasts",
+                    "player": "EnchantedPlayer",
+                    "filter": {
+                        "cardPredicates": [
+                            "NameEqualsChosenComponent"
+                        ]
+                    }
+                },
+                "modification": {
+                    "type": "IncreaseGeneric",
+                    "amount": 2
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CARD_NAME",
+                "cardNamePool": "ANY"
+            }
+        ],
+        "auraTarget": "TargetPlayer"
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "RARE",
+        "artist": "Irina Nordsol",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e7819d5-12a9-4719-91b2-8dd1ba6f3800.jpg?1783925660"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Dawnhart Rejuvenator
 {
     "name": "Dawnhart Rejuvenator",

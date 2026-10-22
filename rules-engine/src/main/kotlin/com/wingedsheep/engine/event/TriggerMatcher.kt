@@ -284,7 +284,7 @@ class TriggerMatcher(
             }
             is EventPattern.SpellCastEvent -> {
                 event is SpellCastEvent &&
-                    matchesPlayer(state, trigger.player, event.casterId, controllerId) &&
+                    matchesPlayer(state, trigger.player, event.casterId, controllerId, sourceId) &&
                     matchesSpellFilter(trigger.spellFilter, event, state, sourceId) &&
                     trigger.requires.all { matchesSpellCastPredicate(it, event, state, sourceId, controllerId) }
             }
@@ -1919,13 +1919,28 @@ class TriggerMatcher(
      * Check if a Player filter matches the event's player. `EachOpponent` is a real opponent test
      * ([GameState.isOpponentOf]) — in a team game the controller's teammate is not "an opponent",
      * so "whenever an opponent gains life" must not fire off your own partner (CR 102.3).
+     *
+     * [Player.EnchantedPlayer] needs the observing ability's [sourceId]: it is the player the
+     * source Aura is attached to ("whenever enchanted player casts a spell", Curse of Silence), and
+     * an Aura attached to no player matches nobody. Callers that don't pass a source keep the
+     * permissive fallback the other unresolved references use.
      */
-    fun matchesPlayer(state: GameState, player: Player, eventPlayerId: EntityId, controllerId: EntityId): Boolean {
+    fun matchesPlayer(
+        state: GameState,
+        player: Player,
+        eventPlayerId: EntityId,
+        controllerId: EntityId,
+        sourceId: EntityId? = null,
+    ): Boolean {
         return when (player) {
             Player.EachDefendingPlayer -> eventPlayerId in com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state)
             Player.You -> eventPlayerId == controllerId
             Player.Each -> true
             Player.EachOpponent -> state.isOpponentOf(eventPlayerId, controllerId)
+            Player.EnchantedPlayer -> if (sourceId == null) true else
+                state.getEntity(sourceId)
+                    ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+                    ?.targetId == eventPlayerId
             else -> true
         }
     }

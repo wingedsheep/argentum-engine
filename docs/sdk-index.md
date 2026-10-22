@@ -1652,6 +1652,7 @@ Families:
 - `SpellCostTarget.OpponentsCast(filter: GameObjectFilter)` — Spells matching filter cast by an **opponent** of the source's controller, from any zone — "Noncreature spells your opponents cast cost {1} more to cast" (Thalia, the Survivor).
 - `SpellCostTarget.OpponentsCastFromZones(zones: Set<Zone>, filter: GameObjectFilter)` — Spells opponents of the source's controller cast **from one of zones**, matching filter (default: any spell).
 - `SpellCostTarget.OpponentsCastTargeting(targetFilter: GroupFilter)` — Spells opponents of the source's controller cast that target one or more permanents matching targetFilter relative to the source.
+- `SpellCostTarget.PlayerCasts(player: Player, filter: GameObjectFilter)` — Spells matching filter cast by the one player player names relative to the source — "Spells with the chosen name enchanted player casts cost {2} more to cast" (Curse of Silence, Player.EnchantedPla…
 - `SpellCostTarget.SelfCast` — Self-reduction on the spell card itself — applies when this card is cast.
 - `SpellCostTarget.YouCast(filter: GameObjectFilter)` — Spells the source's controller casts that match the filter.
 - `SpellCostTarget.YouCastFromZones(zones: Set<Zone>, filter: GameObjectFilter)` — Spells the source's controller casts **from one of zones**, matching filter (default: any spell).

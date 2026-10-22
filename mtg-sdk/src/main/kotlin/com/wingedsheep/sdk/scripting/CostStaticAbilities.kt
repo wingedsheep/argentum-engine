@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.scripting
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
@@ -47,6 +48,7 @@ data class ModifySpellCost(
             is SpellCostTarget.YouCast -> "${filterAdjective(target.filter)}$noun you cast"
             is SpellCostTarget.AnyCaster -> "${filterAdjective(target.filter)}$noun"
             is SpellCostTarget.OpponentsCast -> "${filterAdjective(target.filter)}$noun your opponents cast"
+            is SpellCostTarget.PlayerCasts -> "${filterAdjective(target.filter)}$noun ${target.player.description} casts"
             is SpellCostTarget.OpponentsCastTargeting ->
                 "Spells your opponents cast that target ${target.targetFilter.description}"
             is SpellCostTarget.OpponentsCastFromZones ->
@@ -104,7 +106,8 @@ data class ModifySpellCost(
             is SpellCostTarget.AnyCaster,
             is SpellCostTarget.OpponentsCast,
             is SpellCostTarget.OpponentsCastTargeting,
-            is SpellCostTarget.OpponentsCastFromZones ->
+            is SpellCostTarget.OpponentsCastFromZones,
+            is SpellCostTarget.PlayerCasts ->
                 sourceDescription
                     .replace("you control", "its controller controls")
                     .replace("you own", "its controller owns")
@@ -275,6 +278,29 @@ sealed interface SpellCostTarget {
     @Serializable
     data class OpponentsCastFromZones(
         val zones: Set<com.wingedsheep.sdk.core.Zone>,
+        val filter: GameObjectFilter = GameObjectFilter.Any,
+    ) : SpellCostTarget {
+        override fun applyTextReplacement(replacer: TextReplacer): SpellCostTarget {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
+
+    /**
+     * Spells matching [filter] cast by the one player [player] names relative to the source —
+     * "Spells with the chosen name enchanted player casts cost {2} more to cast" (Curse of Silence,
+     * [Player.EnchantedPlayer]).
+     *
+     * [player] must resolve to a single player recorded on the source:
+     * [Player.EnchantedPlayer] (the player the source Aura is attached to),
+     * [Player.ChosenOpponent] or [Player.ChosenPlayer] (the player chosen as the source entered).
+     * Any other reference matches no caster — "you" and "your opponents" are [YouCast] and
+     * [OpponentsCast]. A source that doesn't currently name a player taxes nobody.
+     */
+    @SerialName("PlayerCasts")
+    @Serializable
+    data class PlayerCasts(
+        val player: Player,
         val filter: GameObjectFilter = GameObjectFilter.Any,
     ) : SpellCostTarget {
         override fun applyTextReplacement(replacer: TextReplacer): SpellCostTarget {
