@@ -942,8 +942,8 @@ sealed interface CostReductionSource {
 
     /**
      * Reduces cost by [amountPerCreature] for each creature that was declared as an attacker this
-     * turn — by ANY player, not just the caster ("for each creature that attacked this turn" is
-     * not controller-scoped), and counting every combat phase this turn.
+     * turn — by any player, or only by the caster with [yoursOnly] ("for each creature that
+     * attacked this turn" is not controller-scoped), counting every combat phase this turn.
      *
      * The turn-history sibling of [PermanentsSacrificedThisTurn], and deliberately *not*
      * `PermanentsOnBattlefieldMatching(Creature.attackedThisTurn())`: that reads the live
