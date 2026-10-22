@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 
 /**
  * Tovolar's Huntmaster // Tovolar's Packleader (Innistrad: Midnight Hunt)
@@ -92,7 +93,13 @@ private val TovolarsPackleader = card("Tovolar's Packleader") {
                 excludeSelf = true,
             )
         )
-        val theirs = target(TargetFilter.CreatureOpponentControls)
+        val theirs = target(
+            TargetFilter(
+                GameObjectFilter.Creature.copy(
+                    controllerPredicate = ControllerPredicate.Not(ControllerPredicate.ControlledByYou)
+                )
+            )
+        )
         effect = Effects.Fight(mine, theirs)
         description = "{2}{G}{G}: Another target Wolf or Werewolf you control fights target creature you don't control."
     }
