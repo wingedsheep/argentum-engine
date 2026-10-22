@@ -4689,7 +4689,7 @@
                     },
                     "counterCount": {
                         "type": "Count",
-                        "player": "You",
+                        "player": "Each",
                         "zone": "Exile",
                         "filter": {
                             "cardPredicates": [
@@ -4736,6 +4736,14 @@
             {
                 "date": "2021-09-24",
                 "text": "If there are no creature cards exiled with Ludevic as it transforms, perhaps because those cards were removed from exile in response to its activated ability or it transformed another way, Olag won't be a copy of anything. Olag will simply be its 4/4 self with no +1/+1 counters."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "It's possible for Olag to become a copy of a card with the daybound keyword ability as it transforms. If this happens, it doesn't transform as it becomes night."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "If Olag becomes a copy of another transforming double-faced card that doesn't have nightbound, such as Delver of Secrets, abilities of it gains or other effects may cause it to transform. If it transforms this way, it does not become Ludevic again. The copy effect continues to apply and its characteristics don't change. If the creature it is a copy of has a triggered ability that occurs when it transforms, that ability will trigger."
             }
         ]
     },

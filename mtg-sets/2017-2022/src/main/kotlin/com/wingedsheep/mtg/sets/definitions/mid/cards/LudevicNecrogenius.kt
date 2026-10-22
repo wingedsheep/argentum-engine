@@ -82,6 +82,8 @@ private val LudevicFront = card("Ludevic, Necrogenius") {
         ruling("2021-09-24", "You choose which exiled creature card Olag is copying as it transforms. It doesn't transform and then become a copy.")
         ruling("2021-09-24", "Olag remains a copy of the creature card you choose even if that card later leaves exile.")
         ruling("2021-09-24", "If there are no creature cards exiled with Ludevic as it transforms, perhaps because those cards were removed from exile in response to its activated ability or it transformed another way, Olag won't be a copy of anything. Olag will simply be its 4/4 self with no +1/+1 counters.")
+        ruling("2021-09-24", "It's possible for Olag to become a copy of a card with the daybound keyword ability as it transforms. If this happens, it doesn't transform as it becomes night.")
+        ruling("2021-09-24", "If Olag becomes a copy of another transforming double-faced card that doesn't have nightbound, such as Delver of Secrets, abilities of it gains or other effects may cause it to transform. If it transforms this way, it does not become Ludevic again. The copy effect continues to apply and its characteristics don't change. If the creature it is a copy of has a triggered ability that occurs when it transforms, that ability will trigger.")
     }
 }
 
@@ -109,7 +111,7 @@ private val OlagLudevicsHubris = card("Olag, Ludevic's Hubris") {
                 addedColors = setOf(Color.BLUE, Color.BLACK),
                 addedSubtypes = setOf(Subtype.ZOMBIE),
             ),
-            counterCount = DynamicAmounts.count(Player.You, Zone.EXILE, creatureCardsExiledWithIt),
+            counterCount = DynamicAmounts.count(Player.Each, Zone.EXILE, creatureCardsExiledWithIt),
         )
     )
 

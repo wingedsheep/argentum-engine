@@ -655,8 +655,8 @@ data class AttachToPlayerAsTransforms(
  *
  * Not [EntersAsCopy]: that is an entry replacement, read on every path a permanent enters by, and a
  * transform is not an entry. Not [AttachToPlayerAsTransforms]: that one's choice is a player to
- * attach to, not a card to copy. Both as-transforms replacements share one settle point — the choice
- * is asked at the first moment the engine can ask after the flip (see `TransformAsReplacements`).
+ * attach to, not a card to copy. Both are settled at the first moment the engine can ask after the
+ * flip — the state-based action pass (`TransformCopy` and `TransformAttachToPlayer` in the engine).
  */
 @SerialName("BecomesCopyAsTransforms")
 @Serializable
@@ -670,7 +670,7 @@ data class BecomesCopyAsTransforms(
     override val appliesTo: EventPattern = EventPattern.TransformEvent()
 ) : ReplacementEffect {
     override val description: String = buildString {
-        append("As this creature transforms, it becomes a copy of a ${copyFilter.description} card")
+        append("As this creature transforms, it becomes a copy of a ${copyFilter.description}")
         if (copyFromZone != Zone.EXILE) append(" in a ${copyFromZone.name.lowercase()}")
         val clauses = exceptions.clauses()
         if (clauses.isNotEmpty()) append(", except ${clauses.joinToString(" and ")}")

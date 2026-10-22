@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Color
@@ -12,6 +13,7 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Supertype
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import io.kotest.assertions.withClue
@@ -47,7 +49,13 @@ class LudevicNecrogeniusScenarioTest : ScenarioTestBase() {
     private fun TestGame.plusOnes(id: EntityId): Int =
         state.getEntity(id)?.get<CountersComponent>()?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0
 
-    private fun TestGame.activateTransform(x: Int, exiled: List<EntityId>) {
+    private fun TestGame.moveExiledToLibrary(cardId: EntityId) {
+        state = state
+            .removeFromZone(ZoneKey(player1Id, Zone.EXILE), cardId)
+            .addToZone(ZoneKey(player1Id, Zone.LIBRARY), cardId)
+    }
+
+    private fun TestGame.activateTransform(x: Int, exiled: List<EntityId>, beforeResolving: () -> Unit = {}) {
         val result = execute(ActivateAbility(
             playerId = player1Id,
             sourceId = findPermanent("Ludevic, Necrogenius")!!,
@@ -56,6 +64,7 @@ class LudevicNecrogeniusScenarioTest : ScenarioTestBase() {
             costPayment = AdditionalCostPayment(exiledCards = exiled),
         ))
         withClue("activation should succeed: ${result.error}") { result.error shouldBe null }
+        beforeResolving()
         resolveStack()
     }
 
@@ -119,12 +128,32 @@ class LudevicNecrogeniusScenarioTest : ScenarioTestBase() {
                 game.state.projectedState.getPower(ludevic) shouldBe 5
 
                 // The copied card leaves exile (shuffled back into its owner's library).
-                game.state = game.state
-                    .removeFromZone(com.wingedsheep.engine.state.ZoneKey(game.player1Id, com.wingedsheep.sdk.core.Zone.EXILE), drake)
-                    .addToZone(com.wingedsheep.engine.state.ZoneKey(game.player1Id, com.wingedsheep.sdk.core.Zone.LIBRARY), drake)
+                game.moveExiledToLibrary(drake)
                 withClue("Olag remains a copy of the card even after it leaves exile") {
                     game.state.projectedState.hasKeyword(ludevic, com.wingedsheep.sdk.core.Keyword.FLYING) shouldBe true
                     game.card(ludevic).name shouldBe "Olag, Ludevic's Hubris"
+                }
+            }
+
+            test("a card that leaves exile in response is neither a copy choice nor counted") {
+                val game = builder()
+                    .withCardInGraveyard(1, "Grizzly Bears")
+                    .withCardInGraveyard(1, "Hill Giant")
+                    .build()
+                val ludevic = game.findPermanent("Ludevic, Necrogenius")!!
+                val bears = game.findCardsInGraveyard(1, "Grizzly Bears").single()
+                val giant = game.findCardsInGraveyard(1, "Hill Giant").single()
+
+                // X = 2, but the Hill Giant leaves exile while the ability is on the stack.
+                game.activateTransform(2, listOf(bears, giant)) { game.moveExiledToLibrary(giant) }
+
+                withClue("only the Bears is still exiled with it, so it is copied without asking") {
+                    game.hasPendingDecision() shouldBe false
+                    game.card(ludevic).typeLine.subtypes.map { it.value } shouldContainExactlyInAnyOrder listOf("Bear", "Zombie")
+                }
+                withClue("one creature card exiled with it: one +1/+1 counter, not X") {
+                    game.plusOnes(ludevic) shouldBe 1
+                    game.state.projectedState.getPower(ludevic) shouldBe 5
                 }
             }
 
@@ -146,8 +175,9 @@ class LudevicNecrogeniusScenarioTest : ScenarioTestBase() {
 
             test("a later transform turns the card over but the copy keeps setting its characteristics") {
                 val game = builder()
-                    .withLandsOnBattlefield(1, "Forest", 2)
+                    .withLandsOnBattlefield(1, "Forest", 4)
                     .withCardInGraveyard(1, "Elite Vanguard")
+                    .withCardInHand(1, "Moonmist")
                     .withCardInHand(1, "Moonmist")
                     .build()
                 val ludevic = game.findPermanent("Ludevic, Necrogenius")!!
@@ -169,6 +199,17 @@ class LudevicNecrogeniusScenarioTest : ScenarioTestBase() {
                     game.card(ludevic).name shouldBe "Olag, Ludevic's Hubris"
                     game.state.projectedState.getPower(ludevic) shouldBe 5
                     game.state.projectedState.getToughness(ludevic) shouldBe 5
+                }
+
+                game.castSpell(1, "Moonmist").error shouldBe null
+                game.resolveStack()
+
+                withClue("turning back to Olag under the copy doesn't apply Olag's as-transforms copy again") {
+                    game.state.getEntity(ludevic)!!.get<DoubleFacedComponent>()!!.currentFace shouldBe DoubleFacedComponent.Face.BACK
+                    game.hasPendingDecision() shouldBe false
+                    game.plusOnes(ludevic) shouldBe 1
+                    game.card(ludevic).typeLine.subtypes.map { it.value } shouldContainExactlyInAnyOrder listOf("Human", "Soldier", "Zombie")
+                    game.state.projectedState.getPower(ludevic) shouldBe 5
                 }
             }
         }

@@ -31,7 +31,9 @@ import com.wingedsheep.sdk.scripting.Duration
  * permanent transforms, so the copy is made at the first point after the flip where the engine can
  * ask — the state-based action pass that follows the transform
  * ([com.wingedsheep.engine.mechanics.sba.permanent.TransformCopyCheck]), which runs before any player
- * gets priority and before triggers are put on the stack.
+ * gets priority and ahead of every real state-based action. Triggers on the transform itself are
+ * detected from its [com.wingedsheep.engine.core.TransformedEvent] at the settle boundary, before this
+ * pass, so a "transforms into [quality]" trigger sees the printed face.
  *
  * With one candidate card the copy is made without asking; with several, the permanent's controller
  * picks one; with none it stays its printed face. Either way the face's counters are put on it next.

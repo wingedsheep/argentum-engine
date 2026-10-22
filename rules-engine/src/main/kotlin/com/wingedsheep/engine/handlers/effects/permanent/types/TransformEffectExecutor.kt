@@ -179,7 +179,9 @@ internal fun flipDfcInPlace(
     // TransformAttachToPlayer); until then the mark keeps the 704.5m check off the Aura.
     // A permanent under a copy effect doesn't gain its new face's abilities (setDfcFace), so they
     // don't apply as it transforms either.
-    val underCopy = newState.getEntity(entityId)?.has<CopyOfComponent>() == true && copiedFace == null
+    val flipped = newState.getEntity(entityId)
+    val underCopy = copiedFace == null && flipped?.get<CopyOfComponent>()?.originalCardComponent != null &&
+        flipped.get<CopyHistoryComponent>() == null
     val faceDefinition = (copiedFace?.let { cardRegistry.getCard(it.cardDefinitionId) } ?: nextCardDef)
         ?.takeUnless { underCopy }
     val faceReplacements = faceDefinition?.script?.replacementEffects.orEmpty()
