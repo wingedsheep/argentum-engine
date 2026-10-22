@@ -4074,6 +4074,17 @@ object Effects {
     )
 
     /**
+     * "Note [amount]" for the source permanent: evaluate it once and store it durably on the
+     * permanent under [slot] (replacing any prior note), read back as "the last noted …" through
+     * [com.wingedsheep.sdk.scripting.values.DynamicAmount.CastChoice]. Wrap in `OnEnterRun` for
+     * "as this enters, note …". Powers Sigarda's Splendor's noted life total.
+     */
+    fun NoteNumberForSource(
+        amount: DynamicAmount,
+        slot: com.wingedsheep.sdk.scripting.ChoiceSlot = com.wingedsheep.sdk.scripting.ChoiceSlot.NOTED_NUMBER
+    ): Effect = com.wingedsheep.sdk.scripting.effects.NoteNumberForSourceEffect(amount, slot)
+
+    /**
      * The controller chooses an opponent, stored durably on the source entity under
      * [com.wingedsheep.sdk.scripting.ChoiceSlot.OPPONENT] and read back through
      * [com.wingedsheep.sdk.scripting.references.Player.ChosenOpponent]. Forced (no prompt)

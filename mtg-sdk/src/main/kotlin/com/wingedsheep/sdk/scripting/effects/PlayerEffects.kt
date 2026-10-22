@@ -1495,6 +1495,40 @@ data class ChooseNumberForSourceEffect(
 }
 
 /**
+ * "Note <a number>" for the source permanent — evaluate [amount] once and write it **durably on
+ * the source permanent** in its cast-choices bag under [slot], replacing any prior value; read it
+ * back later (as "the last noted <number> for this permanent") through
+ * [com.wingedsheep.sdk.scripting.values.DynamicAmount.CastChoice].
+ *
+ * Sigarda's Splendor: "As this enchantment enters, note your life total. At the beginning of your
+ * upkeep, draw a card if your life total is greater than or equal to the last noted life total
+ * for this enchantment. Then note your life total." — `OnEnterRun(NoteNumberForSource(life))`
+ * plus an upkeep trigger that compares against `CastChoice(NOTED_NUMBER)` and then notes again.
+ *
+ * The two closest types don't take this axis: [ChooseNumberForSourceEffect] writes the same bag
+ * but from a *player's choice* in a bounded range, and [StoreNumberEffect] evaluates a
+ * [DynamicAmount] but stores it only in the resolving pipeline, which is gone once the ability
+ * finishes. The note lives on the permanent, so it dies with it (a new object has no note).
+ * With no current source (it left before the note) the effect is a no-op.
+ *
+ * @property amount The number to note, evaluated once at resolution.
+ * @property slot Which durable cast-choices slot to write (default
+ *   [com.wingedsheep.sdk.scripting.ChoiceSlot.NOTED_NUMBER]).
+ */
+@SerialName("NoteNumberForSource")
+@Serializable
+data class NoteNumberForSourceEffect(
+    val amount: DynamicAmount,
+    val slot: com.wingedsheep.sdk.scripting.ChoiceSlot = com.wingedsheep.sdk.scripting.ChoiceSlot.NOTED_NUMBER
+) : Effect {
+    override val description: String = "note ${amount.description}"
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newAmount = amount.applyTextReplacement(replacer)
+        return if (newAmount !== amount) copy(amount = newAmount) else this
+    }
+}
+
+/**
  * The controller chooses an opponent; the choice is written durably onto the source entity's
  * cast-choices bag under [com.wingedsheep.sdk.scripting.ChoiceSlot.OPPONENT], where downstream
  * effects read it back through [com.wingedsheep.sdk.scripting.references.Player.ChosenOpponent].

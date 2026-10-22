@@ -4503,6 +4503,15 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   (replacement at entry + this effect each upkeep), whose P/T is a
   `SetBasePowerToughnessDynamicStatic(power = CastChoice(CHOSEN_NUMBER), toughness = Subtract(Fixed(7),
   CastChoice(CHOSEN_NUMBER)))` CDA — power = last chosen number, toughness = 7 − it.
+- `Effects.NoteNumberForSource(amount, slot=ChoiceSlot.NOTED_NUMBER)` — "note <a number>": evaluate `amount` once
+  and **store it durably on the source permanent** under `slot` (a `ChoiceValue.NumberChoice` in its
+  `CastChoicesComponent`, replacing any prior note); read "the last noted …" back with `DynamicAmount.CastChoice(slot)`.
+  The non-interactive sibling of `ChooseNumberForSource` (a player's choice) and the durable sibling of `StoreNumber`
+  (pipeline-scoped). For "as ~ enters, note …" wrap it in `OnEnterRun`; re-run it from a later ability to re-note. The
+  note belongs to the object — a permanent that left and returned has no note until it notes again; with no current
+  source the effect does nothing. Sigarda's Splendor: `OnEnterRun(NoteNumberForSource(YourLifeTotal))`, and an upkeep
+  trigger `Composite(If(CompareAmounts(YourLifeTotal, GTE, CastChoice(NOTED_NUMBER)), DrawCards(1)),
+  NoteNumberForSource(YourLifeTotal))`.
 - `Effects.ChooseOpponent(prompt)` — the controller picks an opponent, **stored durably on the
   source entity** under `ChoiceSlot.OPPONENT` (a `ChoiceValue.EntityChoice` in its
   `CastChoicesComponent`) and read back through `Player.ChosenOpponent`. Forced (promptless) with a

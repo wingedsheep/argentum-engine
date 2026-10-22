@@ -963,9 +963,16 @@ object CardLinter {
     /**
      * Node types whose `slot` field names the slot they *declare* (write durably on the source).
      * [com.wingedsheep.sdk.scripting.effects.ChooseNumberForSourceEffect] records a number under the
-     * named slot (e.g. `CHOSEN_NUMBER` for Shapeshifter), which a `CastChoice` read then resolves.
+     * named slot (e.g. `CHOSEN_NUMBER` for Shapeshifter), and
+     * [com.wingedsheep.sdk.scripting.effects.NoteNumberForSourceEffect] a noted one (`NOTED_NUMBER`
+     * for Sigarda's Splendor), which a `CastChoice` read then resolves. Each maps to the slot it
+     * writes when the `slot` field is left at its default.
      */
-    private val slotFieldDeclarers = setOf("ChooseNumberForSource", "ChooseCardTypeForSource")
+    private val slotFieldDeclarers = mapOf(
+        "ChooseNumberForSource" to "CHOSEN_NUMBER",
+        "NoteNumberForSource" to "NOTED_NUMBER",
+        "ChooseCardTypeForSource" to "CARD_TYPE",
+    )
 
     private class SlotUsage {
         val declared = mutableSetOf<String>()
@@ -1000,9 +1007,8 @@ object CardLinter {
                     (element["slot"] as? JsonPrimitive)?.contentOrNull
                         ?.let { slots.reads.add(it to type.orEmpty()) }
                 }
-                if (type in slotFieldDeclarers) {
-                    (element["slot"] as? JsonPrimitive)?.contentOrNull
-                        ?.let { slots.declared.add(it) }
+                slotFieldDeclarers[type]?.let { defaultSlot ->
+                    slots.declared.add((element["slot"] as? JsonPrimitive)?.contentOrNull ?: defaultSlot)
                 }
                 // The optional-additional-cost keyword (serial name "Kicker") declares whichever
                 // slot its own mechanic uses: KICKED for kicker/multikicker/offspring, BARGAINED

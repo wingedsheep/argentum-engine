@@ -50,6 +50,7 @@ class PlayerExecutors(
         CantCastSpellsFromNonHandZonesExecutor(),
         CantPlayCardsFromHandExecutor(),
         ChooseNumberForSourceExecutor(decisionHandler),
+        NoteNumberForSourceExecutor(zones.predicateEvaluator.amounts),
         ChooseOpponentForSourceExecutor(),
         ChooseCardTypeForSourceExecutor(),
         CreateGlobalTriggeredAbilityExecutor(),

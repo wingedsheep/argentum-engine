@@ -5504,6 +5504,96 @@
     ]
 }
 
+// Sigarda's Splendor
+{
+    "name": "Sigarda's Splendor",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "As this enchantment enters, note your life total.\nAt the beginning of your upkeep, draw a card if your life total is greater than or equal to the last noted life total for this enchantment. Then note your life total.\nWhenever you cast a white spell, you gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sigarda's Splendor:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": "YourLifeTotal",
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "CastChoice",
+                                        "slot": "NOTED_NUMBER"
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        },
+                        {
+                            "type": "NoteNumberForSource",
+                            "amount": "YourLifeTotal"
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, draw a card if your life total is greater than or equal to the last noted life total for this enchantment. Then note your life total."
+            },
+            {
+                "id": "Sigarda's Splendor:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasColor",
+                                "color": "WHITE"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever you cast a white spell, you gain 1 life."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "OnEnterRunEffect",
+                "effect": {
+                    "type": "NoteNumberForSource",
+                    "amount": "YourLifeTotal"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "RARE",
+        "artist": "Howard Lyon",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bb22626d-84ef-40d1-a4f2-771b45198eaa.jpg?1783925652"
+    }
+}
+
 // Skaab Wrangler
 {
     "name": "Skaab Wrangler",

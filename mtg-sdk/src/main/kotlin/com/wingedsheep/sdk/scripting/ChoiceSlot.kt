@@ -263,6 +263,15 @@ enum class ChoiceSlot {
      */
     CHOSEN_NUMBER,
 
+    /**
+     * A number *noted* for the permanent rather than chosen — "note your life total" (Sigarda's
+     * Splendor). Written by [com.wingedsheep.sdk.scripting.effects.NoteNumberForSourceEffect]
+     * (at entry inside an [OnEnterRun], and again by later abilities — the last note wins) and read
+     * back as "the last noted …" through
+     * [com.wingedsheep.sdk.scripting.values.DynamicAmount.CastChoice].
+     */
+    NOTED_NUMBER,
+
     /** Zero-based branch of a declared additional-cost choice. */
     ADDITIONAL_COST_BRANCH,
 
