@@ -802,6 +802,12 @@ value class CounterType(val name: String) {
          */
         val VALOR = CounterType("VALOR")
 
+        /**
+         * Ritual counter (MID — Heirloom Mirror). A mark with no inherent rule: the artifact's
+         * activated ability adds one, then removes them all and transforms it once it has three.
+         */
+        val RITUAL = CounterType("RITUAL")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -946,6 +952,7 @@ value class CounterType(val name: String) {
             INTERVENTION,
             REJECTION,
             VALOR,
+            RITUAL,
         )
 
         /**
