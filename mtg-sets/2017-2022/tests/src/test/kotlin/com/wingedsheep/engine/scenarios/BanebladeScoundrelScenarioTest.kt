@@ -97,6 +97,24 @@ class BanebladeScoundrelScenarioTest : ScenarioTestBase() {
                 withClue("its controller loses 1") { game.getLifeTotal(2) shouldBe 19 }
             }
 
+            test("the Marauder and its blocker killing each other still costs a life") {
+                val game = nightGame("Craw Wurm")
+
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Baneclaw Marauder" to 2)).error shouldBe null
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.declareBlockers(mapOf("Craw Wurm" to listOf("Baneclaw Marauder"))).error shouldBe null
+                game.passUntilPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
+
+                withClue("the shrunken 5/3 Wurm and the 5/4 Marauder trade") {
+                    game.isInGraveyard(2, "Craw Wurm") shouldBe true
+                    game.findPermanent("Baneclaw Marauder") shouldBe null
+                }
+                withClue("the Marauder sees its blocker die (leaves-the-battlefield look-back)") {
+                    game.getLifeTotal(2) shouldBe 19
+                }
+            }
+
             test("a creature dying while blocking a different attacker doesn't trigger it") {
                 val game = nightGame("Savannah Lions", p1Extra = "Hill Giant")
 

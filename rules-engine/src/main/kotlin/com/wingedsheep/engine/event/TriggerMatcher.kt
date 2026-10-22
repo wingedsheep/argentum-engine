@@ -2757,7 +2757,8 @@ class TriggerMatcher(
      * [StatePredicate.IsBlockingSource] / `IsBlockedBySource` / `IsCombatPairedWithSource` for a
      * zone-change trigger: whether the moving entity blocked, was blocked by, or was paired in
      * combat with [sourceId] (CR 509). A battlefield departure answers from the frozen pairing on
-     * its snapshot; anything else reads the live blocking components.
+     * its snapshot — or, when the source left first in the same batch, on the source's; anything
+     * else reads the live blocking components.
      */
     private fun combatPairedWithSourceForZoneChange(
         predicate: com.wingedsheep.sdk.scripting.predicates.StatePredicate,
@@ -2770,9 +2771,23 @@ class TriggerMatcher(
         val paired: Boolean
         if (event.isBattlefieldDeparture) {
             val lki = event.lastKnown ?: return false
-            blocking = lki.wasBlocking
-            attacking = lki.wasAttacking
-            paired = sourceId in lki.blockingOrBlockedByIds
+            // Simultaneous deaths move one at a time: a source that left first was already
+            // stripped out of this creature's combat components, so its own frozen pairing is the
+            // other half of the answer (the look-back of CR 603.10a — they died blocking each other).
+            val sourceLki = state.getEntity(sourceId)
+                ?.takeIf { sourceId !in state.getBattlefield() }
+                ?.get<com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentComponent>()
+                ?.snapshot
+                ?.takeIf { event.entityId in it.blockingOrBlockedByIds }
+            if (sourceId in lki.blockingOrBlockedByIds) {
+                blocking = lki.wasBlocking
+                attacking = lki.wasAttacking
+                paired = true
+            } else if (sourceLki != null) {
+                blocking = sourceLki.wasAttacking
+                attacking = sourceLki.wasBlocking
+                paired = true
+            } else return false
         } else {
             val entity = state.getEntity(event.entityId) ?: return false
             val blocked = entity.get<com.wingedsheep.engine.state.components.combat.BlockingComponent>()
