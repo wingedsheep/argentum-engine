@@ -1206,6 +1206,19 @@ object DynamicAmounts {
             EntityNumericProperty.AttachmentCount(AttachmentKind.AURA)
         )
 
+    /**
+     * Number of Curses attached to the player the source Curse enchants — "draw cards equal to the
+     * number of Curses attached to that player" (Curse of Surveillance). Includes the source itself.
+     * Players hold their Auras' attachment links like permanents do, and
+     * [EffectTarget.EnchantedPermanent] names whatever the source is attached to, so this is
+     * `AttachmentCount(CURSE)` read off that host.
+     */
+    fun cursesAttachedToEnchantedPlayer(): DynamicAmount =
+        DynamicAmount.EntityProperty(
+            EffectTarget.EnchantedPermanent,
+            EntityNumericProperty.AttachmentCount(AttachmentKind.CURSE)
+        )
+
     /** Number of Equipment attached to the source (Shagrat, Loot Bearer's amass amount). */
     fun equipmentAttachedToSelf(): DynamicAmount =
         DynamicAmount.EntityProperty(

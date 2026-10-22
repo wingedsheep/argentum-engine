@@ -1755,6 +1755,71 @@
     ]
 }
 
+// Curse of Surveillance
+{
+    "name": "Curse of Surveillance",
+    "manaCost": "{4}{U}",
+    "typeLine": "Enchantment — Aura Curse",
+    "oracleText": "Enchant player\nAt the beginning of enchanted player's upkeep, any number of target players other than that player each draw cards equal to the number of Curses attached to that player.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Curse of Surveillance:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "EnchantedPlayer"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "EntityProperty",
+                            "entity": "EnchantedPermanent",
+                            "numericProperty": {
+                                "type": "AttachmentCount",
+                                "kind": "CURSE"
+                            }
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "unlimited": true,
+                    "id": "t0",
+                    "restriction": {
+                        "type": "Not",
+                        "condition": {
+                            "type": "PlayerIs",
+                            "subject": "Candidate",
+                            "player": "EnchantedPlayer"
+                        }
+                    },
+                    "descriptionOverride": "any number of target players other than enchanted player"
+                },
+                "descriptionOverride": "At the beginning of enchanted player's upkeep, any number of target players other than that player each draw cards equal to the number of Curses attached to that player."
+            }
+        ],
+        "auraTarget": "TargetPlayer"
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "RARE",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6a5b3b2-4f27-4c97-9d87-d7bdcc06d36a.jpg?1783925645"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Dawnhart Rejuvenator
 {
     "name": "Dawnhart Rejuvenator",

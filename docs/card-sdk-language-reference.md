@@ -16049,8 +16049,20 @@ For "X = the number of [things] attached to this permanent":
   gets +1/+0 for each Equipment attached to it", which includes the Gauntlets themselves). Distinct
   from `attachmentsOnSelf()`, which counts attachments on the source itself.
 
-`AttachmentCount(kind)` takes an `AttachmentKind` (`ANY` / `EQUIPMENT` / `AURA`); the evaluator
-counts the source's `attachedIds` whose card type matches the kind.
+- `DynamicAmounts.cursesAttachedToEnchantedPlayer()` — the Curses attached to the player the source
+  Curse enchants, itself included (Curse of Surveillance: "draw cards equal to the number of Curses
+  attached to that player"). Players carry their Auras' attachment links like permanents do, and
+  `EffectTarget.EnchantedPermanent` names whatever the source is attached to, so this desugars to
+  `EntityProperty(EnchantedPermanent, AttachmentCount(AttachmentKind.CURSE))`.
+
+`AttachmentCount(kind)` takes an `AttachmentKind` (`ANY` / `EQUIPMENT` / `AURA` / `CURSE`); the
+evaluator counts the entity's `attachedIds` (a permanent's or a player's) whose projected subtypes
+include the kind.
+
+"Other than enchanted player" on a player target is
+`TargetPlayer(restriction = Conditions.Not(Conditions.PlayerIs(Player.Candidate, Player.EnchantedPlayer)))`
+— `PlayerIs` resolves `Player.EnchantedPlayer` off the source Curse's attachment (last-known once it
+has left).
 
 ### Just-amassed Army (`EffectTarget.AmassedArmy`)
 

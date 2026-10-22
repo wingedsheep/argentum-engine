@@ -154,7 +154,9 @@ sealed interface EntityNumericProperty {
      * [AttachmentKind]. [AttachmentKind.ANY] (the default) counts every attachment — Auras,
      * Equipment, and Fortifications alike — matching the historical behaviour;
      * [AttachmentKind.EQUIPMENT] / [AttachmentKind.AURA] count only that kind (Shagrat, Loot
-     * Bearer: "X is the number of Equipment attached to Shagrat").
+     * Bearer: "X is the number of Equipment attached to Shagrat"); [AttachmentKind.CURSE] counts
+     * the Curses, which only a player can be enchanted by (Curse of Surveillance: "the number of
+     * Curses attached to that player" — read off a `PlayerRef`, since players carry attachments too).
      */
     @SerialName("AttachmentCount")
     @Serializable
@@ -163,6 +165,7 @@ sealed interface EntityNumericProperty {
             AttachmentKind.ANY -> "the number of Auras and Equipment attached"
             AttachmentKind.EQUIPMENT -> "the number of Equipment attached"
             AttachmentKind.AURA -> "the number of Auras attached"
+            AttachmentKind.CURSE -> "the number of Curses attached"
         }
     }
 
@@ -274,7 +277,8 @@ sealed interface EntityNumericProperty {
 /**
  * Which kind of attachment [EntityNumericProperty.AttachmentCount] counts. The set is the
  * small closed family of MTG attachment types; [ANY] preserves the original
- * "all attachments" semantics.
+ * "all attachments" semantics. [CURSE] narrows [AURA] to the Aura subtype players are enchanted
+ * by (CR 303.4 lets an Aura enchant a player; Curses are the Auras that do).
  */
 @Serializable
-enum class AttachmentKind { ANY, EQUIPMENT, AURA }
+enum class AttachmentKind { ANY, EQUIPMENT, AURA, CURSE }

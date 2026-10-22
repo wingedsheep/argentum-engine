@@ -205,6 +205,7 @@ value class Subtype(val value: String) {
         val BACKGROUND = Subtype("Background")
         val CASE = Subtype("Case")
         val CLASS = Subtype("Class")
+        val CURSE = Subtype("Curse")
         val ROLE = Subtype("Role")
         val ROOM = Subtype("Room")
         val SAGA = Subtype("Saga")

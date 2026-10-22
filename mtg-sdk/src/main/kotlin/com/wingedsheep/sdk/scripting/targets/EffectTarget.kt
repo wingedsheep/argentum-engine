@@ -80,7 +80,9 @@ sealed interface EffectTarget {
      * The permanent this aura/equipment is attached to, regardless of its type.
      * Use for auras that enchant non-creature permanents (e.g., Wellspring enchants
      * a land: "gain control of enchanted land"). Resolves via the source's
-     * attachment relationship, exactly like [EnchantedCreature]/[EquippedCreature].
+     * attachment relationship, exactly like [EnchantedCreature]/[EquippedCreature]. For an Aura
+     * with enchant player (a Curse) the host is that player, so entity reads that make sense for
+     * a player — `AttachmentCount` ("the number of Curses attached to that player") — work too.
      */
     @SerialName("EnchantedPermanent")
     @Serializable

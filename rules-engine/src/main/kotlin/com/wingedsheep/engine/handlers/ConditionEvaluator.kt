@@ -1504,6 +1504,11 @@ class ConditionEvaluator(
                 state.getEntity(sourceId)?.chosenOpponent()
             }
             is Player.ChosenPlayer -> ctx.sourceId?.let { state.getEntity(it)?.chosenPlayer() }
+            // The player the source Curse is attached to — "any number of target players other than
+            // that player" (Curse of Surveillance) restricts its targets against it.
+            is Player.EnchantedPlayer -> TargetResolutionUtils.enchantedPlayer(
+                ctx.sourceId, state, (ctx as? Resolution)?.effectContext?.lastKnownSourceSnapshot
+            )
             else -> null
         }
     }

@@ -1762,6 +1762,7 @@ class DynamicAmountEvaluator(
                     AttachmentKind.ANY -> attachedIds.size
                     AttachmentKind.EQUIPMENT -> attachedIds.count { hasAttachmentSubtype(it, Subtype.EQUIPMENT) }
                     AttachmentKind.AURA -> attachedIds.count { hasAttachmentSubtype(it, Subtype.AURA) }
+                    AttachmentKind.CURSE -> attachedIds.count { hasAttachmentSubtype(it, Subtype.CURSE) }
                 }
             }
 
