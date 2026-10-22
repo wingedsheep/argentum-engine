@@ -481,6 +481,156 @@
     ]
 }
 
+// Baneblade Scoundrel
+{
+    "name": "Baneblade Scoundrel",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Human Rogue Werewolf",
+    "oracleText": "Whenever this creature becomes blocked, each creature blocking it gets -1/-1 until end of turn.\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "DAYBOUND"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Baneblade Scoundrel:1",
+                "trigger": "BecomesBlockedEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "IsBlockingSource"
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever this creature becomes blocked, each creature blocking it gets -1/-1 until end of turn."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Baneclaw Marauder",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "Whenever this creature becomes blocked, each creature blocking it gets -1/-1 until end of turn.\nWhenever a creature blocking this creature dies, that creature's controller loses 1 life.\nNightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)",
+        "creatureStats": {
+            "power": 5,
+            "toughness": 4
+        },
+        "keywords": [
+            "NIGHTBOUND"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Baneclaw Marauder:1",
+                    "trigger": "BecomesBlockedEvent",
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        "IsBlockingSource"
+                                    ]
+                                }
+                            }
+                        },
+                        "body": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": -1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": -1
+                            },
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "descriptionOverride": "Whenever this creature becomes blocked, each creature blocking it gets -1/-1 until end of turn."
+                },
+                {
+                    "id": "Baneclaw Marauder:2",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                "IsBlockingSource"
+                            ]
+                        },
+                        "from": "Battlefield",
+                        "to": "Graveyard"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "ControllerOfTriggeringEntity"
+                    },
+                    "descriptionOverride": "Whenever a creature blocking this creature dies, that creature's controller loses 1 life."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "85",
+            "rarity": "UNCOMMON",
+            "artist": "Marta Nael",
+            "imageUri": "https://cards.scryfall.io/normal/back/7/b/7b63f2ae-5bfd-452f-b1f5-8459bcecd3bb.jpg?1783925632"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "rarity": "UNCOMMON",
+        "artist": "Marta Nael",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b63f2ae-5bfd-452f-b1f5-8459bcecd3bb.jpg?1783925632"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Bat Whisperer
 {
     "name": "Bat Whisperer",

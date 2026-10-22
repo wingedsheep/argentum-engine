@@ -7191,7 +7191,12 @@ work for abilities-on-stack (which carry no `CardComponent`).
   source's own blockers. Used with `Patterns.Group.dealDamageToAll(n, GroupFilter(Creature.blockingSource()))`
   for "Whenever this becomes blocked, it deals N damage to each creature blocking it" (Battle-Scarred
   Goblin). Resolves in resolution-time effect contexts (where the source is carried); inert in
-  group/projection, untap, and trigger-gating contexts.
+  group/projection and untap contexts. As a zone-change trigger filter it gates against the moving
+  creature's pairing with the trigger's source, and a battlefield departure answers from last-known
+  information (CR 603.10): `Triggers.a(GameObjectFilter.Creature.blockingSource()).dies()` is
+  "Whenever a creature blocking this creature dies" (Baneclaw Marauder), firing for a blocker killed
+  by combat damage or by the block trigger's own -1/-1. `blockedBySource()`,
+  `blockingOrBlockedBySource()` and plain `blocking()` gate the same way.
 - `IsBlockedBySource` (filter builder `blockedBySource()`) — the reverse of `IsBlockingSource`
   (CR 509): matches an attacker in the effect source's own blocked-attacker set, read live, so it
   stops matching once the source leaves combat. As the `source` of a static `PreventDamage`'s

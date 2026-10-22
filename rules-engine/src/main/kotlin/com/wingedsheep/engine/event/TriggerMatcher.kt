@@ -2729,6 +2729,21 @@ class TriggerMatcher(
             else state.getEntity(event.entityId)
                 ?.has<com.wingedsheep.engine.state.components.combat.AttackingComponent>() == true
         }
+        // The blocking half of IsAttacking, and the source-relative pairings over it: "whenever a
+        // creature blocking this creature dies" (Baneclaw Marauder). Damage that kills a blocker
+        // tears down its BlockingComponent before triggers gate, so a departure reads the snapshot's
+        // frozen pairing (CR 603.10) — a blocker's pairings are exactly the attackers it blocked, an
+        // attacker's exactly its blockers. Without these arms the gate failed open and fired for
+        // every matching creature that died. Any other zone change reads live combat state.
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsBlocking -> {
+            if (event.isBattlefieldDeparture) event.lastKnown?.wasBlocking == true
+            else state.getEntity(event.entityId)
+                ?.has<com.wingedsheep.engine.state.components.combat.BlockingComponent>() == true
+        }
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsBlockingSource,
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsBlockedBySource,
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsCombatPairedWithSource ->
+            combatPairedWithSourceForZoneChange(predicate, state, event, sourceId)
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.Or ->
             predicate.predicates.any { matchesStatePredicateForZoneChangeTrigger(it, state, event, sourceId) }
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.And ->
@@ -2736,6 +2751,43 @@ class TriggerMatcher(
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.Not ->
             !matchesStatePredicateForZoneChangeTrigger(predicate.predicate, state, event, sourceId)
         else -> matchesStatePredicateForTrigger(predicate, state, event.entityId)
+    }
+
+    /**
+     * [StatePredicate.IsBlockingSource] / `IsBlockedBySource` / `IsCombatPairedWithSource` for a
+     * zone-change trigger: whether the moving entity blocked, was blocked by, or was paired in
+     * combat with [sourceId] (CR 509). A battlefield departure answers from the frozen pairing on
+     * its snapshot; anything else reads the live blocking components.
+     */
+    private fun combatPairedWithSourceForZoneChange(
+        predicate: com.wingedsheep.sdk.scripting.predicates.StatePredicate,
+        state: GameState,
+        event: ZoneChangeEvent,
+        sourceId: EntityId
+    ): Boolean {
+        val blocking: Boolean
+        val attacking: Boolean
+        val paired: Boolean
+        if (event.isBattlefieldDeparture) {
+            val lki = event.lastKnown ?: return false
+            blocking = lki.wasBlocking
+            attacking = lki.wasAttacking
+            paired = sourceId in lki.blockingOrBlockedByIds
+        } else {
+            val entity = state.getEntity(event.entityId) ?: return false
+            val blocked = entity.get<com.wingedsheep.engine.state.components.combat.BlockingComponent>()
+                ?.blockedAttackerIds.orEmpty()
+            val blockers = entity.get<com.wingedsheep.engine.state.components.combat.BlockedComponent>()
+                ?.blockerIds.orEmpty()
+            blocking = sourceId in blocked
+            attacking = sourceId in blockers
+            paired = blocking || attacking
+        }
+        return paired && when (predicate) {
+            com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsBlockingSource -> blocking
+            com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsBlockedBySource -> attacking
+            else -> true
+        }
     }
 
     private fun matchesStatePredicateForTrigger(
