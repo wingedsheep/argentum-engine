@@ -30,8 +30,8 @@ private val EnduringAngelFront = card("Enduring Angel") {
         ability = GrantHexproofToController
     }
 
-    // A token or single-faced copy can't transform (CR 701.27b): its life total still becomes 3,
-    // then its controller loses the game.
+    // A permanent that isn't double-faced (a single-faced token or copy) can't transform (CR 701.27c):
+    // its life total still becomes 3, then its controller loses the game.
     replacementEffect(
         ReplaceLifeReductionToZero(
             instead = Effects.IfYouDo(

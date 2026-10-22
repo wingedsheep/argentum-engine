@@ -1031,7 +1031,7 @@ class GatedEffectExecutor(
             is SuccessCriterion.CountersRemoved -> evaluateCountersRemoved(priorEvents)
             is SuccessCriterion.PermanentsSacrificed -> evaluatePermanentsSacrificed(priorEvents)
             is SuccessCriterion.TurnedFaceUp -> evaluateTurnedFaceUp(priorEvents)
-            // CR 701.27b — a permanent that can't transform emits no TransformedEvent.
+            // CR 701.27c — a permanent that can't transform emits no TransformedEvent.
             is SuccessCriterion.Transformed -> priorEvents.any { it is com.wingedsheep.engine.core.TransformedEvent }
         }
 

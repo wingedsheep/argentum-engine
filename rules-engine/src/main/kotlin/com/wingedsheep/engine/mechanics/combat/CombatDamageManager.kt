@@ -429,9 +429,13 @@ internal class CombatDamageManager(
         // this way" shields (Candles' Glow), summed over the step and gained once per controller
         // afterwards — the step is one simultaneous damage event (CR 510.2).
         val preventionLifeGains = linkedMapOf<EntityId, Int>()
+        val lifeBeforeStep = newState.turnOrder.associate { newState.teamLifeOwnerOf(it) to newState.lifeTotal(it) }
+        val ridersBeforeStep = newState.pendingReplacementRiders.size
+        val eventsBeforeStep = events.size
         for (assignment in finalAssignments) {
             newState = applySingleAssignment(newState, assignment, events, healProcessedTargets, preventionLifeGains)
         }
+        newState = replaceWholeStepLifeReduction(newState, lifeBeforeStep, ridersBeforeStep, events, eventsBeforeStep)
         for ((controllerId, gained) in preventionLifeGains) {
             val (gainedState, gainEvent) = DamageUtils.gainLife(newState, controllerId, gained, predicateEvaluator = predicateEvaluator)
             newState = gainedState
@@ -482,6 +486,32 @@ internal class CombatDamageManager(
 )
 
     /** Stable wire id for a damage edge. The resumer reads source/target off the edge, never parses this. */
+    /**
+     * The step's combat damage is one simultaneous event (CR 510.2), but it is applied one assignment
+     * at a time. When a life-reduction replacement ([com.wingedsheep.sdk.scripting.ReplaceLifeReductionToZero])
+     * applied to a player during the step, the *whole* reduction was replaced — including the
+     * non-lethal hits applied before the lethal one. Restore that player's life total to its value
+     * before the step and drop the step's life-change events for them; the damage itself stays dealt.
+     */
+    private fun replaceWholeStepLifeReduction(
+        state: GameState,
+        lifeBeforeStep: Map<EntityId, Int>,
+        ridersBeforeStep: Int,
+        events: MutableList<GameEvent>,
+        eventsBeforeStep: Int
+    ): GameState {
+        val replaced = state.pendingReplacementRiders.drop(ridersBeforeStep)
+            .filter { it.replacesLifeReduction }.map { it.subjectId }.toSet()
+        if (replaced.isEmpty()) return state
+        var newState = state
+        for (owner in replaced) {
+            lifeBeforeStep[owner]?.let { newState = newState.withLifeTotal(owner, it) }
+        }
+        events.subList(eventsBeforeStep, events.size)
+            .removeAll { it is LifeChangedEvent && newState.teamLifeOwnerOf(it.playerId) in replaced }
+        return newState
+    }
+
     private fun edgeId(sourceId: EntityId, targetId: EntityId): String = "$sourceId->$targetId"
 
     /**

@@ -43,6 +43,28 @@ class EnduringAngelScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("Angelic Enforcer doesn't carry the replacement: the next lethal damage ends the game") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Enduring Angel")
+                    .withCardInHand(1, "Lightning Bolt")
+                    .withCardInHand(1, "Lightning Bolt")
+                    .withLandsOnBattlefield(1, "Mountain", 2)
+                    .withLifeTotal(1, 2)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpellTargetingPlayer(1, "Lightning Bolt", 1).error shouldBe null
+                game.resolveStack()
+                game.angelName() shouldBe "Angelic Enforcer"
+
+                game.castSpellTargetingPlayer(1, "Lightning Bolt", 1).error shouldBe null
+                game.resolveStack()
+                game.state.gameOver shouldBe true
+                game.state.winnerId shouldBe game.player2Id
+            }
+
             test("damage that leaves life above 0 is dealt normally") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
@@ -100,6 +122,31 @@ class EnduringAngelScenarioTest : ScenarioTestBase() {
                 game.getLifeTotal(1) shouldBe 3
                 withClue("a second application would have flipped it back") {
                     game.angelName() shouldBe "Angelic Enforcer"
+                }
+            }
+        }
+
+        context("Enduring Angel dealt lethal damage in the same combat") {
+            test("the replacement applies before state-based actions, so it still transforms") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Enduring Angel")
+                    .withCardOnBattlefield(2, "Craw Wurm")
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withLifeTotal(1, 2)
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Craw Wurm" to 1, "Grizzly Bears" to 1)).error shouldBe null
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.declareBlockers(mapOf("Enduring Angel" to listOf("Craw Wurm"))).error shouldBe null
+                game.passUntilPhase(Phase.COMBAT, Step.END_COMBAT)
+
+                withClue("the Bears' damage was replaced while the Angel was still on the battlefield") {
+                    game.state.gameOver shouldBe false
+                    game.getLifeTotal(1) shouldBe 3
                 }
             }
         }

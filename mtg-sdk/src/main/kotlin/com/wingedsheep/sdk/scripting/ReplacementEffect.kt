@@ -1936,7 +1936,7 @@ data class LifeLossFloor(
 }
 
 /**
- * "If your life total would be reduced to 0 or less, instead [instead]" — Enduring Angel.
+ * "If your life total would be reduced to 0 or less, instead …" — the replaced reduction runs [instead] (Enduring Angel).
  *
  * Replaces **every** reduction of a matching player's life total that would leave it at 0 or less:
  * damage (combat and noncombat, CR 120.3a), "loses N life" effects, life payments, and effects that

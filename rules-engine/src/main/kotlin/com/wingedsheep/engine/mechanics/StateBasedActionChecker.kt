@@ -66,6 +66,14 @@ class StateBasedActionChecker(
         var currentState = state
         val allEvents = mutableListOf<GameEvent>()
 
+        // The rest of a replacement queued by the event that led here (combat damage applied by the
+        // turn manager, which isn't an effect) is part of that event: it runs before any SBA sees the
+        // result — an Enduring Angel dealt lethal damage in the same combat still transforms.
+        val pendingRiders = runReplacementRiders(ExecutionResult.success(currentState))
+        if (pendingRiders.outcome !is Outcome.Done) return pendingRiders
+        currentState = pendingRiders.state
+        allEvents.addAll(pendingRiders.events)
+
         // Keep checking until no SBAs apply
         var actionsApplied: Boolean
         var iterations = 0

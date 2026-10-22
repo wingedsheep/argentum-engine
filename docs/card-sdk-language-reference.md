@@ -4115,7 +4115,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
     reveal = true), successCriterion = PermanentsSacrificed)` — the ability doesn't target, and an
     empty board means no sacrifice and no search.
     `SuccessCriterion.Transformed` gates on whether the action **actually transformed a permanent**
-    (a `TransformedEvent`) — a token or single-faced copy can't transform (CR 701.27b) and a
+    (a `TransformedEvent`) — a permanent that isn't double-faced (a single-faced token or copy) can't transform (CR 701.27c) and a
     daybound/nightbound permanent can't by any other cause, so neither emits one. Enduring Angel's
     "transform this creature … Then if this creature didn't transform this way, you lose the game"
     puts the loss in `otherwise`.
@@ -10059,7 +10059,7 @@ staticAbility {
   is `CantAttack` + `CantBlock` + this grant, each scoped to the enchanted permanent. (Revoke
   Privileges, Intercessor's Arrest)
 - `GrantKeyword(AbilityFlag.CANT_TRANSFORM.name, filter)` — matching permanents can't transform
-  (CR 701.27b — a permanent that can't transform simply doesn't). Honored in `flipDfcInPlace`, the one
+  (CR 701.27c — a permanent that can't transform simply doesn't). Honored in `flipDfcInPlace`, the one
   shared transform-in-place implementation, so it covers *every* cause: a `TransformEffect` one-shot, an
   activated/triggered transform ability, and the daybound/nightbound day-change flips. The prohibited
   ability still activates/triggers and its other effects still happen — only the flip is skipped.

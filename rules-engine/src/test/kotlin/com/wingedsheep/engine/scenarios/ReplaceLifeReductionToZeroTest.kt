@@ -34,7 +34,7 @@ class ReplaceLifeReductionToZeroTest : ScenarioTestBase() {
         replacementEffect(ReplaceLifeReductionToZero(instead = Effects.SetLifeTotal(3) then Effects.DrawCards(1)))
     }
 
-    /** Enduring Angel's replacement on a permanent that can't transform (CR 701.27b). */
+    /** Enduring Angel's replacement on a permanent that can't transform (CR 701.27c). */
     private val singleFacedAngel = permanent("Single-Faced Angel Probe") {
         replacementEffect(
             ReplaceLifeReductionToZero(
