@@ -1268,6 +1268,119 @@
     ]
 }
 
+// Bloodthirsty Adversary
+{
+    "name": "Bloodthirsty Adversary",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Vampire",
+    "oracleText": "Haste\nWhen this creature enters, you may pay {2}{R} any number of times. When you pay this cost one or more times, put that many +1/+1 counters on this creature, then exile up to that many target instant and/or sorcery cards with mana value 3 or less from your graveyard and copy them. You may cast any number of the copies without paying their mana costs.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bloodthirsty Adversary:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "PayManaCostRepeatedly",
+                        "cost": "{2}{R}"
+                    },
+                    "reflexiveEffect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": {
+                                    "type": "VariableReference",
+                                    "variableName": "times_paid"
+                                },
+                                "target": "Self"
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": "ChosenTargets",
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "gathered0",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Exile"
+                                        }
+                                    },
+                                    {
+                                        "type": "CopyCollectionIntoCollection",
+                                        "from": "gathered0",
+                                        "storeAs": "copies2"
+                                    },
+                                    {
+                                        "type": "CastAnyNumberFromCollectionWithoutPayingCost",
+                                        "from": "copies2"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": "instant|sorcery mv<=3 own:you",
+                                "zone": "Graveyard"
+                            },
+                            "dynamicMaxCount": {
+                                "type": "VariableReference",
+                                "variableName": "times_paid"
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "You may pay {2}{R} any number of times. When you pay this cost one or more times, put that many +1/+1 counters on this creature, then exile up to that many target instant and/or sorcery cards with mana value 3 or less from your graveyard and copy them. You may cast any number of the copies without paying their mana costs."
+                },
+                "descriptionOverride": "When this creature enters, you may pay {2}{R} any number of times. When you pay this cost one or more times, put that many +1/+1 counters on this creature, then exile up to that many target instant and/or sorcery cards with mana value 3 or less from your graveyard and copy them. You may cast any number of the copies without paying their mana costs."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "rarity": "MYTHIC",
+        "artist": "Heonhwa",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/ed557e51-32bd-476f-99f8-d7b1738495c5.jpg?1783925605",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "Whether or not you cast the copies this way, the original cards will remain in exile."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "Copies cast this way are cast during the resolution of the ability. You don't have to follow normal timing requirements and you can't wait and cast them later."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "After you pay the {2}{R} cost one or more times, a second ability triggers and you choose the targets for it. Players may respond to the new ability at that point. As that ability resolves, Bloodthirsty Adversary gets its counters and the target cards are exiled."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Bloodtithe Collector
 {
     "name": "Bloodtithe Collector",
@@ -1532,6 +1645,72 @@
     ]
 }
 
+// Brimstone Vandal
+{
+    "name": "Brimstone Vandal",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Devil",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nIf it's neither day nor night, it becomes day as this creature enters.\nWhenever day becomes night or night becomes day, this creature deals 1 damage to each opponent.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Brimstone Vandal:1",
+                "trigger": "DayNightChangedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "OnEnterRunEffect",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "Any",
+                                "conditions": [
+                                    "IsDay",
+                                    "IsNight"
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "SetDayNight",
+                        "designation": "DAY"
+                    },
+                    "descriptionOverride": "if it's neither day nor night, it becomes day"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "artist": "Andreas Zafiratos",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/0/10addf9a-daca-4b84-a9d3-f98f7b955af9.jpg?1783925604"
+    }
+}
+
 // Brood Weaver
 {
     "name": "Brood Weaver",
@@ -1580,6 +1759,171 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Burn Down the House
+{
+    "name": "Burn Down the House",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Burn Down the House deals 5 damage to each creature and each planeswalker.\n• Create three 1/1 red Devil creature tokens with \"When this token dies, it deals 1 damage to any target.\" They gain haste until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature|planeswalker"
+                            }
+                        },
+                        "body": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 5
+                            },
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "description": "Deal 5 damage to each creature and each planeswalker"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CreateToken",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "power": 1,
+                                "toughness": 1,
+                                "colors": [
+                                    "RED"
+                                ],
+                                "creatureTypes": [
+                                    "Devil"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/1/4/14f9c505-a833-4240-83a0-fbd160bdbf0f.jpg?1783925224",
+                                "triggeredAbilities": [
+                                    {
+                                        "id": "Burn Down the House:1",
+                                        "trigger": {
+                                            "type": "ZoneChangeEvent",
+                                            "from": "Battlefield",
+                                            "to": "Graveyard"
+                                        },
+                                        "effect": {
+                                            "type": "DealDamage",
+                                            "amount": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            },
+                                            "target": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            }
+                                        },
+                                        "targetRequirement": {
+                                            "type": "AnyTarget",
+                                            "id": "t0"
+                                        },
+                                        "descriptionOverride": "When this token dies, it deals 1 damage to any target."
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Collection",
+                                    "collection": "createdTokens"
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "HASTE",
+                                    "target": "IterationEntity"
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Create three 1/1 red Devil tokens with haste until end of turn"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "rarity": "RARE",
+        "artist": "Campbell White",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/20ded7af-8086-465e-a980-3099217d324c.jpg?1783925604"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Burn the Accursed
+{
+    "name": "Burn the Accursed",
+    "manaCost": "{4}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Burn the Accursed deals 5 damage to target creature and 2 damage to that creature's controller. If that creature would die this turn, exile it instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "TargetController"
+                },
+                {
+                    "type": "MarkExileOnDeath",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "artist": "David Auden Nash",
+        "flavorText": "Nothing remained but a few drifting embers and the smell of smoldering hair.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff4d4e6b-564d-46da-8e32-09ed08c8ddc5.jpg?1783925604"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1853,6 +2197,96 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Cathartic Pyre
+{
+    "name": "Cathartic Pyre",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Cathartic Pyre deals 3 damage to target creature or planeswalker.\n• Discard up to two cards, then draw that many cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetCreatureOrPlaneswalker",
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Cathartic Pyre deals 3 damage to target creature or planeswalker"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "discarded_candidates"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "discarded_candidates",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                "storeSelected": "discarded",
+                                "prompt": "Discard up to 2 cards"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "VariableReference",
+                                    "variableName": "discarded_count"
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Discard up to two cards, then draw that many cards"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Yee",
+        "flavorText": "\"Leave behind the sorrow of this body. Be blessed, being of light.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b045c28a-39f9-4cd9-8f3a-a626b697f409.jpg?1783925603"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -2776,6 +3210,87 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Curse of Shaken Faith
+{
+    "name": "Curse of Shaken Faith",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment — Aura Curse",
+    "oracleText": "Enchant player\nWhenever enchanted player casts a spell other than the first spell they cast each turn or copies a spell, this Aura deals 2 damage to them.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Curse of Shaken Faith:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "EnchantedPlayer"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "triggerRestriction": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "SpellsCastThisTurn",
+                        "player": "TriggeringPlayer"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "descriptionOverride": "Whenever enchanted player casts a spell other than the first spell they cast each turn or copies a spell, this Aura deals 2 damage to them."
+            },
+            {
+                "id": "Curse of Shaken Faith:2",
+                "trigger": {
+                    "type": "SpellCopiedEvent",
+                    "player": "EnchantedPlayer"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "descriptionOverride": "Whenever enchanted player casts a spell other than the first spell they cast each turn or copies a spell, this Aura deals 2 damage to them."
+            }
+        ],
+        "auraTarget": "TargetPlayer"
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "rarity": "RARE",
+        "artist": "Campbell White",
+        "flavorText": "Even within the chapel's hallowed halls, the devils' laughter pierced his prayers.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/371b7795-5cfc-4e2b-b26c-2def52c61dbf.jpg?1783925603",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "If a player who has already cast a spell this turn becomes enchanted by Curse of Shaken Faith, casting more spells the same turn will cause the ability to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -4349,6 +4864,47 @@
     ]
 }
 
+// Falkenrath Perforator
+{
+    "name": "Falkenrath Perforator",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Vampire",
+    "oracleText": "Whenever this creature attacks, it deals 1 damage to defending player.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Falkenrath Perforator:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "DefendingPlayer"
+                    }
+                },
+                "descriptionOverride": "Whenever this creature attacks, it deals 1 damage to defending player."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "artist": "Marcela Medeiros",
+        "flavorText": "\"Lady Anje sends her regards. I'll carve the rest of her message into your skin.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c40998e0-d7d0-4d79-a40a-9a381debd2cb.jpg?1783925602"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Falkenrath Pit Fighter
 {
     "name": "Falkenrath Pit Fighter",
@@ -4501,6 +5057,163 @@
         "artist": "Lorenzo Mastroianni",
         "flavorText": "Furious to find the workshop empty, the starving vampires flew into a frenzy.",
         "imageUri": "https://cards.scryfall.io/normal/front/f/d/fdbe6937-ceda-4367-a101-562fd5e0e09d.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Fangblade Brigand
+{
+    "name": "Fangblade Brigand",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Werewolf",
+    "oracleText": "{1}{R}: This creature gets +1/+0 and gains first strike until end of turn.\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "DAYBOUND"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Fangblade Brigand:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FIRST_STRIKE",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{1}{R}: This creature gets +1/+0 and gains first strike until end of turn."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Fangblade Eviscerator",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "{1}{R}: This creature gets +1/+0 and gains first strike until end of turn.\n{4}{R}: Creatures you control get +2/+0 until end of turn.\nNightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 5
+        },
+        "keywords": [
+            "NIGHTBOUND"
+        ],
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Fangblade Eviscerator:1",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{1}{R}"
+                        }
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": "Self"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "FIRST_STRIKE",
+                                "target": "Self"
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "{1}{R}: This creature gets +1/+0 and gains first strike until end of turn."
+                },
+                {
+                    "id": "Fangblade Eviscerator:2",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{4}{R}"
+                        }
+                    },
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "descriptionOverride": "{4}{R}: Creatures you control get +2/+0 until end of turn."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "139",
+            "rarity": "UNCOMMON",
+            "artist": "Vincent Proce",
+            "imageUri": "https://cards.scryfall.io/normal/back/d/2/d2feb859-bfae-4bc4-8181-5737dd5c3b08.jpg?1783925607"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "UNCOMMON",
+        "artist": "Vincent Proce",
+        "flavorText": "As long as the sun is up, you'll only lose your purse.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2feb859-bfae-4bc4-8181-5737dd5c3b08.jpg?1783925607"
     },
     "colorIdentityOverride": [
         "RED"
@@ -7456,6 +8169,68 @@
     ]
 }
 
+// Lunar Frenzy
+{
+    "name": "Lunar Frenzy",
+    "manaCost": "{X}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control gets +X/+0 and gains first strike and trample until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": "XValue",
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "rarity": "UNCOMMON",
+        "artist": "Alix Branwyn",
+        "flavorText": "In the adrenaline-fueled chaos, she hadn't even felt the bite.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5fb18c4-1386-4ea0-97c1-4bdd1e7eb5a6.jpg?1783925597"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Lunarch Veteran
 {
     "name": "Lunarch Veteran",
@@ -7880,6 +8655,72 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Moonrager's Slash
+{
+    "name": "Moonrager's Slash",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {2} less to cast if it's night.\nMoonrager's Slash deals 3 damage to any target.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 3
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": {
+                            "type": "Conditional",
+                            "condition": "IsNight",
+                            "ifTrue": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "ifFalse": {
+                                "type": "Fixed",
+                                "amount": 0
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "artist": "Lars Grant-West",
+        "flavorText": "The cathars fell like leaves as Tovolar himself joined the fray.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb4f266b-c41c-4047-ae6f-b2226c7459e8.jpg?1783925596",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "The phrase \"if it's night\" refers to the day or night designation the game can have. It does not refer to whether or not it's dark outside as you play the game."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -9437,6 +10278,74 @@
     ]
 }
 
+// Play with Fire
+{
+    "name": "Play with Fire",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Play with Fire deals 2 damage to any target. If a player is dealt damage this way, scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "CountPlayersWith",
+                                "scope": "Each",
+                                "condition": {
+                                    "type": "SourceDealtDamageToPlayerThisTurn",
+                                    "player": "You"
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Scry",
+                        "count": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "Devils find human dwellings to be oppressively cold, dark, and unburnt.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6f1a6c60-a8c4-44c2-b1ea-d3befbabdf43.jpg?1783925592"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Poppet Stitcher
 {
     "name": "Poppet Stitcher",
@@ -9645,6 +10554,160 @@
         "artist": "Cristi Balanescu",
         "flavorText": "The folk of Kessig build up their courage by burning effigies of the things they fear.",
         "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0dd378c-5050-48c9-9a16-6d91afa62d21.jpg?1783925591"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Reckless Stormseeker
+{
+    "name": "Reckless Stormseeker",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Werewolf",
+    "oracleText": "At the beginning of combat on your turn, target creature you control gets +1/+0 and gains haste until end of turn.\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "DAYBOUND"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Reckless Stormseeker:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "At the beginning of combat on your turn, target creature you control gets +1/+0 and gains haste until end of turn."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Storm-Charged Slasher",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "At the beginning of combat on your turn, target creature you control gets +2/+0 and gains trample and haste until end of turn.\nNightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 4
+        },
+        "keywords": [
+            "NIGHTBOUND"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Storm-Charged Slasher:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "BEGIN_COMBAT"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    },
+                    "descriptionOverride": "At the beginning of combat on your turn, target creature you control gets +2/+0 and gains trample and haste until end of turn."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "157",
+            "rarity": "RARE",
+            "artist": "Manuel Castañón",
+            "imageUri": "https://cards.scryfall.io/normal/back/a/3/a33af331-0746-4adf-935a-bf61ff9d8d4b.jpg?1783925597"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "rarity": "RARE",
+        "artist": "Manuel Castañón",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a33af331-0746-4adf-935a-bf61ff9d8d4b.jpg?1783925597"
     },
     "colorIdentityOverride": [
         "RED"
@@ -11384,6 +12447,124 @@
     ]
 }
 
+// Spellrune Painter
+{
+    "name": "Spellrune Painter",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Shaman Werewolf",
+    "oracleText": "Whenever you cast an instant or sorcery spell, this creature gets +1/+1 until end of turn.\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "DAYBOUND"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spellrune Painter:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Spellrune Howler",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "Whenever you cast an instant or sorcery spell, this creature gets +2/+2 until end of turn.\nNightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 4
+        },
+        "keywords": [
+            "NIGHTBOUND"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Spellrune Howler:1",
+                    "trigger": {
+                        "type": "SpellCastEvent",
+                        "spellFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        "IsInstant",
+                                        "IsSorcery"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": "Self"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "160",
+            "rarity": "UNCOMMON",
+            "artist": "Lucas Graciano",
+            "imageUri": "https://cards.scryfall.io/normal/back/d/2/d2a5b43d-e21b-4294-9ea2-5bd0264e71d3.jpg?1783925597"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "UNCOMMON",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2a5b43d-e21b-4294-9ea2-5bd0264e71d3.jpg?1783925597"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Startle
 {
     "name": "Startle",
@@ -12153,6 +13334,56 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Tavern Ruffian
+{
+    "name": "Tavern Ruffian",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Warrior Werewolf",
+    "oracleText": "Daybound (If a player casts no spells during their own turn, it becomes night next turn.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "keywords": [
+        "DAYBOUND"
+    ],
+    "backFace": {
+        "name": "Tavern Smasher",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "Nightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)",
+        "creatureStats": {
+            "power": 6,
+            "toughness": 5
+        },
+        "keywords": [
+            "NIGHTBOUND"
+        ],
+        "metadata": {
+            "collectorNumber": "163",
+            "artist": "Zoltan Boros",
+            "flavorText": "With every arm in sight broken, she turned her attention to the furniture.",
+            "imageUri": "https://cards.scryfall.io/normal/back/1/d/1d7b2d05-ce5c-4b73-8fa6-d9b69619d58c.jpg?1783925594"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "artist": "Zoltan Boros",
+        "flavorText": "She dispatched every challenger with a sickening snap of bone.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1d7b2d05-ce5c-4b73-8fa6-d9b69619d58c.jpg?1783925594"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -12926,6 +14157,72 @@
         "rarity": "UNCOMMON",
         "artist": "Evyn Fong",
         "imageUri": "https://cards.scryfall.io/normal/front/c/c/cceb4303-5d02-45f2-86f8-7e8deb774d58.jpg?1782703623"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Voldaren Stinger
+{
+    "name": "Voldaren Stinger",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Vampire Warrior",
+    "oracleText": "This creature has first strike as long as it's attacking.\n{2}{R}: This creature gets +2/+0 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Voldaren Stinger:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "This creature gets +2/+0 until end of turn."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "attacking"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "artist": "Martina Fačková",
+        "flavorText": "A duel to first blood means something very different when a vampire is involved.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f27a7c78-3a64-42fc-8808-15b1f41976a1.jpg?1783925587"
     },
     "colorIdentityOverride": [
         "RED"
