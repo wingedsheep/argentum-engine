@@ -2299,6 +2299,162 @@
     ]
 }
 
+// Closing Statement
+{
+    "name": "Closing Statement",
+    "manaCost": "{3}{W}{B}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {2} less to cast during your end step.\nDestroy target creature or planeswalker you don't control. Put a +1/+1 counter on up to one target creature you control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsCreature",
+                                    "IsPlaneswalker"
+                                ]
+                            }
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t1"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 2
+                },
+                "gating": {
+                    "type": "OnlyIf",
+                    "condition": {
+                        "type": "IsInStep",
+                        "steps": [
+                            "END"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "rarity": "UNCOMMON",
+        "artist": "Craig J Spearing",
+        "flavorText": "\"In conclusion . . .\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/785e6d07-fe40-4723-b963-02da0a0987c7.jpg?1783927320"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Cogwork Archivist
+{
+    "name": "Cogwork Archivist",
+    "manaCost": "{6}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "Reach\n{2}, {T}: Put target card from a graveyard on the bottom of its owner's library.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Cogwork Archivist:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Library",
+                    "placement": "Bottom"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {},
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}, {T}: Put target card from a graveyard on the bottom of its owner's library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "254",
+        "artist": "Joseph Meehan",
+        "flavorText": "\"It's the largest library in the Multiverse. Of course it has the largest librarians.\"\n—Kasmina",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8c024a2d-20fb-478b-a62e-e3590a1e3ac1.jpg?1783927281"
+    },
+    "colorIdentityOverride": []
+}
+
 // Combat Professor
 {
     "name": "Combat Professor",
@@ -2367,6 +2523,346 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Confront the Past
+{
+    "name": "Confront the Past",
+    "manaCost": "{X}{B}",
+    "typeLine": "Sorcery — Lesson",
+    "oracleText": "Choose one —\n• Return target planeswalker card with mana value X or less from your graveyard to the battlefield.\n• Remove twice X loyalty counters from target planeswalker an opponent controls.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Battlefield",
+                        "fromZone": "Graveyard"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsPlaneswalker",
+                                        {
+                                            "type": "CompareNumericProperty",
+                                            "property": "MANA_VALUE",
+                                            "operator": "LTE",
+                                            "amount": "XValue"
+                                        }
+                                    ],
+                                    "controllerPredicate": "OwnedByYou"
+                                },
+                                "zone": "Graveyard"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Return target planeswalker card with mana value X or less from your graveyard to the battlefield"
+                },
+                {
+                    "effect": {
+                        "type": "RemoveCounters",
+                        "counterType": "LOYALTY",
+                        "count": {
+                            "type": "Multiply",
+                            "amount": "XValue",
+                            "multiplier": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "planeswalker ctrl:opponent"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Remove twice X loyalty counters from target planeswalker an opponent controls"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "RARE",
+        "artist": "Kieran Yanner",
+        "flavorText": "\"Why, Gideon? Of all people, why save me?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e1951763-be97-400c-aa95-6b101f47bddf.jpg?1783927369"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Conspiracy Theorist
+{
+    "name": "Conspiracy Theorist",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "Whenever this creature attacks, you may pay {1} and discard a card. If you do, draw a card.\nWhenever you discard one or more nonland cards, you may exile one of them from your graveyard. If you do, you may cast it this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Conspiracy Theorist:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Hand"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.MayPay",
+                            "cost": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "PayManaCost",
+                                        "cost": "{1}"
+                                    },
+                                    {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "FromZone",
+                                                    "zone": "Hand"
+                                                },
+                                                "storeAs": "hand"
+                                            },
+                                            {
+                                                "type": "SelectFromCollection",
+                                                "from": "hand",
+                                                "selection": {
+                                                    "type": "ChooseExactly",
+                                                    "count": {
+                                                        "type": "Fixed",
+                                                        "amount": 1
+                                                    }
+                                                },
+                                                "storeSelected": "discarded",
+                                                "prompt": "Choose 1 card to discard"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "discarded",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Graveyard"
+                                                },
+                                                "moveType": "Discard"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "descriptionOverride": "You may pay {1} and discard a card. If you do, draw a card."
+                    }
+                }
+            },
+            {
+                "id": "Conspiracy Theorist:2",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "cardFilter": "nonland",
+                    "batch": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "FilterCollection",
+                            "from": "trigger.captured",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "InZone",
+                                        "zone": "Graveyard"
+                                    }
+                                ]
+                            },
+                            "storeMatching": "matching0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may exile one of the discarded cards. You may cast it this turn."
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "selected1",
+                            "nonLandOnly": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/742a7487-70a2-448b-8e66-c33cba798a32.jpg?1783927357",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "While resolving Conspiracy Theorist's ability, you can't pay {1} and discard a card multiple times to draw more cards."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "The card exiled by the second ability is exiled face up. Casting it follows the normal rules for casting that card. You must pay its costs, and you must follow all applicable timing rules. For example, if it's a creature card, you can cast it only during your main phase while the stack is empty. In most cases, if you exile a non-instant card during an opponent's turn, you won't be able to cast it that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Containment Breach
+{
+    "name": "Containment Breach",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery — Lesson",
+    "oracleText": "Destroy target artifact or enchantment. If its mana value is 2 or less, create a 1/1 black and green Pest creature token with \"When this token dies, you gain 1 life.\"",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "ManaValue"
+                    },
+                    "operator": "LTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    {
+                        "type": "CreatePredefinedToken",
+                        "tokenType": "Pest"
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "destination": "Graveyard",
+                "byDestruction": true
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|enchantment"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "UNCOMMON",
+        "artist": "Campbell White",
+        "flavorText": "For pestkeepers, there's no sound more disheartening than breaking glass.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0dcca120-b72e-4007-98e1-cb22e7b9a705.jpg?1783927344",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If Containment Breach resolves, and the target artifact has a mana value of 2 or less, but it wasn't destroyed (perhaps because it has indestructible), you will still create a Pest."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If the artifact or enchantment is an illegal target as Containment Breach tries to resolve, it won't resolve and none of its effects will happen. You won't create a Pest."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -2484,6 +2980,164 @@
     ]
 }
 
+// Creative Outburst
+{
+    "name": "Creative Outburst",
+    "manaCost": "{3}{U}{U}{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Creative Outburst deals 5 damage to any target. Look at the top five cards of your library. Put one of them into your hand and the rest on the bottom of your library in a random order.\n{U/R}{U/R}, Discard this card: Create a Treasure token.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "damageSource": "Self"
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Put on bottom"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Creative Outburst:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{U/R}{U/R}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                },
+                "activateFromZone": "Hand",
+                "descriptionOverride": "{U/R}{U/R}, Discard this card: Create a Treasure token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/eab58d87-bf01-45dc-8958-e2b3375f914b.jpg?1783927322"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
+// Crushing Disappointment
+{
+    "name": "Crushing Disappointment",
+    "manaCost": "{3}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Each player loses 2 life. You draw two cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "Each"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "artist": "Andrey Kuzinskiy",
+        "flavorText": "Most students could barely endure Dean Embrose's scrutiny for a semester or two; Killian lived with it his entire life.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7fbe8cf1-11df-4ca4-9a6b-265193c49250.jpg?1783927369"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Culling Ritual
 {
     "name": "Culling Ritual",
@@ -2547,6 +3201,107 @@
     "colorIdentityOverride": [
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Culmination of Studies
+{
+    "name": "Culmination of Studies",
+    "manaCost": "{X}{U}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile the top X cards of your library. For each land card exiled this way, create a Treasure token. For each blue card exiled this way, draw a card. For each red card exiled this way, Culmination of Studies deals 1 damage to each opponent.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": "XValue"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    }
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered0",
+                    "filter": "land",
+                    "storeMatching": "matching2"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered0",
+                    "filter": "blue",
+                    "storeMatching": "matching3"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered0",
+                    "filter": "red",
+                    "storeMatching": "matching4"
+                },
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure",
+                    "dynamicCount": {
+                        "type": "VariableReference",
+                        "variableName": "matching2_count"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "VariableReference",
+                        "variableName": "matching3_count"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "VariableReference",
+                        "variableName": "matching4_count"
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    },
+                    "damageSource": "Self"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "173",
+        "rarity": "RARE",
+        "artist": "Bryan Sola",
+        "flavorText": "Will's quick thinking meshed with Rowan's raw power to bring down the Blood Avatar.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/2483060e-9d3f-48ae-80ea-0119bf6b4d67.jpg?1783927319",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "You will exile all X cards from the top of your library before taking any of the listed actions."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an exiled card is both blue and red, Culmination of Studies deals 1 damage to each opponent and you draw a card."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If multiple red cards are exiled, all of the damage is dealt as a single event."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
     ]
 }
 
@@ -2621,6 +3376,107 @@
         "artist": "Chris Cold",
         "flavorText": "\"Of course it offered you power. Demons always do. But trust me—the sweeter the prize, the more ruinous the price.\"\n—Professor Onyx",
         "imageUri": "https://cards.scryfall.io/normal/front/c/2/c2f18828-ade7-4b99-97b2-e34bc2fdb68c.jpg?1783927319"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Daemogoth Woe-Eater
+{
+    "name": "Daemogoth Woe-Eater",
+    "manaCost": "{1}{B}{B/G}{G}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "At the beginning of your upkeep, sacrifice a creature.\nWhen you sacrifice this creature, each opponent discards a card, you draw a card, and you gain 2 life.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Daemogoth Woe-Eater:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Sacrifice",
+                    "filter": "creature"
+                }
+            },
+            {
+                "id": "Daemogoth Woe-Eater:2",
+                "trigger": "PermanentsSacrificedEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": "EachOpponent"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "Opponent",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "EachOpponent"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "rarity": "UNCOMMON",
+        "artist": "Alex Brock",
+        "flavorText": "\"Your pain for my wisdom. You'll get no better deal.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c965cbe3-50e5-41bb-bdb9-e65d97aab716.jpg?1783927318",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Daemogoth Woe-Eater's second ability will trigger if you sacrifice it as its first ability resolves. It will also trigger if you sacrifice it for any other reason."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK",
@@ -2705,6 +3561,82 @@
     ]
 }
 
+// Decisive Denial
+{
+    "name": "Decisive Denial",
+    "manaCost": "{G}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Target creature you control fights target creature you don't control. (Each deals damage equal to its power to the other.)\n• Counter target noncreature spell unless its controller pays {3}.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Fight",
+                        "target1": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "target2": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "t0"
+                        },
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:opponent"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Target creature you control fights target creature you don't control"
+                },
+                {
+                    "effect": {
+                        "type": "Counter",
+                        "condition": {
+                            "type": "CounterCondition.UnlessPaysMana",
+                            "cost": "{3}"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "noncreature",
+                                "zone": "Stack"
+                            },
+                            "id": "t2"
+                        }
+                    ],
+                    "description": "Counter target noncreature spell unless its controller pays {3}"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "rarity": "UNCOMMON",
+        "artist": "Lorenzo Mastroianni",
+        "flavorText": "\"I've heard enough.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b2e9d132-95f7-4ee7-9c91-be19e4ad7a5d.jpg?1783927318"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Defend the Campus
 {
     "name": "Defend the Campus",
@@ -2771,6 +3703,183 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Devouring Tendrils
+{
+    "name": "Devouring Tendrils",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature you control deals damage equal to its power to target creature or planeswalker you don't control. When the permanent you don't control dies this turn, you gain 2 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "damageSource": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "ZoneChangeEvent",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        }
+                    },
+                    "watchedTarget": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker ctrl:opponent"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "rarity": "UNCOMMON",
+        "artist": "Campbell White",
+        "flavorText": "Witherbloom spells often take on the appearance—and personality—of their components.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7444555-da19-4d2d-ad81-233c54fbb78e.jpg?1783927344",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Devouring Tendrils creates a delayed triggered ability that triggers whenever the target creature or planeswalker you don't control dies this turn, even if it didn't die because of the damage dealt as Devouring Tendrils resolved."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Dina, Soul Steeper
+{
+    "name": "Dina, Soul Steeper",
+    "manaCost": "{B}{G}",
+    "typeLine": "Legendary Creature — Dryad Druid",
+    "oracleText": "Whenever you gain life, each opponent loses 1 life.\n{1}, Sacrifice another creature: Dina gets +X/+0 until end of turn, where X is the sacrificed creature's power.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dina, Soul Steeper:1",
+                "trigger": "LifeGainEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Dina, Soul Steeper:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "EntityProperty",
+                        "entity": "SacrificedAsCost",
+                        "numericProperty": "Power"
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9cd2b567-0cf7-4441-b3ce-e31141dd91c8.jpg?1783927318",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "X is the power the creature had when it was on the battlefield, not the power it has in the graveyard."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Dina's first ability triggers only once for each life gain event, no matter how much life was gained."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
     ]
 }
 
@@ -2909,6 +4018,139 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Double Major
+{
+    "name": "Double Major",
+    "manaCost": "{G}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Copy target creature spell you control, except it isn't legendary if the spell is legendary. (A copy of a creature spell becomes a token.)",
+    "script": {
+        "spellEffect": {
+            "type": "CopyTargetSpell",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "removeLegendary": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "rarity": "RARE",
+        "artist": "Suzanne Helmigh",
+        "flavorText": "\"Now I can dedicate myself fully to zoetimancy and void theory!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c3d35413-8742-4443-8859-93c91112978d.jpg?1783927318",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If a creature spell is copied, it's put onto the battlefield as a token as the spell resolves rather than putting the copy of the spell onto the battlefield. The rules that apply to a permanent spell becoming a permanent apply to a copy of a spell becoming a token."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "The token that a resolving copy of a spell becomes isn't said to have been \"created.\""
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
+// Draconic Intervention
+{
+    "name": "Draconic Intervention",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, exile an instant or sorcery card from your graveyard.\nDraconic Intervention deals X damage to each non-Dragon creature, where X is the exiled card's mana value. If a creature dealt damage this way would die this turn, exile it instead.\nExile Draconic Intervention.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Dragon"
+                            }
+                        ]
+                    }
+                }
+            },
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "ExiledAsCost",
+                            "numericProperty": "ManaValue"
+                        },
+                        "target": "IterationEntity",
+                        "damageDealtVariable": "storedNumber0"
+                    },
+                    {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "Compare",
+                                "left": {
+                                    "type": "VariableReference",
+                                    "variableName": "storedNumber0"
+                                },
+                                "operator": "GT",
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                }
+                            }
+                        },
+                        "then": {
+                            "type": "MarkExileOnDeath",
+                            "target": "IterationEntity"
+                        }
+                    }
+                ]
+            }
+        },
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomExileFrom",
+                    "zone": "Graveyard",
+                    "filter": "instant|sorcery"
+                }
+            }
+        ],
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "RARE",
+        "artist": "Johan Grenier",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/657de246-b9fc-47b1-b932-091e9500bb82.jpg?1783927356"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
