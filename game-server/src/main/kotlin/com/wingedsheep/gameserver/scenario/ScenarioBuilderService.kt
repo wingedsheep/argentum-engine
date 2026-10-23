@@ -568,6 +568,10 @@ class ScenarioBuilderService(
                 ?.takeIf { it >= 0 } ?: dungeon.topmostRoom
             state = com.wingedsheep.engine.mechanics.dungeon.DungeonService.enter(state, playerId, dungeon, "scenario").first
             state = com.wingedsheep.engine.mechanics.dungeon.DungeonService.moveTo(state, playerId, room, "scenario").first
+            // Staging the marker isn't a venture this turn (a per-turn venture cap would read it).
+            state = state.updateEntity(playerId) {
+                it.without<com.wingedsheep.engine.state.components.player.VenturesThisTurnComponent>()
+            }
             return this
         }
 
