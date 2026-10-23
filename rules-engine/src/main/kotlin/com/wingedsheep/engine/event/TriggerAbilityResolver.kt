@@ -28,6 +28,7 @@ import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
 import com.wingedsheep.sdk.scripting.GrantWard
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggeredAbility
@@ -693,7 +694,7 @@ class TriggerAbilityResolver(
         // animation with a Scope.Self GrantWard handed over by GrantStaticAbilityEffect. The layer
         // system already projects the WARD keyword through that record, so the projected keyword
         // is the gate: a later "loses all abilities" takes the trigger away along with the keyword.
-        if (state.grantedStaticAbilities.isNotEmpty() && projected.hasKeyword(entityId, com.wingedsheep.sdk.core.Keyword.WARD)) {
+        if (state.grantedStaticAbilities.isNotEmpty() && projected.hasKeyword(entityId, Keyword.WARD)) {
             state.grantedStaticAbilities.forEachIndexed { index, grant ->
                 if (grant.entityId != entityId || grant.layerTimestamp == null) return@forEachIndexed
                 val ward = grant.ability as? GrantWard ?: return@forEachIndexed

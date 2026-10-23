@@ -180,6 +180,8 @@ class BattlefieldStaticsIndex private constructor(
                 val ward = grant.ability as? GrantWard ?: continue
                 if (ward.filter.scope !is Scope.Battlefield || grant.layerTimestamp == null) continue
                 if (!state.getBattlefield().contains(grant.entityId)) continue
+                // Face-down permanents have no abilities (CR 708.2), granted ones included.
+                if (state.getEntity(grant.entityId)?.has<FaceDownComponent>() != false) continue
                 if (!GrantDurationGate.holds(state, grant.entityId, grant.sourceId, grant.duration)) continue
                 val holderControllerId = projected.getController(grant.entityId) ?: continue
                 (wardGrants ?: mutableListOf<WardGrantProvider>().also { wardGrants = it })
