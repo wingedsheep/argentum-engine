@@ -1047,7 +1047,7 @@ Families:
 - `RevealCollectionEffect(from: String, revealToSelf: Boolean, fromZone: Zone?, toZone: Zone?)` — Emit a com.wingedsheep.engine.core.CardsRevealedEvent for all cards in the named stored collection.
 - `RevealFaceDownPermanentEffect(target: EffectTarget)` — Reveal a face-down permanent: make the identity of the card under a face-down permanent public (CR 708 — a face-down permanent's hidden card characteristics are shown to all players).
 - `RevealHandEffect(target: EffectTarget)` — Reveal a player's hand (publicly visible to all players).
-- `RollDiceEffect(count: DynamicAmount, sides: Int, player: EffectTarget, resultCounts: Map<String, Set<Int>>)` — Roll count independent sides-sided dice for player.
+- `RollDiceEffect(count: DynamicAmount, sides: Int, player: EffectTarget, resultCounts: Map<String, Set<Int>>, modifier: DynamicAmount, storeTotalAs: String?)` — Roll count independent sides-sided dice for player.
 - `SacrificeEffect(filter: GameObjectFilter, count: Int, any: Boolean, excludeSource: Boolean)` — Sacrifice permanents effect.
 - `SacrificeSelfEffect` — Sacrifice the source permanent (self).
 - `SacrificeTargetEffect(target: EffectTarget, sacrificedByItsController: Boolean)` — Sacrifice a specific permanent identified by target.

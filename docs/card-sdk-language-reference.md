@@ -5116,6 +5116,8 @@ with cards):
 | `choosePile(a, b, chooser?, …)` → `(chosen, other)` | `ChoosePileEffect` |
 | `selectTarget(requirement, nonTargeting?, prompt?, excluding?)` (resolution-time choice — never printed "target"; `excluding` drops earlier picks) | `SelectTargetEffect` |
 | `ifNotEmpty(slot, filter?, minSize?) { … } orElse { … }` | `ConditionalOnCollectionEffect` |
+| `ifThen(condition) { … }` (the branch sees the surrounding handles — a die-result row: `ifThen(CompareAmounts(result.amount, LTE, 0)) { … }`) | `GatedEffect` (`Effects.If`) |
+| `rollDice(count, sides, player, resultSets)` → one `NumberSlot` per result set / `rollDiceResult(count, sides, player, modifier)` → the summed (modified) result | `RollDiceEffect` (see "Numerical dice") |
 | `whenMatches(slot, filter)` (returns a `Condition`, adds no step) | `CollectionContainsMatch` |
 | `run(effect)` | any other `Effect`, verbatim |
 | `runStoringCollection { key -> effect }` / `runStoringNumber { … }` / `runStoringChoice { … }` | a non-step effect that *writes* a slot under the key it is handed (`Effects.DestroyAll(filter, storeDestroyedAs = it)`, `Patterns.Exile.impulse(…, storeAs = it)`, `Effects.FlipCoins(…, storeHeadsAs = it)`), returning the typed handle |
@@ -19428,13 +19430,26 @@ uses its existing flip event and rotation. No additional player decision or clie
 ### Numerical dice
 
 `Effects.RollDice(count: DynamicAmount = Fixed(1), sides = 6, player = Controller,
-resultCounts = emptyMap())` rolls equally likely outcomes from 1 through `sides`, advancing the
-immutable game RNG. Count is evaluated once at resolution. `resultCounts` maps numeric pipeline
+resultCounts = emptyMap(), modifier = Fixed(0), storeTotalAs = null)` rolls equally likely outcomes
+from 1 through `sides`, advancing the immutable game RNG. Count is evaluated once at resolution. `resultCounts` maps numeric pipeline
 keys to sets of matching results; every key is written (including zero), scoped to this batch.
 Cards use `Effects.Pipeline { val (evens, sixes) = rollDice(count, sides = 6,
 resultSets = listOf(setOf(2, 4, 6), setOf(6))); ... }`: `rollDice` returns fresh `NumberSlot`s
 in result-set order. Luck Bobblehead creates tapped Treasures from `evens.amount` and tests
 `sixes.amount == 7`, without spelling pipeline keys.
+
+**Modified results.** `modifier` is the instruction's own adjustment, evaluated once at resolution
+and added to each kept die's natural result (CR 706.2): "roll a d20 and subtract the number of cards
+in your hand" is `modifier = -DynamicAmounts.cardsInYourHand()`.
+The sum is the die's *result* and may be zero or negative; `resultCounts`, die observers
+(`TRIGGER_DIE_RESULT`, `TRIGGER_HIGHEST_DIE_RESULT`, the `minimumResult`/`maximumResult` bounds) and
+the `DiceRolledEvent` all read results. `DieRolledEvent.natural` keeps the face that came up for a
+future "natural 20" reader, and the log shows both when they differ. `storeTotalAs` writes the sum of
+the instruction's kept results. In a pipeline, `rollDiceResult(count, sides, player, modifier)`
+returns that sum as a `NumberSlot`, and a results table (CR 706.3a) is a run of
+`ifThen(condition) { … }` branches comparing it with `Conditions.CompareAmounts` — rows such as
+"0 or less" have no finite result set (The Deck of Many Things). `ifThen` is the pipeline's
+`Effects.If` whose branch shares the surrounding handles.
 
 `Triggers.you.rollsDie(minimumResult = null, maximumResult = null)` (also `anOpponent` and
 `anyPlayer`) observes each individual numerical roll with inclusive result bounds. The roller is
@@ -19457,8 +19472,10 @@ the lowest — Pixie Guide and Barbarian Class, "If you would roll one or more d
 many dice plus one and ignore the lowest roll". It replaces the *instruction*, not each die, and
 instances **add** (`DiceRollModifiers.extraDice` sums them over the roller's permanents). An ignored
 roll never happened (CR 706.6): its `DieRolledEvent` carries `ignored = true` so the log shows it, but
-no die observer, `resultCounts` tally or `DiceRolledEvent` result sees it. Rerolls and result
-modifiers are not part of this primitive's current surface.
+no die observer, `resultCounts` tally or `DiceRolledEvent` result sees it. Which roll is lowest is
+decided on natural results; an instruction's `modifier` is uniform across its dice, so it never
+changes that order. Rerolls and result modifiers coming from other permanents are not part of this
+primitive's current surface.
 
 ### Radiation player counters
 

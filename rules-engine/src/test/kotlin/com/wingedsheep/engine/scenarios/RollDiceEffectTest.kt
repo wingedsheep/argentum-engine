@@ -204,4 +204,50 @@ class RollDiceEffectTest : FunSpec({
         resolved.events.filterIsInstance<DieRolledEvent>().size shouldBe 2
         d.state.stack.size shouldBe 1
     }
+    test("a modifier adds to each natural result; tallies, total and events read the result") {
+        val d=setup(); val player=d.activePlayer!!
+        val context=EffectContext(null,player)
+        val effect=RollDiceEffect(DynamicAmount.Fixed(4),6,resultCounts=mapOf("low" to setOf(-2,-1,0)),
+            modifier=DynamicAmount.Subtract(DynamicAmount.Fixed(0),DynamicAmount.Fixed(3)),storeTotalAs="total")
+        val result=executor(d).execute(d.state.copy(rng=GameRng.seeded(9)),effect,context)
+        val rolls=result.events.filterIsInstance<DieRolledEvent>()
+        rolls.all { it.result == it.natural - 3 && it.natural in 1..6 } shouldBe true
+        result.updatedStoredNumbers shouldBe mapOf("low" to rolls.count { it.natural <= 3 }, "total" to rolls.sumOf { it.result })
+        result.events.filterIsInstance<DiceRolledEvent>().single().results shouldBe rolls.map { it.result }
+        val dto=com.wingedsheep.engine.view.ClientEventTransformer.transform(listOf(rolls.first()),player).single() as ClientEvent.DieRolled
+        dto.natural shouldBe rolls.first().natural
+        dto.description.endsWith("${rolls.first().natural}, result ${rolls.first().result}") shouldBe true
+    }
+    test("a result pushed to zero or less is a result, and a results-table row compares it") {
+        val d=setup(); val player=d.activePlayer!!
+        val card=card("Test Shrinking d20") {
+            typeLine="Artifact"
+            activatedAbility {
+                cost=Costs.Tap
+                effect=Effects.Pipeline {
+                    val roll=rollDiceResult(sides=20,modifier=DynamicAmount.Subtract(DynamicAmount.Fixed(0),DynamicAmount.Fixed(25)))
+                    ifThen(Conditions.CompareAmounts(roll.amount,com.wingedsheep.sdk.scripting.conditions.ComparisonOperator.LTE,0)) {
+                        run(Effects.GainLife(DynamicAmount.Fixed(5)))
+                    }
+                }
+            }
+        }
+        d.registerCards(listOf(card)); d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val source=d.putPermanentOnBattlefield(player,card.name)
+        d.submit(ActivateAbility(player,source,card.script.activatedAbilities.single().id)).outcome shouldBe Outcome.Done
+        val die=d.bothPass().events.filterIsInstance<DieRolledEvent>().single()
+        die.result shouldBe die.natural-25
+        (die.result <= 0) shouldBe true
+        d.getLifeTotal(player) shouldBe 25
+    }
+    test("roll-plus-one ignores the lowest natural roll; the uniform modifier keeps the order") {
+        val (d, players)=advantageSetup(0); val player=players[0]
+        val result=executor(d).execute(d.state,RollDiceEffect(DynamicAmount.Fixed(1),20,modifier=DynamicAmount.Fixed(-4),storeTotalAs="total"),EffectContext(null,player))
+        val rolls=result.events.filterIsInstance<DieRolledEvent>()
+        rolls.size shouldBe 2
+        rolls.single { it.ignored }.natural shouldBe rolls.minOf { it.natural }
+        val kept=rolls.single { !it.ignored }
+        kept.result shouldBe kept.natural-4
+        result.updatedStoredNumbers shouldBe mapOf("total" to kept.result)
+    }
 })

@@ -2808,7 +2808,8 @@ data class AttackDeclarationCancelledEvent(val playerId: EntityId) : GameEvent
  * One final numerical die roll. Results are public; the immutable RNG advances once per die.
  * [ignored] marks a roll a [com.wingedsheep.sdk.scripting.RollAdditionalDice] replacement
  * discarded: it is reported so the log shows it, but it never happened (CR 706.6) and triggers
- * nothing.
+ * nothing. [result] is the die's result after the instruction's modifier ("subtract the number
+ * of cards in your hand"), which every observer reads; [natural] is the face that came up (CR 706.2).
  */
 @Serializable
 @SerialName("DieRolledEvent")
@@ -2819,6 +2820,7 @@ data class DieRolledEvent(
     val sourceId: EntityId? = null,
     val sourceName: String = "Ability",
     val ignored: Boolean = false,
+    val natural: Int = result,
 ) : GameEvent
 
 /**

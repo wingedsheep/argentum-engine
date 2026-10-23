@@ -6340,13 +6340,19 @@ object Effects {
     fun GrantCastCreaturesFromGraveyardWithForage(duration: Duration = Duration.EndOfTurn): Effect =
         com.wingedsheep.sdk.scripting.effects.GrantCastCreaturesFromGraveyardWithForageEffect(duration)
 
-    /** Roll dice and publish named counts of matching results from this batch. */
+    /**
+     * Roll dice and publish named counts of matching results from this batch. [modifier] is added
+     * to each die's natural result ("roll a d20 and subtract X" is a negative modifier);
+     * [storeTotalAs] records the sum of the results.
+     */
     fun RollDice(
         count: DynamicAmount = DynamicAmount.Fixed(1),
         sides: Int = 6,
         player: EffectTarget = EffectTarget.Controller,
         resultCounts: Map<String, Set<Int>> = emptyMap(),
-    ): Effect = com.wingedsheep.sdk.scripting.effects.RollDiceEffect(count, sides, player, resultCounts)
+        modifier: DynamicAmount = DynamicAmount.Fixed(0),
+        storeTotalAs: String? = null,
+    ): Effect = com.wingedsheep.sdk.scripting.effects.RollDiceEffect(count, sides, player, resultCounts, modifier, storeTotalAs)
 
     /**
      * Flip [count] coins and store the number that came up heads under [storeHeadsAs] in the

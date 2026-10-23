@@ -3031,6 +3031,301 @@
     ]
 }
 
+// The Deck of Many Things
+{
+    "name": "The Deck of Many Things",
+    "manaCost": "{5}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "{2}, {T}: Roll a d20 and subtract the number of cards in your hand. If the result is 0 or less, discard your hand.\n1—9 | Return a card at random from your graveyard to your hand.\n10—19 | Draw two cards.\n20 | Put a creature card from any graveyard onto the battlefield under your control. When that creature dies, its owner loses the game.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "The Deck of Many Things:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RollDice",
+                            "sides": 20,
+                            "modifier": {
+                                "type": "Multiply",
+                                "amount": {
+                                    "type": "Count",
+                                    "player": "You",
+                                    "zone": "Hand"
+                                },
+                                "multiplier": -1
+                            },
+                            "storeTotalAs": "diceResult0"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult0"
+                                    },
+                                    "operator": "LTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "discardedHand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discardedHand",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "All",
+                                    "conditions": [
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult0"
+                                            },
+                                            "operator": "GTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult0"
+                                            },
+                                            "operator": "LTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 9
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "storeAs": "gathered4"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered4",
+                                        "selection": {
+                                            "type": "Random",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected5"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected5",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "All",
+                                    "conditions": [
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult0"
+                                            },
+                                            "operator": "GTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 10
+                                            }
+                                        },
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult0"
+                                            },
+                                            "operator": "LTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 19
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult0"
+                                    },
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 20
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Graveyard",
+                                            "player": "Each",
+                                            "filter": "creature"
+                                        },
+                                        "storeAs": "gathered10"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered10",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected11",
+                                        "prompt": "Put a creature card onto the battlefield under your control"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected11",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        }
+                                    },
+                                    {
+                                        "type": "CreateDelayedTrigger",
+                                        "effect": {
+                                            "type": "LoseGame",
+                                            "target": {
+                                                "type": "PlayerRef",
+                                                "player": "OwnerOfTriggeringEntity"
+                                            }
+                                        },
+                                        "trigger": {
+                                            "event": {
+                                                "type": "ZoneChangeEvent",
+                                                "from": "Battlefield",
+                                                "to": "Graveyard"
+                                            }
+                                        },
+                                        "watchedTarget": {
+                                            "type": "PipelineTarget",
+                                            "collectionName": "selected11"
+                                        },
+                                        "expiry": "DelayedTriggerExpiry.Never",
+                                        "fireOnce": true
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Roll a d20 and subtract the number of cards in your hand. If the result is 0 or less, discard your hand. 1—9: return a card at random from your graveyard to your hand. 10—19: draw two cards. 20: put a creature card from any graveyard onto the battlefield under your control; when it dies, its owner loses the game."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "241",
+        "rarity": "MYTHIC",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/feddbdc6-0757-43cb-bb41-dc83c6cf42ea.jpg?1783926439",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "Like all results tables, the one on The Deck of Many Things cares about the result of the die roll after any adjustments, such as subtracting the number of cards in your hand. This means it's usually not possible to get a result of 20 unless you have no cards in hand."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Some effects may modify the result of a die roll. This may be part of the instruction to roll a die or it may come from other cards. Anything that references the “result” of a die roll is looking for the result after these modifications. Anything that is looking for the “natural result” is looking for the number shown on the face of the die before these modifications."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Some abilities, like that of Pixie Guide and Barbarian Class, replace rolling a die with rolling extra dice and ignoring the lowest roll. The ignored rolls are not considered for the effect that instructed you to roll a die, and do not cause abilities to trigger. For all intents and purposes, once you determine which dice count, any extra dice were never rolled."
+            }
+        ]
+    }
+}
+
 // Treasure Vault
 {
     "name": "Treasure Vault",

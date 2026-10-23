@@ -1273,6 +1273,32 @@ class PipelineBuilder private constructor(private val shared: Shared) {
         return slots
     }
 
+    /**
+     * Roll one batch and return a numeric handle to its *result* — the sum of every kept die's
+     * natural result plus [modifier] (CR 706.2). For one die that is the die's result, which a
+     * results table reads with `Conditions.CompareAmounts` (CR 706.3a); a negative [modifier] is
+     * "roll a d20 and subtract X" and may push the result to zero or below.
+     */
+    fun rollDiceResult(
+        count: DynamicAmount = DynamicAmount.Fixed(1),
+        sides: Int = 6,
+        player: EffectTarget = EffectTarget.Controller,
+        modifier: DynamicAmount = DynamicAmount.Fixed(0),
+    ): NumberSlot {
+        val slot = NumberSlot(slotKey("diceResult", nextIndex(), null))
+        steps += Effects.RollDice(count, sides, player, modifier = modifier, storeTotalAs = slot.key)
+        return slot
+    }
+
+    /**
+     * Run [block] only if [condition] holds at this point of the pipeline ([Effects.If]). Handles
+     * from the outer scope — a [rollDiceResult] result, a gathered collection — are visible inside.
+     */
+    fun ifThen(condition: Condition, block: PipelineBuilder.() -> Unit) {
+        nextIndex()
+        steps += Effects.If(condition, nestedAsEffect(block))
+    }
+
     /** Like [runStoringCollection], for an effect that records a number (`storeHeadsAs = it`). */
     fun runStoringNumber(effect: (key: String) -> Effect): NumberSlot {
         val slot = NumberSlot(slotKey("storedNumber", nextIndex(), null))

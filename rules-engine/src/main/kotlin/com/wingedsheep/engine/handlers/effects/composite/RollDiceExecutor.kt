@@ -20,7 +20,12 @@ import kotlin.reflect.KClass
  * A [com.wingedsheep.sdk.scripting.RollAdditionalDice] replacement (Pixie Guide) adds dice to each
  * roller's instruction and ignores that many of the lowest. Ignored rolls are reported flagged
  * [DieRolledEvent.ignored] so the log shows them, but they never happened (CR 706.6): no trigger,
- * tally or batch summary sees them.
+ * tally or batch summary sees them. Which roll is lowest is decided on natural results: the
+ * instruction's [RollDiceEffect.modifier] is uniform across its dice, so it never changes the order.
+ *
+ * The modifier is evaluated once, before any die is rolled, and added to every kept natural result
+ * (CR 706.2); [DieRolledEvent.result] is that final result and [DieRolledEvent.natural] the top
+ * face. Tallies, observers and [RollDiceEffect.storeTotalAs] read results only.
  */
 class RollDiceExecutor(
     private val amountEvaluator: DynamicAmountEvaluator,
@@ -32,7 +37,9 @@ class RollDiceExecutor(
         val players = context.resolvePlayerTargets(effect.player, state)
         var current = state
         val events = mutableListOf<GameEvent>()
+        val modifier = amountEvaluator.evaluate(state, effect.modifier, context)
         val counts = effect.resultCounts.mapValues { 0 }.toMutableMap()
+        var total = 0
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name } ?: "Ability"
         for (player in players) {
             if (count == 0) continue
@@ -45,16 +52,19 @@ class RollDiceExecutor(
             // Ties for lowest are interchangeable, so the earliest of them is ignored.
             val ignored = rolled.indices.sortedBy { rolled[it] }.take(extra).toSet()
             val results = mutableListOf<Int>()
-            rolled.forEachIndexed { index, result ->
+            rolled.forEachIndexed { index, natural ->
                 val isIgnored = index in ignored
-                events.add(DieRolledEvent(player, effect.sides, result, context.sourceId, sourceName, ignored = isIgnored))
+                val result = natural + modifier
+                events.add(DieRolledEvent(player, effect.sides, result, context.sourceId, sourceName, ignored = isIgnored, natural = natural))
                 if (isIgnored) return@forEachIndexed
                 results.add(result)
+                total += result
                 for ((key, values) in effect.resultCounts) if (result in values) counts[key] = counts.getValue(key) + 1
             }
             // "Whenever you roll one or more dice" sees the instruction once, after its dice.
             events.add(DiceRolledEvent(player, effect.sides, results, context.sourceId))
         }
+        effect.storeTotalAs?.let { counts[it] = total }
         return EffectResult(current, events, updatedStoredNumbers = counts)
     }
 }

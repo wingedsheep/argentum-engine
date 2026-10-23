@@ -688,5 +688,7 @@ export interface DieRolledEvent {
   readonly isYours?: boolean
   /** True when a "roll that many dice plus one and ignore the lowest" replacement (Pixie Guide) discarded this roll. */
   readonly ignored?: boolean
+  /** The face that came up; differs from `result` when the instruction modifies the roll ("subtract X"). */
+  readonly natural?: number
   readonly description: string
 }
