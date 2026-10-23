@@ -3453,6 +3453,7 @@ object Effects {
             com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender.JOIN_SOURCE,
         basePower: DynamicAmount? = null,
         baseToughness: DynamicAmount? = null,
+        initialCounters: Map<com.wingedsheep.sdk.core.CounterType, DynamicAmount> = emptyMap(),
     ): Effect = CreateTokenCopyOfTarget(
         target = target,
         count = DynamicAmount.Fixed(count),
@@ -3484,6 +3485,7 @@ object Effects {
         attackDefender = attackDefender,
         basePower = basePower,
         baseToughness = baseToughness,
+        initialCounters = initialCounters,
     )
 
     /**
@@ -3523,6 +3525,7 @@ object Effects {
             com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender.JOIN_SOURCE,
         basePower: DynamicAmount? = null,
         baseToughness: DynamicAmount? = null,
+        initialCounters: Map<com.wingedsheep.sdk.core.CounterType, DynamicAmount> = emptyMap(),
     ): Effect = CreateTokenCopyOfTargetEffect(
         target = target,
         count = count,
@@ -3554,6 +3557,7 @@ object Effects {
         attackDefender = attackDefender,
         basePower = basePower,
         baseToughness = baseToughness,
+        initialCounters = initialCounters,
     )
 
     /**

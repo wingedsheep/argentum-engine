@@ -2543,6 +2543,82 @@
     ]
 }
 
+// Ochre Jelly
+{
+    "name": "Ochre Jelly",
+    "manaCost": "{X}{G}",
+    "typeLine": "Creature — Ooze",
+    "oracleText": "Trample\nThis creature enters with X +1/+1 counters on it.\nSplit — When this creature dies, if it had two or more +1/+1 counters on it, create a token that's a copy of it at the beginning of the next end step. The token enters with half that many +1/+1 counters on it, rounded down.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ochre Jelly:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END",
+                    "effect": {
+                        "type": "CreateTokenCopyOfTarget",
+                        "target": "Self",
+                        "initialCounters": {
+                            "PLUS_ONE_PLUS_ONE": {
+                                "type": "Divide",
+                                "numerator": {
+                                    "type": "LastKnownSourceCounters",
+                                    "counterType": "PLUS_ONE_PLUS_ONE"
+                                },
+                                "denominator": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "roundUp": false
+                            }
+                        }
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "LastKnownSourceCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f23cfb7-c6b6-4f04-abba-5b2a6117ea12.jpg?1783926458"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Old Gnawbone
 {
     "name": "Old Gnawbone",

@@ -737,6 +737,17 @@ data class CreateTokenCopyOfTargetEffect(
     val basePower: DynamicAmount? = null,
     /** The copies' base toughness, computed at resolution — the partner of [basePower]. */
     val baseToughness: DynamicAmount? = null,
+    /**
+     * Counters each copy **enters with** — "the token enters with half that many +1/+1 counters
+     * on it" (Ochre Jelly). The dynamic sibling of [CreateTokenEffect.initialCounters]: the amount
+     * is evaluated once per batch at resolution, and the counters arrive as part of the token's
+     * entry (CR 122.6), so counter-placement replacements (Hardened Scales) apply and ETB triggers
+     * already see them — unlike a following `AddCountersToCollection(CREATED_TOKENS, …)`, which
+     * puts them on after the token has entered. A non-positive amount puts none. A delayed
+     * trigger snapshots these amounts when it is created, so a last-known count ("that many")
+     * survives until it fires.
+     */
+    val initialCounters: Map<CounterType, DynamicAmount> = emptyMap(),
 ) : Effect {
     init {
         require(attackedPlayer == null || attacking) { "attackedPlayer needs attacking = true" }
@@ -836,6 +847,10 @@ data class CreateTokenCopyOfTargetEffect(
             append(" with ${addedKeywords.joinToString(", ") { it.displayName.lowercase() }}")
         }
         if (attachedTo != null) append(" attached to ${attachedTo.description}")
+        for ((counterType, amount) in initialCounters) {
+            val pronoun = if (count == DynamicAmount.Fixed(1)) "It enters" else "They enter"
+            append(". $pronoun with ${amount.description} ${counterType.printed} counters on ${if (count == DynamicAmount.Fixed(1)) "it" else "them"}")
+        }
         if (exileAtStep != null) {
             val pronoun = if (count == DynamicAmount.Fixed(1)) "that token" else "those tokens"
             append(". At the beginning of the next ${exileAtStep.name.lowercase()} step, exile $pronoun")

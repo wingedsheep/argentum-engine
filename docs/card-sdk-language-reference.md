@@ -2834,7 +2834,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
 - `CreateTokenCopyOfSelf(count?, overridePower?, overrideToughness?, removeLegendary?)` — token copies
   of the source. `removeLegendary = true` applies the "except it's not legendary" copy clause (Ran and
   Shaw), mirroring `CreateTokenCopyOfEquippedCreature`.
-- `CreateTokenCopyOfTarget(target, count?, overridePower?, overrideToughness?, tapped?, attacking?, triggeredAbilities?, addedKeywords?, addedSupertypes?, removedSupertypes?, overrideColors?, addedColors?, overrideSubtypes?, addedSubtypes?, overrideCardTypes?, activatedAbilities?, addedStaticAbilities?, sacrificeAtStep?, sacrificeOnlyOnControllersTurn?, addCardTypes?, exileAtStep?, exileUnlessSourceIsRingBearer?, controller?, noManaCost?, attachedTo?, attackedPlayer?, attackDefender?, basePower?, baseToughness?)` —
+- `CreateTokenCopyOfTarget(target, count?, overridePower?, overrideToughness?, tapped?, attacking?, triggeredAbilities?, addedKeywords?, addedSupertypes?, removedSupertypes?, overrideColors?, addedColors?, overrideSubtypes?, addedSubtypes?, overrideCardTypes?, activatedAbilities?, addedStaticAbilities?, sacrificeAtStep?, sacrificeOnlyOnControllersTurn?, addCardTypes?, exileAtStep?, exileUnlessSourceIsRingBearer?, controller?, noManaCost?, attachedTo?, attackedPlayer?, attackDefender?, basePower?, baseToughness?, initialCounters?)` —
   token copy of another permanent (or a card in any zone — the executor copies the target's `CardComponent`,
   so a graveyard/exile card works; pass `EffectTarget.PipelineTarget("name")` to copy a card a prior pipeline
   step exiled/stored, as Nexus of Becoming and Mardu Siegebreaker do).
@@ -2927,6 +2927,17 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   single artifact or creature you control, … a copy of that artifact or creature" — Vesuvan Duplimancy) copies a
   target that left before the ability resolved as it last existed on the battlefield: its departure snapshot, or,
   for a token that has ceased to exist, the copiable values frozen when the ability triggered.
+  **A departed object, copied by a delayed trigger.** `CreateDelayedTrigger(step = END,
+  CreateTokenCopyOfTarget(Self | TriggeringEntity, …))` from a dies trigger ("when this creature dies, … create a
+  token that's a copy of it at the beginning of the next end step" — Ochre Jelly) freezes the dying object's
+  departure snapshot into the delayed trigger when it is scheduled, so even a *token* that has ceased to exist
+  by the end step is still copied as it last existed.
+  **Entry counters.** `initialCounters = mapOf(CounterType.PLUS_ONE_PLUS_ONE to amount)` — "the token enters with
+  N +1/+1 counters on it". The dynamic sibling of `CreateToken`'s `initialCounters`: evaluated once per batch,
+  the counters arrive as part of the token's entry (CR 122.6 — Hardened Scales applies, ETB triggers see them),
+  unlike a following `AddCountersToCollection(CREATED_TOKENS, …)`. Inside a delayed trigger the amount is
+  snapshotted when the trigger is scheduled, so a last-known count survives: Ochre Jelly's split is
+  `initialCounters = mapOf(PLUS_ONE_PLUS_ONE to DynamicAmounts.lastKnownSourceCounters(PLUS_ONE_PLUS_ONE) / 2)`.
   **A sacrificed permanent.** `CreateTokenCopyOfTarget(EffectTarget.SacrificedAsCost(0))` copies the permanent
   the cost or an earlier `SacrificeOwn` step sacrificed from the copiable values its sacrifice snapshot froze
   (`EntitySnapshot.copiableCard`, CR 608.2h) — so a sacrificed *token* is still copied, and an Aura that was

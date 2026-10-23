@@ -668,7 +668,8 @@ class TriggerDetector(
                     // blocked by *it* this turn" (Gaze of the Gorgon) reads the watched creature
                     // through EffectTarget.TriggeringEntity.
                     triggeringEntityId = delayed.fireOnPlayerId ?: delayed.watchedEntityId,
-                    triggeringPlayerId = delayed.fireOnPlayerId
+                    triggeringPlayerId = delayed.fireOnPlayerId,
+                    capturedEntitySnapshots = delayed.capturedEntitySnapshots.ifEmpty { null }
                 ),
                 carriedPipeline = delayed.carriedPipelineFor(state)
             )
@@ -1251,7 +1252,8 @@ class TriggerDetector(
                     controllerId = delayed.controllerId,
                     triggerContext = TriggerContext.fromEvent(event).copy(
                         triggeringEntityId = watchedTriggering
-                            ?: TriggerContext.fromEvent(event).triggeringEntityId
+                            ?: TriggerContext.fromEvent(event).triggeringEntityId,
+                        capturedEntitySnapshots = delayed.capturedEntitySnapshots.ifEmpty { null }
                     ).withAttackersAgainstYou(specEvent, event, delayed.controllerId, state),
                     consumesDelayedTriggerId = if (delayed.fireOnce) delayed.id else null,
                     carriedPipeline = delayed.carriedPipelineFor(state)

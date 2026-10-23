@@ -271,7 +271,9 @@ data class TriggerContext(
      * fired. A "create a token that's a copy of that permanent" payoff falls back to them when the
      * captured permanent has left before resolution and its own departure snapshot is gone — a
      * token that ceased to exist (CR 704.5d) — so it is still copied as it last existed (CR 608.2h;
-     * Vesuvan Duplimancy). Null when the trigger captured nothing copyable.
+     * Vesuvan Duplimancy). A delayed trigger also hands over the departed objects it froze when it
+     * was scheduled ([DelayedTriggeredAbility.capturedEntitySnapshots] — Ochre Jelly's "a copy of
+     * it"). Null when the trigger captured nothing copyable.
      */
     val capturedEntitySnapshots: List<com.wingedsheep.engine.state.components.stack.EntitySnapshot>? = null,
     /**

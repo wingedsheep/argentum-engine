@@ -201,7 +201,12 @@ class CreateTokenCopyOfTargetExecutor(
         effect: CreateTokenCopyOfTargetEffect,
         context: EffectContext,
     ): ComponentContainer? {
-        if (effect.target == EffectTarget.IterationEntity) departedCapturedEntity(state, context)?.let { return it }
+        // A value read (CR 608.2h), not an action: a source that died is a new object or gone, but
+        // "a copy of it" still names it.
+        val capturedId = if (effect.target == EffectTarget.IterationEntity) context.iterationEntityId
+        else (effect.target as? EffectTarget.SingleEntity)
+            ?.let { com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveEntity(it, context, state) }
+        capturedId?.let { departedCapturedEntity(state, context, it) }?.let { return it }
         departedSnapshotReference(state, effect, context)?.let { return it }
         context.resolveTarget(effect.target, state)?.let { id ->
             val entity = state.getEntity(id) ?: return null
@@ -217,14 +222,15 @@ class CreateTokenCopyOfTargetExecutor(
 
     /**
      * A permanent the trigger captured ("a spell that targets only a single artifact or creature
-     * you control, … a copy of that artifact or creature" — Vesuvan Duplimancy) that is no longer
-     * the same object on the battlefield when the payoff iterates it. It is copied as it last
+     * you control, … a copy of that artifact or creature" — Vesuvan Duplimancy), or that a delayed
+     * trigger captured as it was scheduled ("when this dies, … create a token that's a copy of it at
+     * the beginning of the next end step" — Ochre Jelly), that is no longer the same object on the
+     * battlefield when the payoff resolves. It is copied as it last
      * existed there (CR 608.2h): its departure snapshot while that still describes the captured
      * visit, else the copiable values frozen when the ability triggered — all a token that has
      * ceased to exist (CR 704.5d) leaves behind. Null while the captured permanent is still there.
      */
-    private fun departedCapturedEntity(state: GameState, context: EffectContext): ComponentContainer? {
-        val id = context.iterationEntityId ?: return null
+    private fun departedCapturedEntity(state: GameState, context: EffectContext, id: EntityId): ComponentContainer? {
         val captured = context.triggerContext?.capturedEntitySnapshots?.snapshotFor(id) ?: return null
         val visit = captured.battlefieldEntryTimestamp
         val entity = state.getEntity(id)
@@ -331,6 +337,9 @@ class CreateTokenCopyOfTargetExecutor(
         // path and the "permanent becomes a copy" path can't drift. Both the exceptions view and
         // the resulting component are loop-invariant, so they are built once rather than per token.
         val exceptions = resolvedExceptions(state, effect, context)
+        // "The token enters with half that many +1/+1 counters" — evaluated once per batch, so every
+        // copy gets the same count.
+        val initialCounters = effect.initialCounters.mapValues { (_, amount) -> amountEvaluator.evaluate(state, amount, context) }
         // `isDoubleFaced` is cleared rather than inherited: it answers "is this a double-faced
         // *card*", and a token is not a card (CR 111.1) — nor is being double-faced a copiable value
         // (CR 707.2 lists them; layout isn't one). A token copy of a double-faced permanent is a
@@ -490,6 +499,10 @@ class CreateTokenCopyOfTargetExecutor(
             }
             newState = afterCounters
             events.addAll(counterEvents)
+            newState = TokenEntryReplacements.applyInitialCounters(
+                newState, tokenId, preCreationState = state, controllerId = controllerId,
+                initialCounters = initialCounters, predicateEvaluator = amountEvaluator.predicates
+            )
 
             for (ability in effect.triggeredAbilities) {
                 val grant = GrantedTriggeredAbility(

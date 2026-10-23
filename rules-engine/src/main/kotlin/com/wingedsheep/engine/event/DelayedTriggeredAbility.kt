@@ -122,6 +122,13 @@ data class DelayedTriggeredAbility(
      * to exist — is dropped when the trigger fires ([carriedPipelineFor]).
      */
     val carriedCollections: Map<String, List<com.wingedsheep.engine.handlers.CapturedObjectBinding>> = emptyMap(),
+    /**
+     * Copiable values of departed objects the delayed effect copies, frozen when it was scheduled
+     * ("when this dies, … create a token that's a copy of it at the beginning of the next end step"
+     * — Ochre Jelly): a token that died has ceased to exist by the time this fires (CR 704.5d).
+     * Handed to the firing trigger as [TriggerContext.capturedEntitySnapshots].
+     */
+    val capturedEntitySnapshots: List<com.wingedsheep.engine.state.components.stack.EntitySnapshot> = emptyList(),
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment()
 )
 

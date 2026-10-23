@@ -43,6 +43,8 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentComponent
+import com.wingedsheep.engine.state.components.stack.EntitySnapshot
 import kotlin.reflect.KClass
 
 /**
@@ -76,7 +78,10 @@ class CreateDelayedTriggerExecutor(
         // bound with their identity: "destroy that creature" must not hit it once it has left and
         // returned as a new object (CR 603.7c / 400.7).
         val bound = mutableListOf<CapturedObjectBinding>()
-        val resolvedEffect = resolveContextTargets(effect.effect, context, state, bound)
+        // Copiable values of departed objects a token-copy payoff names ("a copy of it"), frozen now
+        // because a token that died has ceased to exist by the time the trigger fires (CR 704.5d).
+        val snapshots = mutableListOf<EntitySnapshot>()
+        val resolvedEffect = resolveContextTargets(effect.effect, context, state, bound, snapshots)
 
         // Bake any chosen-value references in the trigger's filter into concrete predicates.
         // Long List of the Ents (LTR) needs "when you cast a creature spell of the type just
@@ -211,6 +216,7 @@ class CreateDelayedTriggerExecutor(
             targetRequirement = effect.targetRequirement,
             additionalTargetRequirements = effect.additionalTargetRequirements,
             fireOnPlayerId = fireOnPlayerId,
+            capturedEntitySnapshots = snapshots.toList(),
             carriedCollections = effect.carryCollections.associateWith { name ->
                 (context.pipeline.storedCollections[name] ?: emptyList()).map { id ->
                     CapturedObjectBinding(id, state.objectRef(id))
@@ -405,6 +411,18 @@ class CreateDelayedTriggerExecutor(
         if (target == EffectTarget.Self || target == EffectTarget.IterationEntity) null
         else context.resolveTarget(target)
 
+    /**
+     * The copiable snapshot of [id] as it last existed on the battlefield, when it has already left:
+     * the triggering departure's snapshot ("when this dies") or the one riding on the departed card.
+     * Null while [id] is still on the battlefield (the payoff reads it live) or nothing was frozen.
+     */
+    private fun departureSnapshot(id: EntityId, context: EffectContext, state: GameState): EntitySnapshot? {
+        if (id in state.getBattlefield()) return null
+        return (context.triggerContext?.triggeringLastKnownSnapshot?.takeIf { it.entityId == id }
+            ?: state.getEntity(id)?.get<LastKnownPermanentComponent>()?.snapshot)
+            ?.takeIf { it.copiableCard != null }
+    }
+
     /** Bind [id] to the battlefield object it names now; an id off the battlefield stays unbound. */
     private fun bind(
         id: EntityId,
@@ -463,6 +481,7 @@ class CreateDelayedTriggerExecutor(
         context: EffectContext,
         state: GameState,
         bound: MutableList<CapturedObjectBinding>,
+        snapshots: MutableList<EntitySnapshot>,
     ): Effect {
         return when (effect) {
             is MoveToZoneEffect -> {
@@ -539,9 +558,24 @@ class CreateDelayedTriggerExecutor(
             // into a SpecificEntity. The token-copy executor reads the copy's printed characteristics
             // from the captured entity's CardComponent (last-known information), matching the rule
             // that the token copies what was printed on the original (Esoteric Duplicator).
+            //
+            // A copied object that has already left the battlefield ("when this dies, … create a
+            // token that's a copy of it at the beginning of the next end step" — Ochre Jelly) is
+            // copied as it last existed there (CR 608.2h), so its departure snapshot is captured
+            // into the trigger: a dead token leaves nothing else behind (CR 704.5d). The counts the
+            // copy enters with ("half that many") read this context's last-known information, so
+            // they are frozen too.
             is CreateTokenCopyOfTargetEffect -> {
                 val resolvedId = bakedId(effect.target, context)
-                if (resolvedId != null) effect.copy(target = EffectTarget.SpecificEntity(resolvedId)) else effect
+                val copiedId = resolvedId ?: (effect.target as? EffectTarget.SingleEntity)
+                    ?.let { com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveEntity(it, context, state) }
+                copiedId?.let { departureSnapshot(it, context, state) }
+                    ?.takeIf { snap -> snapshots.none { it.entityId == snap.entityId } }
+                    ?.let { snapshots += it }
+                effect.copy(
+                    target = if (resolvedId != null) EffectTarget.SpecificEntity(resolvedId) else effect.target,
+                    initialCounters = effect.initialCounters.mapValues { (_, amount) -> snapshotAmount(amount, context, state) },
+                )
             }
             // A delayed trigger that adds mana "equal to" a value read from a context entity
             // (e.g. Mana Sculpt: "{C} equal to the amount of mana spent to cast that spell, at the
@@ -592,7 +626,7 @@ class CreateDelayedTriggerExecutor(
                 if (target !== effect.target) effect.copy(target = target) else effect
             }
             is CompositeEffect -> effect.copy(
-                effects = effect.effects.map { resolveContextTargets(it, context, state, bound) }
+                effects = effect.effects.map { resolveContextTargets(it, context, state, bound, snapshots) }
             )
             // "Flip a coin at the beginning of the next end step. If you lose the flip, sacrifice
             // that creature" (Goblin Kites) — the flip happens when the delayed trigger fires, but
@@ -600,17 +634,17 @@ class CreateDelayedTriggerExecutor(
             // effect gets. Without this the branch keeps an unresolvable ContextTarget and does
             // nothing when the trigger resolves.
             is FlipCoinEffect -> effect.copy(
-                wonEffect = effect.wonEffect?.let { resolveContextTargets(it, context, state, bound) },
-                lostEffect = effect.lostEffect?.let { resolveContextTargets(it, context, state, bound) },
+                wonEffect = effect.wonEffect?.let { resolveContextTargets(it, context, state, bound, snapshots) },
+                lostEffect = effect.lostEffect?.let { resolveContextTargets(it, context, state, bound, snapshots) },
             )
             // Every gate kind — "you may", "if [condition]", "you may pay … if you do", "[action].
             // If you do", … — is resolved when the delayed trigger fires, but the objects its
             // branches name were chosen now. Bake both branches and any effect the gate itself
             // carries (a MayPay cost, a DoAction action), whatever the gate kind.
             is GatedEffect -> {
-                val gate = resolveGateContextTargets(effect.gate, context, state, bound)
-                val then = resolveContextTargets(effect.then, context, state, bound)
-                val otherwise = effect.otherwise?.let { resolveContextTargets(it, context, state, bound) }
+                val gate = resolveGateContextTargets(effect.gate, context, state, bound, snapshots)
+                val then = resolveContextTargets(effect.then, context, state, bound, snapshots)
+                val otherwise = effect.otherwise?.let { resolveContextTargets(it, context, state, bound, snapshots) }
                 if (gate !== effect.gate || then !== effect.then || otherwise !== effect.otherwise) {
                     effect.copy(gate = gate, then = then, otherwise = otherwise)
                 } else effect
@@ -628,14 +662,15 @@ class CreateDelayedTriggerExecutor(
         context: EffectContext,
         state: GameState,
         bound: MutableList<CapturedObjectBinding>,
+        snapshots: MutableList<EntitySnapshot>,
     ): Gate =
         when (gate) {
             is Gate.MayPay -> {
-                val cost = resolveContextTargets(gate.cost, context, state, bound)
+                val cost = resolveContextTargets(gate.cost, context, state, bound, snapshots)
                 if (cost !== gate.cost) gate.copy(cost = cost) else gate
             }
             is Gate.DoAction -> {
-                val action = resolveContextTargets(gate.action, context, state, bound)
+                val action = resolveContextTargets(gate.action, context, state, bound, snapshots)
                 if (action !== gate.action) gate.copy(action = action) else gate
             }
             is Gate.MayDecide,
