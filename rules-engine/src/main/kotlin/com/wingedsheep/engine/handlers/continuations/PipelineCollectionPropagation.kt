@@ -49,8 +49,9 @@ import com.wingedsheep.sdk.model.EntityId
  * sacrifice's LKI), and the sacrifice pauses for target selection as soon as you control two
  * creatures that could be sacrificed.
  *
- * [RepeatWhileContinuation] takes only [collections], into its `bodyCollections` slot — the repeat
- * condition reads collection outputs, and there is no numeric equivalent for it to read.
+ * [RepeatWhileContinuation] takes [collections] and [numbers], into its `bodyCollections` /
+ * `bodyNumbers` slots — a repeat condition reads a pass's collections (Cultivator Colossus) or its
+ * numbers (Delina, Wild Mage's d20 result gating "you may roll again").
  *
  * The consumer is always the top of the continuation stack here: triggers waiting to go on the
  * stack live in the state ([GameState.triggersBeingPlaced], [GameState.pendingTriggers]), never
@@ -126,7 +127,12 @@ fun exposeOutputsToNextFrame(state: GameState, outputs: PipelineOutputs): GameSt
             // Stash into bodyCollections, not effectContext — the condition reads these outputs
             // this pass, but the next iteration must start from the pristine pre-loop context.
             val (_, popped) = state.popContinuation()
-            popped.pushContinuation(next.copy(bodyCollections = next.bodyCollections + outputs.collections))
+            popped.pushContinuation(
+                next.copy(
+                    bodyCollections = next.bodyCollections + outputs.collections,
+                    bodyNumbers = next.bodyNumbers + outputs.numbers,
+                )
+            )
         }
         else -> state
     }

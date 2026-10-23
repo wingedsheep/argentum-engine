@@ -189,7 +189,8 @@ class CoreAutoResumerModule(
                 effectExecutor = services.effectExecutorRegistry::execute,
                 priorEvents = events,
                 bodyOutputs = com.wingedsheep.engine.handlers.effects.composite.RepeatWhileExecutor.Companion.BodyOutputs(
-                    collections = continuation.bodyCollections
+                    collections = continuation.bodyCollections,
+                    numbers = continuation.bodyNumbers,
                 ),
                 conditionEvaluator = services.conditionEvaluator
             )

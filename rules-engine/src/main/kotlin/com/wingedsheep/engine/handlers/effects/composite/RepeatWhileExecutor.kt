@@ -17,7 +17,8 @@ import kotlin.reflect.KClass
  * Executor for RepeatWhileEffect.
  *
  * Executes the body at least once, then evaluates the repeat condition:
- * - [RepeatCondition.PlayerChooses]: pauses for a yes/no decision
+ * - [RepeatCondition.PlayerChooses]: pauses for a yes/no decision — only after a pass where its
+ *   `onlyIf` holds, when it has one; otherwise the loop stops
  * - [RepeatCondition.WhileCondition]: evaluates synchronously
  *
  * Uses the pre-push pattern (same as CompositeEffectExecutor):
@@ -90,7 +91,7 @@ class RepeatWhileExecutor(
             priorEvents: List<GameEvent>,
             conditionEvaluator: ConditionEvaluator
         ): EffectResult {
-            val afterBodyContinuation = loop.copy(bodyCollections = emptyMap())
+            val afterBodyContinuation = loop.copy(bodyCollections = emptyMap(), bodyNumbers = emptyMap())
             val stateWithContinuation = state.pushContinuation(afterBodyContinuation)
 
             // Execute the body
@@ -193,25 +194,33 @@ class RepeatWhileExecutor(
             bodyOutputs: BodyOutputs = BodyOutputs(),
         ): EffectResult {
             val folded = foldPass(loop, bodyOutputs.collections)
+            val context = folded.effectContext
+            // A condition reads the loop's context merged with this pass's outputs — for the
+            // check only, never for the next pass (see executeIteration).
+            val conditionContext = if (bodyOutputs.isEmpty) context else context.copy(
+                pipeline = context.pipeline.copy(
+                    storedCollections = context.pipeline.storedCollections + bodyOutputs.collections,
+                    storedSubtypeGroups = context.pipeline.storedSubtypeGroups + bodyOutputs.subtypeGroups,
+                    storedNumbers = context.pipeline.storedNumbers + bodyOutputs.numbers,
+                    chosenValues = context.pipeline.chosenValues + bodyOutputs.chosenValues,
+                )
+            )
             return when (val repeatCondition = folded.repeatCondition) {
                 is RepeatCondition.PlayerChooses -> {
-                    askDecider(
-                        state = state,
-                        loop = folded,
-                        repeatCondition = repeatCondition,
-                        priorEvents = priorEvents
-                    )
+                    val offered = repeatCondition.onlyIf
+                        ?.let { conditionEvaluator.evaluate(state, it, conditionContext) } ?: true
+                    if (offered) {
+                        askDecider(
+                            state = state,
+                            loop = folded,
+                            repeatCondition = repeatCondition,
+                            priorEvents = priorEvents
+                        )
+                    } else {
+                        EffectResult(state, priorEvents, updatedCollections = published(folded))
+                    }
                 }
                 is RepeatCondition.WhileCondition -> {
-                    val context = folded.effectContext
-                    val conditionContext = if (bodyOutputs.isEmpty) context else context.copy(
-                        pipeline = context.pipeline.copy(
-                            storedCollections = context.pipeline.storedCollections + bodyOutputs.collections,
-                            storedSubtypeGroups = context.pipeline.storedSubtypeGroups + bodyOutputs.subtypeGroups,
-                            storedNumbers = context.pipeline.storedNumbers + bodyOutputs.numbers,
-                            chosenValues = context.pipeline.chosenValues + bodyOutputs.chosenValues,
-                        )
-                    )
                     val shouldRepeat = conditionEvaluator.evaluate(state, repeatCondition.condition, conditionContext)
                     if (shouldRepeat) {
                         // Deepen resolution depth per iteration so a WhileCondition that never goes
@@ -245,7 +254,7 @@ class RepeatWhileExecutor(
             priorEvents: List<GameEvent>
         ): EffectResult {
             val decisionHandler = DecisionHandler()
-            val continuation = RepeatWhileDecisionContinuation(loop = loop.copy(bodyCollections = emptyMap()))
+            val continuation = RepeatWhileDecisionContinuation(loop = loop.copy(bodyCollections = emptyMap(), bodyNumbers = emptyMap()))
 
             val decisionResult = decisionHandler.createYesNoDecision(
                 state = state,

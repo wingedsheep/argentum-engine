@@ -363,6 +363,8 @@ data class ForEachContinuation(
  *   on purpose: [effectContext] must stay the pristine pre-loop context so the *next* iteration
  *   re-gathers fresh (a stale collection leaking forward would mask the next pass and the loop
  *   would never terminate — see RepeatWhileExecutor.executeIteration).
+ * @property bodyNumbers [bodyCollections]' twin for pipeline numbers stored this pass — a die
+ *   result a `PlayerChooses.onlyIf` reads must survive the body pausing just as a collection does.
  * @property collectCollections The effect's body-collection → aggregate map
  *   ([com.wingedsheep.sdk.scripting.effects.RepeatWhileEffect.collectCollections]).
  * @property accumulatedCollections The aggregates folded from every *completed* pass before this
@@ -377,6 +379,7 @@ data class RepeatWhileContinuation(
     val sourceName: String?,
     val effectContext: EffectContext,
     val bodyCollections: Map<String, List<EntityId>> = emptyMap(),
+    val bodyNumbers: Map<String, Int> = emptyMap(),
     val collectCollections: Map<String, String> = emptyMap(),
     val accumulatedCollections: Map<String, List<EntityId>> = emptyMap()
 ) : AutomaticContinuation

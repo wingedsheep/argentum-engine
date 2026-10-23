@@ -1523,7 +1523,7 @@ Families:
 
 ## RepeatCondition
 
-- `RepeatCondition.PlayerChooses(decider: EffectTarget, prompt: String, yesText: String, noText: String)` — A player decides each iteration whether to repeat.
+- `RepeatCondition.PlayerChooses(decider: EffectTarget, prompt: String, yesText: String, noText: String, onlyIf: Condition?)` — A player decides each iteration whether to repeat.
 - `RepeatCondition.WhileCondition(condition: Condition)` — Repeat while a game-state condition is true (checked after each body execution).
 
 ## ReplacementEffect

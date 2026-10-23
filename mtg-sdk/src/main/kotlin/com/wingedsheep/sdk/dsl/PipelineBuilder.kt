@@ -1236,6 +1236,25 @@ class PipelineBuilder private constructor(private val shared: Shared) {
         return aggregates
     }
 
+    /**
+     * Run [block] as the body of a do-while loop ([com.wingedsheep.sdk.scripting.effects.RepeatWhileEffect])
+     * whose [RepeatCondition] [block] returns — so the condition can read the slots the body just
+     * filled, which a condition fixed up front cannot name. "Roll a d20. … 15—20 | Create one of
+     * those tokens. You may roll again." (Delina, Wild Mage) returns a
+     * [RepeatCondition.PlayerChooses] whose `onlyIf` compares the pass's roll. Each pass starts from a
+     * fresh collection scope; nothing the body stores outlives the loop.
+     */
+    fun repeatProcess(block: PipelineBuilder.() -> RepeatCondition) {
+        nextIndex()
+        val inner = PipelineBuilder(shared)
+        val repeatCondition = inner.block()
+        require(inner.steps.isNotEmpty()) { "repeatProcess { } must add at least one step" }
+        steps += RepeatWhileEffect(
+            body = inner.steps.singleOrNull() ?: CompositeEffect(inner.steps.toList()),
+            repeatCondition = repeatCondition,
+        )
+    }
+
     // =========================================================================
     // Escape hatches
     // =========================================================================

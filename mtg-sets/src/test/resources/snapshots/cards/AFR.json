@@ -617,6 +617,237 @@
     ]
 }
 
+// Delina, Wild Mage
+{
+    "name": "Delina, Wild Mage",
+    "manaCost": "{3}{R}",
+    "typeLine": "Legendary Creature — Elf Shaman",
+    "oracleText": "Whenever Delina attacks, choose target creature you control, then roll a d20.\n1—14 | Create a tapped and attacking token that's a copy of that creature, except it's not legendary and it has \"At end of combat, exile this token.\"\n15—20 | Create one of those tokens. You may roll again.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Delina, Wild Mage:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RepeatWhile",
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "RollDice",
+                                        "sides": 20,
+                                        "storeTotalAs": "diceResult1"
+                                    },
+                                    {
+                                        "type": "Gated",
+                                        "gate": {
+                                            "type": "Gate.WhenCondition",
+                                            "condition": {
+                                                "type": "All",
+                                                "conditions": [
+                                                    {
+                                                        "type": "Compare",
+                                                        "left": {
+                                                            "type": "VariableReference",
+                                                            "variableName": "diceResult1"
+                                                        },
+                                                        "operator": "GTE",
+                                                        "right": {
+                                                            "type": "Fixed",
+                                                            "amount": 1
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "Compare",
+                                                        "left": {
+                                                            "type": "VariableReference",
+                                                            "variableName": "diceResult1"
+                                                        },
+                                                        "operator": "LTE",
+                                                        "right": {
+                                                            "type": "Fixed",
+                                                            "amount": 14
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "then": {
+                                            "type": "CreateTokenCopyOfTarget",
+                                            "target": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            },
+                                            "tapped": true,
+                                            "attacking": true,
+                                            "triggeredAbilities": [
+                                                {
+                                                    "id": "Delina, Wild Mage:1",
+                                                    "trigger": {
+                                                        "type": "StepEvent",
+                                                        "step": "END_COMBAT",
+                                                        "player": "Each"
+                                                    },
+                                                    "binding": "ANY",
+                                                    "effect": {
+                                                        "type": "MoveToZone",
+                                                        "target": "Self",
+                                                        "destination": "Exile"
+                                                    },
+                                                    "descriptionOverride": "At end of combat, exile this token."
+                                                }
+                                            ],
+                                            "removedSupertypes": [
+                                                "LEGENDARY"
+                                            ],
+                                            "attackDefender": "CONTROLLER_CHOOSES"
+                                        }
+                                    },
+                                    {
+                                        "type": "Gated",
+                                        "gate": {
+                                            "type": "Gate.WhenCondition",
+                                            "condition": {
+                                                "type": "All",
+                                                "conditions": [
+                                                    {
+                                                        "type": "Compare",
+                                                        "left": {
+                                                            "type": "VariableReference",
+                                                            "variableName": "diceResult1"
+                                                        },
+                                                        "operator": "GTE",
+                                                        "right": {
+                                                            "type": "Fixed",
+                                                            "amount": 15
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "Compare",
+                                                        "left": {
+                                                            "type": "VariableReference",
+                                                            "variableName": "diceResult1"
+                                                        },
+                                                        "operator": "LTE",
+                                                        "right": {
+                                                            "type": "Fixed",
+                                                            "amount": 20
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "then": {
+                                            "type": "CreateTokenCopyOfTarget",
+                                            "target": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            },
+                                            "tapped": true,
+                                            "attacking": true,
+                                            "triggeredAbilities": [
+                                                {
+                                                    "id": "Delina, Wild Mage:1",
+                                                    "trigger": {
+                                                        "type": "StepEvent",
+                                                        "step": "END_COMBAT",
+                                                        "player": "Each"
+                                                    },
+                                                    "binding": "ANY",
+                                                    "effect": {
+                                                        "type": "MoveToZone",
+                                                        "target": "Self",
+                                                        "destination": "Exile"
+                                                    },
+                                                    "descriptionOverride": "At end of combat, exile this token."
+                                                }
+                                            ],
+                                            "removedSupertypes": [
+                                                "LEGENDARY"
+                                            ],
+                                            "attackDefender": "CONTROLLER_CHOOSES"
+                                        }
+                                    }
+                                ]
+                            },
+                            "repeatCondition": {
+                                "type": "PlayerChooses",
+                                "decider": "Controller",
+                                "prompt": "Roll the d20 again?",
+                                "yesText": "Roll again",
+                                "onlyIf": {
+                                    "type": "All",
+                                    "conditions": [
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult1"
+                                            },
+                                            "operator": "GTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 15
+                                            }
+                                        },
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult1"
+                                            },
+                                            "operator": "LTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 20
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever Delina attacks, choose target creature you control, then roll a d20. 1—14: create a tapped and attacking token that's a copy of that creature, except it's not legendary and it has \"At end of combat, exile this token.\" 15—20: create one of those tokens. You may roll again."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "RARE",
+        "artist": "Wisnu Tan",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e87459aa-af8f-4bd2-a310-151353083a2e.jpg?1783926480",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "Delina, Wild Mage has received an update to its Oracle text. Specifically, rolling again on a result of 15–20 is optional."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "You declare which player or planeswalker the token is attacking as you put it onto the battlefield. It doesn't have to be the same player or planeswalker Delina, Wild Mage is attacking."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Although the token is attacking, it was never declared as an attacking creature (for purposes of abilities that trigger whenever a creature attacks, for example)."
+            }
+        ]
+    }
+}
+
 // Dire Wolf Prowler
 {
     "name": "Dire Wolf Prowler",

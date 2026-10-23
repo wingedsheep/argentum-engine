@@ -1293,6 +1293,10 @@ sealed interface RepeatCondition {
      * @property prompt Text shown in the yes/no decision
      * @property yesText Label for the "repeat" button
      * @property noText Label for the "stop" button
+     * @property onlyIf When set, the offer is made only after a pass where this condition holds,
+     *   read like [WhileCondition] against that pass's own outputs; otherwise the loop stops
+     *   without asking. "15—20 | Create one of those tokens. You may roll again." (Delina, Wild
+     *   Mage) is the roll's row gating the choice. Null (the default) asks after every pass.
      */
     @SerialName("PlayerChooses")
     @Serializable
@@ -1300,7 +1304,8 @@ sealed interface RepeatCondition {
         val decider: EffectTarget,
         val prompt: String,
         val yesText: String = "Repeat",
-        val noText: String = "Stop"
+        val noText: String = "Stop",
+        val onlyIf: Condition? = null
     ) : RepeatCondition
 
     /**
@@ -1360,7 +1365,10 @@ data class RepeatWhileEffect(
         append(body.description)
         append(". Repeat this process")
         when (repeatCondition) {
-            is RepeatCondition.PlayerChooses -> append(" as many times as ${repeatCondition.decider.description} chooses")
+            is RepeatCondition.PlayerChooses -> {
+                append(" as many times as ${repeatCondition.decider.description} chooses")
+                repeatCondition.onlyIf?.let { append(" while ${it.description}") }
+            }
             is RepeatCondition.WhileCondition -> append(" while ${repeatCondition.condition.description}")
         }
     }
