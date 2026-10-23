@@ -212,6 +212,26 @@ class SetArchetypesTest : StringSpec({
             listOf("Samurai", "Warrior")
     }
 
+    "Innistrad: Midnight Hunt exposes one archetype per gold signpost uncommon" {
+        val synergies = SetArchetypes.getForSet("MID")!!
+
+        synergies.setName shouldBe "Innistrad: Midnight Hunt"
+        synergies.archetypes.associate { it.name to it.colors.toSet() } shouldBe mapOf(
+            "Disturb Spirits" to setOf(Color.WHITE, Color.BLUE),
+            "Decayed Zombies" to setOf(Color.BLUE, Color.BLACK),
+            "Vampire Aggro" to setOf(Color.BLACK, Color.RED),
+            "Werewolves" to setOf(Color.RED, Color.GREEN),
+            "Coven Humans" to setOf(Color.GREEN, Color.WHITE),
+            "Sacrifice" to setOf(Color.WHITE, Color.BLACK),
+            "Flashback Spells" to setOf(Color.BLUE, Color.RED),
+            "Graveyard Value" to setOf(Color.BLACK, Color.GREEN),
+            "Day/Night Aggro" to setOf(Color.RED, Color.WHITE),
+            "Self-Mill Flashback" to setOf(Color.GREEN, Color.BLUE),
+        )
+        synergies.archetypes.single { it.name == "Werewolves" }.creatureTypes shouldContainExactly listOf("Werewolf")
+        synergies.archetypes.single { it.name == "Decayed Zombies" }.creatureTypes shouldContainExactly listOf("Zombie")
+    }
+
     "March of the Machine: The Aftermath exposes one archetype per gold signpost uncommon" {
         val synergies = SetArchetypes.getForSet("MAT")!!
 

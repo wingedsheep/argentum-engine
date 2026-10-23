@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-mid',
+    date: '2026-10-23',
+    kind: 'set',
+    setCode: 'MID',
+    title: 'Innistrad: Midnight Hunt is complete',
+    body:
+      "Survive the longest night on Innistrad: day and night flip Werewolves between human and beast, flashback and disturb bring spells and Spirits back from the graveyard, and coven rewards Humans for banding together against decayed Zombie hordes and Vampires out for blood. Every pack opens two double-faced cards, and decks reward planning around the graveyard and the time of day.",
+    tryIf: 'graveyard value, flashback spells and Werewolves that transform with the time of day',
+  },
+  {
     id: 'set-mat',
     date: '2026-10-21',
     kind: 'set',

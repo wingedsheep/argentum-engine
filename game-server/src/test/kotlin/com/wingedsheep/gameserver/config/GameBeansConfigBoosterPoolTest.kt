@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.limited.LandSlotBooster
 import com.wingedsheep.sdk.limited.LegendarySlotBooster
 import com.wingedsheep.sdk.limited.PlayBooster
 import com.wingedsheep.sdk.limited.StandardBooster
+import com.wingedsheep.sdk.limited.TwoDoubleFacedSlotBooster
 import com.wingedsheep.sdk.model.Rarity
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
@@ -120,6 +121,43 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
             mythics += pack.count { it.metadata.rarity == Rarity.MYTHIC }
         }
         (mythics.toDouble() / packs) shouldBe (0.125 plusOrMinus 0.03)
+    }
+
+    test("Innistrad: Midnight Hunt draft pack opens two double-faced cards beside 9 commons, 3 uncommons and a rare") {
+        // Draft Booster (collation per mtg.wtf/pack/mid-draft): 1 double-faced common, 9 single-faced commons,
+        // 2 single-faced uncommons, and a double-faced/single-faced pair holding one uncommon and one
+        // rare/mythic (the double-faced card is the rare in 3 packs of 18), plus a basic land (supplied at
+        // deck building). The foil replacing a common in a third of packs is cosmetic and not modelled.
+        val mid = boosterGenerator.availableSets["MID"].shouldNotBeNull()
+        mid.fullyImplemented shouldBe true
+        mid.boosterStrategy shouldBe TwoDoubleFacedSlotBooster(commons = 9, uncommons = 3)
+        val eligible = mid.cards.filter { it.metadata.inBooster && !it.typeLine.isBasicLand }
+        // Scryfall `set:mid is:booster -t:basic`.
+        eligible.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 100, Rarity.UNCOMMON to 83, Rarity.RARE to 64, Rarity.MYTHIC to 20,
+        )
+        // Scryfall `set:mid is:booster is:dfc`: 10 commons, 23 uncommons, 11 rares, 5 mythics.
+        eligible.filter { it.isDoubleFaced }.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 10, Rarity.UNCOMMON to 23, Rarity.RARE to 11, Rarity.MYTHIC to 5,
+        )
+        val eligibleNames = eligible.mapTo(hashSetOf()) { it.name }
+        var dfcRares = 0
+        val packs = 2000
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("MID")
+            pack.size shouldBe 14
+            pack.map { it.name }.toSet().size shouldBe 14
+            withClue("pack ${pack.map { it.name }} holds an off-sheet card") {
+                pack.all { it.name in eligibleNames } shouldBe true
+            }
+            pack.count { it.isDoubleFaced } shouldBe 2
+            pack.count { it.isDoubleFaced && it.metadata.rarity == Rarity.COMMON } shouldBe 1
+            pack.count { it.metadata.rarity == Rarity.COMMON } shouldBe 10
+            pack.count { it.metadata.rarity == Rarity.UNCOMMON } shouldBe 3
+            val rare = pack.single { it.metadata.rarity == Rarity.RARE || it.metadata.rarity == Rarity.MYTHIC }
+            if (rare.isDoubleFaced) dfcRares++
+        }
+        (dfcRares.toDouble() / packs) shouldBe ((1.0 / 6) plusOrMinus 0.03)
     }
 
     test("March of the Machine: The Aftermath opens a 5-card Epilogue Booster from its 50-card pool") {

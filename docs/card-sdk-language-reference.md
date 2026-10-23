@@ -475,6 +475,14 @@ never hold a double-faced card; double-faced rares and mythics stay in the rare 
 back to the other; no double-faced commons or uncommons at all turns the slot into one more common. Kamigawa: Neon
 Dynasty uses `DoubleFacedSlotBooster(commons = 9, uncommons = 3)`.
 
+**Two-double-faced-slot boosters** — `TwoDoubleFacedSlotBooster(commons, uncommons, doubleFacedRareChance, mythicChance)`
+opens two double-faced cards per pack: a double-faced common in its own slot, and a double-faced uncommon/rare/mythic
+paired with a single-faced uncommon-or-rare slot so the pair holds exactly one rare or mythic (the double-faced card
+is the rare with `doubleFacedRareChance`, default 1/6). The rest is `commons` single-faced commons and `uncommons - 1`
+single-faced uncommons; double-faced cards never appear outside their two slots. An empty double-faced tier (host
+bans) falls back to the single-faced sheet of the same rarity. Innistrad: Midnight Hunt uses
+`TwoDoubleFacedSlotBooster(commons = 9, uncommons = 3)`.
+
 **Play Booster wildcard odds** — `PlayBooster(commons, uncommons, wildcards, raresOrMythics, mythicChance, wildcardWeights)`
 rolls each wildcard slot's rarity from `wildcardWeights` (relative odds per `Rarity`, default 50% C / 30% U / 17.5% R /
 2.5% M); a rolled rarity the pool lacks falls through common → uncommon → rare → mythic. March of the Machine: The
