@@ -24,6 +24,15 @@ import com.wingedsheep.sdk.scripting.references.Player
  */
 object DungeonRoomAbilities {
 
+    private const val ID_PREFIX = "dungeon_room:"
+
+    /**
+     * Whether [trigger] is a room ability. Read off the ability id, not the dungeon card entity: a
+     * later venture in the same batch can complete the dungeon and remove its card before the
+     * room ability is placed.
+     */
+    fun isRoomAbility(trigger: PendingTrigger): Boolean = trigger.ability.id.value.startsWith(ID_PREFIX)
+
     /** Queue the room ability for every move into a room in [events]. */
     fun detect(events: List<GameEvent>, triggers: MutableList<PendingTrigger>) {
         for (event in events) {
@@ -47,7 +56,7 @@ object DungeonRoomAbilities {
     fun ability(dungeon: DungeonDefinition, roomIndex: Int): TriggeredAbility {
         val room = dungeon.rooms[roomIndex]
         return TriggeredAbility.create(
-            id = AbilityId("dungeon_room:${dungeon.name}:$roomIndex"),
+            id = AbilityId("$ID_PREFIX${dungeon.name}:$roomIndex"),
             trigger = EventPattern.StepEvent(Step.UPKEEP, Player.You),
             binding = TriggerBinding.SELF,
             effect = room.effect,

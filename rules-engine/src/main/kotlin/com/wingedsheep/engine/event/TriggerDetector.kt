@@ -38,7 +38,6 @@ import com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityFired
 import com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityFiredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.identity.DungeonCardComponent
 import com.wingedsheep.engine.state.components.identity.EmblemSourceComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -4668,7 +4667,7 @@ class TriggerDetector(
         state: GameState,
         triggers: MutableList<PendingTrigger>
     ) {
-        val rooms = triggers.filter { state.getEntity(it.sourceId)?.has<DungeonCardComponent>() == true }
+        val rooms = triggers.filter(DungeonRoomAbilities::isRoomAbility)
         if (rooms.isEmpty()) return
 
         val projected = state.projectedState
@@ -4695,10 +4694,8 @@ class TriggerDetector(
         }
         if (doublersByPlayer.isEmpty()) return
 
-        for (room in rooms) {
-            val ownerId = state.getEntity(room.sourceId)?.get<DungeonCardComponent>()?.ownerId ?: continue
-            repeat(doublersByPlayer[ownerId] ?: 0) { triggers.add(room) }
-        }
+        // A dungeon's owner controls its room abilities (CR 309.4c), so the controller is the owner.
+        for (room in rooms) repeat(doublersByPlayer[room.controllerId] ?: 0) { triggers.add(room) }
     }
 
     private fun isSpellCastOrCopiedPattern(pattern: EventPattern): Boolean = when (pattern) {
