@@ -1394,6 +1394,140 @@
     ]
 }
 
+// Field of Ruin
+{
+    "name": "Field of Ruin",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{2}, {T}, Sacrifice this land: Destroy target nonbasic land an opponent controls. Each player searches their library for a basic land card, puts it onto the battlefield, then shuffles.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Field of Ruin:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Field of Ruin:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "Each"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Library",
+                                            "filter": "basicland"
+                                        },
+                                        "storeAs": "searchable",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "searchable",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "found",
+                                        "prompt": "Search your library for a basic land card to put onto the battlefield",
+                                        "selectedLabel": "Put onto the battlefield"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "found",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        }
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsLand",
+                                    {
+                                        "type": "Not",
+                                        "predicate": "IsBasicLand"
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByOpponent"
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}, {T}, Sacrifice this land: Destroy target nonbasic land an opponent controls. Each player searches their library for a basic land card, puts it onto the battlefield, then shuffles."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "254",
+        "rarity": "UNCOMMON",
+        "artist": "Dimitar Marinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d72afb21-7bb0-4fd8-a529-ada92a654f61.jpg?1783935697",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "If the target land is an illegal target by the time Field of Ruin's ability tries to resolve, the ability doesn't resolve. No players search for a basic land card or shuffles. If the target is legal but not destroyed (most likely because it has indestructible), each player does search and shuffle."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Fiery Cannonade
 {
     "name": "Fiery Cannonade",

@@ -111,3 +111,39 @@
         "WHITE"
     ]
 }
+
+// Pithing Needle
+{
+    "name": "Pithing Needle",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "As this artifact enters, choose a card name.\nActivated abilities of sources with the chosen name can't be activated unless they're mana abilities.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": {
+                    "cardPredicates": [
+                        "NameEqualsChosenComponent"
+                    ]
+                },
+                "nonManaAbilitiesOnly": true,
+                "anyZone": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CARD_NAME",
+                "cardNamePool": "ANY"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "rarity": "RARE",
+        "artist": "Pete Venters",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/78eb9e1d-113e-45ff-8435-32ee42fa5631.jpg?1783944130"
+    },
+    "colorIdentityOverride": []
+}

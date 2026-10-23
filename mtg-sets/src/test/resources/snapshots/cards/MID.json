@@ -4086,6 +4086,68 @@
     ]
 }
 
+// Crossroads Candleguide
+{
+    "name": "Crossroads Candleguide",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Scarecrow",
+    "oracleText": "When this creature enters, exile up to one target card from a graveyard.\n{2}: Add one mana of any color.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Crossroads Candleguide:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {},
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Crossroads Candleguide:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "253",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "Do the candleguides' heads turn to follow you as you pass, or is it merely a trick of the flickering light?",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5cad1524-9e75-47e0-b817-47110634802a.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
 // Curse of Leeches
 {
     "name": "Curse of Leeches",
@@ -7452,6 +7514,114 @@
     ]
 }
 
+// Florian, Voldaren Scion
+{
+    "name": "Florian, Voldaren Scion",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Legendary Creature — Vampire Noble",
+    "oracleText": "First strike\nAt the beginning of each of your postcombat main phases, look at the top X cards of your library, where X is the total amount of life your opponents lost this turn. Exile one of those cards and put the rest on the bottom of your library in a random order. You may play the exiled card this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Florian, Voldaren Scion:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "POSTCOMBAT_MAIN"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "TurnTracking",
+                                    "player": "EachOpponent",
+                                    "tracker": "LIFE_LOST_AMOUNT"
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "Exile one card. You may play it this turn.",
+                            "selectedLabel": "Exile (you may play it this turn)",
+                            "remainderLabel": "Put on the bottom of your library",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "selected1"
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of each of your postcombat main phases, look at the top X cards of your library, where X is the total amount of life your opponents lost this turn. Exile one of those cards and put the rest on the bottom of your library in a random order. You may play the exiled card this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "RARE",
+        "artist": "Justine Cruz",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/53289e69-74da-46d2-91c2-a11378ba76ef.jpg?1783925560",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "If you somehow have more than two main phases in a turn, each main phase after your first one is a postcombat main phase, and Florian's last ability triggers at the beginning of each of them."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "Florian's ability checks only how much life opponents lost during the turn, not by how much their life totals decreased compared to the start of the turn. For example, if an opponent lost 2 life and then gained 8 life before Florian's ability resolves, you'll look at the top two cards of your library."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "You must pay all costs and follow all timing rules for cards you play with Florian's last ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Foul Play
 {
     "name": "Foul Play",
@@ -7836,6 +8006,136 @@
     ]
 }
 
+// Geistflame Reservoir
+{
+    "name": "Geistflame Reservoir",
+    "manaCost": "{2}{R}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever you cast an instant or sorcery spell, put a charge counter on this artifact.\n{1}{R}, {T}, Remove any number of charge counters from this artifact: It deals that much damage to any target.\n{1}{R}, {T}: Exile the top card of your library. You may play that card this turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Geistflame Reservoir:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "CHARGE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you cast an instant or sorcery spell, put a charge counter on this artifact."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Geistflame Reservoir:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{R}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "CHARGE",
+                                "count": "XValue",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": "XValue",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{1}{R}, {T}, Remove any number of charge counters from this artifact: It deals that much damage to any target."
+            },
+            {
+                "id": "Geistflame Reservoir:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{R}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "impulseExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "impulseExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "impulseExiled"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{1}{R}, {T}: Exile the top card of your library. You may play that card this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "RARE",
+        "artist": "Anna Christenson",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b247ce7-9c58-404f-bed1-84abb37575ab.jpg?1783925600"
+    }
+}
+
 // Geistwave
 {
     "name": "Geistwave",
@@ -8003,6 +8303,104 @@
         "artist": "Vincent Proce",
         "flavorText": "It was a family reunion to die for.",
         "imageUri": "https://cards.scryfall.io/normal/front/3/6/363bd6a6-e8e4-4626-a43c-0b77339dd28b.jpg?1782703666"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Gisa, Glorious Resurrector
+{
+    "name": "Gisa, Glorious Resurrector",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "If a creature an opponent controls would die, exile it instead.\nAt the beginning of your upkeep, put all creature cards exiled with Gisa onto the battlefield under your control. They gain decayed. (A creature with decayed can't block. When it attacks, sacrifice it at end of combat.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gisa, Glorious Resurrector:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "storeMovedAs": "moved1",
+                            "filter": "creature"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "moved1"
+                            },
+                            "body": {
+                                "type": "GrantKeyword",
+                                "keyword": "DECAYED",
+                                "target": "IterationEntity",
+                                "duration": "Permanent"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, put all creature cards exiled with Gisa onto the battlefield under your control. They gain decayed."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChange",
+                "newDestination": "Exile",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:opponent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "linkToSource": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "rarity": "RARE",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/63461076-a13d-488d-bd82-ceac441341c8.jpg?1783925617",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "Gisa does not grant haste to the creatures that are returned to the battlefield, so you normally won't be able to attack with them the turn they are returned."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "Because creatures controlled by opponents aren't dying due to Gisa's replacement effect, any \"when [this creature] dies\" triggered abilities those creatures have won't trigger."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "Once a creature with decayed attacks, it will be sacrificed at end of combat, even if it no longer has decayed at that time."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "If a creature your opponent controls would die and more than one effect would cause it to be exiled, that opponent chooses which one to apply. If the creature is exiled due to some other replacement effect, it will not be returned to the battlefield with Gisa."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -9785,6 +10183,221 @@
     ]
 }
 
+// Jerren, Corrupted Bishop
+{
+    "name": "Jerren, Corrupted Bishop",
+    "manaCost": "{2}{B}",
+    "typeLine": "Legendary Creature — Human Cleric",
+    "oracleText": "Whenever Jerren enters or another nontoken Human you control dies, you lose 1 life and create a 1/1 white Human creature token.\n{2}: Target Human you control gains lifelink until end of turn.\nAt the beginning of your end step, if you have exactly 13 life, you may pay {4}{B}{B}. If you do, transform Jerren.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jerren, Corrupted Bishop:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "WHITE"
+                            ],
+                            "creatureTypes": [
+                                "Human"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/b/7/b7667345-e11b-4cad-ac4c-84eb1c5656c5.jpg?1783925225"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Jerren enters or another nontoken Human you control dies, you lose 1 life and create a 1/1 white Human creature token."
+            },
+            {
+                "id": "Jerren, Corrupted Bishop:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature Human nontoken ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "WHITE"
+                            ],
+                            "creatureTypes": [
+                                "Human"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/b/7/b7667345-e11b-4cad-ac4c-84eb1c5656c5.jpg?1783925225"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Jerren enters or another nontoken Human you control dies, you lose 1 life and create a 1/1 white Human creature token."
+            },
+            {
+                "id": "Jerren, Corrupted Bishop:4",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{4}{B}{B}"
+                        }
+                    },
+                    "then": "Transform"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": "YourLifeTotal",
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 13
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, if you have exactly 13 life, you may pay {4}{B}{B}. If you do, transform Jerren."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Jerren, Corrupted Bishop:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature Human ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}: Target Human you control gains lifelink until end of turn."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Ormendahl, the Corrupter",
+        "manaCost": "",
+        "typeLine": "Legendary Creature — Demon",
+        "oracleText": "Flying, trample, lifelink\nSacrifice another creature: Draw a card.",
+        "creatureStats": {
+            "power": 6,
+            "toughness": 6
+        },
+        "keywords": [
+            "FLYING",
+            "TRAMPLE",
+            "LIFELINK"
+        ],
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Ormendahl, the Corrupter:1",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomSacrifice",
+                            "filter": "creature",
+                            "excludeSelf": true
+                        }
+                    },
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "descriptionOverride": "Sacrifice another creature: Draw a card."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "109",
+            "rarity": "MYTHIC",
+            "artist": "Yongjae Choi",
+            "flavorText": "\"Ah, Jerren. You've been such a faithful, useful insect.\"",
+            "imageUri": "https://cards.scryfall.io/normal/back/0/f/0f6e668d-2502-4e82-b4c2-ef34c9afa27e.jpg?1783925620"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "MYTHIC",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f6e668d-2502-4e82-b4c2-ef34c9afa27e.jpg?1783925620",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "Jerren's last ability will trigger only if you have exactly 13 life at the beginning of your end step. You will be able to pay {4}{B}{B} only if you have exactly 13 life as that ability begins to resolve. If your life total isn't 13 at that point, the ability will have no effect. You won't be able to pay {4}{B}{B} and Jerren won't transform."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "If, while activating mana abilities during the resolution of Jerren's last ability, you somehow gain or lose life, you will still be able to finish paying the cost and Jerren will still transform."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Join the Dance
 {
     "name": "Join the Dance",
@@ -9827,6 +10440,95 @@
     "colorIdentityOverride": [
         "WHITE",
         "GREEN"
+    ]
+}
+
+// Katilda, Dawnhart Prime
+{
+    "name": "Katilda, Dawnhart Prime",
+    "manaCost": "{G}{W}",
+    "typeLine": "Legendary Creature — Human Warlock",
+    "oracleText": "Protection from Werewolves\nHuman creatures you control have \"{T}: Add one mana of any of this creature's colors.\"\n{4}{G}{W}, {T}: Put a +1/+1 counter on each creature you control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Subtype",
+                "subtype": "Werewolf"
+            }
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Katilda, Dawnhart Prime:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{G}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Put a +1/+1 counter on each creature you control."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Katilda, Dawnhart Prime:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddManaOfChoice",
+                        "colorSet": {
+                            "type": "ManaColorSet.ColorsOf",
+                            "entity": "Self"
+                        }
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                },
+                "filter": {
+                    "baseFilter": "creature Human ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "RARE",
+        "artist": "Bryan Sola",
+        "flavorText": "\"The angels may have abandoned us, but Ghrin-Danu has not.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/673cd775-d417-4652-a91d-825ad5c89e8a.jpg?1783925559"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }
 
@@ -10320,6 +11022,120 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Lord of the Forsaken
+{
+    "name": "Lord of the Forsaken",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Flying, trample\n{B}, Sacrifice another creature: Target player mills three cards.\nPay 1 life: Add {C}. Spend this mana only to cast a spell from your graveyard.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Lord of the Forsaken:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ]
+            },
+            {
+                "id": "Lord of the Forsaken:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "restriction": "CastFromGraveyardOnly"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "rarity": "MYTHIC",
+        "artist": "Kekai Kotaki",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d5a8846c-3950-4588-97e8-3aa70bcd2403.jpg?1783925614"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -11776,6 +12592,97 @@
     ]
 }
 
+// Mystic Skull
+{
+    "name": "Mystic Skull",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{1}, {T}: Add one mana of any color.\n{5}, {T}: Transform this artifact.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mystic Skull:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Mystic Skull:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": "Transform",
+                "descriptionOverride": "{5}, {T}: Transform this artifact."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Mystic Monstrosity",
+        "manaCost": "",
+        "typeLine": "Artifact Creature — Construct",
+        "oracleText": "Lands you control have \"{T}: Add one mana of any color.\"",
+        "creatureStats": {
+            "power": 5,
+            "toughness": 6
+        },
+        "script": {
+            "staticAbilities": [
+                {
+                    "type": "GrantActivatedAbility",
+                    "ability": {
+                        "id": "Mystic Monstrosity:1",
+                        "cost": "CostTap",
+                        "effect": "AddManaOfChoice",
+                        "timing": "ManaAbility",
+                        "isManaAbility": true
+                    },
+                    "filter": {
+                        "baseFilter": "land ctrl:you"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "256",
+            "rarity": "UNCOMMON",
+            "artist": "Joe Slucher",
+            "flavorText": "Under the light of an unnatural moon, it walked out on legs of straw with joints of hinges ripped from the barn doors.",
+            "imageUri": "https://cards.scryfall.io/normal/back/1/1/115a9a44-131d-45f3-852a-40fd18e4afb6.jpg?1783925552"
+        },
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "256",
+        "rarity": "UNCOMMON",
+        "artist": "Joe Slucher",
+        "flavorText": "It waited on the barn wall for decades, forgotten, looking for the perfect opportunity.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/115a9a44-131d-45f3-852a-40fd18e4afb6.jpg?1783925552"
+    }
+}
+
 // Nebelgast Intruder
 {
     "name": "Nebelgast Intruder",
@@ -12305,6 +13212,102 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Old Stickfingers
+{
+    "name": "Old Stickfingers",
+    "manaCost": "{X}{B}{G}",
+    "typeLine": "Legendary Creature — Horror",
+    "oracleText": "When you cast this spell, reveal cards from the top of your library until you reveal X creature cards. Put all creature cards revealed this way into your graveyard, then put the rest on the bottom of your library in a random order.\nOld Stickfingers's power and toughness are each equal to the number of creature cards in your graveyard.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "Count",
+                "player": "You",
+                "zone": "Graveyard",
+                "filter": "creature"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "Count",
+                "player": "You",
+                "zone": "Graveyard",
+                "filter": "creature"
+            }
+        }
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Old Stickfingers:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherUntilMatch",
+                            "filter": "creature",
+                            "storeMatch": "matched0",
+                            "storeRevealed": "revealed0",
+                            "count": {
+                                "type": "ContextProperty",
+                                "key": "X_VALUE_OF_TRIGGERING_SPELL"
+                            }
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "revealed0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "revealed0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "filter": "creature"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "revealed0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random",
+                            "filter": "noncreature"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When you cast this spell, reveal cards from the top of your library until you reveal X creature cards. Put all creature cards revealed this way into your graveyard, then put the rest on the bottom of your library in a random order."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "234",
+        "rarity": "RARE",
+        "artist": "Jehan Choo",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b203be6f-c565-4d8f-b200-b537569a0292.jpg?1783925557",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "The triggered ability will resolve before Old Stickfingers does. If Old Stickfingers is countered in response to its own triggered ability, you will still follow all the instructions of the triggered ability, using the chosen value of X."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "The ability that defines the power and toughness of Old Stickfingers functions in all zones, not only while Old Stickfingers is on the battlefield. While Old Stickfingers is in a graveyard, the ability will count Old Stickfingers itself, presumably using a single, withered stickfinger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
     ]
 }
 
@@ -13954,6 +14957,124 @@
     ]
 }
 
+// Rem Karolus, Stalwart Slayer
+{
+    "name": "Rem Karolus, Stalwart Slayer",
+    "manaCost": "{1}{R}{W}",
+    "typeLine": "Legendary Creature — Human Knight",
+    "oracleText": "Flying, haste\nIf a spell would deal damage to you or another permanent you control, prevent that damage.\nIf a spell would deal damage to an opponent or a permanent an opponent controls, it deals that much damage plus 1 instead.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "HASTE"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientAnyOf",
+                        "options": [
+                            {
+                                "type": "RecipientPlayer",
+                                "player": "You"
+                            },
+                            {
+                                "type": "RecipientObject",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsPermanent"
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "StateNot",
+                                            "predicate": "IsSource"
+                                        }
+                                    ],
+                                    "controllerPredicate": "ControlledByYou"
+                                }
+                            }
+                        ]
+                    },
+                    "source": {
+                        "statePredicates": [
+                            {
+                                "type": "InZone",
+                                "zone": "Stack"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "type": "ModifyDamageAmount",
+                "modifier": 1,
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientAnyOf",
+                        "options": [
+                            {
+                                "type": "RecipientPlayer",
+                                "player": "EachOpponent"
+                            },
+                            {
+                                "type": "RecipientObject",
+                                "filter": "permanent ctrl:opponent"
+                            }
+                        ]
+                    },
+                    "source": {
+                        "statePredicates": [
+                            {
+                                "type": "InZone",
+                                "zone": "Stack"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "235",
+        "rarity": "RARE",
+        "artist": "Francisco Miyara",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b31e307a-9689-4e11-8c5f-96b7a4b50bed.jpg?1783925556",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "Rem Karolus, Stalwart Slayer's last two abilities apply only to damage dealt by spells on the stack. A spell that becomes a permanent and then deals damage won't be affected."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "If another effect modifies how much damage a spell would deal to an opponent or a permanent they control, including preventing some of it, the player being dealt damage or the controller of the permanent being dealt damage chooses an order in which to apply those effects. If all of the damage is prevented, Rem's effect no longer applies."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "The additional 1 damage is dealt by the original source of damage. The additional damage isn't dealt by Rem Karolus."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "If damage dealt by a source you control is being divided or assigned among multiple permanents an opponent controls or among an opponent and one or more permanents they control, divide the original amount before adding 1."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "Some spells cause other objects to deal damage, such as spells that cause two creatures to fight. Rem Karolus, Stalwart Slayer's last two abilities don't apply to damage from such effects."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Revenge of the Drowned
 {
     "name": "Revenge of the Drowned",
@@ -15238,6 +16359,130 @@
     }
 }
 
+// Sigarda, Champion of Light
+{
+    "name": "Sigarda, Champion of Light",
+    "manaCost": "{1}{G}{W}{W}",
+    "typeLine": "Legendary Creature — Angel",
+    "oracleText": "Flying, trample\nHumans you control get +1/+1.\nCoven — Whenever Sigarda attacks, if you control three or more creatures with different powers, look at the top five cards of your library. You may reveal a Human creature card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sigarda, Champion of Light:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "creature Human",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal a Human creature card from among them and put it into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature",
+                        "aggregation": "DISTINCT_VALUES",
+                        "property": "POWER"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Human ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "240",
+        "rarity": "MYTHIC",
+        "artist": "Howard Lyon",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c6cf357-c231-4512-aa9a-ab4a60007136.jpg?1783925554",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "A creature has different power from another if their powers are different numbers. For example, a 1/1 creature and a 2/1 creature have different powers."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "Many coven abilities, such as that of Dawnhart Wardens above, are triggered abilities with intervening if clauses. You must control three or more creatures with different powers at the time the ability triggers and at the time the ability tries to resolve. They do not, however, need to be the same set of creatures in both cases."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "For three creatures to have different powers from one another, each of their powers needs to be different. A 1/1 creature, a 2/1 creature, and another 2/1 creature aren't three creatures with different powers, even though both 2/1 creatures have different power than the 1/1 creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Sigardian Savior
 {
     "name": "Sigardian Savior",
@@ -15492,10 +16737,10 @@
         ]
     },
     "metadata": {
-        "collectorNumber": "242",
+        "collectorNumber": "241",
         "rarity": "RARE",
         "artist": "Livia Prima",
-        "imageUri": "https://cards.scryfall.io/normal/front/2/8/28a6b23f-a854-469a-9b06-119507dd9d42.jpg?1783911895",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/3/d329e2d4-e483-4981-8a0b-6a9a717d50cd.jpg?1783925553",
         "rulings": [
             {
                 "date": "2021-09-24",
@@ -15636,6 +16881,107 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Slogurk, the Overslime
+{
+    "name": "Slogurk, the Overslime",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Legendary Creature — Ooze",
+    "oracleText": "Trample\nWhenever a land card is put into your graveyard from anywhere, put a +1/+1 counter on Slogurk.\nRemove three +1/+1 counters from Slogurk: Return it to its owner's hand.\nWhen Slogurk leaves the battlefield, return up to three target land cards from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Slogurk, the Overslime:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land nontoken own:you",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Slogurk, the Overslime:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 3,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "land own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Slogurk, the Overslime:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomRemoveCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "self": true
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "242",
+        "rarity": "RARE",
+        "artist": "Nicholas Gregory",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f94e888b-6eeb-4ef3-ab21-5ed2bf0036a3.jpg?1783925554"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
     ]
 }
 
@@ -16296,6 +17642,77 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Stolen Vitality
+{
+    "name": "Stolen Vitality",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +3/+1 until end of turn. If it's your turn, that creature gains trample until end of turn. Otherwise, it gains first strike until end of turn. (A creature with trample can deal excess combat damage to the player or planeswalker it's attacking. A creature with first strike deals combat damage before creatures without first strike.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "IsYourTurn"
+                    },
+                    "then": {
+                        "type": "GrantKeyword",
+                        "keyword": "TRAMPLE",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "otherwise": {
+                        "type": "GrantKeyword",
+                        "keyword": "FIRST_STRIKE",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "artist": "Mike Bierek",
+        "flavorText": "\"There's nothing like a good meal to really lift the spirit.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d50df2dd-8d14-4d92-ab4e-bf9f9f147e91.jpg?1783925590"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

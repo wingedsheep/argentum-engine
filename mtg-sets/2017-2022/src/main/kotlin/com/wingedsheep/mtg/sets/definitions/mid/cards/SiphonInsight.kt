@@ -61,9 +61,9 @@ val SiphonInsight = card("Siphon Insight") {
 
     metadata {
         rarity = Rarity.RARE
-        collectorNumber = "242"
+        collectorNumber = "241"
         artist = "Livia Prima"
-        imageUri = "https://cards.scryfall.io/normal/front/2/8/28a6b23f-a854-469a-9b06-119507dd9d42.jpg?1783911895"
+        imageUri = "https://cards.scryfall.io/normal/front/d/3/d329e2d4-e483-4981-8a0b-6a9a717d50cd.jpg?1783925553"
         ruling("2021-09-24", "Only you get to look at the exiled card. Its owner doesn't get to know what it is while it is in exile unless you tell them.")
         ruling("2021-09-24", "You may play the card even if it is a land.")
         ruling("2021-09-24", "You must still follow all normal timing rules to play a card exiled with Siphon Insight.")
