@@ -713,16 +713,17 @@ object ZoneMovementUtils {
         return EffectResult.success(result.state, result.events)
     }
 
-    /**
-     * If [entityId] carries an ExileOnDeath mark, returns the state with that mark consumed — the
-     * caller then moves the permanent to exile instead of the graveyard. Null when there is no mark.
-     */
+    /** True when [entityId] carries an ExileOnDeath mark ("if it would die, exile it instead"). */
     fun hasExileOnDeathMark(state: GameState, entityId: EntityId): Boolean =
         state.floatingEffects.any { effect ->
             effect.effect.modification is com.wingedsheep.engine.mechanics.layers.SerializableModification.ExileOnDeath &&
                 entityId in effect.effect.affectedEntities
         }
 
+    /**
+     * If [entityId] carries an ExileOnDeath mark, returns the state with that mark consumed — the
+     * caller then moves the permanent to exile instead of the graveyard. Null when there is no mark.
+     */
     fun consumeExileOnDeath(state: GameState, entityId: EntityId): GameState? {
         val index = state.floatingEffects.indexOfFirst { effect ->
             effect.effect.modification is com.wingedsheep.engine.mechanics.layers.SerializableModification.ExileOnDeath &&
