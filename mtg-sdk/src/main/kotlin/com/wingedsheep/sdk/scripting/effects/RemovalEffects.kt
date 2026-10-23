@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting.effects
 
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -69,18 +70,28 @@ data class CantBeRegeneratedEffect(
 }
 
 /**
- * Mark target creature so that if it would die this turn, it goes to exile instead of graveyard.
+ * Mark target creature so that if it would die, it goes to exile instead of graveyard.
  * "If it would die this turn, exile it instead."
  *
  * Designed to be composed with damage/destroy effects via `then` for cards like Carbonize.
  * Only applies to creatures — if the target is a player, this effect does nothing.
+ *
+ * [duration] bounds the mark: [Duration.EndOfTurn] (the default) is the "this turn" rider;
+ * [Duration.Permanent] is a creature that *gains* "If this creature would die, exile it instead"
+ * (Can't Stay Away) — the mark then lasts until the creature leaves the battlefield, since a
+ * permanent that changes zones becomes a new object (CR 400.7).
  */
 @SerialName("MarkExileOnDeath")
 @Serializable
 data class MarkExileOnDeathEffect(
-    val target: EffectTarget
+    val target: EffectTarget,
+    val duration: Duration = Duration.EndOfTurn
 ) : Effect {
-    override val description: String = "If ${target.description} would die this turn, exile it instead"
+    override val description: String = when (duration) {
+        Duration.Permanent -> "${target.description} gains \"If this creature would die, exile it instead.\""
+        Duration.EndOfTurn -> "If ${target.description} would die this turn, exile it instead"
+        else -> "If ${target.description} would die ${duration.description}, exile it instead"
+    }
 }
 
 /**

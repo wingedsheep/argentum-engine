@@ -717,6 +717,12 @@ object ZoneMovementUtils {
      * If [entityId] carries an ExileOnDeath mark, returns the state with that mark consumed — the
      * caller then moves the permanent to exile instead of the graveyard. Null when there is no mark.
      */
+    fun hasExileOnDeathMark(state: GameState, entityId: EntityId): Boolean =
+        state.floatingEffects.any { effect ->
+            effect.effect.modification is com.wingedsheep.engine.mechanics.layers.SerializableModification.ExileOnDeath &&
+                entityId in effect.effect.affectedEntities
+        }
+
     fun consumeExileOnDeath(state: GameState, entityId: EntityId): GameState? {
         val index = state.floatingEffects.indexOfFirst { effect ->
             effect.effect.modification is com.wingedsheep.engine.mechanics.layers.SerializableModification.ExileOnDeath &&
@@ -908,6 +914,13 @@ object ZoneMovementUtils {
         if (fromZone == Zone.BATTLEFIELD && toZone == Zone.GRAVEYARD) {
             val counters = container.get<CountersComponent>()
             if (counters != null && counters.getCount(CounterType.FINALITY) > 0) {
+                return ZoneChangeRedirectResult(Zone.EXILE)
+            }
+            // An ExileOnDeath mark ("if it would die [this turn], exile it instead") covers every
+            // way of dying, sacrifice included — not only the destroy and SBA paths that consume
+            // it up front. Leaving the battlefield prunes the mark along with the object's other
+            // floating effects, so there is nothing to consume here.
+            if (hasExileOnDeathMark(state, entityId)) {
                 return ZoneChangeRedirectResult(Zone.EXILE)
             }
         }

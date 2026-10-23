@@ -2078,10 +2078,12 @@ object Effects {
     /**
      * "If it would die this turn, exile it instead." Marks a creature so its death is replaced by
      * exile; a no-op on a non-creature. Composed after damage (Carbonize) or granted as a rider
-     * on a creature that deals damage (Runesword).
+     * on a creature that deals damage (Runesword). Pass [Duration.Permanent] for a creature that
+     * *gains* "If this creature would die, exile it instead" (Can't Stay Away): the mark then lasts
+     * until the creature leaves the battlefield.
      */
-    fun MarkExileOnDeath(target: EffectTarget): Effect =
-        com.wingedsheep.sdk.scripting.effects.MarkExileOnDeathEffect(target)
+    fun MarkExileOnDeath(target: EffectTarget, duration: Duration = Duration.EndOfTurn): Effect =
+        com.wingedsheep.sdk.scripting.effects.MarkExileOnDeathEffect(target, duration)
 
     /**
      * "If it would die this turn, exile it and its controller's graveyard instead" — the

@@ -952,7 +952,7 @@ Families:
 - `MakePlottedEffect(from: String, ownerControls: Boolean)` — Make every card in a named collection *plotted* (CR 718, Outlaws of Thunder Junction).
 - `MarkEnduringReturnEffect` — Stamps the source permanent as having returned via its Enduring ability (Duskmourn Glimmer cycle).
 - `MarkExileControllerGraveyardOnDeathEffect(target: EffectTarget)` — Mark target creature so that when it dies this turn, its controller's graveyard is exiled.
-- `MarkExileOnDeathEffect(target: EffectTarget)` — Mark target creature so that if it would die this turn, it goes to exile instead of graveyard.
+- `MarkExileOnDeathEffect(target: EffectTarget, duration: Duration)` — Mark target creature so that if it would die, it goes to exile instead of graveyard.
 - `MarkMustAttackEffect(target: EffectTarget, window: MustAttackWindow)` — Mark a creature as required to attack if able, for the window named — "target creature attacks this turn if able" (Walking Desecration, via `ForEachInGroup` over a group) or "that creature attacks…
 - `MarkMustBlockThisTurnEffect(target: EffectTarget)` — Mark a creature as "blocks this turn if able" (Culvert Ambusher).
 - `MarkSpellExileWithCountersEffect(target: EffectTarget, counterType: CounterType, count: Int)` — Mark a spell on the stack so that, when it resolves, it is exiled with the specified counters on it instead of being put into its owner's graveyard.
