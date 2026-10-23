@@ -24,8 +24,8 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * sacrificing itself — the engine's self-sacrifice detection now fires ANY-binding sacrifice-batch
  * triggers off the just-sacrificed permanent, so this single ability covers both "this" and
  * "another". "That artifact" is bound as the triggering entity; the delayed end-step token-copy
- * captures its id at creation time and copies the artifact's printed characteristics via last-known
- * information (it's already in the graveyard by the time the copy is made).
+ * captures its id at creation time and copies the artifact as it last existed on the battlefield
+ * (it's already in the graveyard by the time the copy is made).
  *
  * The Clue ability ({2}, Sacrifice: Draw a card) is itself a sacrifice that feeds the trigger.
  */

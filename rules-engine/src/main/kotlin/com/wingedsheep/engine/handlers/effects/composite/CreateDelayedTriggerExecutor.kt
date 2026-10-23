@@ -555,9 +555,7 @@ class CreateDelayedTriggerExecutor(
             // "At the beginning of the next end step, create a token that's a copy of that
             // <permanent>" — the copied permanent (e.g. a just-sacrificed artifact, bound here as
             // TriggeringEntity) is gone by the time the delayed trigger fires, so capture its id NOW
-            // into a SpecificEntity. The token-copy executor reads the copy's printed characteristics
-            // from the captured entity's CardComponent (last-known information), matching the rule
-            // that the token copies what was printed on the original (Esoteric Duplicator).
+            // into a SpecificEntity (Esoteric Duplicator).
             //
             // A copied object that has already left the battlefield ("when this dies, … create a
             // token that's a copy of it at the beginning of the next end step" — Ochre Jelly) is

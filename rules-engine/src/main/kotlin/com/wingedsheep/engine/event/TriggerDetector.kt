@@ -1139,7 +1139,10 @@ class TriggerDetector(
                 objectReferences = referencesFor(attackerId),
                                 sourceName = delayed.sourceName,
                                 controllerId = delayed.controllerId,
-                                triggerContext = TriggerContext.fromEvent(event).copy(triggeringEntityId = attackerId),
+                                triggerContext = TriggerContext.fromEvent(event).copy(
+                                    triggeringEntityId = attackerId,
+                                    capturedEntitySnapshots = delayed.capturedEntitySnapshots.ifEmpty { null }
+                                ),
                                 consumesDelayedTriggerId = if (delayed.fireOnce) delayed.id else null,
                                 carriedPipeline = delayed.carriedPipelineFor(state)
                             )
@@ -1174,7 +1177,10 @@ class TriggerDetector(
                                 objectReferences = referencesFor(blockerId),
                                 sourceName = delayed.sourceName,
                                 controllerId = delayed.controllerId,
-                                triggerContext = TriggerContext(triggeringEntityId = blockerId),
+                                triggerContext = TriggerContext(
+                                    triggeringEntityId = blockerId,
+                                    capturedEntitySnapshots = delayed.capturedEntitySnapshots.ifEmpty { null }
+                                ),
                                 consumesDelayedTriggerId = if (delayed.fireOnce) delayed.id else null,
                                 carriedPipeline = delayed.carriedPipelineFor(state)
                             )
@@ -1223,7 +1229,10 @@ class TriggerDetector(
                 objectReferences = referencesFor(partnerId),
                                 sourceName = delayed.sourceName,
                                 controllerId = delayed.controllerId,
-                                triggerContext = TriggerContext(triggeringEntityId = partnerId),
+                                triggerContext = TriggerContext(
+                                    triggeringEntityId = partnerId,
+                                    capturedEntitySnapshots = delayed.capturedEntitySnapshots.ifEmpty { null }
+                                ),
                                 consumesDelayedTriggerId = if (delayed.fireOnce) delayed.id else null,
                                 carriedPipeline = delayed.carriedPipelineFor(state)
                             )
