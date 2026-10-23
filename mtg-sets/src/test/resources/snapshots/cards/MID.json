@@ -3527,6 +3527,76 @@
     ]
 }
 
+// Corpse Cobble
+{
+    "name": "Corpse Cobble",
+    "manaCost": "{U}{B}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, sacrifice any number of creatures.\nCreate an X/X blue and black Zombie creature token with menace, where X is the total power of the sacrificed creatures.\nFlashback {3}{U}{B} (You may cast this card from your graveyard for its flashback cost and any additional costs. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{3}{U}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "power": 0,
+            "toughness": 0,
+            "colors": [
+                "BLUE",
+                "BLACK"
+            ],
+            "creatureTypes": [
+                "Zombie"
+            ],
+            "keywords": [
+                "MENACE"
+            ],
+            "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb5fb489-6e46-4359-9c3c-ef1702526e5a.jpg?1783925219",
+            "dynamicPower": "TotalPowerSacrificedThisWay",
+            "dynamicToughness": "TotalPowerSacrificedThisWay"
+        },
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomVariablePermanents",
+                    "filter": "creature",
+                    "minCount": 0,
+                    "excludeSelf": false,
+                    "action": "SACRIFICE",
+                    "xMeasure": "COUNT"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "214",
+        "rarity": "UNCOMMON",
+        "artist": "Ravenna Tran",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfe4f48d-179a-47d7-aed6-9751dd2f7d8c.jpg?1783925566",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "If you cast Corpse Cobble using flashback, you still pay its additional cost of sacrificing any number of creatures."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "You may choose to sacrifice no creatures to pay the additional cost. If you do, you'll create a 0/0 Zombie token. Unless something else is raising its toughness, the token will subsequently die, but any \"enters the battlefield\" or \"dies\" triggered abilities will still trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Covert Cutpurse
 {
     "name": "Covert Cutpurse",
@@ -4919,6 +4989,179 @@
     ]
 }
 
+// Devoted Grafkeeper
+{
+    "name": "Devoted Grafkeeper",
+    "manaCost": "{W}{U}",
+    "typeLine": "Creature — Human Peasant",
+    "oracleText": "When this creature enters, mill two cards.\nWhenever you cast a spell from your graveyard, tap target creature you don't control.\nDisturb {1}{W}{U} (You may cast this card from your graveyard transformed for its disturb cost.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "DISTURB"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Disturb",
+            "cost": "{1}{W}{U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Devoted Grafkeeper:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, mill two cards."
+            },
+            {
+                "id": "Devoted Grafkeeper:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        {
+                            "type": "SpellCastFromZone",
+                            "zone": "Graveyard"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControllerNot",
+                                "predicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you cast a spell from your graveyard, tap target creature you don't control."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Departed Soulkeeper",
+        "manaCost": "",
+        "typeLine": "Creature — Spirit",
+        "oracleText": "Flying\nThis creature can block only creatures with flying.\nIf Departed Soulkeeper would be put into a graveyard from anywhere, exile it instead.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 1
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "script": {
+            "staticAbilities": [
+                {
+                    "type": "CanOnlyBlockCreaturesWith",
+                    "blockerFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasKeyword",
+                                "keyword": "FLYING"
+                            }
+                        ]
+                    }
+                }
+            ],
+            "replacementEffects": [
+                {
+                    "type": "RedirectZoneChange",
+                    "newDestination": "Exile",
+                    "appliesTo": {
+                        "type": "ZoneChangeEvent",
+                        "to": "Graveyard"
+                    },
+                    "selfOnly": true
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "218",
+            "rarity": "UNCOMMON",
+            "artist": "Raoul Vitale",
+            "imageUri": "https://cards.scryfall.io/normal/back/9/6/965e6bd5-dc32-406c-bc99-ceb15be4d3f2.jpg?1783925570"
+        },
+        "colorIdentityOverride": [
+            "WHITE",
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "WHITE",
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "UNCOMMON",
+        "artist": "Raoul Vitale",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/965e6bd5-dc32-406c-bc99-ceb15be4d3f2.jpg?1783925570",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "When you cast a spell using a card's disturb ability, the card is put onto the stack with its back face up. The resulting spell has all the characteristics of that face."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "The mana value of a spell cast using disturb is determined by the mana cost on the front face of the card, no matter what the total cost to cast the spell was."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "The back face of each card with disturb has an ability that instructs its controller to exile it if it would be put into a graveyard from anywhere. This includes going to the graveyard from the stack, so if the spell is countered after you cast it using the disturb ability, it will be put into exile."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Dire-Strain Rampage
 {
     "name": "Dire-Strain Rampage",
@@ -5166,6 +5409,71 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Diregraf Rebirth
+{
+    "name": "Diregraf Rebirth",
+    "manaCost": "{3}{B}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "This spell costs {1} less to cast for each creature that died this turn.\nReturn target creature card from your graveyard to the battlefield.\nFlashback {5}{B}{G} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{5}{B}{G}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Battlefield",
+            "fromZone": "Graveyard"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": {
+                            "type": "TurnTracking",
+                            "player": "Each",
+                            "tracker": "CREATURES_DIED"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "220",
+        "rarity": "UNCOMMON",
+        "artist": "Irina Nordsol",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b51ed1ea-661e-49c6-9751-1eb7bb651bb1.jpg?1783925565"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
     ]
 }
 
@@ -7527,6 +7835,63 @@
     ]
 }
 
+// Ghoulcaller's Harvest
+{
+    "name": "Ghoulcaller's Harvest",
+    "manaCost": "{B}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create X 2/2 black Zombie creature tokens with decayed, where X is half the number of creature cards in your graveyard, rounded up. (A creature with decayed can't block. When it attacks, sacrifice it at end of combat.)\nFlashback {3}{B}{G} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{3}{B}{G}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": {
+                "type": "Divide",
+                "numerator": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "creature"
+                },
+                "denominator": {
+                    "type": "Fixed",
+                    "amount": 2
+                }
+            },
+            "power": 2,
+            "toughness": 2,
+            "colors": [
+                "BLACK"
+            ],
+            "creatureTypes": [
+                "Zombie"
+            ],
+            "keywords": [
+                "DECAYED"
+            ],
+            "imageUri": "https://cards.scryfall.io/normal/front/6/a/6adb8607-1066-451d-a719-74ad32358278.jpg?1783925226"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "225",
+        "rarity": "RARE",
+        "artist": "Anna Steinbauer",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6a507ea6-d818-4443-b468-cf65c3e7031c.jpg?1783925560"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Ghoulish Procession
 {
     "name": "Ghoulish Procession",
@@ -7984,6 +8349,100 @@
     "colorIdentityOverride": [
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Hallowed Respite
+{
+    "name": "Hallowed Respite",
+    "manaCost": "{W}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile target nonlegendary creature, then return it to the battlefield under its owner's control. If it entered under your control, put a +1/+1 counter on it. Otherwise, tap it.\nFlashback {1}{W}{U} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{1}{W}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "ctrl:you"
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "otherwise": {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsNonlegendary"
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "227",
+        "rarity": "RARE",
+        "artist": "Jason A. Engle",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2877523-6321-47e6-8be4-755ec21676c6.jpg?1783925561"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
     ]
 }
 
@@ -9021,6 +9480,54 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Hungry for More
+{
+    "name": "Hungry for More",
+    "manaCost": "{B}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a 3/1 black and red Vampire creature token with trample, lifelink, and haste. Sacrifice it at the beginning of the next end step.\nFlashback {1}{B}{R} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{1}{B}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "power": 3,
+            "toughness": 1,
+            "colors": [
+                "BLACK",
+                "RED"
+            ],
+            "creatureTypes": [
+                "Vampire"
+            ],
+            "keywords": [
+                "TRAMPLE",
+                "LIFELINK",
+                "HASTE"
+            ],
+            "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f8fe08d-b469-4471-8a7d-cf75850ba312.jpg?1783925221",
+            "sacrificeAtStep": "END"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "UNCOMMON",
+        "artist": "Bastien L. Deharme",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce09c0df-d022-4ebf-8f7f-8a913249e75f.jpg?1783925560"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -13487,6 +13994,54 @@
     ]
 }
 
+// Rite of Harmony
+{
+    "name": "Rite of Harmony",
+    "manaCost": "{G}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Whenever a creature or enchantment you control enters this turn, draw a card.\nFlashback {2}{G}{W} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{2}{G}{W}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateDelayedTrigger",
+            "effect": {
+                "type": "DrawCards",
+                "count": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            },
+            "trigger": {
+                "event": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature|enchantment ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "236",
+        "rarity": "RARE",
+        "artist": "Rovina Cai",
+        "flavorText": "Nature bends to the witches' call.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb1a16f9-13d4-4188-8e1e-0f2394349c7a.jpg?1783925556"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Rite of Oblivion
 {
     "name": "Rite of Oblivion",
@@ -14672,6 +15227,229 @@
     ]
 }
 
+// Silver Bolt
+{
+    "name": "Silver Bolt",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "{3}, {T}, Sacrifice this artifact: It deals 3 damage to target creature. If a Werewolf is dealt damage this way, destroy it.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Silver Bolt:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "damageDealtVariable": "storedNumber0"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "All",
+                                    "conditions": [
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "storedNumber0"
+                                            },
+                                            "operator": "GTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        {
+                                            "type": "EntityMatches",
+                                            "entity": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            },
+                                            "filter": "Werewolf"
+                                        }
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "258",
+        "artist": "Anna Fehr",
+        "flavorText": "\"When a werewolf charges, you'll only have time for one shot. Best make it count.\"\n—Captain Eberheart",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb2c05a8-db56-4397-9b6c-5accb2d3f81f.jpg?1783925546"
+    },
+    "colorIdentityOverride": []
+}
+
+// Siphon Insight
+{
+    "name": "Siphon Insight",
+    "manaCost": "{U}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Look at the top two cards of target opponent's library. Exile one of them face down and put the other on the bottom of that library. You may play the exiled card for as long as it remains exiled, and you may spend mana as though it were mana of any color to cast that spell.\nFlashback {1}{U}{B} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{1}{U}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "storeRemainder": "remainder1",
+                    "prompt": "Choose a card to exile face down",
+                    "selectedLabel": "Exile face down",
+                    "remainderLabel": "Put on bottom of that library"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "faceDown": "HIDDEN"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "remainder1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "placement": "Bottom"
+                    }
+                },
+                {
+                    "type": "GrantMayPlayFromExile",
+                    "from": "selected1",
+                    "expiry": "Permanent",
+                    "withAnyManaColor": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "242",
+        "rarity": "RARE",
+        "artist": "Livia Prima",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/28a6b23f-a854-469a-9b06-119507dd9d42.jpg?1783911895",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "Only you get to look at the exiled card. Its owner doesn't get to know what it is while it is in exile unless you tell them."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "You may play the card even if it is a land."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "You must still follow all normal timing rules to play a card exiled with Siphon Insight."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "You don't have to disclose which card you exiled and which card you put on the bottom of the library. For example, if your opponent knows what the top card of their library is and you cast Siphon Insight, you don't have to tell them where you put that card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Skaab Wrangler
 {
     "name": "Skaab Wrangler",
@@ -15450,6 +16228,78 @@
     ]
 }
 
+// Storm Skreelix
+{
+    "name": "Storm Skreelix",
+    "manaCost": "{3}{U}{R}",
+    "typeLine": "Creature — Drake Horror",
+    "oracleText": "Flying\nInstant and sorcery spells you cast cost {1} less to cast.\nWhenever you cast an instant or sorcery spell, this creature gets +2/+0 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Storm Skreelix:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "instant|sorcery"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "243",
+        "rarity": "UNCOMMON",
+        "artist": "Darek Zabrocki",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6c49618f-2e9e-4674-9953-153ccc76cce2.jpg?1783925553"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Storm the Festival
 {
     "name": "Storm the Festival",
@@ -15801,6 +16651,80 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Sunrise Cavalier
+{
+    "name": "Sunrise Cavalier",
+    "manaCost": "{1}{R}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Trample, haste\nIf it's neither day nor night, it becomes day as this creature enters.\nWhenever day becomes night or night becomes day, put a +1/+1 counter on target creature you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sunrise Cavalier:1",
+                "trigger": "DayNightChangedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "OnEnterRunEffect",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "Any",
+                                "conditions": [
+                                    "IsDay",
+                                    "IsNight"
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "SetDayNight",
+                        "designation": "DAY"
+                    },
+                    "descriptionOverride": "if it's neither day nor night, it becomes day"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "244",
+        "rarity": "UNCOMMON",
+        "artist": "John Di Giovanni",
+        "flavorText": "\"Like us, the morning fights for survival.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d0081b1-40fd-44ad-b154-efe2f27fed6b.jpg?1783925552"
+    }
 }
 
 // Sunset Revelry
@@ -17362,6 +18286,177 @@
     ]
 }
 
+// Vadrik, Astral Archmage
+{
+    "name": "Vadrik, Astral Archmage",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "If it's neither day nor night, it becomes day as Vadrik enters.\nInstant and sorcery spells you cast cost {X} less to cast, where X is Vadrik's power.\nWhenever day becomes night or night becomes day, put a +1/+1 counter on Vadrik.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vadrik, Astral Archmage:1",
+                "trigger": "DayNightChangedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever day becomes night or night becomes day, put a +1/+1 counter on Vadrik."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "instant|sorcery"
+                },
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "Self",
+                            "numericProperty": "Power"
+                        }
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "OnEnterRunEffect",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "Any",
+                                "conditions": [
+                                    "IsDay",
+                                    "IsNight"
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "SetDayNight",
+                        "designation": "DAY"
+                    },
+                    "descriptionOverride": "if it's neither day nor night, it becomes day"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "248",
+        "rarity": "RARE",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/454666bb-f81d-4845-84aa-d6f8f80ce86a.jpg?1783925550"
+    }
+}
+
+// Vampire Socialite
+{
+    "name": "Vampire Socialite",
+    "manaCost": "{B}{R}",
+    "typeLine": "Creature — Vampire Noble",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nWhen this creature enters, if an opponent lost life this turn, put a +1/+1 counter on each other Vampire you control.\nAs long as an opponent lost life this turn, each other Vampire you control enters with an additional +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vampire Socialite:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent Vampire ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "EachOpponent",
+                        "tracker": "LIFE_LOST"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "When this creature enters, if an opponent lost life this turn, put a +1/+1 counter on each other Vampire you control."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "EachOpponent",
+                        "tracker": "LIFE_LOST"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "otherOnly": true,
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Vampire ctrl:you",
+                    "to": "Battlefield"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "249",
+        "rarity": "UNCOMMON",
+        "artist": "Suzanne Helmigh",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f07cbf04-2864-4407-800e-4d55c10d3426.jpg?1783925550"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Vanquish the Horde
 {
     "name": "Vanquish the Horde",
@@ -17741,6 +18836,136 @@
     ]
 }
 
+// Wake to Slaughter
+{
+    "name": "Wake to Slaughter",
+    "manaCost": "{3}{B}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose up to two target creature cards in your graveyard. An opponent chooses one of them. Return that card to your hand. Return the other to the battlefield under your control. It gains haste. Exile it at the beginning of the next end step.\nFlashback {4}{B}{R} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{4}{B}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "ConditionalOnCollection",
+                    "collection": "gathered0",
+                    "ifNotEmpty": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "chooser": "Opponent",
+                                "storeSelected": "selected2",
+                                "storeRemainder": "remainder2",
+                                "prompt": "Choose a card to return to your opponent's hand. The other returns to the battlefield with haste and is exiled at the beginning of the next end step.",
+                                "selectedLabel": "To hand",
+                                "remainderLabel": "To battlefield"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "remainder2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                },
+                                "storeMovedAs": "moved4"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "moved4",
+                                "ifNotEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GrantKeyword",
+                                            "keyword": "HASTE",
+                                            "target": {
+                                                "type": "PipelineTarget",
+                                                "collectionName": "moved4"
+                                            },
+                                            "duration": "Permanent"
+                                        },
+                                        {
+                                            "type": "CreateDelayedTrigger",
+                                            "step": "END",
+                                            "effect": {
+                                                "type": "MoveToZone",
+                                                "target": {
+                                                    "type": "PipelineTarget",
+                                                    "collectionName": "moved4"
+                                                },
+                                                "destination": "Exile"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "250",
+        "rarity": "RARE",
+        "artist": "Chris Cold",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f02a544-716c-4f09-8ae9-dbfe7ef136d7.jpg?1783925551",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "If only one target is still legal as Wake to Slaughter resolves (or if you only chose one target), that's the card your opponent will have to choose to put into your hand. They can't choose to have you return it to the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Willow Geist
 {
     "name": "Willow Geist",
@@ -17794,6 +19019,83 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Winterthorn Blessing
+{
+    "name": "Winterthorn Blessing",
+    "manaCost": "{G}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put a +1/+1 counter on up to one target creature you control. Tap up to one target creature you don't control, and that creature doesn't untap during its controller's next untap step.\nFlashback {1}{G}{U} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{1}{G}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "DOESNT_UNTAP",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "duration": "UntilAfterAffectedControllersNextUntap"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "251",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1e9edd3-151d-4bf6-b491-03db9db32234.jpg?1783925550"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
     ]
 }
 
