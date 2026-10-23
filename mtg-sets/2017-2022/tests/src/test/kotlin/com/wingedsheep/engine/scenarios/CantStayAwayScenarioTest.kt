@@ -6,8 +6,6 @@ import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
@@ -17,21 +15,6 @@ import io.kotest.matchers.shouldNotBe
  * Flashback {3}{W}{B}"
  */
 class CantStayAwayScenarioTest : ScenarioTestBase() {
-
-    private fun TestGame.castOnGraveyardCard(fromGraveyard: Boolean, creature: EntityId) =
-        execute(
-            CastSpell(
-                player1Id,
-                (if (fromGraveyard) state.getGraveyard(player1Id) else state.getHand(player1Id))
-                    .first { state.getEntity(it)?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.name == "Can't Stay Away" },
-                listOf(ChosenTarget.Card(creature, player1Id, Zone.GRAVEYARD))
-            )
-        )
-
-    private fun TestGame.graveyardCard(name: String): EntityId =
-        state.getGraveyard(player1Id).first {
-            state.getEntity(it)?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.name == name
-        }
 
     init {
         context("Can't Stay Away") {
@@ -49,11 +32,11 @@ class CantStayAwayScenarioTest : ScenarioTestBase() {
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
 
-                val bears = game.graveyardCard("Grizzly Bears")
-                game.castOnGraveyardCard(fromGraveyard = false, creature = bears).error shouldBe null
+                game.castSpellTargetingGraveyardCard(1, "Can't Stay Away", 1, "Grizzly Bears").error shouldBe null
                 game.resolveStack()
                 game.findPermanent("Grizzly Bears") shouldNotBe null
 
+                // Past this turn's cleanup: the granted ability isn't a "this turn" rider.
                 game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
                 game.state.activePlayerId shouldBe game.player2Id
                 game.castSpell(2, "Lightning Bolt", game.findPermanent("Grizzly Bears")).error shouldBe null
@@ -75,17 +58,11 @@ class CantStayAwayScenarioTest : ScenarioTestBase() {
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
 
-                game.castOnGraveyardCard(fromGraveyard = false, creature = game.graveyardCard("Grizzly Bears")).error shouldBe null
+                game.castSpellTargetingGraveyardCard(1, "Can't Stay Away", 1, "Grizzly Bears").error shouldBe null
                 game.resolveStack()
-                val bears = game.findPermanent("Grizzly Bears")!!
+                game.findPermanent("Grizzly Bears") shouldNotBe null
 
-                val sacrifice = game.state.getHand(game.player1Id).first {
-                    game.state.getEntity(it)?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.name == "Sacrifice"
-                }
-                game.execute(
-                    CastSpell(game.player1Id, sacrifice, emptyList(),
-                        additionalCostPayment = AdditionalCostPayment(sacrificedPermanents = listOf(bears)))
-                ).error shouldBe null
+                game.castSpellWithAdditionalSacrifice(1, "Sacrifice", "Grizzly Bears").error shouldBe null
 
                 game.isInExile(1, "Grizzly Bears") shouldBe true
                 game.isInGraveyard(1, "Grizzly Bears") shouldBe false
@@ -102,7 +79,11 @@ class CantStayAwayScenarioTest : ScenarioTestBase() {
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
 
-                game.castOnGraveyardCard(fromGraveyard = true, creature = game.graveyardCard("Grizzly Bears")).error shouldBe null
+                val spell = game.findCardsInGraveyard(1, "Can't Stay Away").first()
+                val bears = game.findCardsInGraveyard(1, "Grizzly Bears").first()
+                game.execute(
+                    CastSpell(game.player1Id, spell, listOf(ChosenTarget.Card(bears, game.player1Id, Zone.GRAVEYARD)))
+                ).error shouldBe null
                 game.resolveStack()
 
                 game.findPermanent("Grizzly Bears") shouldNotBe null
@@ -120,7 +101,7 @@ class CantStayAwayScenarioTest : ScenarioTestBase() {
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
 
-                game.castOnGraveyardCard(fromGraveyard = false, creature = game.graveyardCard("Gurmag Angler")).error shouldNotBe null
+                game.castSpellTargetingGraveyardCard(1, "Can't Stay Away", 1, "Gurmag Angler").error shouldNotBe null
             }
         }
     }

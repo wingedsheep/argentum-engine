@@ -5,7 +5,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
@@ -32,7 +31,7 @@ val CantStayAway = card("Can't Stay Away") {
         "Flashback {3}{W}{B} (You may cast this card from your graveyard for its flashback cost. Then exile it.)"
 
     spell {
-        target(TargetFilter(GameObjectFilter.Creature.ownedByYou().manaValueAtMost(3), zone = Zone.GRAVEYARD))
+        target(TargetFilter.CreatureInYourGraveyard.manaValueAtMost(3))
 
         effect = Effects.Pipeline {
             val returned = moveTracked(
@@ -49,6 +48,7 @@ val CantStayAway = card("Can't Stay Away") {
 
     metadata {
         rarity = Rarity.RARE
+        flavorText = "Death is no impediment to dinner."
         collectorNumber = "213"
         artist = "Milivoj Ćeran"
         imageUri = "https://cards.scryfall.io/normal/front/3/c/3ccfebf1-add1-4f62-bffa-9023dea5b7c4.jpg"
