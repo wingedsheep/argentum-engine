@@ -200,6 +200,59 @@
     "colorIdentityOverride": []
 }
 
+// Accomplished Alchemist
+{
+    "name": "Accomplished Alchemist",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Elf Druid",
+    "oracleText": "{T}: Add one mana of any color.\n{T}: Add X mana of any one color, where X is the amount of life you gained this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Accomplished Alchemist:1",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Accomplished Alchemist:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "amount": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_GAINED"
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "rarity": "RARE",
+        "artist": "Randy Vargas",
+        "flavorText": "\"Tincture of murkroot and lizard feet? Simple. One that doesn't taste like murkroot and lizard feet? I'm working on it.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0d7b7830-b65e-4c53-98e8-152026764e4b.jpg?1783927349",
+        "rulings": [
+            {
+                "date": "4/16/2021",
+                "text": "Accomplished Alchemist's second ability counts the total amount of life gained without taking into account any life you lost during that turn. For example, if you lost 3 life and gained 3 life earlier in the turn, you'll add three mana."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Aether Helix
 {
     "name": "Aether Helix",
@@ -542,6 +595,278 @@
     "colorIdentityOverride": []
 }
 
+// Ardent Dustspeaker
+{
+    "name": "Ardent Dustspeaker",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Minotaur Shaman",
+    "oracleText": "Whenever this creature attacks, you may put an instant or sorcery card from your graveyard on the bottom of your library. If you do, exile the top two cards of your library. You may play those cards this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ardent Dustspeaker:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Graveyard",
+                                        "filter": "instant|sorcery"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected1",
+                                    "prompt": "You may put an instant or sorcery card from your graveyard on the bottom of your library"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "selected1",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Library",
+                                        "placement": "Bottom"
+                                    },
+                                    "order": "ControllerChooses"
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            },
+                            {
+                                "type": "GrantMayPlayFromExile",
+                                "from": "gathered0"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "UNCOMMON",
+        "artist": "Mads Ahm",
+        "flavorText": "\"The Founder Dragons weren't even hatched when this scroll was written!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7ff4832a-26c0-4da5-abbb-1941e7084e72.jpg?1783927358",
+        "rulings": [
+            {
+                "date": "4/16/2021",
+                "text": "You may play those cards that turn even if Ardent Dustspeaker leaves the battlefield or another player gains control of it."
+            },
+            {
+                "date": "4/16/2021",
+                "text": "Any cards exiled with Ardent Dustspeaker that you don't play remain exiled. You will not be able to play them on later turns, even if Ardent Dustspeaker's ability triggers again."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Arrogant Poet
+{
+    "name": "Arrogant Poet",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Warlock",
+    "oracleText": "Whenever this creature attacks, you may pay 2 life. If you do, it gains flying until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Arrogant Poet:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayLife",
+                            "amount": 2
+                        }
+                    },
+                    "then": {
+                        "type": "GrantKeyword",
+                        "keyword": "FLYING",
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "artist": "Billy Christian",
+        "flavorText": "\"I would be kinder to my peers, Professor, but I simply don't have any.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/556a0816-83c5-41dc-8546-213b21e2cceb.jpg?1783927370",
+        "rulings": [
+            {
+                "date": "4/16/2021",
+                "text": "You choose whether or not to pay 2 life as the ability resolves. Once you make that choice, no one can respond before Arrogant Poet gains flying."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Augmenter Pugilist
+{
+    "name": "Augmenter Pugilist",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Troll Druid",
+    "oracleText": "Trample\nAs long as you control eight or more lands, this creature gets +5/+5.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 5,
+                    "toughnessBonus": 5,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "rarity": "RARE",
+        "artist": "Volkan Baǵa",
+        "flavorText": "\"Hold still. I have a theory about what's going to happen to your face.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d9131fc3-018a-4975-8795-47be3956160d.jpg?1783927337",
+        "rulings": [
+            {
+                "date": "4/16/2021",
+                "text": "Because damage remains marked on creatures until the damage is removed as the turn ends, nonlethal damage dealt to Augmenter Pugilist may become lethal if the number of lands you control falls below eight."
+            },
+            {
+                "date": "4/16/2021",
+                "text": "Echoing Equation copies the printed values of the target creature. It won't copy any counters on that creature or any effects that have changed its power, toughness, types, color, and so on, and a creature becoming a copy doesn't remove any such counters or effects that are already applying to it."
+            },
+            {
+                "date": "4/16/2021",
+                "text": "If the chosen creature is copying something else, other creatures you control become copies of whatever the chosen creature is copying."
+            },
+            {
+                "date": "4/16/2021",
+                "text": "Echoing Equation affects only creatures you control at the time it resolves. Creatures that come under your control later in the turn won't be copies of the chosen creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ],
+    "layout": "MODAL_DFC",
+    "cardFaces": [
+        {
+            "name": "Echoing Equation",
+            "manaCost": "{3}{U}{U}",
+            "typeLine": "Sorcery",
+            "oracleText": "Choose target creature you control. Each other creature you control becomes a copy of it until end of turn, except those creatures aren't legendary.",
+            "script": {
+                "spellEffect": {
+                    "type": "EachPermanentBecomesCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "duration": "EndOfTurn",
+                    "excludeTarget": true,
+                    "exceptions": {
+                        "removedSupertypes": [
+                            "LEGENDARY"
+                        ]
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            },
+            "imageUri": "https://cards.scryfall.io/normal/back/d/9/d9131fc3-018a-4975-8795-47be3956160d.jpg?1783927337"
+        }
+    ]
+}
+
 // Basic Conjuration
 {
     "name": "Basic Conjuration",
@@ -614,6 +939,48 @@
         "artist": "Randy Vargas",
         "flavorText": "\"I made that! It's mine! Did you see that?\"",
         "imageUri": "https://cards.scryfall.io/normal/front/8/b/8be52d88-f430-4437-a0d3-590c2947c838.jpg?1783927348"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Bayou Groff
+{
+    "name": "Bayou Groff",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Plant Dog",
+    "oracleText": "As an additional cost to cast this spell, sacrifice a creature or pay {3}.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "additionalCosts": [
+            {
+                "type": "OrPay",
+                "cost": {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "creature"
+                    }
+                },
+                "alternativeManaCost": "{3}"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "artist": "Ilse Gort",
+        "flavorText": "\"Groffs are great for tracking pests through the muck, but securing the pests before the groff devours them is a dicey endeavor.\"\n—Lisette, Witherbloom dean",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4a82b032-b1ba-456c-abab-c0f7430b0587.jpg?1783927348",
+        "rulings": [
+            {
+                "date": "4/16/2021",
+                "text": "You must sacrifice exactly one creature or pay an extra {3} to cast this spell; you can't cast it without paying one of those costs, and you can't pay either multiple times."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -751,6 +1118,56 @@
     ]
 }
 
+// Biblioplex Assistant
+{
+    "name": "Biblioplex Assistant",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Gargoyle",
+    "oracleText": "Flying\nWhen this creature enters, put up to one target instant or sorcery card from your graveyard on top of your library.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Biblioplex Assistant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Library",
+                    "placement": "Top"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "instant|sorcery own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "251",
+        "artist": "Raoul Vitale",
+        "flavorText": "\"I appreciate the help, and honestly, it's very entertaining.\"\n—Isabough of the Biblioplex",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d74e1117-0196-4268-be97-a1e81b5dc90e.jpg?1783927282"
+    }
+}
+
 // Big Play
 {
     "name": "Big Play",
@@ -816,6 +1233,71 @@
     ]
 }
 
+// Biomathematician
+{
+    "name": "Biomathematician",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When this creature enters, create a 0/0 green and blue Fractal creature token. Put a +1/+1 counter on each Fractal you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Biomathematician:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 0,
+                            "toughness": 0,
+                            "colors": [
+                                "GREEN",
+                                "BLUE"
+                            ],
+                            "creatureTypes": [
+                                "Fractal"
+                            ]
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "permanent Fractal ctrl:you"
+                                }
+                            },
+                            "body": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "164",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"I will reach infinity.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b41a35ef-dae1-4534-a12a-d3951b285273.jpg?1783927324"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Blade Historian
 {
     "name": "Blade Historian",
@@ -847,6 +1329,211 @@
     "colorIdentityOverride": [
         "RED",
         "WHITE"
+    ]
+}
+
+// Blex, Vexing Pest
+{
+    "name": "Blex, Vexing Pest",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Pest",
+    "oracleText": "Other Pests, Bats, Insects, Snakes, and Spiders you control get +1/+1.\nWhen Blex dies, you gain 4 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Blex, Vexing Pest:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsPermanent",
+                            {
+                                "type": "HasAnyOfSubtypes",
+                                "subtypes": [
+                                    "Pest",
+                                    "Bat",
+                                    "Insect",
+                                    "Snake",
+                                    "Spider"
+                                ]
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "rarity": "MYTHIC",
+        "artist": "Ekaterina Burmak",
+        "flavorText": "Pests are typically harvested before they outgrow their enclosures. Blex is far from typical.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c204b7ca-0904-40fa-b20c-92400fae20b8.jpg?1783927336",
+        "rulings": [
+            {
+                "date": "4/16/2021",
+                "text": "If a creature is more than one of the creature types Blex cares about, it may haunt your dreams, but it will get the +1/+1 bonus only once."
+            },
+            {
+                "date": "4/16/2021",
+                "text": "While resolving Search for Blex, you may put any number of the cards into your hand, even if you don't have enough life to cover it. We'll assume you have a plan that's better than \"and then I'll lose the game.\""
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ],
+    "layout": "MODAL_DFC",
+    "cardFaces": [
+        {
+            "name": "Search for Blex",
+            "manaCost": "{2}{B}{B}",
+            "typeLine": "Sorcery",
+            "oracleText": "Look at the top five cards of your library. You may put any number of them into your hand and the rest into your graveyard. You lose 3 life for each card you put into your hand this way.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "Put any number into your hand (lose 3 life each); the rest go into your graveyard",
+                            "selectedLabel": "Put into your hand (lose 3 life each)",
+                            "remainderLabel": "Put into your graveyard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Multiply",
+                                "amount": {
+                                    "type": "VariableReference",
+                                    "variableName": "selected1_count"
+                                },
+                                "multiplier": 3
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            },
+            "imageUri": "https://cards.scryfall.io/normal/back/c/2/c204b7ca-0904-40fa-b20c-92400fae20b8.jpg?1783927336"
+        }
+    ]
+}
+
+// Blood Age General
+{
+    "name": "Blood Age General",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Spirit Warrior",
+    "oracleText": "{T}: Attacking Spirits get +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Blood Age General:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature Spirit attacking"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "{T}: Attacking Spirits get +1/+0 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "artist": "Johan Grenier",
+        "flavorText": "His troops took the Fortress of Caerdoon centuries ago, yet he fights on.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f30237cc-27c8-4075-acbd-d75a16588a68.jpg?1783927359",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Blood Age General's activated ability affects only Spirits that are attacking as it resolves. If you activate it while no Spirits are attacking, it will have no effect, even if you attack with one or more Spirits later in the turn."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Once the activated ability resolves, Spirits that get the +1/+0 bonus will retain it until end of turn, even after they stop attacking or if they stop being Spirits."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -886,6 +1573,231 @@
     },
     "colorIdentityOverride": [
         "BLACK",
+        "GREEN"
+    ]
+}
+
+// Blot Out the Sky
+{
+    "name": "Blot Out the Sky",
+    "manaCost": "{X}{W}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create X tapped 2/1 white and black Inkling creature tokens with flying. If X is 6 or more, destroy all noncreature, nonland permanents.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "count": "XValue",
+                    "power": 2,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE",
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Inkling"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "tapped": true
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": "XValue",
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 6
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsNonland",
+                                            "IsPermanent",
+                                            {
+                                                "type": "Not",
+                                                "predicate": "IsCreature"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "destroyAll_gathered"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "destroyAll_gathered",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Destroy"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "rarity": "MYTHIC",
+        "artist": "Olena Richards",
+        "flavorText": "A drop of ink is a nuisance. A torrent of inklings is a menace.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/0141312f-4b68-4c56-b1dc-5b7e6afbb96c.jpg?1783927322"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "WHITE"
+    ]
+}
+
+// Body of Research
+{
+    "name": "Body of Research",
+    "manaCost": "{G}{G}{G}{U}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a 0/0 green and blue Fractal creature token. Put X +1/+1 counters on it, where X is the number of cards in your library.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [
+                        "GREEN",
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Fractal"
+                    ]
+                },
+                {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Library"
+                    },
+                    "target": {
+                        "type": "PipelineTarget",
+                        "collectionName": "createdTokens"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "rarity": "MYTHIC",
+        "artist": "Antonio José Manzanedo",
+        "flavorText": "Needledeep had promised that his final project would be his biggest one yet.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/98b56823-0076-49cc-b5aa-4accb8e2782e.jpg?1783927322"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
+// Bookwurm
+{
+    "name": "Bookwurm",
+    "manaCost": "{7}{G}",
+    "typeLine": "Creature — Wurm",
+    "oracleText": "Trample\nWhen this creature enters, you gain 3 life and draw a card.\n{2}{G}: Put this card from your graveyard into your library third from the top.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bookwurm:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Bookwurm:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Library",
+                    "positionFromTop": 2
+                },
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "{2}{G}: Put this card from your graveyard into your library third from the top."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "rarity": "UNCOMMON",
+        "artist": "Wayne Reynolds",
+        "flavorText": "It takes \"devouring a book in one sitting\" to a frightening extreme.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/57d230fc-d382-40b4-bdbd-5fe880fa16bf.jpg?1783927347",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If Bookwurm is removed from your graveyard in response to its last ability, it won't be put into your library."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If you have zero or one card left in your library when Bookwurm's last ability resolves, it is put on the bottom of your library."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
         "GREEN"
     ]
 }
@@ -1063,6 +1975,111 @@
     ]
 }
 
+// Callous Bloodmage
+{
+    "name": "Callous Bloodmage",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Vampire Warlock",
+    "oracleText": "When this creature enters, choose one —\n• Create a 1/1 black and green Pest creature token with \"When this token dies, you gain 1 life.\"\n• You draw a card and you lose 1 life.\n• Exile target player's graveyard.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Callous Bloodmage:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "CreatePredefinedToken",
+                                "tokenType": "Pest"
+                            },
+                            "description": "Create a 1/1 black and green Pest creature token with \"When this token dies, you gain 1 life.\""
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    {
+                                        "type": "LoseLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "target": "Controller"
+                                    }
+                                ]
+                            },
+                            "description": "You draw a card and you lose 1 life"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Graveyard",
+                                            "player": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            }
+                                        },
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "gathered0",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Exile",
+                                            "player": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetPlayer",
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Exile target player's graveyard"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "rarity": "RARE",
+        "artist": "Jokubas Uogintas",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/81358736-65cf-44d8-819e-d0268d14cc76.jpg?1783927369"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Campus Guide
 {
     "name": "Campus Guide",
@@ -1136,6 +2153,150 @@
         "imageUri": "https://cards.scryfall.io/normal/front/8/7/87a9a8a2-de81-441b-b501-418311b677f7.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Charge Through
+{
+    "name": "Charge Through",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gains trample until end of turn.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "artist": "Craig J Spearing",
+        "flavorText": "\"What a move! Lorehold gets caught flat-footed, and Witherbloom barrels ahead.\"\n—Cremik, Mage Tower commentator",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/ed16926f-feb0-481a-8c5e-88ea119752cd.jpg?1783927346",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If the target becomes illegal before Charge Through resolves (perhaps because an opponent destroyed it), you won't draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Clever Lumimancer
+{
+    "name": "Clever Lumimancer",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Magecraft — Whenever you cast or copy an instant or sorcery spell, this creature gets +2/+2 until end of turn.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Clever Lumimancer:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "SpellCopiedEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Magecraft — Whenever you cast or copy an instant or sorcery spell, this creature gets +2/+2 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "UNCOMMON",
+        "artist": "Lie Setiawan",
+        "flavorText": "\"You're too dim to realize it, but you've already lost.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/69957656-cfdf-4001-8e84-0ef29e4a468d.jpg?1783927394",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates a copy of an instant or sorcery spell, this will also cause the magecraft ability to trigger."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates multiple copies of an instant or sorcery spell, magecraft abilities trigger once for each copy created by the effect."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Some effects instruct you to copy an instant or sorcery card in a zone other than the stack. These copies do not cause magecraft abilities to trigger. However, most effects that do this also allow you to cast the copy, and casting the copy will cause magecraft abilities to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Combat Professor
