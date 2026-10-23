@@ -6982,6 +6982,77 @@
     ]
 }
 
+// Furycalm Snarl
+{
+    "name": "Furycalm Snarl",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "As this land enters, you may reveal a Mountain or Plains card from your hand. If you don't, this land enters tapped.\n{T}: Add {R} or {W}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Furycalm Snarl:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Furycalm Snarl:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "OnEnterRunEffect",
+                "effect": {
+                    "type": "MayRevealCardFromHand",
+                    "filter": "land Mountain|Plains",
+                    "otherwise": "EnterTapped"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "266",
+        "rarity": "RARE",
+        "artist": "Sam Burley",
+        "flavorText": "A seething locus of reverent rage.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/53e33f37-7fd1-4431-a032-cd61b644401c.jpg?1783927276",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "The \"Snarl\" itself doesn't have any land subtypes. You can't reveal one to satisfy the ability of another."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If a land card with an appropriate subtype is entering the battlefield from your hand at the same time as one of these lands, you may reveal the other land to have the \"Snarl\" enter untapped."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect instructs you to put one of these lands onto the battlefield tapped, it will still enter the battlefield tapped even if you reveal a land card from your hand."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "You may reveal any land card with either or both of the appropriate subtypes. It doesn't have to be a basic land card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Galazeth Prismari
 {
     "name": "Galazeth Prismari",
@@ -7155,6 +7226,148 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Go Blank
+{
+    "name": "Go Blank",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player discards two cards. Then exile that player's graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "hand"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "hand",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "chooser": "TargetPlayer",
+                    "storeSelected": "discarded",
+                    "prompt": "Choose 2 cards to discard"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "discarded",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "rarity": "UNCOMMON",
+        "artist": "Wylie Beckert",
+        "flavorText": "The only feeling worse than not knowing the answer is the certainty that you once did.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/846e8657-7435-44c6-a997-b8b156d0cd2c.jpg?1783927368",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If the target player has one card in hand as Go Blank resolves, they'll discard it and the cards in their graveyard will be exiled. If their hand is empty, you'll just exile the cards in their graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Golden Ratio
+{
+    "name": "Golden Ratio",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw a card for each different power among creatures you control.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature",
+                "aggregation": "DISTINCT_VALUES",
+                "property": "POWER"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "rarity": "UNCOMMON",
+        "artist": "Alix Branwyn",
+        "flavorText": "\"When I look around, I see a world defined by patterns that still manages to defy them.\"\n—Kianne, Quandrix dean",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/626fbddb-3963-4dd2-8507-9777ed66bbbc.jpg?1783927312",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Creatures have different power if their powers are not equal. For example, if you have a creature with 2 power, two creatures with 1 power, and a creature with -1 power, you will draw three cards as Golden Ratio resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
     ]
 }
 
@@ -7343,6 +7556,160 @@
     ]
 }
 
+// Hall of Oracles
+{
+    "name": "Hall of Oracles",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{1}, {T}: Add one mana of any color.\n{T}: Put a +1/+1 counter on target creature. Activate only as a sorcery and only if you've cast an instant or sorcery spell this turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hall of Oracles:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Hall of Oracles:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Hall of Oracles:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "PlayerCastSpellsThisTurn",
+                            "filter": "instant|sorcery",
+                            "atLeast": 1
+                        }
+                    }
+                ],
+                "descriptionOverride": "{T}: Put a +1/+1 counter on target creature. Activate only as a sorcery and only if you've cast an instant or sorcery spell this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "267",
+        "rarity": "RARE",
+        "artist": "Piotr Dura",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/7642dddd-4461-46dd-b396-9e0a89f7232e.jpg?1783927274"
+    },
+    "colorIdentityOverride": []
+}
+
+// Harness Infinity
+{
+    "name": "Harness Infinity",
+    "manaCost": "{1}{B}{B}{B}{G}{G}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Exchange your hand and graveyard.\nExile Harness Infinity.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard"
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        },
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "rarity": "MYTHIC",
+        "artist": "Seb McKinnon",
+        "flavorText": "\"As I stepped into the star arch, it all became perfectly clear. Life and death are not opposites, but an endless path, twisting around and back upon itself, never ending and never beginning.\"\n—Zhaer, professor of biophilosophy",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f74120ce-9f11-449f-bb72-04fe2a27a9f6.jpg?1783927311",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Cards put into your graveyard this way are not discarded. Any ability that triggers when you discard a card will not trigger."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If either your graveyard or your hand has no cards in it, the exchange still happens. If one of those zones has any cards in it, you will move them to the other zone."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Heated Debate
 {
     "name": "Heated Debate",
@@ -7377,6 +7744,191 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Honor Troll
+{
+    "name": "Honor Troll",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Troll Druid",
+    "oracleText": "Vigilance\nIf you would gain life, you gain that much life plus 1 instead.\nThis creature gets +2/+1 as long as you have 25 or more life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 1,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "LifeTotal",
+                        "player": "You"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 25
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "ModifyLifeGain",
+                "multiplier": 1,
+                "modifier": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Ejsing",
+        "flavorText": "First in his clan to attend Strixhaven, and now first in his class.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a9c6a6b9-f00c-46a5-8dab-796483e3a262.jpg?1783927343",
+        "rulings": [
+            {
+                "date": "2021-09-24",
+                "text": "If you control two Honor Trolls and you would gain life, you gain that much life plus 2. A third Honor Troll has you gain that much life plus 3, and so on."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "The middle ability of Honor Troll applies just once to each life-gaining event, whether it's 1 life from Impassioned Orator or 4 life from Dawning Angel. If you gain an amount of life \"for each\" of something or \"equal to the number\" of something, that life is gained as one event and the ability of Honor Troll applies only once."
+            },
+            {
+                "date": "2021-09-24",
+                "text": "In multiplayer formats where your life total doesn't start at 20, Honor Troll's last ability still applies if your life total is 25 or more."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Humiliate
+{
+    "name": "Humiliate",
+    "manaCost": "{W}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent reveals their hand. You choose a nonland card from it. That player discards that card. Put a +1/+1 counter on a creature you control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "nonland",
+                    "storeSelected": "selected2",
+                    "prompt": "Choose a nonland card to discard",
+                    "showAllCards": true,
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                },
+                {
+                    "type": "SelectTarget",
+                    "requirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "storeAs": "target4",
+                    "nonTargeting": true,
+                    "prompt": "Choose a creature you control to get a +1/+1 counter"
+                },
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "PipelineTarget",
+                        "collectionName": "target4"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "193",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "flavorText": "\"Aw, what's that? No comeback?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dc3ae8cb-fbdb-45a8-83c2-cbf4aff01f90.jpg?1783927311",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "You may cast Humiliate even if you control no creatures."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "You choose which creature to put the +1/+1 counter on as Humiliate is resolving, after their hand has been revealed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 
@@ -7614,6 +8166,236 @@
     ]
 }
 
+// Illuminate History
+{
+    "name": "Illuminate History",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Sorcery — Lesson",
+    "oracleText": "Discard any number of cards, then draw that many cards. Then if there are seven or more cards in your graveyard, create a 3/2 red and white Spirit creature token.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "stored0_candidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "stored0_candidates",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "stored0",
+                            "prompt": "Choose any number of cards to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "stored0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "VariableReference",
+                        "variableName": "stored0_count"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Graveyard"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 7
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "power": 3,
+                        "toughness": 2,
+                        "colors": [
+                            "RED",
+                            "WHITE"
+                        ],
+                        "creatureTypes": [
+                            "Spirit"
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "rarity": "RARE",
+        "artist": "Jokubas Uogintas",
+        "flavorText": "\"Look at the detail in this stonework! Professor, our assumptions about early Kathorran tool use may not be correct.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/98739789-80b5-4224-a2e4-09e00654aa9d.jpg?1783927352",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "You may choose not to discard any cards as Illuminate History resolves. In that case, you will not draw any cards, but you might still create a Spirit."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Illuminate History will stay on the stack until it is finished resolving, so it will not count itself as one of the cards in your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Illustrious Historian
+{
+    "name": "Illustrious Historian",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "{5}, Exile this card from your graveyard: Create a tapped 3/2 red and white Spirit creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Illustrious Historian:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 2,
+                    "colors": [
+                        "RED",
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "tapped": true
+                },
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "{5}, Exile this card from your graveyard: Create a tapped 3/2 red and white Spirit creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "artist": "Brian Valeza",
+        "flavorText": "The most distinguished Lorehold professors are eligible to receive extended tenure, even beyond the limits of their own mortality.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/56cc4e7d-3b06-4938-9023-d903912350c0.jpg?1783927351"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Infuse with Vitality
+{
+    "name": "Infuse with Vitality",
+    "manaCost": "{B}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, target creature gains deathtouch and \"When this creature dies, return it to the battlefield tapped under its owner's control.\"\nYou gain 2 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "DEATHTOUCH",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantTriggeredAbility",
+                    "ability": {
+                        "id": "Infuse with Vitality:1",
+                        "trigger": {
+                            "type": "ZoneChangeEvent",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        },
+                        "effect": {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Battlefield",
+                            "placement": "Tapped",
+                            "fromZone": "Graveyard"
+                        },
+                        "descriptionOverride": "When this creature dies, return it to the battlefield tapped under its owner's control."
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "artist": "Andrey Kuzinskiy",
+        "flavorText": "Dina raised her cup to Killian's lips, and for the first time in his life, he knew compassion.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/840600a9-3e78-48a6-b75b-860446b82c1b.jpg?1783927311"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Inkling Summoning
 {
     "name": "Inkling Summoning",
@@ -7649,6 +8431,53 @@
     ]
 }
 
+// Introduction to Annihilation
+{
+    "name": "Introduction to Annihilation",
+    "manaCost": "{5}",
+    "typeLine": "Sorcery — Lesson",
+    "oracleText": "Exile target nonland permanent. Its controller draws a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "TargetController"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "artist": "Nicholas Gregory",
+        "flavorText": "\"I've never seen a student fail quite so spectacularly. There's potential in that.\"\n—Hostram, professor of arcanochemistry",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b0bc4682-bcaf-4f51-be0b-9f2851a16e3b.jpg?1783927394"
+    },
+    "colorIdentityOverride": []
+}
+
 // Introduction to Prophecy
 {
     "name": "Introduction to Prophecy",
@@ -7680,6 +8509,478 @@
         "imageUri": "https://cards.scryfall.io/normal/front/7/8/7820923e-bad2-4d6a-92b3-97b9737d2ca9.jpg?1783927395"
     },
     "colorIdentityOverride": []
+}
+
+// Karok Wrangler
+{
+    "name": "Karok Wrangler",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Elf Druid",
+    "oracleText": "Magecraft — Whenever you cast or copy an instant or sorcery spell, put a +1/+1 counter on target creature you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Karok Wrangler:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "SpellCopiedEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Magecraft — Whenever you cast or copy an instant or sorcery spell, put a +1/+1 counter on target creature you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"She showed up to class on a what?\"\n—Valentin, Witherbloom Dean",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/74729320-f6ee-4176-9463-397d6e477d7a.jpg?1783927342",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates a copy of an instant or sorcery spell, this will also cause the magecraft ability to trigger."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates multiple copies of an instant or sorcery spell, magecraft abilities trigger once for each copy created by the effect."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Some effects instruct you to copy an instant or sorcery card in a zone other than the stack. These copies do not cause magecraft abilities to trigger. However, most effects that do this also allow you to cast the copy, and casting the copy will cause magecraft abilities to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Kasmina, Enigma Sage
+{
+    "name": "Kasmina, Enigma Sage",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Legendary Planeswalker — Kasmina",
+    "oracleText": "Each other planeswalker you control has the loyalty abilities of Kasmina.\n+2: Scry 1.\n−X: Create a 0/0 green and blue Fractal creature token. Put X +1/+1 counters on it.\n−8: Search your library for an instant or sorcery card that shares a color with this planeswalker, exile that card, then shuffle. You may cast that card without paying its mana cost.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kasmina, Enigma Sage:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Scry 1."
+            },
+            {
+                "id": "Kasmina, Enigma Sage:5",
+                "cost": "CostLoyaltyX",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 0,
+                            "toughness": 0,
+                            "colors": [
+                                "GREEN",
+                                "BLUE"
+                            ],
+                            "creatureTypes": [
+                                "Fractal"
+                            ]
+                        },
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "amount": "XValue",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Create a 0/0 green and blue Fractal creature token. Put X +1/+1 counters on it."
+            },
+            {
+                "id": "Kasmina, Enigma Sage:6",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -8
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                "IsInstant",
+                                                "IsSorcery"
+                                            ]
+                                        },
+                                        {
+                                            "type": "SharesColorWith",
+                                            "entity": "Self"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Search for an instant or sorcery card that shares a color with this planeswalker"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "storeMovedAs": "moved2"
+                        },
+                        "ShuffleLibrary",
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "CastFromCollectionWithoutPayingCost",
+                                "from": "moved2"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Search your library for an instant or sorcery card that shares a color with this planeswalker, exile that card, then shuffle. You may cast that card without paying its mana cost."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Kasmina, Enigma Sage:1",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": 2
+                    },
+                    "effect": {
+                        "type": "Scry",
+                        "count": 1
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Scry 1."
+                },
+                "filter": {
+                    "baseFilter": "planeswalker ctrl:you",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Kasmina, Enigma Sage:2",
+                    "cost": "CostLoyaltyX",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CreateToken",
+                                "power": 0,
+                                "toughness": 0,
+                                "colors": [
+                                    "GREEN",
+                                    "BLUE"
+                                ],
+                                "creatureTypes": [
+                                    "Fractal"
+                                ]
+                            },
+                            {
+                                "type": "AddDynamicCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "amount": "XValue",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "createdTokens"
+                                }
+                            }
+                        ]
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Create a 0/0 green and blue Fractal creature token. Put X +1/+1 counters on it."
+                },
+                "filter": {
+                    "baseFilter": "planeswalker ctrl:you",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Kasmina, Enigma Sage:3",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -8
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            {
+                                                "type": "Or",
+                                                "predicates": [
+                                                    "IsInstant",
+                                                    "IsSorcery"
+                                                ]
+                                            },
+                                            {
+                                                "type": "SharesColorWith",
+                                                "entity": "Self"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "gathered0",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected1",
+                                "prompt": "Search for an instant or sorcery card that shares a color with this planeswalker"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                },
+                                "storeMovedAs": "moved2"
+                            },
+                            "ShuffleLibrary",
+                            {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "CastFromCollectionWithoutPayingCost",
+                                    "from": "moved2"
+                                }
+                            }
+                        ]
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Search your library for an instant or sorcery card that shares a color with this planeswalker, exile that card, then shuffle. You may cast that card without paying its mana cost."
+                },
+                "filter": {
+                    "baseFilter": "planeswalker ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "rarity": "MYTHIC",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/178bf300-38cf-4ab2-9e66-6fcaa112b649.jpg?1783927310",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Each other planeswalker you control gains Kasmina's loyalty abilities in addition to their own. For each planeswalker you control, you may still activate only one of that planeswalker's loyalty abilities per turn."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "When you activate Kasmina's last loyalty ability on another planeswalker, you search your library for a card that shares a color with that planeswalker, not with Kasmina. You can't search for a colorless card, even if the planeswalker is colorless."
+            }
+        ]
+    },
+    "startingLoyalty": 2,
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
+// Kelpie Guide
+{
+    "name": "Kelpie Guide",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "{T}: Untap another target permanent you control.\n{T}: Tap target permanent. Activate only if you control eight or more lands.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kelpie Guide:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Untap another target permanent you control."
+            },
+            {
+                "id": "Kelpie Guide:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 8
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "Tap target permanent. Activate only if you control eight or more lands."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "UNCOMMON",
+        "artist": "Ilse Gort",
+        "flavorText": "Kelpies are drawn to paradoxes, making them ideal companions for Quandrix mages.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/0112ebfb-55ad-401c-9dc5-ffd829f5b5bf.jpg?1783927379"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Lash of Malice
