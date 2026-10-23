@@ -90,6 +90,8 @@ data class ProjectedValues(
     /** Extra life every mana ability of this permanent costs to activate (Thran Portal). */
     val manaAbilityLifeTax: Int = 0,
     val lostAllAbilities: Boolean = false,
+    /** See [Modification.GrantExileOnDeathAbility]. */
+    val hasExileOnDeathAbility: Boolean = false,
     /**
      * True when a continuous effect SET this permanent's basic land types (Blood Moon,
      * Zhao's "nonbasic lands are Mountains", Spreading Seas, …). Such effects grant the
@@ -316,6 +318,10 @@ class ProjectedState(
     fun hasLostAllAbilities(entityId: EntityId): Boolean =
         projectedValues[entityId]?.lostAllAbilities == true
 
+    /** See [Modification.GrantExileOnDeathAbility]. */
+    fun hasExileOnDeathAbility(entityId: EntityId): Boolean =
+        projectedValues[entityId]?.hasExileOnDeathAbility == true
+
     /** See [ProjectedValues.basicLandTypesSetByEffect]. */
     fun hasBasicLandTypesSetByEffect(entityId: EntityId): Boolean =
         projectedValues[entityId]?.basicLandTypesSetByEffect == true
@@ -371,6 +377,7 @@ internal fun buildIntermediateProjectedState(
             additionalBlockCount = v.additionalBlockCount,
             manaAbilityLifeTax = v.manaAbilityLifeTax,
             lostAllAbilities = v.lostAllAbilities,
+            hasExileOnDeathAbility = v.hasExileOnDeathAbility,
             name = v.name
         )
     }

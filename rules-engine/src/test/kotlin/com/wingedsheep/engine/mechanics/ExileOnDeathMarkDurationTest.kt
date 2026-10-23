@@ -20,7 +20,9 @@ import io.kotest.matchers.shouldBe
  * `MarkExileOnDeath`'s duration axis: the default "this turn" mark lapses at cleanup, a
  * [Duration.Permanent] mark ("it gains 'If this creature would die, exile it instead'") outlives the
  * turn but ends when the creature leaves the battlefield (CR 400.7), and either mark replaces every
- * way of dying — destruction, lethal damage, and sacrifice alike.
+ * way of dying — destruction, lethal damage, and sacrifice alike. The permanent mark is a *granted
+ * ability*, so a later lose-all-abilities effect strips it (layer 6, timestamp order) while an
+ * earlier one doesn't; the "this turn" mark is the spell's own replacement effect and survives both.
  */
 class ExileOnDeathMarkDurationTest : FunSpec({
 
@@ -57,10 +59,19 @@ class ExileOnDeathMarkDurationTest : FunSpec({
         }
     }
 
+    val loseAbilities = card("Test Lose All Abilities") {
+        manaCost = "{U}"
+        typeLine = "Instant"
+        spell {
+            val t = target(TargetFilter.Creature)
+            effect = Effects.RemoveAllAbilities(t)
+        }
+    }
+
     fun setup(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all)
-        driver.registerCards(listOf(markForever, markThisTurn, sacrificeIt, bounceIt))
+        driver.registerCards(listOf(markForever, markThisTurn, sacrificeIt, bounceIt, loseAbilities))
         driver.initMirrorMatch(deck = Deck.of("Plains" to 40), startingLife = 20)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -152,5 +163,38 @@ class ExileOnDeathMarkDurationTest : FunSpec({
 
         driver.cast(active, "Lightning Bolt", Color.RED, bears)
         driver.getGraveyard(active) shouldContain bears
+    }
+
+    test("losing all abilities after the grant removes the permanent mark") {
+        val driver = setup()
+        val active = driver.activePlayer!!
+        val bears = driver.putCreatureOnBattlefield(active, "Grizzly Bears")
+        driver.cast(active, "Test Lasting Exile Mark", Color.WHITE, bears)
+        driver.cast(active, "Test Lose All Abilities", Color.BLUE, bears)
+        driver.cast(active, "Lightning Bolt", Color.RED, bears)
+
+        driver.getGraveyard(active) shouldContain bears
+    }
+
+    test("a lose-all-abilities effect older than the grant doesn't remove the permanent mark") {
+        val driver = setup()
+        val active = driver.activePlayer!!
+        val bears = driver.putCreatureOnBattlefield(active, "Grizzly Bears")
+        driver.cast(active, "Test Lose All Abilities", Color.BLUE, bears)
+        driver.cast(active, "Test Lasting Exile Mark", Color.WHITE, bears)
+        driver.cast(active, "Test Make Sacrifice", Color.BLACK, bears)
+
+        driver.getExile(active) shouldContain bears
+    }
+
+    test("the this-turn mark is not an ability, so losing all abilities leaves it in place") {
+        val driver = setup()
+        val active = driver.activePlayer!!
+        val bears = driver.putCreatureOnBattlefield(active, "Grizzly Bears")
+        driver.cast(active, "Test Turn Exile Mark", Color.WHITE, bears)
+        driver.cast(active, "Test Lose All Abilities", Color.BLUE, bears)
+        driver.cast(active, "Lightning Bolt", Color.RED, bears)
+
+        driver.getExile(active) shouldContain bears
     }
 })

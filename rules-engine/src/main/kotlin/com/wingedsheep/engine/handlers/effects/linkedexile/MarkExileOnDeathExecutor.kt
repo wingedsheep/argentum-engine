@@ -41,7 +41,12 @@ class MarkExileOnDeathExecutor : EffectExecutor<MarkExileOnDeathEffect> {
 
         val newState = state.addFloatingEffect(
             layer = Layer.ABILITY,
-            modification = SerializableModification.ExileOnDeath,
+            // "It gains 'If this creature would die, exile it instead'" is an ability the creature
+            // has, which lose-all-abilities effects strip; a "this turn" rider is the spell's own
+            // replacement effect and isn't.
+            modification = SerializableModification.ExileOnDeath(
+                grantedAbility = effect.duration == Duration.Permanent
+            ),
             affectedEntities = setOf(targetId),
             duration = effect.duration,
             context = context

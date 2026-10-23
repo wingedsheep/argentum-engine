@@ -466,6 +466,10 @@ internal class EffectApplicator(
                     values.staticAbilitySourceIds.clear()
                     values.manaAbilityLifeTax = 0
                     values.lostAllAbilities = true
+                    values.hasExileOnDeathAbility = false
+                }
+                is Modification.GrantExileOnDeathAbility -> {
+                    values.hasExileOnDeathAbility = true
                 }
                 is Modification.NoOp -> {
                     // No-op: effect doesn't modify projected state

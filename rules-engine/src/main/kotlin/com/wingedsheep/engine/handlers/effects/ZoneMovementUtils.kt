@@ -713,22 +713,29 @@ object ZoneMovementUtils {
         return EffectResult.success(result.state, result.events)
     }
 
-    /** True when [entityId] carries an ExileOnDeath mark ("if it would die, exile it instead"). */
-    fun hasExileOnDeathMark(state: GameState, entityId: EntityId): Boolean =
-        state.floatingEffects.any { effect ->
-            effect.effect.modification is com.wingedsheep.engine.mechanics.layers.SerializableModification.ExileOnDeath &&
-                entityId in effect.effect.affectedEntities
+    /**
+     * Index of a live ExileOnDeath mark on [entityId] ("if it would die, exile it instead"), or -1.
+     * A granted-ability mark (Can't Stay Away) is live only while the creature still has that
+     * ability in layer 6 — a later lose-all-abilities effect strips it; a "this turn" rider always is.
+     */
+    fun exileOnDeathMarkIndex(state: GameState, entityId: EntityId): Int =
+        state.floatingEffects.indexOfFirst { effect ->
+            val mod = effect.effect.modification
+            mod is com.wingedsheep.engine.mechanics.layers.SerializableModification.ExileOnDeath &&
+                entityId in effect.effect.affectedEntities &&
+                (!mod.grantedAbility || state.projectedState.hasExileOnDeathAbility(entityId))
         }
+
+    /** True when [entityId] carries a live ExileOnDeath mark (see [exileOnDeathMarkIndex]). */
+    fun hasExileOnDeathMark(state: GameState, entityId: EntityId): Boolean =
+        exileOnDeathMarkIndex(state, entityId) != -1
 
     /**
      * If [entityId] carries an ExileOnDeath mark, returns the state with that mark consumed — the
      * caller then moves the permanent to exile instead of the graveyard. Null when there is no mark.
      */
     fun consumeExileOnDeath(state: GameState, entityId: EntityId): GameState? {
-        val index = state.floatingEffects.indexOfFirst { effect ->
-            effect.effect.modification is com.wingedsheep.engine.mechanics.layers.SerializableModification.ExileOnDeath &&
-                entityId in effect.effect.affectedEntities
-        }
+        val index = exileOnDeathMarkIndex(state, entityId)
         if (index == -1) return null
         return state.copy(floatingEffects = state.floatingEffects.toMutableList().apply { removeAt(index) })
     }

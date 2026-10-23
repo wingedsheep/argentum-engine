@@ -548,6 +548,16 @@ sealed interface Modification {
         override val layer get() = Layer.ABILITY
     }
 
+    /**
+     * The affected creature has the granted ability "If this creature would die, exile it
+     * instead" — the layer-6 face of a granted-ability ExileOnDeath mark, so a later
+     * [RemoveAllAbilities] clears it (ProjectedValues.hasExileOnDeathAbility).
+     */
+    @Serializable
+    data object GrantExileOnDeathAbility : Modification {
+        override val layer get() = Layer.ABILITY
+    }
+
     @Serializable
     data class GrantProtectionFromColor(val color: String) : Modification {
         override val layer get() = Layer.ABILITY
@@ -872,6 +882,7 @@ internal data class MutableProjectedValues(
     var additionalBlockCount: Int = 0,
     var manaAbilityLifeTax: Int = 0,
     var lostAllAbilities: Boolean = false,
+    var hasExileOnDeathAbility: Boolean = false,
     /** See [com.wingedsheep.engine.mechanics.layers.ProjectedValues.basicLandTypesSetByEffect]. */
     var basicLandTypesSetByEffect: Boolean = false,
     /**

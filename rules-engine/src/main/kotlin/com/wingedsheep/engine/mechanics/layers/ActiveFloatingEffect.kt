@@ -625,11 +625,16 @@ sealed interface SerializableModification {
     ) : SerializableModification
 
     /**
-     * Death replacement: if the affected creature would die this turn, exile it instead.
-     * Used by Carbonize and similar effects.
+     * Death replacement: if the affected creature would die, exile it instead. Used by Carbonize
+     * and similar "this turn" riders.
+     *
+     * [grantedAbility] marks the creature as having *gained* the ability "If this creature would
+     * die, exile it instead" (Can't Stay Away), rather than being subject to a spell's replacement
+     * effect. Only then is the mark a layer-6 ability that a later lose-all-abilities effect strips
+     * ([Modification.GrantExileOnDeathAbility]).
      */
     @Serializable
-    data object ExileOnDeath : SerializableModification
+    data class ExileOnDeath(val grantedAbility: Boolean = false) : SerializableModification
 
     /**
      * Death trigger: when the affected creature dies this turn, exile its controller's graveyard.
@@ -929,8 +934,10 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.ReplaceDrawWith -> Modification.NoOp
     // PreventNextDamageFromMatching doesn't map to a layer modification - it's checked during damage resolution directly
     is SerializableModification.PreventNextDamageFromMatching -> Modification.NoOp
-    // ExileOnDeath doesn't map to a layer modification - it's checked during SBA creature death
-    is SerializableModification.ExileOnDeath -> Modification.NoOp
+    // ExileOnDeath is read at the point of death; a granted-ability mark also projects in layer 6
+    // so lose-all-abilities effects can strip it in timestamp order.
+    is SerializableModification.ExileOnDeath ->
+        if (grantedAbility) Modification.GrantExileOnDeathAbility else Modification.NoOp
     // ExileControllerGraveyardOnDeath doesn't map to a layer modification - it's checked during SBA creature death
     is SerializableModification.ExileControllerGraveyardOnDeath -> Modification.NoOp
     // PreventCombatDamageFromGroup doesn't map to a layer modification - it's checked by CombatManager directly

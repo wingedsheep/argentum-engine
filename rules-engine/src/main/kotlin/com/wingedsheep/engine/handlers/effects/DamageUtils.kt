@@ -1453,7 +1453,7 @@ object DamageUtils {
         if (riders.any { it.exileInsteadOfDying }) {
             newState = newState.addFloatingEffect(
                 layer = Layer.ABILITY,
-                modification = SerializableModification.ExileOnDeath,
+                modification = SerializableModification.ExileOnDeath(),
                 affectedEntities = setOf(targetCreatureId),
                 duration = Duration.EndOfTurn,
                 context = context

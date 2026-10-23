@@ -186,6 +186,12 @@ internal class CardActiveEffectsProjector(
     ): List<ClientCardEffect> =
         state.floatingEffects
             .filter { entityId in it.effect.affectedEntities || appliesThroughDynamicGroup(it, entityId, projectedState) }
+            // A granted "exile it instead" ability stripped by a later lose-all-abilities effect.
+            .filterNot { floating ->
+                val mod = floating.effect.modification
+                mod is SerializableModification.ExileOnDeath && mod.grantedAbility &&
+                    projectedState?.hasExileOnDeathAbility(entityId) != true
+            }
             .mapNotNull { floating ->
                 modificationBadge(state, floating.effect.modification)?.let { it to durationPhrase(state, floating) }
             }

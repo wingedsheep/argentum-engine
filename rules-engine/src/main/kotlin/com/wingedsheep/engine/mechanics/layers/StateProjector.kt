@@ -598,6 +598,7 @@ class StateProjector {
                 additionalBlockCount = v.additionalBlockCount,
                 manaAbilityLifeTax = v.manaAbilityLifeTax,
                 lostAllAbilities = v.lostAllAbilities,
+                hasExileOnDeathAbility = v.hasExileOnDeathAbility,
                 basicLandTypesSetByEffect = v.basicLandTypesSetByEffect
             )
         }
