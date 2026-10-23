@@ -42,6 +42,14 @@ data class DelayedTriggeredAbility(
      */
     val watchedEntityId: EntityId? = null,
     /**
+     * The identity of [watchedEntityId]'s object when this event-based trigger was created. "When
+     * *that* creature dies" follows that object only (CR 400.7): once it changes zones it is a new
+     * object, so a later departure of the same entity id does not match, and the cleanup step
+     * drops the trigger once the object is no longer current. Null for player-scoped watchers and
+     * for objects created without identity bookkeeping.
+     */
+    val watchedObject: com.wingedsheep.engine.state.ObjectRef? = null,
+    /**
      * For event-based delayed triggers: scopes the trigger to events whose *recipient*
      * (the damaged/targeted entity) matches this id. Whereas [watchedEntityId] narrows by the
      * event's source, this narrows by the event's recipient — e.g. "whenever a creature you

@@ -96,7 +96,14 @@ class CreateDelayedTriggerExecutor(
                 context.resolvePlayerTarget(target, state)
                     ?: return EffectResult.error(state, "CreateDelayedTrigger watched player did not resolve: $target")
             } else context.resolveTarget(target)
+                // "When that creature dies" with no creature (nothing was put onto the battlefield)
+                // watches nothing: an unbaked watcher would fall back to the trigger's own binding
+                // and watch the source instead.
+                ?: return EffectResult.success(state)
         }
+        val watchedObject = if (effect.trigger != null && effect.watchedTarget !is EffectTarget.PlayerRef) {
+            watchedEntityId?.let { state.objectRef(it) }
+        } else null
 
         // Recipient-scoped delayed triggers ("…deals combat damage to *that player* this turn"):
         // resolve the chosen recipient (e.g. ContextTarget(0) for the targeted opponent) into a
@@ -193,6 +200,7 @@ class CreateDelayedTriggerExecutor(
             controllerId = context.controllerId,
             trigger = resolvedTrigger,
             watchedEntityId = watchedEntityId,
+            watchedObject = watchedObject,
             watchedRecipientId = watchedRecipientId,
             expiry = expiry,
             expiryPlayerId = expiryPlayerId,

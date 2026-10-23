@@ -1104,7 +1104,7 @@ class TriggerDetector(
                 }
                 if (delayed.fireOnce && delayed.id in firedOnceIds) continue
                 val spec = delayed.trigger ?: continue
-                if (!matchesEventForWatchedEntity(spec, event, delayed.watchedEntityId, delayed.watchedRecipientId, delayed.id, delayed.sourceId, delayed.controllerId, state)) continue
+                if (!matchesEventForWatchedEntity(spec, event, delayed.watchedEntityId, delayed.watchedRecipientId, delayed.id, delayed.sourceId, delayed.controllerId, state, delayed.watchedObject)) continue
 
                 // A filter-scoped attack delayed trigger ("this turn, whenever a creature you control
                 // attacks alone, do X to it" — The Last Ronin III) must fan out one trigger per
@@ -1297,7 +1297,8 @@ class TriggerDetector(
         delayedId: String,
         sourceId: EntityId,
         controllerId: EntityId,
-        state: GameState
+        state: GameState,
+        watchedObject: com.wingedsheep.engine.state.ObjectRef? = null
     ): Boolean {
         val specEvent = spec.event
         return when (specEvent) {
@@ -1354,6 +1355,9 @@ class TriggerDetector(
                     // entity already narrows the trigger, so we only check the zone transition —
                     // the spec's GameObjectFilter does not apply.
                     if (event.entityId != watchedEntityId) return false
+                    // Only the object the trigger was created for (CR 400.7): the same card back
+                    // from another zone is a new object.
+                    if (watchedObject != null && event.oldObject != null && event.oldObject != watchedObject) return false
                     if (specEvent.from != null && event.fromZone != specEvent.from) return false
                     if (specEvent.to != null && event.toZone != specEvent.to) return false
                     if (specEvent.excludeTo != null && event.toZone == specEvent.excludeTo) return false

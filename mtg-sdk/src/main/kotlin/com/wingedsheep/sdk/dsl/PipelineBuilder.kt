@@ -1275,7 +1275,8 @@ class PipelineBuilder private constructor(private val shared: Shared) {
 
     /**
      * Roll one batch and return a numeric handle to its *result* — the sum of every kept die's
-     * natural result plus [modifier] (CR 706.2). For one die that is the die's result, which a
+     * natural result plus [modifier] (CR 706.2), summed over every roller when [player] names
+     * several. For one die rolled by one player that is the die's result, which a
      * results table reads with `Conditions.CompareAmounts` (CR 706.3a); a negative [modifier] is
      * "roll a d20 and subtract X" and may push the result to zero or below.
      */

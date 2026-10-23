@@ -9607,6 +9607,12 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
     PlayerRef(Player.DefendingPlayer)`; the spell filter still applies, and the spell stays the
     triggering entity, its caster `Player.TriggeringPlayer`); the spec's `GameObjectFilter` is *not* applied — the
     watched entity is the whole scope.
+    An object watched target follows that **object** (CR 400.7): a `ZoneChangeEvent` matches only the
+    departure of the object captured at creation, so the same card back on the battlefield later
+    ("reanimated, bounced, recast") is a new object the trigger ignores, and the cleanup step drops
+    the trigger once its object is gone. An object watched target that resolves to nothing — "put a
+    creature card onto the battlefield … when that creature dies" with no creature card to put —
+    creates no trigger (The Deck of Many Things).
   - **Recipient-scoped** — set `watchedRecipient` to bind a `DealsDamageEvent` trigger to the damaged
     *recipient* (rather than the source): "whenever a creature you control deals combat damage to
     **that player** this turn, …" (Great Train Heist's Treasure-on-hit mode). The target is resolved at
@@ -19445,7 +19451,7 @@ The sum is the die's *result* and may be zero or negative; `resultCounts`, die o
 (`TRIGGER_DIE_RESULT`, `TRIGGER_HIGHEST_DIE_RESULT`, the `minimumResult`/`maximumResult` bounds) and
 the `DiceRolledEvent` all read results. `DieRolledEvent.natural` keeps the face that came up for a
 future "natural 20" reader, and the log shows both when they differ. `storeTotalAs` writes the sum of
-the instruction's kept results. In a pipeline, `rollDiceResult(count, sides, player, modifier)`
+the instruction's kept results, over every roller when `player` names several. In a pipeline, `rollDiceResult(count, sides, player, modifier)`
 returns that sum as a `NumberSlot`, and a results table (CR 706.3a) is a run of
 `ifThen(condition) { … }` branches comparing it with `Conditions.CompareAmounts` — rows such as
 "0 or less" have no finite result set (The Deck of Many Things). `ifThen` is the pipeline's

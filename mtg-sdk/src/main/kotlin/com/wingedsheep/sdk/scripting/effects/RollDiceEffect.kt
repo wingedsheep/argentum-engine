@@ -15,7 +15,7 @@ import kotlinx.serialization.Serializable
  * kept die's natural result (the top face, CR 706.2); the sum is the die's *result*, which may be
  * zero or negative. [resultCounts], die observers and the batch summary all read results, never
  * natural faces. [storeTotalAs], when set, writes the sum of the kept results of this instruction
- * under that pipeline key — a results table (CR 706.3a) compares it with `Conditions.CompareAmounts`,
+ * — across every player [player] names, when it names several — under that pipeline key — a results table (CR 706.3a) compares it with `Conditions.CompareAmounts`,
  * which reaches rows such as "0 or less" that no finite result set can.
  *
  * Closest types: [FlipCoinsEffect] counts binary wins rather than numerical die results;
