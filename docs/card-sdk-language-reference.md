@@ -12295,6 +12295,11 @@ enumerated as legal actions today, each by its own `ActionEnumerator`:
   (`ManaPaymentWindow.hasManualOnlyMana`) so the player exiles the card themselves. Every battlefield
   mana reader (`ManaSolver`, `ManaAbilityEnumerator`, `ManaAbilityPresence`) skips abilities whose
   `activateFromZone` isn't `BATTLEFIELD`, so the card on the battlefield has no usable mana ability.
+  **Graveyard mana abilities** work the same way (`ManaPaymentWindow.OFF_BATTLEFIELD_MANA_ZONES` is
+  hand + graveyard): Jack-o'-Lantern's "{1}, Exile this card from your graveyard: Add one mana of any
+  color." is `cost = Costs.Composite(Costs.Mana("{1}"), Costs.ExileSelf); effect = Effects.AddAnyColorMana();
+  manaAbility = true; activateFromZone = Zone.GRAVEYARD`. A mana sub-cost nets no mana, so affordability
+  doesn't count it; the payment window still opens and offers it, and its {1} is auto-paid on activation.
 - `Zone.COMMAND` — `CommandZoneAbilityEnumerator` (Momir Basic avatar).
 
 `ActivateAbilityHandler` accepts any non-battlefield `activateFromZone` generically (it just checks

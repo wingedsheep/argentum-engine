@@ -62,18 +62,29 @@ object ManaPaymentWindow {
     }
 
     /**
+     * The zones other than the battlefield whose cards can carry a mana ability that functions there
+     * (CR 605.1a): the hand (Simian Spirit Guide's "Exile this card from your hand") and the
+     * graveyard (Jack-o'-Lantern's "Exile this card from your graveyard"). Both spend the card, so
+     * auto-pay never activates them; the player does, at priority or inside this window.
+     */
+    val OFF_BATTLEFIELD_MANA_ZONES: List<Zone> = listOf(Zone.HAND, Zone.GRAVEYARD)
+
+    /**
      * Whether [playerId] can produce mana that auto-pay deliberately never spends: a life-funded
-     * mana action (Channel) or a mana ability that functions from the hand (Simian Spirit Guide,
-     * CR 605.1a — its cost spends a card). A cast or activation auto-pay can't cover then opens this
-     * window instead of failing, so the player produces that mana themselves (CR 605.3a).
+     * mana action (Channel) or a mana ability that functions from the hand or graveyard (Simian
+     * Spirit Guide, Jack-o'-Lantern — CR 605.1a, its cost spends the card). A cast or activation
+     * auto-pay can't cover then opens this window instead of failing, so the player produces that
+     * mana themselves (CR 605.3a).
      */
     fun hasManualOnlyMana(state: GameState, playerId: EntityId, cardRegistry: CardRegistry): Boolean =
         state.playerActionPermissions.any {
             it.playerId == playerId && it.action.timing == com.wingedsheep.sdk.scripting.effects.PlayerActionTiming.ManaAbility
-        } || state.getZone(ZoneKey(playerId, Zone.HAND)).any { cardId ->
-            val card = state.getEntity(cardId)?.get<CardComponent>() ?: return@any false
-            cardRegistry.getCard(card.cardDefinitionId)?.script?.activatedAbilities
-                ?.any { it.isManaAbility && it.activateFromZone == Zone.HAND } == true
+        } || OFF_BATTLEFIELD_MANA_ZONES.any { zone ->
+            state.getZone(ZoneKey(playerId, zone)).any { cardId ->
+                val card = state.getEntity(cardId)?.get<CardComponent>() ?: return@any false
+                cardRegistry.getCard(card.cardDefinitionId)?.script?.activatedAbilities
+                    ?.any { it.isManaAbility && it.activateFromZone == zone } == true
+            }
         }
 
     /**

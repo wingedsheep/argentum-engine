@@ -1015,7 +1015,9 @@ export function useGhostCards(playerId: EntityId | null): readonly ClientCard[] 
         const action = actionInfo.action
         if (action.type === 'ActivateAbility') {
           if (!gyCardIds.has(action.sourceId)) continue
-          if (actionInfo.isManaAbility && !actionInfo.additionalCostInfo) continue
+          // A mana ability that functions from the graveyard (Jack-o'-Lantern) is only ever used by
+          // clicking its card, so it joins the ghosts like any other graveyard ability.
+          if (actionInfo.isManaAbility && !actionInfo.additionalCostInfo && actionInfo.sourceZone !== 'GRAVEYARD') continue
           if (actionInfo.isAffordable === false) continue
           ghostCardIds.add(action.sourceId)
         } else if (action.type === 'CastSpell' && actionInfo.sourceZone === 'GRAVEYARD') {

@@ -2746,7 +2746,9 @@ class ManaSolver private constructor(
         /** Internal recursion tally for Phyrexian pips tentatively paid with life. */
         phyrexianLifePipsCommitted: Int = 0,
         /** False to ask whether mana alone pays [cost], every Phyrexian pip included. */
-        allowPhyrexianLife: Boolean = true
+        allowPhyrexianLife: Boolean = true,
+        /** Internal recursion tally for coloured pips relaxed by [offBattlefieldColorFixers]. */
+        colorFixersCommitted: Int = 0
     ): Boolean {
         // A Phyrexian pip may be paid with 2 life instead of its color. Try each distinct pip
         // choice before the mana-only solver below; recursive calls see a strictly smaller cost.
@@ -2836,6 +2838,23 @@ class ManaSolver private constructor(
 
         // Check if we can tap sources for the remaining cost (including remaining X)
         if (solve(state, playerId, remainingCost, xRemainingToPay, excludeSources, spellContext, precomputedSources, xManaRestriction) != null) return true
+
+        // A mana ability that functions from the hand or graveyard and turns {N} into N mana of any
+        // color (Jack-o'-Lantern) adds no mana, so the bonus tally below skips it — what it adds is
+        // fixing: each of its N mana lets one colored pip be paid by any mana. Try relaxing each
+        // distinct colored pip in turn; recursive calls see one more fixer committed.
+        val coloredPips = remainingCost.symbols.filterIsInstance<ManaSymbol.Colored>().map { it.color }.distinct()
+        if (coloredPips.isNotEmpty() && colorFixersCommitted < offBattlefieldColorFixers(state, playerId)) {
+            for (color in coloredPips) {
+                val index = cost.symbols.indexOfFirst { it == ManaSymbol.Colored(color) }
+                if (index < 0) continue
+                val relaxed = ManaCost(cost.symbols.toMutableList().also { it[index] = ManaSymbol.Generic(1) })
+                if (canPay(
+                        state, playerId, relaxed, xValue, excludeSources, spellContext, precomputedSources,
+                        xManaRestriction, phyrexianLifePipsCommitted, allowPhyrexianLife, colorFixersCommitted + 1
+                    )) return true
+            }
+        }
 
         // Fallback: check if "extras" — mana abilities the auto-tap solver doesn't pick — can
         // cover the remaining cost. Two flavors:
@@ -3147,14 +3166,14 @@ class ManaSolver private constructor(
             }
         }
 
-        // Mana abilities that function from the hand (CR 605.1a — Simian Spirit Guide's "Exile this
-        // card from your hand: Add {R}"). Never auto-paid: the cost spends a card, so the player
-        // activates it themselves, at priority or inside the payment window.
-        for (entityId in state.getZone(ZoneKey(playerId, Zone.HAND))) {
+        // Mana abilities that function from the hand or graveyard (CR 605.1a — Simian Spirit Guide's
+        // "Exile this card from your hand: Add {R}"). Never auto-paid: the cost spends a card, so the
+        // player activates it themselves, at priority or inside the payment window.
+        for (zone in ManaPaymentWindow.OFF_BATTLEFIELD_MANA_ZONES) for (entityId in state.getZone(ZoneKey(playerId, zone))) {
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
             val abilities = cardRegistry.getCard(card.cardDefinitionId)?.script?.activatedAbilities ?: continue
             for (ability in abilities) {
-                if (!ability.isManaAbility || ability.activateFromZone != Zone.HAND) continue
+                if (!ability.isManaAbility || ability.activateFromZone != zone) continue
                 val cost = ability.cost
                 if (costHasManaSubCost(cost)) continue
                 if (!legality.activationRestrictionsMet(state, playerId, entityId, ability)) continue
@@ -3196,6 +3215,34 @@ class ManaSolver private constructor(
             }
         }
         else -> false
+    }
+
+    /**
+     * How many colored pips [playerId]'s hand and graveyard mana abilities can fix: each ability
+     * whose cost is a generic `{N}` plus non-mana parts payable now, and whose effect adds exactly N
+     * mana of any color (Jack-o'-Lantern's "{1}, Exile this card from your graveyard: Add one mana of
+     * any color."), contributes N. Never auto-paid — the player activates it in the payment window.
+     */
+    private fun offBattlefieldColorFixers(state: GameState, playerId: EntityId): Int {
+        var fixers = 0
+        for (zone in ManaPaymentWindow.OFF_BATTLEFIELD_MANA_ZONES) for (entityId in state.getZone(ZoneKey(playerId, zone))) {
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val abilities = cardRegistry.getCard(card.cardDefinitionId)?.script?.activatedAbilities ?: continue
+            for (ability in abilities) {
+                if (!ability.isManaAbility || ability.activateFromZone != zone) continue
+                val parts = (ability.cost as? AbilityCost.Composite)?.costs ?: continue
+                val manaParts = parts.mapNotNull { ((it as? AbilityCost.Atom)?.atom as? CostAtom.Mana)?.cost }
+                val generic = manaParts.singleOrNull()?.takeIf { it.symbols.all { s -> s is ManaSymbol.Generic } }
+                    ?.genericAmount ?: continue
+                val produced = manaProducedByEffect(ability.effect)
+                if (generic == 0 || produced.anyColorMana != generic || produced.totalMana != generic) continue
+                if (!legality.activationRestrictionsMet(state, playerId, entityId, ability)) continue
+                val nonMana = parts.filterNot { (it as? AbilityCost.Atom)?.atom is CostAtom.Mana }
+                if (!nonMana.all { nonManaAbilityCostIsPayable(state, playerId, entityId, it) }) continue
+                fixers += generic
+            }
+        }
+        return fixers
     }
 
     /** Whether any part of [cost] is a mana payment. */

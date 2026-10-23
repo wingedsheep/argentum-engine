@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.EngineServices
 import com.wingedsheep.engine.core.TurnManager
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.mechanics.mana.ManaPaymentWindow
 import com.wingedsheep.engine.legalactions.enumerators.*
 import com.wingedsheep.engine.mechanics.SplitSecond
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
@@ -219,7 +220,9 @@ class LegalActionEnumerator(
             predicateEvaluator, conditionEvaluator, turnManager, mode,
         )
         return ManaAbilityEnumerator(predicateEvaluator = predicateEvaluator).enumerate(context) +
-            ZoneActivatedAbilityEnumerator(Zone.HAND, predicateEvaluator, manaOnly = true).enumerate(context) +
+            ManaPaymentWindow.OFF_BATTLEFIELD_MANA_ZONES.flatMap {
+                ZoneActivatedAbilityEnumerator(it, predicateEvaluator, manaOnly = true).enumerate(context)
+            } +
             PlayerActionEnumerator(manaOnly = true).enumerate(context)
     }
 

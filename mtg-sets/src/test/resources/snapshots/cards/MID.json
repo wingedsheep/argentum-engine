@@ -10128,6 +10128,93 @@
     ]
 }
 
+// Jack-o'-Lantern
+{
+    "name": "Jack-o'-Lantern",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "{1}, {T}, Sacrifice this artifact: Exile up to one target card from a graveyard. Draw a card.\n{1}, Exile this card from your graveyard: Add one mana of any color.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Jack-o'-Lantern:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": {},
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            },
+            {
+                "id": "Jack-o'-Lantern:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "{1}, Exile this card from your graveyard: Add one mana of any color."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "254",
+        "artist": "Josu Hernaiz",
+        "flavorText": "By the end of the festival, it was the only thing still grinning.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21b589ab-45a0-480a-a891-581c34f8a9bf.jpg?1783925548"
+    }
+}
+
 // Jadar, Ghoulcaller of Nephalia
 {
     "name": "Jadar, Ghoulcaller of Nephalia",
