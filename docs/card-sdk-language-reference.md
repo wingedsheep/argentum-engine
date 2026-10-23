@@ -16472,8 +16472,8 @@ restriction matches the spell context.
   `AnyOf(SubtypeSpellsOnly(setOf("Equipment")), EquipAbilityActivationOnly)`, and Freya Crescent's
   identically-meant "…an Equipment spell or activate an equip ability" is the same expression — it
   shipped on the over-broad spelling before this atom existed and was converged onto it.
-- `ManaRestriction.ClassLevelUpOnly` — only a Class's **level-up** activations (CR 716.2a, "[Cost]:
-  Level N"): the ability the engine builds with a `LevelUpClassEffect`. Satisfied by
+- `ManaRestriction.ClassLevelUpOnly` — only a Class's **level-up** activations (CR 716.2c, the "[Cost]:
+  Level N" ability): the ability the engine builds with a `LevelUpClassEffect`. Satisfied by
   `SpellPaymentContext.isClassLevelUpActivation`, set by `buildAbilityPaymentContext`. The level-up
   sibling of `EquipAbilityActivationOnly`: a source type or subtype test (`"Class"`, enchantment)
   would also pay the other activated abilities a Class's levels grant. Sorcerer Class's "Spend this

@@ -114,7 +114,7 @@ data class SpellPaymentContext(
      */
     val isEquipAbilityActivation: Boolean = false,
     /**
-     * True when the payment is for a Class's **level-up** ability (CR 716.2a) — the activation
+     * True when the payment is for a Class's **level-up** ability (CR 716.2c) — the activation
      * whose effect is a `LevelUpClassEffect`. Like [isEquipAbilityActivation], a strictly narrower
      * fact about an ability activation that [ManaRestriction.ClassLevelUpOnly] reads, set only by
      * [buildAbilityPaymentContext].

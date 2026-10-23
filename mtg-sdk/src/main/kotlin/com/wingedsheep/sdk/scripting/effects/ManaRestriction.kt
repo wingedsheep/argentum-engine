@@ -335,7 +335,8 @@ sealed interface ManaRestriction {
 
     /**
      * "Spend this mana only to … gain a Class level." Satisfied only by paying the cost of a
-     * Class's level-up ability (CR 716.2a — "[Cost]: Level N" is an activated ability, "Activate
+     * Class's level-up ability (CR 716.2c: "to gain a Class level" means to activate an ability
+     * indicated by a class level bar; CR 716.2a — "[Cost]: Level N" is an activated ability, "Activate
      * only if this Class is level N-1 and only as a sorcery"): the ability the engine builds with
      * a `LevelUpClassEffect`.
      *

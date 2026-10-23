@@ -22,10 +22,10 @@ import com.wingedsheep.sdk.model.EntityId
  * rather than defaulted) so every activation site has to state what it is activating: facts about
  * the *ability* rather than its source — "is this an equip ability" (CR 702.6, for
  * [com.wingedsheep.sdk.scripting.effects.ManaRestriction.EquipAbilityActivationOnly]), "is this a Class
- * level-up" (CR 716.2a, for [com.wingedsheep.sdk.scripting.effects.ManaRestriction.ClassLevelUpOnly]) and "does its
+ * level-up" (CR 716.2c, for [com.wingedsheep.sdk.scripting.effects.ManaRestriction.ClassLevelUpOnly]) and "does its
  * cost contain {X}" (for [com.wingedsheep.sdk.scripting.effects.ManaRestriction.CostsContainingXOnly])
  * — can't be recovered from [cardComponent]. Pass null only where the ability genuinely isn't resolvable
- * (a granted ability the caller can't look up); both facts then read false, i.e. the
+ * (a granted ability the caller can't look up); each fact then reads false, i.e. the
  * restriction refuses, which is the safe direction.
  */
 internal fun buildAbilityPaymentContext(

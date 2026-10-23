@@ -14,7 +14,7 @@ import io.kotest.matchers.shouldBe
 
 /**
  * Engine-level tests for [ManaRestriction.ClassLevelUpOnly] — "Spend this mana only to … gain a
- * Class level" (CR 716.2a: a level ability is an activated ability).
+ * Class level" (CR 716.2c: activating an ability indicated by a class level bar).
  *
  * The restriction reads [SpellPaymentContext.isClassLevelUpActivation], a fact about the *ability*
  * rather than its source: a Class's level-up and the other activated abilities its levels grant
