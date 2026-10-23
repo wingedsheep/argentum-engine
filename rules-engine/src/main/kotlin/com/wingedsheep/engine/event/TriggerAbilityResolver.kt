@@ -688,6 +688,21 @@ class TriggerAbilityResolver(
             }
         }
 
+        // 1b. Ward this permanent gained from a resolved effect — "until end of turn, this land
+        // becomes a 7/7 blue Giant creature with ward {3}" (Hall of Storm Giants) composes the
+        // animation with a Scope.Self GrantWard handed over by GrantStaticAbilityEffect. The layer
+        // system already projects the WARD keyword through that record, so the projected keyword
+        // is the gate: a later "loses all abilities" takes the trigger away along with the keyword.
+        if (state.grantedStaticAbilities.isNotEmpty() && projected.hasKeyword(entityId, com.wingedsheep.sdk.core.Keyword.WARD)) {
+            state.grantedStaticAbilities.forEachIndexed { index, grant ->
+                if (grant.entityId != entityId || grant.layerTimestamp == null) return@forEachIndexed
+                val ward = grant.ability as? GrantWard ?: return@forEachIndexed
+                if (ward.filter.scope !is Scope.Self) return@forEachIndexed
+                if (!GrantDurationGate.holds(state, entityId, grant.sourceId, grant.duration)) return@forEachIndexed
+                result.add(createWardTriggeredAbility(ward.cost, "gained_$index"))
+            }
+        }
+
         // 2. Ward granted by battlefield-scoped GrantWard static abilities. The grants themselves
         // were collected in one battlefield walk (see BattlefieldStaticsIndex); all that is left
         // per entity is matching it against each grant's filter.

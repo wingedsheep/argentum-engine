@@ -2110,15 +2110,12 @@ object Effects {
      * [EffectTarget.IterationEntity] for "each creature you control gains ...".
      *
      * The grant lands in `GameState.grantedStaticAbilities`, which the combat, casting, and
-     * activation checks read alongside a permanent's printed statics. The **layer projector does
-     * not read it.** A static that only does something by projecting — `SetName`, `GrantKeyword`,
-     * `ModifyStats`, `SetBasePowerToughnessStatic`, `TransformPermanent`, … — is therefore
-     * *silently inert* when granted this way. Reach for
-     * [com.wingedsheep.sdk.scripting.effects.BecomeArtifactEffect]'s `grantedStaticAbilities`
-     * instead: it appends to the permanent's own `ContinuousEffectSourceComponent`, the same
-     * channel a printed static uses, and its `cardTypes = null` / `subtypes = null` /
-     * `loseAllAbilities = false` knobs let it grant without transforming anything else (Tenth
-     * District Hero).
+     * activation checks read alongside a permanent's printed statics. A grant to a battlefield
+     * permanent also projects: the part of the ability that lowers to a continuous effect when
+     * printed (`GrantKeyword`, `ModifyStats`, `CantBlock`, `GrantWard`'s WARD keyword, …) is lowered
+     * from the holder exactly as the printed form would be. A granted `GrantWard` also gets its ward
+     * trigger — "until end of turn, this land becomes a 7/7 blue Giant creature with ward {3}" (Hall
+     * of Storm Giants) is `BecomeCreature` + `GrantStaticAbility(GrantWard(cost, Filters.Self), Self)`.
      */
     fun GrantStaticAbility(
         ability: com.wingedsheep.sdk.scripting.StaticAbility,

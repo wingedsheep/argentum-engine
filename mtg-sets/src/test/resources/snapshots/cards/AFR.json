@@ -1981,6 +1981,107 @@
     ]
 }
 
+// Hall of Storm Giants
+{
+    "name": "Hall of Storm Giants",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "If you control two or more other lands, this land enters tapped.\n{T}: Add {U}.\n{5}{U}: Until end of turn, this land becomes a 7/7 blue Giant creature with ward {3}. It's still a land. (Whenever it becomes the target of a spell or ability an opponent controls, counter it unless that player pays {3}.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hall of Storm Giants:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Hall of Storm Giants:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "BecomeCreature",
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 7
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 7
+                            },
+                            "creatureTypes": [
+                                "Giant"
+                            ],
+                            "colors": [
+                                "BLUE"
+                            ]
+                        },
+                        {
+                            "type": "GrantStaticAbility",
+                            "ability": {
+                                "type": "GrantWard",
+                                "cost": {
+                                    "type": "WardCost.Mana",
+                                    "manaCost": "{3}"
+                                },
+                                "filter": {
+                                    "baseFilter": "permanent",
+                                    "scope": "Self"
+                                }
+                            },
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{5}{U}: Until end of turn, this land becomes a 7/7 blue Giant creature with ward {3}. It's still a land."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersTapped",
+                "unlessCondition": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "land",
+                            "excludeSelf": true
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "257",
+        "rarity": "RARE",
+        "artist": "Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf8f052d-8840-4905-a807-9a305f4fd8f7.jpg?1783926434"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Hill Giant Herdgorger
 {
     "name": "Hill Giant Herdgorger",

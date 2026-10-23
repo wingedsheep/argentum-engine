@@ -3,6 +3,7 @@ package com.wingedsheep.engine.event
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.mechanics.durations.GrantDurationGate
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
@@ -169,6 +170,20 @@ class BattlefieldStaticsIndex private constructor(
                             .add(WardGrantProvider(emblemId, ability, emblemControllerId))
                     }
                 }
+            }
+
+            // A battlefield-scope GrantWard a permanent gained from a resolved effect reads like a
+            // printed one on that permanent — the projection lowers the same record into the WARD
+            // keyword, so the trigger has to come from it too (see TriggerAbilityResolver's
+            // Scope.Self branch for the "this permanent gains ward" half).
+            for (grant in state.grantedStaticAbilities) {
+                val ward = grant.ability as? GrantWard ?: continue
+                if (ward.filter.scope !is Scope.Battlefield || grant.layerTimestamp == null) continue
+                if (!state.getBattlefield().contains(grant.entityId)) continue
+                if (!GrantDurationGate.holds(state, grant.entityId, grant.sourceId, grant.duration)) continue
+                val holderControllerId = projected.getController(grant.entityId) ?: continue
+                (wardGrants ?: mutableListOf<WardGrantProvider>().also { wardGrants = it })
+                    .add(WardGrantProvider(grant.entityId, ward, holderControllerId))
             }
 
             if (triggerGrants == null && wardGrants == null && suppressors == null && attachments == null) {
