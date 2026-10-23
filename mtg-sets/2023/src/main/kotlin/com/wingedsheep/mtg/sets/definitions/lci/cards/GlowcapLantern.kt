@@ -45,7 +45,7 @@ val GlowcapLantern = card("Glowcap Lantern") {
     // "You may look at the top card of your library any time" — only while attached (see KDoc).
     staticAbility {
         condition = Conditions.SourceMatches(GameObjectFilter.Any.attachedTo(GameObjectFilter.Creature))
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     // Equipped creature has "Whenever this creature attacks, it explores."

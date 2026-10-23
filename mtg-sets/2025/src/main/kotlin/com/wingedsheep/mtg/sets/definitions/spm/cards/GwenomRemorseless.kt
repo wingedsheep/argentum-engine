@@ -53,7 +53,7 @@ val GwenomRemorseless = card("Gwenom, Remorseless") {
             duration = Duration.EndOfTurn,
         ) then
             Effects.GrantStaticAbility(
-                ability = LookAtTopOfLibrary,
+                ability = LookAtTopOfLibrary(),
                 target = EffectTarget.Self,
                 duration = Duration.EndOfTurn,
             )

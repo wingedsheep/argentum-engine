@@ -29,7 +29,7 @@ val ErrantAndGiada = card("Errant and Giada") {
     keywords(Keyword.FLASH, Keyword.FLYING)
 
     staticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     staticAbility {

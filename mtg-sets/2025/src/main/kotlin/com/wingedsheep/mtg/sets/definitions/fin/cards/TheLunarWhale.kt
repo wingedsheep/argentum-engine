@@ -42,7 +42,7 @@ val TheLunarWhale = card("The Lunar Whale") {
     keywords(Keyword.FLYING)
 
     staticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     staticAbility {

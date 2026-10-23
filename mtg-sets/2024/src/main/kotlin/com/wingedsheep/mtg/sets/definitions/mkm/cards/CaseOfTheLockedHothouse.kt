@@ -47,7 +47,7 @@ val CaseOfTheLockedHothouse = card("Case of the Locked Hothouse") {
     toSolve(Conditions.YouControlAtLeast(7, GameObjectFilter.Land))
 
     solvedStaticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     solvedStaticAbility {

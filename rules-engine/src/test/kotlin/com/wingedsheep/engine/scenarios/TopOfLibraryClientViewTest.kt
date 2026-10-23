@@ -35,7 +35,7 @@ class TopOfLibraryClientViewTest : FunSpec({
         typeLine = "Artifact"
 
         staticAbility {
-            ability = LookAtTopOfLibrary
+            ability = LookAtTopOfLibrary()
         }
     }
 

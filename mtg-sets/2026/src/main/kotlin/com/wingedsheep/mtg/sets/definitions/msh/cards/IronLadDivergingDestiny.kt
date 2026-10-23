@@ -40,7 +40,7 @@ val IronLadDivergingDestiny = card("Iron Lad, Diverging Destiny") {
     keywords(Keyword.FLYING, Keyword.VIGILANCE)
 
     staticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     activatedAbility {

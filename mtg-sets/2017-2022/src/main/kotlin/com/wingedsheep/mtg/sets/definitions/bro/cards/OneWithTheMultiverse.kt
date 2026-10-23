@@ -26,7 +26,7 @@ val OneWithTheMultiverse = card("One with the Multiverse") {
         "library without paying its mana cost."
 
     staticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     staticAbility {

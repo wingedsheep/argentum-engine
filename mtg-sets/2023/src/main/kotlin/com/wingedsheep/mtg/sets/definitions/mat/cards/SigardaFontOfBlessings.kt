@@ -42,7 +42,7 @@ val SigardaFontOfBlessings = card("Sigarda, Font of Blessings") {
     }
 
     staticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     staticAbility {

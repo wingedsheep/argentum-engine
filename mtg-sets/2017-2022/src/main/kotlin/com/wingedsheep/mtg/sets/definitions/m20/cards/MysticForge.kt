@@ -27,7 +27,7 @@ val MysticForge = card("Mystic Forge") {
         "{T}, Pay 1 life: Exile the top card of your library."
 
     staticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     // Lands are never cast, so an artifact land on top stays unplayable (2019-07-12 ruling).

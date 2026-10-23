@@ -4,7 +4,7 @@ import type { RefObject } from 'react'
 import { useGameStore } from '@/store/gameStore'
 import type { ClientPlayer } from '@/types'
 import { hand } from '@/types'
-import { useRevealedLibraryTopCard, useIdentityColor, useIsSharedLifeTeamGame, useZoneCards } from '@/store/selectors'
+import { useHasLegalActions, useRevealedLibraryTopCard, useIdentityColor, useIsSharedLifeTeamGame, useZoneCards } from '@/store/selectors'
 import { useResponsiveContext } from './shared'
 import { Battlefield } from './Battlefield'
 import { CardRow, HAND_FAN_EDGE_MARGIN } from './HandZone'
@@ -213,9 +213,12 @@ export function OpponentBoardArea({
   liftHand?: boolean
 }) {
   const revealedTopCard = useRevealedLibraryTopCard(opponent.playerId)
+  // A top card *you* may play (Xanathar, Guild Kingpin) is offered as a ghost in your own hand;
+  // drawing it here as well would put two interactive copies of the same card on the table.
+  const topCardPlayableByYou = useHasLegalActions(revealedTopCard?.id ?? null)
   const ghostCards = useMemo(
-    () => (revealedTopCard ? [revealedTopCard] : []),
-    [revealedTopCard]
+    () => (revealedTopCard && !topCardPlayableByYou ? [revealedTopCard] : []),
+    [revealedTopCard, topCardPlayableByYou]
   )
   const {
     cellRef,

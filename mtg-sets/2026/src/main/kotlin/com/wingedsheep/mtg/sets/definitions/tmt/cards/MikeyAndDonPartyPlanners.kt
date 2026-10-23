@@ -37,7 +37,7 @@ val MikeyAndDonPartyPlanners = card("Mikey & Don, Party Planners") {
     keywords(Keyword.WARD)
     keywordAbility(KeywordAbility.Ward(WardCost.Mana("{2}")))
 
-    staticAbility { ability = LookAtTopOfLibrary }
+    staticAbility { ability = LookAtTopOfLibrary() }
     staticAbility {
         ability = PlayLandsAndCastFilteredFromTopOfLibrary(
             spellFilter = GameObjectFilter.Any.withAnyOfSubtypes(

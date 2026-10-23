@@ -42,7 +42,7 @@ val VizierOfTheMenagerie = card("Vizier of the Menagerie") {
         "You can spend mana of any type to cast creature spells."
 
     staticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     staticAbility {

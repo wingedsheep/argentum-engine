@@ -1076,6 +1076,21 @@ export function useGhostCards(playerId: EntityId | null): readonly ClientCard[] 
       ghostCardIds.add(topCardId)
     }
 
+    // 2b. The top card of *another* player's library you may play (Xanathar, Guild Kingpin's "you
+    // may play the top card of their library") — the server only offers a library action on it when
+    // a permission reaches that library.
+    for (const zone of gameState.zones) {
+      if (zone.zoneId.zoneType !== ZoneType.LIBRARY || zoneIdEquals(zone.zoneId, libZoneId)) continue
+      const otherTopId = librarySlots(zone)[0]
+      if (!otherTopId) continue
+      const playable = legalActions.some((actionInfo) => {
+        const action = actionInfo.action
+        return actionInfo.sourceZone === 'LIBRARY' &&
+          (action.type === 'CastSpell' || action.type === 'PlayLand') && action.cardId === otherTopId
+      })
+      if (playable) ghostCardIds.add(otherTopId)
+    }
+
     // 3. Exile cards playable via Mind's Desire-like effects
     // Check ALL exile zones because cards like Kheru Spellsnatcher exile opponent's spells
     // (cards stay in their owner's exile zone but are playable by the Spellsnatcher's controller)

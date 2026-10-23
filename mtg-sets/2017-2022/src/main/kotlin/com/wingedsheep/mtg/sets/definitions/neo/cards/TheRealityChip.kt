@@ -34,7 +34,7 @@ val TheRealityChip = card("The Reality Chip") {
         "creature. Reconfigure only as a sorcery. While attached, this isn't a creature.)"
 
     staticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     staticAbility {

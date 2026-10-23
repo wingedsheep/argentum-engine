@@ -40,7 +40,7 @@ val FblthpLostOnTheRange = card("Fblthp, Lost on the Range") {
     keywordAbility(KeywordAbility.Ward(WardCost.Mana("{2}")))
 
     staticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
     staticAbility {
         ability = PlotFromTopOfLibrary(filter = GameObjectFilter.Nonland)

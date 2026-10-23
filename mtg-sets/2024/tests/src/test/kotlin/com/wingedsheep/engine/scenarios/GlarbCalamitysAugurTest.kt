@@ -39,7 +39,7 @@ class GlarbCalamitysAugurTest : FunSpec({
         keywords(Keyword.DEATHTOUCH)
 
         staticAbility {
-            ability = LookAtTopOfLibrary
+            ability = LookAtTopOfLibrary()
         }
 
         staticAbility {

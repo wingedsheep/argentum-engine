@@ -44,7 +44,7 @@ val VesuvanDrifter = card("Vesuvan Drifter") {
     keywords(Keyword.FLYING)
 
     staticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     triggeredAbility {

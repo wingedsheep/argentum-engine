@@ -10,6 +10,8 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.CantBeBlockedBy
+import com.wingedsheep.sdk.scripting.LookAtTopOfLibrary
+import com.wingedsheep.sdk.scripting.PlayFromTopWithAlternativeCost
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.effects.GrantStaticAbilityEffect
 import kotlin.reflect.KClass
@@ -109,6 +111,15 @@ class GrantStaticAbilityExecutor : EffectExecutor<GrantStaticAbilityEffect> {
         is CantBeBlockedBy -> {
             val baked = ResolutionPlayerBaker.bake(ability.blockerFilter, context, state)
             if (baked == ability.blockerFilter) ability else ability.copy(blockerFilter = baked)
+        }
+        // Xanathar, Guild Kingpin: "their library" is the target opponent, fixed as the grant resolves.
+        is LookAtTopOfLibrary -> {
+            val baked = ResolutionPlayerBaker.bakePlayer(ability.libraryOwner, context, state)
+            if (baked == ability.libraryOwner) ability else ability.copy(libraryOwner = baked)
+        }
+        is PlayFromTopWithAlternativeCost -> {
+            val baked = ResolutionPlayerBaker.bakePlayer(ability.libraryOwner, context, state)
+            if (baked == ability.libraryOwner) ability else ability.copy(libraryOwner = baked)
         }
         else -> ability
     }

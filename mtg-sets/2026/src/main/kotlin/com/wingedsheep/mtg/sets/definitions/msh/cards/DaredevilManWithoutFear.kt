@@ -52,7 +52,7 @@ val DaredevilManWithoutFear = card("Daredevil, Man Without Fear") {
 
     // Radar Sense — You may look at the top card of your library any time.
     staticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     // Whenever you attack, you may exile the top card of your library. …

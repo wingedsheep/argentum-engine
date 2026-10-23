@@ -206,9 +206,12 @@ class PlayLandHandler(
         val exileOwner = state.turnOrder.firstOrNull { pid ->
             action.cardId in state.getZone(ZoneKey(pid, Zone.EXILE))
         }
+        // The top of another player's library, under Xanathar, Guild Kingpin's permission.
+        val otherLibraryOwner = if (action.cardId in state.getZone(libraryZone)) null else
+            state.turnOrder.firstOrNull { pid -> action.cardId in state.getZone(ZoneKey(pid, Zone.LIBRARY)) }
         val fromZone = when {
             action.cardId in state.getZone(handZone) -> Zone.HAND
-            action.cardId in state.getZone(libraryZone) -> Zone.LIBRARY
+            action.cardId in state.getZone(libraryZone) || otherLibraryOwner != null -> Zone.LIBRARY
             exileOwner != null -> Zone.EXILE
             action.cardId in state.getZone(graveyardZone) -> Zone.GRAVEYARD
             action.cardId in state.getZone(sideboardZone) -> Zone.SIDEBOARD
@@ -216,6 +219,8 @@ class PlayLandHandler(
         }
         val sourceZoneKey = if (fromZone == Zone.EXILE && exileOwner != null) {
             ZoneKey(exileOwner, Zone.EXILE)
+        } else if (fromZone == Zone.LIBRARY && otherLibraryOwner != null) {
+            ZoneKey(otherLibraryOwner, Zone.LIBRARY)
         } else {
             ZoneKey(action.playerId, fromZone)
         }
@@ -733,6 +738,9 @@ class PlayLandHandler(
         playerId: EntityId,
         cardId: EntityId
     ): Boolean {
+        // A play-from-top permission — Gwenom's over the player's own library, Xanathar, Guild
+        // Kingpin's over a target opponent's — covers lands as well as spells ("play").
+        if (zoneResolver.topOfLibraryAlternativeGrant(state, playerId, cardId) != null) return true
         val library = state.getLibrary(playerId)
         if (library.isEmpty() || library.first() != cardId) return false
         return hasPlayFromTopOfLibrary(state, playerId, cardId)

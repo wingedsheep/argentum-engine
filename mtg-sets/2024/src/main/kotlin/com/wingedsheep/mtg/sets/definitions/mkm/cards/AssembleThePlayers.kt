@@ -33,7 +33,7 @@ val AssembleThePlayers = card("Assemble the Players") {
         "library."
 
     staticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     staticAbility {

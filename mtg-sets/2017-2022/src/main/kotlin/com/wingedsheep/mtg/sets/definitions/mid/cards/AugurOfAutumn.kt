@@ -37,7 +37,7 @@ val AugurOfAutumn = card("Augur of Autumn") {
         "Coven — As long as you control three or more creatures with different powers, you may cast " +
         "creature spells from the top of your library."
 
-    staticAbility { ability = LookAtTopOfLibrary }
+    staticAbility { ability = LookAtTopOfLibrary() }
 
     staticAbility {
         ability = PlayLandsAndCastFilteredFromTopOfLibrary(spellFilter = null)

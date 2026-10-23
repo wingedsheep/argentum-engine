@@ -24,6 +24,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.LookAtFaceDownCreatures
 import com.wingedsheep.sdk.scripting.LookAtTopOfLibrary
+import com.wingedsheep.engine.legalactions.utils.LibraryTopGrants
 import com.wingedsheep.sdk.scripting.OpponentsPlayWithHandsRevealed
 import com.wingedsheep.sdk.scripting.PlayersPlayWithHandsRevealed
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
@@ -260,8 +261,7 @@ class Visibility(
         if (isSpectator) return false
 
         if (isCardRevealedTo(state, entityId, viewingPlayerId)) return true
-        return isTopCard && zoneKey.ownerId == viewingPlayerId &&
-            hasLookAtTopOfLibrary(state, viewingPlayerId)
+        return isTopCard && hasLookAtTopOfLibrary(state, viewingPlayerId, zoneKey.ownerId)
     }
 
     /**
@@ -347,8 +347,15 @@ class Visibility(
                 hasActiveStaticAbility(state, controllerId) { it is PlayersRevealTopOfLibrary }
             }
 
-    private fun hasLookAtTopOfLibrary(state: GameState, playerId: EntityId): Boolean =
-        hasActiveStaticAbility(state, playerId) { it is LookAtTopOfLibrary }
+    /**
+     * Whether [playerId] may look at the top card of [libraryOwnerId]'s library: a
+     * [LookAtTopOfLibrary] they hold that names that library — their own (Lens of Clarity), or
+     * another player's under a granted copy (Xanathar, Guild Kingpin).
+     */
+    private fun hasLookAtTopOfLibrary(state: GameState, playerId: EntityId, libraryOwnerId: EntityId): Boolean =
+        hasActiveStaticAbility(state, playerId) {
+            it is LookAtTopOfLibrary && LibraryTopGrants.libraryOwnerId(it.libraryOwner, playerId) == libraryOwnerId
+        }
 
     private fun revealsOpponentHandsTo(state: GameState, playerId: EntityId): Boolean =
         hasActiveStaticAbility(state, playerId) { it is OpponentsPlayWithHandsRevealed }
@@ -383,10 +390,10 @@ class Visibility(
         // so visibility and castability stay in lockstep — otherwise the top card is castable but the
         // controller never sees it, so there is nothing to play.
         for (grant in state.grantedStaticAbilities) {
-            // Match the cast-legality scan in CastPermissionUtils.playFromTopAlternativeCost (base
-            // control) so visibility and castability stay in lockstep.
-            val anchor = state.getEntity(grant.entityId) ?: continue
-            if (anchor.get<ControllerComponent>()?.playerId != playerId) continue
+            // The same holder the cast-legality scan reads (LibraryTopGrants.holderOf), so
+            // visibility and castability stay in lockstep — including a grant anchored to the
+            // player themself (Xanathar, Guild Kingpin's turn-long peek).
+            if (LibraryTopGrants.holderOf(state, grant) != playerId) continue
             if (activeStaticAbility(state, grant.ability, grant.entityId, playerId)?.let(predicate) == true) {
                 return true
             }

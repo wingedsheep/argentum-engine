@@ -75,7 +75,7 @@ val CemeteryIlluminator = card("Cemetery Illuminator") {
 
     // You may look at the top card of your library any time.
     staticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     // Once each turn, you may cast a spell from the top of your library if it shares a card type

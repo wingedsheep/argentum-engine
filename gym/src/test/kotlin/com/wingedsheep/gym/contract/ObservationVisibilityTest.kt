@@ -48,7 +48,7 @@ class ObservationVisibilityTest : ScenarioTestBase() {
     private val privateTop = card("Private Top") {
         manaCost = "{1}"
         typeLine = "Artifact"
-        staticAbility { ability = LookAtTopOfLibrary }
+        staticAbility { ability = LookAtTopOfLibrary() }
     }
 
     init {

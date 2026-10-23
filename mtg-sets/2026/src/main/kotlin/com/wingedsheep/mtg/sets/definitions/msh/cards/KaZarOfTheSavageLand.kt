@@ -37,7 +37,7 @@ val KaZarOfTheSavageLand = card("Ka-Zar of the Savage Land") {
         "When Ka-Zar enters, create Zabu, a legendary 2/2 green Cat creature token with " +
         "\"Landfall — Whenever a land you control enters, put a +1/+1 counter on Zabu.\""
 
-    staticAbility { ability = LookAtTopOfLibrary }
+    staticAbility { ability = LookAtTopOfLibrary() }
 
     staticAbility {
         ability = PlayLandsAndCastFilteredFromTopOfLibrary(spellFilter = null)

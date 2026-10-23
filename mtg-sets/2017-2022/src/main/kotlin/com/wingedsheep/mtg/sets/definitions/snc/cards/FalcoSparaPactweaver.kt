@@ -48,7 +48,7 @@ val FalcoSparaPactweaver = card("Falco Spara, Pactweaver") {
     )
 
     staticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     staticAbility {

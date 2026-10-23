@@ -12266,7 +12266,7 @@ concerns — the `ClientStateTransformer` reveals the top card for `PlayFromTopO
   it can't be spelled as the self-scoped variant. (**Wizened Snitches**)
 - `PlayFromTopOfLibrary` — public reveal **and** "play lands and cast spells from the top of your
   library" (all card types). (Future Sight)
-- `PlayFromTopWithAlternativeCost(withoutPayingManaCost = false, additionalCost = null, filter = null)`
+- `PlayFromTopWithAlternativeCost(withoutPayingManaCost = false, additionalCost = null, filter = null, libraryOwner = EffectTarget.Controller, withAnyManaColor = false)`
   — "you may play cards from the top of your library; a spell cast this way pays an alternative cost"
   (mana waived and/or an `AdditionalCost` substituted). Gwenom, Remorseless grants this until end of
   turn (`GrantStaticAbility(..., Duration.EndOfTurn)`) with `withoutPayingManaCost = true` +
@@ -12274,6 +12274,15 @@ concerns — the `ClientStateTransformer` reveals the top card for `PlayFromTopO
   mana value rather than its mana cost." Read through the top-of-library cast path, which scans
   `grantedStaticAbilities` for it (so a durationally-granted permission works), waives the mana, and
   charges the life. Pass `filter` to restrict which cards it covers (null = all).
+  `libraryOwner` names **whose** library, relative to the holder (`Controller` = your own). Granted
+  with a context-bound player — a target, a chosen player — it is pinned to that player as the grant
+  resolves, so the permission reads another player's top card: the holder casts the spell / plays the
+  land (using their land drop) and controls the result, the card's owner is unchanged.
+  `withAnyManaColor = true` lets mana be spent as though it were any color on spells cast this way
+  (CR 609.4b — colored pips only; `{C}` still needs colorless). Xanathar, Guild Kingpin grants its
+  controller (`target = EffectTarget.Controller`, so it outlives Xanathar)
+  `PlayFromTopWithAlternativeCost(libraryOwner = opponent, withAnyManaColor = true)` plus
+  `LookAtTopOfLibrary(libraryOwner = opponent)` until end of turn.
 - `PlayLandsAndCastFilteredFromTopOfLibrary(spellFilter, landFilter = GameObjectFilter.Land)` — like
   `PlayFromTopOfLibrary` but only spells matching `spellFilter` are castable (`null` = lands only),
   only lands matching `landFilter` are playable, and **no public reveal** (pair with
@@ -12297,8 +12306,10 @@ concerns — the `ClientStateTransformer` reveals the top card for `PlayFromTopO
   count = 1, filter = GameObjectFilter.Creature))`. It is surfaced and checked like any zone-cast
   additional cost, and isn't owed when a cost-free permission (Future Sight, a costless grant, a
   card-specific MayPlay) also covers the card.
-- `LookAtTopOfLibrary` — *private*: the controller may look at their own top card any time (revealed
-  only to them, not opponents). (Lens of Clarity, Vizier of the Menagerie)
+- `LookAtTopOfLibrary(libraryOwner = EffectTarget.Controller)` — *private*: the holder may look at the
+  top card of a library any time (revealed only to them). Default is their own (Lens of Clarity,
+  Vizier of the Menagerie); a granted copy can name another player's library, pinned at grant
+  resolution like `PlayFromTopWithAlternativeCost.libraryOwner` (Xanathar, Guild Kingpin).
 - `PlotFromTopOfLibrary(filter = Nonland)` — the controller may **plot** (CR 718) the top card of
   their library if it matches `filter`, paying a plot cost equal to the card's mana cost. The plot
   legal-action enumerator offers the top card as a plot action and `PlotCardHandler` moves it from

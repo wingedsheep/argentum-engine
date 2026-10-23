@@ -43,6 +43,18 @@ object ResolutionPlayerBaker {
         else filter.copy(controllerPredicate = predicate, anyOf = anyOf)
     }
 
+    /**
+     * [target] pinned to the concrete player it names now, when it is context-bound (a target, a
+     * chosen or triggering player) — Xanathar, Guild Kingpin's "their library" on a granted
+     * library-top permission. Left as is when it is state-relative or names no player here.
+     */
+    fun bakePlayer(target: EffectTarget, context: EffectContext, state: GameState): EffectTarget =
+        if (!isContextBound(target)) target
+        else context.resolvePlayerTarget(target, state)
+            ?.takeIf { it in state.turnOrder }
+            ?.let { EffectTarget.SpecificEntity(it) }
+            ?: target
+
     private fun bake(
         predicate: ControllerPredicate,
         context: EffectContext,

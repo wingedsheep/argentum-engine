@@ -23,7 +23,7 @@ val LensOfClarity = card("Lens of Clarity") {
     oracleText = "You may look at the top card of your library and at face-down creatures you don't control any time."
 
     staticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     staticAbility {

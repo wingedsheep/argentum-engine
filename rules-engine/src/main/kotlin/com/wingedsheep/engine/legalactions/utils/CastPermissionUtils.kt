@@ -426,32 +426,17 @@ class CastPermissionUtils(
     }
 
     /**
-     * The effective [com.wingedsheep.sdk.scripting.PlayFromTopWithAlternativeCost] permission for
-     * [playerId] (Gwenom's "play from the top; pay life equal to a spell's mana value rather than its
-     * mana cost"), or null. Printed on a permanent the player controls, or granted durationally in
-     * `grantedStaticAbilities` anchored to a permanent they control. Mirrors the printed-or-granted
-     * scan used for `MayCastFromGraveyard`.
+     * The effective [com.wingedsheep.sdk.scripting.PlayFromTopWithAlternativeCost] permission
+     * [playerId] holds over [libraryOwnerId]'s library (Gwenom's "play from the top; pay life equal
+     * to a spell's mana value rather than its mana cost" over their own; Xanathar, Guild Kingpin's
+     * over a target opponent's), or null. See [LibraryTopGrants.playFromTop].
      */
     fun playFromTopAlternativeCost(
         state: GameState,
-        playerId: EntityId
-    ): com.wingedsheep.sdk.scripting.PlayFromTopWithAlternativeCost? {
-        for (entityId in state.getBattlefield(playerId)) {
-            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-            cardDef.liveStaticAbilities(state, entityId)
-                .firstOrNull { it is com.wingedsheep.sdk.scripting.PlayFromTopWithAlternativeCost }
-                ?.let { return it as com.wingedsheep.sdk.scripting.PlayFromTopWithAlternativeCost }
-        }
-        for (grant in state.grantedStaticAbilities) {
-            val ability = grant.ability
-            if (ability !is com.wingedsheep.sdk.scripting.PlayFromTopWithAlternativeCost) continue
-            val anchor = state.getEntity(grant.entityId) ?: continue
-            if (anchor.get<ControllerComponent>()?.playerId != playerId) continue
-            return ability
-        }
-        return null
-    }
+        playerId: EntityId,
+        libraryOwnerId: EntityId = playerId,
+    ): com.wingedsheep.sdk.scripting.PlayFromTopWithAlternativeCost? =
+        LibraryTopGrants.playFromTop(state, playerId, libraryOwnerId, cardRegistry)
 
     /**
      * Resolve a static ability that may be gated by a [com.wingedsheep.sdk.scripting.ConditionalStaticAbility]

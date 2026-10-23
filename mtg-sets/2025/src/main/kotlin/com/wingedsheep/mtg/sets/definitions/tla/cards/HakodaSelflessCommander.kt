@@ -37,7 +37,7 @@ val HakodaSelflessCommander = card("Hakoda, Selfless Commander") {
 
     // You may look at the top card of your library any time.
     staticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     // You may cast Ally spells from the top of your library.

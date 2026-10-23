@@ -4605,3 +4605,91 @@
         "BLUE"
     ]
 }
+
+// Xanathar, Guild Kingpin
+{
+    "name": "Xanathar, Guild Kingpin",
+    "manaCost": "{4}{U}{B}",
+    "typeLine": "Legendary Creature — Beholder",
+    "oracleText": "At the beginning of your upkeep, choose target opponent. Until end of turn, that player can't cast spells, you may look at the top card of their library any time, you may play the top card of their library, and you may spend mana as though it were mana of any color to cast spells this way.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Xanathar, Guild Kingpin:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CantCastSpells",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantStaticAbility",
+                            "ability": {
+                                "type": "LookAtTopOfLibrary",
+                                "libraryOwner": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "target": "Controller"
+                        },
+                        {
+                            "type": "GrantStaticAbility",
+                            "ability": {
+                                "type": "PlayFromTopWithAlternativeCost",
+                                "libraryOwner": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "withAnyManaColor": true
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "At the beginning of your upkeep, choose target opponent. Until end of turn, that player can't cast spells, you may look at the top card of their library any time, you may play the top card of their library, and you may spend mana as though it were mana of any color to cast spells this way."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "239",
+        "rarity": "MYTHIC",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5bc58050-a615-4090-9cf5-cd49ccb4e2c6.jpg?1783926441",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "Xanathar doesn't change when you can cast spells or play lands. You must still follow all normal timing rules and land play limits."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "During your turn, you can look at the top card of the chosen opponent's library whenever you want, even if you don't have priority."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "You'll still pay all costs for spells cast this way, including additional costs. You may also pay alternative costs if any are available."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}

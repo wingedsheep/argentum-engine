@@ -50,7 +50,7 @@ val TheBelligerent = card("The Belligerent") {
 
     staticAbility {
         condition = Conditions.SourceAttackedThisTurn
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     staticAbility {

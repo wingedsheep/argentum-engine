@@ -41,7 +41,7 @@ val EladamriKorvecdal = card("Eladamri, Korvecdal") {
         "Activate only during your turn."
 
     staticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     staticAbility {

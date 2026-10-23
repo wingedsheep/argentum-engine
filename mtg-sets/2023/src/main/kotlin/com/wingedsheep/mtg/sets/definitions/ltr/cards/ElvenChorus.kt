@@ -30,7 +30,7 @@ val ElvenChorus = card("Elven Chorus") {
         "Creatures you control have \"{T}: Add one mana of any color.\""
 
     staticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     staticAbility {

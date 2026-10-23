@@ -26,7 +26,7 @@ val JohannApprenticeSorcerer = card("Johann, Apprentice Sorcerer") {
     toughness = 5
 
     staticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     staticAbility {

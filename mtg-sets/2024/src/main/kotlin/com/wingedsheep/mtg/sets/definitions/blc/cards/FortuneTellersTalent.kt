@@ -38,7 +38,7 @@ val FortuneTellersTalent = card("Fortune Teller's Talent") {
         "Spells you cast from anywhere other than your hand cost {2} less to cast."
 
     staticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     classLevel(2, "{3}{U}") {

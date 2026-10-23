@@ -90,7 +90,11 @@ class CastFromZoneEnumerator(
         // unaffected; CastSpellHandler re-checks this authoritatively.
         if (context.restrictedToHandCasting) return result
 
-        enumerateTopOfLibrary(context, result)
+        // Every library whose top card a permission opens: the player's own, plus any other player's
+        // under a permission scoped to that library (Xanathar, Guild Kingpin).
+        for (libraryOwnerId in context.state.turnOrder) {
+            enumerateTopOfLibrary(context, result, libraryOwnerId)
+        }
         val linkedExileCardIds = enumerateExileCards(context, result)
         enumerateLinkedExile(context, result, linkedExileCardIds)
         enumerateIntrinsicZoneCast(context, result, linkedExileCardIds)
@@ -263,22 +267,33 @@ class CastFromZoneEnumerator(
     // Top of library
     // =========================================================================
 
-    private fun enumerateTopOfLibrary(context: EnumerationContext, result: MutableList<LegalAction>) {
+    private fun enumerateTopOfLibrary(
+        context: EnumerationContext,
+        result: MutableList<LegalAction>,
+        libraryOwnerId: EntityId,
+    ) {
         val state = context.state
         val playerId = context.playerId
+        // Only a [PlayFromTopWithAlternativeCost] can name another player's library; every other
+        // top-of-library permission opens its holder's own.
+        val ownLibrary = libraryOwnerId == playerId
 
-        val canPlayAllFromTop = context.castPermissionUtils.hasPlayFromTopOfLibrary(state, playerId)
+        val canPlayAllFromTop = if (ownLibrary) {
+            context.castPermissionUtils.hasPlayFromTopOfLibrary(state, playerId)
+        } else {
+            context.castPermissionUtils.playFromTopAlternativeCost(state, playerId, libraryOwnerId) != null
+        }
         // One entry per granting permanent: a source-relative filter (Cemetery Illuminator's
         // "shares a card type with a card exiled with this creature") has to be evaluated against
         // the permanent that granted it, so the pairs can't be folded into a single filter.
-        val castFromTopGrants = if (!canPlayAllFromTop) {
+        val castFromTopGrants = if (ownLibrary && !canPlayAllFromTop) {
             context.castPermissionUtils.getCastFromTopOfLibraryGrants(state, playerId)
         } else emptyList()
-        val castFilteredFromTopFilters = if (!canPlayAllFromTop) {
+        val castFilteredFromTopFilters = if (ownLibrary && !canPlayAllFromTop) {
             context.castPermissionUtils.getCastFilteredFromTopOfLibraryFilters(state, playerId)
         } else emptyList()
 
-        val library = state.getLibrary(playerId)
+        val library = state.getLibrary(libraryOwnerId)
         if (library.isEmpty()) return
 
         val topCardId = library.first()
@@ -286,7 +301,7 @@ class CastFromZoneEnumerator(
         val topCardDef = context.cardRegistry.getCard(topCardComponent.name)
         // Per card, not per player: a land permission can be narrowed by a filter (Isu's snow lands).
         val canPlayLandsFromTop = canPlayAllFromTop ||
-            context.castPermissionUtils.hasPlayLandsFromTopOfLibrary(state, playerId, topCardId)
+            (ownLibrary && context.castPermissionUtils.hasPlayLandsFromTopOfLibrary(state, playerId, topCardId))
 
         if (!canPlayAllFromTop && castFromTopGrants.isEmpty() && !canPlayLandsFromTop && castFilteredFromTopFilters.isEmpty()) return
 
@@ -331,7 +346,7 @@ class CastFromZoneEnumerator(
                 if (context.legality.castRestrictionsMet(state, playerId, castRestrictions)) {
                     // Gwenom: a spell cast from the top under a PlayFromTopWithAlternativeCost
                     // permission pays no mana and instead pays life equal to its mana value.
-                    val topAltCost = context.castPermissionUtils.playFromTopAlternativeCost(state, playerId)
+                    val topAltCost = context.castPermissionUtils.playFromTopAlternativeCost(state, playerId, libraryOwnerId)
                         ?.takeIf { grant ->
                             val grantFilter = grant.filter
                             grantFilter == null || context.predicateEvaluator.matches(
@@ -362,8 +377,11 @@ class CastFromZoneEnumerator(
                     // Menagerie — whose own second ability is what makes a creature spell castable
                     // from here in the first place). Relaxed for payment only; the displayed
                     // `manaCostString` below stays the printed cost.
+                    // Xanathar's "spend mana as though it were mana of any color to cast spells
+                    // this way" relaxes the colored pips only (CR 609.4b).
                     val topPayableCost = context.castPermissionUtils
                         .relaxSpellCostColorsIfAny(state, playerId, topCardId, topEffectiveCost)
+                        .let { if (topAltCost?.withAnyManaColor == true) it.relaxColoredRequirements() else it }
                     val cachedSources = context.availableManaSources
                     // A free cast still owes the cost increases (CR 601.2f).
                     val topFreeCost by lazy { context.freeCastCost(topCardDef, Zone.LIBRARY) }
@@ -374,7 +392,7 @@ class CastFromZoneEnumerator(
                     // library (One with the Multiverse) frees this cast. Offered as its own variant
                     // (CR 118.9a) alongside the pay path; X is treated as 0 (CR 107.3b). Not stacked
                     // on a top-of-library alternative cost, which is already the cast's alternative.
-                    val freeCastFromSource = topAltCost == null &&
+                    val freeCastFromSource = ownLibrary && topAltCost == null &&
                         context.freeCastPermissionFor(topCardId, Zone.LIBRARY) && context.canPayMana(topFreeCost)
                     val targetReqs = buildList {
                         addAll(topCardDef?.script?.targetRequirements ?: emptyList())

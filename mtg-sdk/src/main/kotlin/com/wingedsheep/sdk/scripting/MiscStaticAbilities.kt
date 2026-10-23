@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.SerialName
@@ -578,6 +579,13 @@ data object PlayFromTopOfLibrary : StaticAbility {
  * @property additionalCost An additional cost substituted for the mana cost (e.g. pay life equal to
  *   the spell's mana value). Null for none.
  * @property filter Restrict which cards this permission covers; null = all cards (lands + spells).
+ * @property libraryOwner Whose library's top card may be played, read relative to the ability's
+ *   holder: [EffectTarget.Controller] (the default) is "your library". Xanathar, Guild Kingpin
+ *   grants the permission over a target opponent's library ("you may play the top card of their
+ *   library"); the grant pins that player to an [EffectTarget.SpecificEntity] as it resolves. The
+ *   played card keeps its owner; the holder casts the spell and controls the resulting permanent.
+ * @property withAnyManaColor Mana may be spent as though it were mana of any color to cast a spell
+ *   this way (CR 609.4b) — Xanathar's rider. Colored pips relax; a `{C}` pip still needs colorless.
  */
 @SerialName("PlayFromTopWithAlternativeCost")
 @Serializable
@@ -585,14 +593,18 @@ data class PlayFromTopWithAlternativeCost(
     val withoutPayingManaCost: Boolean = false,
     val additionalCost: AdditionalCost? = null,
     val filter: GameObjectFilter? = null,
+    val libraryOwner: EffectTarget = EffectTarget.Controller,
+    val withAnyManaColor: Boolean = false,
 ) : StaticAbility {
     override val description: String = buildString {
-        append("You may play cards from the top of your library")
+        if (libraryOwner == EffectTarget.Controller) append("You may play cards from the top of your library")
+        else append("You may play the top card of ${libraryOwner.description}'s library")
         if (withoutPayingManaCost || additionalCost != null) {
             append("; a spell cast this way")
             if (withoutPayingManaCost) append(" doesn't pay its mana cost")
             if (additionalCost != null) append(" and instead ${additionalCost.description}")
         }
+        if (withAnyManaColor) append(", and you may spend mana as though it were mana of any color to cast spells this way")
     }
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter?.applyTextReplacement(replacer)
@@ -645,15 +657,25 @@ data class CastSpellTypesFromTopOfLibrary(
 }
 
 /**
- * You may look at the top card of your library any time.
- * Unlike PlayFromTopOfLibrary, this only reveals the top card privately to the controller,
+ * You may look at the top card of a library any time — your own by default.
+ * Unlike PlayFromTopOfLibrary, this only reveals the top card privately to the holder,
  * not to all players. Used for Lens of Clarity, Vizier of the Menagerie, etc.
+ *
+ * @property libraryOwner Whose library's top card the holder may look at, read relative to the
+ *   ability's holder: [EffectTarget.Controller] (the default) is "your library"; a granted copy
+ *   aimed at another player names them — Xanathar, Guild Kingpin's "you may look at the top card
+ *   of their library any time" — and is pinned to a concrete
+ *   [EffectTarget.SpecificEntity] when the grant resolves, since the ability's target is gone by
+ *   the time the permission is read.
  */
 @SerialName("LookAtTopOfLibrary")
 @Serializable
-data object LookAtTopOfLibrary : StaticAbility {
+data class LookAtTopOfLibrary(
+    val libraryOwner: EffectTarget = EffectTarget.Controller,
+) : StaticAbility {
     override val description: String =
-        "You may look at the top card of your library any time."
+        if (libraryOwner == EffectTarget.Controller) "You may look at the top card of your library any time."
+        else "You may look at the top card of ${libraryOwner.description}'s library any time."
 }
 
 /**

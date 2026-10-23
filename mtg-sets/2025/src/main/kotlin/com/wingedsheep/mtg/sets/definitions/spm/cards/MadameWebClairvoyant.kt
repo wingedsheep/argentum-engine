@@ -35,7 +35,7 @@ val MadameWebClairvoyant = card("Madame Web, Clairvoyant") {
         "Whenever you attack, you may mill a card. (You may put the top card of your library into your graveyard.)"
 
     staticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     staticAbility {

@@ -30,7 +30,7 @@ val GlarbCalamitysAugur = card("Glarb, Calamity's Augur") {
     keywords(Keyword.DEATHTOUCH)
 
     staticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     staticAbility {

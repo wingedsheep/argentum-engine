@@ -40,7 +40,7 @@ val MmmenonTheRightHand = card("Mm'menon, the Right Hand") {
     keywords(Keyword.FLYING)
 
     staticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     staticAbility {

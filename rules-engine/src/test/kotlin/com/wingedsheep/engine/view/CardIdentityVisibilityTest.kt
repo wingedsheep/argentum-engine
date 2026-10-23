@@ -58,7 +58,7 @@ class CardIdentityVisibilityTest : ScenarioTestBase() {
     private val privateTop = card("Private Top") {
         manaCost = "{1}"
         typeLine = "Artifact"
-        staticAbility { ability = LookAtTopOfLibrary }
+        staticAbility { ability = LookAtTopOfLibrary() }
     }
 
     private val visibility: Visibility

@@ -45,7 +45,7 @@ val IsuTheAbominable = card("Isu the Abominable") {
 
     // You may look at the top card of your library any time.
     staticAbility {
-        ability = LookAtTopOfLibrary
+        ability = LookAtTopOfLibrary()
     }
 
     // You may play snow lands and cast snow spells from the top of your library.
