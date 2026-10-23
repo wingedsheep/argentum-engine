@@ -4779,6 +4779,255 @@
     ]
 }
 
+// Ecological Appreciation
+{
+    "name": "Ecological Appreciation",
+    "manaCost": "{X}{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library and graveyard for up to four creature cards with different names that each have mana value X or less and reveal them. An opponent chooses two of those cards. Shuffle the chosen cards into your library and put the rest onto the battlefield. Exile Ecological Appreciation.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromMultipleZones",
+                        "zones": [
+                            "Library",
+                            "Graveyard"
+                        ],
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "ManaValueAtMostDynamic",
+                                    "amount": "XValue"
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "gathered0",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "Search your library and graveyard for up to four creature cards with different names and mana value X or less",
+                    "restrictions": [
+                        "OnePerCardName"
+                    ]
+                },
+                {
+                    "type": "RevealCollection",
+                    "from": "selected1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "selected1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "chooser": "Opponent",
+                    "storeSelected": "selected3",
+                    "storeRemainder": "remainder3",
+                    "prompt": "Choose two of the revealed cards. Those are shuffled into their owner's library; the rest are put onto the battlefield.",
+                    "selectedLabel": "Shuffle into library",
+                    "remainderLabel": "Onto the battlefield"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected3",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Shuffled"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "remainder3",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        },
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "MYTHIC",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/115f3d72-1aaf-4237-91b9-389256e5e5c8.jpg?1783927344",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If you find and reveal three cards, two of them will still be shuffled into your library. If you find and reveal one or two cards, no creatures will be put onto the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Efreet Flamepainter
+{
+    "name": "Efreet Flamepainter",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Efreet Shaman",
+    "oracleText": "Double strike\nWhenever this creature deals combat damage to a player, you may cast target instant or sorcery card from your graveyard without paying its mana cost. If that spell would be put into your graveyard, exile it instead.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "DOUBLE_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Efreet Flamepainter:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "CastFromCollectionWithoutPayingCost",
+                                "from": "gathered0",
+                                "insteadOfGraveyard": "EXILE"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "instant|sorcery own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, you may cast target instant or sorcery card from your graveyard without paying its mana cost. If that spell would be put into your graveyard, exile it instead."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "rarity": "RARE",
+        "artist": "Marta Nael",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d9f0731c-2a3d-4613-bffa-8b967e4f142e.jpg?1783927358",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Efreet Flamepainter's triggered ability lets you cast the spell immediately, ignoring timing restrictions. It doesn't let you choose to cast it at a later time."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If you cast a spell \"without paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs. If the spell has any mandatory additional costs, those must be paid to cast the spell."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If the card has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Elemental Masterpiece
+{
+    "name": "Elemental Masterpiece",
+    "manaCost": "{5}{U}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create two 4/4 blue and red Elemental creature tokens.\n{U/R}{U/R}, Discard this card: Create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            },
+            "power": 4,
+            "toughness": 4,
+            "colors": [
+                "BLUE",
+                "RED"
+            ],
+            "creatureTypes": [
+                "Elemental"
+            ]
+        },
+        "activatedAbilities": [
+            {
+                "id": "Elemental Masterpiece:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{U/R}{U/R}"
+                            }
+                        },
+                        "CostDiscardSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                },
+                "activateFromZone": "Hand",
+                "descriptionOverride": "{U/R}{U/R}, Discard this card: Create a Treasure token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "artist": "Marta Nael",
+        "flavorText": "Rootha passed with flying, living colors.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/4331a7a6-e98e-4517-b0f9-ace379426a94.jpg?1783927319"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Elemental Summoning
 {
     "name": "Elemental Summoning",
@@ -4808,6 +5057,220 @@
     "colorIdentityOverride": [
         "RED",
         "BLUE"
+    ]
+}
+
+// Elite Spellbinder
+{
+    "name": "Elite Spellbinder",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Flying\nWhen this creature enters, look at target opponent's hand. You may exile a nonland card from it. For as long as that card remains exiled, its owner may play it. A spell cast this way costs {2} more to cast.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Elite Spellbinder:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LookAtTargetHand",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand",
+                                        "player": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "filter": "nonland",
+                                    "storeSelected": "selected1",
+                                    "prompt": "You may exile a nonland card from target opponent's hand",
+                                    "showAllCards": true,
+                                    "alwaysPrompt": true
+                                },
+                                {
+                                    "type": "ConditionalOnCollection",
+                                    "collection": "selected1",
+                                    "ifNotEmpty": {
+                                        "type": "ExileAndGrantOwnerPlayPermission",
+                                        "target": {
+                                            "type": "PipelineTarget",
+                                            "collectionName": "selected1"
+                                        },
+                                        "opponentCostIncrease": 2
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, look at target opponent's hand. You may exile a nonland card from it. For as long as that card remains exiled, its owner may play it. A spell cast this way costs {2} more to cast."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "flavorText": "Paulo Vitor Damo da Rosa, World Champion XXVI",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d3a7998-ccac-45ad-a4e9-3a2cb057f63b.jpg?1783927390",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Playing the exiled card follows all normal timing restrictions."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If the exiled card is a modal double-faced card and its back face is a land, its owner may play it as a land. (Note that if the front face is also a land, you couldn't have exiled it to begin with.)"
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Emergent Sequence
+{
+    "name": "Emergent Sequence",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for a basic land card, put it onto the battlefield tapped, then shuffle. That land becomes a 0/0 green and blue Fractal creature that's still a land. Put a +1/+1 counter on it for each land you had enter the battlefield under your control this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "basicland"
+                    },
+                    "storeAs": "gathered0",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "Search your library for a basic land card to put onto the battlefield tapped"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    },
+                    "storeMovedAs": "moved2"
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent",
+                {
+                    "type": "BecomeCreature",
+                    "target": {
+                        "type": "PipelineTarget",
+                        "collectionName": "moved2"
+                    },
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "creatureTypes": [
+                        "Fractal"
+                    ],
+                    "colors": [
+                        "GREEN",
+                        "BLUE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/1/910f48ab-b04e-4874-b31d-a86a7bc5af14.jpg?1783927192",
+                    "duration": "Permanent"
+                },
+                {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LANDS_ENTERED_UNDER_CONTROL"
+                    },
+                    "target": {
+                        "type": "PipelineTarget",
+                        "collectionName": "moved2"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "rarity": "UNCOMMON",
+        "artist": "Andreas Zafiratos",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/04a81975-5f0e-4593-a2da-b9689f9a985f.jpg?1783927343",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "The land won't be a creature as it enters the battlefield unless some other effect is making it one. Abilities that trigger whenever a creature enters the battlefield won't trigger."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "The last sentence of Emergent Sequence's ability counts the land it put onto the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -5063,6 +5526,78 @@
     ]
 }
 
+// Eureka Moment
+{
+    "name": "Eureka Moment",
+    "manaCost": "{2}{G}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Draw two cards. You may put a land card from your hand onto the battlefield.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "land"
+                            },
+                            "storeAs": "put_candidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "put_candidates",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "putting"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "putting",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "184",
+        "artist": "Anna Steinbauer",
+        "flavorText": "\"At first, the equations were simply numbers. But in those numbers I saw a story, and in that story I saw a pattern, and suddenly it all fit together!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e400c9b7-c789-49dd-9f72-b9d1df03fcca.jpg?1783927314",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Putting a land card from your hand onto the battlefield is not the same as playing a land. You may do it even if you have already played a land on your turn, or if you're casting Eureka Moment on your opponent's turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Excavated Wall
 {
     "name": "Excavated Wall",
@@ -5128,6 +5663,71 @@
         "imageUri": "https://cards.scryfall.io/normal/front/f/e/fed54d00-b11f-4529-864c-63a114617b36.jpg?1783927281"
     },
     "colorIdentityOverride": []
+}
+
+// Exhilarating Elocution
+{
+    "name": "Exhilarating Elocution",
+    "manaCost": "{2}{W}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put two +1/+1 counters on target creature you control. Other creatures you control get +1/+1 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 2,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeTarget": true
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "artist": "Randy Vargas",
+        "flavorText": "His words poured forth on waves of golden light, scouring all fear from his audience's hearts and minds.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/8468417d-7ef5-43e0-9190-e88f3eed9e82.jpg?1783927315"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
 }
 
 // Expanded Anatomy
@@ -5211,6 +5811,142 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Explosive Welcome
+{
+    "name": "Explosive Welcome",
+    "manaCost": "{7}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Explosive Welcome deals 5 damage to any target and 3 damage to any other target. Add {R}{R}{R}.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                {
+                    "type": "AddMana",
+                    "color": "RED",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0",
+                "descriptionOverride": "any target (takes 5 damage)"
+            },
+            {
+                "type": "TargetOther",
+                "baseRequirement": {
+                    "type": "AnyTarget",
+                    "descriptionOverride": "any other target (takes 3 damage)"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "flavorText": "Rowan and Will were a natural fit in Prismari College, the school of outrageous elemental arts.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/122c01e6-38a6-456e-971e-9004df85ac1c.jpg?1783927356"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Exponential Growth
+{
+    "name": "Exponential Growth",
+    "manaCost": "{X}{X}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Until end of turn, double target creature's power X times.",
+    "script": {
+        "spellEffect": {
+            "type": "RepeatDynamicTimes",
+            "amount": "XValue",
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "EntityProperty",
+                    "entity": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "numericProperty": "Power"
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 0
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "rarity": "RARE",
+        "artist": "Izzy",
+        "flavorText": "Most Quandrix students fundamentally disagree with the concept of \"enough.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c129bb7-9489-44bd-a46d-c5f738bf9d25.jpg?1783927343",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If an effect instructs you to \"double\" a creature's power, that creature gets +X/+0, where X is its power as that effect begins to apply. (This is not the value of X you chose when you cast the spell)"
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Exponential Growth doubles a creature's power sequentially, not all at the same time. For example, if X is 3 and you target a 2/2 creature, you will double its power once to 4, again to 8, and a third time to 16, making it a 16/2 creature until end of turn."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If a creature's power is less than 0 when it's doubled, instead that creature gets -X/-0, where X is how much less than 0 its power is. For example, if an effect has given a 5/5 creature -7/-0 so that it's a -2/5 creature, doubling its power makes it a -4/5 creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -5823,6 +6559,314 @@
             },
             "imageUri": "https://cards.scryfall.io/normal/back/0/d/0dba25e3-2b4f-45d4-965f-3834bcb359ee.jpg?1739656768"
         }
+    ]
+}
+
+// Flunk
+{
+    "name": "Flunk",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets -X/-X until end of turn, where X is 7 minus the number of cards in that creature's controller's hand.",
+    "script": {
+        "spellEffect": {
+            "type": "ModifyStats",
+            "powerModifier": {
+                "type": "Multiply",
+                "amount": {
+                    "type": "IfPositive",
+                    "amount": {
+                        "type": "Subtract",
+                        "left": {
+                            "type": "Fixed",
+                            "amount": 7
+                        },
+                        "right": {
+                            "type": "Count",
+                            "player": {
+                                "type": "ControllerOf",
+                                "targetDescription": "target creature"
+                            },
+                            "zone": "Hand"
+                        }
+                    }
+                },
+                "multiplier": -1
+            },
+            "toughnessModifier": {
+                "type": "Multiply",
+                "amount": {
+                    "type": "IfPositive",
+                    "amount": {
+                        "type": "Subtract",
+                        "left": {
+                            "type": "Fixed",
+                            "amount": 7
+                        },
+                        "right": {
+                            "type": "Count",
+                            "player": {
+                                "type": "ControllerOf",
+                                "targetDescription": "target creature"
+                            },
+                            "zone": "Hand"
+                        }
+                    }
+                },
+                "multiplier": -1
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "flavorText": "\"I assure you, no one fails my course more than once.\"\n—Embrose, Silverquill dean",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f8487884-e991-4feb-823b-90d9125edf19.jpg?1783927367",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "The value of X is determined as Flunk resolves."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If the target creature's controller has seven or more cards in hand when Flunk resolves, the creature gets -0/-0. This effect will never increase the creature's power and toughness."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Fortifying Draught
+{
+    "name": "Fortifying Draught",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "You gain 2 life. Target creature gets +X/+X until end of turn, where X is the amount of life you gained this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_GAINED"
+                    },
+                    "toughnessModifier": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_GAINED"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "UNCOMMON",
+        "artist": "Andrey Kuzinskiy",
+        "flavorText": "\"If a seedling can push through solid stone, there's no limit to what I could do.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/6789b717-a000-464a-a39b-32c1aeefe560.jpg?1783927343",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Fortifying Draught counts the total amount of life gained without considering any life you lost during that turn. For example, if you lost 2 life and gained 3 life earlier in the turn, you will gain 2 more life from Fortifying Draught and the target creature will get +5/+5."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Fractal Summoning
+{
+    "name": "Fractal Summoning",
+    "manaCost": "{X}{G/U}{G/U}",
+    "typeLine": "Sorcery — Lesson",
+    "oracleText": "Create a 0/0 green and blue Fractal creature token. Put X +1/+1 counters on it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [
+                        "GREEN",
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Fractal"
+                    ]
+                },
+                {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": "XValue",
+                    "target": {
+                        "type": "PipelineTarget",
+                        "collectionName": "createdTokens"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "artist": "Livia Prima",
+        "flavorText": "\"Fractals are just pseudo-dimensional manifestations of asynchronous biosymmetries. It's really quite simple.\"\n—Kianne, Quandrix dean",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc3f1f7e-eb19-49c1-a1ee-93b85ac8815c.jpg?1783927314"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
+// Fracture
+{
+    "name": "Fracture",
+    "manaCost": "{W}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target artifact, enchantment, or planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|enchantment|planeswalker"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "188",
+        "rarity": "UNCOMMON",
+        "artist": "Miranda Meeks",
+        "flavorText": "\"Your defiance is amusing, little mage. It's time you learn how fragile you really are.\"\n—Extus Narr",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a11224f8-06ea-4ec3-85e6-d5c8d906840c.jpg?1783927312"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Frost Trickster
+{
+    "name": "Frost Trickster",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Bird Wizard",
+    "oracleText": "Flying\nWhen this creature enters, tap target creature an opponent controls. That creature doesn't untap during its controller's next untap step.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Frost Trickster:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "artist": "Uriah Voth",
+        "flavorText": "The most important skill in a Mage Tower match is keeping one's cool.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd79c9cc-0a8c-4d88-96e2-cb177134a18d.jpg?1783927380",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Frost Trickster's ability can target a creature that's already tapped. That creature won't untap during its controller's next untap step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
