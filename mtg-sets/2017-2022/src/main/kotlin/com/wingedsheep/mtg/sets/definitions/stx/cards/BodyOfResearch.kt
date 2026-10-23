@@ -2,6 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.stx.cards
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
@@ -35,7 +36,7 @@ val BodyOfResearch = card("Body of Research") {
             power = 0,
             toughness = 0,
             colors = setOf(Color.GREEN, Color.BLUE),
-            creatureTypes = setOf("Fractal")
+            creatureTypes = setOf(Subtype.FRACTAL.value)
         ) then
             Effects.AddDynamicCounters(
                 CounterType.PLUS_ONE_PLUS_ONE,
