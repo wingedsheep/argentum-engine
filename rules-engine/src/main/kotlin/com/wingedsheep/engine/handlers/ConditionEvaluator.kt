@@ -425,6 +425,13 @@ class ConditionEvaluator(
             // Pure zone-membership lookup, so it reads the same in both modes.
             is SourceInZone -> evaluateSourceInZone(state, condition, ctx)
 
+            // "If you cast it" / "as long as it was cast" (The Tarrasque): a resolving spell knows
+            // its cast zone; a permanent carries the cast-origin marker stamped as it resolved, so
+            // a static gate reads the same answer under projection.
+            is WasCast -> evaluateWasCast(state, ctx.castFromZone(), ctx.sourceId)
+            is WasCastFromHand -> evaluateWasCastFromZone(state, Zone.HAND, ctx.castFromZone(), ctx.sourceId)
+            is WasCastFromZone -> evaluateWasCastFromZone(state, condition.zone, ctx.castFromZone(), ctx.sourceId)
+
             // CR 805 — "your turn" is the active team's turn for every member of that team.
             is IsYourTurn -> ctx.controllerId?.let { state.isActiveTurnFor(it) } ?: false
             is IsNotYourTurn -> ctx.controllerId?.let { !state.isActiveTurnFor(it) } ?: false
@@ -818,9 +825,6 @@ class ConditionEvaluator(
             is APlayerControlsMostOfSubtype -> ifResolution { evaluateAPlayerControlsMostOfSubtype(state, condition) }
             is YouControlMostOfChosenType -> ifResolution { evaluateYouControlMostOfChosenType(state, condition, it) }
             is YouControlSource -> ifResolution { evaluateYouControlSource(state, it) }
-            is WasCast -> ifResolution { evaluateWasCast(state, it) }
-            is WasCastFromHand -> ifResolution { evaluateWasCastFromHand(state, it) }
-            is WasCastFromZone -> ifResolution { evaluateWasCastFromZone(state, condition, it) }
             is WasKicked -> ifResolution { evaluateWasKicked(state, it) }
             is SneakCostWasPaid -> ifResolution { evaluateSneakCostWasPaid(state, it) }
             is WebSlungCostWasPaid -> ifResolution { evaluateWebSlungCostWasPaid(state, it) }
@@ -1695,22 +1699,18 @@ class ConditionEvaluator(
         return context.controllerId == sourceController
     }
 
-    private fun evaluateWasCast(state: GameState, context: EffectContext): Boolean {
-        // For spells resolving, any non-null castFromZone means the spell is being cast
-        if (context.castFromZone != null) return true
-        // For permanents (e.g., ETB triggers), check the cast-from-zone markers added
-        // when the spell resolved. Reanimated, token, and "put onto battlefield"
-        // permanents lack these markers and are correctly excluded.
-        val sourceId = context.sourceId ?: return false
-        return state.getEntity(sourceId)?.has<WasCastComponent>() == true
-    }
+    /** The zone a resolving spell was cast from; null under projection, which only sees permanents. */
+    private fun ConditionEvaluationContext.castFromZone(): Zone? =
+        (this as? ConditionEvaluationContext.Resolution)?.effectContext?.castFromZone
 
-    private fun evaluateWasCastFromHand(state: GameState, context: EffectContext): Boolean {
-        // For spells resolving, check context.castFromZone (set from SpellOnStackComponent)
-        if (context.castFromZone == Zone.HAND) return true
-        // For permanents (triggered abilities), fall back to battlefield component
-        val sourceId = context.sourceId ?: return false
-        return state.getEntity(sourceId)?.has<CastFromHandComponent>() == true
+    private fun evaluateWasCast(state: GameState, castFromZone: Zone?, sourceId: EntityId?): Boolean {
+        // For spells resolving, any non-null castFromZone means the spell is being cast
+        if (castFromZone != null) return true
+        // For permanents (ETB triggers, static gates), check the cast marker added when the spell
+        // resolved. Reanimated, token, and "put onto battlefield" permanents lack it and are
+        // correctly excluded; it is stripped when the permanent changes zones (CR 400.7).
+        sourceId ?: return false
+        return state.getEntity(sourceId)?.has<WasCastComponent>() == true
     }
 
     /**
@@ -1730,15 +1730,15 @@ class ConditionEvaluator(
         return state.zones.any { (key, ids) -> key.zoneType in condition.zones && sourceId in ids }
     }
 
-    private fun evaluateWasCastFromZone(state: GameState, condition: WasCastFromZone, context: EffectContext): Boolean {
-        // For spells resolving, check context.castFromZone (set from SpellOnStackComponent)
-        if (context.castFromZone == condition.zone) return true
+    private fun evaluateWasCastFromZone(state: GameState, zone: Zone, castFromZone: Zone?, sourceId: EntityId?): Boolean {
+        // For spells resolving, check castFromZone (set from SpellOnStackComponent)
+        if (castFromZone == zone) return true
         // For permanents (e.g. an entering creature's own "enters with a counter if cast from
-        // graveyard" replacement, or a triggered ability), fall back to the cast-origin marker
-        // component stamped on the permanent as it resolved onto the battlefield.
-        val sourceId = context.sourceId ?: return false
+        // graveyard" replacement, a triggered ability, or a static gate), fall back to the
+        // cast-origin marker component stamped on the permanent as it resolved onto the battlefield.
+        sourceId ?: return false
         val entity = state.getEntity(sourceId) ?: return false
-        return when (condition.zone) {
+        return when (zone) {
             Zone.HAND -> entity.has<CastFromHandComponent>()
             Zone.GRAVEYARD -> entity.has<CastFromGraveyardComponent>()
             Zone.LIBRARY -> entity.has<CastFromLibraryComponent>()

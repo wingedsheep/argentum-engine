@@ -665,6 +665,26 @@ class TriggerAbilityResolver(
                         result.add(createWardTriggeredAbility(ka.cost, "intrinsic"))
                     }
                 }
+                // "This creature has ward {N} [as long as <condition>]" — a Scope.Self GrantWard on
+                // its own definition (The Tarrasque, Yuna). The layer system already projects the
+                // WARD keyword through the grant; the trigger has to be built here too, with the
+                // condition read the same way the projection reads it (this permanent as source).
+                val classLevel = targetContainer.get<ClassLevelComponent>()?.currentLevel
+                cardDef.script.effectiveStaticAbilities(classLevel).forEachIndexed { index, ability ->
+                    val ward = when (ability) {
+                        is GrantWard -> ability
+                        is ConditionalStaticAbility -> (ability.ability as? GrantWard)?.takeIf {
+                            val controllerId = projected.getController(entityId)
+                            controllerId != null && conditionEvaluator.evaluate(
+                                state, ability.condition, EffectContext(sourceId = entityId, controllerId = controllerId)
+                            )
+                        }
+                        else -> null
+                    }
+                    if (ward != null && ward.filter.scope is Scope.Self) {
+                        result.add(createWardTriggeredAbility(ward.cost, "self_$index"))
+                    }
+                }
             }
         }
 

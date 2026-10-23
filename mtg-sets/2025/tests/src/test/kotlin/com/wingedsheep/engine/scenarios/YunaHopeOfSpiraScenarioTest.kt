@@ -49,6 +49,26 @@ class YunaHopeOfSpiraScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("on your turn, Yuna's own ward {2} triggers and counters unpaid removal") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Yuna, Hope of Spira", summoningSickness = false)
+                    .withCardInHand(2, "Murder")
+                    .withLandsOnBattlefield(2, "Swamp", 3)
+                    .withActivePlayer(1)
+                    .withPriorityPlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(2, "Murder", game.findPermanent("Yuna, Hope of Spira")!!).error shouldBe null
+                game.resolveStack()
+
+                withClue("ward {2} went unpaid, so Murder was countered") {
+                    game.isOnBattlefield("Yuna, Hope of Spira") shouldBe true
+                    game.isInGraveyard(2, "Murder") shouldBe true
+                }
+            }
+
             test("the anthem is inactive during an opponent's turn") {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")

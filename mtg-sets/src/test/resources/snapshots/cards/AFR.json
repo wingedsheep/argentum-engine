@@ -3857,6 +3857,103 @@
     }
 }
 
+// The Tarrasque
+{
+    "name": "The Tarrasque",
+    "manaCost": "{6}{G}{G}{G}",
+    "typeLine": "Legendary Creature — Dinosaur",
+    "oracleText": "The Tarrasque has haste and ward {10} as long as it was cast.\nWhenever The Tarrasque attacks, it fights target creature defending player controls.",
+    "creatureStats": {
+        "power": 10,
+        "toughness": 10
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "The Tarrasque:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Fight",
+                    "target1": "Self",
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": "ControlledByDefendingPlayer"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "WasCast"
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantWard",
+                    "cost": {
+                        "type": "WardCost.Mana",
+                        "manaCost": "{10}"
+                    },
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "WasCast"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "MYTHIC",
+        "artist": "Filip Burburan",
+        "flavorText": "When it rises, nations fall.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8a26fa15-d81f-4152-ae33-e91aa276b3fc.jpg?1783926454",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "The Tarrasque will have haste and ward {10} even if it was cast from a zone other than your hand. May we suggest the command zone?"
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Fighting is not optional. If there is at least one legal target for The Tarrasque's last ability, it must fight."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "The fight happens in the declare attackers step before blockers are declared. Unless the creature it is fighting survives, that creature won't be able to block that combat."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If a player casts a spell that targets multiple permanents their opponent controls with ward, each of those ward abilities will trigger. If that player doesn't pay for all of them, the spell will be countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Treasure Vault
 {
     "name": "Treasure Vault",
