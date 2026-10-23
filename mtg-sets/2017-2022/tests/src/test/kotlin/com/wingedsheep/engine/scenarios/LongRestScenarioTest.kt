@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
@@ -58,6 +59,56 @@ class LongRestScenarioTest : ScenarioTestBase() {
                 withClue("Long Rest exiles itself") {
                     game.isInExile(1, "Long Rest") shouldBe true
                 }
+            }
+
+            test("only cards actually returned count: a target gone before resolution leaves seven and no reset") {
+                val builder = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Long Rest")
+                    .withLandsOnBattlefield(1, "Forest", 11)
+                    .withLifeTotal(1, 5)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                ladder.forEach { builder.withCardInGraveyard(1, it) }
+                val game = builder.build()
+
+                val ids = ladder.map { game.findCardsInGraveyard(1, it).single() }
+                val longRest = game.findCardsInHand(1, "Long Rest").single()
+                game.execute(
+                    CastSpell(game.player1Id, longRest, ids.map { ChosenTarget.Card(it, game.player1Id, Zone.GRAVEYARD) }, xValue = 8)
+                ).error shouldBe null
+                // Duskdale Wurm leaves the graveyard while Long Rest is on the stack.
+                game.state = game.state.moveToZone(
+                    ids.last(), ZoneKey(game.player1Id, Zone.GRAVEYARD), ZoneKey(game.player1Id, Zone.EXILE)
+                )
+                game.resolveStack()
+
+                withClue("the seven remaining targets return") {
+                    ladder.dropLast(1).forEach { game.isInHand(1, it) shouldBe true }
+                    game.isInHand(1, "Duskdale Wurm") shouldBe false
+                }
+                withClue("seven returned is fewer than eight: life stays at 5") {
+                    game.getLifeTotal(1) shouldBe 5
+                }
+                game.isInExile(1, "Long Rest") shouldBe true
+            }
+
+            test("X is capped at the number of different mana values in the graveyard") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Long Rest")
+                    .withCardInGraveyard(1, "Llanowar Elves")
+                    .withCardInGraveyard(1, "Elvish Mystic")
+                    .withCardInGraveyard(1, "Grizzly Bears")
+                    .withLandsOnBattlefield(1, "Forest", 8)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val longRest = game.findCardsInHand(1, "Long Rest").single()
+                val cast = game.getLegalActions(1).single { (it.action as? CastSpell)?.cardId == longRest }
+                // Three cards but only two mana values (1 and 2): X = 3 has no legal choice of targets.
+                cast.maxAffordableX shouldBe 2
             }
 
             test("two cards with the same mana value can't both be targeted") {

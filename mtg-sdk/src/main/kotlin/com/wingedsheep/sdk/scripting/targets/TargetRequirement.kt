@@ -575,6 +575,15 @@ data class TargetObject(
      */
     override val chooser: TargetChooser = TargetChooser.Controller
 ) : TargetRequirement {
+    init {
+        // Both are announced as exclusive pools (one pick per value / per owner) and an equality
+        // restriction contradicts a difference one, so they don't combine on one requirement.
+        require(differentNumericProperty == null || (sameNumericProperty == null && ownerDistribution == null &&
+            !onePerCardType && !onePerColor)) {
+            "differentNumericProperty doesn't combine with sameNumericProperty, ownerDistribution or one-per-category targets"
+        }
+    }
+
     /**
      * A [dynamicMinCount] is unknown until X (or the board) is read, and may resolve to 0, so the
      * static floor is 0 — the authoritative sites resolve the real one (see [dynamicMinCount]).
@@ -626,7 +635,7 @@ data class TargetObject(
             else -> base
         }
         val numericQualified = sameNumericProperty?.let { "$qualified with equal ${it.description}" }
-            ?: differentNumericProperty?.let { "$qualified with different ${it.description}s" } ?: qualified
+            ?: differentNumericProperty?.let { "$qualified with different ${it.pluralDescription}" } ?: qualified
         if (totalManaValueAtMost != null) {
             "$numericQualified with total mana value ${totalManaValueAtMost.description} or less"
         } else {

@@ -382,7 +382,14 @@ data class TargetInfo(
      * ([com.wingedsheep.engine.mechanics.targeting.OnePerCategoryTargets]).
      */
     val distinctCategories: Map<EntityId, List<String>>? = null,
-)
+) {
+    /**
+     * How many of [candidates] can be chosen together: one per [exclusiveGroups] pool that still
+     * holds a candidate ("… with different mana values", one per owner), else every candidate.
+     */
+    fun distinctPickCount(candidates: List<EntityId> = validTargets): Int =
+        exclusiveGroups?.count { group -> group.any { it in candidates } } ?: candidates.size
+}
 
 /**
  * The per-requirement list a [LegalAction] carries in `targetRequirements`. A single requirement

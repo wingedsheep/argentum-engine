@@ -201,7 +201,7 @@ object XCostSelection {
         // "X target creatures" is exactly X (CR 601.2c): the floor is X too, and an X with fewer
         // legal targets than that can't be cast at all.
         val minTargets = if (requirement.xConstrainsCountExactly) x else minOf(requirement.minTargets, maxTargets)
-        if (requirement.xConstrainsCountExactly && valid.size < x) return null
+        if (requirement.xConstrainsCountExactly && requirement.distinctPickCount(valid) < x) return null
         if (requirement.minTargets > 0 && (valid.isEmpty() || maxTargets < requirement.minTargets)) {
             return null
         }

@@ -385,7 +385,7 @@ class TargetValidator(
             if (differentProperty != null && targetsForReq.size > 1) {
                 val ids = targetsForReq.map { it.toEntityId() }
                 if (!NumericTargetEquality.isDistinct(state, ids, differentProperty)) {
-                    return "Targets must have different ${differentProperty.description}s"
+                    return "Targets must have different ${differentProperty.pluralDescription}"
                 }
             }
 
