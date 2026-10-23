@@ -323,7 +323,7 @@ function OutsideTheGameTab({ cards, playable, onPlay }: {
       <span style={{ color: '#94a3b8', fontSize: 12, maxWidth: 560, textAlign: 'center', lineHeight: 1.5 }}>
         {anyPlayable ? (
           <span style={{ color: '#a5f3fc', fontWeight: 600 }}>
-            You may play one of the highlighted cards this turn — click one to play it.{' '}
+            You may play the highlighted cards right now — click one to play it.{' '}
           </span>
         ) : null}
         Your sideboard — cards you own outside the game. Learn, wishes and similar effects can bring

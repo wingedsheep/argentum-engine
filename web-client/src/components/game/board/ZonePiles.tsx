@@ -207,7 +207,9 @@ export function ZonePile({
     : { alignSelf: 'flex-end' as const, marginBottom: responsive.sectionGap * 2 }
 
   // The deck list is worth opening even on an empty library (you can still read what you played).
-  const isOwnDeck = ownDeck.length > 0
+  // A sideboard is only ever sent to its owner, so one also marks this pile as the viewer's — and
+  // keeps it openable when a Wish has a card to offer from it even with no library or deck list.
+  const isOwnDeck = ownDeck.length > 0 || outsideCards.length > 0
   const canBrowseDeck = player.librarySize > 0 || isOwnDeck
   const showsTopLibraryCard = player.librarySize > 0 && topLibraryCard !== null
 
@@ -235,7 +237,7 @@ export function ZonePile({
           data-zone={isOpponent ? 'opponent-library' : 'player-library'}
           data-zone-owner={player.playerId}
           title={outsidePlayableCount > 0
-            ? `You may play a card from outside the game — open to choose (D)`
+            ? `You may play cards from outside the game — open to choose (D)`
             : deckPileTitle(canBrowseDeck, isOwnDeck, showsTopLibraryCard ? topLibraryCard : null, outsideCards.length)}
           style={{
             ...styles.deckPile,

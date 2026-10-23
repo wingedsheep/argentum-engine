@@ -2,6 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.PlayLand
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
@@ -70,6 +71,22 @@ class WishScenarioTest : ScenarioTestBase() {
             withClue("Wish lets you play one card, not each of them") {
                 game.sideboardActions() shouldBe emptyList()
                 game.execute(CastSpell(game.player1Id, game.sideboardCard("Lightning Bolt"))).error shouldNotBe null
+            }
+        }
+
+        test("an instant cast from the sideboard goes to its owner's graveyard once it resolves") {
+            val game = wishGame()
+            game.castSpell(1, "Wish")
+            game.resolveStack()
+
+            game.execute(
+                CastSpell(game.player1Id, game.sideboardCard("Lightning Bolt"), listOf(ChosenTarget.Player(game.player2Id)))
+            ).error shouldBe null
+            game.resolveStack()
+            game.getLifeTotal(2) shouldBe 17
+            withClue("a card that entered the game stays in it (CR 400.11b): graveyard, not back outside") {
+                game.isInGraveyard(1, "Lightning Bolt") shouldBe true
+                game.isInSideboard(1, "Lightning Bolt") shouldBe false
             }
         }
 
