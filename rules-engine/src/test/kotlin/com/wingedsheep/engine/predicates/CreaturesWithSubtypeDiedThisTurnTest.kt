@@ -2,7 +2,7 @@ package com.wingedsheep.engine.predicates
 
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
-import com.wingedsheep.engine.state.components.player.CreatureDeathRecord
+import com.wingedsheep.engine.support.creatureDeath
 import com.wingedsheep.engine.state.components.player.CreatureDeathsThisTurnComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -29,7 +29,7 @@ class CreaturesWithSubtypeDiedThisTurnTest : FunSpec({
     }
 
     fun GameTestDriver.record(player: com.wingedsheep.sdk.model.EntityId, vararg deaths: Set<String>) =
-        replaceState(state.updateEntity(player) { it.with(CreatureDeathsThisTurnComponent(deaths.map { CreatureDeathRecord("Test Creature", it) })) })
+        replaceState(state.updateEntity(player) { it.with(CreatureDeathsThisTurnComponent(deaths.map { creatureDeath(subtypes = it) })) })
 
     fun GameTestDriver.eval(amount: DynamicAmount): Int =
         PredicateEvaluator(cardRegistry = null).amounts.evaluate(state, amount, EffectContext(sourceId = null, controllerId = player1))

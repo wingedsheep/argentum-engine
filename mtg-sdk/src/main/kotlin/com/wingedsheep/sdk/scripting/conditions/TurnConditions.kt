@@ -665,56 +665,51 @@ data object ControlledCreatureDiedThisTurnCondition : Condition {
 }
 
 /**
- * Condition: "if a creature [matching the record tests] died this turn" — a filtered sibling of
- * [CreatureDiedThisTurnCondition], satisfied when **one** creature that died this turn passes every
- * test that is set. Evaluated against each dying creature's **last-known** name and subtypes (as it
- * was when it died, per CR 603.10 / last-known information), not any creature's current state, so a
- * Zombie that loses its types after death still counts as a Zombie death.
+ * Condition: "if a [filter] creature died this turn" — the filtered sibling of
+ * [CreatureDiedThisTurnCondition], satisfied when **one** creature that died this turn matches
+ * [filter]. Each death is matched against the creature **as it last existed on the battlefield**
+ * (CR 603.10 / last-known information) — its projected name, type line, subtypes, colors, P/T,
+ * keywords, counters and token status — not its current graveyard state, so a Zombie that loses
+ * its types after death still counts as a Zombie death. A face-down creature died with no name
+ * (CR 708.2a): it matches no `named` test and passes every `notNamed` one. Predicates a
+ * last-known snapshot can't answer (a chosen name, a stored collection) never match.
  *
- *  - [subtype] with [present] = true  → "a [subtype] creature died this turn" (some dead creature
- *    *had* the subtype); [present] = false → "a non-[subtype] creature died this turn" (some dead
- *    creature *lacked* it). `null` = no subtype test.
- *  - [notNamed] → "a creature not named [notNamed] died this turn" (Ebondeath, Dracolich, AFR):
- *    some dead creature's last-known name differs. `null` = no name test.
- *
- * Note the asymmetry that makes the negated forms correct: they are true iff *at least one*
- * creature that died this turn fails the excluded property. A turn in which only Zombies died does
- * not satisfy the non-Zombie form, while a turn in which a Zombie and a Human both died satisfies
- * both the Zombie and the non-Zombie form.
+ * Negated filters read "some dead creature lacked it": a turn in which only Zombies died does not
+ * satisfy the non-Zombie form, while a Zombie and a Human both dying satisfies both the Zombie and
+ * the non-Zombie form.
  *
  * Backed by the per-player [com.wingedsheep.engine.state.components.player.CreatureDeathsThisTurnComponent]
- * (one record per death, the dying creature's last-known name and subtypes), cleared at end of turn.
+ * (one last-known snapshot per death), cleared at end of turn. Facades:
+ * `Conditions.SubtypeCreatureDiedThisTurn` / `NonSubtypeCreatureDiedThisTurn` /
+ * `CreatureNotNamedDiedThisTurn`.
  *
- *  - Undead Sprinter (DSK): `CreatureDiedThisTurnMatching(Subtype.ZOMBIE.value, present = false)`
- *    gates its conditional cast-from-graveyard permission ("if a non-Zombie creature died this turn").
+ *  - Undead Sprinter (DSK): `Creature.notSubtype(ZOMBIE)` — "if a non-Zombie creature died this turn".
+ *  - Ebondeath, Dracolich (AFR): `Creature.notNamed("Ebondeath, Dracolich")`.
  *  - Cult Conscript (DMU): `player = Player.You` — "a non-Skeleton creature died under your control
  *    this turn". Each death is recorded under its last-known controller, so the scoped form reads
- *    only that player's records and a single death must satisfy both the subtype test and the
- *    controller scope (unlike `ControlledCreatureDiedThisTurn` AND a global subtype test, which two
+ *    only that player's records and a single death must satisfy both the filter and the
+ *    controller scope (unlike `ControlledCreatureDiedThisTurn` AND a global filtered test, which two
  *    different deaths could satisfy between them).
  *
- * @property subtype The creature subtype to test for, stored as its raw string (e.g. "Zombie"), or null.
- * @property present Whether a creature *with* the subtype (true) or *without* it (false) must have died.
- * @property notNamed A name the dead creature must *not* have had, or null.
+ * @property filter What the dead creature must have been.
  * @property player Whose deaths count — [Player.Each] (default, global) or a single player resolved
  *   relative to the source ([Player.You] = died under the source controller's control).
  */
 @SerialName("CreatureDiedThisTurnMatching")
 @Serializable
 data class CreatureDiedThisTurnMatching(
-    val subtype: String? = null,
-    val present: Boolean = true,
-    val notNamed: String? = null,
+    val filter: GameObjectFilter,
     val player: Player = Player.Each
 ) : Condition {
     override val description: String = buildString {
-        append("if a ")
-        if (subtype != null) append(if (present) "$subtype " else "non-$subtype ")
-        append("creature")
-        if (notNamed != null) append(" not named $notNamed")
-        append(" died")
+        append("if ${filter.indefiniteArticle} ${filter.description} died")
         if (player != Player.Each) append(" under ${player.possessive} control")
         append(" this turn")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Condition {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
     }
 }
 

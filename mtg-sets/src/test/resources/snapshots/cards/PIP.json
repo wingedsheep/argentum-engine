@@ -14267,7 +14267,7 @@
                 },
                 "interveningIf": {
                     "type": "CreatureDiedThisTurnMatching",
-                    "subtype": "Human",
+                    "filter": "creature Human",
                     "player": "You"
                 }
             }

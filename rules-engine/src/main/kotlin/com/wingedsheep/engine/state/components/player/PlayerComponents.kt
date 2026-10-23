@@ -1491,31 +1491,24 @@ data class PermanentsPutIntoGraveyardFromBattlefieldThisTurnComponent(
 
 /**
  * Records each creature that died under this player's control during the current turn — one
- * [deaths] entry per death, in death order, holding the dying creature's last-known name and
- * subtypes. Both are captured from projected state at the moment it left the battlefield
- * (CR 603.10 / last-known information), so a creature that loses its types or a copied name after
- * death is still recorded as it was when it died. Subtypes are stored as their raw strings
- * (e.g. "Zombie").
+ * [deaths] entry per death, in death order: a lean [EntitySnapshot] of the creature as it last
+ * existed on the battlefield (CR 603.10 / last-known information) — its projected name, type line,
+ * subtypes, colors, P/T, keywords, counters and token / face-down status — so a creature that loses
+ * its types after death is still recorded as it was when it died. A face-down creature is recorded
+ * with no name (CR 708.2a).
  *
  * Cleared at end of turn by CleanupPhaseManager alongside [CreaturesDiedThisTurnComponent].
  *
- * Backs the filtered death conditions
- * ([com.wingedsheep.sdk.scripting.conditions.CreatureDiedThisTurnMatching]): "a Goblin died this
- * turn", "a non-Zombie creature died this turn" (Undead Sprinter, DSK), "a creature not named
- * Ebondeath, Dracolich died this turn" (AFR). Summed across all players this gives the game-wide
- * record, since those conditions are global by default.
+ * Backs the filtered death condition
+ * ([com.wingedsheep.sdk.scripting.conditions.CreatureDiedThisTurnMatching], matched through
+ * `PredicateEvaluator.matchesSnapshot`): "a Goblin died this turn", "a non-Zombie creature died this
+ * turn" (Undead Sprinter, DSK), "a creature not named Ebondeath, Dracolich died this turn" (AFR).
+ * Summed across all players this gives the game-wide record, since that condition is global by default.
  */
 @Serializable
 data class CreatureDeathsThisTurnComponent(
-    val deaths: List<CreatureDeathRecord> = emptyList()
+    val deaths: List<com.wingedsheep.engine.state.components.stack.EntitySnapshot> = emptyList()
 ) : Component
-
-/** One creature death in [CreatureDeathsThisTurnComponent]: its last-known [name] and [subtypes]. */
-@Serializable
-data class CreatureDeathRecord(
-    val name: String,
-    val subtypes: Set<String>
-)
 
 /**
  * Tracks the number of permanents — of any type, token or nontoken — that left the

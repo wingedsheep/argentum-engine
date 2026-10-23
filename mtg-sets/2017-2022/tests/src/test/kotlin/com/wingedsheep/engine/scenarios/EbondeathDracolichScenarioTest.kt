@@ -3,8 +3,6 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.legalactions.EnumerationMode
 import com.wingedsheep.engine.legalactions.LegalActionEnumerator
-import com.wingedsheep.engine.state.components.player.CreatureDeathRecord
-import com.wingedsheep.engine.state.components.player.CreatureDeathsThisTurnComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.afr.cards.EbondeathDracolich
@@ -52,15 +50,31 @@ class EbondeathDracolichScenarioTest : FunSpec({
         d.canCastFromGraveyard(d.player1, ebondeath) shouldBe false
     }
 
-    test("only a creature named Ebondeath, Dracolich died: not castable") {
+    test("Ebondeath itself dying doesn't enable its own recast") {
         val d = newDriver()
-        val ebondeath = d.putCardInGraveyard(d.player1, "Ebondeath, Dracolich")
-        d.addComponent(
-            d.player1,
-            CreatureDeathsThisTurnComponent(listOf(CreatureDeathRecord("Ebondeath, Dracolich", setOf("Zombie", "Dragon"))))
-        )
+        val ebondeath = d.putPermanentOnBattlefield(d.player1, "Ebondeath, Dracolich")
+        d.bolt(ebondeath)
+        d.state.getZone(d.player1, Zone.GRAVEYARD).contains(ebondeath) shouldBe true
         d.giveMana(d.player1, Color.BLACK, 4)
         d.canCastFromGraveyard(d.player1, ebondeath) shouldBe false
+    }
+
+    test("a copy of Ebondeath dies under the copied name, so it doesn't count either") {
+        val d = newDriver()
+        val you = d.player1
+        val ebondeath = d.putCardInGraveyard(you, "Ebondeath, Dracolich")
+        val original = d.putPermanentOnBattlefield(d.player2, "Ebondeath, Dracolich")
+
+        val clone = d.putCardInHand(you, "Clone")
+        d.giveMana(you, Color.BLUE, 4)
+        d.castSpell(you, clone).error shouldBe null
+        d.bothPass()
+        d.submitCardSelection(you, listOf(original))
+
+        d.bolt(clone)
+        d.state.getZone(you, Zone.GRAVEYARD).contains(clone) shouldBe true
+        d.giveMana(you, Color.BLACK, 4)
+        d.canCastFromGraveyard(you, ebondeath) shouldBe false
     }
 
     test("an opponent's creature died: cast from the graveyard at instant speed, enters tapped with flying") {

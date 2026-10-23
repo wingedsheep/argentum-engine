@@ -801,14 +801,15 @@ class ConditionEvaluator(
                     Player.Each, Player.Any -> state.turnOrder
                     else -> listOfNotNull(resolvePlayer(state, condition.player, ctx))
                 }
-                players.any { playerId ->
-                    val died = state.getEntity(playerId)
-                        ?.get<CreatureDeathsThisTurnComponent>()
-                        ?.deaths.orEmpty()
-                    died.any { death ->
-                        (condition.subtype == null || (condition.subtype in death.subtypes) == condition.present) &&
-                            (condition.notNamed == null || death.name != condition.notNamed)
+                val deaths = players.flatMap { playerId ->
+                    state.getEntity(playerId)?.get<CreatureDeathsThisTurnComponent>()?.deaths.orEmpty()
+                }
+                if (deaths.isEmpty()) false else {
+                    val predicateContext = when (ctx) {
+                        is Resolution -> PredicateContext.fromEffectContext(ctx.effectContext)
+                        is Projection -> PredicateContext(controllerId = ctx.controllerId ?: ctx.sourceId, sourceId = ctx.sourceId)
                     }
+                    deaths.any { predicates.matchesSnapshot(state, it, condition.filter, predicateContext) }
                 }
             }
 

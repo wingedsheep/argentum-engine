@@ -401,6 +401,13 @@ class PredicateEvaluator(
             is CardPredicate.HasSubtype ->
                 typeLine?.hasSubtype(predicate.subtype)
                     ?: snapshot.subtypes.any { it.equals(predicate.subtype.value, ignoreCase = true) }
+            is CardPredicate.NotSubtype ->
+                (typeLine?.hasSubtype(predicate.subtype)
+                    ?: snapshot.subtypes.any { it.equals(predicate.subtype.value, ignoreCase = true) }).not()
+            // A face-down permanent has no name (CR 708.2a), so it matches no name — and so passes
+            // a negated one ("a creature not named …"). An uncaptured name stays unknown.
+            is CardPredicate.NameEquals ->
+                if (snapshot.wasFaceDown) false else snapshot.name?.let { it == predicate.name }
             is CardPredicate.HasKeyword -> snapshot.keywords.containsKeyword(predicate.keyword)
             CardPredicate.PowerGreaterThanBase -> {
                 val power = snapshot.power
@@ -471,14 +478,12 @@ class PredicateEvaluator(
             is CardPredicate.ManaValueEqualsDynamic,
             CardPredicate.ManaValueIsEven,
             CardPredicate.ManaValueIsOdd,
-            is CardPredicate.NameEquals,
             is CardPredicate.NameEqualsChosen,
             is CardPredicate.NameEqualsChosenComponent,
             CardPredicate.NameNotSharedWithControlledRoom,
             is CardPredicate.NotColor,
             is CardPredicate.NotKeyword,
             CardPredicate.NotOfSourceChosenType,
-            is CardPredicate.NotSubtype,
             is CardPredicate.OriginallyPrintedInSet,
             is CardPredicate.PowerAtLeast,
             is CardPredicate.PowerAtMost,

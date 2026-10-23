@@ -12,6 +12,10 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.conditions.CreatureDiedThisTurnMatching
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.engine.support.creatureDeath
+import com.wingedsheep.engine.support.recordCreatureDeaths
+import io.kotest.matchers.string.shouldContain
 import com.wingedsheep.sdk.scripting.references.Player
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -108,14 +112,26 @@ class CreatureDiedThisTurnMatchingTest : FunSpec({
         val d = driver()
         d.kill(d.putPermanentOnBattlefield(d.player1, "Goblin Guide"))
         d.kill(d.putPermanentOnBattlefield(d.player1, "Savannah Lions"))
-        val goblinNotGuide = CreatureDiedThisTurnMatching(subtype = Subtype.GOBLIN.value, notNamed = "Goblin Guide")
-        d.holds(goblinNotGuide) shouldBe false
-        d.holds(CreatureDiedThisTurnMatching(subtype = Subtype.GOBLIN.value, present = false, notNamed = "Goblin Guide")) shouldBe true
+        val goblin = GameObjectFilter.Creature.withSubtype(Subtype.GOBLIN)
+        d.holds(CreatureDiedThisTurnMatching(goblin.notNamed("Goblin Guide"))) shouldBe false
+        d.holds(CreatureDiedThisTurnMatching(goblin.named("Goblin Guide"))) shouldBe true
+        d.holds(CreatureDiedThisTurnMatching(GameObjectFilter.Creature.notSubtype(Subtype.GOBLIN).notNamed("Goblin Guide"))) shouldBe true
     }
 
-    test("description reads like the printed condition") {
-        notLions.description shouldBe "if a creature not named Savannah Lions died this turn"
-        nonGoblinMine.description shouldBe "if a non-Goblin creature died under your control this turn"
+    test("a face-down creature dies nameless and with no subtypes (CR 708.2a)") {
+        val d = driver()
+        d.recordCreatureDeaths(
+            d.player1,
+            creatureDeath(name = "Savannah Lions").copy(name = null, wasFaceDown = true, subtypes = emptySet())
+        )
+        d.holds(notLions) shouldBe true
+        d.holds(CreatureDiedThisTurnMatching(GameObjectFilter.Creature.named("Savannah Lions"))) shouldBe false
+        d.holds(nonGoblinMine) shouldBe true
+    }
+
+    test("description names the filter and the scope") {
+        nonGoblinMine.description shouldContain "non-Goblin"
+        nonGoblinMine.description shouldContain "died under your control this turn"
+        notLions.description shouldContain "Savannah Lions"
     }
 })
-

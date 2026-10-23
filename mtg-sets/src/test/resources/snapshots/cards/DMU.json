@@ -3249,8 +3249,15 @@
                         "type": "ActivationOnlyIfCondition",
                         "condition": {
                             "type": "CreatureDiedThisTurnMatching",
-                            "subtype": "Skeleton",
-                            "present": false,
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotSubtype",
+                                        "subtype": "Skeleton"
+                                    }
+                                ]
+                            },
                             "player": "You"
                         }
                     }

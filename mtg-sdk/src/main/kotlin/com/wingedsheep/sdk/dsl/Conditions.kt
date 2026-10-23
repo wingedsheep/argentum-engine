@@ -2351,7 +2351,7 @@ object Conditions {
      * subtypes. Global by default; pass [player] (e.g. `Player.You`) for "died under your control".
      */
     fun SubtypeCreatureDiedThisTurn(subtype: Subtype, player: Player = Player.Each): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.CreatureDiedThisTurnMatching(subtype.value, present = true, player = player)
+        com.wingedsheep.sdk.scripting.conditions.CreatureDiedThisTurnMatching(GameObjectFilter.Creature.withSubtype(subtype), player)
 
     /**
      * "if a non-[subtype] creature died this turn" — satisfied when at least one creature that died
@@ -2360,7 +2360,7 @@ object Conditions {
      * control (Cult Conscript, DMU: "a non-Skeleton creature died under your control this turn").
      */
     fun NonSubtypeCreatureDiedThisTurn(subtype: Subtype, player: Player = Player.Each): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.CreatureDiedThisTurnMatching(subtype.value, present = false, player = player)
+        com.wingedsheep.sdk.scripting.conditions.CreatureDiedThisTurnMatching(GameObjectFilter.Creature.notSubtype(subtype), player)
 
     /**
      * "if a creature not named [name] died this turn" — satisfied when at least one creature that
@@ -2369,7 +2369,7 @@ object Conditions {
      * Ebondeath, Dracolich died this turn."
      */
     fun CreatureNotNamedDiedThisTurn(name: String, player: Player = Player.Each): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.CreatureDiedThisTurnMatching(notNamed = name, player = player)
+        com.wingedsheep.sdk.scripting.conditions.CreatureDiedThisTurnMatching(GameObjectFilter.Creature.notNamed(name), player)
 
     /**
      * Intervening-if: "if a permanent you controlled left the battlefield this turn".
