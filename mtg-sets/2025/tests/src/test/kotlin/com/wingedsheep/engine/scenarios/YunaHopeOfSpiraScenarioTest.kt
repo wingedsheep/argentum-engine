@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ManaSourcesSelectedResponse
+import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
@@ -9,6 +11,7 @@ import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * Scenario tests for Yuna, Hope of Spira (FIN).
@@ -66,6 +69,31 @@ class YunaHopeOfSpiraScenarioTest : ScenarioTestBase() {
                 withClue("ward {2} went unpaid, so Murder was countered") {
                     game.isOnBattlefield("Yuna, Hope of Spira") shouldBe true
                     game.isInGraveyard(2, "Murder") shouldBe true
+                }
+            }
+
+            test("on your turn, paying Yuna's single ward {2} lets the removal resolve") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Yuna, Hope of Spira", summoningSickness = false)
+                    .withCardInHand(2, "Murder")
+                    .withLandsOnBattlefield(2, "Swamp", 5)
+                    .withActivePlayer(1)
+                    .withPriorityPlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(2, "Murder", game.findPermanent("Yuna, Hope of Spira")!!).error shouldBe null
+                game.resolveStack()
+
+                val ward = game.getPendingDecision()
+                ward.shouldBeInstanceOf<SelectManaSourcesDecision>()
+                game.submitDecision(ManaSourcesSelectedResponse(ward.id, autoPay = true)).error shouldBe null
+                game.resolveStack()
+
+                withClue("one ward {2} trigger, paid with the last two Swamps, so Murder resolved") {
+                    game.getPendingDecision() shouldBe null
+                    game.isInGraveyard(1, "Yuna, Hope of Spira") shouldBe true
                 }
             }
 
