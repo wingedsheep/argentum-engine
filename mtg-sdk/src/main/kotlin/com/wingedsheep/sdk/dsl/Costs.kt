@@ -350,8 +350,11 @@ object Costs {
         count: Int = 1,
         filter: GameObjectFilter = GameObjectFilter.Any,
         excludeSelf: Boolean = false,
+        distinctNames: Boolean = false,
     ): AbilityCost =
-        AbilityCost.Atom(CostAtom.ExileFrom(Zone.BATTLEFIELD, filter, count, excludeSelf = excludeSelf))
+        AbilityCost.Atom(
+            CostAtom.ExileFrom(Zone.BATTLEFIELD, filter, count, excludeSelf = excludeSelf, distinctNames = distinctNames)
+        )
 
     /**
      * Exile X cards from graveyard, where X is the ability's X value.

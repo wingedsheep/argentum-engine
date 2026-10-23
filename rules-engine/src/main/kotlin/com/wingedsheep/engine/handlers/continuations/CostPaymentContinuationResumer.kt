@@ -229,8 +229,9 @@ class CostPaymentContinuationResumer(
         // never reaches this payment.
         // "Sacrifice N ... with different names" — reject selections that repeat a name (CR 601.2g costs
         // must be paid in full and legally). The chosen permanents must be pairwise distinctly named.
-        if (atom is CostAtom.Sacrifice && atom.distinctNames &&
-            !CostPaymentService.allDistinctNames(state, response.selectedCards)
+        val distinctNames = (atom as? CostAtom.Sacrifice)?.distinctNames == true ||
+            (atom as? CostAtom.ExileFrom)?.distinctNames == true
+        if (distinctNames && !CostPaymentService.allDistinctNames(state, response.selectedCards)
         ) {
             return declined(state, continuation, checkForMore)
         }

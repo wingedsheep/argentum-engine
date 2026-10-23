@@ -201,6 +201,17 @@ data class CreateTokenEffect(
      * Requires [attacking].
      */
     val attackedPlayer: EffectTarget? = null,
+    /**
+     * Pipeline collections whose cards lend the token **all of their triggered abilities** — "create
+     * Vecna, a legendary 8/8 … token with indestructible and all triggered abilities of the exiled
+     * cards" (The Book of Vile Darkness). Read once, as the token is created: each card's printed
+     * triggered abilities become part of the token's copiable values (the Book's ruling), so a gained
+     * "when this enters" ability triggers on the token's own entry and a copy of the token keeps them.
+     * Face-down cards lend nothing (they have no abilities, CR 708.2). The sibling of
+     * [triggeredAbilities] for abilities named by the cards a resolution gathered rather than printed
+     * on the token-maker.
+     */
+    val triggeredAbilitiesOf: List<String> = emptyList(),
 ) : Effect {
     init {
         require(attackDefender != EnteringAttackDefender.RETURNED_ATTACKER) { "RETURNED_ATTACKER is for MoveToZoneEffect only" }

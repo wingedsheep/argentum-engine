@@ -15,6 +15,7 @@ import com.wingedsheep.engine.handlers.effects.composite.asConditional
 import com.wingedsheep.engine.mechanics.SummoningSicknessRules
 import com.wingedsheep.engine.mechanics.mana.TapForGeneric
 import com.wingedsheep.engine.legalactions.*
+import com.wingedsheep.engine.mechanics.cost.CostPaymentService
 import com.wingedsheep.engine.legalactions.utils.AbilityCostReduction
 import com.wingedsheep.engine.legality.LegalityKernel
 import com.wingedsheep.engine.legalactions.utils.TargetEnumerationUtils
@@ -368,6 +369,9 @@ class ActivatedAbilityEnumerator(
                                 excludeSelfId = if (atom.excludeSelf) entityId else null
                             )
                             if (targets.size < atom.count) continue
+                            if (atom.distinctNames &&
+                                CostPaymentService.distinctNameCount(state, targets) < atom.count
+                            ) continue
                             exileCost = atom
                             exileTargets = targets
                         }
@@ -631,7 +635,9 @@ class ActivatedAbilityEnumerator(
                                             atom.anyPlayersZone, atom.singleZone, atom.count,
                                             excludeSelfId = if (atom.excludeSelf) entityId else null
                                         )
-                                        if (targets.size < atom.count) {
+                                        if (targets.size < atom.count || (atom.distinctNames &&
+                                                CostPaymentService.distinctNameCount(state, targets) < atom.count)
+                                        ) {
                                             costCanBePaid = false
                                             break
                                         }

@@ -3918,6 +3918,151 @@
     ]
 }
 
+// The Book of Vile Darkness
+{
+    "name": "The Book of Vile Darkness",
+    "manaCost": "{B}{B}{B}",
+    "typeLine": "Legendary Artifact — Book",
+    "oracleText": "At the beginning of your end step, if you lost 2 or more life this turn, create a 2/2 black Zombie creature token.\n{T}, Exile The Book of Vile Darkness and artifacts you control named Eye of Vecna and Hand of Vecna: Create Vecna, a legendary 8/8 black Zombie God creature token with indestructible and all triggered abilities of the exiled cards.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "The Book of Vile Darkness:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_LOST_AMOUNT"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "The Book of Vile Darkness:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostExileSelf",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomExileFrom",
+                                "zone": "Battlefield",
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                {
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsArtifact",
+                                                        {
+                                                            "type": "NameEquals",
+                                                            "name": "Eye of Vecna"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsArtifact",
+                                                        {
+                                                            "type": "NameEquals",
+                                                            "name": "Hand of Vecna"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "controllerPredicate": "ControlledByYou"
+                                },
+                                "count": 2,
+                                "distinctNames": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "Entity",
+                                "entity": "Self"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": "ExiledAsCost",
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 8,
+                            "toughness": 8,
+                            "colors": [
+                                "BLACK"
+                            ],
+                            "creatureTypes": [
+                                "Zombie",
+                                "God"
+                            ],
+                            "keywords": [
+                                "INDESTRUCTIBLE"
+                            ],
+                            "name": "Vecna",
+                            "imageUri": "https://cards.scryfall.io/normal/front/8/6/86881c5f-df5e-4f50-b554-e4c49d5316f9.jpg?1783926347",
+                            "legendary": true,
+                            "triggeredAbilitiesOf": [
+                                "gathered0",
+                                "gathered1"
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "{T}, Exile The Book of Vile Darkness and artifacts you control named Eye of Vecna and Hand of Vecna: Create Vecna, a legendary 8/8 black Zombie God creature token with indestructible and all triggered abilities of the exiled cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "rarity": "MYTHIC",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/05dcff61-8c48-401f-a31f-5fc53a298356.jpg?1783926499"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // The Deck of Many Things
 {
     "name": "The Deck of Many Things",

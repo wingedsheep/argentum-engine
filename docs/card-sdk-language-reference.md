@@ -678,9 +678,12 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   validates a client-supplied `costPayment.discardedCards` (exactly X distinct matching hand cards)
   and is a real discard, so discard triggers fire. **Gix, Yawgmoth Praetor**: `Costs.Composite(
   Costs.Mana("{4}{B}{B}{B}"), Costs.DiscardX())` → exile the top X cards of target opponent's library.
-- `Costs.ExilePermanentsFixed(count = 1, filter = Any, excludeSelf = false)` — **fixed-count** "exile N permanents you
+- `Costs.ExilePermanentsFixed(count = 1, filter = Any, excludeSelf = false, distinctNames = false)` — **fixed-count** "exile N permanents you
   control matching `filter`" activated-ability cost (City of Shadows: "{T}, Exile a creature you
-  control:"). The counted sibling of the variable-count `Costs.ExilePermanents` below — reach for
+  control:"). `distinctNames = true` (the `Costs.Sacrifice` twin) requires the N objects to have different
+  names: "exile … artifacts you control named Eye of Vecna and Hand of Vecna" (The Book of Vile Darkness)
+  is `count = 2` over `named("Eye of Vecna") or named("Hand of Vecna")` with different names — exactly one
+  of each. Payable only with N distinctly named candidates; a selection that repeats a name is rejected. The counted sibling of the variable-count `Costs.ExilePermanents` below — reach for
   this whenever the card names a specific number and nothing downstream reads an X. Pass a
   controller-scoped filter (`.youControl()`): the battlefield zone map is keyed by **owner**, so the
   filter is what enforces "you control". `excludeSelf = true` is "exile **another** …" (Curie,
@@ -2736,7 +2739,12 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   counters, abilities, tapped state and cleanup riders. Event-scoped additions (Peregrin Took's
   Food) and attached-copy replacement choices apply once to the whole batch, including across
   a paused decision. Use this for “create [token] and [token]”; `then` creates separate events.
-- `CreateToken(p, t, colors?, creatureTypes, keywords?, count?, controller?, imageUri?, name?, legendary?, tapped?, artifactToken?, enchantmentToken?, staticAbilities?, exileAtStep?, sacrificeAtStep?, attacking?, attackDefender?, attackedPlayer?)` — make N creature tokens.
+- `CreateToken(p, t, colors?, creatureTypes, keywords?, count?, controller?, imageUri?, name?, legendary?, tapped?, artifactToken?, enchantmentToken?, staticAbilities?, exileAtStep?, sacrificeAtStep?, attacking?, attackDefender?, attackedPlayer?, triggeredAbilitiesOf?)` — make N creature tokens.
+  `triggeredAbilitiesOf: List<CollectionSlot>` creates the token "with all triggered abilities of the exiled
+  cards" (The Book of Vile Darkness: `listOf(gather(CardSource.Entity(Self)), gather(CardSource.ExiledAsCost))`).
+  Every printed triggered ability of the cards in those pipeline collections is read once, as the token is
+  created, into its copiable values — so a gained "when this enters" triggers on the token's own entry (the
+  Book's ruling) and a copy of the token keeps them. Face-down cards lend nothing.
   `exileAtStep: Step?` arms the exile counterpart of the delayed trigger described below. Both the fixed
   and dynamic-count overloads expose both delayed zone-change options.
   `attacking = true` (usually with `tapped = true`) puts the tokens onto the battlefield attacking, and

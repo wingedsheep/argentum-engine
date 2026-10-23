@@ -3253,11 +3253,12 @@ object Effects {
         attackDefender: com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender =
             com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender.JOIN_SOURCE,
         attackedPlayer: EffectTarget? = null,
+        triggeredAbilitiesOf: List<CollectionSlot> = emptyList(),
     ): CreateTokenEffect = CreateToken(
         DynamicAmount.Fixed(count), power, toughness, colors, creatureTypes, keywords, controller, imageUri,
         name, legendary, tapped, artifactToken, enchantmentToken, staticAbilities, exileAtStep,
         sacrificeAtStep, attacking, triggeredAbilities, activatedAbilities, dynamicPower, dynamicToughness,
-        initialCounters, stampCreator, numericKeywords, attackDefender, attackedPlayer,
+        initialCounters, stampCreator, numericKeywords, attackDefender, attackedPlayer, triggeredAbilitiesOf,
     )
 
     /**
@@ -3278,6 +3279,9 @@ object Effects {
      * @param initialCounters Counters the token enters with.
      * @param stampCreator Record the creating permanent on each token, for "tokens created with
      *   this" ([com.wingedsheep.sdk.scripting.predicates.StatePredicate.CreatedBySource]).
+     * @param triggeredAbilitiesOf "… and all triggered abilities of the exiled cards" (The Book of
+     *   Vile Darkness): the token is created with every triggered ability of the cards in these
+     *   collections, as copiable values — see [CreateTokenEffect.triggeredAbilitiesOf].
      */
     fun CreateToken(
         count: DynamicAmount,
@@ -3307,6 +3311,7 @@ object Effects {
         attackDefender: com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender =
             com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender.JOIN_SOURCE,
         attackedPlayer: EffectTarget? = null,
+        triggeredAbilitiesOf: List<CollectionSlot> = emptyList(),
     ): CreateTokenEffect = CreateTokenEffect(
         count = count, power = power, toughness = toughness, colors = colors,
         creatureTypes = creatureTypes, keywords = keywords, name = name, imageUri = imageUri,
@@ -3317,6 +3322,7 @@ object Effects {
         activatedAbilities = activatedAbilities, exileAtStep = exileAtStep,
         sacrificeAtStep = sacrificeAtStep, initialCounters = initialCounters, stampCreator = stampCreator,
         numericKeywords = numericKeywords, attackDefender = attackDefender, attackedPlayer = attackedPlayer,
+        triggeredAbilitiesOf = triggeredAbilitiesOf.map { it.key },
     )
 
     /**

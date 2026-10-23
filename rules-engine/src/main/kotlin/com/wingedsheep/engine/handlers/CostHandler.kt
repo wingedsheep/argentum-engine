@@ -733,9 +733,14 @@ class CostHandler(private val zones: ZoneTransitionService) {
         is CostAtom.ExileFrom -> {
             // "from a single graveyard" (Night Soil): affordability is per-zone, not pooled —
             // one matching card in each of two graveyards pays nothing.
-            val perZone = exileCandidatesByOwner(state, atom, controllerId, sourceId).values.map { it.size }
-            if (atom.singleZone) perZone.any { it >= atom.count }
-            else perZone.sum() >= atom.count
+            val byOwner = exileCandidatesByOwner(state, atom, controllerId, sourceId).values
+            when {
+                // "… with different names": count names, not objects.
+                atom.distinctNames ->
+                    CostPaymentService.distinctNameCount(state, byOwner.flatten()) >= atom.count
+                atom.singleZone -> byOwner.any { it.size >= atom.count }
+                else -> byOwner.sumOf { it.size } >= atom.count
+            }
         }
         // CR 701.59b — a player unable to exile cards totalling N can't choose to collect evidence,
         // so the ability isn't activatable at all. The gate is the graveyard's summed mana value,
@@ -1578,7 +1583,14 @@ class CostHandler(private val zones: ZoneTransitionService) {
             } else {
                 byOwner.values.flatten()
             }
-            autoPool.take(count)
+            // "With different names": one object per name.
+            val distinctPool = if (atom.distinctNames) {
+                autoPool.distinctBy { state.getEntity(it)?.get<CardComponent>()?.name }
+            } else autoPool
+            distinctPool.take(count)
+        }
+        if (atom.distinctNames && !CostPaymentService.allDistinctNames(state, toExile)) {
+            return CostPaymentResult.failure("The exiled ${fromZone.name.lowercase()} objects must have different names")
         }
 
         if (toExile.size < count) {

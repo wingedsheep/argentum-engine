@@ -276,6 +276,8 @@ class CreateTokenExecutor(
                 )
         } else null
 
+        val donatedTriggers = donatedTriggeredAbilities(state, effect, context)
+
         var newState = state
         val createdTokens = mutableListOf<EntityId>()
 
@@ -297,6 +299,7 @@ class CreateTokenExecutor(
                 imageUri = resolvedImageUri,
                 copyNumericKeywords = effect.numericKeywords,
                 copyStaticAbilities = effect.staticAbilities,
+                copyTriggeredAbilities = donatedTriggers,
             )
 
             val components = mutableListOf<Component>(
@@ -597,6 +600,35 @@ class CreateTokenExecutor(
             typeLine = TypeLine.parse("$typeLinePrefix - ${effectiveCreatureTypes.joinToString(" ")}"),
             cardDefinitionId = "token:${effectiveCreatureTypes.joinToString("-")}"
         )
+    }
+
+    /**
+     * "… with all triggered abilities of the exiled cards" (The Book of Vile Darkness): every printed
+     * triggered ability of the cards in [CreateTokenEffect.triggeredAbilitiesOf], read as the token is
+     * created. They become the token's copiable values ([CardComponent.copyTriggeredAbilities]), so a
+     * gained "when this enters" ability triggers on the token's own entry and a copy of the token keeps
+     * them. Each is re-stamped with a positional id, so two cards whose abilities share a printed id
+     * stay two abilities. A face-down card has no abilities to lend (CR 708.2).
+     */
+    private fun donatedTriggeredAbilities(
+        state: GameState,
+        effect: CreateTokenEffect,
+        context: EffectContext,
+    ): List<TriggeredAbility> {
+        if (effect.triggeredAbilitiesOf.isEmpty()) return emptyList()
+        val registry = cardRegistry ?: return emptyList()
+        return effect.triggeredAbilitiesOf
+            .flatMap { context.pipeline.storedCollections[it].orEmpty() }
+            .distinct()
+            .flatMap { donorId ->
+                val container = state.getEntity(donorId) ?: return@flatMap emptyList()
+                if (container.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>()) {
+                    return@flatMap emptyList()
+                }
+                val card = container.get<CardComponent>() ?: return@flatMap emptyList()
+                registry.getCard(card.cardDefinitionId)?.script?.triggeredAbilities.orEmpty()
+            }
+            .mapIndexed { index, ability -> ability.copy(id = AbilityId("copy:$index:${ability.id.value}")) }
     }
 
     private companion object {

@@ -835,7 +835,11 @@ class CostPaymentService(private val services: EngineServices) {
                     is CostAtom.Discard -> domain(state, payerId, c, sourceId, predicateEvaluator = predicateEvaluator).size >= atom.count
                     // CR 118.3 — an empty hand discards nothing, and a cost of nothing is payable.
                     is CostAtom.DiscardHand -> true
-                    is CostAtom.ExileFrom -> domain(state, payerId, c, sourceId, predicateEvaluator = predicateEvaluator).size >= atom.count
+                    is CostAtom.ExileFrom -> {
+                        val candidates = domain(state, payerId, c, sourceId, predicateEvaluator = predicateEvaluator)
+                        if (atom.distinctNames) distinctNameCount(state, candidates) >= atom.count
+                        else candidates.size >= atom.count
+                    }
                     // CR 701.59b — unpayable unless the graveyard's *total mana value* reaches N.
                     // Card count says nothing here: five lands total 0 and pay nothing.
                     is CostAtom.CollectEvidence ->

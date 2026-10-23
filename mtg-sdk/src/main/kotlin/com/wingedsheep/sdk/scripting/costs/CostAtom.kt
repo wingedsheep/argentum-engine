@@ -368,6 +368,14 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
          * The [Sacrifice.excludeSelf] twin; spell additional costs have no source and leave it false.
          */
         val excludeSelf: Boolean = false,
+        /**
+         * The [count] exiled objects must all have different names — the [Sacrifice.distinctNames]
+         * twin. "Exile … artifacts you control named Eye of Vecna and Hand of Vecna" (The Book of
+         * Vile Darkness) is `count = 2` over a filter matching either name, with different names, so
+         * it takes exactly one of each. Payable only when [count] distinctly named candidates exist;
+         * a selection that repeats a name is rejected.
+         */
+        val distinctNames: Boolean = false,
     ) : CostAtom {
         override val selectionCount: Int get() = count
         override val description: String get() {
@@ -376,7 +384,7 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
                 // "Exile five other cards from your graveyard" (escape, CR 702.138).
                 excludeSelf -> quantify(count, "other ${filter.description}")
                 else -> quantify(count, filter.description)
-            }
+            } + if (distinctNames) " with different names" else ""
             return when {
                 anyPlayersZone && singleZone -> "exile $what from a single ${zone.name.lowercase()}"
                 anyPlayersZone -> "exile $what from a ${zone.name.lowercase()}"
