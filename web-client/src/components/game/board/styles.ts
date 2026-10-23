@@ -195,6 +195,26 @@ export const styles: Record<string, React.CSSProperties> = {
     fontSize: 9,
     lineHeight: '13px',
   },
+  // The deck pile while a card outside the game may be played (Wish): the playable-card cyan, so
+  // it reads like any other card you can act on, plus a label saying why.
+  deckPileOutsidePlayable: {
+    boxShadow: '0 0 0 2px rgba(0, 221, 255, 0.85), 0 0 14px rgba(0, 221, 255, 0.5)',
+  },
+  deckOutsidePlayableBadge: {
+    position: 'absolute',
+    top: 2,
+    right: 2,
+    backgroundColor: 'rgba(4, 30, 40, 0.92)',
+    border: '1px solid rgba(0, 221, 255, 0.8)',
+    color: '#a5f3fc',
+    borderRadius: 4,
+    padding: '0 4px',
+    fontSize: 9,
+    fontWeight: 700,
+    lineHeight: '13px',
+    letterSpacing: 0.4,
+    pointerEvents: 'none',
+  },
   graveyardPile: {
     position: 'relative',
     overflow: 'hidden',

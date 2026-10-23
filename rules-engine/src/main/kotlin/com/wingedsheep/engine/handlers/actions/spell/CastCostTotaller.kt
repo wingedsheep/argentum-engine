@@ -610,7 +610,7 @@ internal class CastCostTotaller(
      */
     fun castSourceZone(state: GameState, cardId: EntityId): Zone? {
         for (ownerId in state.turnOrder) {
-            for (zone in listOf(Zone.HAND, Zone.GRAVEYARD, Zone.EXILE, Zone.LIBRARY)) {
+            for (zone in listOf(Zone.HAND, Zone.GRAVEYARD, Zone.EXILE, Zone.LIBRARY, Zone.SIDEBOARD)) {
                 if (cardId in state.getZone(ZoneKey(ownerId, zone))) return zone
             }
         }

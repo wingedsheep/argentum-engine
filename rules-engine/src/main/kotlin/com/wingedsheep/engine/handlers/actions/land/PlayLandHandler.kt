@@ -143,8 +143,11 @@ class PlayLandHandler(
         // permission can never surface as a land play at priority.
         val mayPlayFromLibraryByEffect = duringResolution && !inHand && !onTopOfLibrary &&
             isInLibraryWithPlayPermission(state, action.playerId, action.cardId)
+        // "You may play a card you own from outside the game this turn" (Wish): a land in the
+        // player's own sideboard under a stored may-play permission.
+        val mayPlayFromSideboard = !inHand && isInSideboardWithPlayPermission(state, action.playerId, action.cardId)
         if (!inHand && !onTopOfLibrary && !mayPlayFromExile && !mayPlayFromLinkedExile && !mayPlayFromGraveyard &&
-            !mayPlayFromLibraryByEffect
+            !mayPlayFromLibraryByEffect && !mayPlayFromSideboard
         ) {
             return "Land is not in your hand"
         }
@@ -198,6 +201,7 @@ class PlayLandHandler(
         val handZone = ZoneKey(action.playerId, Zone.HAND)
         val libraryZone = ZoneKey(action.playerId, Zone.LIBRARY)
         val graveyardZone = ZoneKey(action.playerId, Zone.GRAVEYARD)
+        val sideboardZone = ZoneKey(action.playerId, Zone.SIDEBOARD)
         // Check all exile zones since cards may be in another player's exile (Villainous Wealth)
         val exileOwner = state.turnOrder.firstOrNull { pid ->
             action.cardId in state.getZone(ZoneKey(pid, Zone.EXILE))
@@ -207,6 +211,7 @@ class PlayLandHandler(
             action.cardId in state.getZone(libraryZone) -> Zone.LIBRARY
             exileOwner != null -> Zone.EXILE
             action.cardId in state.getZone(graveyardZone) -> Zone.GRAVEYARD
+            action.cardId in state.getZone(sideboardZone) -> Zone.SIDEBOARD
             else -> Zone.HAND
         }
         val sourceZoneKey = if (fromZone == Zone.EXILE && exileOwner != null) {
@@ -378,7 +383,7 @@ class PlayLandHandler(
         // card if it later returned to exile.
         // A single-use grant ("play one of those cards") is spent for its whole group, from exile or
         // a graveyard alike — before the per-card cleanup below drops this card from it.
-        if (fromZone == Zone.EXILE || fromZone == Zone.GRAVEYARD) {
+        if (fromZone == Zone.EXILE || fromZone == Zone.GRAVEYARD || fromZone == Zone.SIDEBOARD) {
             newState = newState.spendCappedMayPlayFor(action.cardId, action.playerId)
         }
         if (fromZone == Zone.EXILE) {
@@ -420,7 +425,7 @@ class PlayLandHandler(
         // card" (Djinn of Wishes) in the library. Lands bypass the stack, so clean up the permission
         // here too — otherwise it would silently re-authorize the card if it returned to that zone
         // later this turn. No-op when no per-card permission exists.
-        if (fromZone == Zone.GRAVEYARD || fromZone == Zone.LIBRARY) {
+        if (fromZone == Zone.GRAVEYARD || fromZone == Zone.LIBRARY || fromZone == Zone.SIDEBOARD) {
             newState = newState.removeMayPlayPermissionsForCard(action.cardId)
         }
 
@@ -738,6 +743,18 @@ class PlayLandHandler(
         playerId: EntityId,
         cardId: EntityId
     ): Boolean = cardId in state.getLibrary(playerId) &&
+        state.activeMayPlayFor(cardId, playerId, conditionEvaluator, cardRegistry).any { !it.nonLandOnly }
+
+    /**
+     * True when [cardId] is in [playerId]'s own sideboard — outside the game (CR 400.11a) — and a
+     * stored may-play permission lets them play it ("You may play a card you own from outside the
+     * game this turn", Wish). Only the owner's sideboard: the permission says "a card you own".
+     */
+    private fun isInSideboardWithPlayPermission(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): Boolean = cardId in state.getZone(ZoneKey(playerId, Zone.SIDEBOARD)) &&
         state.activeMayPlayFor(cardId, playerId, conditionEvaluator, cardRegistry).any { !it.nonLandOnly }
 
     private fun isInExileWithPlayPermission(

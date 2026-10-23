@@ -507,7 +507,12 @@ class CastFromZoneEnumerator(
         // (e.g. Malcolm, Alluring Scoundrel) are castable without a detour through exile.
         val exileCandidates = state.turnOrder.flatMap { pid -> state.getExile(pid).map { it to "EXILE" } }
         val graveyardCandidates = state.turnOrder.flatMap { pid -> state.getGraveyard(pid).map { it to "GRAVEYARD" } }
-        for ((cardId, sourceZoneLabel) in exileCandidates + graveyardCandidates) {
+        // "You may play a card you own from outside the game this turn" (Wish): the player's own
+        // sideboard (CR 400.11a) under a stored permission. Only their own — "a card you own".
+        // A Limited sideboard is the whole unplayed pool, so skip it outright without a grant.
+        val sideboardCandidates = if (state.mayPlayPermissions.none { it.controllerId == playerId }) emptyList()
+        else state.getZone(ZoneKey(playerId, Zone.SIDEBOARD)).map { it to "SIDEBOARD" }
+        for ((cardId, sourceZoneLabel) in exileCandidates + graveyardCandidates + sideboardCandidates) {
             val container = state.getEntity(cardId) ?: continue
             val permissions = state.activeMayPlayFor(cardId, playerId, context.conditionEvaluator, context.cardRegistry)
             if (permissions.isEmpty()) continue
@@ -585,7 +590,11 @@ class CastFromZoneEnumerator(
                     val hasCorrectTiming = isInstant || grantsFlashTiming || context.canPlaySorcerySpeed
                     val castRestrictions = effectiveScript?.castRestrictions ?: emptyList()
                     val meetsRestrictions = context.legality.castRestrictionsMet(state, playerId, castRestrictions)
-                    val castZone = if (sourceZoneLabel == "EXILE") Zone.EXILE else Zone.GRAVEYARD
+                    val castZone = when (sourceZoneLabel) {
+                        "EXILE" -> Zone.EXILE
+                        "SIDEBOARD" -> Zone.SIDEBOARD
+                        else -> Zone.GRAVEYARD
+                    }
                     // The paid cast, priced by its target count (a prepare-spell copy is its face).
                     // A fixed alternative cost (below) replaces this price, so it carries no table.
                     val runtimeFixedAltCost = container.get<PlayWithFixedAlternativeManaCostComponent>()

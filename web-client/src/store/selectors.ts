@@ -645,6 +645,28 @@ export function useHasLegalActions(cardId: EntityId | null): boolean {
   })
 }
 
+/**
+ * Cards outside the game (the viewer's sideboard) the server currently offers to play — "You may
+ * play a card you own from outside the game this turn" (Wish). Read off the legal actions'
+ * `sourceZone`, so the client never decides playability. Joined into a sorted string so Zustand's
+ * equality skips re-renders while the set is unchanged; split it with {@link splitOutsidePlayable}.
+ */
+export function useOutsidePlayableKey(): string {
+  return useGameStore((state) => {
+    const ids: string[] = []
+    for (const info of state.legalActions) {
+      if (info.sourceZone !== 'SIDEBOARD' || info.isAffordable === false) continue
+      const a = info.action
+      if (a.type === 'CastSpell' || a.type === 'PlayLand') ids.push(a.cardId)
+    }
+    return ids.length === 0 ? '' : [...new Set(ids)].sort().join(',')
+  })
+}
+
+export function splitOutsidePlayable(key: string): ReadonlySet<EntityId> {
+  return new Set(key === '' ? [] : (key.split(',') as EntityId[]))
+}
+
 export interface BattlefieldAttachments {
   readonly attachments: readonly ClientCard[]
   readonly linkedExile: readonly ClientCard[]

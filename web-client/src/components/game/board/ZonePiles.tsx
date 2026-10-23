@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useGameStore } from '@/store/gameStore.ts'
-import { useZoneCards, useStackCards, useZone, useCard, selectGameState, librarySlots } from '@/store/selectors.ts'
+import { useZoneCards, useStackCards, useZone, useCard, selectGameState, librarySlots, useOutsidePlayableKey, splitOutsidePlayable } from '@/store/selectors.ts'
 import { graveyard, exile, library, sideboard, CounterType, CounterTypeDisplayNames } from '@/types'
 import type { ClientCard, ClientDeckCard, ClientPlayer } from '@/types'
 import { CARD_BACK_IMAGE_URL } from '@/utils/cardImages.ts'
@@ -95,6 +95,11 @@ export function ZonePile({
   // for. The server only sends a sideboard's contents to its owner, so this is empty on every
   // other seat's pile.
   const outsideCards = useZoneCards(sideboard(player.playerId))
+  // Sideboard cards the server lets this viewer play right now (Wish). Always empty on an
+  // opponent's pile: their sideboard isn't sent, and its cards are never in our legal actions.
+  const outsidePlayableKey = useOutsidePlayableKey()
+  const outsidePlayable = React.useMemo(() => splitOutsidePlayable(outsidePlayableKey), [outsidePlayableKey])
+  const outsidePlayableCount = outsideCards.filter((c) => outsidePlayable.has(c.id)).length
   const hoverCard = useGameStore((state) => state.hoverCard)
   const responsive = useResponsiveContext()
   const [browsingGraveyard, setBrowsingGraveyard] = useState(false)
@@ -229,12 +234,15 @@ export function ZonePile({
         <div
           data-zone={isOpponent ? 'opponent-library' : 'player-library'}
           data-zone-owner={player.playerId}
-          title={deckPileTitle(canBrowseDeck, isOwnDeck, showsTopLibraryCard ? topLibraryCard : null, outsideCards.length)}
+          title={outsidePlayableCount > 0
+            ? `You may play a card from outside the game — open to choose (D)`
+            : deckPileTitle(canBrowseDeck, isOwnDeck, showsTopLibraryCard ? topLibraryCard : null, outsideCards.length)}
           style={{
             ...styles.deckPile,
             ...pileStyle,
             cursor: canBrowseDeck ? 'pointer' : 'default',
             ...(showsTopLibraryCard ? styles.deckPileTopRevealed : null),
+            ...(outsidePlayableCount > 0 ? styles.deckPileOutsidePlayable : null),
           }}
           onClick={() => { if (canBrowseDeck) setBrowsingLibrary(true) }}
           onMouseEnter={(e) => { if (showsTopLibraryCard) hoverCard(topLibraryCard.id, { x: e.clientX, y: e.clientY }) }}
@@ -261,6 +269,7 @@ export function ZonePile({
           {/* Badge the face-up top card so it doesn't read as "the whole deck is public" — the
               rest of the library is still a card back's worth of unknown. */}
           {showsTopLibraryCard && <div style={styles.deckTopRevealedBadge}>👁</div>}
+          {outsidePlayableCount > 0 && <div style={styles.deckOutsidePlayableBadge}>Play</div>}
           <div style={{ ...styles.pileCount, fontSize: responsive.fontSize.small }}>{player.librarySize}</div>
         </div>
         {showLabels && <span style={zoneLabelStyle}>Deck</span>}
@@ -503,6 +512,7 @@ export function ZonePile({
           slots={librarySlotIds}
           deck={ownDeck}
           outsideCards={outsideCards}
+          outsidePlayable={outsidePlayable}
           onClose={() => setBrowsingLibrary(false)}
         />,
         document.body,

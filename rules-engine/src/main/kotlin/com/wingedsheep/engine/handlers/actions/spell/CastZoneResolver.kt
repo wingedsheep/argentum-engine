@@ -83,12 +83,14 @@ class CastZoneResolver(
      * Check if a card is in a non-hand "other" zone and has an active `MayPlayPermission`
      * granting the player permission to play it.
      *
-     * Covers exile / graveyard / library:
+     * Covers exile / graveyard / library / sideboard:
      * - Exile + graveyard: free-cast grants like Etali, Mind's Desire, Malcolm.
      * - Library: cards revealed by an effect like Sunbird's Invocation, where the oracle
      *   text leaves the cards in the library while permitting a free cast directly from
      *   among the revealed pile. CR semantics treat reveal-then-cast as casting from the
      *   library; the MayPlayPermission gates which specific cards qualify.
+     * - Sideboard: "you may play a card you own from outside the game this turn" (Wish) grants
+     *   the player's own sideboard cards, capped at one play.
      *
      * Checks all players' exile/graveyard zones because cards like Villainous Wealth
      * exile from an opponent's library (cards remain in their owner's zone but are
@@ -107,7 +109,10 @@ class CastZoneResolver(
         val inOtherZone = state.turnOrder.any { pid ->
             cardId in state.getZone(ZoneKey(pid, Zone.EXILE)) ||
                 cardId in state.getZone(ZoneKey(pid, Zone.GRAVEYARD))
-        } || cardId in state.getZone(ZoneKey(playerId, Zone.LIBRARY))
+        } || cardId in state.getZone(ZoneKey(playerId, Zone.LIBRARY)) ||
+            // "You may play a card you own from outside the game this turn" (Wish): the player's
+            // own sideboard (CR 400.11a), under a stored per-card permission.
+            cardId in state.getZone(ZoneKey(playerId, Zone.SIDEBOARD))
         if (!inOtherZone) return false
 
         // Check direct MayPlayPermission. When the grant carries a runtime condition

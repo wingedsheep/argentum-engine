@@ -22,6 +22,7 @@ import { useEffect, useState } from 'react'
 import type React from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import { selectGameState } from '@/store/selectors.ts'
+import { useInteraction } from '@/hooks/useInteraction.ts'
 import type { ClientCard, ClientDeckCard, EntityId } from '@/types'
 import { CARD_BACK_IMAGE_URL, getCardImageUrl } from '@/utils/cardImages.ts'
 import { DeckCardBody, type DeckViewCard } from '@/components/deck/GameDeckView'
@@ -30,11 +31,14 @@ import { styles } from './styles'
 
 type Tab = 'deck' | 'order' | 'outside'
 
+const EMPTY_IDS: ReadonlySet<EntityId> = new Set()
+
 export function DeckBrowser({
   ownerLabel,
   slots,
   deck,
   outsideCards = [],
+  outsidePlayable = EMPTY_IDS,
   onClose,
 }: {
   /** Title prefix, e.g. "Your" / "Alice's". */
@@ -45,13 +49,24 @@ export function DeckBrowser({
   deck: readonly ClientDeckCard[]
   /** The viewer's own sideboard — cards outside the game. Empty hides the tab. */
   outsideCards?: readonly ClientCard[]
+  /** Sideboard cards the server lets the viewer play right now (Wish) — clickable tiles. */
+  outsidePlayable?: ReadonlySet<EntityId>
   onClose: () => void
 }) {
   const responsive = useResponsiveContext()
   const [minimized, setMinimized] = useState(false)
   // Default to the deck list when there is one: "what am I playing" is the common question, and
   // library order is only ever interesting right after a scry or surveil.
-  const [tab, setTab] = useState<Tab>(deck.length > 0 ? 'deck' : 'order')
+  // …unless a card outside the game is playable right now: then that is what the player came for.
+  const anyOutsidePlayable = outsideCards.some((c) => outsidePlayable.has(c.id))
+  const [tab, setTab] = useState<Tab>(anyOutsidePlayable ? 'outside' : deck.length > 0 ? 'deck' : 'order')
+  const { handleCardClick } = useInteraction()
+  // Playing a card from here goes through the same action menu as a card in hand; close the
+  // browser first so the menu, and any targeting or payment after it, has the board.
+  const playOutsideCard = (cardId: EntityId) => {
+    onClose()
+    handleCardClick(cardId)
+  }
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -105,7 +120,7 @@ export function DeckBrowser({
         {tab === 'deck' ? (
           <DeckListTab deck={deck} librarySize={slots.length} />
         ) : tab === 'outside' && hasOutside ? (
-          <OutsideTheGameTab cards={outsideCards} />
+          <OutsideTheGameTab cards={outsideCards} playable={outsidePlayable} onPlay={playOutsideCard} />
         ) : (
           <LibraryOrderTab slots={slots} />
         )}
@@ -273,19 +288,28 @@ function outsideSortKey(card: ClientCard): number {
  * it's a menu to read before casting a wish, so the art matters more than a curve. Grouped like
  * the wish cycle asks for them (Lessons, then by type), cheapest first within a type.
  */
-function OutsideTheGameTab({ cards }: { cards: readonly ClientCard[] }) {
+function OutsideTheGameTab({ cards, playable, onPlay }: {
+  cards: readonly ClientCard[]
+  playable: ReadonlySet<EntityId>
+  onPlay: (cardId: EntityId) => void
+}) {
   const hoverCard = useGameStore((state) => state.hoverCard)
   const responsive = useResponsiveContext()
 
   const cardWidth = responsive.isMobile ? 120 : 160
   const cardHeight = Math.round(cardWidth * 1.4)
 
-  const distinct = new Map<string, { card: ClientCard; copies: number }>()
+  // One tile per name; a playable copy stands for the tile, so clicking it plays that copy.
+  const distinct = new Map<string, { card: ClientCard; copies: number; playableId: EntityId | null }>()
   for (const card of cards) {
+    const playableId = playable.has(card.id) ? card.id : null
     const entry = distinct.get(card.name)
-    if (entry) entry.copies += 1
-    else distinct.set(card.name, { card, copies: 1 })
+    if (entry) {
+      entry.copies += 1
+      entry.playableId ??= playableId
+    } else distinct.set(card.name, { card, copies: 1, playableId })
   }
+  const anyPlayable = [...distinct.values()].some((t) => t.playableId != null)
   const tiles = [...distinct.values()].sort(
     (a, b) =>
       outsideSortKey(a.card) - outsideSortKey(b.card) ||
@@ -297,15 +321,24 @@ function OutsideTheGameTab({ cards }: { cards: readonly ClientCard[] }) {
   return (
     <>
       <span style={{ color: '#94a3b8', fontSize: 12, maxWidth: 560, textAlign: 'center', lineHeight: 1.5 }}>
+        {anyPlayable ? (
+          <span style={{ color: '#a5f3fc', fontWeight: 600 }}>
+            You may play one of the highlighted cards this turn — click one to play it.{' '}
+          </span>
+        ) : null}
         Your sideboard — cards you own outside the game. Learn, wishes and similar effects can bring
         one of these into the game; nothing else can touch them.
         {lessons > 0 ? ` ${lessons} Lesson${lessons === 1 ? '' : 's'} for Learn.` : ''}
       </span>
       <div style={styles.libraryCardGrid}>
-        {tiles.map(({ card, copies }) => (
+        {tiles.map(({ card, copies, playableId }) => (
           <div
             key={card.name}
             data-outside-card={card.name}
+            data-playable={playableId != null ? 'true' : undefined}
+            role={playableId != null ? 'button' : undefined}
+            title={playableId != null ? `Play ${card.name}` : undefined}
+            onClick={playableId != null ? () => onPlay(playableId) : undefined}
             style={{
               width: cardWidth,
               height: cardHeight,
@@ -313,7 +346,13 @@ function OutsideTheGameTab({ cards }: { cards: readonly ClientCard[] }) {
               overflow: 'hidden',
               flexShrink: 0,
               position: 'relative',
-              boxShadow: '0 0 0 1px rgba(167, 139, 250, 0.45), 0 0 12px rgba(167, 139, 250, 0.18)',
+              cursor: playableId != null ? 'pointer' : 'default',
+              // Playable: the board's playable-card cyan. While something is playable the rest
+              // dim, so the choice reads at a glance in a forty-card Limited sideboard.
+              boxShadow: playableId != null
+                ? '0 0 0 2px rgba(0, 221, 255, 0.9), 0 0 14px rgba(0, 221, 255, 0.45)'
+                : '0 0 0 1px rgba(167, 139, 250, 0.45), 0 0 12px rgba(167, 139, 250, 0.18)',
+              opacity: anyPlayable && playableId == null ? 0.45 : 1,
             }}
             onMouseEnter={(e) => hoverCard(card.id, { x: e.clientX, y: e.clientY })}
             onMouseLeave={() => hoverCard(null)}

@@ -686,7 +686,7 @@ internal class SpellCaster(
         cardId: EntityId,
         playerId: EntityId
     ): Zone? {
-        val zones = listOf(Zone.HAND, Zone.GRAVEYARD, Zone.LIBRARY, Zone.COMMAND)
+        val zones = listOf(Zone.HAND, Zone.GRAVEYARD, Zone.LIBRARY, Zone.COMMAND, Zone.SIDEBOARD)
         for (zone in zones) {
             if (cardId in state.getZone(ZoneKey(playerId, zone))) {
                 return zone
@@ -789,6 +789,12 @@ internal class SpellCaster(
         val commandZone = ownerOf(Zone.COMMAND)
         if (commandZone != null) {
             return state.removeFromZone(commandZone, cardId)
+        }
+
+        // A card cast from outside the game (Wish) leaves its owner's sideboard.
+        val sideboardZone = ownerOf(Zone.SIDEBOARD)
+        if (sideboardZone != null) {
+            return state.removeFromZone(sideboardZone, cardId)
         }
 
         return state

@@ -1322,6 +1322,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       'Learn, the wishes (Burning Wish, Living Wish…) and a few others bring in a card you own from outside the game — your sideboard. Every mode gives you one; press D and open Outside the game to see yours.',
     body: [
       { kind: 'p', text: 'Only these effects can touch your sideboard, and nobody else can see it. When one resolves you choose from the cards that match — a sorcery for Burning Wish, a Lesson for Learn — or choose nothing.' },
+      { kind: 'p', text: 'Wish is different: it lets you play one card from outside the game this turn, straight from your sideboard. While you may, your Deck pile glows and is marked Play; open it, and the cards you can play now are highlighted on the Outside the game tab. Click one to cast it (or play it, if it’s a land) — you pay for it and follow the usual timing, and a land uses your land drop.' },
       { kind: 'h', text: 'Where your sideboard comes from' },
       { kind: 'table', head: ['Mode', 'Outside the game'], rows: [
         ['Sealed, Draft, cube Sealed', 'Every card in your pool you didn’t put in your deck.'],

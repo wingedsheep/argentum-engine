@@ -4279,6 +4279,44 @@
     ]
 }
 
+// Wish
+{
+    "name": "Wish",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "You may play a card you own from outside the game this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Sideboard"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "GrantMayPlayFromExile",
+                    "from": "gathered0",
+                    "maxPlays": 1
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "166",
+        "rarity": "RARE",
+        "artist": "Ekaterina Burmak",
+        "flavorText": "\"If you had just one wish, what would it be? Gold, or angel song? Finding a lost love, or finding your way back home? Let me sing a song about one wish that came true . . .\"\n—Ellywick Tumblestrum",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3ed021d2-e2bc-44b3-8934-4bd02e0a42ec.jpg?1783926471"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Wizard Class
 {
     "name": "Wizard Class",
