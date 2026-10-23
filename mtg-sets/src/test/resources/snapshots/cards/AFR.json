@@ -2082,6 +2082,36 @@
     ]
 }
 
+// Hama Pashar, Ruin Seeker
+{
+    "name": "Hama Pashar, Ruin Seeker",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "Room abilities of dungeons you own trigger an additional time.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            "AdditionalDungeonRoomTriggers"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "224",
+        "rarity": "UNCOMMON",
+        "artist": "Eric Deschamps",
+        "flavorText": "\"Someone took the time to carve these inscriptions. The least we can do is care enough to read them.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/47b8eb2e-73ac-4ad6-9ab6-4f8da7b41020.jpg?1783926447",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "Hama Pashar, Ruin Seeker's ability causes the same room you ventured into to trigger an additional time. It does not cause you to move to the next room."
+            }
+        ]
+    }
+}
+
 // Hill Giant Herdgorger
 {
     "name": "Hill Giant Herdgorger",
