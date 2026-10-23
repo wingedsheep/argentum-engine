@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.model.Rarity
 import kotlin.random.Random
 
 /**
- * Booster with two double-faced slots (Innistrad: Midnight Hunt / Crimson Vow draft boosters): one
+ * Booster with two double-faced slots (Innistrad: Midnight Hunt draft boosters): one
  * double-faced common, and one double-faced uncommon, rare or mythic paired with one single-faced
  * uncommon-or-rare slot, beside [commons] single-faced commons and `uncommons - 1` single-faced
  * uncommons.
@@ -41,7 +41,7 @@ data class TwoDoubleFacedSlotBooster(
         val dfcRareAvailable = dfcPicker.hasAny(Rarity.RARE) || dfcPicker.hasAny(Rarity.MYTHIC)
         if (dfcRareAvailable && random.nextDouble() < doubleFacedRareChance) {
             booster.add(pickRareOrMythic(dfcPicker, random)!!)
-            picker.pick(Rarity.UNCOMMON)?.let(booster::add)
+            (picker.pick(Rarity.UNCOMMON) ?: picker.pick(Rarity.COMMON))?.let(booster::add)
         } else {
             (dfcPicker.pick(Rarity.UNCOMMON) ?: picker.pick(Rarity.UNCOMMON))?.let(booster::add)
             val rare = pickRareOrMythic(picker, random)
