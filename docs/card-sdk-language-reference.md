@@ -11351,6 +11351,8 @@ staticAbility {
   targets. Each coin really flipped emits a `CoinFlipEvent`, with the discarded ones carrying
   `ignored = true` so the log and the client animation show what was flipped without reporting a win
   nobody got. Not a Rule 613 continuous effect.
+- `RollAdditionalDice(extraDice = 1)` — the die-roll replacement: roll that many dice plus
+  `extraDice` and ignore that many of the lowest (Pixie Guide, Barbarian Class). See "Numerical dice".
 - `RestrictSpellsCastPerTurn(maxPerTurn, eachPlayer = false, spellFilter = GameObjectFilter.Any)` — a
   per-turn cap on spells cast. `eachPlayer = false` (default) limits only the source's controller
   (Yawgmoth's Agenda: "You can't cast more than one spell each turn."); `eachPlayer = true` is a
@@ -19429,8 +19431,16 @@ however many dice that instruction rolled — Feywild Trickster, Brazen Dwarf. T
 highest, so "if any of those results was 10 or higher" is
 `Conditions.CompareAmounts(DynamicAmounts.triggerHighestDieResult(), ComparisonOperator.GTE, 10)`
 (Farideh, Devil's Chosen). A batch trigger takes no result interval.
-No new die decision is needed; server results appear in the game log. Roll replacements, extra
-ignored dice, rerolls and result modifiers are not part of this primitive's current surface.
+No new die decision is needed; server results appear in the game log.
+
+`RollAdditionalDice(extraDice = 1)` is the static die-roll replacement (CR 614.1a): whenever its
+controller would roll one or more dice, they roll that many plus `extraDice` and ignore that many of
+the lowest — Pixie Guide and Barbarian Class, "If you would roll one or more dice, instead roll that
+many dice plus one and ignore the lowest roll". It replaces the *instruction*, not each die, and
+instances **add** (`DiceRollModifiers.extraDice` sums them over the roller's permanents). An ignored
+roll never happened (CR 706.6): its `DieRolledEvent` carries `ignored = true` so the log shows it, but
+no die observer, `resultCounts` tally or `DiceRolledEvent` result sees it. Rerolls and result
+modifiers are not part of this primitive's current surface.
 
 ### Radiation player counters
 

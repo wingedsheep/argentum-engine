@@ -153,6 +153,108 @@
     ]
 }
 
+// Barbarian Class
+{
+    "name": "Barbarian Class",
+    "manaCost": "{R}",
+    "typeLine": "Enchantment — Class",
+    "oracleText": "(Gain the next level as a sorcery to add its ability.)\nIf you would roll one or more dice, instead roll that many dice plus one and ignore the lowest roll.\n{1}{R}: Level 2 — Whenever you roll one or more dice, target creature you control gets +2/+0 and gains menace until end of turn.\n{2}{R}: Level 3 — Creatures you control have haste.",
+    "script": {
+        "staticAbilities": [
+            "RollAdditionalDice"
+        ],
+        "classLevels": [
+            {
+                "level": 2,
+                "cost": "{1}{R}",
+                "triggeredAbilities": [
+                    {
+                        "id": "Barbarian Class:1",
+                        "trigger": {
+                            "type": "DieRolledEvent",
+                            "player": "You",
+                            "batch": true
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "ModifyStats",
+                                    "powerModifier": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    },
+                                    "toughnessModifier": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    },
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                {
+                                    "type": "GrantKeyword",
+                                    "keyword": "MENACE",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            ]
+                        },
+                        "targetRequirement": {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "t0"
+                        },
+                        "descriptionOverride": "Whenever you roll one or more dice, target creature you control gets +2/+0 and gains menace until end of turn."
+                    }
+                ]
+            },
+            {
+                "level": 3,
+                "cost": "{2}{R}",
+                "staticAbilities": [
+                    {
+                        "type": "GrantKeyword",
+                        "keyword": "HASTE",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "rarity": "UNCOMMON",
+        "artist": "Campbell White",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/647c2269-bdc7-4455-9158-73abbff6e50e.jpg?1783926485",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "Gaining a level is a normal activated ability. It uses the stack and can be responded to."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Gaining a level won't remove abilities that a Class had at a previous level."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Some Class cards have an effect that increases when more are under your control. For example, if you have multiple Barbarian Class cards, you roll that many additional dice and ignore that many of the lowest rolls."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Black Dragon
 {
     "name": "Black Dragon",
@@ -2240,6 +2342,35 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Pixie Guide
+{
+    "name": "Pixie Guide",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Faerie",
+    "oracleText": "Flying\nGrant an Advantage — If you would roll one or more dice, instead roll that many dice plus one and ignore the lowest roll.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            "RollAdditionalDice"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "artist": "Fariba Khamseh",
+        "flavorText": "Pixies are well known as pranksters, but some delight in more helpful magic.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c65631b9-ca62-4851-9eca-9c760fb1a177.jpg?1783926512"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

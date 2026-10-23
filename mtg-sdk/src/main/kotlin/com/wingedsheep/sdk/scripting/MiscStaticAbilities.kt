@@ -1533,6 +1533,38 @@ data class FlipAdditionalCoins(
 }
 
 /**
+ * The die-roll replacement (CR 614.1a — an "instead" effect is a replacement effect): when the
+ * controller would roll one or more dice, they roll that many plus [extraDice] instead and ignore
+ * the [extraDice] lowest rolls — Pixie Guide's and Barbarian Class's "If you would roll one or more
+ * dice, instead roll that many dice plus one and ignore the lowest roll."
+ *
+ * - **It replaces the instruction, not each die**: "roll two d6" becomes three d6 with the lowest
+ *   one ignored, not two pairs.
+ * - **Instances add.** The Barbarian Class ruling: with several, "you roll that many additional
+ *   dice and ignore that many of the lowest rolls" — so the engine sums [extraDice] across every
+ *   source the roller controls.
+ * - **An ignored roll never happened** (CR 706.6): it triggers nothing and no effect reads it. The
+ *   engine still reports it, flagged ignored, so the log shows what was really rolled. Ties for
+ *   lowest need no choice — tied rolls are indistinguishable once only their result matters.
+ *
+ * Not a Rule 613 continuous effect: `RollDiceExecutor` queries it when it rolls.
+ *
+ * Closest type: [FlipAdditionalCoins] replaces each *coin* and lets the flipper choose which to
+ * keep; dice replace the whole instruction and the kept rolls are fixed by their results.
+ *
+ * @property extraDice How many additional dice are rolled, and how many of the lowest are ignored.
+ */
+@SerialName("RollAdditionalDice")
+@Serializable
+data class RollAdditionalDice(
+    val extraDice: Int = 1,
+) : StaticAbility {
+    override val description: String =
+        if (extraDice == 1) "If you would roll one or more dice, instead roll that many dice plus one and ignore the lowest roll"
+        else "If you would roll one or more dice, instead roll that many dice plus $extraDice and ignore the $extraDice lowest rolls"
+}
+
+/**
  * Replaces land mana production when a land would produce two or more mana.
  * Used for Damping Sphere: "If a land is tapped for two or more mana, it produces {C} instead
  * of any other type and amount."

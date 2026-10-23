@@ -1298,6 +1298,8 @@ class StaticAbilityHandler(
             // Rule 613 continuous effect:
             is WinCoinFlips,
             is com.wingedsheep.sdk.scripting.FlipAdditionalCoins,
+            // The die-roll replacement (CR 614), queried by RollDiceExecutor via DiceRollModifiers:
+            is com.wingedsheep.sdk.scripting.RollAdditionalDice,
 
             // Stamped as marker components by addContinuousEffectComponent in this
             // handler and read from those components by their subsystems:

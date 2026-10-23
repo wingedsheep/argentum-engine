@@ -11,6 +11,7 @@ import com.wingedsheep.engine.view.ClientEvent
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.*
 import com.wingedsheep.sdk.model.*
+import com.wingedsheep.sdk.scripting.RollAdditionalDice
 import com.wingedsheep.sdk.scripting.effects.RollDiceEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.*
@@ -22,7 +23,7 @@ class RollDiceEffectTest : FunSpec({
         it.registerCards(TestCards.all)
         it.initMirrorMatch(Deck.of("Island" to 40))
     }
-    fun executor(d: GameTestDriver) = RollDiceExecutor(PredicateEvaluator(d.cardRegistry).conditions.amounts)
+    fun executor(d: GameTestDriver) = RollDiceExecutor(PredicateEvaluator(d.cardRegistry).conditions.amounts, d.cardRegistry)
 
     test("seeded dice advance only the returned RNG, count overlapping result sets, and emit public events") {
         val d = setup()
@@ -143,5 +144,64 @@ class RollDiceEffectTest : FunSpec({
         d.bothPass(); d.bothPass()
         d.getLifeTotal(player) shouldBe 22
         d.getLifeTotal(opponent) shouldBe 20
+    }
+    val advantage=card("Test Dice Advantage") {
+        typeLine="Enchantment"
+        staticAbility { ability=RollAdditionalDice() }
+    }
+    fun advantageSetup(vararg owners: Int): Pair<GameTestDriver, List<EntityId>> {
+        val d=setup(); d.registerCards(listOf(advantage))
+        val players=listOf(d.activePlayer!!, d.getOpponent(d.activePlayer!!))
+        for (owner in owners) d.putPermanentOnBattlefield(players[owner], advantage.name)
+        d.replaceState(d.state.copy(rng=GameRng.seeded(77)))
+        return d to players
+    }
+
+    test("roll that many dice plus one: the lowest roll is reported ignored and nothing reads it") {
+        val (d, players)=advantageSetup(0); val player=players[0]
+        val result=executor(d).execute(d.state,RollDiceEffect(DynamicAmount.Fixed(3),6,resultCounts=mapOf("all" to (1..6).toSet())),EffectContext(null,player))
+        val rolls=result.events.filterIsInstance<DieRolledEvent>()
+        rolls.size shouldBe 4
+        val ignored=rolls.single { it.ignored }
+        ignored.result shouldBe rolls.minOf { it.result }
+        val kept=rolls.filterNot { it.ignored }.map { it.result }
+        result.events.filterIsInstance<DiceRolledEvent>().single().results shouldBe kept
+        result.updatedStoredNumbers shouldBe mapOf("all" to 3)
+        val dto=com.wingedsheep.engine.view.ClientEventTransformer.transform(listOf(ignored),player).single() as ClientEvent.DieRolled
+        dto.ignored shouldBe true
+        dto.description.endsWith(", ignored") shouldBe true
+    }
+    test("instances add: two sources roll a single d20 as three and keep the highest") {
+        val (d, players)=advantageSetup(0,0); val player=players[0]
+        val result=executor(d).execute(d.state,RollDiceEffect(DynamicAmount.Fixed(1),20),EffectContext(null,player))
+        val rolls=result.events.filterIsInstance<DieRolledEvent>()
+        rolls.size shouldBe 3
+        rolls.count { it.ignored } shouldBe 2
+        result.events.filterIsInstance<DiceRolledEvent>().single().results shouldBe listOf(rolls.maxOf { it.result })
+    }
+    test("only the source's controller rolls extra dice, and a roll of zero dice stays zero") {
+        val (d, players)=advantageSetup(1)
+        val mine=executor(d).execute(d.state,RollDiceEffect(DynamicAmount.Fixed(2),6),EffectContext(null,players[0]))
+        mine.events.filterIsInstance<DieRolledEvent>().size shouldBe 2
+        val theirs=executor(d).execute(d.state,RollDiceEffect(DynamicAmount.Fixed(0),6),EffectContext(null,players[1]))
+        theirs.events shouldBe emptyList()
+    }
+    test("an ignored roll triggers no die observer") {
+        val observer=card("Test Any Die Observer") {
+            typeLine="Enchantment"
+            triggeredAbility { trigger=Triggers.you.rollsDie(); effect=Effects.GainLife(DynamicAmount.Fixed(1)) }
+        }
+        val roller=card("Test Single Roller") {
+            typeLine="Artifact"
+            activatedAbility { cost=Costs.Tap; effect=Effects.RollDice(DynamicAmount.Fixed(1),6) }
+        }
+        val (d, players)=advantageSetup(0); d.registerCards(listOf(observer,roller)); d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val player=players[0]
+        d.putPermanentOnBattlefield(player,observer.name)
+        val source=d.putPermanentOnBattlefield(player,roller.name)
+        d.submit(ActivateAbility(player,source,roller.script.activatedAbilities.single().id)).outcome shouldBe Outcome.Done
+        val resolved=d.bothPass()
+        resolved.events.filterIsInstance<DieRolledEvent>().size shouldBe 2
+        d.state.stack.size shouldBe 1
     }
 })

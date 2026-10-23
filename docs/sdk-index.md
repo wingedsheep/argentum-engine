@@ -1947,6 +1947,7 @@ Families:
 - `RetainUnspentColoredMana(color: Color)` — The controller doesn't lose unspent mana of color as steps and phases end (Electro, Assaulting Battery: "You don't lose unspent red mana as steps and phases end").
 - `RevealFirstDrawEachTurn` — Reveal the first card the controller draws each turn.
 - `RevealTopOfLibrary` — Play with the top card of your library revealed (to all players), without granting any permission to play it from there.
+- `RollAdditionalDice(extraDice: Int)` — The die-roll replacement (CR 614.1a — an "instead" effect is a replacement effect): when the controller would roll one or more dice, they roll that many plus extraDice instead and ignore the extraD…
 - `SetBasePowerToughnessDynamicStatic(power: DynamicAmount, toughness: DynamicAmount, filter: GroupFilter)` — Sets the base power and toughness of a group of creatures to dynamic amounts — a characteristic-defining ability (CDA) that recomputes continuously rather than snapshotting the value once at creati…
 - `SetBasePowerToughnessStatic(power: Int, toughness: Int, filter: GroupFilter)` — Sets the base power and toughness of the target permanent.
 - `SetBaseToughnessForCreatureGroup(toughness: Int, filter: GroupFilter)` — Sets the base toughness of a group of creatures.

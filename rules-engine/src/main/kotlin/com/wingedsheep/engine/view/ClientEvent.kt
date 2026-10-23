@@ -718,7 +718,9 @@ sealed interface ClientEvent {
         val sourceId: EntityId?,
         val sourceName: String,
         val isYours: Boolean? = null,
-        override val description: String = "${if (isYours == true) "You" else if (isYours == false) "Opponent" else "A player"} rolled a d$sides ($sourceName): $result",
+        /** True when a "roll that many dice plus one and ignore the lowest" replacement discarded this roll. */
+        val ignored: Boolean = false,
+        override val description: String = "${if (isYours == true) "You" else if (isYours == false) "Opponent" else "A player"} rolled a d$sides ($sourceName): $result${if (ignored) ", ignored" else ""}",
     ) : ClientEvent
 
     @Serializable
@@ -1609,7 +1611,7 @@ object ClientEventTransformer {
             // The per-die events animate the roll; the instruction summary only feeds triggers.
             is DiceRolledEvent -> null
 
-            is DieRolledEvent -> ClientEvent.DieRolled(event.playerId, event.sides, event.result, event.sourceId, event.sourceName, event.playerId == viewingPlayerId)
+            is DieRolledEvent -> ClientEvent.DieRolled(event.playerId, event.sides, event.result, event.sourceId, event.sourceName, event.playerId == viewingPlayerId, event.ignored)
 
             is CoinFlipEvent -> ClientEvent.CoinFlipped(
                 playerId = event.playerId,

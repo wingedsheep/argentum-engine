@@ -686,5 +686,7 @@ export interface DieRolledEvent {
   readonly sourceId: EntityId | null
   readonly sourceName: string
   readonly isYours?: boolean
+  /** True when a "roll that many dice plus one and ignore the lowest" replacement (Pixie Guide) discarded this roll. */
+  readonly ignored?: boolean
   readonly description: string
 }

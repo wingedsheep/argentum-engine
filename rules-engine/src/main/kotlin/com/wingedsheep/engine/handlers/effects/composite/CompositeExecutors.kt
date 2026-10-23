@@ -69,7 +69,7 @@ class CompositeExecutors(
         flipCoinExecutor,
         flipTwoCoinsExecutor,
         flipCoinsExecutor,
-        RollDiceExecutor(amountEvaluator),
+        RollDiceExecutor(amountEvaluator, cardRegistry),
         FlipOntoBattlefieldExecutor(amountEvaluator.predicates),
         flipCoinsUntilLossExecutor,
         repeatWhileExecutor,
