@@ -63,7 +63,7 @@ object ManaPaymentWindow {
 
     /**
      * The zones other than the battlefield whose cards can carry a mana ability that functions there
-     * (CR 605.1a): the hand (Simian Spirit Guide's "Exile this card from your hand") and the
+     * (CR 113.6m; still mana abilities, CR 605.1a): the hand (Simian Spirit Guide's "Exile this card from your hand") and the
      * graveyard (Jack-o'-Lantern's "Exile this card from your graveyard"). Both spend the card, so
      * auto-pay never activates them; the player does, at priority or inside this window.
      */
@@ -72,7 +72,7 @@ object ManaPaymentWindow {
     /**
      * Whether [playerId] can produce mana that auto-pay deliberately never spends: a life-funded
      * mana action (Channel) or a mana ability that functions from the hand or graveyard (Simian
-     * Spirit Guide, Jack-o'-Lantern — CR 605.1a, its cost spends the card). A cast or activation
+     * Spirit Guide, Jack-o'-Lantern — CR 113.6m, its cost spends the card). A cast or activation
      * auto-pay can't cover then opens this window instead of failing, so the player produces that
      * mana themselves (CR 605.3a).
      */

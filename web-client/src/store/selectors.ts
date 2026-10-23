@@ -991,7 +991,8 @@ export function useGroupedZoneCards(zoneId: ZoneId): readonly GroupedCard[] {
  * or castable spells (e.g., flashback), top-of-library cards playable via
  * Future Sight-like effects, and exile cards playable via Mind's Desire-like effects.
  * These are shown as translucent cards appended to the player's hand for discoverability.
- * Excludes simple mana abilities and unaffordable actions (same filtering as useHasLegalActions).
+ * Excludes unaffordable actions. A graveyard mana ability (Jack-o'-Lantern) is a ghost too: clicking
+ * its card is the only way to use it.
  *
  * A ghost is an *offer*, not the card as its zone holds it: a disturb card (CR 702.146a) is cast
  * back face up (CR 712.8c), so it joins the hand as the spirit it becomes rather than the creature
@@ -1015,9 +1016,6 @@ export function useGhostCards(playerId: EntityId | null): readonly ClientCard[] 
         const action = actionInfo.action
         if (action.type === 'ActivateAbility') {
           if (!gyCardIds.has(action.sourceId)) continue
-          // A mana ability that functions from the graveyard (Jack-o'-Lantern) is only ever used by
-          // clicking its card, so it joins the ghosts like any other graveyard ability.
-          if (actionInfo.isManaAbility && !actionInfo.additionalCostInfo && actionInfo.sourceZone !== 'GRAVEYARD') continue
           if (actionInfo.isAffordable === false) continue
           ghostCardIds.add(action.sourceId)
         } else if (action.type === 'CastSpell' && actionInfo.sourceZone === 'GRAVEYARD') {

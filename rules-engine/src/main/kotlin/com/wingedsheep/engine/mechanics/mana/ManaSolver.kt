@@ -2766,7 +2766,8 @@ class ManaSolver private constructor(
                 val reduced = cost.withPhyrexianPaidByLife(listOf(lifeColor)) ?: continue
                 if (canPay(
                         state, playerId, reduced, xValue, excludeSources, spellContext,
-                        precomputedSources, xManaRestriction, phyrexianLifePipsCommitted + 1
+                        precomputedSources, xManaRestriction, phyrexianLifePipsCommitted + 1,
+                        colorFixersCommitted = colorFixersCommitted
                     )) return true
             }
         }
@@ -3166,9 +3167,10 @@ class ManaSolver private constructor(
             }
         }
 
-        // Mana abilities that function from the hand or graveyard (CR 605.1a — Simian Spirit Guide's
-        // "Exile this card from your hand: Add {R}"). Never auto-paid: the cost spends a card, so the
-        // player activates it themselves, at priority or inside the payment window.
+        // Mana abilities that function from the hand or graveyard (CR 113.6m; still mana abilities,
+        // CR 605.1a — Simian Spirit Guide's "Exile this card from your hand: Add {R}"). Never
+        // auto-paid: the cost spends a card, so the player activates it themselves, at priority or
+        // inside the payment window.
         for (zone in ManaPaymentWindow.OFF_BATTLEFIELD_MANA_ZONES) for (entityId in state.getZone(ZoneKey(playerId, zone))) {
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
             val abilities = cardRegistry.getCard(card.cardDefinitionId)?.script?.activatedAbilities ?: continue

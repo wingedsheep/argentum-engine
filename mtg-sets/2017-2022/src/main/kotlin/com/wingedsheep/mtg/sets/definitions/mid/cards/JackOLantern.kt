@@ -15,7 +15,8 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * {1}, {T}, Sacrifice this artifact: Exile up to one target card from a graveyard. Draw a card.
  * {1}, Exile this card from your graveyard: Add one mana of any color.
  *
- * The second ability is a mana ability that functions from the graveyard (CR 605.1a).
+ * The second ability is a mana ability that functions only from the graveyard (CR 113.6m; still a
+ * mana ability, CR 605.1a).
  */
 val JackOLantern = card("Jack-o'-Lantern") {
     manaCost = "{1}"

@@ -92,6 +92,31 @@ class JackOLanternScenarioTest : ScenarioTestBase() {
                 game.isInExile(1, "Jack-o'-Lantern") shouldBe true
             }
 
+            test("each Jack-o'-Lantern fixes exactly one colored pip") {
+                val oneJack = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInGraveyard(1, "Jack-o'-Lantern")
+                    .withLandsOnBattlefield(1, "Forest", 3)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                services.manaSolver.canPay(oneJack.state, oneJack.player1Id, ManaCost.parse("{1}{R}")) shouldBe true
+                services.manaSolver.canPay(oneJack.state, oneJack.player1Id, ManaCost.parse("{R}{R}")) shouldBe false
+                withClue("paying a Phyrexian pip with life doesn't refund the fixer") {
+                    services.manaSolver.canPay(oneJack.state, oneJack.player1Id, ManaCost.parse("{R}{R}{R/P}")) shouldBe false
+                }
+
+                val twoJacks = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInGraveyard(1, "Jack-o'-Lantern")
+                    .withCardInGraveyard(1, "Jack-o'-Lantern")
+                    .withLandsOnBattlefield(1, "Forest", 2)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                services.manaSolver.canPay(twoJacks.state, twoJacks.player1Id, ManaCost.parse("{R}{R}")) shouldBe true
+            }
+
             test("on the battlefield the graveyard ability isn't usable, and sacrificing it exiles a card and draws") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
@@ -108,7 +133,7 @@ class JackOLanternScenarioTest : ScenarioTestBase() {
                 game.getLegalActions(1).none {
                     it.action == ActivateAbility(game.player1Id, jack, graveyardManaAbility)
                 } shouldBe true
-                services.manaSolver.canPay(game.state, game.player1Id, ManaCost.parse("{2}")) shouldBe false
+                services.manaSolver.canPay(game.state, game.player1Id, ManaCost.parse("{R}")) shouldBe false
 
                 val handBefore = game.handSize(1)
                 game.execute(
