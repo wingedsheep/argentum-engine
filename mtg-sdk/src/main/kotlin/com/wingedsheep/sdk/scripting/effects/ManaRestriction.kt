@@ -334,6 +334,25 @@ sealed interface ManaRestriction {
     }
 
     /**
+     * "Spend this mana only to … gain a Class level." Satisfied only by paying the cost of a
+     * Class's level-up ability (CR 716.2a — "[Cost]: Level N" is an activated ability, "Activate
+     * only if this Class is level N-1 and only as a sorcery"): the ability the engine builds with
+     * a `LevelUpClassEffect`.
+     *
+     * The level-up sibling of [EquipAbilityActivationOnly], and kept as its own atom for the same
+     * reason: neither [AbilityActivationOnly] nor `CardTypeSpellsOrAbilitiesOnly(ENCHANTMENT)` /
+     * `SubtypeSpellsOrAbilitiesOnly("Class")` can separate a Class's level-up from the other
+     * activated abilities its levels grant (Druid Class's, Rogue Class's), which share its source.
+     * Sorcerer Class's "Spend this mana only to cast an instant or sorcery spell or to gain a
+     * Class level" is `AnyOf(InstantOrSorceryOnly, ClassLevelUpOnly)`.
+     */
+    @SerialName("ClassLevelUpOnly")
+    @Serializable
+    data object ClassLevelUpOnly : ManaRestriction {
+        override val description: String = "Spend this mana only to gain a Class level"
+    }
+
+    /**
      * "This mana can't be spent to cast a non-[cardTypes] spell" (Hydraulic Helper:
      * "{T}: Add {U}. This mana can't be spent to cast a nonartifact spell").
      *

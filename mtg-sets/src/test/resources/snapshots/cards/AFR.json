@@ -3626,6 +3626,178 @@
     ]
 }
 
+// Sorcerer Class
+{
+    "name": "Sorcerer Class",
+    "manaCost": "{U}{R}",
+    "typeLine": "Enchantment — Class",
+    "oracleText": "(Gain the next level as a sorcery to add its ability.)\nWhen this Class enters, draw two cards, then discard two cards.\n{U}{R}: Level 2 — Creatures you control have \"{T}: Add {U} or {R}. Spend this mana only to cast an instant or sorcery spell or to gain a Class level.\"\n{3}{U}{R}: Level 3 — Whenever you cast an instant or sorcery spell, that spell deals damage to each opponent equal to the number of instant and sorcery spells you've cast this turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sorcerer Class:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 2 cards to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
+        "classLevels": [
+            {
+                "level": 2,
+                "cost": "{U}{R}",
+                "staticAbilities": [
+                    {
+                        "type": "GrantActivatedAbility",
+                        "ability": {
+                            "id": "Sorcerer Class:2",
+                            "cost": "CostTap",
+                            "effect": {
+                                "type": "AddManaOfChoice",
+                                "colorSet": {
+                                    "type": "ManaColorSet.Specific",
+                                    "colors": [
+                                        "BLUE",
+                                        "RED"
+                                    ]
+                                },
+                                "restriction": {
+                                    "type": "AnyOf",
+                                    "restrictions": [
+                                        "InstantOrSorceryOnly",
+                                        "ClassLevelUpOnly"
+                                    ]
+                                }
+                            },
+                            "timing": "ManaAbility",
+                            "isManaAbility": true
+                        },
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    }
+                ]
+            },
+            {
+                "level": 3,
+                "cost": "{3}{U}{R}",
+                "triggeredAbilities": [
+                    {
+                        "id": "Sorcerer Class:3",
+                        "trigger": {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "SpellsCastThisTurn",
+                                "filter": "instant|sorcery"
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            },
+                            "damageSource": "TriggeringEntity"
+                        },
+                        "descriptionOverride": "Whenever you cast an instant or sorcery spell, that spell deals damage to each opponent equal to the number of instant and sorcery spells you've cast this turn."
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "233",
+        "rarity": "RARE",
+        "artist": "Alexander Mokhov",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f754b385-a28d-48de-a91f-2b4f33cc47f7.jpg?1783926444",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "The last ability counts the number of spells that were cast before it resolved, not the number of spells that were cast before it was placed on the stack. For example, if you cast a sorcery and then respond to Sorcerer Class's triggered ability by casting an instant, both triggered abilities will deal 2 damage when they resolve."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If the spell that causes the last ability to trigger is countered or is otherwise no longer on the stack as the ability resolves, it will still deal damage. Last known information will be used to do determine the effects of that damage. For example, if the spell has lifelink, you will still gain life when it deals damage, even if the spell was countered."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Copying a spell won't cause Sorcerer Class's level 3 ability to trigger and won't be counted toward the number of spells you've cast during the turn. However, if an effect copies a card and you cast the copy, that will count for both of those things."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Gaining a level is a normal activated ability. It uses the stack and can be responded to."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "You can multiclass or even control multiple Class enchantments of the same class. Each Class permanent tracks its own level separately."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Soulknife Spy
 {
     "name": "Soulknife Spy",

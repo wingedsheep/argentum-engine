@@ -114,6 +114,13 @@ data class SpellPaymentContext(
      */
     val isEquipAbilityActivation: Boolean = false,
     /**
+     * True when the payment is for a Class's **level-up** ability (CR 716.2a) — the activation
+     * whose effect is a `LevelUpClassEffect`. Like [isEquipAbilityActivation], a strictly narrower
+     * fact about an ability activation that [ManaRestriction.ClassLevelUpOnly] reads, set only by
+     * [buildAbilityPaymentContext].
+     */
+    val isClassLevelUpActivation: Boolean = false,
+    /**
      * True when colorless mana may be spent **as though it were mana of any color** on this
      * payment (CR 609.4b) — a per-spell permission carried by the cast grant that authorised it
      * ("you may spend colorless mana as though it were mana of any color to cast that spell",
@@ -128,6 +135,9 @@ data class SpellPaymentContext(
     init {
         require(!isEquipAbilityActivation || isAbilityActivation) {
             "isEquipAbilityActivation implies isAbilityActivation"
+        }
+        require(!isClassLevelUpActivation || isAbilityActivation) {
+            "isClassLevelUpActivation implies isAbilityActivation"
         }
     }
 
@@ -193,6 +203,7 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
     is ManaRestriction.UnlockDoorOnly -> context.isUnlockDoorAction
     is ManaRestriction.AbilityActivationOnly -> context.isAbilityActivation
     is ManaRestriction.EquipAbilityActivationOnly -> context.isEquipAbilityActivation
+    is ManaRestriction.ClassLevelUpOnly -> context.isClassLevelUpActivation
     is ManaRestriction.AnyOf -> restrictions.any { it.isSatisfiedBy(context) }
     is ManaRestriction.AllOf -> restrictions.all { it.isSatisfiedBy(context) }
     is ManaRestriction.SpellsOnly -> context.isSpellCast
