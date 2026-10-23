@@ -38,6 +38,7 @@ import com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityFired
 import com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityFiredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.DungeonCardComponent
 import com.wingedsheep.engine.state.components.identity.EmblemSourceComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -493,6 +494,11 @@ class TriggerDetector(
         // abilities (e.g., Twinflame Travelers). For each pending trigger whose source matches
         // a doubler's filter, add a copy.
         duplicateSourceTriggers(state, triggers)
+
+        // Duplicate dungeon room abilities for their owner's AdditionalDungeonRoomTriggers statics
+        // (Hama Pashar, Ruin Seeker). Room abilities trigger from the command zone, outside any
+        // permanent filter's reach, so they get their own pass.
+        duplicateDungeonRoomTriggers(state, triggers)
 
         // Detect event-based delayed triggers (e.g. Long River Lurker's
         // "whenever that creature deals combat damage this turn, you may exile it").
@@ -4651,6 +4657,48 @@ class TriggerDetector(
             }
         }
         triggers.addAll(duplicates)
+    }
+
+    /**
+     * Duplicate room abilities (CR 309.4c) for [AdditionalDungeonRoomTriggers]: each copy controlled
+     * by a dungeon card's owner adds one more firing of every room ability that dungeon card is the
+     * source of. Copies are additive.
+     */
+    private fun duplicateDungeonRoomTriggers(
+        state: GameState,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        val rooms = triggers.filter { state.getEntity(it.sourceId)?.has<DungeonCardComponent>() == true }
+        if (rooms.isEmpty()) return
+
+        val projected = state.projectedState
+        val doublersByPlayer = mutableMapOf<EntityId, Int>()
+        for (permanentId in state.getBattlefield()) {
+            val container = state.getEntity(permanentId) ?: continue
+            val card = container.get<CardComponent>() ?: continue
+            if (container.has<FaceDownComponent>() || projected.hasLostAllAbilities(permanentId)) continue
+            val controllerId = projected.getController(permanentId) ?: continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val classLevel = container.get<ClassLevelComponent>()?.currentLevel
+            for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
+                val applies = when (ability) {
+                    is AdditionalDungeonRoomTriggers -> true
+                    is ConditionalStaticAbility -> ability.ability is AdditionalDungeonRoomTriggers &&
+                        conditionEvaluator.evaluate(
+                            state, ability.condition,
+                            EffectContext(sourceId = permanentId, controllerId = controllerId)
+                        )
+                    else -> false
+                }
+                if (applies) doublersByPlayer.merge(controllerId, 1, Int::plus)
+            }
+        }
+        if (doublersByPlayer.isEmpty()) return
+
+        for (room in rooms) {
+            val ownerId = state.getEntity(room.sourceId)?.get<DungeonCardComponent>()?.ownerId ?: continue
+            repeat(doublersByPlayer[ownerId] ?: 0) { triggers.add(room) }
+        }
     }
 
     private fun isSpellCastOrCopiedPattern(pattern: EventPattern): Boolean = when (pattern) {

@@ -10831,6 +10831,11 @@ in the declare-blockers step, even before the turn-based block action has comple
   `CardPredicate.HasChosenSubtype`). Roaming Throne pairs it with `EntersWithChoice(CREATURE_TYPE)` +
   `GrantChosenSubtype()` for "another creature you control of the chosen type" (`excludeSelf = true`).
   `TriggerDetector.duplicateSourceTriggers` (and `ActivateAbilityHandler` for triggered mana abilities).
+- `AdditionalDungeonRoomTriggers` — Hama Pashar, Ruin Seeker: "Room abilities of dungeons you own
+  trigger an additional time." The room-ability analogue of `AdditionalSourceTriggers`: room abilities
+  (CR 309.4c) trigger from a dungeon card in the command zone, which no permanent filter reaches, so the
+  scope is fixed — every room ability of a dungeon card (the Undercity included) owned by this ability's
+  controller. `TriggerDetector.duplicateDungeonRoomTriggers`; additive across copies.
 - `AdditionalAttackTriggers(attackerFilter = GameObjectFilter.Any)` — Windcrag Siege (Mardu): the
   attack-cause analogue of `AdditionalETBOrLTBTriggers`. If a creature matching `attackerFilter`
   being declared as an attacker causes an attack-related triggered ability ("whenever a creature

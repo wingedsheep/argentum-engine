@@ -94,6 +94,7 @@ import com.wingedsheep.sdk.scripting.OpponentsCantMakeYouSacrifice
 import com.wingedsheep.sdk.scripting.StationUsingToughness
 import com.wingedsheep.sdk.scripting.AdditionalAttackTriggers
 import com.wingedsheep.sdk.scripting.AdditionalCastOrCopyTriggers
+import com.wingedsheep.sdk.scripting.AdditionalDungeonRoomTriggers
 import com.wingedsheep.sdk.scripting.AdditionalDeathTriggers
 import com.wingedsheep.sdk.scripting.AdditionalETBOrLTBTriggers
 import com.wingedsheep.sdk.scripting.AdditionalManaOnSourceTap
@@ -1135,6 +1136,7 @@ class StaticAbilityHandler(
             is AdditionalAttackTriggers,
             is AdditionalCastOrCopyTriggers,
             is AdditionalDeathTriggers,
+            is AdditionalDungeonRoomTriggers,
             is AdditionalETBOrLTBTriggers,
             is AdditionalSourceTriggers,
             is GrantTriggeredAbility,

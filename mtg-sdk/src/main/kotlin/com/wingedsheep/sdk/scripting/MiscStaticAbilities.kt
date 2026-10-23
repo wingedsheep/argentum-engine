@@ -1905,6 +1905,21 @@ data class AdditionalCastOrCopyTriggers(
 }
 
 /**
+ * Room abilities of dungeons you own trigger an additional time (CR 603.2d, 309.4c) — Hama Pashar,
+ * Ruin Seeker. The **room-ability** analogue of [AdditionalSourceTriggers]: a dungeon's room abilities
+ * trigger from the command zone, where no permanent filter can reach their source, so the scope is
+ * fixed — every room ability whose dungeon card is owned by this ability's controller (including the
+ * Undercity reached by taking the initiative).
+ *
+ * Multiple copies are additive: N copies add N extra firings of each room ability.
+ */
+@SerialName("AdditionalDungeonRoomTriggers")
+@Serializable
+data object AdditionalDungeonRoomTriggers : StaticAbility {
+    override val description: String = "Room abilities of dungeons you own trigger an additional time"
+}
+
+/**
  * If a creature dying causes a triggered ability within the doubler's *scope* to trigger, that
  * ability triggers an additional time. The **death-cause** analogue of [AdditionalAttackTriggers]:
  * where that doubles triggers caused by an attack being declared, this doubles triggers caused by a
