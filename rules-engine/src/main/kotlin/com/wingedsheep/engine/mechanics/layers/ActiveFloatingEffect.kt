@@ -207,6 +207,19 @@ sealed interface SerializableModification {
     @Serializable
     data class ModifyPowerToughness(val powerMod: Int, val toughnessMod: Int) : SerializableModification
 
+    /**
+     * Dynamic power/toughness *modification* — Layer 7c, evaluated per affected entity at projection
+     * time with the effect's source as "you". Mirrors [Modification.ModifyPowerToughnessDynamic] for
+     * floating effects: an emblem's "creatures you control get +2/+2 for each differently named
+     * dungeon you've completed" (Ellywick Tumblestrum) keeps tracking the count, where
+     * [ModifyPowerToughness] would freeze a number.
+     */
+    @Serializable
+    data class ModifyPowerToughnessDynamic(
+        val powerBonus: DynamicAmount,
+        val toughnessBonus: DynamicAmount
+    ) : SerializableModification
+
     @Serializable
     data object SwitchPowerToughness : SerializableModification
 
@@ -867,6 +880,7 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.SetPower -> Modification.SetPower(power)
     is SerializableModification.SetToughness -> Modification.SetToughness(toughness)
     is SerializableModification.ModifyPowerToughness -> Modification.ModifyPowerToughness(powerMod, toughnessMod)
+    is SerializableModification.ModifyPowerToughnessDynamic -> Modification.ModifyPowerToughnessDynamic(powerBonus, toughnessBonus)
     is SerializableModification.SwitchPowerToughness -> Modification.SwitchPowerToughness(EntityId(""))
     is SerializableModification.GrantKeyword -> Modification.GrantKeyword(keyword)
     is SerializableModification.RemoveKeyword -> Modification.RemoveKeyword(keyword)

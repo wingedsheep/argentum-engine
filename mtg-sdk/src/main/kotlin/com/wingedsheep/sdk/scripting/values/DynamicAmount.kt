@@ -729,13 +729,28 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
      * Tomb of Annihilation"); `null` counts them all. "You've completed a dungeon" is
      * `Compare(DungeonsCompleted(You), GTE, Fixed(1))`, exposed as
      * [com.wingedsheep.sdk.dsl.Conditions.YouCompletedADungeon].
+     *
+     * [counting] picks what is tallied: every completion ([DungeonCounting.EACH_COMPLETION], the
+     * default), or each dungeon name once however often it was completed
+     * ([DungeonCounting.DIFFERENTLY_NAMED] — "for each differently named dungeon you've completed",
+     * Ellywick Tumblestrum's emblem).
      */
     @SerialName("DungeonsCompleted")
     @Serializable
-    data class DungeonsCompleted(val player: Player = Player.You, val dungeon: String? = null) : DynamicAmount {
-        override val description: String =
-            if (dungeon == null) "the number of dungeons ${player.description} ${if (player == Player.You) "have" else "has"} completed"
-            else "the number of times ${player.description} ${if (player == Player.You) "have" else "has"} completed $dungeon"
+    data class DungeonsCompleted(
+        val player: Player = Player.You,
+        val dungeon: String? = null,
+        val counting: DungeonCounting = DungeonCounting.EACH_COMPLETION
+    ) : DynamicAmount {
+        override val description: String = run {
+            val verb = if (player == Player.You) "have" else "has"
+            when {
+                dungeon != null -> "the number of times ${player.description} $verb completed $dungeon"
+                counting == DungeonCounting.DIFFERENTLY_NAMED ->
+                    "the number of differently named dungeons ${player.description} $verb completed"
+                else -> "the number of dungeons ${player.description} $verb completed"
+            }
+        }
     }
 
     /**
@@ -2239,3 +2254,13 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
 /** Which independently recorded cost supplies a mana provenance amount. */
 @Serializable
 enum class ManaPayment { CAST, ACTIVATION }
+
+/** What [DynamicAmount.DungeonsCompleted] tallies (CR 309.7). */
+@Serializable
+enum class DungeonCounting {
+    /** Every completion — the same dungeon completed twice counts twice. */
+    EACH_COMPLETION,
+
+    /** Each dungeon name once, however many times it was completed ("differently named dungeons"). */
+    DIFFERENTLY_NAMED
+}

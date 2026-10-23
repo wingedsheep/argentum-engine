@@ -22,6 +22,7 @@ import com.wingedsheep.engine.state.components.identity.EmblemStaticAbilityCompo
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.GrantDynamicStats
 import com.wingedsheep.sdk.scripting.GrantWard
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.effects.CreatePermanentEmblemEffect
@@ -153,6 +154,25 @@ class CreatePermanentEmblemExecutor : EffectExecutor<CreatePermanentEmblemEffect
                 affectedEntities = emptySet(),
                 duration = Duration.Permanent,
                 context = emblemContext,
+                dynamicGroupFilter = ability.filter
+            )
+        }
+
+        // An owned "<group> get +X/+X for each …" (Ellywick Tumblestrum's emblem) is a layer-7c
+        // modification whose amount is re-read every projection with the emblem as its source, so
+        // "you" is the emblem's controller and the bonus follows the count as it changes.
+        for (ability in effect.ownedStaticAbilities) {
+            if (ability !is GrantDynamicStats) continue
+            newState = newState.addFloatingEffect(
+                layer = Layer.POWER_TOUGHNESS,
+                modification = SerializableModification.ModifyPowerToughnessDynamic(
+                    powerBonus = ability.powerBonus,
+                    toughnessBonus = ability.toughnessBonus
+                ),
+                affectedEntities = emptySet(),
+                duration = Duration.Permanent,
+                context = emblemContext,
+                sublayer = Sublayer.MODIFICATIONS,
                 dynamicGroupFilter = ability.filter
             )
         }

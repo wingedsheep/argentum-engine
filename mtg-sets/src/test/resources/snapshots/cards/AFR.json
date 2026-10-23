@@ -1268,6 +1268,165 @@
     }
 }
 
+// Ellywick Tumblestrum
+{
+    "name": "Ellywick Tumblestrum",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Legendary Planeswalker — Ellywick",
+    "oracleText": "+1: Venture into the dungeon. (Enter the first room or advance to the next room.)\n−2: Look at the top six cards of your library. You may reveal a creature card from among them and put it into your hand. If it's legendary, you gain 3 life. Put the rest on the bottom of your library in a random order.\n−7: You get an emblem with \"Creatures you control have trample and haste and get +2/+2 for each differently named dungeon you've completed.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ellywick Tumblestrum:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": "VentureIntoTheDungeon",
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Ellywick Tumblestrum:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 6
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "creature",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "You may reveal a creature card and put it into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "selected1",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsLegendary"
+                                        ]
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ],
+                    "descriptionOverride": "Look at the top six cards of your library. You may reveal a creature card from among them and put it into your hand. If it's legendary, you gain 3 life. Put the rest on the bottom of your library in a random order."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Ellywick Tumblestrum:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "CreatePermanentEmblem",
+                    "groupFilter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "grantedKeywords": [
+                        "TRAMPLE",
+                        "HASTE"
+                    ],
+                    "ownedStaticAbilities": [
+                        {
+                            "type": "GrantDynamicStats",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "powerBonus": {
+                                "type": "Multiply",
+                                "amount": {
+                                    "type": "DungeonsCompleted",
+                                    "counting": "DIFFERENTLY_NAMED"
+                                },
+                                "multiplier": 2
+                            },
+                            "toughnessBonus": {
+                                "type": "Multiply",
+                                "amount": {
+                                    "type": "DungeonsCompleted",
+                                    "counting": "DIFFERENTLY_NAMED"
+                                },
+                                "multiplier": 2
+                            }
+                        }
+                    ],
+                    "emblemDescription": "Creatures you control have trample and haste and get +2/+2 for each differently named dungeon you've completed."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "MYTHIC",
+        "artist": "Anna Steinbauer",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/bab81bc0-0369-469e-9296-6d9681697b21.jpg?1783926464"
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Elturgard Ranger
 {
     "name": "Elturgard Ranger",

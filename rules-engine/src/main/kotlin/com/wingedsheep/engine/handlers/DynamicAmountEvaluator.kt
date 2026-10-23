@@ -391,11 +391,11 @@ class DynamicAmountEvaluator(
                 state.speed(playerId)
             }
 
-            // Dungeons completed this game (CR 309.7), optionally of one dungeon by name.
+            // Dungeons completed this game (CR 309.7), optionally of one dungeon by name or once per name.
             is DynamicAmount.DungeonsCompleted -> {
                 val playerIds = resolveUnifiedPlayerIds(state, amount.player, context, projectedState)
                 val playerId = playerIds.firstOrNull() ?: return 0
-                com.wingedsheep.engine.mechanics.dungeon.DungeonService.completedCount(state, playerId, amount.dungeon)
+                com.wingedsheep.engine.mechanics.dungeon.DungeonService.completedCount(state, playerId, amount.dungeon, amount.counting)
             }
 
             // Total unspent mana in the player's pool (Ozai, the Phoenix King's "six or more

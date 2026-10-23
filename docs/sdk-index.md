@@ -649,7 +649,7 @@ Families:
 - `DynamicAmount.DistinctColorsManaSpent(payment: ManaPayment)` — The number of distinct *colors* of mana spent to cast the source spell (0–5).
 - `DynamicAmount.DistinctEntitiesInCollections(collections: List<String>)` — Number of *distinct* entities across several named pipeline collections.
 - `DynamicAmount.Divide(numerator: DynamicAmount, denominator: DynamicAmount, roundUp: Boolean)` — Divide one dynamic amount by another, with configurable rounding.
-- `DynamicAmount.DungeonsCompleted(player: Player, dungeon: String?)` — How many dungeons player has completed this game (CR 309.7 — a player completes a dungeon as it is removed from the game).
+- `DynamicAmount.DungeonsCompleted(player: Player, dungeon: String?, counting: DungeonCounting)` — How many dungeons player has completed this game (CR 309.7 — a player completes a dungeon as it is removed from the game).
 - `DynamicAmount.EntityProperty(entity: EffectTarget.SingleEntity, numericProperty: EntityNumericProperty)` — Read a numeric property from a referenced entity.
 - `DynamicAmount.Fixed(amount: Int)` — Fixed amount (for consistency in the type system).
 - `DynamicAmount.GraveyardRelativeCount(entity: EffectTarget.SingleEntity, above: Boolean, filter: GameObjectFilter)` — Count matching cards above or below a current object in its graveyard.
