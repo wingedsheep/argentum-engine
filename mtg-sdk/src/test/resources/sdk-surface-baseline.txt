@@ -242,7 +242,7 @@ ControllerTurnsTakenAtMost — Condition
 CounterPutOnPermanentYouControlledThisTurn — Condition
 CounterRemovedFromPermanentYouControlledThisTurn — Condition
 CreatureDiedThisTurnCondition — Condition
-CreatureWithSubtypeDiedThisTurn — Condition
+CreatureDiedThisTurnMatching — Condition
 EnchantedCreatureHasSubtype — Condition
 EnchantedCreatureIsLegendary — Condition
 EntityMatches — Condition

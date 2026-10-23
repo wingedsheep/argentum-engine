@@ -4,7 +4,8 @@ import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.legalactions.EnumerationMode
 import com.wingedsheep.engine.legalactions.LegalActionEnumerator
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
-import com.wingedsheep.engine.state.components.player.CreatureSubtypesDiedThisTurnComponent
+import com.wingedsheep.engine.state.components.player.CreatureDeathRecord
+import com.wingedsheep.engine.state.components.player.CreatureDeathsThisTurnComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
@@ -27,7 +28,7 @@ import io.kotest.matchers.shouldBe
  *  - the conditional self cast-from-graveyard permission
  *    (`MayCastSelfFromZones(GRAVEYARD, condition = NonSubtypeCreatureDiedThisTurn(ZOMBIE))`),
  *    gated on the global subtype-filtered death tracker
- *    ([CreatureSubtypesDiedThisTurnComponent]); and
+ *    ([CreatureDeathsThisTurnComponent]); and
  *  - the graveyard-cast-linked +1/+1 counter rider
  *    (`EntersWithCounters(selfOnly, condition = WasCastFromGraveyard)`).
  */
@@ -52,11 +53,11 @@ class UndeadSprinterScenarioTest : FunSpec({
 
     /** Record a single non-Zombie creature death (a Human) under [player]'s control this turn. */
     fun GameTestDriver.recordNonZombieDeath(player: EntityId) =
-        addComponent(player, CreatureSubtypesDiedThisTurnComponent(listOf(setOf("Human"))))
+        addComponent(player, CreatureDeathsThisTurnComponent(listOf(CreatureDeathRecord("Test Creature", setOf("Human")))))
 
     /** Record a single Zombie creature death under [player]'s control this turn. */
     fun GameTestDriver.recordZombieDeath(player: EntityId) =
-        addComponent(player, CreatureSubtypesDiedThisTurnComponent(listOf(setOf("Zombie"))))
+        addComponent(player, CreatureDeathsThisTurnComponent(listOf(CreatureDeathRecord("Test Creature", setOf("Zombie")))))
 
     test("a non-Zombie creature died: castable from graveyard, enters 3/3 with a +1/+1 counter, trample+haste") {
         val d = newDriver()
@@ -133,8 +134,8 @@ class UndeadSprinterScenarioTest : FunSpec({
 
         // ZoneTransitionService recorded the dying creature's last-known subtypes.
         val recorded = d.state.getEntity(you)
-            ?.get<CreatureSubtypesDiedThisTurnComponent>()?.diedSubtypeSets
-        recorded shouldBe listOf(setOf("Goblin", "Scout"))
+            ?.get<CreatureDeathsThisTurnComponent>()?.deaths
+        recorded shouldBe listOf(CreatureDeathRecord("Goblin Guide", setOf("Goblin", "Scout")))
 
         // A non-Zombie (Goblin) died, so the graveyard cast is now legal.
         canCastFromGraveyard(d, you, sprinter) shouldBe true

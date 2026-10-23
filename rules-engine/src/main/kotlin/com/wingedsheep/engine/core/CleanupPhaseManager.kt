@@ -125,7 +125,7 @@ import com.wingedsheep.engine.state.components.battlefield.MayCastFromLinkedExil
 import com.wingedsheep.engine.state.components.battlefield.MayCastWithoutPayingCostUsedThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.PlayerAttackedPlayersThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CreatureLeftBattlefieldThisTurnComponent
-import com.wingedsheep.engine.state.components.player.CreatureSubtypesDiedThisTurnComponent
+import com.wingedsheep.engine.state.components.player.CreatureDeathsThisTurnComponent
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
 
 /**
@@ -955,8 +955,8 @@ class CleanupPhaseManager(
                 if (result.has<PermanentsPutIntoGraveyardFromBattlefieldThisTurnComponent>()) {
                     result = result.without<PermanentsPutIntoGraveyardFromBattlefieldThisTurnComponent>()
                 }
-                if (result.has<CreatureSubtypesDiedThisTurnComponent>()) {
-                    result = result.without<CreatureSubtypesDiedThisTurnComponent>()
+                if (result.has<CreatureDeathsThisTurnComponent>()) {
+                    result = result.without<CreatureDeathsThisTurnComponent>()
                 }
                 if (result.has<PermanentLeftBattlefieldThisTurnComponent>()) {
                     result = result.without<PermanentLeftBattlefieldThisTurnComponent>()

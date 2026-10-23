@@ -1113,7 +1113,7 @@ control** this turn" (Denethor, Faramir, Sméagol, Barrensteppe Siege). Each pri
 whole condition with a facade of its own, so the band is two `constant` rows beside the life-state
 conditions, and every position that slots `Conditions` read them at once: intervening-ifs, "Activate
 only if", "… instead if", and "This spell costs {3} less to cast if". The subtype-filtered spellings
-("if a Zombie died this turn") build `CreatureWithSubtypeDiedThisTurn` and stay out of this band.
+("if a Zombie died this turn") build `CreatureDiedThisTurnMatching` and stay out of this band.
 
 ### What the differential found
 

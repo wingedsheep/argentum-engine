@@ -2,7 +2,8 @@ package com.wingedsheep.engine.predicates
 
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
-import com.wingedsheep.engine.state.components.player.CreatureSubtypesDiedThisTurnComponent
+import com.wingedsheep.engine.state.components.player.CreatureDeathRecord
+import com.wingedsheep.engine.state.components.player.CreatureDeathsThisTurnComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Step
@@ -17,7 +18,7 @@ import kotlinx.serialization.json.Json
 
 /**
  * [DynamicAmount.CreaturesWithSubtypeDiedThisTurn] reads the per-death subtype record
- * ([CreatureSubtypesDiedThisTurnComponent]), one entry per creature that died, credited to the
+ * ([CreatureDeathsThisTurnComponent]), one entry per creature that died, credited to the
  * controller it died under.
  */
 class CreaturesWithSubtypeDiedThisTurnTest : FunSpec({
@@ -28,7 +29,7 @@ class CreaturesWithSubtypeDiedThisTurnTest : FunSpec({
     }
 
     fun GameTestDriver.record(player: com.wingedsheep.sdk.model.EntityId, vararg deaths: Set<String>) =
-        replaceState(state.updateEntity(player) { it.with(CreatureSubtypesDiedThisTurnComponent(deaths.toList())) })
+        replaceState(state.updateEntity(player) { it.with(CreatureDeathsThisTurnComponent(deaths.map { CreatureDeathRecord("Test Creature", it) })) })
 
     fun GameTestDriver.eval(amount: DynamicAmount): Int =
         PredicateEvaluator(cardRegistry = null).amounts.evaluate(state, amount, EffectContext(sourceId = null, controllerId = player1))

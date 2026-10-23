@@ -1135,9 +1135,9 @@ class DynamicAmountEvaluator(
                 val wanted = amount.subtype.value
                 resolveUnifiedPlayerIds(state, amount.player, context, projectedState).sumOf { playerId ->
                     state.getEntity(playerId)
-                        ?.get<com.wingedsheep.engine.state.components.player.CreatureSubtypesDiedThisTurnComponent>()
-                        ?.diedSubtypeSets
-                        ?.count { died -> died.any { it.equals(wanted, ignoreCase = true) } }
+                        ?.get<com.wingedsheep.engine.state.components.player.CreatureDeathsThisTurnComponent>()
+                        ?.deaths
+                        ?.count { died -> died.subtypes.any { it.equals(wanted, ignoreCase = true) } }
                         ?: 0
                 }
             }

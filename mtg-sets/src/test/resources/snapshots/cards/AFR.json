@@ -1268,6 +1268,48 @@
     }
 }
 
+// Ebondeath, Dracolich
+{
+    "name": "Ebondeath, Dracolich",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Legendary Creature — Zombie Dragon",
+    "oracleText": "Flash\nFlying\nEbondeath enters tapped.\nYou may cast this card from your graveyard if a creature not named Ebondeath, Dracolich died this turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ],
+                "condition": {
+                    "type": "CreatureDiedThisTurnMatching",
+                    "notNamed": "Ebondeath, Dracolich"
+                }
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "rarity": "MYTHIC",
+        "artist": "Lars Grant-West",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e6b3f460-92ba-4af0-aad9-cf86615d4177.jpg?1783926497"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Ellywick Tumblestrum
 {
     "name": "Ellywick Tumblestrum",

@@ -48,7 +48,8 @@ import com.wingedsheep.engine.state.components.player.CardsDiscardedThisTurnComp
 import com.wingedsheep.engine.state.components.player.CardsLeftGraveyardThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PermanentsPutIntoHandFromBattlefieldThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CardsPutIntoExileThisTurnComponent
-import com.wingedsheep.engine.state.components.player.CreatureSubtypesDiedThisTurnComponent
+import com.wingedsheep.engine.state.components.player.CreatureDeathRecord
+import com.wingedsheep.engine.state.components.player.CreatureDeathsThisTurnComponent
 import com.wingedsheep.engine.state.components.player.ArtifactsDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PermanentsPutIntoGraveyardFromBattlefieldThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PermanentsWithCountersPutIntoGraveyardThisTurnComponent
@@ -1252,17 +1253,18 @@ class ZoneTransitionService(
                     playerContainer.with(NonTokenCreaturesDiedThisTurnComponent(existing.count + 1))
                 }
             }
-            // Record the dying creature's last-known subtypes (CR 603.10 / last-known information)
-            // so subtype-filtered death conditions can match it (e.g. "a non-Zombie creature died
-            // this turn"). Falls back to the base type line if no projected snapshot was captured.
-            val diedSubtypes = (lastKnownTypeLine ?: cardComponent.typeLine)
-                .subtypes.map { it.value }.toSet()
+            // Record the dying creature's last-known name and subtypes (CR 603.10 / last-known
+            // information) so filtered death conditions can match it ("a non-Zombie creature died
+            // this turn", "a creature not named Ebondeath, Dracolich died this turn"). Falls back to
+            // the base card data if no projected snapshot was captured.
+            val death = CreatureDeathRecord(
+                name = lastKnownSnapshot?.name ?: cardComponent.name,
+                subtypes = (lastKnownTypeLine ?: cardComponent.typeLine).subtypes.map { it.value }.toSet()
+            )
             newState = newState.updateEntity(controllerId) { playerContainer ->
-                val existing = playerContainer.get<CreatureSubtypesDiedThisTurnComponent>()
-                    ?: CreatureSubtypesDiedThisTurnComponent()
-                playerContainer.with(
-                    CreatureSubtypesDiedThisTurnComponent(existing.diedSubtypeSets + listOf(diedSubtypes))
-                )
+                val existing = playerContainer.get<CreatureDeathsThisTurnComponent>()
+                    ?: CreatureDeathsThisTurnComponent()
+                playerContainer.with(CreatureDeathsThisTurnComponent(existing.deaths + death))
             }
         }
 

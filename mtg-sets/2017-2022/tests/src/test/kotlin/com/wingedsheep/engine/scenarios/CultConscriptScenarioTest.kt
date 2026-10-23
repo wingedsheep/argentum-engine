@@ -1,7 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
-import com.wingedsheep.engine.state.components.player.CreatureSubtypesDiedThisTurnComponent
+import com.wingedsheep.engine.state.components.player.CreatureDeathRecord
+import com.wingedsheep.engine.state.components.player.CreatureDeathsThisTurnComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.dmu.cards.CultConscript
@@ -37,7 +38,7 @@ class CultConscriptScenarioTest : FunSpec({
     }
 
     fun GameTestDriver.recordDeaths(player: EntityId, vararg subtypes: Set<String>) =
-        addComponent(player, CreatureSubtypesDiedThisTurnComponent(subtypes.toList()))
+        addComponent(player, CreatureDeathsThisTurnComponent(subtypes.map { CreatureDeathRecord("Test Creature", it) }))
 
     fun GameTestDriver.activateReturn(conscript: EntityId) =
         submit(ActivateAbility(playerId = player1, sourceId = conscript, abilityId = returnAbility))

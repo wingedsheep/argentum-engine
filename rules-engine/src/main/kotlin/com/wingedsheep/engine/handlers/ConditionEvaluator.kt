@@ -165,8 +165,8 @@ import com.wingedsheep.sdk.scripting.conditions.PlayerIs
 import com.wingedsheep.sdk.scripting.conditions.RingHasTemptedPlayerAtLeast
 import com.wingedsheep.sdk.scripting.conditions.CreatureDiedThisTurnCondition
 import com.wingedsheep.sdk.scripting.conditions.ControlledCreatureDiedThisTurnCondition
-import com.wingedsheep.sdk.scripting.conditions.CreatureWithSubtypeDiedThisTurn
-import com.wingedsheep.engine.state.components.player.CreatureSubtypesDiedThisTurnComponent
+import com.wingedsheep.sdk.scripting.conditions.CreatureDiedThisTurnMatching
+import com.wingedsheep.engine.state.components.player.CreatureDeathsThisTurnComponent
 import com.wingedsheep.sdk.scripting.conditions.SourcePlottedOnPriorTurn
 import com.wingedsheep.sdk.scripting.conditions.SourceForetoldOnPriorTurn
 import com.wingedsheep.sdk.scripting.conditions.YouDiscardedThisCardThisTurn
@@ -301,7 +301,7 @@ class ConditionEvaluator(
             ControlledCreatureDiedThisTurnCondition,
             is ControllerTurnsTakenAtMost,
             CreatureDiedThisTurnCondition,
-            is CreatureWithSubtypeDiedThisTurn,
+            is CreatureDiedThisTurnMatching,
             is EnchantedCreatureHasSubtype,
             EnchantedCreatureIsLegendary,
             is EntityMatches,
@@ -796,16 +796,19 @@ class ConditionEvaluator(
             // had the subtype; present=false: some dead creature lacked it ("a non-Zombie died").
             // Player.Each reads every player's records; a single player reads only theirs, so one
             // death must meet both the subtype test and the controller scope.
-            is CreatureWithSubtypeDiedThisTurn -> {
+            is CreatureDiedThisTurnMatching -> {
                 val players = when (condition.player) {
                     Player.Each, Player.Any -> state.turnOrder
                     else -> listOfNotNull(resolvePlayer(state, condition.player, ctx))
                 }
                 players.any { playerId ->
                     val died = state.getEntity(playerId)
-                        ?.get<CreatureSubtypesDiedThisTurnComponent>()
-                        ?.diedSubtypeSets.orEmpty()
-                    died.any { subtypes -> (condition.subtype in subtypes) == condition.present }
+                        ?.get<CreatureDeathsThisTurnComponent>()
+                        ?.deaths.orEmpty()
+                    died.any { death ->
+                        (condition.subtype == null || (condition.subtype in death.subtypes) == condition.present) &&
+                            (condition.notNamed == null || death.name != condition.notNamed)
+                    }
                 }
             }
 

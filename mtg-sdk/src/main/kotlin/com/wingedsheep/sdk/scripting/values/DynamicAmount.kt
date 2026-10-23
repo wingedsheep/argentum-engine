@@ -2156,8 +2156,8 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
      * the Champions of Kamigawa Zubera cycle).
      *
      * A turn-history count over the same per-death record as the
-     * [com.wingedsheep.sdk.scripting.conditions.CreatureWithSubtypeDiedThisTurn] condition
-     * (`CreatureSubtypesDiedThisTurnComponent`, one entry per death holding the creature's
+     * [com.wingedsheep.sdk.scripting.conditions.CreatureDiedThisTurnMatching] condition
+     * (`CreatureDeathsThisTurnComponent`, one entry per death holding the creature's
      * last-known subtypes). A dies trigger's own source is already recorded when the trigger
      * resolves, so "for each Zubera that died this turn" counts the Zubera itself, and a creature
      * that was a Zubera only through a continuous effect counts too.

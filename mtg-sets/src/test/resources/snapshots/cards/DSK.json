@@ -19236,7 +19236,7 @@
                     "Graveyard"
                 ],
                 "condition": {
-                    "type": "CreatureWithSubtypeDiedThisTurn",
+                    "type": "CreatureDiedThisTurnMatching",
                     "subtype": "Zombie",
                     "present": false
                 }

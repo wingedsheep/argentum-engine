@@ -3248,7 +3248,7 @@
                     {
                         "type": "ActivationOnlyIfCondition",
                         "condition": {
-                            "type": "CreatureWithSubtypeDiedThisTurn",
+                            "type": "CreatureDiedThisTurnMatching",
                             "subtype": "Skeleton",
                             "present": false,
                             "player": "You"
