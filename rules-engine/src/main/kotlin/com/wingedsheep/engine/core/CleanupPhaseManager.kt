@@ -259,14 +259,20 @@ class CleanupPhaseManager(
         val remainingCostReductions = state.spellCostModifiers.filter { reduction ->
             !(reduction.duration is Duration.UntilYourNextTurn && reduction.controllerId in activeTeam)
         }
+        // Granted replacement effects keyed to the granting player ("until your next turn, each
+        // creature you control enters with an additional +1/+1 counter" — Arlinn, the Pack's Hope).
+        val remainingGrantedReplacements = state.grantedReplacementEffects.filter { grant ->
+            !(grant.duration is Duration.UntilYourNextTurn && grant.controllerId in activeTeam)
+        }
         val floatingChanged = remainingFloating.size != state.floatingEffects.size
+        val grantedReplacementsChanged = remainingGrantedReplacements.size != state.grantedReplacementEffects.size
         val costReductionsChanged = remainingCostReductions.size != state.spellCostModifiers.size
         val grantedStaticChanged = remainingGrantedStatic.size != state.grantedStaticAbilities.size
         val globalChanged = remainingGlobal.size != state.globalGrantedTriggeredAbilities.size
         val grantedActivatedChanged = remainingGrantedActivated.size != state.grantedActivatedAbilities.size
         val delayedChanged = remainingDelayed.size != state.delayedTriggers.size
         var result = if (floatingChanged || globalChanged || grantedActivatedChanged || delayedChanged ||
-            grantedStaticChanged || costReductionsChanged
+            grantedStaticChanged || costReductionsChanged || grantedReplacementsChanged
         ) {
             state.copy(
                 floatingEffects = if (floatingChanged) remainingFloating else state.floatingEffects,
@@ -274,7 +280,8 @@ class CleanupPhaseManager(
                 grantedActivatedAbilities = if (grantedActivatedChanged) remainingGrantedActivated else state.grantedActivatedAbilities,
                 grantedStaticAbilities = if (grantedStaticChanged) remainingGrantedStatic else state.grantedStaticAbilities,
                 delayedTriggers = if (delayedChanged) remainingDelayed else state.delayedTriggers,
-                spellCostModifiers = if (costReductionsChanged) remainingCostReductions else state.spellCostModifiers
+                spellCostModifiers = if (costReductionsChanged) remainingCostReductions else state.spellCostModifiers,
+                grantedReplacementEffects = if (grantedReplacementsChanged) remainingGrantedReplacements else state.grantedReplacementEffects
             )
         } else {
             state

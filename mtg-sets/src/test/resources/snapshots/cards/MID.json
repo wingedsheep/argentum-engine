@@ -479,6 +479,170 @@
     ]
 }
 
+// Arlinn, the Pack's Hope
+{
+    "name": "Arlinn, the Pack's Hope",
+    "manaCost": "{2}{R}{G}",
+    "typeLine": "Legendary Planeswalker — Arlinn",
+    "oracleText": "Daybound (If a player casts no spells during their own turn, it becomes night next turn.)\n+1: Until your next turn, you may cast creature spells as though they had flash, and each creature you control enters with an additional +1/+1 counter on it.\n−3: Create two 2/2 green Wolf creature tokens.",
+    "keywords": [
+        "DAYBOUND"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Arlinn, the Pack's Hope:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantFlashToSpells",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ]
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "GrantReplacementEffect",
+                            "replacement": {
+                                "type": "EntersWithCounters",
+                                "count": 1
+                            },
+                            "duration": "UntilYourNextTurn"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Until your next turn, you may cast creature spells as though they had flash, and each creature you control enters with an additional +1/+1 counter on it."
+            },
+            {
+                "id": "Arlinn, the Pack's Hope:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Wolf"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Create two 2/2 green Wolf creature tokens."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Arlinn, the Moon's Fury",
+        "manaCost": "",
+        "typeLine": "Legendary Planeswalker — Arlinn",
+        "oracleText": "Nightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)\n+2: Add {R}{G}.\n0: Until end of turn, Arlinn becomes a 5/5 Werewolf creature with trample, indestructible, and haste.",
+        "keywords": [
+            "NIGHTBOUND"
+        ],
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Arlinn, the Moon's Fury:1",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": 2
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddMana",
+                                "color": "RED"
+                            },
+                            {
+                                "type": "AddMana",
+                                "color": "GREEN"
+                            }
+                        ]
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Add {R}{G}."
+                },
+                {
+                    "id": "Arlinn, the Moon's Fury:2",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": 0
+                    },
+                    "effect": {
+                        "type": "BecomeCreature",
+                        "power": {
+                            "type": "Fixed",
+                            "amount": 5
+                        },
+                        "toughness": {
+                            "type": "Fixed",
+                            "amount": 5
+                        },
+                        "keywords": [
+                            "TRAMPLE",
+                            "INDESTRUCTIBLE",
+                            "HASTE"
+                        ],
+                        "creatureTypes": [
+                            "Werewolf"
+                        ]
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Until end of turn, Arlinn becomes a 5/5 Werewolf creature with trample, indestructible, and haste."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "211",
+            "rarity": "MYTHIC",
+            "artist": "Anna Steinbauer",
+            "imageUri": "https://cards.scryfall.io/normal/back/5/0/50d4b0df-a1d8-494f-a019-70ce34161320.jpg?1783925572"
+        },
+        "startingLoyalty": 4,
+        "colorIdentityOverride": [
+            "RED",
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "RED",
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "211",
+        "rarity": "MYTHIC",
+        "artist": "Anna Steinbauer",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50d4b0df-a1d8-494f-a019-70ce34161320.jpg?1783925572"
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Arrogant Outlaw
 {
     "name": "Arrogant Outlaw",
