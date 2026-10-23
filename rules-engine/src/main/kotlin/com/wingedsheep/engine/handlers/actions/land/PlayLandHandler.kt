@@ -492,7 +492,7 @@ class PlayLandHandler(
                     cardComponent.name,
                     fromZone,
                     Zone.BATTLEFIELD,
-                    action.playerId,
+                    cardComponent.ownerId ?: action.playerId,
                     oldObject = state.objectRef(action.cardId),
                     newObject = enteredObject,
                 )
@@ -723,7 +723,7 @@ class PlayLandHandler(
             cardComponent.name,
             fromZone,
             Zone.BATTLEFIELD,
-            action.playerId,
+            cardComponent.ownerId ?: action.playerId,
             oldObject = state.objectRef(action.cardId),
             newObject = enteredObject,
         )

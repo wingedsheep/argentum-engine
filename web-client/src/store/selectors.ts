@@ -1085,7 +1085,7 @@ export function useGhostCards(playerId: EntityId | null): readonly ClientCard[] 
       if (!otherTopId) continue
       const playable = legalActions.some((actionInfo) => {
         const action = actionInfo.action
-        return actionInfo.sourceZone === 'LIBRARY' &&
+        return actionInfo.sourceZone === 'LIBRARY' && actionInfo.isAffordable !== false &&
           (action.type === 'CastSpell' || action.type === 'PlayLand') && action.cardId === otherTopId
       })
       if (playable) ghostCardIds.add(otherTopId)

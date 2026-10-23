@@ -299,6 +299,15 @@ class CastFromZoneEnumerator(
         val topCardId = library.first()
         val topCardComponent = state.getEntity(topCardId)?.get<CardComponent>() ?: return
         val topCardDef = context.cardRegistry.getCard(topCardComponent.name)
+        // Another player's top card is reachable only through a grant whose filter it matches —
+        // the same check the cast and land-play handlers make (CastZoneResolver.topOfLibraryAlternativeGrant).
+        if (!ownLibrary && canPlayAllFromTop &&
+            context.castPermissionUtils.playFromTopAlternativeCost(state, playerId, libraryOwnerId)?.filter?.let { filter ->
+                !context.predicateEvaluator.matches(
+                    state, state.projectedState, topCardId, filter, PredicateContext(controllerId = playerId)
+                )
+            } == true
+        ) return
         // Per card, not per player: a land permission can be narrowed by a filter (Isu's snow lands).
         val canPlayLandsFromTop = canPlayAllFromTop ||
             (ownLibrary && context.castPermissionUtils.hasPlayLandsFromTopOfLibrary(state, playerId, topCardId))

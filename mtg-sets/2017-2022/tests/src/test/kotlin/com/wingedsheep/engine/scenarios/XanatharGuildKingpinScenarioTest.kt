@@ -3,6 +3,7 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.core.PlayLand
+import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.support.GameTestDriver
@@ -101,8 +102,11 @@ class XanatharGuildKingpinScenarioTest : FunSpec({
         visibleTo(driver, game.you, second) shouldBe false
 
         // Playing a land from their library uses your land drop and puts it under your control.
-        driver.playLand(game.you, first).error shouldBe null
+        val played = driver.playLand(game.you, first)
+        played.error shouldBe null
         driver.getController(first) shouldBe game.you
+        // The zone change reports the card's real owner, so "a land an opponent owns" reads it right.
+        played.events.filterIsInstance<ZoneChangeEvent>().single { it.entityId == first }.ownerId shouldBe game.opponent
         driver.state.getEntity(first)?.get<OwnerComponent>()?.playerId shouldBe game.opponent
 
         visibleTo(driver, game.you, second) shouldBe true
@@ -148,7 +152,7 @@ class XanatharGuildKingpinScenarioTest : FunSpec({
         visibleTo(driver, game.you, courser) shouldBe true
         (courser in libraryActionCardIds(driver, game.you)) shouldBe true
 
-        // Into the opponent's turn: the grant expired at cleanup, and they may cast again.
+        // Into the opponent's turn: the grant expired at cleanup.
         driver.passPriorityUntil(Step.UPKEEP, game.opponent)
         visibleTo(driver, game.you, courser) shouldBe false
         (courser in libraryActionCardIds(driver, game.you)) shouldBe false

@@ -4680,6 +4680,10 @@
             },
             {
                 "date": "2021-07-23",
+                "text": "The target opponent may still cast spells in response to Xanathar, Guild Kingpin's ability in your upkeep. If that player has somehow become an illegal target for the ability as it tries to resolve, the ability does nothing. They may cast spells and you cannot look at or play the top card of their library."
+            },
+            {
+                "date": "2021-07-23",
                 "text": "During your turn, you can look at the top card of the chosen opponent's library whenever you want, even if you don't have priority."
             },
             {

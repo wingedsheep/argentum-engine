@@ -59,6 +59,7 @@ val XanatharGuildKingpin = card("Xanathar, Guild Kingpin") {
         artist = "Kieran Yanner"
         imageUri = "https://cards.scryfall.io/normal/front/5/b/5bc58050-a615-4090-9cf5-cd49ccb4e2c6.jpg?1783926441"
         ruling("2021-07-23", "Xanathar doesn't change when you can cast spells or play lands. You must still follow all normal timing rules and land play limits.")
+        ruling("2021-07-23", "The target opponent may still cast spells in response to Xanathar, Guild Kingpin's ability in your upkeep. If that player has somehow become an illegal target for the ability as it tries to resolve, the ability does nothing. They may cast spells and you cannot look at or play the top card of their library.")
         ruling("2021-07-23", "During your turn, you can look at the top card of the chosen opponent's library whenever you want, even if you don't have priority.")
         ruling("2021-07-23", "You'll still pay all costs for spells cast this way, including additional costs. You may also pay alternative costs if any are available.")
     }

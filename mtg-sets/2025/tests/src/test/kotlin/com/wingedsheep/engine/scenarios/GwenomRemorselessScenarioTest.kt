@@ -3,6 +3,7 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.PaymentStrategy
+import com.wingedsheep.engine.core.PlayLand
 import com.wingedsheep.engine.legalactions.LegalActionEnumerator
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.view.ClientStateTransformer
@@ -147,5 +148,29 @@ class GwenomRemorselessScenarioTest : FunSpec({
         (beast in topOfLibraryCastCardIds(driver, you)) shouldBe false
         val nextTurn = ClientStateTransformer(driver.cardRegistry, predicateEvaluator = PredicateEvaluator(cardRegistry = null)).transform(driver.state, viewingPlayerId = you)
         (beast in nextTurn.cards) shouldBe false
+    }
+
+    // "Play cards from the top" covers lands: after the attack the top land is playable from the
+    // library, it uses the turn's land drop, and a second one is refused.
+    test("after Gwenom attacks, a land on top can be played, using the land drop") {
+        val (driver, you, opponent) = newGame()
+        val gwenom = driver.putCreatureOnBattlefield(you, "Gwenom, Remorseless")
+        driver.removeSummoningSickness(gwenom)
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(you, listOf(gwenom), opponent)
+        resolveStack(driver)
+        driver.declareNoBlockers(opponent)
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+        resolveStack(driver)
+
+        val swamp = driver.putCardOnTopOfLibrary(you, "Swamp")
+        LegalActionEnumerator.create(driver.cardRegistry).enumerate(driver.state, you)
+            .any { it.sourceZone == "LIBRARY" && (it.action as? PlayLand)?.cardId == swamp } shouldBe true
+        driver.playLand(you, swamp).error shouldBe null
+        driver.getController(swamp) shouldBe you
+
+        val second = driver.putCardOnTopOfLibrary(you, "Swamp")
+        driver.submitExpectFailure(PlayLand(you, second))
     }
 })
