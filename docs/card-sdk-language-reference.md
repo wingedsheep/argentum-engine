@@ -2742,7 +2742,8 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
 - `CreateToken(p, t, colors?, creatureTypes, keywords?, count?, controller?, imageUri?, name?, legendary?, tapped?, artifactToken?, enchantmentToken?, staticAbilities?, exileAtStep?, sacrificeAtStep?, attacking?, attackDefender?, attackedPlayer?, triggeredAbilitiesOf?)` — make N creature tokens.
   `triggeredAbilitiesOf: List<CollectionSlot>` creates the token "with all triggered abilities of the exiled
   cards" (The Book of Vile Darkness: `listOf(gather(CardSource.Entity(Self)), gather(CardSource.ExiledAsCost))`).
-  Every printed triggered ability of the cards in those pipeline collections is read once, as the token is
+  Every triggered ability declared by the definitions of the cards in those collections (keyword-derived
+  triggers such as prowess aren't read) is read once, as the token is
   created, into its copiable values — so a gained "when this enters" triggers on the token's own entry (the
   Book's ruling) and a copy of the token keeps them. Face-down cards lend nothing.
   `exileAtStep: Step?` arms the exile counterpart of the delayed trigger described below. Both the fixed

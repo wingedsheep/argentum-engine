@@ -207,7 +207,9 @@ data class CreateTokenEffect(
      * cards" (The Book of Vile Darkness). Read once, as the token is created: each card's printed
      * triggered abilities become part of the token's copiable values (the Book's ruling), so a gained
      * "when this enters" ability triggers on the token's own entry and a copy of the token keeps them.
-     * Face-down cards lend nothing (they have no abilities, CR 708.2). The sibling of
+     * Face-down cards lend nothing (they have no abilities, CR 708.2). Only the triggered abilities a
+     * card's definition declares are read — keyword-derived triggers (prowess, exalted, bushido …) are
+     * not, since none of the motivating cards has one. The sibling of
      * [triggeredAbilities] for abilities named by the cards a resolution gathered rather than printed
      * on the token-maker.
      */

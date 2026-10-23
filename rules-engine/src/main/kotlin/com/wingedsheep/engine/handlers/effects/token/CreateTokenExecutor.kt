@@ -603,8 +603,8 @@ class CreateTokenExecutor(
     }
 
     /**
-     * "… with all triggered abilities of the exiled cards" (The Book of Vile Darkness): every printed
-     * triggered ability of the cards in [CreateTokenEffect.triggeredAbilitiesOf], read as the token is
+     * "… with all triggered abilities of the exiled cards" (The Book of Vile Darkness): every triggered
+     * ability the definitions of the cards in [CreateTokenEffect.triggeredAbilitiesOf] declare (keyword-derived triggers aren't read), taken as the token is
      * created. They become the token's copiable values ([CardComponent.copyTriggeredAbilities]), so a
      * gained "when this enters" ability triggers on the token's own entry and a copy of the token keeps
      * them. Each is re-stamped with a positional id, so two cards whose abilities share a printed id
