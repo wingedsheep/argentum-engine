@@ -3,6 +3,7 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -10,13 +11,16 @@ import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.afr.cards.DelinaWildMage
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.model.GameRng
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
@@ -29,8 +33,15 @@ class DelinaWildMageScenarioTest : FunSpec({
 
     fun GameTestDriver.forceNextD20(natural: Int) = replaceState(state.copy(rng = GameRng.seeded(seedFor(natural))))
 
+    val walker = card("Test Delina Walker") {
+        manaCost = "{3}"
+        typeLine = "Legendary Planeswalker — Test"
+        startingLoyalty = 3
+        oracleText = ""
+    }
+
     fun driver() = GameTestDriver().apply {
-        registerCards(TestCards.all + DelinaWildMage)
+        registerCards(TestCards.all + DelinaWildMage + walker)
         initMirrorMatch(deck = Deck.of("Mountain" to 40), skipMulligans = true, startingPlayer = 0)
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -106,6 +117,36 @@ class DelinaWildMageScenarioTest : FunSpec({
 
         d.pendingDecision shouldBe null
         d.tokens("Grizzly Bears") shouldHaveSize 1
+    }
+
+    test("each token's controller picks what it attacks as it enters, and a 15-20 still offers the reroll") {
+        val d = driver()
+        val (delina, bears) = d.setup()
+        val opponent = d.getOpponent(d.player1)
+        val theirWalker = d.putPermanentOnBattlefield(opponent, "Test Delina Walker").also { pw ->
+            d.replaceState(d.state.updateEntity(pw) { it.with(CountersComponent().withAdded(CounterType.LOYALTY, 3)) })
+        }
+        d.attackAndRoll(delina, copied = bears, natural = 17)
+
+        val choice = d.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+        choice.legalTargets[0]!! shouldContainExactlyInAnyOrder listOf(opponent, theirWalker)
+        d.submitTargetSelection(d.player1, listOf(theirWalker)).error shouldBe null
+
+        val token = d.tokens("Grizzly Bears").single()
+        d.state.getEntity(token)!!.get<AttackingComponent>()!!.defenderId shouldBe theirWalker
+        withClue("the roll survived the defender prompt, so the reroll is still offered") {
+            d.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+        }
+        d.forceNextD20(9)
+        d.submitYesNo(d.player1, true)
+        d.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+        d.submitTargetSelection(d.player1, listOf(opponent)).error shouldBe null
+
+        withClue("a 9 makes the second token, attacking the player, and ends the process") {
+            d.pendingDecision shouldBe null
+            d.tokens("Grizzly Bears").map { d.state.getEntity(it)!!.get<AttackingComponent>()!!.defenderId } shouldContainExactlyInAnyOrder
+                listOf(theirWalker, opponent)
+        }
     }
 
     test("the tokens are exiled at end of combat") {
