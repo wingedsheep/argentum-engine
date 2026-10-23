@@ -3375,7 +3375,8 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         }
     }
 
-    /** Each individual numerical die roll; scopes on its roller and final result.
+    /** A numerical die roll — each individual die, or (`batch`) each roll instruction for one roller;
+     * scopes on its roller and, per die, its final result.
      * Unlike TrainedEvent (a creature action) and ScriedEvent (a library action), this
      * observes a player's random numerical outcome, with an optional result interval.
      */

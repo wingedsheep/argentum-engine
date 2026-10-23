@@ -27,7 +27,7 @@ class FaridehDevilsChosenScenarioTest : FunSpec({
     }
 
     for ((label, accept, draws) in listOf(
-        Triple("a 10 or higher among the results draws a card", { r: List<Int> -> r.min() < 10 && r.max() >= 10 }, 1),
+        Triple("a 10 or higher among the results draws a card", { r: List<Int> -> r[0] >= 10 && r[1] < 10 }, 1),
         Triple("results all below 10 draw nothing", { r: List<Int> -> r.max() < 10 }, 0),
     )) test(label) {
         val d = GameTestDriver().also {
