@@ -1,7 +1,6 @@
 package com.wingedsheep.engine.mechanics.dungeon
 
 import com.wingedsheep.engine.core.ChooseOptionDecision
-import com.wingedsheep.sdk.scripting.values.DungeonCounting
 import com.wingedsheep.engine.core.DecisionContext
 import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.DungeonCompletedEvent
@@ -47,19 +46,16 @@ object DungeonService {
     /** Where [playerId]'s venture marker is, or null if they own no dungeon in the command zone. */
     fun marker(state: GameState, playerId: EntityId): DungeonMarker? = progress(state, playerId)?.current
 
-    /** How many dungeons [playerId] has completed — of [dungeon] only, when it's given; once per name under [DungeonCounting.DIFFERENTLY_NAMED]. */
+    /** How many dungeons [playerId] has completed — of [dungeon] only, when it's given; once per name when [distinctNames]. */
     fun completedCount(
         state: GameState,
         playerId: EntityId,
         dungeon: String? = null,
-        counting: DungeonCounting = DungeonCounting.EACH_COMPLETION
+        distinctNames: Boolean = false
     ): Int {
         val completed = progress(state, playerId)?.completed ?: return 0
         val matching = if (dungeon == null) completed else completed.filter { it == dungeon }
-        return when (counting) {
-            DungeonCounting.EACH_COMPLETION -> matching.size
-            DungeonCounting.DIFFERENTLY_NAMED -> matching.distinct().size
-        }
+        return if (distinctNames) matching.distinct().size else matching.size
     }
 
     /** The outcome of running a venture up to its first choice. */

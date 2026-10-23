@@ -1394,7 +1394,7 @@
                                 "type": "Multiply",
                                 "amount": {
                                     "type": "DungeonsCompleted",
-                                    "counting": "DIFFERENTLY_NAMED"
+                                    "distinctNames": true
                                 },
                                 "multiplier": 2
                             },
@@ -1402,7 +1402,7 @@
                                 "type": "Multiply",
                                 "amount": {
                                     "type": "DungeonsCompleted",
-                                    "counting": "DIFFERENTLY_NAMED"
+                                    "distinctNames": true
                                 },
                                 "multiplier": 2
                             }

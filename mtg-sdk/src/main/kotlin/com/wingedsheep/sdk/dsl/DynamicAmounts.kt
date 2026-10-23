@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.values.Aggregation
 import com.wingedsheep.sdk.scripting.values.AttachmentKind
 import com.wingedsheep.sdk.scripting.values.CardNumericProperty
-import com.wingedsheep.sdk.scripting.values.DungeonCounting
 import com.wingedsheep.sdk.scripting.values.ContextPropertyKey
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
@@ -1043,14 +1042,14 @@ object DynamicAmounts {
     /**
      * How many dungeons [player] has completed this game (CR 309.7) — of the dungeon named [dungeon]
      * only, when it's given. "If you've completed a dungeon" is `Conditions.YouCompletedADungeon`.
-     * [counting] = [DungeonCounting.DIFFERENTLY_NAMED] counts each dungeon name once — "for each
-     * differently named dungeon you've completed".
+     * [distinctNames] counts each dungeon name once — "for each differently named dungeon you've
+     * completed".
      */
     fun dungeonsCompleted(
         player: Player = Player.You,
         dungeon: String? = null,
-        counting: DungeonCounting = DungeonCounting.EACH_COMPLETION
-    ): DynamicAmount = DynamicAmount.DungeonsCompleted(player, dungeon, counting)
+        distinctNames: Boolean = false
+    ): DynamicAmount = DynamicAmount.DungeonsCompleted(player, dungeon, distinctNames)
 
     /**
      * How many counters of [counterType] a player currently has (CR 122.1 — counters placed on a

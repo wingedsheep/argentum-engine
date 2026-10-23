@@ -15,13 +15,12 @@ import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.values.DungeonCounting
 
 /**
  * Ellywick Tumblestrum — {2}{G}{G} Legendary Planeswalker — Ellywick, loyalty 4.
  *
  * The −7 emblem's "+2/+2 for each differently named dungeon you've completed" is an owned
- * `GrantDynamicStats` over `DungeonsCompleted(counting = DIFFERENTLY_NAMED)`: it is re-read every
+ * `GrantDynamicStats` over `DungeonsCompleted(distinctNames = true)`: it is re-read every
  * projection, so completing a new dungeon after the emblem exists grows the bonus, and completing
  * the same dungeon again does not.
  */
@@ -72,7 +71,7 @@ val EllywickTumblestrum = card("Ellywick Tumblestrum") {
 
     loyaltyAbility(-7) {
         val creaturesYouControl = GroupFilter(GameObjectFilter.Creature.youControl())
-        val bonus = DynamicAmounts.dungeonsCompleted(counting = DungeonCounting.DIFFERENTLY_NAMED) * 2
+        val bonus = DynamicAmounts.dungeonsCompleted(distinctNames = true) * 2
         effect = Effects.CreatePermanentEmblem(
             groupFilter = creaturesYouControl,
             grantedKeywords = listOf(Keyword.TRAMPLE.name, Keyword.HASTE.name),

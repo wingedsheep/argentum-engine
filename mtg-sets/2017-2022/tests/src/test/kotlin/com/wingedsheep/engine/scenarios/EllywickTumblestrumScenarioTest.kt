@@ -45,11 +45,12 @@ class EllywickTumblestrumScenarioTest : ScenarioTestBase() {
             .withActivePlayer(1)
             .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
 
-        /** Six cards: the legendary Isamaru, a nonlegendary Grizzly Bears and four Forests. */
+        /** Top six: the legendary Isamaru, a nonlegendary Grizzly Bears and four Forests; a Plains below them. */
         fun lookBoard() = board().apply {
             withCardInLibrary(1, "Isamaru, Hound of Konda")
             withCardInLibrary(1, "Grizzly Bears")
             repeat(4) { withCardInLibrary(1, "Forest") }
+            withCardInLibrary(1, "Plains")
         }
 
         test("+1 ventures into the dungeon") {
@@ -80,7 +81,11 @@ class EllywickTumblestrumScenarioTest : ScenarioTestBase() {
 
             game.state.getHand(game.player1Id) shouldContain isamaru
             withClue("Isamaru is legendary: +3 life") { game.getLifeTotal(1) shouldBe 23 }
-            game.state.getLibrary(game.player1Id).size shouldBe 5
+            val library = game.state.getLibrary(game.player1Id)
+            library.size shouldBe 6
+            withClue("the five unchosen cards went under the Plains, which is now on top") {
+                game.state.getEntity(library.first())!!.get<CardComponent>()!!.name shouldBe "Plains"
+            }
             loyalty(game, ellywick) shouldBe 2
         }
 

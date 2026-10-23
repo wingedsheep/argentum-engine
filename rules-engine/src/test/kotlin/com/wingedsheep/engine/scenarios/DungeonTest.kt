@@ -21,7 +21,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dungeons.Dungeons
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.values.DungeonCounting
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContainExactly
@@ -80,7 +79,7 @@ class DungeonTest : ScenarioTestBase() {
         typeLine = "Sorcery"
         spell {
             effect = Effects.GainLife(
-                DynamicAmount.DungeonsCompleted(Player.You, counting = DungeonCounting.DIFFERENTLY_NAMED)
+                DynamicAmount.DungeonsCompleted(Player.You, distinctNames = true)
             )
         }
     }
@@ -276,7 +275,7 @@ class DungeonTest : ScenarioTestBase() {
             }
             DungeonService.completedCount(game.state, game.player1Id) shouldBe 3
             DungeonService.completedCount(
-                game.state, game.player1Id, "Lost Mine of Phandelver", DungeonCounting.DIFFERENTLY_NAMED
+                game.state, game.player1Id, "Lost Mine of Phandelver", distinctNames = true
             ) shouldBe 1
         }
 
