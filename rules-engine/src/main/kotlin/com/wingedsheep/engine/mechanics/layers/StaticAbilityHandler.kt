@@ -1234,6 +1234,8 @@ class StaticAbilityHandler(
             is RestrictSpellsCastPerTurn,
             // Per-turn draw cap (DrawRestrictions, read by DrawLoop / DrawUpToExecutor):
             is com.wingedsheep.sdk.scripting.RestrictCardsDrawnPerTurn,
+            // Per-turn venture cap (VentureRestrictions, read by VentureIntoTheDungeonExecutor):
+            is com.wingedsheep.sdk.scripting.RestrictVenturesPerTurn,
 
             // Spell costs (CostCalculator):
             is GrantAlternativeCastingCost,

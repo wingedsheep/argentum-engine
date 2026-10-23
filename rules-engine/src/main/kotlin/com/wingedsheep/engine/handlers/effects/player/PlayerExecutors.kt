@@ -62,7 +62,7 @@ class PlayerExecutors(
         PlaySubgameExecutor(),
         GainCitysBlessingExecutor(),
         TakeDesignationExecutor(),
-        VentureIntoTheDungeonExecutor(),
+        VentureIntoTheDungeonExecutor(cardRegistry, zones.predicateEvaluator),
         ChangeSpeedExecutor(amountEvaluator = zones.predicateEvaluator.amounts),
         RemoveMaximumHandSizeExecutor(),
         ReduceMaximumHandSizeExecutor(amountEvaluator = zones.predicateEvaluator.amounts),

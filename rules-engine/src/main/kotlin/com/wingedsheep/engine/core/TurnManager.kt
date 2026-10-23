@@ -223,6 +223,8 @@ class TurnManager(
                     .with(CardsDiscardedThisTurnComponent(cardIds = emptyList()))
                     // Lands played this turn (with zone-of-origin) reset (Spider-Man 2099).
                     .with(LandsPlayedThisTurnComponent(fromZones = emptyList()))
+                    // Ventures this turn reset (Keen-Eared Sentry's per-turn venture cap).
+                    .without<com.wingedsheep.engine.state.components.player.VenturesThisTurnComponent>()
                     // Distinct bends reset each turn for every player ("this turn" is per game-turn).
                     .with(BendsThisTurnComponent(types = emptySet()))
             }

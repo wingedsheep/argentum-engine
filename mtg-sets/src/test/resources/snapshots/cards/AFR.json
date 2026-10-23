@@ -2454,6 +2454,34 @@
     ]
 }
 
+// Keen-Eared Sentry
+{
+    "name": "Keen-Eared Sentry",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "You have hexproof. (You can't be the target of spells or abilities your opponents control.)\nEach opponent can't venture into the dungeon more than once each turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            "GrantHexproofToController",
+            "RestrictVenturesPerTurn"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "UNCOMMON",
+        "artist": "Viko Menezes",
+        "flavorText": "\"You're not the first to underestimate me.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/de169d64-8242-4f57-980e-47f901fd57ab.jpg?1783926531"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Long Rest
 {
     "name": "Long Rest",

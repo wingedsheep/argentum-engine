@@ -10728,6 +10728,14 @@ in the declare-blockers step, even before the turn-based block action has comple
   remaining allowance. Read through `standingStatics` (face-down, ability-loss, conditional and
   granted statics handled like `SkipStepOrPhase`). Not modelled: refusing "you may draw two" outright
   (CR 121.2b's optional multi-draw) — choosing yes draws up to the cap.
+- `RestrictVenturesPerTurn(affected = Player.EachOpponent, maxPerTurn = 1)` — a per-turn cap on
+  venturing into the dungeon (CR 701.49): Keen-Eared Sentry ("Each opponent can't venture into the
+  dungeon more than once each turn"). Same shape as `RestrictCardsDrawnPerTurn`: `affected` relative to
+  the source's controller, the smallest applicable cap wins, and ventures earlier in the turn count even
+  before the source entered (tally: `VenturesThisTurnComponent`, cleared each turn). Every venture
+  counts — "venture into Undercity" and the initiative's ventures too. A venture the cap forbids simply
+  doesn't happen (no marker move, no dungeon completed or entered, no room trigger); enforced in
+  `VentureIntoTheDungeonExecutor` through `VentureRestrictions`.
 - `CantEnterTheBattlefield(filter = GameObjectFilter.Any, fromZones = null)` — an entry prohibition:
   cards matching `filter` can't enter the battlefield from `fromZones` (`null` = any zone). The other
   half of Worms of the Earth's lock — `CantEnterTheBattlefield(GameObjectFilter.Land)` — and

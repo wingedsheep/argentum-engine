@@ -1946,6 +1946,7 @@ Families:
 - `ReplaceLandManaColor(filter: GameObjectFilter, produces: ManaSymbol?, replaces: Color?)` — Lands matching filter produce other mana instead of their normal mana — a replacement on the land's mana ability's output (the land still taps as a mana ability).
 - `RestrictCardsDrawnPerTurn(affected: Player, maxPerTurn: Int)` — A per-turn cap on how many cards a player can draw (CR 121.2b): "Each opponent can't draw more than one card each turn." (Narset, Parter of Veils; Leovold, Emissary of Trest), "Each player can't dr…
 - `RestrictSpellsCastPerTurn(maxPerTurn: Int, eachPlayer: Boolean, spellFilter: GameObjectFilter)` — A per-turn cap on how many spells a player can cast, scoped along a single who-axis: - eachPlayer = false (default) — the cap applies only to the permanent's **controller** ("You can't cast more th…
+- `RestrictVenturesPerTurn(affected: Player, maxPerTurn: Int)` — A per-turn cap on how many times a player can venture into the dungeon (CR 701.49): "Each opponent can't venture into the dungeon more than once each turn." (Keen-Eared Sentry).
 - `RetainUnspentColoredMana(color: Color)` — The controller doesn't lose unspent mana of color as steps and phases end (Electro, Assaulting Battery: "You don't lose unspent red mana as steps and phases end").
 - `RevealFirstDrawEachTurn` — Reveal the first card the controller draws each turn.
 - `RevealTopOfLibrary` — Play with the top card of your library revealed (to all players), without granting any permission to play it from there.

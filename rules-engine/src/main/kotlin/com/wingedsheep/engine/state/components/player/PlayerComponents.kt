@@ -1024,6 +1024,17 @@ data class DungeonProgressComponent(
 ) : Component
 
 /**
+ * How many times this player has ventured into the dungeon (CR 701.49) during the current turn —
+ * the tally a [com.wingedsheep.sdk.scripting.RestrictVenturesPerTurn] cap reads. Counted by
+ * [com.wingedsheep.engine.mechanics.dungeon.DungeonService] once per venture; removed for every
+ * player at each turn change.
+ */
+@Serializable
+data class VenturesThisTurnComponent(
+    val count: Int = 0
+) : Component
+
+/**
  * Where a player's venture marker is (CR 309.4): on room [room] of the dungeon named [dungeon], whose
  * card in the command zone is the entity [dungeonEntityId] — the source of its room abilities.
  */

@@ -16,6 +16,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.DungeonCardComponent
 import com.wingedsheep.engine.state.components.player.DungeonMarker
 import com.wingedsheep.engine.state.components.player.DungeonProgressComponent
+import com.wingedsheep.engine.state.components.player.VenturesThisTurnComponent
 import com.wingedsheep.sdk.dungeons.Dungeons
 import com.wingedsheep.sdk.model.DungeonDefinition
 import com.wingedsheep.sdk.model.EntityId
@@ -153,7 +154,7 @@ object DungeonService {
         val (cardId, minted) = state.newEntity()
         val withCard = minted.withEntity(cardId, ComponentContainer.of(DungeonCardComponent(dungeon.name, playerId)))
         val room = dungeon.topmostRoom
-        val updated = setMarker(withCard, playerId, DungeonMarker(cardId, dungeon.name, room))
+        val updated = countVenture(setMarker(withCard, playerId, DungeonMarker(cardId, dungeon.name, room)), playerId)
         return updated to listOf(
             VenturedIntoDungeonEvent(
                 playerId = playerId,
@@ -176,7 +177,7 @@ object DungeonService {
     ): Pair<GameState, List<GameEvent>> {
         val marker = marker(state, playerId) ?: return state to emptyList()
         val dungeon = Dungeons.byName(marker.dungeon) ?: return state to emptyList()
-        val updated = setMarker(state, playerId, marker.copy(room = room))
+        val updated = countVenture(setMarker(state, playerId, marker.copy(room = room)), playerId)
         return updated to listOf(
             VenturedIntoDungeonEvent(
                 playerId = playerId,
@@ -214,6 +215,12 @@ object DungeonService {
         return state.withoutEntity(marker.dungeonEntityId)
             .updateEntity(leaver) { it.with(progress.copy(current = null)) }
     }
+
+    /** One more venture this turn — every venture ends by entering a dungeon or moving the marker. */
+    private fun countVenture(state: GameState, playerId: EntityId): GameState =
+        state.updateEntity(playerId) {
+            it.with(VenturesThisTurnComponent((it.get<VenturesThisTurnComponent>()?.count ?: 0) + 1))
+        }
 
     private fun setMarker(state: GameState, playerId: EntityId, marker: DungeonMarker): GameState {
         val previous = progress(state, playerId) ?: DungeonProgressComponent()

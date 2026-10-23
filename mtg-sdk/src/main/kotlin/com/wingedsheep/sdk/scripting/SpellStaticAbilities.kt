@@ -1315,6 +1315,53 @@ data class RestrictCardsDrawnPerTurn(
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
 }
 
+/**
+ * A per-turn cap on how many times a player can venture into the dungeon (CR 701.49): "Each
+ * opponent can't venture into the dungeon more than once each turn." (Keen-Eared Sentry).
+ *
+ *  - **who** — [affected], relative to this permanent's controller, as on [RestrictCardsDrawnPerTurn].
+ *  - **how many** — [maxPerTurn], compared against the player's ventures-this-turn tally, so a
+ *    venture made earlier in the turn counts even if it happened before this permanent entered.
+ *    When several caps apply, the smallest wins.
+ *
+ * Every venture counts — "venture into the dungeon", "venture into Undercity" (CR 701.49d), and the
+ * ventures the initiative makes (CR 726.2) — and a venture the cap forbids simply doesn't happen:
+ * the marker doesn't move, no dungeon is completed or entered, no room ability triggers. Enforced
+ * where every venture resolves.
+ *
+ * Separate from [RestrictCardsDrawnPerTurn] and [RestrictSpellsCastPerTurn] because it caps a
+ * different event — a venture, not a draw or a cast — counted off its own tally and read where a
+ * venture resolves rather than in the draw loop or at cast legality.
+ *
+ * @property affected Which players are capped, relative to the source's controller.
+ * @property maxPerTurn The most times an affected player may venture each turn.
+ */
+@SerialName("RestrictVenturesPerTurn")
+@Serializable
+data class RestrictVenturesPerTurn(
+    val affected: Player = Player.EachOpponent,
+    val maxPerTurn: Int = 1
+) : StaticAbility {
+    override val description: String = buildString {
+        append(
+            when (affected) {
+                is Player.You -> "You"
+                is Player.EachOpponent -> "Each opponent"
+                is Player.Each -> "Each player"
+                else -> affected.description.replaceFirstChar { it.uppercase() }
+            }
+        )
+        if (maxPerTurn == 0) {
+            append(" can't venture into the dungeon")
+        } else {
+            val times = when (maxPerTurn) { 1 -> "once"; 2 -> "twice"; else -> "$maxPerTurn times" }
+            append(" can't venture into the dungeon more than $times each turn")
+        }
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+}
+
 @SerialName("PlayersCantCastSpells")
 @Serializable
 data class PlayersCantCastSpells(
