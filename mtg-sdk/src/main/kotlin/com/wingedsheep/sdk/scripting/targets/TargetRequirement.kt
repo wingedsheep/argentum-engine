@@ -477,6 +477,17 @@ data class TargetObject(
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val sameNumericProperty: com.wingedsheep.sdk.scripting.values.CardNumericProperty? = null,
     /**
+     * All targets in this requirement must have pairwise **different** values of this property —
+     * "X target cards with different mana values from your graveyard" (Long Rest). The inverse of
+     * [sameNumericProperty], read the same way (projected on the battlefield, the card elsewhere).
+     * At announcement the candidates are offered as one exclusive pool per value (pick at most one
+     * from each), so the count is capped at the number of distinct values; at resolution two
+     * targets that now share a value are both illegal. Null imposes no restriction.
+     */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val differentNumericProperty: com.wingedsheep.sdk.scripting.values.CardNumericProperty? = null,
+    /**
      * When true and more than one target is chosen for this requirement, the chosen targets must
      * all share at least one creature type with one another — "two target creatures you control
      * that share a creature type" (Secret Tunnel), "two target creature cards that share a creature
@@ -614,7 +625,8 @@ data class TargetObject(
             sameCardType -> "$base that share a card type"
             else -> base
         }
-        val numericQualified = sameNumericProperty?.let { "$qualified with equal ${it.description}" } ?: qualified
+        val numericQualified = sameNumericProperty?.let { "$qualified with equal ${it.description}" }
+            ?: differentNumericProperty?.let { "$qualified with different ${it.description}s" } ?: qualified
         if (totalManaValueAtMost != null) {
             "$numericQualified with total mana value ${totalManaValueAtMost.description} or less"
         } else {

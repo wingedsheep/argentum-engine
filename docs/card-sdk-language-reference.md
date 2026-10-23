@@ -5899,7 +5899,7 @@ spell {
 - **Several object targets under one requirement** — "two target creatures", "up to X target
   creatures", "any number of target cards from a single graveyard" — are
   `targets(filter, count, minCount, optional, unlimited, dynamicMaxCount, exactly, sameController,
-  sameOwner, sameNumericProperty, sameCreatureType, sameCardType, totalManaValueAtMost, differentNames, differentControllers,
+  sameOwner, sameNumericProperty, differentNumericProperty, sameCreatureType, sameCardType, totalManaValueAtMost, differentNames, differentControllers,
   onePerCardType, onePerColor, chooser)`, which returns one handle per slot:
   `val (first, second) = targets(TargetFilter.Creature, count = 2)`. An ability that treats the
   targets uniformly ignores the handles and reads them with `Effects.ForEachTarget(…)`.
@@ -6086,6 +6086,15 @@ Every `TargetRequirement` carries count semantics (defaults shown):
   values invalidate the whole requirement. Server-computed `selectionGroups` guide board targeting
   and AI choices without client rules. V.A.T.S. uses
   `targets(TargetFilter.Creature, unlimited = true, sameNumericProperty = CardNumericProperty.TOUGHNESS)`.
+- `differentNumericProperty: CardNumericProperty? = null` — on `TargetObject` and `targets(...)`; the
+  inverse of `sameNumericProperty`: no two chosen targets may share a value of the property
+  ("**X target cards with different mana values from your graveyard**" — Long Rest). Read the same
+  way (projected on the battlefield, the card elsewhere). The targeting pause offers the candidates
+  as server-computed `exclusiveGroups`, one per value (at most one pick from each), and caps the count
+  at the number of distinct values; `TargetValidator` is authoritative. At resolution, remaining
+  targets that now share a value are all illegal. E.g.
+  `targets(TargetFilter(GameObjectFilter.Any.ownedByYou(), zone = Zone.GRAVEYARD), exactly = DynamicAmount.XValue,
+  differentNumericProperty = CardNumericProperty.MANA_VALUE)`.
 - `sameCardType = false` — on `TargetObject` / `TargetObject(filter = TargetFilter.Permanent, count = ...)`; the **card-type** sibling of
   `sameCreatureType`. When `true` and the requirement picks more than one target, the chosen **permanent**
   targets must all share at least one *card type* per CR 205.2a — artifact, creature, enchantment,

@@ -32,6 +32,12 @@ object NumericTargetEquality {
         return ids.drop(1).all { value(state, it, property) == first }
     }
 
+    /** "… with different mana values": no two of [ids] share a value of [property]. */
+    fun isDistinct(state: GameState, ids: List<EntityId>, property: CardNumericProperty): Boolean {
+        val values = ids.map { value(state, it, property) ?: return false }
+        return values.size == values.toSet().size
+    }
+
     fun eligible(state: GameState, ids: List<EntityId>, requirement: com.wingedsheep.sdk.scripting.targets.TargetRequirement,
                  minimum: Int = requirement.effectiveMinCount): List<EntityId> {
         return compatibleGroups(state, ids, requirement, minimum)?.flatten() ?: ids

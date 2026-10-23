@@ -2270,6 +2270,71 @@
     ]
 }
 
+// Long Rest
+{
+    "name": "Long Rest",
+    "manaCost": "{X}{G}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return X target cards with different mana values from your graveyard to your hand. If eight or more cards were returned to your hand this way, your life total becomes equal to your starting life total. Exile Long Rest.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "storeMovedAs": "moved1"
+                },
+                {
+                    "type": "ConditionalOnCollection",
+                    "collection": "moved1",
+                    "ifNotEmpty": {
+                        "type": "SetLifeTotal",
+                        "amount": {
+                            "type": "StartingLifeTotal",
+                            "player": "You"
+                        }
+                    },
+                    "minSize": 8
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0",
+                "dynamicMaxCount": "XValue",
+                "dynamicMinCount": "XValue",
+                "differentNumericProperty": "MANA_VALUE"
+            }
+        ],
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "193",
+        "rarity": "RARE",
+        "artist": "Chris Seaman",
+        "flavorText": "A job well done means a rest well earned.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/0615e930-3b6b-4b2f-a09c-0730d491545c.jpg?1783926459"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Loyal Warhound
 {
     "name": "Loyal Warhound",

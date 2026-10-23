@@ -10,12 +10,27 @@ fun com.wingedsheep.engine.core.TargetRequirementInfo.withTargetConstraints(
     candidates: List<EntityId>,
 ): com.wingedsheep.engine.core.TargetRequirementInfo {
     val distributed = withOwnerDistribution(state, requirement, candidates).withDistinctCategories(state, requirement, candidates)
+        .withDifferentValues(state, requirement, candidates)
     val property = DynamicTargetCount.objectOf(requirement)?.sameNumericProperty ?: return distributed
     val groups = NumericTargetEquality.compatibleGroups(state, candidates, requirement, distributed.minTargets).orEmpty()
     return distributed.copy(sameNumericProperty = property, selectionGroups = groups,
         maxTargets = minOf(distributed.maxTargets, groups.maxOfOrNull { group ->
             if (distributed.exclusiveGroups != null) OwnerTargetDistribution.groups(state, group).size else group.size
         } ?: 0))
+}
+
+/**
+ * "… with different mana values": one exclusive pool per value (at most one pick from each), and the
+ * count capped at the number of distinct values among the candidates.
+ */
+private fun com.wingedsheep.engine.core.TargetRequirementInfo.withDifferentValues(
+    state: GameState,
+    requirement: com.wingedsheep.sdk.scripting.targets.TargetRequirement,
+    candidates: List<EntityId>,
+): com.wingedsheep.engine.core.TargetRequirementInfo {
+    val property = DynamicTargetCount.objectOf(requirement)?.differentNumericProperty ?: return this
+    val groups = NumericTargetEquality.groups(state, candidates, property)
+    return copy(exclusiveGroups = groups, maxTargets = minOf(maxTargets, groups.size))
 }
 
 /**

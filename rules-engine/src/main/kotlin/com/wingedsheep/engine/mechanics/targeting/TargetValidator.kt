@@ -379,6 +379,16 @@ class TargetValidator(
                 }
             }
 
+            // "... with different mana values" — no two chosen targets for this requirement may
+            // share a value of the property (Long Rest). CR 601.2c.
+            val differentProperty = (requirement as? TargetObject)?.differentNumericProperty
+            if (differentProperty != null && targetsForReq.size > 1) {
+                val ids = targetsForReq.map { it.toEntityId() }
+                if (!NumericTargetEquality.isDistinct(state, ids, differentProperty)) {
+                    return "Targets must have different ${differentProperty.description}s"
+                }
+            }
+
             // "For each other player, ... up to one target creature that player controls" — no two
             // chosen targets for this requirement may share a controller (Kaya, Spirits' Justice).
             // CR 601.2c. Read from projected state so a control-change effect is respected.

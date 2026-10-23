@@ -123,8 +123,11 @@ internal class ResolutionTargetValidator(
                 }
         }.toSet()
         val sharingController = targetsSharingAController(projected, state, targets, individuallyLegal, targetRequirements)
+        val sharingValue = targetsSharingADifferentValue(state, targets, individuallyLegal, targetRequirements)
         if (targetRequirements.none { (it as? TargetObject)?.sameNumericProperty != null }) {
-            return targets.filterIndexed { index, _ -> index in individuallyLegal && index !in sharingController }
+            return targets.filterIndexed { index, _ ->
+                index in individuallyLegal && index !in sharingController && index !in sharingValue
+            }
         }
         val unequal = (individuallyLegal - sharingController).groupBy { index ->
             var offset = 0
@@ -141,9 +144,28 @@ internal class ResolutionTargetValidator(
                     )) indices else emptyList()
             }.toSet()
         return targets.filterIndexed { index, _ ->
-            index in individuallyLegal && index !in sharingController && index !in unequal
+            index in individuallyLegal && index !in sharingController && index !in unequal && index !in sharingValue
         }
     }
+
+    /**
+     * "… with different mana values" (Long Rest) restricts the *set* of targets, so it is re-checked
+     * at resolution like [targetsSharingAController]: still-legal targets of a
+     * `differentNumericProperty` requirement that now share a value are all illegal.
+     */
+    private fun targetsSharingADifferentValue(
+        state: GameState,
+        targets: List<ChosenTarget>,
+        legalIndices: Set<Int>,
+        targetRequirements: List<TargetRequirement>,
+    ): Set<Int> = legalIndices
+        .groupBy { index -> (getRequirementForTargetIndex(index, targetRequirements) as? TargetObject)?.differentNumericProperty }
+        .flatMap { (property, indices) ->
+            if (property == null) return@flatMap emptyList()
+            indices.groupBy { index ->
+                com.wingedsheep.engine.mechanics.targeting.NumericTargetEquality.value(state, targets[index].toEntityId(), property)
+            }.values.filter { it.size > 1 }.flatten()
+        }.toSet()
 
     /**
      * "Two target creatures controlled by different players" (Run Away Together) is a restriction on

@@ -408,9 +408,17 @@ class TargetEnumerationUtils(
                 ?: emptyList()
             val equalityGroups = com.wingedsheep.engine.mechanics.targeting.NumericTargetEquality
                 .compatibleGroups(state, validTargets, req, bounds.min)
+            // "… with different mana values": one exclusive pool per value, so the count can't
+            // exceed the distinct values on offer (and too few of them leaves no legal choice).
+            val differentValueGroups = (req as? TargetObject)?.differentNumericProperty?.let {
+                com.wingedsheep.engine.mechanics.targeting.NumericTargetEquality.groups(state, validTargets, it)
+            }?.takeIf { it.size >= bounds.min }
+            val offered = if ((req as? TargetObject)?.differentNumericProperty != null && differentValueGroups == null)
+                emptyList() else validTargets
             TargetInfo(
                 exclusiveGroups = if ((req as? TargetObject)?.ownerDistribution != null)
-                    com.wingedsheep.engine.mechanics.targeting.OwnerTargetDistribution.groups(state, validTargets) else null,
+                    com.wingedsheep.engine.mechanics.targeting.OwnerTargetDistribution.groups(state, validTargets)
+                    else differentValueGroups,
                 selectionGroups = equalityGroups,
                 index = index,
                 description = req.description,
@@ -431,10 +439,12 @@ class TargetEnumerationUtils(
                     distinctCategories != null -> minOf(bounds.max ?: Int.MAX_VALUE,
                         com.wingedsheep.engine.mechanics.targeting.OnePerCategoryTargets
                             .maxTargets(distinctCategories.filterKeys { it in validTargets }))
+                    differentValueGroups != null -> minOf(differentValueGroups.size,
+                        bounds.max ?: if (req.unlimited) differentValueGroups.size else req.count)
                     req.unlimited -> minOf(validTargets.size, bounds.max ?: validTargets.size)
                     else -> bounds.max ?: req.count
                 },
-                validTargets = equalityGroups?.flatten() ?: validTargets,
+                validTargets = equalityGroups?.flatten() ?: offered,
                 targetZone = getTargetZone(req),
                 mustDifferFromEarlier = req is TargetOther,
                 xConstrainsManaValue = requirementComparesToX(req, CardNumericProperty.MANA_VALUE, ComparisonOperator.LTE),
