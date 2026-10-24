@@ -8544,10 +8544,10 @@
                                 "type": "SelectFromCollection",
                                 "from": "scried",
                                 "selection": "ChooseAnyNumber",
-                                "chooser": "TargetPlayer",
+                                "chooser": "ChosenOpponent",
                                 "storeSelected": "toBottom",
                                 "storeRemainder": "toTop",
-                                "prompt": "Scry 2: choose cards to put on the bottom of your library",
+                                "prompt": "Scry 2: choose cards to put on the bottom of the library",
                                 "selectedLabel": "Put on bottom",
                                 "remainderLabel": "Put on top"
                             },

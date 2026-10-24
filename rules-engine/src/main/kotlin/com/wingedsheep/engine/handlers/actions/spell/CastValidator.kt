@@ -795,6 +795,10 @@ internal class CastValidator(
             state.getEntity(action.cardId)?.has<PlayWithFixedAlternativeManaCostComponent>() == true)) {
             return "Bestow cannot be combined with another alternative cost"
         }
+        // CR 118.9a — a free cast can't also pay the card's own alternative cost (Mastery ruling).
+        if (playForFree && action.useAlternativeCost && action.alternativeCostType == AlternativeCostType.SELF_ALTERNATIVE) {
+            return "Cannot combine 'without paying its mana cost' with another alternative cost"
+        }
         if (com.wingedsheep.engine.mechanics.MutateCasts.selected(action) && (playForFree ||
             state.getEntity(action.cardId)?.has<PlayWithFixedAlternativeManaCostComponent>() == true)) {
             return "Mutate cannot be combined with another alternative cost"

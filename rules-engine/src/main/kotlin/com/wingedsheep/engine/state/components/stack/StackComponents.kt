@@ -103,6 +103,8 @@ data class SpellOnStackComponent(
      * view can say how the spell was cast without a flag per mechanic — see
      * [com.wingedsheep.engine.view.CastProvenance]. Disturb, flashback, harmonize, emerge and
      * miracle have no `was*` flag at all, which is exactly why the stack could not describe them.
+     * Rules read it too: flashback's exile, escape's "escaped" mark, and the card's own
+     * alternative cost (`Conditions.SelfAlternativeCostWasPaid`). A free cast records none.
      */
     val alternativeCost: com.wingedsheep.engine.core.AlternativeCostType? = null,
     val wasWarped: Boolean = false,  // For warp - permanent is exiled at end step

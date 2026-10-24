@@ -363,10 +363,12 @@ internal class CastCostTotaller(
      * The alternative cost this cast actually pays (CR 118.9), or null for a cast that doesn't use
      * one. An explicit [CastSpell.alternativeCostType] is that choice; an untyped
      * `useAlternativeCost` cast resolves to the first available base in [alternativeBases]' order —
-     * the same base its price came from — so the spell still records which cost was paid.
+     * the same base its price came from — so the spell still records which cost was paid. A free
+     * cast pays no alternative cost (CR 118.9a: only one alternative cost applies), so it records none.
      */
     fun paidAlternativeCostType(state: GameState, action: CastSpell, cardDef: CardDefinition?): AlternativeCostType? {
         if (!action.useAlternativeCost) return null
+        if (action.useWithoutPayingManaCost || zoneResolver.hasPlayWithoutPayingCost(state, action.playerId, action.cardId)) return null
         action.alternativeCostType?.let { return it }
         if (cardDef == null) return null
         return alternativeBases.firstOrNull { (_, base) -> base(AlternativeBaseQuery(state, action, cardDef)) != null }?.first

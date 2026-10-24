@@ -42,6 +42,8 @@ internal fun effectTargetToChooser(target: EffectTarget): Chooser = when (target
         is Player.You -> Chooser.Controller
         is Player.TargetOpponent -> Chooser.TargetPlayer
         is Player.AnOpponent, is Player.EachOpponent -> Chooser.Opponent
+        // The opponent a preceding ChooseOpponent named (Ingenious Mastery's "they scry 2").
+        is Player.ChosenOpponent -> Chooser.ChosenOpponent
         is Player.TriggeringPlayer -> Chooser.TriggeringPlayer
         // "Its owner" (e.g. Recoil: "Return target permanent to its owner's hand. Then that
         // player discards a card.") resolves to whoever owns the targeted permanent, which may be

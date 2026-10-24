@@ -2,6 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -29,11 +30,16 @@ class IngeniousMasteryScenarioTest : FunSpec({
     fun GameTestDriver.treasures(player: com.wingedsheep.sdk.model.EntityId): Int =
         state.getBattlefield(player).count { state.getEntity(it)?.get<CardComponent>()?.name == "Treasure" }
 
-    fun GameTestDriver.resolveAll() {
+    /** Resolves everything, returning who was asked to choose cards (the scry's top/bottom split). */
+    fun GameTestDriver.resolveAll(): List<com.wingedsheep.sdk.model.EntityId> {
+        val selectors = mutableListOf<com.wingedsheep.sdk.model.EntityId>()
         repeat(20) {
-            if (state.pendingDecision != null) autoResolveDecision()
-            else if (stackSize > 0) bothPass()
-            else return
+            val decision = state.pendingDecision
+            if (decision != null) {
+                if (decision is SelectCardsDecision) selectors += decision.playerId
+                autoResolveDecision()
+            } else if (stackSize > 0) bothPass()
+            else return selectors
         }
         error("stack did not finish resolving")
     }
@@ -48,8 +54,9 @@ class IngeniousMasteryScenarioTest : FunSpec({
 
         d.submit(CastSpell(me, mastery, useAlternativeCost = true,
             alternativeCostType = AlternativeCostType.SELF_ALTERNATIVE)).error shouldBe null
-        d.resolveAll()
+        val selectors = d.resolveAll()
 
+        selectors shouldBe listOf(opponent)
         d.getHand(me).size shouldBe myHand - 1 + 3
         d.treasures(opponent) shouldBe 2
         d.treasures(me) shouldBe 0

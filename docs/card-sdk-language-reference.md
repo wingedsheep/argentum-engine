@@ -4699,9 +4699,11 @@ one-off pipeline belongs inline in the card file via `Effects.Pipeline { }` (§5
   twin of `scry(count)`: when `target` is the controller it is identical (returns the compact
   `ScryEffect` macro); otherwise it expands to a `scryPipeline` whose gather + library moves read the
   **target** player's library and whose top/bottom decision is made by that player
-  (`Chooser.TargetPlayer`) — the scry analogue of `mill(count, target)`. Used by modal "• Target
+  (the shared `effectTargetToChooser` mapping: `Chooser.TargetPlayer` for a target, and
+  `Chooser.ChosenOpponent` for `PlayerRef(Player.ChosenOpponent)`). Used by modal "• Target
   player scries N" modes (Bumi, King of Three Trials), where `target` is the chosen mode's local
-  `EffectTarget.ContextTarget(0)`.
+  `EffectTarget.ContextTarget(0)`, and by "an opponent … and they scry 2" after `ChooseOpponent`
+  (Ingenious Mastery).
   The target also orders the cards left on top (`MoveCollectionEffect(order = CardOrder.OwnerChooses)`
   — the player whose library receives the cards gets the reorder prompt; `ControllerChooses` would
   hand it to the caster), and the `ScriedEvent` it emits names the **scrying** player, so the

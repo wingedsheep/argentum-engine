@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.core.TargetsResponse
+import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -22,6 +23,7 @@ import com.wingedsheep.sdk.scripting.SelfAlternativeCost
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 
 /**
  * [Conditions.SelfAlternativeCostWasPaid] — "If the {1}{B} cost was paid, …" (the Strixhaven
@@ -131,6 +133,20 @@ class SelfAlternativeCostWasPaidTest : FunSpec({
         d.giveMana(me, Color.RED, 1)
 
         d.submit(altCast(me, spell, type = AlternativeCostType.FLASHBACK)).error shouldBe null
+        d.resolveAll()
+
+        d.getLifeTotal(me) shouldBe 21
+    }
+
+    test("a free cast can't also pay the card's own alternative cost, and records none (CR 118.9a)") {
+        val d = driver()
+        val me = d.activePlayer!!
+        val spell = d.putCardInHand(me, mastery.name)
+        d.replaceState(d.state.updateEntity(spell) { it.with(PlayWithoutPayingCostComponent(me)) })
+        d.giveMana(me, Color.RED, 1)
+
+        d.submitExpectFailure(altCast(me, spell)).error shouldNotBe null
+        d.submit(altCast(me, spell, type = null)).error shouldBe null
         d.resolveAll()
 
         d.getLifeTotal(me) shouldBe 21

@@ -877,8 +877,7 @@ data class SpellCastEvent(
     val castFromZone: Zone? = null,
     /**
      * Which alternative casting cost paid for this spell (CR 118.9), or null for a normal cast.
-     * Mirrors [com.wingedsheep.engine.state.components.stack.SpellOnStackComponent.alternativeCost];
-     * also descriptive only.
+     * Mirrors [com.wingedsheep.engine.state.components.stack.SpellOnStackComponent.alternativeCost].
      */
     val alternativeCost: AlternativeCostType? = null,
     /**

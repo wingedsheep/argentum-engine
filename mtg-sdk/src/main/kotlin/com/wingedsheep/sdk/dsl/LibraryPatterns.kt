@@ -386,13 +386,13 @@ object LibraryPatterns {
      * "Target player scries [count]" (CR 701.22) — a *player-scoped* scry. When [target] is the
      * effect's own controller this is identical to [scry] (returns the compact [ScryEffect] macro);
      * otherwise it expands to a [scryPipeline] whose gather/library-moves read the *target* player's
-     * library and whose top/bottom decision is made by that player ([Chooser.TargetPlayer]) — the
+     * library and whose top/bottom decision is made by that player ([effectTargetToChooser]) — the
      * scry twin of [mill]`(count, target)`. Used by modal "• Target player scries N" modes (Bumi,
      * King of Three Trials), where the player is the chosen mode's local [EffectTarget.ContextTarget].
      */
     fun scry(count: Int, target: EffectTarget): Effect = when (target) {
         EffectTarget.Controller -> ScryEffect(count)
-        else -> scryPipeline(count, scryPlayer(target), Chooser.TargetPlayer)
+        else -> scryPipeline(count, scryPlayer(target), effectTargetToChooser(target))
     }
 
     /**
@@ -408,7 +408,7 @@ object LibraryPatterns {
         is DynamicAmount.Fixed -> scry(count.amount, target)
         else -> when (target) {
             EffectTarget.Controller -> scryPipeline(count)
-            else -> scryPipeline(count, scryPlayer(target), Chooser.TargetPlayer)
+            else -> scryPipeline(count, scryPlayer(target), effectTargetToChooser(target))
         }
     }
 
