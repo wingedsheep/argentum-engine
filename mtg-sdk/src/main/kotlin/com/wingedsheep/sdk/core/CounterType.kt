@@ -826,6 +826,13 @@ value class CounterType(val name: String) {
          */
         val BOOK = CounterType("BOOK")
 
+        /**
+         * Study counter (STX — Kianne, Dean of Substance // Imbraham, Dean of Theory). A mark with no
+         * inherent rule, placed on cards in exile: the deans' abilities read the nonland cards you own
+         * in exile that carry one, wherever the counters came from.
+         */
+        val STUDY = CounterType("STUDY")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -974,6 +981,7 @@ value class CounterType(val name: String) {
             FLAME,
             EMBER,
             BOOK,
+            STUDY,
         )
 
         /**

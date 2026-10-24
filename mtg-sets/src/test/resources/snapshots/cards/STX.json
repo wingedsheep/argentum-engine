@@ -10735,6 +10735,268 @@
     ]
 }
 
+// Kianne, Dean of Substance
+{
+    "name": "Kianne, Dean of Substance",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Elf Druid",
+    "oracleText": "{T}: Exile the top card of your library. If it's a land card, put it into your hand. Otherwise, put a study counter on it.\n{4}{G}: Create a 0/0 green and blue Fractal creature token. Put a +1/+1 counter on it for each different mana value among nonland cards you own in exile with study counters on them.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kianne, Dean of Substance:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "land",
+                            "storeMatching": "matching2",
+                            "storeNonMatching": "rest2"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "AddCountersToCollection",
+                            "collectionName": "rest2",
+                            "counterType": "STUDY"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{T}: Exile the top card of your library. If it's a land card, put it into your hand. Otherwise, put a study counter on it."
+            },
+            {
+                "id": "Kianne, Dean of Substance:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 0,
+                            "toughness": 0,
+                            "colors": [
+                                "GREEN",
+                                "BLUE"
+                            ],
+                            "creatureTypes": [
+                                "Fractal"
+                            ]
+                        },
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "amount": {
+                                "type": "AggregateZone",
+                                "player": "You",
+                                "zone": "Exile",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsNonland"
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "HasCounter",
+                                            "counterType": "STUDY"
+                                        }
+                                    ]
+                                },
+                                "aggregation": "DISTINCT_VALUES",
+                                "property": "MANA_VALUE"
+                            },
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{4}{G}: Create a 0/0 green and blue Fractal creature token. Put a +1/+1 counter on it for each different mana value among nonland cards you own in exile with study counters on them."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Imbraham, Dean of Theory",
+        "manaCost": "{2}{U}{U}",
+        "typeLine": "Legendary Creature — Bird Wizard",
+        "oracleText": "Flying\n{X}{U}{U}, {T}: Exile the top X cards of your library and put a study counter on each of them. Then you may put a card you own in exile with a study counter on it into your hand.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Imbraham, Dean of Theory:1",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{X}{U}{U}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": "XValue"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                },
+                                "addCounterType": "STUDY"
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Exile",
+                                    "filter": {
+                                        "statePredicates": [
+                                            {
+                                                "type": "HasCounter",
+                                                "counterType": "STUDY"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "gathered2"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered2",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected3",
+                                "prompt": "You may put a card with a study counter on it into your hand",
+                                "selectedLabel": "Put into hand"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected3",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "{X}{U}{U}, {T}: Exile the top X cards of your library and put a study counter on each of them. Then you may put a card you own in exile with a study counter on it into your hand."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "152",
+            "rarity": "RARE",
+            "artist": "Ryan Pancoast",
+            "imageUri": "https://cards.scryfall.io/normal/back/8/b/8b45dc40-6827-46a7-a9b7-802be698d053.jpg?1783927335",
+            "rulings": [
+                {
+                    "date": "2021-04-16",
+                    "text": "Cards are exiled face up unless an effect states otherwise."
+                },
+                {
+                    "date": "2021-04-16",
+                    "text": "The second abilities of both Kianne and Imbraham look at all cards you own in exile with study counters, even if they were exiled by a different permanent, such as another Kianne or Imbraham."
+                },
+                {
+                    "date": "2021-04-16",
+                    "text": "You may choose 0 as the value of X as you activate Imbraham's last ability. If you do, you will not exile any cards from your library. However, you may still put a card previously exiled with a study counter on it into your hand."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "GREEN",
+            "BLUE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b45dc40-6827-46a7-a9b7-802be698d053.jpg?1783927335",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Cards are exiled face up unless an effect states otherwise."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Exiled cards with study counters on them retain their study counters even if Kianne or Imbraham leave the battlefield."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "The second abilities of both Kianne and Imbraham look at all cards you own in exile with study counters, even if they were exiled by a different permanent, such as another Kianne or Imbraham."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ],
+    "layout": "MODAL_DFC"
+}
+
 // Killian, Ink Duelist
 {
     "name": "Killian, Ink Duelist",

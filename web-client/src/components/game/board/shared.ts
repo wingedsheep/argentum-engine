@@ -882,6 +882,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.EMBER,
   // Spell Satchel's store: one pays for {C}, three for a card.
   CounterType.BOOK,
+  // Kianne / Imbraham's mark on exiled cards.
+  CounterType.STUDY,
   CounterType.PLUS_ONE_PLUS_TWO,
   CounterType.PLUS_TWO_PLUS_TWO,
   CounterType.MINUS_TWO_MINUS_TWO,

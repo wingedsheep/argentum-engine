@@ -768,11 +768,13 @@ internal class SpellCaster(
                 // so a leftover marker would be inert, but this keeps the permanent clean.
                 // The "which zone was this exiled from" stamp is only meaningful while the object
                 // is in exile; this path reuses the entity id, so leaving it on would put an
-                // ExiledFromZoneComponent on the resulting permanent.
+                // ExiledFromZoneComponent on the resulting permanent. Likewise counters placed on it
+                // in exile (silver, study, a last time counter) aren't retained by the spell.
                 val removed = state.removeFromZone(exileZone, cardId)
                     .updateEntity(cardId) {
                         it.without<com.wingedsheep.engine.state.components.battlefield.SuspendedComponent>()
                             .without<com.wingedsheep.engine.state.components.identity.ExiledFromZoneComponent>()
+                            .without<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
                     }
                 return com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
                     .unlinkFromAllLinkedExiles(removed, cardId)

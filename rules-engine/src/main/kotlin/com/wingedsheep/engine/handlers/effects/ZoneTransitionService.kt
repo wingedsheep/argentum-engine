@@ -888,9 +888,13 @@ class ZoneTransitionService(
             // Any further zone change makes a new object (CR 400.7): information about the old
             // battlefield incarnation must not survive it. No-op when the component is absent.
             // The damage memory goes too — also the memory a spell recorded while on the stack.
+            // So do counters: a card leaving exile with a silver/study/time counter arrives without
+            // it (counters aren't retained across a zone change). Entry counters for a battlefield
+            // destination are placed later, during entry setup.
             newState = newState.updateEntity(entityId) { c ->
                 c.without<LastKnownPermanentComponent>()
                     .without<com.wingedsheep.engine.state.components.battlefield.DealtDamageToThisGameComponent>()
+                    .without<CountersComponent>()
             }
         }
 

@@ -608,10 +608,12 @@ class ScenarioBuilderService(
             // CardComponent.cardDefinitionId matches the key used by CardRegistry. Without the
             // set-code prefix, registry lookups (e.g. TriggerAbilityResolver.getTriggeredAbilities)
             // miss and the card silently has no triggered abilities.
+            // A modal DFC's back face is registered under its bare name only, so fall back to the
+            // name whenever the registry doesn't know the numbered key (else its abilities vanish).
             val definitionId = cardDef.metadata.collectorNumber?.let { cn ->
                 if (cardDef.setCode != null) "${cardDef.name}#${cardDef.setCode}-$cn"
                 else "${cardDef.name}#$cn"
-            } ?: cardDef.name
+            }?.takeIf { cardRegistry.getCard(it) != null } ?: cardDef.name
             val cardComponent = CardComponent(
                 cardDefinitionId = definitionId,
                 name = cardDef.name,
