@@ -16728,6 +16728,179 @@
     ]
 }
 
+// Snow Day
+{
+    "name": "Snow Day",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Tap up to two target creatures. Those creatures don't untap during their controller's next untap step.\nDraw two cards, then discard a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "DOESNT_UNTAP",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "duration": "UntilAfterAffectedControllersNextUntap"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "rarity": "UNCOMMON",
+        "artist": "Forrest Imel",
+        "flavorText": "\"Advanced Elemental Manifestations is canceled until all students have thawed.\"\n—Prismari dormitory notice",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6b6f17d-45ba-4d60-a963-5eee026f2219.jpg?1783927374",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If you chose targets for Snow Day as you cast it, and none of those targets are legal as it tries to resolve, it will be removed from the stack and do nothing. You will not draw or discard."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "You may choose tapped creatures as targets. Those creatures won't untap during their controller's next untap step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Solve the Equation
+{
+    "name": "Solve the Equation",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for an instant or sorcery card, reveal it, put it into your hand, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "instant|sorcery"
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for an instant or sorcery card to put into your hand",
+                    "selectedLabel": "Put into your hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "UNCOMMON",
+        "artist": "Lie Setiawan",
+        "flavorText": "Zimone's brilliance drew attention from many, including the sinister mages known as the Oriq.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66c04ee2-c1e0-45fb-aaf5-1b4459df80fc.jpg?1783927375"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Soothsayer Adept
 {
     "name": "Soothsayer Adept",
@@ -16961,6 +17134,216 @@
     ]
 }
 
+// Specter of the Fens
+{
+    "name": "Specter of the Fens",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Specter",
+    "oracleText": "Flying\n{5}{B}: Target opponent loses 2 life and you gain 2 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Specter of the Fens:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{5}{B}: Target opponent loses 2 life and you gain 2 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "artist": "G-host Lee",
+        "flavorText": "Foul specters hunt down those who try to back out of a deal with a daemogoth.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/73e3cfbc-7177-4bbc-89c4-560c9c2f97db.jpg?1783927361"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Spell Satchel
+{
+    "name": "Spell Satchel",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "Magecraft — Whenever you cast or copy an instant or sorcery spell, put a book counter on this artifact.\n{T}, Remove a book counter from this artifact: Add {C}.\n{3}, {T}, Remove three book counters from this artifact: Draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spell Satchel:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "SpellCopiedEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "BOOK",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Magecraft — Whenever you cast or copy an instant or sorcery spell, put a book counter on this artifact."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Spell Satchel:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "BOOK",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}, Remove a book counter from this artifact: Add {C}."
+            },
+            {
+                "id": "Spell Satchel:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "BOOK",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "{3}, {T}, Remove three book counters from this artifact: Draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "258",
+        "rarity": "UNCOMMON",
+        "artist": "YW Tang",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7de826a0-6e68-4d40-a51c-8d6e7a4148d1.jpg?1783927279",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates a copy of an instant or sorcery spell, this will also cause the magecraft ability to trigger."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates multiple copies of an instant or sorcery spell, magecraft abilities trigger once for each copy created by the effect."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Some effects instruct you to copy an instant or sorcery card in a zone other than the stack. These copies do not cause magecraft abilities to trigger. However, most effects that do this also allow you to cast the copy, and casting the copy will cause magecraft abilities to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Spined Karok
 {
     "name": "Spined Karok",
@@ -17013,6 +17396,74 @@
     ]
 }
 
+// Spiteful Squad
+{
+    "name": "Spiteful Squad",
+    "manaCost": "{2}{W}{B}",
+    "typeLine": "Creature — Human Warlock",
+    "oracleText": "Deathtouch\nThis creature enters with two +1/+1 counters on it.\nWhen this creature dies, put its counters on target creature you control.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spiteful Squad:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "MoveAllLastKnownCounters",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 2,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "artist": "Manuel Castañón",
+        "flavorText": "\"Don't you know first-years pay a toll to walk through here?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/be88355e-c986-4b69-93b4-0abf04916e86.jpg?1783927290",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Spiteful Squad's ability doesn't cause you to move counters from itself to the target creature. Rather, you put the same number of each kind of counter Spiteful Squad had when it died onto that creature."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If Spiteful Squad has -1/-1 counters on it when it dies, the last ability will include those as well. This may result in the recipient also dying. Spiteful indeed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Springmane Cervin
 {
     "name": "Springmane Cervin",
@@ -17049,6 +17500,129 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Square Up
+{
+    "name": "Square Up",
+    "manaCost": "{1}{G/U}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature has base power and toughness 4/4 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "SetBaseStats",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "power": {
+                "type": "Fixed",
+                "amount": 4
+            },
+            "toughness": {
+                "type": "Fixed",
+                "amount": 4
+            },
+            "duration": "EndOfTurn"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "238",
+        "artist": "Manuel Castañón",
+        "flavorText": "Sometimes the most radical thing you can do is think inside the box.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d548d5a-1dd7-448a-8483-249572e08c47.jpg?1783927290",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Square Up overwrites all previous effects that set the target creature's power and toughness to specific values. Other effects that set its power or toughness to specific values that start to apply after Square Up resolves will overwrite this effect."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Any effects that modify a creature's power and/or toughness without setting them to a specific value (i.e. ones that don't affect base power and/or toughness) will apply after its base power and toughness are set, regardless of the order those effects were created. The same is true for counters that modify its power and toughness."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
+// Star Pupil
+{
+    "name": "Star Pupil",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "This creature enters with a +1/+1 counter on it.\nWhen this creature dies, put its counters on target creature you control.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Star Pupil:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "MoveAllLastKnownCounters",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "artist": "Howard Lyon",
+        "flavorText": "\"When I'm done here, they'll name entire buildings after me.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/99e9318f-2e17-4b6e-895f-c17cd5d0d282.jpg?1783927385",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Star Pupil puts all of its counters onto the target creature, not just its +1/+1 counters."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Star Pupil's ability doesn't cause you to move counters from itself to the target creature. Rather, you put the same number of each kind of counter Star Pupil had when it died onto that creature."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If Star Pupil has -1/-1 counters on it when it dies, the last ability will include those as well. This may result in the recipient also dying."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -17115,6 +17689,62 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Stonebinder's Familiar
+{
+    "name": "Stonebinder's Familiar",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Spirit Dog",
+    "oracleText": "Whenever one or more cards are put into exile during your turn, put a +1/+1 counter on this creature. This ability triggers only once each turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Stonebinder's Familiar:1",
+                "trigger": {
+                    "type": "CardsPutIntoExileEvent",
+                    "fromZones": [
+                        "Library",
+                        "Hand",
+                        "Battlefield",
+                        "Graveyard",
+                        "Stack",
+                        "Command"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "triggerRestriction": "IsYourTurn",
+                "oncePerTurn": true,
+                "descriptionOverride": "Whenever one or more cards are put into exile during your turn, put a +1/+1 counter on this creature. This ability triggers only once each turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "UNCOMMON",
+        "artist": "Sam Rowan",
+        "flavorText": "\"Hey, my great-great-grandfather had a dog just like that!\"\n—Dradiel, Lorehold mage-student",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21de4a01-98d3-4af3-9c6e-29e16d2c1767.jpg?1783927384",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If multiple cards are put into exile as part of the same event on your turn, the triggered ability will trigger only once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -17321,6 +17951,152 @@
     ]
 }
 
+// Strixhaven Stadium
+{
+    "name": "Strixhaven Stadium",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {C}. Put a point counter on this artifact.\nWhenever a creature deals combat damage to you, remove a point counter from this artifact.\nWhenever a creature you control deals combat damage to an opponent, put a point counter on this artifact. Then if it has ten or more point counters on it, remove them all and that player loses the game.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Strixhaven Stadium:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "You"
+                    },
+                    "sourceFilter": "creature"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "RemoveCounters",
+                    "counterType": "POINT",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever a creature deals combat damage to you, remove a point counter from this artifact."
+            },
+            {
+                "id": "Strixhaven Stadium:3",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "EachOpponent"
+                    },
+                    "sourceFilter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "POINT",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Self",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": "POINT"
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 10
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "RemoveAllCountersOfType",
+                                        "counterType": "POINT",
+                                        "target": "Self"
+                                    },
+                                    {
+                                        "type": "LoseGame",
+                                        "target": {
+                                            "type": "PlayerRef",
+                                            "player": "TriggeringPlayer"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever a creature you control deals combat damage to an opponent, put a point counter on this artifact. Then if it has ten or more point counters on it, remove them all and that player loses the game."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Strixhaven Stadium:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddColorlessMana",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "POINT",
+                            "count": 1,
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {C}. Put a point counter on this artifact."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "259",
+        "rarity": "RARE",
+        "artist": "Piotr Dura",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/421674ee-4b85-4942-b166-952598165826.jpg?1783927278",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "“That player” refers to the opponent who was dealt damage."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If multiple creatures deal combat damage to you or an opponent at the same time, the appropriate ability of Strixhaven Stadium will trigger that many times. You can put these abilities on the stack in any order. The last ability put on the stack will be the first to resolve."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "The check for ten or more point counters happens only as the last ability is resolving. Notably, if you add the tenth point counter some other way, no one will lose the game . . . yet."
+            }
+        ]
+    }
+}
+
 // Study Break
 {
     "name": "Study Break",
@@ -17509,6 +18285,211 @@
     ]
 }
 
+// Symmetry Sage
+{
+    "name": "Symmetry Sage",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Flying\nMagecraft — Whenever you cast or copy an instant or sorcery spell, target creature you control has base power 2 until end of turn.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Symmetry Sage:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "SpellCopiedEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "SetBaseStats",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "duration": "EndOfTurn"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Magecraft — Whenever you cast or copy an instant or sorcery spell, target creature you control has base power 2 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "UNCOMMON",
+        "artist": "Jehan Choo",
+        "flavorText": "\"By my calculations, I should be able to achieve true enlightenment before graduation.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3e726fc7-36cf-405c-9b7c-d1e41cd6c68f.jpg?1783927373",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Symmetry Sage’s triggered ability overwrites all previous effects that set the target creature’s power to a specific value. Other effects that set its power to specific values that start to apply after this ability resolves will overwrite this effect."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Any effects that modify a creature’s power without setting it to a specific value (i.e. ones that don’t affect base power) will apply after its base power is set, regardless of the order those effects were created. The same is true for counters that modify its power."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates a copy of an instant or sorcery spell, this will also cause the magecraft ability to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Tanazir Quandrix
+{
+    "name": "Tanazir Quandrix",
+    "manaCost": "{3}{G}{U}",
+    "typeLine": "Legendary Creature — Elder Dragon",
+    "oracleText": "Flying, trample\nWhen Tanazir Quandrix enters, double the number of +1/+1 counters on target creature you control.\nWhenever Tanazir Quandrix attacks, you may have the base power and toughness of other creatures you control become equal to Tanazir Quandrix's power and toughness until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tanazir Quandrix:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DoubleCounters",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When Tanazir Quandrix enters, double the number of +1/+1 counters on target creature you control."
+            },
+            {
+                "id": "Tanazir Quandrix:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you",
+                                "excludeSelf": true
+                            }
+                        },
+                        "body": {
+                            "type": "SetBaseStats",
+                            "target": "IterationEntity",
+                            "power": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Power"
+                            },
+                            "toughness": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": "Toughness"
+                            },
+                            "duration": "EndOfTurn"
+                        }
+                    },
+                    "descriptionOverride": "Whenever Tanazir Quandrix attacks, you may have the base power and toughness of other creatures you control become equal to Tanazir Quandrix's power and toughness until end of turn."
+                },
+                "descriptionOverride": "Whenever Tanazir Quandrix attacks, you may have the base power and toughness of other creatures you control become equal to Tanazir Quandrix's power and toughness until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "240",
+        "rarity": "MYTHIC",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3bd62ee4-e654-44ba-a650-889782cc9ac3.jpg?1783927287",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "To double the number of +1/+1 counters on a permanent, put a number of +1/+1 counters on it equal to the number it already has. Other cards that interact with putting counters on it will interact with this effect accordingly."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "As the last ability resolves, the base power and toughness of other creatures you control are set to Tanazir Quandrix's actual power and toughness, not just its base power and toughness. If Tanazir Quandrix's power or toughness changes later in the turn, the other creatures you control aren't affected."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Any effects that modify a creature's power and/or toughness without setting them to a specific value (i.e. ones that don't affect base power and/or toughness) will apply after its base power and toughness are set, regardless of the order those effects were created. The same is true for counters that modify its power and toughness."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Tanazir Quandrix's last ability overwrites all previous effects that set a creature's power and toughness to specific values. Other effects that set its power or toughness to specific values that start to apply after the ability resolves will overwrite this effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Tangletrap
 {
     "name": "Tangletrap",
@@ -17595,6 +18576,246 @@
     "colorIdentityOverride": [
         "BLUE",
         "RED"
+    ]
+}
+
+// Teachings of the Archaics
+{
+    "name": "Teachings of the Archaics",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery — Lesson",
+    "oracleText": "If an opponent has more cards in hand than you, draw two cards. Draw three cards instead if an opponent has at least four more cards in hand than you.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Hand"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Add",
+                        "left": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Hand"
+                        },
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    }
+                }
+            },
+            "then": {
+                "type": "DrawCards",
+                "count": {
+                    "type": "Fixed",
+                    "amount": 3
+                }
+            },
+            "otherwise": {
+                "type": "Gated",
+                "gate": {
+                    "type": "Gate.WhenCondition",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "GreatestAmongPlayers",
+                            "players": "EachOpponent",
+                            "inner": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Hand"
+                            }
+                        },
+                        "operator": "GT",
+                        "right": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Hand"
+                        }
+                    }
+                },
+                "then": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "rarity": "RARE",
+        "artist": "Lius Lasahido",
+        "flavorText": "Mages seek out the ancient beings known as the Archaics for their boundless knowledge of history and magic, dispensed only in cryptic metaphors.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/967148b1-2bb6-4bc0-95e6-c45fcf99afd2.jpg?1783927373",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "The number of cards in each player’s hand is determined as Teachings of the Archaics resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Team Pennant
+{
+    "name": "Team Pennant",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+1 and has vigilance and trample.\nEquip creature token {1}\nEquip {3}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Team Pennant:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature token you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature token ctrl:you"
+                        },
+                        "id": "creature token you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true,
+                "equipQuality": "creature token"
+            },
+            {
+                "id": "Team Pennant:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE"
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE"
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "260",
+        "rarity": "UNCOMMON",
+        "artist": "Anna Fehr",
+        "flavorText": "Choosing a college based on Mage Tower results is discouraged, but not unheard of.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/be294c4e-712b-459c-a36c-e26ed5c27edb.jpg?1783927279"
+    }
+}
+
+// Tempted by the Oriq
+{
+    "name": "Tempted by the Oriq",
+    "manaCost": "{1}{U}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "For each opponent, gain control of up to one target creature or planeswalker that player controls with mana value 3 or less.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "GainControl",
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature|planeswalker mv<=3 ctrl:opponent"
+                },
+                "id": "t0",
+                "dynamicMaxCount": "PlayerCount",
+                "differentControllers": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "rarity": "RARE",
+        "artist": "Billy Christian",
+        "flavorText": "To exact his vengeance, Extus needed followers. His infiltrators recruited promising mage-students from the very halls he sought to destroy.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c23e64f9-531e-4735-9960-b0a76b32c340.jpg?1783927374",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Tempted by the Oriq’s control-changing effect lasts indefinitely."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Unless it has haste, you will not able to attack with a creature or activate its abilities that have {T} in the cost on the turn you gain control of it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

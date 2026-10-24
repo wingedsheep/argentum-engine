@@ -880,6 +880,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.FLAME,
   // Smoldering Egg's countdown: at seven it removes them and transforms.
   CounterType.EMBER,
+  // Spell Satchel's store: one pays for {C}, three for a card.
+  CounterType.BOOK,
   CounterType.PLUS_ONE_PLUS_TWO,
   CounterType.PLUS_TWO_PLUS_TWO,
   CounterType.MINUS_TWO_MINUS_TWO,

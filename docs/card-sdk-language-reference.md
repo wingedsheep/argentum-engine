@@ -14303,7 +14303,10 @@ composite abilities).
   TargetFilter.CreatureYouControl.withSubtype(Subtype.HUMAN))`. `quality` supplies the wording only,
   landing in two places: `ActivatedAbility.equipQuality`, which makes the ability *render* as its
   printed line, and the target requirement's id/label ("Human creature you control"), which is the
-  targeting prompt and what `LegalActionInfo.targetDescription` carries. `targetFilter` is the rules
+  targeting prompt and what `LegalActionInfo.targetDescription` carries. A quality that already
+  names its noun isn't suffixed again: "planeswalker" labels "planeswalker you control" (Luxior) and
+  "creature token" labels "creature token you control" (Team Pennant: `quality = "creature token"`,
+  `targetFilter = TargetFilter(GameObjectFilter.Creature.token().youControl())`). `targetFilter` is the rules
   half and must stay controller-scoped, since CR 702.6c allows targeting
   "only a creature that's controlled by the player activating the ability and that has the chosen
   quality". Build it off `TargetFilter.CreatureYouControl` or a `GameObjectFilter` ending in
@@ -18216,6 +18219,7 @@ are their printed spellings (`CounterType.printed`). Text converts back only thr
 - `ritual` (`CounterType.RITUAL`): MID — Heirloom Mirror. Passive countdown with no inherent rule: its sorcery-speed ability adds one, then `Effects.If(Conditions.SourceCounterCountAtLeast(RITUAL, 3), Effects.RemoveAllCountersOfType(RITUAL, Self) then Effects.Transform(Self))`. The passive-counter badge displays its count.
 - `flame` (`CounterType.FLAME`): MID — Embodiment of Flame (Flame Channeler's back face). Passive fuel with no inherent rule: `Triggers.a(GameObjectFilter.InstantOrSorcery.youControl()).dealsDamage()` adds one, and its impulse-draw ability pays `Costs.RemoveCounterFromSelf(FLAME)`. The passive-counter badge displays its count.
 - `ember` (`CounterType.EMBER`): MID — Smoldering Egg. Passive countdown with no inherent rule: each instant or sorcery you cast adds `DynamicAmounts.manaSpentOnTriggeringSpell()` of them, then `Effects.If(Conditions.SourceCounterCountAtLeast(EMBER, 7), Effects.RemoveAllCountersOfType(EMBER, Self) then Effects.Transform(Self))`. The passive-counter badge displays its count.
+- `book` (`CounterType.BOOK`): STX — Spell Satchel. Passive store with no inherent rule: its magecraft trigger adds one, `{T}, Costs.RemoveCounterFromSelf(BOOK)` adds {C}, and `{3}, {T}, Costs.RemoveCounterFromSelf(BOOK, 3)` draws a card. The passive-counter badge displays its count.
 - `charge`, `time`, `level`, `quest`, `fade`, `vanishing`, `experience`, `age`, `velocity`, `awakening`,
   `blood`, `cage`, `doom`, `storage`, `divinity` (`CounterType.DIVINITY`, a passive counter used by the Myojin
   cycle), `charm`, `music`, `crumble`, `corpse`, `germ`, `ink`, `growth`,

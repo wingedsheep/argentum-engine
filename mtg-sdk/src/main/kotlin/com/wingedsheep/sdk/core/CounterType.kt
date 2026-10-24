@@ -820,6 +820,12 @@ value class CounterType(val name: String) {
          */
         val EMBER = CounterType("EMBER")
 
+        /**
+         * Book counter (STX — Spell Satchel). A mark with no inherent rule: magecraft adds one, and
+         * its two mana/draw abilities remove one or three as a cost.
+         */
+        val BOOK = CounterType("BOOK")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -967,6 +973,7 @@ value class CounterType(val name: String) {
             RITUAL,
             FLAME,
             EMBER,
+            BOOK,
         )
 
         /**
