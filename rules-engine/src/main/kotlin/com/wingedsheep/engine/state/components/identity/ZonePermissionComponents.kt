@@ -164,12 +164,28 @@ data class PlayWithAdditionalCostComponent(
  *
  * @param controllerId The player who has this cost increase when casting.
  * @param cost Mana added to the spell's cost — generic for a tax, colored for an additional cost.
+ * @param unlessAnyTargetMatches The tax is waived when any of the spell's chosen targets matches
+ *   this filter — "if that spell doesn't target a creature you control, it costs {8} more" (Mavinda,
+ *   Students' Advocate). Null taxes every cast.
+ * @param grantedPermissionId The [com.wingedsheep.engine.state.permissions.MayPlayPermission] the
+ *   tax was stamped alongside ("costs {8} more to cast **this way**"): honoured only while that
+ *   permission exists, so a card left uncast in a graveyard isn't taxed by a later turn's cast.
+ *   Null for a tax that lives as long as the card's zone (Soul Partition, Lightstall Inquisitor).
  */
 @Serializable
 data class PlayWithCostIncreaseComponent(
     val controllerId: EntityId,
     val cost: com.wingedsheep.sdk.core.ManaCost,
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val unlessAnyTargetMatches: com.wingedsheep.sdk.scripting.GameObjectFilter? = null,
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val grantedPermissionId: EntityId? = null,
 ) : Component {
+    /** True when this tax can price [playerId]'s cast in [state] — see [grantedPermissionId]. */
+    fun appliesTo(state: com.wingedsheep.engine.state.GameState, playerId: EntityId): Boolean =
+        controllerId == playerId &&
+            (grantedPermissionId == null || state.mayPlayPermissions.any { it.id == grantedPermissionId })
+
     /** A generic-mana tax of [amount] (Soul Partition's {2}). */
     constructor(controllerId: EntityId, amount: Int) :
         this(controllerId, com.wingedsheep.sdk.core.ManaCost.parse("{$amount}"))

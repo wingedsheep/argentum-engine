@@ -12652,6 +12652,77 @@
     ]
 }
 
+// Mavinda, Students' Advocate
+{
+    "name": "Mavinda, Students' Advocate",
+    "manaCost": "{2}{W}",
+    "typeLine": "Legendary Creature — Bird Advisor",
+    "oracleText": "Flying\n{0}: You may cast target instant or sorcery card from your graveyard this turn. If that spell doesn't target a creature you control, it costs {8} more to cast this way. If that spell would be put into your graveyard, exile it instead. Activate only once each turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mavinda, Students' Advocate:1",
+                "cost": "CostFree",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "gathered0",
+                            "insteadOfGraveyard": "EXILE"
+                        },
+                        {
+                            "type": "GrantPlayWithCostIncrease",
+                            "from": "gathered0",
+                            "amount": 8,
+                            "unlessTargets": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "instant|sorcery own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    "OncePerTurn"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "MYTHIC",
+        "artist": "Wesley Burt",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b3d521f-31cd-4bd2-b6b6-771c79252789.jpg?1783927388"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Mentor's Guidance
 {
     "name": "Mentor's Guidance",

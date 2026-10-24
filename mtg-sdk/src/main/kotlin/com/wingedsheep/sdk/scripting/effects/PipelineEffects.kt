@@ -2087,17 +2087,34 @@ data class GrantPlayWithAdditionalCostEffect(
  * more to cast"), where each opponent exiles a card from their own hand and
  * may play it with this tax.
  *
+ * When the controller already holds a may-play permission over a card from this same source (the
+ * grant this effect is paired with), the tax is tied to that permission — "it costs {8} more to
+ * cast **this way**": it lapses with the permission and isn't owed by a flashback/escape/… cast of
+ * the same card, which is a different way of casting it.
+ *
  * @property from Name of the collection containing the card(s)
  * @property amount Generic mana added to each card's cost when the controller casts it
+ * @property unlessTargets Waives the tax when any of the spell's chosen targets matches this
+ *   filter — "if that spell doesn't target a creature you control, it costs {8} more to cast this
+ *   way" (Mavinda, Students' Advocate). The negated counterpart of the spell-side
+ *   [com.wingedsheep.sdk.scripting.CostModification.IncreaseGenericIfAnyTargetMatches]; a spell
+ *   with no targets always pays it. Null (the default) taxes every cast.
  */
 @SerialName("GrantPlayWithCostIncrease")
 @Serializable
 data class GrantPlayWithCostIncreaseEffect(
     val from: String,
-    val amount: Int
+    val amount: Int,
+    val unlessTargets: GameObjectFilter? = null,
 ) : Effect {
     override val description: String =
-        "Each of those spells costs {$amount} more to cast"
+        if (unlessTargets == null) "Each of those spells costs {$amount} more to cast"
+        else "If that spell doesn't target ${unlessTargets.description}, it costs {$amount} more to cast this way"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newFilter = unlessTargets?.applyTextReplacement(replacer)
+        return if (newFilter !== unlessTargets) copy(unlessTargets = newFilter) else this
+    }
 }
 
 /**

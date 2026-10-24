@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.actions.spell
 
 import com.wingedsheep.engine.mechanics.cost.spell.AnyNumberForCostReductionCostKind
 import com.wingedsheep.engine.core.AlternativeCostType
+import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.toEntityId
@@ -58,6 +59,23 @@ internal class CastCostTotaller(
     private val zoneResolver: CastZoneResolver,
     private val predicateEvaluator: PredicateEvaluator,
 ) {
+
+    /**
+     * Whether a runtime cast tax owes on this cast. A tax tied to a permission ("costs {8} more to
+     * cast **this way**", Mavinda) lapses with it and isn't owed by a cast that announces one of the
+     * card's own graveyard routes (flashback, harmonize, mayhem, escape, disturb) — that's a
+     * different way of casting it. "Unless it targets …" waives it on a matching chosen target.
+     */
+    private fun taxApplies(state: GameState, action: CastSpell, tax: PlayWithCostIncreaseComponent): Boolean {
+        if (!tax.appliesTo(state, action.playerId)) return false
+        if (tax.grantedPermissionId != null && action.useAlternativeCost &&
+            action.alternativeCostType in GRAVEYARD_ROUTES
+        ) return false
+        val waiver = tax.unlessAnyTargetMatches ?: return true
+        val targets = (action.targets + action.modeTargetsOrdered.flatten()).map { it.toEntityId() }
+        val context = PredicateContext(controllerId = action.playerId)
+        return targets.none { predicateEvaluator.matches(state, state.projectedState, it, waiver, context) }
+    }
 
     /**
      * The total cost of casting [action] (CR 601.2f), before tap/exile payment reductions. Null when
@@ -136,7 +154,7 @@ internal class CastCostTotaller(
         // increase survives "without paying its mana cost", CR 601.2f).
         val runtimeCostIncrease = state.getEntity(action.cardId)
             ?.get<PlayWithCostIncreaseComponent>()
-            ?.takeIf { it.controllerId == action.playerId }
+            ?.takeIf { taxApplies(state, action, it) }
         if (runtimeCostIncrease != null) {
             effectiveCost = effectiveCost + runtimeCostIncrease.cost
         }
@@ -639,5 +657,12 @@ internal class CastCostTotaller(
             }
         }
         return null
+    }
+
+    private companion object {
+        val GRAVEYARD_ROUTES = setOf(
+            AlternativeCostType.FLASHBACK, AlternativeCostType.HARMONIZE, AlternativeCostType.MAYHEM,
+            AlternativeCostType.ESCAPE, AlternativeCostType.DISTURB,
+        )
     }
 }

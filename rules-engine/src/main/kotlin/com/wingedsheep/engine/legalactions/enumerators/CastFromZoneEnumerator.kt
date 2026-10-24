@@ -547,7 +547,7 @@ class CastFromZoneEnumerator(
             val runtimeAdditionalCost = container.get<PlayWithAdditionalCostComponent>()
                 ?.takeIf { it.controllerId == playerId }
             val runtimeCostIncrease = container.get<PlayWithCostIncreaseComponent>()
-                ?.takeIf { it.controllerId == playerId }
+                ?.takeIf { it.appliesTo(state, playerId) }
             val cardComponent = container.get<CardComponent>() ?: continue
 
             // Land with play permission — skipped when every applicable permission is
@@ -669,13 +669,25 @@ class CastFromZoneEnumerator(
                         context.castPermissionUtils.canSpendAnyManaTypeForSpell(state, playerId, cardId)
                     // "As though it were mana of any color" (Stolen Strategy) relaxes only the
                     // colored pips — a {C} pip still needs colorless (CR 609.4b).
+                    // "Unless it targets a creature you control" (Mavinda): targets aren't chosen
+                    // yet, so price the cheapest cast — waived when the spell targets at all and a
+                    // permanent the waiver names is on the battlefield; CastCostTotaller charges it
+                    // against the targets actually chosen.
+                    val offeredCostIncrease = runtimeCostIncrease?.takeUnless { tax ->
+                        val waiver = tax.unlessAnyTargetMatches ?: return@takeUnless false
+                        val waiverContext = PredicateContext(controllerId = playerId)
+                        cardDef?.script?.targetRequirements?.isNotEmpty() == true &&
+                            state.getBattlefield().any {
+                                context.predicateEvaluator.matches(state, state.projectedState, it, waiver, waiverContext)
+                            }
+                    }
                     fun permitted(cost: ManaCost): ManaCost {
                         val relaxed = when {
                             anyManaType -> cost.relaxColors()
                             permissions.any { it.withAnyManaColor } -> cost.relaxColoredRequirements()
                             else -> cost
                         }
-                        return if (runtimeCostIncrease != null) relaxed + runtimeCostIncrease.cost else relaxed
+                        return if (offeredCostIncrease != null) relaxed + offeredCostIncrease.cost else relaxed
                     }
                     val effectiveCost = permitted(baseCost)
                     val costString = if (playForFree) freeCostString(effectiveCost) else effectiveCost.toString()

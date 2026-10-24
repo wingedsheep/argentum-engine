@@ -1745,10 +1745,12 @@ object Effects {
      * Tax spells cast from a named collection — each card in [from] gets a
      * generic-mana surcharge so the controller pays [amount] more to cast it.
      * Pair with [GrantMayPlayFromExile] for "each spell cast this way costs {N}
-     * more to cast" clauses (Lightstall Inquisitor).
+     * more to cast" clauses (Lightstall Inquisitor). [unlessTargets] waives the tax
+     * when the spell targets a matching object — "if that spell doesn't target a
+     * creature you control, it costs {8} more to cast this way" (Mavinda, Students' Advocate).
      */
-    fun GrantPlayWithCostIncrease(from: String, amount: Int): Effect =
-        com.wingedsheep.sdk.scripting.effects.GrantPlayWithCostIncreaseEffect(from, amount)
+    fun GrantPlayWithCostIncrease(from: String, amount: Int, unlessTargets: GameObjectFilter? = null): Effect =
+        com.wingedsheep.sdk.scripting.effects.GrantPlayWithCostIncreaseEffect(from, amount, unlessTargets)
 
     /**
      * Grant a single target entity in exile permission to be cast without paying its mana cost.
@@ -4958,9 +4960,9 @@ object Effects {
     fun GrantPlayWithAdditionalCost(from: CollectionSlot, additionalCost: AdditionalCost): Effect =
         GrantPlayWithAdditionalCostEffect(from.key, additionalCost)
 
-    /** Each spell cast from [from] costs [amount] more. */
-    fun GrantPlayWithCostIncrease(from: CollectionSlot, amount: Int): Effect =
-        GrantPlayWithCostIncrease(from.key, amount)
+    /** Each spell cast from [from] costs [amount] more — unless it targets something matching [unlessTargets]. */
+    fun GrantPlayWithCostIncrease(from: CollectionSlot, amount: Int, unlessTargets: GameObjectFilter? = null): Effect =
+        GrantPlayWithCostIncrease(from.key, amount, unlessTargets)
 
     /** Cast a card from [from] without paying its mana cost (see the String overload). */
     fun CastFromCollectionWithoutPayingCost(

@@ -474,13 +474,25 @@ class GrantPlayWithCostIncreaseExecutor : EffectExecutor<GrantPlayWithCostIncrea
         val controllerId = context.controllerId
         val collection = context.pipeline.storedCollections[effect.from] ?: emptyList()
 
+        val tax = com.wingedsheep.sdk.core.ManaCost.parse("{${effect.amount}}")
         var newState = state
         for (cardId in collection) {
+            // "Costs {N} more to cast this way": tie the tax to the newest permission this source
+            // granted the controller over the card (the grant this effect is paired with), so it
+            // lapses with that permission. No such grant leaves a zone-long tax, as before.
+            val grantedPermissionId = context.sourceId?.let { sourceId ->
+                state.mayPlayPermissions
+                    .filter { it.sourceId == sourceId && it.controllerId == controllerId && cardId in it.cardIds }
+                    .maxByOrNull { it.timestamp }
+                    ?.id
+            }
             newState = newState.updateEntity(cardId) { container ->
                 container.with(
                     PlayWithCostIncreaseComponent(
                         controllerId = controllerId,
-                        amount = effect.amount
+                        cost = tax,
+                        unlessAnyTargetMatches = effect.unlessTargets,
+                        grantedPermissionId = grantedPermissionId,
                     )
                 )
             }
