@@ -297,10 +297,7 @@ class CastSpellEnumerator(
             var reducingXCredit = 0
             var offerReduction = 0
             if (reducingCost != null && offer.reducingCandidates.isNotEmpty()) {
-                val manaSourceIds = context.availableManaSources.mapTo(HashSet()) { it.entityId }
-                val sourceCandidates = offer.reducingCandidates.count { it in manaSourceIds }
-                val maxReduction = (offer.reducingCandidates.size - sourceCandidates) * reducingCost.reductionPerUnit +
-                    sourceCandidates * (reducingCost.reductionPerUnit - 1).coerceAtLeast(0)
+                val maxReduction = maxOfferReduction(context, offer)
                 val genericBefore = effectiveCost.genericAmount
                 offerReduction = maxReduction
                 effectiveCost = effectiveCost.reduceGeneric(maxReduction)
@@ -3184,6 +3181,20 @@ class CastSpellEnumerator(
         )
     }
 
+    /**
+     * The largest generic discount [offer]'s "costs {N} less for each … this way" cost can give.
+     * A candidate that is itself a counted mana source (a mana dork tapped or sacrificed for the
+     * discount) can't also make its mana, so it is worth N − 1 over the sources already counted.
+     */
+    private fun maxOfferReduction(context: EnumerationContext, offer: SpellCostOffer): Int {
+        val reducingCost = offer.reducingCost ?: return 0
+        if (offer.reducingCandidates.isEmpty()) return 0
+        val manaSourceIds = context.availableManaSources.mapTo(HashSet()) { it.entityId }
+        val sourceCandidates = offer.reducingCandidates.count { it in manaSourceIds }
+        return (offer.reducingCandidates.size - sourceCandidates) * reducingCost.reductionPerUnit +
+            sourceCandidates * (reducingCost.reductionPerUnit - 1).coerceAtLeast(0)
+    }
+
     private fun enumerateSecondaryFace(
         context: EnumerationContext,
         cardId: EntityId,
@@ -3205,14 +3216,17 @@ class CastSpellEnumerator(
             state, context.costCalculator.faceCharacteristics(cardDef, face), playerId, cardId,
             withTable = !context.skipAutoTapPreview, card = cardDef,
         )
-        val effectiveCost = pricing.min
-        val costByTargetCount = pricing.byCountStrings()
         val cachedSources = context.availableManaSources
         // The face's own additional costs, enumerated like the primary cast's: an unpayable one
         // makes the face uncastable, a payable one publishes its picker on the offer.
         val faceCosts = face.script.additionalCosts
         val costOffer = SpellCostOffer()
         val costsPayable = SpellCosts.enumerateAll(SpellCostEnumeration(context, cardId), faceCosts, costOffer)
+        // The face's own "costs {N} less for each … this way" discount (Awaken the Blood Avatar),
+        // at its largest — the same affordability bound the primary cast uses.
+        val offerReduction = maxOfferReduction(context, costOffer)
+        val effectiveCost = pricing.min.reduceGeneric(offerReduction)
+        val costByTargetCount = pricing.byCount?.mapValues { it.value.reduceGeneric(offerReduction).toString() }
         val costInfo = if (costsPayable && faceCosts.isNotEmpty()) {
             buildAdditionalCostData(faceCosts, costOffer, state = state, payerId = playerId, castCardId = cardId)
         } else null

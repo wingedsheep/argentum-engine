@@ -6863,6 +6863,185 @@
     ]
 }
 
+// Extus, Oriq Overlord
+{
+    "name": "Extus, Oriq Overlord",
+    "manaCost": "{1}{W}{B}{B}",
+    "typeLine": "Legendary Creature — Human Warlock",
+    "oracleText": "Double strike\nMagecraft — Whenever you cast or copy an instant or sorcery spell, return target nonlegendary creature card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "DOUBLE_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Extus, Oriq Overlord:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "SpellCopiedEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "IsNonlegendary"
+                            ],
+                            "controllerPredicate": "OwnedByYou"
+                        },
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Magecraft — Whenever you cast or copy an instant or sorcery spell, return target nonlegendary creature card from your graveyard to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone & Kekai Kotaki",
+        "flavorText": "\"Join me for the dawn of a new age.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba09360a-067e-48a5-bdc5-a19fd066a785.jpg?1783927337",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Returning a nonlegendary creature card is not optional. If there is at least one in your graveyard, you must target it with the magecraft ability."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Awaken the Blood Avatar's first ability can't reduce its cost below {B}{R}. However, you can sacrifice any number of creatures, even if they won't reduce its cost any further."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Include any additional costs to cast Awaken the Blood Avatar before applying its own cost reduction. For example, if Extus is your commander, and an additional cost of {6} applies from the \"commander tax,\" you may cast Awaken the Blood Avatar by sacrificing four creatures and paying {4}{B}{R}."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "As Awaken the Blood Avatar resolves, first the next opponent in turn order (or, if it's an opponent's turn, the opponent whose turn it is) chooses a creature they control, then each other opponent in turn order does the same knowing the choices made before them. Then all the chosen creatures are sacrificed at the same time."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "The Blood Avatar will be awakened even if no player has creatures to sacrifice when it resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK",
+        "RED"
+    ],
+    "layout": "MODAL_DFC",
+    "cardFaces": [
+        {
+            "name": "Awaken the Blood Avatar",
+            "manaCost": "{6}{B}{R}",
+            "typeLine": "Sorcery",
+            "oracleText": "As an additional cost to cast this spell, you may sacrifice any number of creatures. This spell costs {2} less to cast for each creature sacrificed this way.\nEach opponent sacrifices a creature of their choice. Create a 3/6 black and red Avatar creature token with haste and \"Whenever this token attacks, it deals 3 damage to each opponent.\"",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForceSacrifice",
+                            "filter": "creature",
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 3,
+                            "toughness": 6,
+                            "colors": [
+                                "BLACK",
+                                "RED"
+                            ],
+                            "creatureTypes": [
+                                "Avatar"
+                            ],
+                            "keywords": [
+                                "HASTE"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/9/4/94a50acd-ac2d-47bf-b331-0bcf5edd9c75.jpg?1783927193",
+                            "triggeredAbilities": [
+                                {
+                                    "id": "Extus, Oriq Overlord:2",
+                                    "trigger": "AttackEvent",
+                                    "effect": {
+                                        "type": "DealDamage",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 3
+                                        },
+                                        "target": {
+                                            "type": "PlayerRef",
+                                            "player": "EachOpponent"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "additionalCosts": [
+                    {
+                        "type": "AnyNumberForCostReduction",
+                        "action": "SACRIFICE",
+                        "filter": "creature",
+                        "reductionPerUnit": 2
+                    }
+                ]
+            },
+            "imageUri": "https://cards.scryfall.io/normal/back/b/a/ba09360a-067e-48a5-bdc5-a19fd066a785.jpg?1783927337"
+        }
+    ]
+}
+
 // Eyetwitch
 {
     "name": "Eyetwitch",

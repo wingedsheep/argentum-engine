@@ -1097,7 +1097,8 @@ cast action advertises the first selection cost as `additionalCostInfo` and the 
   announced X is generic in that total, so on an `{X}{W}` March the discount keeps paying into the X),
   and the effect never reads it; X stays the announced X. Choosing none is always legal. Tapping is a
   cost, not `{T}`, so summoning-sick creatures may pay; exiling from hand never offers the spell itself
-  (CR 601.2a). The enumerator publishes a zero-floor picker — `costType` `SacrificeForCostReduction`
+  (CR 601.2a). Also valid as a modal-DFC back face's own `additionalCost` (Extus, Oriq Overlord // Awaken
+  the Blood Avatar) — the back-face offer counts the discount when judging affordability. The enumerator publishes a zero-floor picker — `costType` `SacrificeForCostReduction`
   (`sacrificedPermanents`), `TapForCostReduction` (`tappedPermanents`) or `ExileFromHand`
   (`exiledCards`, `exileMinCount = 0`). Its castability check and X ceiling assume every candidate is
   used, netting a candidate that is itself a mana source (a mana dork) at N − 1.
