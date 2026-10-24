@@ -1771,6 +1771,11 @@ class ActivatedAbilityBuilder(private val declaredTargets: TargetList = TargetLi
      * `ExpiringGrantWindow` branches on `timing == InstantSpeed`, so which half a card fell in
      * changed behaviour. Found by Argentum Assay's differential, which derives both from the printed
      * line and reported every card that carried only one.
+     *
+     * The one exception is an explicit `timing = TimingRule.SorcerySpeed`: "Activate only as a
+     * sorcery" on a mana ability (Grinning Ignus, CR 602.5d) is kept. It is still a mana ability —
+     * no stack, can't be responded to — but it is offered only when its controller could cast a
+     * sorcery, and never mid-payment (the spell or ability being paid for is already on the stack).
      */
     var manaAbility: Boolean = false
     /**
@@ -1888,8 +1893,9 @@ class ActivatedAbilityBuilder(private val declaredTargets: TargetList = TargetLi
             targetRequirements = targetRequirements,
             isManaAbility = manaAbility,
             isEquipAbility = isEquipAbility,
-            // A mana ability's timing is not a separate authoring choice — see [manaAbility].
-            timing = if (manaAbility) TimingRule.ManaAbility else timing,
+            // A mana ability's timing is not a separate authoring choice — see [manaAbility] —
+            // except "Activate only as a sorcery", which a mana ability can still carry.
+            timing = if (manaAbility && timing != TimingRule.SorcerySpeed) TimingRule.ManaAbility else timing,
             restrictions = effectiveRestrictions,
             activateFromZone = activateFromZone,
             trackActivations = trackActivations,

@@ -61,6 +61,7 @@ import com.wingedsheep.sdk.scripting.TappedForManaType
 import com.wingedsheep.sdk.scripting.AdditionalManaOnTap
 import com.wingedsheep.sdk.scripting.DampLandManaProduction
 import com.wingedsheep.sdk.scripting.GrantActivatedAbility
+import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.MultiplyManaOnSourceTap
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
@@ -1572,7 +1573,7 @@ class ManaSolver private constructor(
             for (ability in manaAbilities) {
                 // Skip abilities whose activation restrictions aren't satisfied
                 // (e.g., Lys Alana Dignitary's "only if there is an Elf card in your graveyard").
-                if (!legality.activationRestrictionsMet(state, playerId, entityId, ability)) {
+                if (!usableDuringPayment(state, playerId, entityId, ability)) {
                     continue
                 }
 
@@ -3111,6 +3112,16 @@ class ManaSolver private constructor(
     }
 
     /**
+     * Whether [ability] of [entityId] can be activated while a cost is being paid. Its own
+     * activation restrictions must hold, and it must not be limited to sorcery timing: mana is paid
+     * with the spell or ability already on the stack (CR 601.2a, 601.2g; CR 602.2b for abilities),
+     * so "Activate only as a sorcery" (CR 602.5d — Grinning Ignus) can never be met mid-payment.
+     * Such a mana ability is activated at priority beforehand, through `ManaAbilityEnumerator`.
+     */
+    private fun usableDuringPayment(state: GameState, playerId: EntityId, entityId: EntityId, ability: ActivatedAbility): Boolean =
+        ability.timing != TimingRule.SorcerySpeed && legality.activationRestrictionsMet(state, playerId, entityId, ability)
+
+    /**
      * Calculates extra mana available from mana abilities that can only be produced by activating
      * them explicitly, because [findAvailableManaSources] does not model their cost shape at all.
      *
@@ -3160,7 +3171,7 @@ class ManaSolver private constructor(
                 // A mana sub-cost would recurse straight back into canPay, and its net production
                 // is ambiguous anyway — the same call the tap+SacrificeSelf helper makes.
                 if (costHasManaSubCost(cost)) continue
-                if (!legality.activationRestrictionsMet(state, playerId, entityId, ability)) continue
+                if (!usableDuringPayment(state, playerId, entityId, ability)) continue
                 if (!nonManaAbilityCostIsPayable(state, playerId, entityId, cost)) continue
 
                 total += manaProducedByEffect(ability.effect)
@@ -3178,7 +3189,7 @@ class ManaSolver private constructor(
                 if (!ability.isManaAbility || ability.activateFromZone != zone) continue
                 val cost = ability.cost
                 if (costHasManaSubCost(cost)) continue
-                if (!legality.activationRestrictionsMet(state, playerId, entityId, ability)) continue
+                if (!usableDuringPayment(state, playerId, entityId, ability)) continue
                 if (!nonManaAbilityCostIsPayable(state, playerId, entityId, cost)) continue
                 total += manaProducedByEffect(ability.effect)
             }
@@ -3238,7 +3249,7 @@ class ManaSolver private constructor(
                     ?.genericAmount ?: continue
                 val produced = manaProducedByEffect(ability.effect)
                 if (generic == 0 || produced.anyColorMana != generic || produced.totalMana != generic) continue
-                if (!legality.activationRestrictionsMet(state, playerId, entityId, ability)) continue
+                if (!usableDuringPayment(state, playerId, entityId, ability)) continue
                 val nonMana = parts.filterNot { (it as? AbilityCost.Atom)?.atom is CostAtom.Mana }
                 if (!nonMana.all { nonManaAbilityCostIsPayable(state, playerId, entityId, it) }) continue
                 fixers += generic
@@ -3391,7 +3402,7 @@ class ManaSolver private constructor(
                 if (composite.costs.any { it.manaCostOrNull != null }) continue
 
                 // Honor activation restrictions (e.g. "only during your turn").
-                if (!legality.activationRestrictionsMet(state, playerId, entityId, ability)) continue
+                if (!usableDuringPayment(state, playerId, entityId, ability)) continue
 
                 // Recurse into the effect so multi-mana sacrifice abilities expressed as a
                 // CompositeEffect (e.g. Irrigation Ditch's "{T}, Sacrifice: Add {G}{U}",
@@ -3507,7 +3518,7 @@ class ManaSolver private constructor(
                 // double-count or complicate color resolution here.
                 if (composite.costs.any { it is AbilityCost.SacrificeSelf || it.manaCostOrNull != null }) continue
 
-                if (!legality.activationRestrictionsMet(state, playerId, entityId, ability)) continue
+                if (!usableDuringPayment(state, playerId, entityId, ability)) continue
 
                 val context = PredicateContext(controllerId = playerId)
                 val matchingTapTargets = battlefieldCards.filter { targetId ->

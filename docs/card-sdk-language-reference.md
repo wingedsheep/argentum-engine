@@ -12398,6 +12398,16 @@ activatedAbility {
 }
 ```
 
+**Sorcery-speed mana abilities.** `manaAbility = true` derives `timing = TimingRule.ManaAbility`,
+except when the ability also sets `timing = TimingRule.SorcerySpeed` — "Activate only as a sorcery" on
+a mana ability (CR 602.5d). Grinning Ignus: `cost = Costs.Composite(Costs.Mana("{R}"),
+Costs.ReturnSelfToHand); effect = Effects.AddMana(...); manaAbility = true; timing =
+TimingRule.SorcerySpeed`. It is still a mana ability (no stack, can't be responded to), but
+`ManaAbilityEnumerator` offers it only when its controller could cast a sorcery, and the `ManaSolver`
+never auto-pays with it or counts it toward affordability: costs are paid with the spell or ability
+already on the stack (CR 601.2a/601.2g), so sorcery timing can't hold mid-payment. The player
+activates it at priority first and pays from the floating mana.
+
 **`activateFromZone` — where the ability can be activated (default `Zone.BATTLEFIELD`).** An ability
 whose source functions from another zone sets `activateFromZone` to that zone. Four zones are
 enumerated as legal actions today, each by its own `ActionEnumerator`:

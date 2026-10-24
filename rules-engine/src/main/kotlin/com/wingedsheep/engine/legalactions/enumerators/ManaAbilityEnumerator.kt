@@ -33,6 +33,7 @@ import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.manaCostOrNull
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
@@ -162,6 +163,14 @@ class ManaAbilityEnumerator(
                 // is a mana ability today; the guard is here so a future one can't be offered as a
                 // mana source that `ActivateAbilityHandler.validate` would then reject.
                 if (context.castPermissionUtils.isPowerUpActivationRestricted(state, ability)) continue
+
+                // "Activate only as a sorcery" on a mana ability (Grinning Ignus, CR 602.5d) — still a
+                // mana ability, but offered only when its controller could cast a sorcery. Asks the
+                // same TurnManager check as ActivationValidator.checkSorcerySpeedTiming, whose
+                // priority gate also keeps it out of a mana payment window.
+                if (ability.timing == TimingRule.SorcerySpeed &&
+                    !context.turnManager.canPlaySorcerySpeed(state, playerId)
+                ) continue
 
                 // Apply text replacement to cost filters
                 val effectiveCost = if (manaTextReplacement != null) {

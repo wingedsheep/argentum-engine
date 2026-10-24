@@ -58,6 +58,10 @@ sealed interface TimingRule {
      * - Tapping a basic land for mana
      * - Llanowar Elves' "{T}: Add {G}"
      * - Black Lotus' "{T}, Sacrifice: Add three mana of any one color"
+     *
+     * A mana ability that reads "Activate only as a sorcery" (Grinning Ignus) keeps
+     * [SorcerySpeed] as its timing instead, with `isManaAbility = true` still marking it a mana
+     * ability: no stack, but sorcery timing (CR 602.5d) and so never usable mid-payment.
      */
     @SerialName("ManaAbility")
     @Serializable

@@ -144,6 +144,76 @@
     ]
 }
 
+// Grinning Ignus
+{
+    "name": "Grinning Ignus",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "{R}, Return this creature to its owner's hand: Add {C}{C}{R}. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Grinning Ignus:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{R}"
+                            }
+                        },
+                        "CostReturnSelfToHand"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddColorlessMana",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "RED"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isManaAbility": true,
+                "descriptionOverride": "{R}, Return this creature to its owner's hand: Add {C}{C}{R}. Activate only as a sorcery."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "artist": "James Kei",
+        "flavorText": "\"Take care what you offer the ignus. Food, perhaps. Coins. But nothing flammable!\"\n—Stovic, village eccentric",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/31716a43-2522-46ff-a9a4-b6952cd41f11.jpg?1783943102",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "Although Grinning Ignus's ability has a timing restriction, it's still a mana ability. It doesn't use the stack and it can't be responded to."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "If you cast Grinning Ignus during your main phase, it will enter the battlefield and you'll receive priority. If no abilities trigger because of this, you can activate its ability immediately, before any other player has a chance to remove it from the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Mass of Ghouls
 {
     "name": "Mass of Ghouls",
