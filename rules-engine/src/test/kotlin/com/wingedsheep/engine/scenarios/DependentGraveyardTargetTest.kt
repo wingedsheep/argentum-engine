@@ -88,4 +88,18 @@ class DependentGraveyardTargetTest : FunSpec({
             ChosenTarget.Card(mine, d.player1, Zone.GRAVEYARD)), requirements, d.player1,
             targetingSourceType = TargetingSourceType.SPELL) shouldNotBe null
     }
+
+    test("the cast accepts a named-player-owned card it offered and rejects another graveyard's") {
+        val d = setup()
+        val mine = d.putCardInGraveyard(d.player1, "Forest")
+        val theirs = d.putCardInGraveyard(d.player2, "Mountain")
+        val requirements = cardsOf(GameObjectFilter.Any.ownedBy(EffectTarget.BoundVariable("player")))
+        val validator = TargetValidator(predicates)
+        validator.validateTargets(d.state, listOf(ChosenTarget.Player(d.player2),
+            ChosenTarget.Card(theirs, d.player2, Zone.GRAVEYARD)), requirements, d.player1,
+            targetingSourceType = TargetingSourceType.SPELL) shouldBe null
+        validator.validateTargets(d.state, listOf(ChosenTarget.Player(d.player2),
+            ChosenTarget.Card(mine, d.player1, Zone.GRAVEYARD)), requirements, d.player1,
+            targetingSourceType = TargetingSourceType.SPELL) shouldNotBe null
+    }
 })

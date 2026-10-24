@@ -4249,7 +4249,7 @@
     "name": "Gaea's Blessing",
     "manaCost": "{1}{G}",
     "typeLine": "Sorcery",
-    "oracleText": "Target player shuffles up to three target cards from their graveyard into their library. Draw a card.\nWhen Gaea's Blessing is put into your graveyard from your library, shuffle your graveyard into your library.",
+    "oracleText": "Target player shuffles up to three target cards from their graveyard into their library.\nDraw a card.\nWhen this card is put into your graveyard from your library, shuffle your graveyard into your library.",
     "script": {
         "spellEffect": {
             "type": "Composite",

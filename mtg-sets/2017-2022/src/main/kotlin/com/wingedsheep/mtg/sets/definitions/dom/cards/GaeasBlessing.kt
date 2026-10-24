@@ -15,16 +15,16 @@ import com.wingedsheep.sdk.dsl.Triggers
  * Gaea's Blessing
  * {1}{G}
  * Sorcery
- * Target player shuffles up to three target cards from their graveyard into their
- * library. Draw a card.
- * When Gaea's Blessing is put into your graveyard from your library, shuffle your
- * graveyard into your library.
+ * Target player shuffles up to three target cards from their graveyard into their library.
+ * Draw a card.
+ * When this card is put into your graveyard from your library, shuffle your graveyard into
+ * your library.
  */
 val GaeasBlessing = card("Gaea's Blessing") {
     manaCost = "{1}{G}"
     colorIdentity = "G"
     typeLine = "Sorcery"
-    oracleText = "Target player shuffles up to three target cards from their graveyard into their library. Draw a card.\nWhen Gaea's Blessing is put into your graveyard from your library, shuffle your graveyard into your library."
+    oracleText = "Target player shuffles up to three target cards from their graveyard into their library.\nDraw a card.\nWhen this card is put into your graveyard from your library, shuffle your graveyard into your library."
 
     spell {
         // The card slot reads the player slot: only cards from that player's graveyard.

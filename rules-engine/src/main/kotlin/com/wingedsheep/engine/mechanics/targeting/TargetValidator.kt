@@ -1043,7 +1043,8 @@ class TargetValidator(
         casterId: EntityId,
         sourceId: EntityId? = null,
         xValue: Int? = null,
-        targetPlayerId: EntityId? = null
+        targetPlayerId: EntityId? = null,
+        targetContext: PredicateContext? = null
     ): String? {
         if (target !is ChosenTarget.Card) {
             return "Target must be a card in a graveyard"
@@ -1064,7 +1065,10 @@ class TargetValidator(
         // Use unified filter - OwnedByYou predicate handles "your graveyard" restriction; a
         // separately-chosen player target (Drafna's Restoration) flows in via targetPlayerId so
         // OwnedByTargetPlayer matches "cards in target player's graveyard".
-        val predicateContext = PredicateContext(controllerId = casterId, ownerId = target.ownerId, sourceId = sourceId, xValue = xValue, targetPlayerId = targetPlayerId)
+        // The cast's earlier targets ride in [targetContext], so `.ownedBy(player)` over a target
+        // handle resolves as it did when the card was offered.
+        val predicateContext = targetContext?.copy(ownerId = target.ownerId)
+            ?: PredicateContext(controllerId = casterId, ownerId = target.ownerId, sourceId = sourceId, xValue = xValue, targetPlayerId = targetPlayerId)
         val matches = predicateEvaluator.matches(state, state.projectedState, target.cardId, filter.baseFilter, predicateContext)
         if (!matches) {
             return "Target does not match filter: ${filter.description}"
@@ -1124,7 +1128,7 @@ class TargetValidator(
                 ?: "Target does not match filter: ${filter.description}"
         }
         return when (filter.zone) {
-            Zone.GRAVEYARD -> validateGraveyardTarget(state, target, filter, casterId, sourceId, xValue, targetPlayerId)
+            Zone.GRAVEYARD -> validateGraveyardTarget(state, target, filter, casterId, sourceId, xValue, targetPlayerId, targetContext)
             Zone.BATTLEFIELD -> validatePermanentTarget(state, target, filter, casterId, sourceId, xValue, targetContext)
             Zone.STACK -> validateSpellTarget(state, target, filter, casterId, xValue, sourceId)
             else -> validateCardInZoneTarget(state, target, filter, casterId, xValue, sourceId)
