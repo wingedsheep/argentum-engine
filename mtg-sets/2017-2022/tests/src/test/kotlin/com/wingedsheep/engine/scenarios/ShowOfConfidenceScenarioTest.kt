@@ -80,6 +80,39 @@ class ShowOfConfidenceScenarioTest : ScenarioTestBase() {
                 game.plusOneCounters(giant) shouldBe 0
                 game.state.projectedState.hasKeyword(bears, Keyword.VIGILANCE) shouldBe true
             }
+
+            test("an instant cast in response to its cast trigger also counts") {
+                val game = scenario()
+                    .withPlayers("Alice", "Bob")
+                    .withCardInHand(1, "Show of Confidence")
+                    .withCardInHand(1, "Giant Growth")
+                    .withLandsOnBattlefield(1, "Plains", 2)
+                    .withLandsOnBattlefield(1, "Forest", 2)
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withCardOnBattlefield(1, "Hill Giant")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                val bears = game.findPermanent("Grizzly Bears")!!
+                val giant = game.findPermanent("Hill Giant")!!
+
+                game.castSpell(1, "Show of Confidence", bears).error shouldBe null
+                withClue("the spell plus its cast trigger") {
+                    game.state.stack.size shouldBe 2
+                }
+                game.castSpell(1, "Giant Growth", giant).error shouldBe null
+                game.resolveStack()
+
+                withClue("the instant cast in response is counted when the trigger resolves") {
+                    game.state.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+                }
+                game.selectTargets(listOf(giant)).error shouldBe null
+                game.resolveStack()
+
+                game.state.pendingDecision shouldBe null
+                game.plusOneCounters(bears) shouldBe 1
+                game.plusOneCounters(giant) shouldBe 1
+            }
         }
     }
 }

@@ -10,7 +10,7 @@ import com.wingedsheep.sdk.scripting.OnEnterRun
 import com.wingedsheep.sdk.scripting.TimingRule
 
 /**
- * Shineshadow Snarl
+ * Shineshadow Snarl — Strixhaven: School of Mages #272 (canonical printing)
  * Land
  *
  * As this land enters, you may reveal a Plains or Swamp card from your hand.
