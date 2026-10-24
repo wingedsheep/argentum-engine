@@ -87,6 +87,8 @@ class FacadeBoundaryTest : FunSpec({
             "CreateDelayedTriggerEffect.carryCollections names the collections the delayed trigger remembers",
         "neo/cards/GreasefangOkibaBoss.kt" to
             "CreateDelayedTriggerEffect.carryCollections names the collections the delayed trigger remembers",
+        "stx/cards/MilaCraftyCompanion.kt" to
+            "CreateDelayedTriggerEffect.carryCollections names the collections the delayed trigger remembers",
         "leg/cards/InfiniteAuthority.kt" to
             "CreateDelayedTriggerEffect.carryCollections names the collections the delayed trigger remembers",
         "mh3/cards/WheelOfPotential.kt" to

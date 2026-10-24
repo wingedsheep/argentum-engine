@@ -9334,6 +9334,106 @@
     ]
 }
 
+// Lorehold Apprentice
+{
+    "name": "Lorehold Apprentice",
+    "manaCost": "{R}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Magecraft — Whenever you cast or copy an instant or sorcery spell, until end of turn, Spirit creatures you control gain \"{T}: This creature deals 1 damage to each opponent.\"",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lorehold Apprentice:2",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "SpellCopiedEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GrantActivatedAbilityToGroup",
+                    "ability": {
+                        "id": "Lorehold Apprentice:1",
+                        "cost": "CostTap",
+                        "effect": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        }
+                    },
+                    "filter": {
+                        "baseFilter": "creature Spirit ctrl:you"
+                    }
+                },
+                "descriptionOverride": "Magecraft — Whenever you cast or copy an instant or sorcery spell, until end of turn, Spirit creatures you control gain \"{T}: This creature deals 1 damage to each opponent.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "rarity": "UNCOMMON",
+        "artist": "Manuel Castañón",
+        "flavorText": "Ancient footfalls echo in her head, their timeless rhythm guiding the present.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/048157c6-4626-4881-ba19-deddd13622dc.jpg?1783927307",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Lorehold Apprentice's ability can give your Spirit creatures multiple instances of \"{T}: This creature deals 1 damage to each opponent.\" However, each Spirit can only activate one of these abilities at a time, and each ability will still only deal 1 damage."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates a copy of an instant or sorcery spell, this will also cause the magecraft ability to trigger."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates multiple copies of an instant or sorcery spell, magecraft abilities trigger once for each copy created by the effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Lorehold Campus
 {
     "name": "Lorehold Campus",
@@ -9537,6 +9637,1453 @@
         "RED",
         "WHITE"
     ]
+}
+
+// Lorehold Excavation
+{
+    "name": "Lorehold Excavation",
+    "manaCost": "{R}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your end step, mill a card. If a land card was milled this way, you gain 1 life. Otherwise, this enchantment deals 1 damage to each opponent. (To mill a card, put the top card of your library into your graveyard.)\n{5}, Exile a creature card from your graveyard: Create a tapped 3/2 red and white Spirit creature token.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lorehold Excavation:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "gathered0",
+                                    "filter": "land"
+                                }
+                            },
+                            "then": {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "otherwise": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "EachOpponent"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your end step, mill a card. If a land card was milled this way, you gain 1 life. Otherwise, this enchantment deals 1 damage to each opponent."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Lorehold Excavation:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomExileFrom",
+                                "zone": "Graveyard",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 2,
+                    "colors": [
+                        "RED",
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "tapped": true
+                },
+                "descriptionOverride": "{5}, Exile a creature card from your graveyard: Create a tapped 3/2 red and white Spirit creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "UNCOMMON",
+        "artist": "Jinho Bae",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/43105beb-46f3-4914-8222-4907bd76d48f.jpg?1783927309"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Lorehold Pledgemage
+{
+    "name": "Lorehold Pledgemage",
+    "manaCost": "{1}{R/W}{R/W}",
+    "typeLine": "Creature — Kor Shaman",
+    "oracleText": "First strike\nMagecraft — Whenever you cast or copy an instant or sorcery spell, this creature gets +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lorehold Pledgemage:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "SpellCopiedEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Magecraft — Whenever you cast or copy an instant or sorcery spell, this creature gets +1/+0 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "artist": "Jake Murray",
+        "flavorText": "\"The weight of history can empower you or it can crush you. It's your choice.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/79b88b38-6b5a-4a89-80ca-add79c11e8b9.jpg?1783927308",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates a copy of an instant or sorcery spell, this will also cause the magecraft ability to trigger."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates multiple copies of an instant or sorcery spell, magecraft abilities trigger once for each copy created by the effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Maelstrom Muse
+{
+    "name": "Maelstrom Muse",
+    "manaCost": "{1}{U}{U/R}{R}",
+    "typeLine": "Creature — Djinn Wizard",
+    "oracleText": "Flying\nWhenever this creature attacks, the next instant or sorcery spell you cast this turn costs {X} less to cast, where X is this creature's power as this ability resolves.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Maelstrom Muse:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ModifySpellCosts",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    },
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "nextSpellOnly": true
+                },
+                "descriptionOverride": "Whenever this creature attacks, the next instant or sorcery spell you cast this turn costs {X} less to cast, where X is this creature's power as this ability resolves."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "rarity": "UNCOMMON",
+        "artist": "Michele Parisi",
+        "flavorText": "She's an inspiration to everyone, even herself.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/5516e81e-16ea-411c-9df0-ed3b03670220.jpg?1783927307",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions (such as that of Maelstrom Muse's triggered ability). The mana value of the spell is determined only by its mana cost, no matter what the total cost to cast the spell was."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Maelstrom Muse's cost reduction can reduce only generic mana in a spell's total cost. It can't reduce colored mana requirements."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
+// Mage Duel
+{
+    "name": "Mage Duel",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "This spell costs {2} less to cast if you've cast another instant or sorcery spell this turn.\nTarget creature you control gets +1/+2 until end of turn. Then it fights target creature you don't control. (Each deals damage equal to its power to the other.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Fight",
+                    "target1": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "id": "t1"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 2
+                },
+                "gating": {
+                    "type": "OnlyIf",
+                    "condition": {
+                        "type": "PlayerCastSpellsThisTurn",
+                        "filter": "instant|sorcery",
+                        "atLeast": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "artist": "Randy Vargas",
+        "flavorText": "\"Remember the rules. No spells to the face!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/92325638-0321-4409-8910-2287c64c182e.jpg?1783927342",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions (such as that of Mage Duel). Mage Duel's mana value is always 3, no matter what the total cost to cast it was."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "You can't cast Mage Duel unless you choose both a creature you control and a creature you don't control as targets."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If the creature you control is an illegal target as Mage Duel tries to resolve, that creature won't get +1/+2. If that creature is a legal target, but the one you don't control isn't, your creature will still get +1/+2. In both cases, no fight will happen and no creature will deal or be dealt damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Mage Hunter
+{
+    "name": "Mage Hunter",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Horror",
+    "oracleText": "Whenever an opponent casts or copies an instant or sorcery spell, they lose 1 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mage Hunter:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "player": "EachOpponent"
+                        },
+                        {
+                            "type": "SpellCopiedEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "player": "EachOpponent"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "descriptionOverride": "Whenever an opponent casts or copies an instant or sorcery spell, they lose 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "flavorText": "One of the Oriq's most powerful tools is the mage hunter, a vile monstrosity created to seek out and snuff out the arcane.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/56fcbe4a-2d98-4fa9-a6c3-e28255171a4d.jpg?1783927367",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Mage Hunter's triggered ability will resolve before the spell that caused it to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Mage Hunters' Onslaught
+{
+    "name": "Mage Hunters' Onslaught",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target creature or planeswalker.\nWhenever a creature blocks this turn, its controller loses 1 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "ControllerOfTriggeringEntity"
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "BlockEvent",
+                            "filter": "creature"
+                        },
+                        "binding": "ANY"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "artist": "Lie Setiawan",
+        "flavorText": "Extus stood before his alma mater for a moment, remembering first his studies, then his vengeance. At his command, the mage hunters unfolded.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/ed85140f-f0e0-4ac1-a67f-26d17ff95e31.jpg?1783927365"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Make Your Mark
+{
+    "name": "Make Your Mark",
+    "manaCost": "{R/W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +1/+0 until end of turn. When that creature dies this turn, create a 3/2 red and white Spirit creature token.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 3,
+                        "toughness": 2,
+                        "colors": [
+                            "RED",
+                            "WHITE"
+                        ],
+                        "creatureTypes": [
+                            "Spirit"
+                        ]
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "ZoneChangeEvent",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        }
+                    },
+                    "watchedTarget": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "fireOnce": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "artist": "Bryan Sola",
+        "flavorText": "Those who do learn from history may still choose to repeat it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7e937830-3804-44e8-b9d0-3e5f5cf39eab.jpg?1783927305"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Manifestation Sage
+{
+    "name": "Manifestation Sage",
+    "manaCost": "{G/U}{G/U}{G/U}{G/U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When this creature enters, create a 0/0 green and blue Fractal creature token. Put X +1/+1 counters on it, where X is the number of cards in your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Manifestation Sage:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 0,
+                            "toughness": 0,
+                            "colors": [
+                                "GREEN",
+                                "BLUE"
+                            ],
+                            "creatureTypes": [
+                                "Fractal"
+                            ]
+                        },
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "amount": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Hand"
+                            },
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "RARE",
+        "artist": "Darren Tan",
+        "flavorText": "The first thing a Quandrix mage learns is the laws of metaphysics. The second thing is how to break them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/76fc5cd2-fbb0-4d13-9089-0292b356de48.jpg?1783927305",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "X is number of cards in your hand as Manifestation Sage's triggered ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
+// Mascot Exhibition
+{
+    "name": "Mascot Exhibition",
+    "manaCost": "{7}",
+    "typeLine": "Sorcery — Lesson",
+    "oracleText": "Create a 2/1 white and black Inkling creature token with flying, a 3/2 red and white Spirit creature token, and a 4/4 blue and red Elemental creature token.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE",
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Inkling"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 2,
+                    "colors": [
+                        "RED",
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ]
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "BLUE",
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Elemental"
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "MYTHIC",
+        "artist": "Randy Vargas",
+        "flavorText": "\"Don't just win the game. Win the crowd.\"\n—Moriana, Mage Tower coach",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/2047592c-739c-41dd-b3e8-31ae1c7688ab.jpg?1783927395"
+    },
+    "colorIdentityOverride": []
+}
+
+// Mascot Interception
+{
+    "name": "Mascot Interception",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "This spell costs {3} less to cast if it targets a creature token.\nGain control of target creature until end of turn. Untap that creature. It gets +2/+0 and gains haste until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfAnyTargetMatches",
+                        "amount": 3,
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "IsToken"
+                            ],
+                            "statePredicates": [
+                                "IsOnBattlefield"
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "rarity": "UNCOMMON",
+        "artist": "Bryan Sola",
+        "flavorText": "Far from the trappings of royalty, Rowan and Will found inspiration from the most popular sport on campus, Mage Tower.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8f0ea66f-1756-4b0d-8ccc-3b3a7370b531.jpg?1783927351",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions (such as that of Mascot Interception). Mascot Interception's mana value is always 4, no matter what the total cost to cast it was."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Master Symmetrist
+{
+    "name": "Master Symmetrist",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Rhino Druid",
+    "oracleText": "Reach\nWhenever a creature you control with power equal to its toughness attacks, it gains trample until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Master Symmetrist:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "target": "TriggeringEntity"
+                },
+                "triggerRestriction": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "TriggeringEntity",
+                        "numericProperty": "Power"
+                    },
+                    "operator": "EQ",
+                    "right": {
+                        "type": "EntityProperty",
+                        "entity": "TriggeringEntity",
+                        "numericProperty": "Toughness"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "UNCOMMON",
+        "artist": "Forrest Imel",
+        "flavorText": "Tondo lost his very first duel and has spent his entire life trying to get even.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/255cdc39-6ad8-4831-9718-6712cb17654c.jpg?1783927343",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Master Symmetrist's triggered ability only looks at the power and toughness of a creature when it attacks. Once the ability has triggered, changing the creature's power or toughness will not stop it from gaining trample or remove trample from it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Mentor's Guidance
+{
+    "name": "Mentor's Guidance",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "When you cast this spell, copy it if you control a planeswalker, Cleric, Druid, Shaman, Warlock, or Wizard.\nScry 1, then draw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Scry",
+                    "count": 1
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "triggeredAbilities": [
+            {
+                "id": "Mentor's Guidance:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsPlaneswalker",
+                                            {
+                                                "type": "And",
+                                                "predicates": [
+                                                    "IsPermanent",
+                                                    {
+                                                        "type": "Or",
+                                                        "predicates": [
+                                                            {
+                                                                "type": "HasSubtype",
+                                                                "subtype": "Cleric"
+                                                            },
+                                                            {
+                                                                "type": "HasSubtype",
+                                                                "subtype": "Druid"
+                                                            },
+                                                            {
+                                                                "type": "HasSubtype",
+                                                                "subtype": "Shaman"
+                                                            },
+                                                            {
+                                                                "type": "HasSubtype",
+                                                                "subtype": "Warlock"
+                                                            },
+                                                            {
+                                                                "type": "HasSubtype",
+                                                                "subtype": "Wizard"
+                                                            }
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "CopyTargetSpell",
+                        "target": "TriggeringEntity"
+                    }
+                },
+                "descriptionOverride": "When you cast this spell, copy it if you control a planeswalker, Cleric, Druid, Shaman, Warlock, or Wizard."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "UNCOMMON",
+        "artist": "Brian Valeza",
+        "flavorText": "Kasmina had encouraged the twins to apply. Strixhaven would test not only their magical potential, but also their character.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0dbb1230-a465-4499-bb9c-35a06712a08b.jpg?1783927378",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "The triggered ability will trigger when you cast Mentor's Guidance no matter what permanents you control. As that ability tries to resolve, it will check to see if you control at least one permanent with the listed type or subtypes. If you do, Mentor's Guidance will be copied once, not once for each of those permanents. If you don't control a qualifying permanent at that time, the triggered ability won't resolve and it won't copy Mentor's Guidance."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Mercurial Transformation
+{
+    "name": "Mercurial Transformation",
+    "manaCost": "{1}{U}",
+    "typeLine": "Sorcery — Lesson",
+    "oracleText": "Until end of turn, target nonland permanent loses all abilities and becomes your choice of a blue Frog creature with base power and toughness 1/1 or a blue Octopus creature with base power and toughness 4/4.",
+    "script": {
+        "spellEffect": {
+            "type": "ChooseAction",
+            "choices": [
+                {
+                    "label": "It becomes a blue 1/1 Frog creature with no abilities",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "BecomeArtifact",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "cardTypes": [
+                                    "CREATURE"
+                                ],
+                                "subtypes": [
+                                    "Frog"
+                                ],
+                                "colors": [
+                                    "BLUE"
+                                ],
+                                "duration": "EndOfTurn"
+                            },
+                            {
+                                "type": "SetBaseStats",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "power": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughness": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "duration": "EndOfTurn"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "label": "It becomes a blue 4/4 Octopus creature with no abilities",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "BecomeArtifact",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "cardTypes": [
+                                    "CREATURE"
+                                ],
+                                "subtypes": [
+                                    "Octopus"
+                                ],
+                                "colors": [
+                                    "BLUE"
+                                ],
+                                "duration": "EndOfTurn"
+                            },
+                            {
+                                "type": "SetBaseStats",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "power": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "toughness": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "duration": "EndOfTurn"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "UNCOMMON",
+        "artist": "Craig J Spearing",
+        "flavorText": "\"For sun's sake, I just want a crab!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/adcbe115-5482-4e5a-95bb-8ccbb01d3547.jpg?1783927377",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "You choose Frog or Octopus as Mercurial Transformation resolves, not when you cast it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Mila, Crafty Companion
+{
+    "name": "Mila, Crafty Companion",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Legendary Creature — Fox",
+    "oracleText": "Whenever an opponent attacks one or more planeswalkers you control, put a loyalty counter on each planeswalker you control.\nWhenever a permanent you control becomes the target of a spell or ability an opponent controls, you may draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mila, Crafty Companion:1",
+                "trigger": {
+                    "type": "YouAttackEvent",
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsAttackingYouOrYourPlaneswalkers",
+                            {
+                                "type": "StateNot",
+                                "predicate": {
+                                    "type": "IsAttackingPlayer",
+                                    "player": "Controller"
+                                }
+                            }
+                        ]
+                    },
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "planeswalker ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "LOYALTY",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever an opponent attacks one or more planeswalkers you control, put a loyalty counter on each planeswalker you control."
+            },
+            {
+                "id": "Mila, Crafty Companion:2",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "targetFilter": "permanent ctrl:you",
+                    "byOpponent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "descriptionOverride": "Whenever a permanent you control becomes the target of a spell or ability an opponent controls, you may draw a card."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Lukka, Wayward Bonder",
+        "manaCost": "{4}{R}{R}",
+        "typeLine": "Legendary Planeswalker — Lukka",
+        "oracleText": "+1: You may discard a card. If you do, draw a card. If a creature card was discarded this way, draw two cards instead.\n−2: Return target creature card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of your next upkeep.\n−7: You get an emblem with \"Whenever a creature you control enters, it deals damage equal to its power to any target.\"",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Lukka, Wayward Bonder:1",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": 1
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected1",
+                                "prompt": "You may discard a card"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "CollectionContainsMatch",
+                                        "collection": "selected1",
+                                        "filter": "creature"
+                                    }
+                                },
+                                "then": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                "otherwise": {
+                                    "type": "Gated",
+                                    "gate": {
+                                        "type": "Gate.WhenCondition",
+                                        "condition": {
+                                            "type": "CollectionContainsMatch",
+                                            "collection": "selected1"
+                                        }
+                                    },
+                                    "then": {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "You may discard a card. If you do, draw a card. If a creature card was discarded this way, draw two cards instead."
+                },
+                {
+                    "id": "Lukka, Wayward Bonder:2",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -2
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": "ChosenTargets",
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                },
+                                "storeMovedAs": "lukkaReturned"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "lukkaReturned",
+                                "ifNotEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GrantKeyword",
+                                            "keyword": "HASTE",
+                                            "target": {
+                                                "type": "PipelineTarget",
+                                                "collectionName": "lukkaReturned"
+                                            },
+                                            "duration": "Permanent"
+                                        },
+                                        {
+                                            "type": "CreateDelayedTrigger",
+                                            "step": "UPKEEP",
+                                            "effect": {
+                                                "type": "Composite",
+                                                "effects": [
+                                                    {
+                                                        "type": "MoveCollection",
+                                                        "from": "lukkaReturned",
+                                                        "destination": {
+                                                            "type": "ToZone",
+                                                            "zone": "Exile"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            "timing": "NextTurn",
+                                            "fireOnPlayer": {
+                                                "type": "PlayerRef",
+                                                "player": "You"
+                                            },
+                                            "carryCollections": [
+                                                "lukkaReturned"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature own:you",
+                                "zone": "Graveyard"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Return target creature card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of your next upkeep."
+                },
+                {
+                    "id": "Lukka, Wayward Bonder:4",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -7
+                    },
+                    "effect": {
+                        "type": "CreateGlobalTriggeredAbility",
+                        "ability": {
+                            "id": "Lukka, Wayward Bonder:3",
+                            "trigger": {
+                                "type": "ZoneChangeEvent",
+                                "filter": "creature ctrl:you",
+                                "to": "Battlefield"
+                            },
+                            "binding": "ANY",
+                            "effect": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "EntityProperty",
+                                    "entity": "TriggeringEntity",
+                                    "numericProperty": "Power"
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "damageSource": "TriggeringEntity"
+                            },
+                            "targetRequirement": {
+                                "type": "AnyTarget",
+                                "id": "t1"
+                            },
+                            "descriptionOverride": "Whenever a creature you control enters, it deals damage equal to its power to any target."
+                        },
+                        "descriptionOverride": "Whenever a creature you control enters, it deals damage equal to its power to any target."
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "You get an emblem with \"Whenever a creature you control enters, it deals damage equal to its power to any target.\""
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "153",
+            "rarity": "MYTHIC",
+            "artist": "Kieran Yanner",
+            "imageUri": "https://cards.scryfall.io/normal/back/8/e/8e4e0f81-f92b-4a3a-bb29-adcc3de211b4.jpg?1783927336"
+        },
+        "startingLoyalty": 5,
+        "colorIdentityOverride": [
+            "RED",
+            "WHITE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "rarity": "MYTHIC",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8e4e0f81-f92b-4a3a-bb29-adcc3de211b4.jpg?1783927336",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "When Mila's first ability resolves, you will put a loyalty counter on all planeswalkers you control, even ones that aren't being attacked."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Mila's first ability triggers only once no matter how many creatures are attacking or how many planeswalkers are being attacked."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Mila's second ability will resolve before the spell or ability that caused it to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ],
+    "layout": "MODAL_DFC"
 }
 
 // Moldering Karok
