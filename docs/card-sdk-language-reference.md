@@ -584,11 +584,13 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
 - `Costs.PayLife(amount)` — pay N life. `CostAtom.PayLife.amount` is a `DynamicAmount` (an `Int`
   overload wraps it in `Fixed`), so `Costs.PayLife(amount: DynamicAmount)` prices a life cost from
   game state as it is paid — War Room's "Pay life equal to the number of colors in your commanders'
-  color identity" is `Costs.PayLife(DynamicAmounts.commanderColorIdentityCount())`. The atom admits
-  only a nonnegative `Fixed` or a `CommanderColorIdentityCount()` for `Player.You` (amounts priced
-  from the payer's state alone, no X or targets); every engine site prices it through `CostAtomAmounts.life` with the payer, so the
+  color identity" is `Costs.PayLife(DynamicAmounts.commanderColorIdentityCount())`, and Hand of
+  Vecna's "Equip—Pay 1 life for each card in your hand" is
+  `Costs.PayLife(DynamicAmounts.cardsInYourHand())` on an `isEquipAbility` activated
+  ability. The atom admits only a nonnegative `Fixed`, a `CommanderColorIdentityCount()` or a
+  `Count(...)` for `Player.You` (amounts priced from the payer's state alone, no X or targets); every engine site prices it through `CostAtomAmounts.life` with the payer, so the
   legal-action enumerator, the activation validator and the payment charge the same number. Renders
-  "pay 2 life" / "pay life equal to <amount>". A commander-identity count for a player with **no**
+  "pay 2 life" / "pay 1 life for each card in your hand" / "pay life equal to <amount>". A commander-identity count for a player with **no**
   commander is unpayable (CR 903.4f; War Room ruling), while a colorless commander prices it at 0. A dynamic
   life cost can't be `repeated` (escalate) and isn't planned over by the scoped mana planner.
 - `Costs.PayXLife` — pay X life, where X is the value chosen for the ability's `{X}` mana cost

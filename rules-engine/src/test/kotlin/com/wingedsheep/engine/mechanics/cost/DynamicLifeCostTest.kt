@@ -41,6 +41,9 @@ import io.kotest.matchers.shouldNotBe
  *    submit it (CR 119.4) — the enumerator and the validator agree;
  *  - a colorless commander prices it at 0, payable even where no life may be paid (CR 119.4b);
  *  - a player with no commander can't activate it at all (War Room's ruling);
+ *  - a [DynamicAmount.Count] of the payer's own objects (Hand of Vecna's "Pay 1 life for each card
+ *    in your hand") is priced from the activator's hand as the cost is paid, and an empty hand
+ *    prices it at 0;
  *  - the atom's whitelist and printed text.
  */
 class DynamicLifeCostTest : FunSpec({
@@ -207,6 +210,65 @@ class DynamicLifeCostTest : FunSpec({
         driver.getLifeTotal(me) shouldBe 20
     }
 
+    val handEngine = card("Hand Count Life Engine") {
+        manaCost = "{1}"
+        typeLine = "Artifact"
+        oracleText = "{T}, Pay 1 life for each card in your hand: Draw a card."
+        activatedAbility {
+            cost = Costs.Composite(Costs.Tap, Costs.PayLife(DynamicAmounts.cardsInYourHand()))
+            effect = Effects.DrawCards(1)
+            timing = TimingRule.InstantSpeed
+        }
+    }
+    val handAbilityId = handEngine.activatedAbilities.single().id
+    val handAtom = CostAtom.PayLife(DynamicAmounts.cardsInYourHand())
+
+    fun handGame(): Pair<GameTestDriver, EntityId> {
+        val driver = GameTestDriver()
+        driver.registerCards(all + handEngine)
+        driver.initMirrorMatch(deck = Deck.of(filler.name to 40), skipMulligans = true, startingPlayer = 0)
+        val me = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        return driver to me
+    }
+
+    test("a count of the payer's hand prices the cost, read for the activator as it is paid") {
+        val (driver, me) = handGame()
+        val opponent = driver.getOpponent(me)
+        val engine = driver.putPermanentOnBattlefield(me, handEngine.name)
+        val hand = driver.getHandSize(me)
+        withClue("the opening hand is the price") {
+            CostAtomAmounts.life(driver.state, handAtom, me, driver.services.predicateEvaluator) shouldBe hand
+            CostAtomAmounts.evaluate(driver.state, handAtom.amount, predicateEvaluator = driver.services.predicateEvaluator) shouldBe
+                CostAtomAmounts.UNPRICEABLE
+        }
+
+        driver.canActivate(me, engine) shouldBe true
+        driver.submitSuccess(ActivateAbility(playerId = me, sourceId = engine, abilityId = handAbilityId))
+        driver.getLifeTotal(me) shouldBe 20 - hand
+        driver.getLifeTotal(opponent) shouldBe 20
+    }
+
+    test("a hand count above the payer's life is not offered and is rejected; an empty hand costs 0") {
+        val (driver, me) = handGame()
+        val engine = driver.putPermanentOnBattlefield(me, handEngine.name)
+        val hand = driver.getHandSize(me)
+        driver.setLifeTotal(me, hand - 1)
+
+        driver.canActivate(me, engine) shouldBe false
+        driver.submit(ActivateAbility(playerId = me, sourceId = engine, abilityId = handAbilityId)).error shouldNotBe null
+        driver.getLifeTotal(me) shouldBe hand - 1
+
+        withClue("with no cards in hand the price is 0 life, payable even at 1 life") {
+            driver.getHand(me).forEach { driver.moveToGraveyard(it) }
+            driver.setLifeTotal(me, 1)
+            CostAtomAmounts.life(driver.state, handAtom, me, driver.services.predicateEvaluator) shouldBe 0
+            driver.canActivate(me, engine) shouldBe true
+            driver.submitSuccess(ActivateAbility(playerId = me, sourceId = engine, abilityId = handAbilityId))
+            driver.getLifeTotal(me) shouldBe 1
+        }
+    }
+
     test("the atom admits only nonnegative constants and state-priced counts, and prints both") {
         CostAtom.PayLife(2).description shouldBe "pay 2 life"
         lifeAtom.description shouldBe "pay life equal to the number of colors in your commanders' color identity"
@@ -217,6 +279,12 @@ class DynamicLifeCostTest : FunSpec({
         withClue("a cost is priced for its payer alone") {
             shouldThrow<IllegalArgumentException> {
                 CostAtom.PayLife(DynamicAmount.CommanderColorIdentityCount(Player.TargetOpponent))
+            }
+        }
+        handAtom.description shouldBe "pay 1 life for each card in your hand"
+        withClue("a count of another player's objects is not a cost its payer can price") {
+            shouldThrow<IllegalArgumentException> {
+                CostAtom.PayLife(DynamicAmount.Count(Player.TargetOpponent, com.wingedsheep.sdk.core.Zone.HAND))
             }
         }
         DynamicAmount.CommanderColorIdentityCount(Player.TargetOpponent).description shouldBe

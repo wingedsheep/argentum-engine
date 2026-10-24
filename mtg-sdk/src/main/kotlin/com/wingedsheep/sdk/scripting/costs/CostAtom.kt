@@ -75,8 +75,10 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
      * pricing site goes through the engine's `CostAtomAmounts.evaluate` with the payer, so the
      * legal-action enumerator and the activation validator see the same number. The whitelist in
      * `init` admits only amounts that price from game state alone (no X, no targets): a
-     * nonnegative [DynamicAmount.Fixed] or a [DynamicAmount.CommanderColorIdentityCount] for
-     * `Player.You` (a cost is priced for its payer alone).
+     * nonnegative [DynamicAmount.Fixed], or a [DynamicAmount.CommanderColorIdentityCount] or a
+     * [DynamicAmount.Count] for `Player.You` (a cost is priced for its payer alone) — Hand of
+     * Vecna's "Equip—Pay 1 life for each card in your hand" is
+     * `PayLife(DynamicAmounts.cardsInYourHand())`.
      */
     @SerialName("AtomPayLife")
     @Serializable
@@ -85,8 +87,10 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
 
         init {
             require(amount is DynamicAmount.Fixed && amount.amount >= 0 ||
-                amount is DynamicAmount.CommanderColorIdentityCount && amount.player == Player.You) {
-                "Life costs require a nonnegative fixed amount or your commanders' color-identity count"
+                amount is DynamicAmount.CommanderColorIdentityCount && amount.player == Player.You ||
+                amount is DynamicAmount.Count && amount.player == Player.You) {
+                "Life costs require a nonnegative fixed amount, your commanders' color-identity count, " +
+                    "or a count of your own objects"
             }
         }
 
@@ -95,6 +99,9 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
 
         override val description: String get() = when (amount) {
             is DynamicAmount.Fixed -> "pay ${amount.amount} life"
+            // "the number of cards in your hand" -> "pay 1 life for each card in your hand"
+            is DynamicAmount.Count -> "pay 1 life for each " + amount.description.removePrefix("the number of ")
+                .replaceFirst(DynamicAmount.pluralize(amount.filter.description), amount.filter.description.ifEmpty { "card" })
             else -> "pay life equal to ${amount.description}"
         }
     }

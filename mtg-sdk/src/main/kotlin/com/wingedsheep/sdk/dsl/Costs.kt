@@ -95,8 +95,10 @@ object Costs {
     /**
      * Pay life equal to an amount priced from game state as the cost is paid — War Room's "Pay
      * life equal to the number of colors in your commanders' color identity" is
-     * `PayLife(DynamicAmounts.commanderColorIdentityCount())`. Only amounts [CostAtom.PayLife]
-     * admits (a [DynamicAmount.CommanderColorIdentityCount]) are accepted.
+     * `PayLife(DynamicAmounts.commanderColorIdentityCount())`; Hand of Vecna's "Pay 1 life for
+     * each card in your hand" is `PayLife(DynamicAmounts.cardsInYourHand())`. Only
+     * amounts [CostAtom.PayLife] admits (a [DynamicAmount.CommanderColorIdentityCount] or a
+     * [DynamicAmount.Count] for `Player.You`) are accepted.
      */
     fun PayLife(amount: DynamicAmount): AbilityCost =
         AbilityCost.Atom(CostAtom.PayLife(amount))
