@@ -19365,6 +19365,445 @@
     ]
 }
 
+// Thunderous Orator
+{
+    "name": "Thunderous Orator",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Kor Wizard",
+    "oracleText": "Vigilance\nWhenever this creature attacks, it gains flying until end of turn if you control a creature with flying. The same is true for first strike, double strike, deathtouch, indestructible, lifelink, menace, and trample.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thunderous Orator:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature kw:flying"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "FLYING",
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature kw:first_strike"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "FIRST_STRIKE",
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature kw:double_strike"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "DOUBLE_STRIKE",
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature kw:deathtouch"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "DEATHTOUCH",
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature kw:indestructible"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "INDESTRUCTIBLE",
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature kw:lifelink"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "LIFELINK",
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature kw:menace"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "MENACE",
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature kw:trample"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": "Self"
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "This creature gains flying until end of turn if you control a creature with flying. The same is true for first strike, double strike, deathtouch, indestructible, lifelink, menace, and trample."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "UNCOMMON",
+        "artist": "Brian Valeza",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/ef3b2961-559f-42b1-be13-ff3d03e62809.jpg?1783927382",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If you control a creature with one of the abilities listed in the last sentence, Thunderous Orator will gain that ability, not flying."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Check the creatures you control as the triggered ability resolves to determine which abilities Thunderous Orator gains. Once Thunderous Orator gains an ability, it doesn't matter what happens to other creatures you control with that ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Tome Shredder
+{
+    "name": "Tome Shredder",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Wolf",
+    "oracleText": "Haste\n{T}, Exile an instant or sorcery card from your graveyard: Put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tome Shredder:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomExileFrom",
+                                "zone": "Graveyard",
+                                "filter": "instant|sorcery"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "{T}, Exile an instant or sorcery card from your graveyard: Put a +1/+1 counter on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "artist": "Sam Rowan",
+        "flavorText": "\"Quintorius, would you care to explain why you didn't complete your homework?\"\n—Augusta, Lorehold dean",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a7cc9ea8-db4e-4f41-800f-fb0dbcb2c345.jpg?1783927349"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Torrent Sculptor
+{
+    "name": "Torrent Sculptor",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Merfolk Wizard",
+    "oracleText": "Ward {2} (Whenever this creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {2}.)\nWhen this creature enters, exile an instant or sorcery card from your graveyard. Put a number of +1/+1 counters on this creature equal to half that card's mana value, rounded up.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Torrent Sculptor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "instant|sorcery"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Exile an instant or sorcery card from your graveyard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "amount": {
+                                "type": "Divide",
+                                "numerator": {
+                                    "type": "StoredCardManaValue",
+                                    "collectionName": "selected1"
+                                },
+                                "denominator": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, exile an instant or sorcery card from your graveyard. Put a number of +1/+1 counters on this creature equal to half that card's mana value, rounded up."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/87463b68-3642-41c7-a11c-67d524759b60.jpg?1783927334",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "You choose which instant or sorcery card to exile as Torrent Sculptor's enters-the-battlefield ability resolves. You must exile one if able."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Flamethrower Sonata goes on the stack without a target. While it is resolving, you discard a card, then draw a card. When you discard an instant or sorcery card this way, the reflexive triggered ability triggers and you pick a target to be dealt damage. This is different from effects that say \"If you do . . .\" in that players can respond to the triggered ability knowing how much damage will be dealt."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If you have no cards in hand as Flamethrower Sonata resolves, you won't be able to discard a card, but you will draw a card. No damage will be dealt."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If a player casts a spell that targets multiple permanents their opponent controls with ward, each of those ward abilities will trigger. If that player doesn't pay for all of them, the spell will be countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ],
+    "layout": "MODAL_DFC",
+    "cardFaces": [
+        {
+            "name": "Flamethrower Sonata",
+            "manaCost": "{1}{R}",
+            "typeLine": "Sorcery",
+            "oracleText": "Discard a card, then draw a card. When you discard an instant or sorcery card this way, Flamethrower Sonata deals damage equal to that card's mana value to target creature or planeswalker you don't control.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Discard a card"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "selected1",
+                            "ifNotEmpty": {
+                                "type": "ReflexiveTrigger",
+                                "action": {
+                                    "type": "Composite",
+                                    "effects": []
+                                },
+                                "optional": false,
+                                "reflexiveEffect": {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "StoredCardManaValue",
+                                        "collectionName": "selected1"
+                                    },
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "reflexiveTargetRequirements": [
+                                    {
+                                        "type": "TargetObject",
+                                        "filter": {
+                                            "baseFilter": "creature|planeswalker ctrl:opponent"
+                                        },
+                                        "id": "t0"
+                                    }
+                                ],
+                                "descriptionOverride": "Flamethrower Sonata deals damage equal to the discarded card's mana value to target creature or planeswalker you don't control"
+                            },
+                            "filter": "instant|sorcery"
+                        }
+                    ]
+                }
+            },
+            "imageUri": "https://cards.scryfall.io/normal/back/8/7/87463b68-3642-41c7-a11c-67d524759b60.jpg?1783927334"
+        }
+    ]
+}
+
 // Twinscroll Shaman
 {
     "name": "Twinscroll Shaman",
@@ -19449,6 +19888,739 @@
     ]
 }
 
+// Unwilling Ingredient
+{
+    "name": "Unwilling Ingredient",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Frog",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\n{2}{B}, Exile this card from your graveyard: You draw a card and you lose 1 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Unwilling Ingredient:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                },
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "{2}{B}, Exile this card from your graveyard: You draw a card and you lose 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "artist": "David Auden Nash",
+        "flavorText": "\"Don't look at me like that. It was either this or being eaten by a groff.\"\n—Dina, Witherbloom mage-student",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/30448144-639a-43c7-a408-bd6ed543c231.jpg?1783927360"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Valentin, Dean of the Vein
+{
+    "name": "Valentin, Dean of the Vein",
+    "manaCost": "{B}",
+    "typeLine": "Legendary Creature — Vampire Warlock",
+    "oracleText": "Menace, lifelink\nIf a nontoken creature an opponent controls would die, exile it instead. When you do, you may pay {2}. If you do, create a 1/1 black and green Pest creature token with \"When this token dies, you gain 1 life.\"",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "MENACE",
+        "LIFELINK"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChangeWithEffect",
+                "newDestination": "Exile",
+                "additionalEffect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{2}"
+                        }
+                    },
+                    "then": {
+                        "type": "CreatePredefinedToken",
+                        "tokenType": "Pest"
+                    }
+                },
+                "riderTiming": "WHEN_YOU_DO",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:opponent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Lisette, Dean of the Root",
+        "manaCost": "{2}{G}{G}",
+        "typeLine": "Legendary Creature — Human Druid",
+        "oracleText": "Whenever you gain life, you may pay {1}. If you do, put a +1/+1 counter on each creature you control and those creatures gain trample until end of turn.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Lisette, Dean of the Root:1",
+                    "trigger": "LifeGainEvent",
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.MayPay",
+                            "cost": {
+                                "type": "PayManaCost",
+                                "cost": "{1}"
+                            }
+                        },
+                        "then": {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you"
+                                }
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "PLUS_ONE_PLUS_ONE",
+                                        "count": 1,
+                                        "target": "IterationEntity"
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "TRAMPLE",
+                                        "target": "IterationEntity"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "descriptionOverride": "Whenever you gain life, you may pay {1}. If you do, put a +1/+1 counter on each creature you control and those creatures gain trample until end of turn."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "161",
+            "rarity": "RARE",
+            "artist": "Jesper Ejsing",
+            "flavorText": "\"Life is as fleeting as it is vibrant. Embrace the brief blessing of a flower before it withers.\"",
+            "imageUri": "https://cards.scryfall.io/normal/back/6/5/65008352-bc7e-40b2-a832-b46813e5dc4c.jpg?1783927330",
+            "rulings": [
+                {
+                    "date": "2021-04-16",
+                    "text": "If you gain life at the same time a creature you control is dealt lethal damage, that creature dies before Lisette's ability can put a +1/+1 counter on it."
+                },
+                {
+                    "date": "2021-04-16",
+                    "text": "An ability that triggers \"whenever you gain life\" triggers just once for each life-gaining event, no matter how much life you gain."
+                },
+                {
+                    "date": "2021-04-16",
+                    "text": "You may only pay {1} once for each life gain event."
+                },
+                {
+                    "date": "2021-04-16",
+                    "text": "Each creature with lifelink dealing combat damage causes a separate life-gaining event. For example, if two creatures you control with lifelink deal combat damage at the same time, a \"whenever you gain life\" ability will trigger twice. However, if a single creature you control with lifelink deals combat damage to multiple creatures, players, and/or planeswalkers at the same time (perhaps because it has trample or was blocked by more than one creature), the ability will trigger only once."
+                },
+                {
+                    "date": "2021-04-16",
+                    "text": "If you gain an amount of life \"for each\" of something, that life is gained as one event and the ability will trigger only once."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "BLACK",
+            "GREEN"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "rarity": "RARE",
+        "artist": "Jesper Ejsing",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/65008352-bc7e-40b2-a832-b46813e5dc4c.jpg?1783927330",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If a nontoken creature an opponent controls would die, and both Valentin and another effect are trying to exile it instead, that opponent chooses which effect to apply. If Valentin's effect ends up not applying because of this choice, the triggered ability that allows you to pay {2} won't trigger, even if the creature card ends up in exile."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ],
+    "layout": "MODAL_DFC"
+}
+
+// Vanishing Verse
+{
+    "name": "Vanishing Verse",
+    "manaCost": "{W}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target monocolored permanent.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Exile"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsPermanent",
+                            "IsMonocolored"
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "244",
+        "rarity": "RARE",
+        "artist": "Chris Seaman",
+        "flavorText": "\"Whoever summoned that thing had better confess right this moment, or the whole class will be cleaning the ink receptacles for a month!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e12573fe-aee3-49db-93e2-d00972cbb3b1.jpg?1783927288",
+        "rulings": [
+            {
+                "date": "2024-04-12",
+                "text": "A monocolored permanent is exactly one color. Colorless permanents aren't monocolored."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Velomachus Lorehold
+{
+    "name": "Velomachus Lorehold",
+    "manaCost": "{5}{R}{W}",
+    "typeLine": "Legendary Creature — Elder Dragon",
+    "oracleText": "Flying, vigilance, haste\nWhenever Velomachus Lorehold attacks, look at the top seven cards of your library. You may cast an instant or sorcery spell with mana value less than or equal to Velomachus Lorehold's power from among them without paying its mana cost. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Velomachus Lorehold:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 7
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    },
+                                    {
+                                        "type": "ManaValueAtMostDynamic",
+                                        "amount": {
+                                            "type": "EntityProperty",
+                                            "entity": "Self",
+                                            "numericProperty": "Power"
+                                        }
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may cast an instant or sorcery spell with mana value up to Velomachus Lorehold's power without paying its mana cost.",
+                            "selectedLabel": "Cast for free",
+                            "remainderLabel": "Put on bottom",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "selected1"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "InZone",
+                                        "zone": "Library"
+                                    }
+                                ]
+                            },
+                            "storeMatching": "matching3"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Velomachus Lorehold attacks, look at the top seven cards of your library. You may cast an instant or sorcery spell with mana value less than or equal to Velomachus Lorehold's power from among them without paying its mana cost. Put the rest on the bottom of your library in a random order."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "245",
+        "rarity": "MYTHIC",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/04ea9067-ad50-4c43-ae4d-3f66890cd898.jpg?1783927292",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "When Velomachus Lorehold's triggered ability resolves, it lets you cast a spell immediately, ignoring timing restrictions. It does not let you cast that spell later in the turn."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If you choose not to cast a spell this way, all of the cards will be put on the bottom of the library in a random order."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If you're casting a spell with {X} in its cost without paying its mana cost, you must choose 0 for the value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Vineglimmer Snarl
+{
+    "name": "Vineglimmer Snarl",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "As this land enters, you may reveal a Forest or Island card from your hand. If you don't, this land enters tapped.\n{T}: Add {G} or {U}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Vineglimmer Snarl:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Vineglimmer Snarl:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "OnEnterRunEffect",
+                "effect": {
+                    "type": "MayRevealCardFromHand",
+                    "filter": "land Forest|Island",
+                    "otherwise": "EnterTapped"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "274",
+        "rarity": "RARE",
+        "artist": "Sam Burley",
+        "flavorText": "A verdant paradox of primal logic.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f77e5ca7-dde1-435f-9b40-87558dd88749.jpg?1783927269",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "The \"Snarl\" itself doesn't have any land subtypes. You can't reveal one to satisfy the ability of another."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If a land card with an appropriate subtype is entering the battlefield from your hand at the same time as one of these lands, you may reveal the other land to have the \"Snarl\" enter untapped."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect instructs you to put one of these lands onto the battlefield tapped, it will still enter the battlefield tapped even if you reveal a land card from your hand."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "You may reveal any land card with either or both of the appropriate subtypes. It doesn't have to be a basic land card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
+// Vortex Runner
+{
+    "name": "Vortex Runner",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "As long as you control eight or more lands, this creature gets +1/+0 and can't be blocked.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 0,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "CantBeBlocked",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "artist": "Billy Christian",
+        "flavorText": "\"By using the vortex, I can study for at least fifteen extra minutes between every class. I wasn't being reckless, Dean Imbraham. I was being efficient.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/bab4a68d-5d26-42d8-bc51-15e3c1f95ebe.jpg?1783927372"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Wandering Archaic
+{
+    "name": "Wandering Archaic",
+    "manaCost": "{5}",
+    "typeLine": "Creature — Avatar",
+    "oracleText": "Whenever an opponent casts an instant or sorcery spell, they may pay {2}. If they don't, you may copy that spell. You may choose new targets for the copy.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wandering Archaic:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    },
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{2}"
+                        }
+                    },
+                    "suffer": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "CopyTargetSpell",
+                            "target": "TriggeringEntity"
+                        }
+                    },
+                    "player": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    },
+                    "consequenceDescription": "let Wandering Archaic's controller copy that spell"
+                },
+                "descriptionOverride": "Whenever an opponent casts an instant or sorcery spell, they may pay {2}. If they don't, you may copy that spell. You may choose new targets for the copy."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "RARE",
+        "artist": "Wayne Reynolds",
+        "flavorText": "\"Fly the path of nine birds.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/18a2bdc8-b705-4eb5-b3a5-ff2e2ab8f312.jpg?1783927400",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "For Wandering Archaic's triggered ability, the opponent chooses whether to pay {2} before their spell resolves. If they don't pay {2}, your copy will resolve before the original spell."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Explore the Vastlands has received an update to its Oracle text. Specifically, revealing either a land card or an instant or sorcery card is optional. Any player who can't reveal a card or chooses not to simply puts all cards they looked at on the bottom of their library in a random order. Each player gains 3 life whether they revealed a card or not."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "While resolving Explore the Vastlands, first the active player reveals the cards they are going to put into their hand. Then each other player in turn order does the same, knowing choices made before they choose."
+            }
+        ]
+    },
+    "colorIdentityOverride": [],
+    "layout": "MODAL_DFC",
+    "cardFaces": [
+        {
+            "name": "Explore the Vastlands",
+            "manaCost": "{3}",
+            "typeLine": "Sorcery",
+            "oracleText": "Each player looks at the top five cards of their library and may reveal a land card and/or an instant or sorcery card from among them. Each player puts the cards they revealed this way into their hand and the rest on the bottom of their library in a random order. Each player gains 3 life.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "ActivePlayerFirst"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "TopOfLibrary",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 5
+                                            }
+                                        },
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered0",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "filter": "land",
+                                        "storeSelected": "selected1",
+                                        "storeRemainder": "remainder1",
+                                        "prompt": "You may reveal a land card and put it into your hand",
+                                        "selectedLabel": "Reveal and put in hand",
+                                        "remainderLabel": "Leave",
+                                        "showAllCards": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "remainder1",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "filter": "instant|sorcery",
+                                        "storeSelected": "selected2",
+                                        "storeRemainder": "remainder2",
+                                        "prompt": "You may reveal an instant or sorcery card and put it into your hand",
+                                        "selectedLabel": "Reveal and put in hand",
+                                        "remainderLabel": "Put on the bottom",
+                                        "showAllCards": true
+                                    },
+                                    {
+                                        "type": "RevealCollection",
+                                        "from": "selected1"
+                                    },
+                                    {
+                                        "type": "RevealCollection",
+                                        "from": "selected2"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected1",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        }
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected2",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        }
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "remainder2",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Library",
+                                            "placement": "Bottom"
+                                        },
+                                        "order": "Random"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "Each"
+                            }
+                        }
+                    ]
+                }
+            },
+            "imageUri": "https://cards.scryfall.io/normal/back/1/8/18a2bdc8-b705-4eb5-b3a5-ff2e2ab8f312.jpg?1783927400"
+        }
+    ]
+}
+
 // Waterfall Aerialist
 {
     "name": "Waterfall Aerialist",
@@ -19480,6 +20652,104 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Witherbloom Apprentice
+{
+    "name": "Witherbloom Apprentice",
+    "manaCost": "{B}{G}",
+    "typeLine": "Creature — Human Druid",
+    "oracleText": "Magecraft — Whenever you cast or copy an instant or sorcery spell, each opponent loses 1 life and you gain 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Witherbloom Apprentice:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "SpellCopiedEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Magecraft — Whenever you cast or copy an instant or sorcery spell, each opponent loses 1 life and you gain 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "247",
+        "rarity": "UNCOMMON",
+        "artist": "Josh Hass",
+        "flavorText": "\"All we are—every feeling, every action—powered by a single, delicate little organ. Life is so terrifyingly, beautifully fragile.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f80a11b-188b-464c-b00d-c9d1cfb8ddee.jpg?1783927284",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates a copy of an instant or sorcery spell, this will also cause the magecraft ability to trigger."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates multiple copies of an instant or sorcery spell, magecraft abilities trigger once for each copy created by the effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
     ]
 }
 
@@ -19549,6 +20819,300 @@
     ]
 }
 
+// Witherbloom Command
+{
+    "name": "Witherbloom Command",
+    "manaCost": "{B}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose two —\n• Target player mills three cards, then you return a land card from your graveyard to your hand.\n• Destroy target noncreature, nonland permanent with mana value 2 or less.\n• Target creature gets -3/-1 until end of turn.\n• Target opponent loses 2 life and you gain 2 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "TopOfLibrary",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 3
+                                            },
+                                            "player": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            },
+                                            "isMill": true
+                                        },
+                                        "storeAs": "milled"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "milled",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard",
+                                            "player": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Graveyard",
+                                    "filter": "land"
+                                },
+                                "storeAs": "gathered1"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered1",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected2",
+                                "prompt": "Return a land card from your graveyard to your hand",
+                                "selectedLabel": "Return to hand",
+                                "remainderLabel": "Leave in graveyard",
+                                "showAllCards": true
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Target player mills three cards, then you return a land card from your graveyard to your hand"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsNonland",
+                                        "IsPermanent",
+                                        {
+                                            "type": "Not",
+                                            "predicate": "IsCreature"
+                                        },
+                                        {
+                                            "type": "ManaValueAtMost",
+                                            "max": 2
+                                        }
+                                    ]
+                                }
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Destroy target noncreature, nonland permanent with mana value 2 or less"
+                },
+                {
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -3
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t2"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t2"
+                        }
+                    ],
+                    "description": "Target creature gets -3/-1 until end of turn"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t3"
+                                }
+                            },
+                            {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetOpponent",
+                            "id": "t3"
+                        }
+                    ],
+                    "description": "Target opponent loses 2 life and you gain 2 life"
+                }
+            ],
+            "chooseCount": 2
+        }
+    },
+    "metadata": {
+        "collectorNumber": "248",
+        "rarity": "RARE",
+        "artist": "Dmitry Burmak",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/87d5e94b-0b35-4efd-9158-1767dcaea38c.jpg?1783927285",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If you target yourself with the first mode, you may return any land card to your hand, including one you just milled or one that was already there."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If at least one target is still legal as Witherbloom Command tries to resolve, it will resolve and do as much as it can."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If all of Witherbloom Command's targets are illegal as it tries to resolve, it will do nothing."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Witherbloom Pledgemage
+{
+    "name": "Witherbloom Pledgemage",
+    "manaCost": "{3}{B/G}{B/G}",
+    "typeLine": "Creature — Treefolk Warlock",
+    "oracleText": "Magecraft — Whenever you cast or copy an instant or sorcery spell, you gain 1 life.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Witherbloom Pledgemage:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "SpellCopiedEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Magecraft — Whenever you cast or copy an instant or sorcery spell, you gain 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "249",
+        "artist": "Filip Burburan",
+        "flavorText": "\"Death is really just a transfer of energy. Those pests I harvested have the honor of becoming pure magic. What could be more beautiful?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6cc6914-2dcb-411d-90a5-01853ff2d5b8.jpg?1783927288",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates a copy of an instant or sorcery spell, this will also cause the magecraft ability to trigger."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates multiple copies of an instant or sorcery spell, magecraft abilities trigger once for each copy created by the effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Wormhole Serpent
 {
     "name": "Wormhole Serpent",
@@ -19599,6 +21163,262 @@
         "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d0fd73f-e161-4e42-b4f9-9246a9dba785.jpg?1783927371"
     },
     "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Zephyr Boots
+{
+    "name": "Zephyr Boots",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature has flying.\nWhenever equipped creature deals combat damage to a player, draw a card, then discard a card.\nEquip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Zephyr Boots:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever equipped creature deals combat damage to a player, draw a card, then discard a card."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Zephyr Boots:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "261",
+        "rarity": "UNCOMMON",
+        "artist": "YW Tang",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d0566fd-3775-48f1-ba22-6e659558c3d3.jpg?1783927277"
+    },
+    "colorIdentityOverride": []
+}
+
+// Zimone, Quandrix Prodigy
+{
+    "name": "Zimone, Quandrix Prodigy",
+    "manaCost": "{G}{U}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "{1}, {T}: You may put a land card from your hand onto the battlefield tapped.\n{4}, {T}: Draw a card. If you control eight or more lands, draw two cards instead.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Zimone, Quandrix Prodigy:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "land"
+                            },
+                            "storeAs": "put_candidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "put_candidates",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "putting",
+                            "prompt": "You may put a land card from your hand onto the battlefield tapped"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "putting",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{1}, {T}: You may put a land card from your hand onto the battlefield tapped."
+            },
+            {
+                "id": "Zimone, Quandrix Prodigy:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 8
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "otherwise": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "descriptionOverride": "{4}, {T}: Draw a card. If you control eight or more lands, draw two cards instead."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "250",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Pancoast",
+        "flavorText": "\"What are they complaining about? It's not like axiomatic leyline paratrigonometrics is hard.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0ca14c17-dc72-4f68-92f2-14a6c4019f4e.jpg?1783927283",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Zimone's first ability isn't the same as playing a land. As it resolves, you may put a land card from your hand onto the battlefield tapped even if you have no available land plays or it's another player's turn."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Zimone's last ability counts the number of lands you control as it resolves, not as you activate it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
         "BLUE"
     ]
 }
