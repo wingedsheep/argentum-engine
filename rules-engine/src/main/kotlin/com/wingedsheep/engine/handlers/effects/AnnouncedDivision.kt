@@ -44,7 +44,8 @@ object AnnouncedDivision {
      * The division a *spell* announces as it is cast (CR 601.2d): a top-level divided-damage effect,
      * or a counter division anywhere in the spell's sequence (Undercity Upheaval: "distribute X +1/+1
      * counters among any number of target creatures you control … creatures you control gain
-     * vigilance"). A split that lets a target get nothing (`minPerTarget = 0` — Wicked Slumber's
+     * vigilance"), or a divided-damage step scoped to one of the spell's target requirements (Magma
+     * Opus). A split that lets a target get nothing (`minPerTarget = 0` — Wicked Slumber's
      * "put a stun counter on either of them" twice) isn't a division: it is made at resolution among
      * the targets still legal then. Null when the spell divides nothing at cast.
      */

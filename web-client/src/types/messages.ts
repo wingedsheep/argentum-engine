@@ -1206,7 +1206,7 @@ export interface LegalActionInfo {
   /** What the division divides when it isn't damage — "+1/+1 counter" (Ajani, Sleeper Agent's −3). Absent means damage. */
   readonly distributionUnit?: string
   /** Which target requirement (index) the division is among, when scoped to one — Magma Opus divides among its "any number of targets", not the permanents it taps. Absent means every chosen target. */
-  readonly distributionTargetGroup?: number
+  readonly distributionTargetGroup?: number | null
   /** Preview of which lands/sources would be auto-tapped if this spell is cast (for UI highlighting) */
   readonly autoTapPreview?: readonly EntityId[]
   /** Available mana sources for pre-cast selection */

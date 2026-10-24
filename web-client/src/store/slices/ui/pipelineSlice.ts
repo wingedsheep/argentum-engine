@@ -370,9 +370,10 @@ function getStoreMethods(get: () => import('../types').GameStore): PipelineStore
 function targetsOfGroup(
   selected: readonly EntityId[],
   groupCounts: readonly number[] | undefined,
-  group: number | undefined,
+  group: number | null | undefined,
 ): EntityId[] {
-  if (group === undefined || groupCounts === undefined) return [...selected]
+  // The server encodes an unscoped division as an explicit null.
+  if (group == null || groupCounts == null) return [...selected]
   const start = groupCounts.slice(0, group).reduce((sum, n) => sum + n, 0)
   return selected.slice(start, start + (groupCounts[group] ?? 0))
 }
