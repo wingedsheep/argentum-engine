@@ -543,7 +543,7 @@ class TriggerProcessor(
                 effect = ability.effect,
                 description = ability.description,
                 abilityIdentity = identity,
-                triggerContext = trigger.triggerContext,
+                triggerContext = trigger.triggerContext.copy(abilityTriggerCause = triggerCauseOf(trigger)),
                 elseEffect = ability.elseEffect,
                 targetRequirements = allRequirements,
                 sequentialTargets = if (sequential) emptyList() else null,
@@ -1020,14 +1020,14 @@ class TriggerProcessor(
      *    (Firebender Ascension). Other in-combat triggers (deals damage, dies, …) carry no cause, and
      *    an anthem-style ANY-bound "whenever a creature you control attacks" ability lives on a
      *    different permanent than "that [attacking] creature", so it is excluded too.
-     *  - [AbilityTriggerCause.PERMANENT_ENTERING] — an enters-the-battlefield shaped trigger, the same
-     *    classification Torpor Orb's suppression uses (Strict Proctor). Wherever its source is: the
+     *  - [AbilityTriggerCause.PERMANENT_ENTERING] — a trigger an entry caused ([PendingTrigger.isEntryCaused],
+     *    the same classification Torpor Orb's suppression uses — Strict Proctor). Wherever its source is: the
      *    current Oracle text counts a graveyard card's landfall ability too.
      */
     private fun triggerCauseOf(trigger: PendingTrigger): AbilityTriggerCause? = when {
         trigger.ability.trigger is com.wingedsheep.sdk.scripting.EventPattern.AttackEvent &&
             trigger.ability.binding == com.wingedsheep.sdk.scripting.TriggerBinding.SELF -> AbilityTriggerCause.ATTACK
-        isEntersBattlefieldTrigger(trigger.ability.trigger) -> AbilityTriggerCause.PERMANENT_ENTERING
+        trigger.isEntryCaused() -> AbilityTriggerCause.PERMANENT_ENTERING
         else -> null
     }
 

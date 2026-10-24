@@ -2959,7 +2959,9 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * [Player.EachOpponent] for an opponent's, etc.
      *
      * [cause] narrows by what made the ability trigger (CR 603.3b's "abilities that trigger on
-     * another ability triggering"); null = any triggered ability. The engine stamps the cause on
+     * another ability triggering"). Only stamped causes are re-detected when the engine places a
+     * wave of triggers, so a null cause sees just the abilities put on the stack after a decision —
+     * no card uses that form; give a cause. The engine stamps the cause on
      * the emitted `AbilityTriggeredEvent` when it puts the ability on the stack:
      *  - [AbilityTriggerCause.ATTACK] — Firebender Ascension's "a creature you control attacking
      *    causes a triggered ability of that creature to trigger": a per-attacker "whenever this
@@ -2988,7 +2990,12 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
                 append(player.description)
                 append(" control attacking causes a triggered ability of that creature to trigger")
             } else if (cause == AbilityTriggerCause.PERMANENT_ENTERING) {
-                append("a permanent entering causes a triggered ability to trigger")
+                append("a permanent entering causes a triggered ability ")
+                if (player != Player.Each) {
+                    append(player.description)
+                    append(" control ")
+                }
+                append("to trigger")
             } else {
                 append(player.description)
                 append(" put a triggered ability ")

@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.core.YesNoResponse
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
@@ -91,13 +92,14 @@ class StrictProctorScenarioTest : ScenarioTestBase() {
                 }
             }
 
-            test("taxes another permanent's 'whenever a creature enters' trigger, whoever controls it") {
+            test("asks the controller of another permanent's 'whenever a creature enters' trigger to pay") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
                     .withCardOnBattlefield(1, "Strict Proctor")
                     .withCardInHand(1, "Grizzly Bears")
                     .withLandsOnBattlefield(1, "Forest", 2)
                     .withCardOnBattlefield(2, "Soul Warden")
+                    .withLandsOnBattlefield(2, "Plains", 2)
                     .withActivePlayer(1)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
@@ -105,9 +107,48 @@ class StrictProctorScenarioTest : ScenarioTestBase() {
                 game.castSpell(1, "Grizzly Bears").error shouldBe null
                 game.resolveStack()
 
-                withClue("the opponent's Soul Warden trigger was countered: they had no mana to pay") {
+                val ask = game.getPendingDecision()
+                ask.shouldBeInstanceOf<YesNoDecision>()
+                withClue("Soul Warden's controller, not Strict Proctor's, pays") {
+                    ask.playerId shouldBe game.player2Id
+                }
+                game.submitDecision(YesNoResponse(ask.id, true)).error shouldBe null
+                val window = game.getPendingDecision()
+                window.shouldBeInstanceOf<SelectManaSourcesDecision>()
+                game.submitDecision(ManaSourcesSelectedResponse(window.id, autoPay = true)).error shouldBe null
+                game.resolveStack()
+
+                withClue("the tax was paid, so Soul Warden's life gain resolved") {
+                    game.getLifeTotal(2) shouldBe 21
+                }
+            }
+
+            test("taxes a targeted 'enters or is turned face up' trigger once its target is chosen") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Strict Proctor")
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withCardInHand(1, "Rakish Scoundrel")
+                    .withLandsOnBattlefield(1, "Swamp", 2)
+                    .withLandsOnBattlefield(1, "Forest", 2)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Rakish Scoundrel").error shouldBe null
+                game.passPriority().error shouldBe null
+                game.passPriority().error shouldBe null
+                val bears = game.findPermanent("Grizzly Bears")!!
+                game.selectTargets(listOf(bears)).error shouldBe null
+
+                withClue("the entry fired the 'enters or is turned face up' trigger, and Strict Proctor saw it") {
+                    game.stackSourceNames() shouldBe listOf("Rakish Scoundrel", "Strict Proctor")
+                }
+                game.resolveStack()
+
+                withClue("no mana left for {2}, so the indestructible grant was countered") {
                     game.state.stack.isEmpty() shouldBe true
-                    game.getLifeTotal(2) shouldBe 20
+                    game.state.projectedState.hasKeyword(bears, Keyword.INDESTRUCTIBLE) shouldBe false
                 }
             }
 

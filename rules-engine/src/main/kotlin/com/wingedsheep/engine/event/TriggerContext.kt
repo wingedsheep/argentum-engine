@@ -86,6 +86,12 @@ data class TriggerContext(
      * reads this when there is no [targetingSourceEntityId] to look the controller up from.
      */
     val causeControllerId: EntityId? = null,
+    /**
+     * What caused this trigger, for the CR 603.3b meta-triggers (Firebender Ascension, Strict
+     * Proctor). Pinned when a trigger pauses for its targets so the resumed placement still stamps
+     * it on the `AbilityTriggeredEvent`; null everywhere else (direct placement passes it itself).
+     */
+    val abilityTriggerCause: com.wingedsheep.sdk.scripting.AbilityTriggerCause? = null,
     /** The object that dealt the triggering damage (`EffectTarget.DamageSource`); null outside damage triggers. */
     val damageSourceId: EntityId? = null,
     /**

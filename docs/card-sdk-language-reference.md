@@ -8649,11 +8649,13 @@ The shapes in this family, with their engine notes.
   ability is exposed as `EffectTarget.TriggeringEntity` (`AbilityTriggeredEvent` sets the triggering entity to the
   ability on the stack), so a `Effects.CopyTargetTriggeredAbility(EffectTarget.TriggeringEntity)` can copy it and
   reprompt for new targets (CR 707.10c). `sourceFilter` optionally restricts which permanent's ability counts;
-  `player` scopes whose ability it is. `cause = null` matches any triggered ability.
+  `player` scopes whose ability it is. Give a `cause`: only cause-stamped placements are re-detected in the second
+  CR 603.3b wave, so a null-cause pattern would miss most triggered abilities.
 - `Triggers.anyPlayer.permanentEnteringTriggersAbility()` — **a permanent entering causes a triggered ability to
   trigger** (Strict Proctor). `cause = AbilityTriggerCause.PERMANENT_ENTERING`: stamped on
-  enters-the-battlefield shaped triggers — a `ZoneChangeEvent` to the battlefield (the entering permanent's own ETB,
-  another permanent's "whenever a [...] enters", landfall) or a `PermanentsEnteredEvent` batch, the same
+  triggers an entry caused — a `ZoneChangeEvent` to the battlefield (the entering permanent's own ETB,
+  another permanent's "whenever a [...] enters", landfall), a `PermanentsEnteredEvent` batch, or a `Triggers.or`
+  trigger that fired through its enters atom ("enters or is turned face up" on entry, not on the face-up turn), the same
   classification Torpor Orb's `SuppressEntersTriggers` uses — wherever the ability's source is (a graveyard card's
   landfall counts under the current Oracle text). Both meta-triggers go on the stack in the second
   CR 603.3b wave, above the ability they saw, so

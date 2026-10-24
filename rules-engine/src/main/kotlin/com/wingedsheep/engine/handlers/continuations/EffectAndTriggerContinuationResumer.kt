@@ -167,7 +167,9 @@ class EffectAndTriggerContinuationResumer(
                 interveningIf = continuation.interveningIf,
                 isBackup = continuation.isBackup
             )
-            val stackResult = services.stackResolver.putTriggeredAbility(state, elseComponent, emptyList())
+            val stackResult = services.stackResolver.putTriggeredAbility(
+                state, elseComponent, emptyList(), triggerCause = continuation.triggerContext?.abilityTriggerCause
+            )
             if (stackResult.outcome !is Outcome.Done) return stackResult
             return checkForMore(stackResult.newState, stackResult.events.toList())
         }
@@ -223,7 +225,7 @@ class EffectAndTriggerContinuationResumer(
         )
 
         val stackResult = services.stackResolver.putTriggeredAbility(
-            state, abilityComponent, selectedTargets, alignedRequirements
+            state, abilityComponent, selectedTargets, alignedRequirements, triggerCause = continuation.triggerContext?.abilityTriggerCause
         )
 
         if (stackResult.outcome !is Outcome.Done) {
@@ -287,8 +289,8 @@ class EffectAndTriggerContinuationResumer(
             targetRequirements = alignedRequirements,
             totalDamage = total,
             interveningIf = continuation.interveningIf,
-            isBackup = continuation.isBackup
-        )
+            isBackup = continuation.isBackup,
+                    )
 
         return state.suspendForDecision(question, distributionContinuation, emptyList())
     }
@@ -325,7 +327,8 @@ class EffectAndTriggerContinuationResumer(
         )
 
         val stackResult = services.stackResolver.putTriggeredAbility(
-            state, abilityComponent, continuation.selectedTargets, continuation.targetRequirements
+            state, abilityComponent, continuation.selectedTargets, continuation.targetRequirements,
+            triggerCause = continuation.triggerContext?.abilityTriggerCause
         )
 
         if (stackResult.outcome !is Outcome.Done) {
