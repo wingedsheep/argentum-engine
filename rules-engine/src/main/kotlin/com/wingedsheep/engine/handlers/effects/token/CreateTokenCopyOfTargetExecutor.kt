@@ -93,8 +93,8 @@ class CreateTokenCopyOfTargetExecutor(
         val targetCard = targetContainer.copiableCardComponent()
             ?: return EffectResult.success(state)
 
-        val count = amountEvaluator.evaluate(state, effect.count, context)
-        if (count <= 0) return EffectResult.success(state)
+        val baseCount = amountEvaluator.evaluate(state, effect.count, context)
+        if (baseCount <= 0) return EffectResult.success(state)
 
         // Who creates (controls + owns) the token. Defaults to the effect's controller; a player
         // target (e.g. "Target player creates a token …" — Echocasting Symposium) puts the token
@@ -102,6 +102,13 @@ class CreateTokenCopyOfTargetExecutor(
         val controllerId = effect.controller
             ?.let { context.resolvePlayerTargets(it, state).firstOrNull() }
             ?: context.controllerId
+
+        // Token-count replacements (Doubling Season, Parallel Lives, Mondrak) apply to token copies
+        // exactly as to any other token creation, before a substitution gets a look — the order
+        // CreateTokenExecutor uses. Applied once here, never by the token-by-token resume.
+        val count = TokenCreationReplacementHelper.applyCountReplacements(
+            state, controllerId, baseCount, predicateEvaluator = amountEvaluator.predicates
+        )
 
         // Check for token creation replacement effects (e.g., Mirrormind Crown).
         // Mirrormind's replacement copies the equipped creature instead of this

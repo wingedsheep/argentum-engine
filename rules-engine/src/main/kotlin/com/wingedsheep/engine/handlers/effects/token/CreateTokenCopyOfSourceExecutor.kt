@@ -55,7 +55,14 @@ class CreateTokenCopyOfSourceExecutor(
         state: GameState,
         effect: CreateTokenCopyOfSourceEffect,
         context: EffectContext
-    ): EffectResult = createTokens(state, effect, context, context.controllerId, effect.count)
+    ): EffectResult = createTokens(
+        state, effect, context, context.controllerId,
+        // Token-count replacements (Doubling Season, Parallel Lives) apply to token copies too.
+        // Applied once here, never by the token-by-token resume that re-enters createTokens.
+        TokenCreationReplacementHelper.applyCountReplacements(
+            state, context.controllerId, effect.count, predicateEvaluator = predicateEvaluator
+        ),
+    )
 
     /**
      * Create [count] token copies of the effect's source. Split out of [execute] so the

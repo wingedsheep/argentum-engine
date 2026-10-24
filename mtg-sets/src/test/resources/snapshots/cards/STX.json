@@ -8733,6 +8733,178 @@
     ]
 }
 
+// Hofri Ghostforge
+{
+    "name": "Hofri Ghostforge",
+    "manaCost": "{3}{R}{W}",
+    "typeLine": "Legendary Creature — Dwarf Cleric",
+    "oracleText": "Spirits you control get +1/+1 and have trample and haste.\nWhenever another nontoken creature you control dies, exile it. If you do, create a token that's a copy of that creature, except it's a Spirit in addition to its other types and it has \"When this token leaves the battlefield, return the exiled card to its owner's graveyard.\"",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hofri Ghostforge:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "Entity",
+                                        "entity": "TriggeringEntity"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "gathered0",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Exile"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CreateTokenCopyOfTarget",
+                                "target": "TriggeringEntity",
+                                "exceptions": {
+                                    "addedSubtypes": [
+                                        "Spirit"
+                                    ],
+                                    "addedTriggeredAbilities": [
+                                        {
+                                            "id": "Hofri Ghostforge:1",
+                                            "trigger": {
+                                                "type": "ZoneChangeEvent",
+                                                "from": "Battlefield"
+                                            },
+                                            "effect": {
+                                                "type": "Composite",
+                                                "effects": [
+                                                    {
+                                                        "type": "GatherCards",
+                                                        "source": "FromLinkedExile",
+                                                        "storeAs": "gathered0"
+                                                    },
+                                                    {
+                                                        "type": "MoveCollection",
+                                                        "from": "gathered0",
+                                                        "destination": {
+                                                            "type": "ToZone",
+                                                            "zone": "Graveyard"
+                                                        }
+                                                    }
+                                                ]
+                                            },
+                                            "descriptionOverride": "When this token leaves the battlefield, return the exiled card to its owner's graveyard."
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "Entity",
+                                    "entity": "TriggeringEntity"
+                                },
+                                "storeAs": "gathered3"
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Collection",
+                                    "collection": "createdTokens"
+                                },
+                                "body": {
+                                    "type": "LinkCollectionToPermanent",
+                                    "from": "gathered3",
+                                    "permanent": "IterationEntity"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever another nontoken creature you control dies, exile it. If you do, create a token that's a copy of that creature, except it's a Spirit in addition to its other types and it has \"When this token leaves the battlefield, return the exiled card to its owner's graveyard.\""
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Spirit ctrl:you"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE",
+                "filter": {
+                    "baseFilter": "creature Spirit ctrl:you"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE",
+                "filter": {
+                    "baseFilter": "creature Spirit ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "192",
+        "rarity": "MYTHIC",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bd8deecf-eded-418b-ac4c-5c3e8f54e86d.jpg?1783927311",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If you can't exile the card, perhaps because another effect moved the card before the triggered ability started resolving, you won't create a token."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Hofri Ghostforge's last ability is linked to the ability it grants the Spirit token. If a replacement effect causes you to create more than one Spirit token with this effect, they will all have that ability, and the exiled card will be returned to the graveyard if any of them leaves the battlefield."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Each Spirit token you create refers only to the card you exile during the resolution of the ability that created that token. When it leaves the battlefield, you return only that card to your graveyard, not any other card exiled by Hofri."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If another creature enters the battlefield as a copy of the Spirit token or another effect creates a copy of the Spirit token, it will have the triggered ability granted by Hofri, but will not be linked to Hofri's ability and will not return the card to the graveyard when it leaves the battlefield."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "The copy uses the copiable values of the creature as it last existed on the battlefield before it died, not as it existed in the graveyard before it was exiled."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Honor Troll
 {
     "name": "Honor Troll",
