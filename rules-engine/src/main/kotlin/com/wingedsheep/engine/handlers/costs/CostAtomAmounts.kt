@@ -16,12 +16,13 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
 /**
  * The one place a [DynamicAmount] carried by a **cost atom** is turned into a number.
  *
- * A cost is priced *before* anything resolves, so it can't go through
- * [com.wingedsheep.engine.handlers.DynamicAmountEvaluator] — there is no `EffectContext` yet, only
- * the half-announced spell or ability the cost belongs to. What that half-announcement does carry
- * is exactly the two things a printed cost is ever priced from: the X the caster chose, and the
- * targets they announced (CR 601.2b–c, both settled before the total cost is determined at
- * 601.2f). Everything else evaluates to 0.
+ * A cost is priced *before* anything resolves, so there is no resolving `EffectContext` yet, only
+ * the half-announced spell or ability the cost belongs to. What that half-announcement carries is
+ * the X the caster chose and the targets they announced (CR 601.2b–c, both settled before the total
+ * cost is determined at 601.2f). The few amounts read off the payer's own state alone (a life cost's
+ * commander-identity count or count of the payer's objects) go through
+ * [com.wingedsheep.engine.handlers.DynamicAmountEvaluator] with a payer-only context. Everything
+ * else evaluates to 0.
  *
  * Before this existed the same `Fixed` / `XValue` `when` was hand-written in six places, which is
  * why the seventh shape — Urgent Necropsy's "collect evidence X, where X is the total mana value of

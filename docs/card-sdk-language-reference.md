@@ -586,7 +586,7 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   game state as it is paid — War Room's "Pay life equal to the number of colors in your commanders'
   color identity" is `Costs.PayLife(DynamicAmounts.commanderColorIdentityCount())`, and Hand of
   Vecna's "Equip—Pay 1 life for each card in your hand" is
-  `Costs.PayLife(DynamicAmount.Count(Player.You, Zone.HAND))` on an `isEquipAbility` activated
+  `Costs.PayLife(DynamicAmounts.cardsInYourHand())` on an `isEquipAbility` activated
   ability. The atom admits only a nonnegative `Fixed`, a `CommanderColorIdentityCount()` or a
   `Count(...)` for `Player.You` (amounts priced from the payer's state alone, no X or targets); every engine site prices it through `CostAtomAmounts.life` with the payer, so the
   legal-action enumerator, the activation validator and the payment charge the same number. Renders

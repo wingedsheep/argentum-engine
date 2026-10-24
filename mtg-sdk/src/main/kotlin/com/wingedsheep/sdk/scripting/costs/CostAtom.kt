@@ -78,7 +78,7 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
      * nonnegative [DynamicAmount.Fixed], or a [DynamicAmount.CommanderColorIdentityCount] or a
      * [DynamicAmount.Count] for `Player.You` (a cost is priced for its payer alone) — Hand of
      * Vecna's "Equip—Pay 1 life for each card in your hand" is
-     * `PayLife(DynamicAmount.Count(Player.You, Zone.HAND))`.
+     * `PayLife(DynamicAmounts.cardsInYourHand())`.
      */
     @SerialName("AtomPayLife")
     @Serializable
