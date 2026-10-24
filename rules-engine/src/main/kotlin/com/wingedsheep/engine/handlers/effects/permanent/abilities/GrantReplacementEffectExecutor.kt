@@ -43,8 +43,9 @@ class GrantReplacementEffectExecutor : EffectExecutor<GrantReplacementEffectEffe
         // battlefield permanent) may grant a *floating, controller-scoped* global replacement —
         // Malicious Eclipse's "if a creature an opponent controls would die this turn, exile it
         // instead". The zone-change redirect read path uses only the grant's controllerId + the
-        // replacement's filter (never its entityId), so anchoring to the caster is sufficient and the
-        // grant persists after the spell leaves. A grant aimed at a permanent that has left the
+        // replacement's filter for such a floating rider (only a `selfOnly` grant reads its
+        // entityId), so anchoring to the caster is sufficient and the grant persists after the
+        // spell leaves. A grant aimed at a permanent that has left the
         // battlefield is still meaningless, so only the source-spell case is allowed off-battlefield.
         if (!onBattlefield && targetId != context.sourceId) {
             return EffectResult.error(state, "Target is not on the battlefield")
