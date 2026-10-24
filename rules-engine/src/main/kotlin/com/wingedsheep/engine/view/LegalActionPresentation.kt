@@ -187,6 +187,12 @@ data class LegalActionInfo(
     val minDamagePerTarget: Int? = null,
     /** What the division divides when it isn't damage — "+1/+1 counter". Null means damage. */
     val distributionUnit: String? = null,
+    /**
+     * Which target requirement (index into the spell's requirements) the division is among, when it
+     * is scoped to one (Magma Opus divides its damage among its "any number of targets", not the two
+     * permanents it taps). Null means among every chosen target.
+     */
+    val distributionTargetGroup: Int? = null,
     val autoTapPreview: List<EntityId>? = null,
     val availableManaSources: List<ManaSourceInfo>? = null,
     /**

@@ -274,12 +274,17 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
       nextPhases = [{ type: 'escalateCost' }, ...nextPhases]
     }
 
-    // Dynamic phase injection: damage distribution after targeting with >1 targets
+    // Dynamic phase injection: damage distribution after targeting with >1 targets. A division
+    // scoped to one target requirement (Magma Opus) is among that requirement's targets only.
+    const dividedTargets =
+      result.type === 'targeting'
+        ? targetsOfGroup(result.selectedTargets, result.targetGroupCounts, actionInfo.distributionTargetGroup)
+        : []
     if (
       result.type === 'targeting' &&
       actionInfo.requiresDamageDistribution &&
       actionInfo.totalDamageToDistribute &&
-      result.selectedTargets.length > 1
+      dividedTargets.length > 1
     ) {
       // Spells read "Cast <name>", activated abilities "Activate <name>: …" — strip either verb so
       // the modal header names the source (Chandra, Flameshaper's −4 divides damage the same way
@@ -287,7 +292,7 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
       const cardName = actionInfo.description.replace(/^(Cast|Activate) /, '')
       const minPerTarget = actionInfo.minDamagePerTarget ?? 1
       const initialDistribution: Record<string, number> = {}
-      for (const targetId of result.selectedTargets) {
+      for (const targetId of dividedTargets) {
         initialDistribution[targetId] = minPerTarget
       }
 
@@ -304,7 +309,7 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
         actionInfo,
         action: mergedAction as CastSpellAction | ActivateAbilityAction,
         cardName,
-        targetIds: [...result.selectedTargets],
+        targetIds: [...dividedTargets],
         totalDamage: actionInfo.totalDamageToDistribute,
         minPerTarget,
         ...(actionInfo.distributionUnit ? { unit: actionInfo.distributionUnit } : {}),
@@ -356,4 +361,18 @@ function getStoreMethods(get: () => import('../types').GameStore): PipelineStore
     startTargeting: state.startTargeting,
     startDamageDistribution: state.startDamageDistribution,
   }
+}
+
+/**
+ * The targets a division is among: the slice of requirement [group]'s targets when the server
+ * scoped it to one ([LegalActionInfo.distributionTargetGroup]), else every chosen target.
+ */
+function targetsOfGroup(
+  selected: readonly EntityId[],
+  groupCounts: readonly number[] | undefined,
+  group: number | undefined,
+): EntityId[] {
+  if (group === undefined || groupCounts === undefined) return [...selected]
+  const start = groupCounts.slice(0, group).reduce((sum, n) => sum + n, 0)
+  return selected.slice(start, start + (groupCounts[group] ?? 0))
 }

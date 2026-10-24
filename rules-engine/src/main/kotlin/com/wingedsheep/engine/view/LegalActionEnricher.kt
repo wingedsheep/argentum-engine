@@ -145,6 +145,7 @@ class LegalActionEnricher(
             totalDamageToDistribute = action.totalDamageToDistribute,
             minDamagePerTarget = action.minDamagePerTarget,
             distributionUnit = action.distributionUnit,
+            distributionTargetGroup = action.distributionTargetGroup,
             autoTapPreview = action.autoTapPreview,
             availableManaSources = if (shouldExposeManaSources(action)) manaSourceInfos else null,
             eligibleRestrictedMana = eligibleRestrictedMana,

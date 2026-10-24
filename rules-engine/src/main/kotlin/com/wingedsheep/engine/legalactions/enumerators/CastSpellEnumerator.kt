@@ -743,6 +743,8 @@ class CastSpellEnumerator(
                 (division != null && !cardDef.manaCost.hasX && (totalDamageToDistribute ?: 0) > 0)
             val minDamagePerTarget = division?.takeIf { requiresDamageDistribution }?.let(AnnouncedDivision::minPerTarget)
             val distributionUnit = division?.takeIf { requiresDamageDistribution }?.let(AnnouncedDivision::counterUnit)
+            val distributionTargetGroup = division?.takeIf { requiresDamageDistribution }
+                ?.let { AnnouncedDivision.groupIndex(it, cardDef.script.targetRequirements) }
 
             // Compute alternative cost info for this spell (Jodah-style GrantAlternativeCastingCost).
             // The grant picked above is the affordable one, so its non-mana half is payable too and
@@ -1126,6 +1128,7 @@ class CastSpellEnumerator(
                                 totalDamageToDistribute = totalDamageToDistribute,
                                 minDamagePerTarget = minDamagePerTarget,
                                 distributionUnit = distributionUnit,
+                                distributionTargetGroup = distributionTargetGroup,
                                 autoTapPreview = autoTapPreview
                             ))
                         }
@@ -1141,6 +1144,7 @@ class CastSpellEnumerator(
                                 totalDamageToDistribute = totalDamageToDistribute,
                                 minDamagePerTarget = minDamagePerTarget,
                                 distributionUnit = distributionUnit,
+                                distributionTargetGroup = distributionTargetGroup,
                                 autoTapPreview = altCostInfo.autoTapPreview
                             ))
                         }
@@ -1156,6 +1160,7 @@ class CastSpellEnumerator(
                                 totalDamageToDistribute = totalDamageToDistribute,
                                 minDamagePerTarget = minDamagePerTarget,
                                 distributionUnit = distributionUnit,
+                                distributionTargetGroup = distributionTargetGroup,
                                 autoTapPreview = selfAltCostResult.autoTapPreview
                             ))
                         }
@@ -1189,6 +1194,7 @@ class CastSpellEnumerator(
                                 totalDamageToDistribute = totalDamageToDistribute,
                                 minDamagePerTarget = minDamagePerTarget,
                                 distributionUnit = distributionUnit,
+                                distributionTargetGroup = distributionTargetGroup,
                                 autoTapPreview = freeCastResult.autoTapPreview
                             ))
                         }
@@ -1204,6 +1210,7 @@ class CastSpellEnumerator(
                                 totalDamageToDistribute = totalDamageToDistribute,
                                 minDamagePerTarget = minDamagePerTarget,
                                 distributionUnit = distributionUnit,
+                                distributionTargetGroup = distributionTargetGroup,
                                 autoTapPreview = path.autoTapPreview
                             ))
                         }
@@ -1238,6 +1245,7 @@ class CastSpellEnumerator(
                                 totalDamageToDistribute = totalDamageToDistribute,
                                 minDamagePerTarget = minDamagePerTarget,
                                 distributionUnit = distributionUnit,
+                                distributionTargetGroup = distributionTargetGroup,
                                 autoTapPreview = autoTapPreview
                             ))
                         }
@@ -1264,6 +1272,7 @@ class CastSpellEnumerator(
                                 totalDamageToDistribute = totalDamageToDistribute,
                                 minDamagePerTarget = minDamagePerTarget,
                                 distributionUnit = distributionUnit,
+                                distributionTargetGroup = distributionTargetGroup,
                                 autoTapPreview = altCostInfo.autoTapPreview
                             ))
                         }
@@ -1290,6 +1299,7 @@ class CastSpellEnumerator(
                                 totalDamageToDistribute = totalDamageToDistribute,
                                 minDamagePerTarget = minDamagePerTarget,
                                 distributionUnit = distributionUnit,
+                                distributionTargetGroup = distributionTargetGroup,
                                 autoTapPreview = selfAltCostResult.autoTapPreview
                             ))
                         }
@@ -1356,6 +1366,7 @@ class CastSpellEnumerator(
                                 totalDamageToDistribute = totalDamageToDistribute,
                                 minDamagePerTarget = minDamagePerTarget,
                                 distributionUnit = distributionUnit,
+                                distributionTargetGroup = distributionTargetGroup,
                                 autoTapPreview = freeCastResult.autoTapPreview
                             ))
                         }
@@ -1382,6 +1393,7 @@ class CastSpellEnumerator(
                                 totalDamageToDistribute = totalDamageToDistribute,
                                 minDamagePerTarget = minDamagePerTarget,
                                 distributionUnit = distributionUnit,
+                                distributionTargetGroup = distributionTargetGroup,
                                 autoTapPreview = path.autoTapPreview
                             ))
                         }

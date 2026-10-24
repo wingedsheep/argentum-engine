@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.scripting.effects.DistributeCountersAmongTargetsEffec
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
+import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
@@ -50,8 +51,36 @@ object AnnouncedDivision {
     fun ofSpell(spellEffect: Effect?): Effect? = when {
         spellEffect == null -> null
         spellEffect is DividedDamageEffect -> spellEffect
-        else -> of(spellEffect)?.takeIf { it is DistributeCountersAmongTargetsEffect && it.minPerTarget >= 1 }
+        else -> of(spellEffect)?.takeIf {
+            // Divided damage inside a sequence is announced when it is scoped to one of the
+            // spell's target requirements (Magma Opus: "… divided as you choose among any number of
+            // targets. Tap two target permanents. …"); an unscoped one keeps dividing at resolution.
+            (it is DividedDamageEffect && it.among != null) ||
+                (it is DistributeCountersAmongTargetsEffect && it.minPerTarget >= 1)
+        }
     }
+
+    /**
+     * Which of the announced targets [division] divides among: the flat-list slice of the one
+     * requirement it is scoped to ([DividedDamageEffect.among]), given how many targets each of
+     * [requirements] holds ([groupCounts]) — or every target when it isn't scoped.
+     */
+    fun <T> dividedTargets(
+        division: Effect,
+        requirements: List<TargetRequirement>,
+        groupCounts: List<Int>,
+        targets: List<T>
+    ): List<T> {
+        val group = groupIndex(division, requirements) ?: return targets
+        val start = groupCounts.take(group).sum()
+        return targets.drop(start).take(groupCounts.getOrElse(group) { 0 })
+    }
+
+    /** The index among [requirements] of the requirement [division] is scoped to; null when it divides among every target. */
+    fun groupIndex(division: Effect, requirements: List<TargetRequirement>): Int? =
+        (division as? DividedDamageEffect)?.among
+            ?.let { id -> requirements.indexOfFirst { it.id == id } }
+            ?.takeIf { it >= 0 }
 
     /**
      * The amount [division] divides, evaluated now — a dynamic total reads [context]'s X.

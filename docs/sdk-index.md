@@ -820,7 +820,7 @@ Families:
 - `DistributeCountersAmongTargetsEffect(totalCounters: DynamicAmount, counterType: CounterType, minPerTarget: Int)` — Distribute a number of counters among the targets from context.
 - `DistributeCountersFromSelfEffect(counterType: CounterType)` — Distribute any number of counters from this creature onto other creatures.
 - `DistributeDamageAmongCollectionEffect(amount: DynamicAmount, collectionName: String, damageSource: EffectTarget, chooser: Chooser)` — damageSource deals amount damage divided among the permanents in pipeline collection collectionName — **not targets** — with the division made at resolution by chooser.
-- `DividedDamageEffect(totalDamage: Int, minTargets: Int, maxTargets: Int, dynamicTotal: DynamicAmount?)` — Deal damage to multiple targets, dividing the total as you choose.
+- `DividedDamageEffect(totalDamage: Int, minTargets: Int, maxTargets: Int, dynamicTotal: DynamicAmount?, among: String?)` — Deal damage to multiple targets, dividing the total as you choose.
 - `DoubleCountersEffect(counterType: CounterType?, target: EffectTarget)` — Double the number of counters already on a target (one-shot).
 - `DoubleDamageToPlayerEffect(target: EffectTarget, duration: Duration)` — Install a duration-bounded replacement effect that doubles *all* damage — from any source, combat or noncombat — that would be dealt to a chosen player and to any permanent that player controls (CR…
 - `DrainLifeEffect(amount: DynamicAmount, from: EffectTarget, to: EffectTarget)` — Life drain composite: each player in from loses amount life, then to gains life equal to the total life actually lost this way ("Each opponent loses X life.

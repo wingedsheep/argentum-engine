@@ -338,17 +338,26 @@ object Effects {
      * @param total Fixed total to divide. Ignored when [dynamicTotal] is supplied.
      * @param dynamicTotal Total computed at resolution instead ("X damage …, where X is the number
      *        of lands you control" — Ureni, the Song Unending).
+     * @param among The handles of the one target requirement the damage is divided among, when the
+     *        spell targets more than once (Magma Opus: `among = targets(Targets.Any.withCount(4)...)`).
+     *        Null divides among every target.
      */
     fun DividedDamage(
         total: Int = 0,
         minTargets: Int = 1,
         maxTargets: Int = 3,
-        dynamicTotal: DynamicAmount? = null
+        dynamicTotal: DynamicAmount? = null,
+        among: List<EffectTarget.BoundVariable>? = null
     ): Effect = DividedDamageEffect(
         totalDamage = total,
         minTargets = minTargets,
         maxTargets = maxTargets,
-        dynamicTotal = dynamicTotal
+        dynamicTotal = dynamicTotal,
+        among = among?.let { handles ->
+            val ids = handles.map { it.name.substringBefore('[') }.toSet()
+            require(ids.size == 1) { "DividedDamage(among = ...) takes the handles of exactly one target requirement" }
+            ids.single()
+        }
     )
 
     /**

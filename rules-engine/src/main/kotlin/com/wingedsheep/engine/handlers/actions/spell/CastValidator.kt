@@ -269,7 +269,7 @@ internal class CastValidator(
         validateOptionalCostKeywords(state, action, cardComponent, cardDef, source)?.let { return it }
         validateTotalCost(state, action, cardComponent, cardDef, source)?.let { return it }
         validateTargets(state, action, cardDef, source)?.let { return it }
-        validateDamageDistribution(state, action, cardDef)?.let { return it }
+        validateDamageDistribution(state, action, cardDef, source)?.let { return it }
         validateGraveyardLifeCost(state, action)?.let { return it }
         return validateTargetLifeTaxes(state, action)
     }
@@ -965,7 +965,7 @@ internal class CastValidator(
      * that reads a mana-paid {X} isn't offered at cast ([CastSpellEnumerator]) — and then divides at
      * resolution through a `DistributeDecision`, like an activated ability's.
      */
-    private fun validateDamageDistribution(state: GameState, action: CastSpell, cardDef: CardDefinition?): String? {
+    private fun validateDamageDistribution(state: GameState, action: CastSpell, cardDef: CardDefinition?, source: CastSource): String? {
         val spellEffect = if (action.declaredCostSlot != null && cardDef?.script?.kickerSpellEffect != null) {
             cardDef.script.kickerSpellEffect
         } else if (cardDef != null && isCleaveCast(action, cardDef) && cardDef.script.cleaveSpellEffect != null) {
@@ -985,13 +985,26 @@ internal class CastValidator(
         }
         val isDamage = division is DividedDamageEffect
         val unit = if (isDamage) "damage" else "counters"
+        // A division scoped to one target requirement (Magma Opus) is announced among that
+        // requirement's targets only — the slice of the flat list its validated binding gives it.
+        // The bound requirements open with the cast variant's own (kicked or not), so the
+        // requirement's index there is its index in the binding.
+        val requirements = if (action.declaredCostSlot != null && cardDef.script.kickerTargetRequirements.isNotEmpty()) {
+            cardDef.script.kickerTargetRequirements
+        } else cardDef.script.targetRequirements
+        val dividedTargets = if (AnnouncedDivision.groupIndex(division, requirements) == null) {
+            action.targets
+        } else {
+            val counts = targetBinding(state, action, cardDef, source.transformedFace)?.counts.orEmpty()
+            AnnouncedDivision.dividedTargets(division, requirements, counts, action.targets)
+        }
         if (distribution == null) {
             // A counter division submitted without a split divides at resolution, as an activation's does.
-            return if (isDamage && action.targets.size > 1) {
+            return if (isDamage && dividedTargets.size > 1) {
                 "Damage distribution required for this spell when targeting multiple creatures"
             } else null
         }
-        if (distribution.keys != action.targets.map { it.toEntityId() }.toSet()) {
+        if (distribution.keys != dividedTargets.map { it.toEntityId() }.toSet()) {
             return "Distribution targets must match chosen targets"
         }
         val context = EffectContext(sourceId = action.cardId, controllerId = action.playerId, xValue = action.xValue)

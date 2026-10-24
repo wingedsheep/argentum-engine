@@ -1588,7 +1588,7 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   If either fighter is no longer a creature on the battlefield when the fight happens, neither deals
   damage (CR 701.14b) and the excess variable is 0 — this covers a `Self` fighter ("it fights"), which
   no target re-check removes.
-- `Effects.DividedDamage(total, minTargets, maxTargets, dynamicTotal?)` — "N damage divided as you
+- `Effects.DividedDamage(total, minTargets, maxTargets, dynamicTotal?, among?)` — "N damage divided as you
   choose among target ..." The targets come from the ability's target requirement; pair with
   `TargetObject(filter = TargetFilter.Creature, count = count, minCount = minCount)` (Forked Lightning, Skirk Volcanist) or, for "any number of target",
   a `TargetObject(unlimited = true, dynamicMaxCount = ..., filter = ...)`. Set `dynamicTotal` (a
@@ -1600,6 +1600,17 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   Effects.SacrificeOwn(filter = GameObjectFilter.Artifact), then = Effects.DividedDamage(total = 4,
   minTargets = 0, maxTargets = 4))` with `AnyTarget(count = 4, minCount = 0, optional = true)`; the
   announced split is dealt only if the gate opens.
+
+  **One target word of several** (Magma Opus: "deals 4 damage divided as you choose among any number
+  of targets. Tap two target permanents. …"): pass the handles of the divided requirement as `among`
+  — `val damaged = targets(AnyTarget(count = 4, minCount = 0)); val (a, b) = targets(TargetFilter.Permanent,
+  count = 2); effect = Effects.DividedDamage(total = 4, minTargets = 0, maxTargets = 4, among = damaged)
+  then Effects.Tap(a) then Effects.Tap(b) then …`. The division is then announced as the spell is cast
+  even though it sits inside a sequence, among that requirement's targets only: the legal action names
+  the group (`distributionTargetGroup`, an index into the spell's requirements), the client divides
+  among that group's picks, and the validator checks the split against that slice of the targets.
+  The same object may be chosen for both target words. Without `among`, a divided step inside a
+  sequence divides among every target at resolution, as before.
 
   **A total fixed "as you activate this ability"** (Lukka, Bound to Ruin's −4: "X damage divided …,
   where X is the greatest power among creatures you control as you activate this ability") is a

@@ -218,6 +218,12 @@ data class DamageToTargetCantBePreventedThisTurnEffect(
  * The set of targets among which the total is divided comes from the ability's target requirement
  * (e.g. `TargetObject(unlimited = true, filter = CreatureOrPlaneswalker opponent controls)`), so
  * "any number of target" forms divide the total only among the targets actually chosen.
+ *
+ * [among] scopes the division to one target requirement of a spell or ability that targets more
+ * than once — the binding id of that requirement (what the DSL's `targets(...)` mints). Magma Opus:
+ * "deals 4 damage divided as you choose among any number of targets. Tap two target permanents." —
+ * the 4 damage is divided among the first requirement's targets only, never the tapped permanents.
+ * Null divides among every target of the effect, the historical reading.
  */
 @SerialName("DividedDamage")
 @Serializable
@@ -225,7 +231,8 @@ data class DividedDamageEffect(
     val totalDamage: Int,
     val minTargets: Int = 1,
     val maxTargets: Int = 3,
-    val dynamicTotal: com.wingedsheep.sdk.scripting.values.DynamicAmount? = null
+    val dynamicTotal: com.wingedsheep.sdk.scripting.values.DynamicAmount? = null,
+    val among: String? = null
 ) : Effect {
     override val description: String =
         if (dynamicTotal != null)

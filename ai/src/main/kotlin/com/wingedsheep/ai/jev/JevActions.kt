@@ -62,7 +62,7 @@ internal class JevActions(
             chosen
         }
         val modeTargets = modes.map { targets(it.targetRequirements, x) }
-        val targets = if (modal != null) modeTargets.flatten() else targets(
+        val targetGroups = if (modal != null) modeTargets else targetGroups(
             info.targetRequirements ?: if (info.requiresTargets) listOf(LegalActionTargetInfo(
                 index = 0, description = info.targetDescription ?: "Target", minTargets = info.minTargets,
                 maxTargets = info.targetCount, validTargets = info.validTargets.orEmpty(),
@@ -71,18 +71,24 @@ internal class JevActions(
                 xConstrainsPower = info.xConstrainsTargetPower, xConstrainsCount = info.xConstrainsTargetCount,
                 xConstrainsCountExactly = info.xConstrainsTargetCountExactly,
             )) else emptyList(), x)
+        val targets = targetGroups.flatten()
         val costs = listOfNotNull(info.additionalCostInfo) + info.additionalCostInfo?.alsoRequired.orEmpty() + modes.mapNotNull { it.additionalCostInfo } +
             List((modes.size - 1).coerceAtLeast(0)) { modal?.additionalCostPerExtraMode }.filterNotNull()
         val payment = costs.map { cost(it, x.takeIf { action is CastSpell }) }.reduceOrNull(::combine)
         val manaPayment = manaPayment(info)
         val alternative = alternative(info)
         val damage = if (info.requiresDamageDistribution && info.totalDamageToDistribute != null) {
-            JevDecisions(q, label).distribute("Divide damage", targets.map(::targetId), info.totalDamageToDistribute!!, info.minDamagePerTarget ?: 1)
+            // A division scoped to one requirement (Magma Opus) is among that requirement's targets only.
+            val divided = info.distributionTargetGroup?.let { targetGroups.getOrNull(it).orEmpty() } ?: targets
+            if (info.distributionTargetGroup != null && divided.size < 2) null
+            else JevDecisions(q, label).distribute("Divide damage", divided.map(::targetId), info.totalDamageToDistribute!!, info.minDamagePerTarget ?: 1)
         } else null
+        val groupCounts = targetGroups.map { it.size }.takeIf { modal == null && info.distributionTargetGroup != null }
         return when (action) {
             is CastSpell -> action.copy(targets = targets.ifEmpty { action.targets }, xValue = x ?: action.xValue,
                 additionalCostPayment = payment ?: action.additionalCostPayment, paymentStrategy = manaPayment,
                 alternativePayment = alternative.takeUnless { it.isEmpty } ?: action.alternativePayment, damageDistribution = damage,
+                targetGroupCounts = groupCounts ?: action.targetGroupCounts,
                 chosenModes = if (modal == null) action.chosenModes else modes.map { it.index },
                 modeTargetsOrdered = if (modal == null) action.modeTargetsOrdered else modeTargets)
             is ActivateAbility -> action.copy(targets = targets.ifEmpty { action.targets }, xValue = x ?: action.xValue,
@@ -98,8 +104,13 @@ internal class JevActions(
         "Choose creatures with total power at least ${info.tapForPowerRequired}",
         info.tapForPowerCreatures.orEmpty().map { it.entityId })
 
-    private fun targets(requirements: List<LegalActionTargetInfo>, x: Int?): List<ChosenTarget> {
+    private fun targets(requirements: List<LegalActionTargetInfo>, x: Int?): List<ChosenTarget> =
+        targetGroups(requirements, x).flatten()
+
+    /** The chosen targets, one group per requirement. */
+    private fun targetGroups(requirements: List<LegalActionTargetInfo>, x: Int?): List<List<ChosenTarget>> {
         val chosenIds = mutableListOf<EntityId>()
+        val groups = mutableListOf<List<ChosenTarget>>()
         for (r in requirements) {
             val candidates = r.validTargetsByPrefix?.get(chosenIds.joinToString(","))
                 ?: if (r.validTargetsByPrefix == null) r.validTargets else emptyList()
@@ -111,9 +122,11 @@ internal class JevActions(
             }
             val max = if (r.xConstrainsCount && x != null) x else r.maxTargets
             val min = if (r.xConstrainsCountExactly && x != null) x else minOf(r.minTargets, max)
-            chosenIds += cards(r.description, options, min, max)
+            val picked = cards(r.description, options, min, max)
+            chosenIds += picked
+            groups += picked.map(::target)
         }
-        return chosenIds.map(::target)
+        return groups
     }
 
     private fun target(id: EntityId): ChosenTarget {

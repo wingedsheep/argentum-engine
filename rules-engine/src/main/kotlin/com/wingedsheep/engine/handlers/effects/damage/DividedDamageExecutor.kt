@@ -43,8 +43,14 @@ class DividedDamageExecutor(
         effect: DividedDamageEffect,
         context: EffectContext
     ): EffectResult {
-        // Get the targets from context
-        val targets = context.targets.map { it.toEntityId() }
+        // The targets the damage is divided among: one requirement's when the effect is scoped to
+        // it (Magma Opus — never the permanents it taps), else every target of the effect. Named
+        // targets are bound from the 608.2b-aligned list, so a dropped target is simply absent.
+        val targets = effect.among?.let { id ->
+            context.pipeline.namedTargets
+                .filterKeys { it == id || it.startsWith("$id[") }
+                .values.map { it.toEntityId() }.distinct()
+        } ?: context.targets.map { it.toEntityId() }
 
         // The total is fixed unless a dynamicTotal is supplied, which is evaluated at resolution
         // (e.g. Ureni — "X is the number of lands you control").
