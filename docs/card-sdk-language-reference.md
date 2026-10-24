@@ -3493,6 +3493,9 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   A dynamic mana-value bound (`manaValueEqualsDynamic` / `ManaValueAtMostDynamic`) is locked in as a literal when
   the effect resolves (CR 608.2h) — **Living Breakthrough**: `Triggers.you.casts()` →
   `CantCastSpells(PlayerRef(EachOpponent), UntilYourNextTurn, Any.manaValueEqualsDynamic(DynamicAmounts.triggeringManaValue()))`.
+  A chosen card name (`Any.namedFromVariable(slot)`, i.e. `NameEqualsChosen`) is frozen the same way into a
+  literal `NameEquals` — **Academic Probation**: `chooseCardName(pool = CardNamePool.NONLAND)` →
+  `CantCastSpells(PlayerRef(EachOpponent), UntilYourNextTurn, Any.namedFromVariable(name))`.
   A mana-value ban reads the X chosen for an `{X}` spell (CR 202.3e): the offer stays up unless the ban holds at
   every X, and validation rejects a banned X.
   Use characteristic filters independent of the casting process, such as type, subtype, color or mana value.

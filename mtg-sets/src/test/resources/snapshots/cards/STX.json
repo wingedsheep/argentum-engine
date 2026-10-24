@@ -134,6 +134,139 @@
     ]
 }
 
+// Academic Probation
+{
+    "name": "Academic Probation",
+    "manaCost": "{1}{W}",
+    "typeLine": "Sorcery — Lesson",
+    "oracleText": "Choose one —\n• Choose a nonland card name. Opponents can't cast spells with the chosen name until your next turn.\n• Choose target nonland permanent. Until your next turn, it can't attack or block, and its activated abilities can't be activated.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ChooseOption",
+                                "optionType": "CARD_NAME",
+                                "storeAs": "cardName0",
+                                "prompt": "Choose a nonland card name",
+                                "cardNamePool": "NONLAND"
+                            },
+                            {
+                                "type": "CantCastSpells",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "EachOpponent"
+                                },
+                                "duration": "UntilYourNextTurn",
+                                "spellFilter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "NameEqualsChosen",
+                                            "variableName": "cardName0"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Choose a nonland card name. Opponents can't cast spells with the chosen name until your next turn"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CantAttack",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "duration": "UntilYourNextTurn"
+                            },
+                            {
+                                "type": "CantBlockTargetCreatures",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "duration": "UntilYourNextTurn"
+                            },
+                            {
+                                "type": "GrantStaticAbility",
+                                "ability": {
+                                    "type": "PreventActivatedAbilities",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsPermanent"
+                                        ],
+                                        "statePredicates": [
+                                            "IsSource"
+                                        ]
+                                    }
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "duration": "UntilYourNextTurn"
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "nonland permanent"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Choose target nonland permanent. Until your next turn, it can't attack or block, and its activated abilities can't be activated"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "RARE",
+        "artist": "Cristi Balanescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/05521edf-f47f-4e7a-aec5-cdc4ae7368c2.jpg?1783927395",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "For the first mode, no one can cast spells between the time a card is named and the time that Academic Probation's effect starts to apply."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Academic Probation is a sorcery, but in some unusual cases it may be cast in response to other spells. Spells with the chosen name that somehow happen to already be on the stack when Academic Probation resolves will not be affected."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Although spells with the chosen name can't be cast, a card with that name can still be put onto the battlefield by another effect (if it's a permanent card)."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "You can name either face of a modal double-faced card, but not both, and you can name either half of a split card, but not both. Opponents may still cast the face or half you didn't name."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If you target a noncreature permanent with the second mode and it later becomes a creature, that creature still won't be able to attack or block until your next turn."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Activated abilities contain a colon. They're generally written \"[Cost]: [Effect].\" Some keyword abilities (such as equip) are activated abilities and will have a colon in their reminder text. Triggered abilities (starting with \"when,\" \"whenever,\" or \"at\") are unaffected."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Access Tunnel
 {
     "name": "Access Tunnel",

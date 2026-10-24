@@ -22,7 +22,9 @@ import kotlin.reflect.KClass
  * The ban is read at every later cast, long after this resolution's context is gone, so a
  * dynamic mana-value bound in its filter is locked in now (CR 608.2h): Living Breakthrough's
  * "spells with the same mana value as that spell" fixes the triggering spell's mana value when
- * the trigger resolves.
+ * the trigger resolves. A chosen card name is frozen the same way: Academic Probation's
+ * "opponents can't cast spells with the chosen name" reads the name out of the pipeline now, since
+ * a later cast check has no pipeline to read it from.
  */
 class CantCastSpellsExecutor(
     private val amounts: DynamicAmountEvaluator
@@ -80,6 +82,8 @@ class CantCastSpellsExecutor(
                 CardPredicate.ManaValueEquals(amounts.evaluate(state, predicate.amount, context))
             is CardPredicate.ManaValueAtMostDynamic ->
                 CardPredicate.ManaValueAtMost(amounts.evaluate(state, predicate.amount, context))
+            is CardPredicate.NameEqualsChosen ->
+                context.pipeline.chosenValues[predicate.variableName]?.let(CardPredicate::NameEquals) ?: predicate
             is CardPredicate.And -> CardPredicate.And(predicate.predicates.map { lockIn(it, state, context) })
             is CardPredicate.Or -> CardPredicate.Or(predicate.predicates.map { lockIn(it, state, context) })
             is CardPredicate.Not -> CardPredicate.Not(lockIn(predicate.predicate, state, context))
