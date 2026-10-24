@@ -49,6 +49,15 @@ enum class ExploreReveal { ANY, LAND, NONLAND }
 enum class TapSymbolInCost { WITH, WITHOUT }
 
 /**
+ * What made a triggered ability trigger — the cause axis of [EventPattern.AbilityTriggeredEvent].
+ *
+ * - [ATTACK] — its source creature attacking ("whenever this creature attacks"; Firebender Ascension).
+ * - [PERMANENT_ENTERING] — a permanent entering the battlefield (Strict Proctor).
+ */
+@Serializable
+enum class AbilityTriggerCause { ATTACK, PERMANENT_ENTERING }
+
+/**
  * Represents a game event type used by both replacement effects and triggered abilities.
  *
  * This is compositional - events are specified by combining an event type
@@ -2949,14 +2958,19 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * [player] scopes whose triggered ability counts (its controller): [Player.You] for your own,
      * [Player.EachOpponent] for an opponent's, etc.
      *
-     * [requireAttackCause] narrows to the Firebender Ascension clause "a creature you control
-     * attacking causes a triggered ability of that creature to trigger": the ability must be a
-     * per-attacker "whenever this creature attacks" ability (a SELF-bound [AttackEvent]) whose own
-     * source creature was just declared as an attacker. The engine stamps `causedByAttack` on the
-     * emitted `AbilityTriggeredEvent` when it puts such an ability on the stack; a non-attack
-     * trigger (an ETB, a dies, a "deals combat damage") never matches. The triggering ability is
-     * exposed as the triggering entity, so a copy effect can target it via
-     * [com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity].
+     * [cause] narrows by what made the ability trigger (CR 603.3b's "abilities that trigger on
+     * another ability triggering"); null = any triggered ability. The engine stamps the cause on
+     * the emitted `AbilityTriggeredEvent` when it puts the ability on the stack:
+     *  - [AbilityTriggerCause.ATTACK] — Firebender Ascension's "a creature you control attacking
+     *    causes a triggered ability of that creature to trigger": a per-attacker "whenever this
+     *    creature attacks" ability (a SELF-bound [AttackEvent]) of the declared attacker. A
+     *    non-attack trigger (an ETB, a dies, a "deals combat damage") never matches.
+     *  - [AbilityTriggerCause.PERMANENT_ENTERING] — Strict Proctor's "a permanent entering causes a
+     *    triggered ability to trigger": an enters-the-battlefield shaped trigger (a [ZoneChangeEvent]
+     *    to the battlefield, or a [PermanentsEnteredEvent] batch) — the entering permanent's own,
+     *    another permanent's "whenever a [...] enters", or a graveyard card's landfall.
+     * The triggering ability is exposed as the triggering entity, so a copy or counter effect
+     * reaches it via [com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity].
      *
      * [sourceFilter] optionally restricts which permanent the triggered ability must belong to.
      * Null = any source (the [player] scope alone applies).
@@ -2965,14 +2979,16 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     @Serializable
     data class AbilityTriggeredEvent(
         val player: Player = Player.You,
-        val requireAttackCause: Boolean = false,
+        val cause: AbilityTriggerCause? = null,
         val sourceFilter: GameObjectFilter? = null
     ) : EventPattern {
         override val description: String = buildString {
-            if (requireAttackCause) {
+            if (cause == AbilityTriggerCause.ATTACK) {
                 append("a creature ")
                 append(player.description)
                 append(" control attacking causes a triggered ability of that creature to trigger")
+            } else if (cause == AbilityTriggerCause.PERMANENT_ENTERING) {
+                append("a permanent entering causes a triggered ability to trigger")
             } else {
                 append(player.description)
                 append(" put a triggered ability ")

@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.event
 
+import com.wingedsheep.sdk.scripting.AbilityTriggerCause
 import com.wingedsheep.engine.mechanics.targeting.withTargetConstraints
 import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.handlers.DependentTargetSelection
@@ -605,7 +606,7 @@ class TriggerProcessor(
             stateTriggerAbilityId = ability.id.takeIf { ability.trigger == EventPattern.StateConditionMetEvent }
         )
 
-        val causedByAttack = isAttackCausedTrigger(trigger)
+        val triggerCause = triggerCauseOf(trigger)
         val outerRequirements = listOfNotNull(ability.targetRequirement)
 
         // CR 603.3c / 700.2b — a modal triggered ability's modes are announced as the ability is
@@ -628,14 +629,14 @@ class TriggerProcessor(
                 modal = modal,
                 selectedModeIndices = emptyList(),
                 availableIndices = null,
-                causedByAttack = causedByAttack
+                triggerCause = triggerCause
             )
         }
 
         return stackResolver.putTriggeredAbility(
             state, abilityComponent, targets,
             targetRequirements = outerRequirements,
-            causedByAttack = causedByAttack
+            triggerCause = triggerCause
         )
     }
 
@@ -698,7 +699,7 @@ class TriggerProcessor(
         modal: ModalEffect,
         selectedModeIndices: List<Int>,
         availableIndices: List<Int>?,
-        causedByAttack: Boolean
+        triggerCause: AbilityTriggerCause?
     ): ExecutionResult {
         val (chooseCount, minChooseCount) = effectiveChooseCounts(state, ability, modal)
 
@@ -722,7 +723,7 @@ class TriggerProcessor(
             }
             return presentTriggerModalTargetDecision(
                 state, ability, outerTargets, outerTargetRequirements,
-                modal.modes, selectedModeIndices, emptyList(), currentOrdinal = 0, causedByAttack,
+                modal.modes, selectedModeIndices, emptyList(), currentOrdinal = 0, triggerCause,
                 recordChosenModesOnSource = modal.excludePreviouslyChosenModes,
                 recordChosenModesThisTurn = modal.excludeModesChosenThisTurn
             )
@@ -771,7 +772,7 @@ class TriggerProcessor(
             availableIndices = candidateIndices,
             selectedModeIndices = selectedModeIndices,
             doneOptionOffered = doneOffered,
-            causedByAttack = causedByAttack,
+            triggerCause = triggerCause,
             recordChosenModesOnSource = modal.excludePreviouslyChosenModes,
             recordChosenModesThisTurn = modal.excludeModesChosenThisTurn
         )
@@ -794,7 +795,7 @@ class TriggerProcessor(
         chosenModeIndices: List<Int>,
         resolvedModeTargets: List<List<com.wingedsheep.engine.state.components.stack.ChosenTarget>>,
         currentOrdinal: Int,
-        causedByAttack: Boolean,
+        triggerCause: AbilityTriggerCause?,
         recordChosenModesOnSource: Boolean,
         recordChosenModesThisTurn: Boolean,
         resolvedModeTargetGroupCounts: List<List<Int>> = emptyList(),
@@ -873,7 +874,7 @@ class TriggerProcessor(
                 resolvedModeTargets = targetsAccum,
                 resolvedModeTargetGroupCounts = countsAccum,
                 currentOrdinal = ordinal,
-                causedByAttack = causedByAttack,
+                triggerCause = triggerCause,
                 recordChosenModesOnSource = recordChosenModesOnSource,
                 recordChosenModesThisTurn = recordChosenModesThisTurn
             )
@@ -883,7 +884,7 @@ class TriggerProcessor(
 
         return finalizeModalTrigger(
             state, ability, outerTargets, outerTargetRequirements,
-            modes, chosenModeIndices, targetsAccum, causedByAttack,
+            modes, chosenModeIndices, targetsAccum, triggerCause,
             recordChosenModesOnSource, recordChosenModesThisTurn, countsAccum
         )
     }
@@ -903,7 +904,7 @@ class TriggerProcessor(
         modes: List<com.wingedsheep.sdk.scripting.effects.Mode>,
         chosenModeIndices: List<Int>,
         resolvedModeTargets: List<List<com.wingedsheep.engine.state.components.stack.ChosenTarget>>,
-        causedByAttack: Boolean,
+        triggerCause: AbilityTriggerCause?,
         recordChosenModesOnSource: Boolean,
         recordChosenModesThisTurn: Boolean,
         resolvedModeTargetGroupCounts: List<List<Int>>,
@@ -949,7 +950,7 @@ class TriggerProcessor(
         return stackResolver.putTriggeredAbility(
             stateWithMemory, component, flatTargets,
             targetRequirements = flatRequirements,
-            causedByAttack = causedByAttack
+            triggerCause = triggerCause
         )
     }
 
@@ -1012,18 +1013,23 @@ class TriggerProcessor(
     }
 
     /**
-     * True when [trigger] is a creature's own "whenever this creature attacks" ability — a
-     * SELF-bound per-attacker [com.wingedsheep.sdk.scripting.EventPattern.AttackEvent]. Used to
-     * stamp `causedByAttack` on the emitted `AbilityTriggeredEvent` so Firebender Ascension's
-     * "a creature you control attacking causes a triggered ability of that creature to trigger"
-     * meta-trigger fires only for genuine attack triggers, not other in-combat triggers (deals
-     * damage, dies, etc.). The SELF binding is what ties the ability to "that [attacking] creature":
-     * an anthem-style ANY-bound "whenever a creature you control attacks" ability lives on a
-     * different permanent and is deliberately excluded.
+     * What caused [trigger] to trigger, stamped as `triggerCause` on the emitted
+     * `AbilityTriggeredEvent` for the CR 603.3b meta-triggers that key on it:
+     *  - [AbilityTriggerCause.ATTACK] — a creature's own "whenever this creature attacks" ability, a
+     *    SELF-bound per-attacker [com.wingedsheep.sdk.scripting.EventPattern.AttackEvent]
+     *    (Firebender Ascension). Other in-combat triggers (deals damage, dies, …) carry no cause, and
+     *    an anthem-style ANY-bound "whenever a creature you control attacks" ability lives on a
+     *    different permanent than "that [attacking] creature", so it is excluded too.
+     *  - [AbilityTriggerCause.PERMANENT_ENTERING] — an enters-the-battlefield shaped trigger, the same
+     *    classification Torpor Orb's suppression uses (Strict Proctor). Wherever its source is: the
+     *    current Oracle text counts a graveyard card's landfall ability too.
      */
-    private fun isAttackCausedTrigger(trigger: PendingTrigger): Boolean =
+    private fun triggerCauseOf(trigger: PendingTrigger): AbilityTriggerCause? = when {
         trigger.ability.trigger is com.wingedsheep.sdk.scripting.EventPattern.AttackEvent &&
-            trigger.ability.binding == com.wingedsheep.sdk.scripting.TriggerBinding.SELF
+            trigger.ability.binding == com.wingedsheep.sdk.scripting.TriggerBinding.SELF -> AbilityTriggerCause.ATTACK
+        isEntersBattlefieldTrigger(trigger.ability.trigger) -> AbilityTriggerCause.PERMANENT_ENTERING
+        else -> null
+    }
 
     /**
      * Create a ChosenTarget from an EntityId based on what the entity is in the game state.

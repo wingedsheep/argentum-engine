@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.stack
 
+import com.wingedsheep.sdk.scripting.AbilityTriggerCause
 import com.wingedsheep.engine.mechanics.ManaValues
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.state.ComponentContainer
@@ -30,12 +31,11 @@ internal object StackPlacement {
         targets: List<ChosenTarget> = emptyList(),
         targetRequirements: List<TargetRequirement> = emptyList(),
         /**
-         * True when this ability fired because its own source creature was declared as an attacker
-         * (a SELF-bound attacks trigger). Stamped onto the emitted [AbilityTriggeredEvent] so
-         * Firebender Ascension's "attacking causes a triggered ability of that creature to trigger"
-         * meta-trigger can key on it.
+         * What caused this ability to trigger (its creature attacking, a permanent entering), or
+         * null. Stamped onto the emitted [AbilityTriggeredEvent] so the CR 603.3b meta-triggers
+         * (Firebender Ascension, Strict Proctor) can key on it.
          */
-        causedByAttack: Boolean = false
+        triggerCause: AbilityTriggerCause? = null
     ): ExecutionResult {
         // Create a new entity for the ability on the stack
         val (abilityId, stateWithId) = state.newEntity()
@@ -61,7 +61,7 @@ internal object StackPlacement {
                 ability.controllerId,
                 ability.description,
                 abilityEntityId = abilityId,
-                causedByAttack = causedByAttack
+                triggerCause = triggerCause
             )
         )
 

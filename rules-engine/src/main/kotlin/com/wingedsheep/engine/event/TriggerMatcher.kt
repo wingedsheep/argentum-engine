@@ -381,9 +381,10 @@ class TriggerMatcher(
             is EventPattern.AbilityTriggeredEvent -> {
                 if (event !is AbilityTriggeredEvent) return false
                 if (!matchesPlayer(state, trigger.player, event.controllerId, controllerId, sourceId)) return false
-                // "attacking causes a triggered ability of that creature to trigger": only fire for
-                // abilities the engine stamped as attack-caused (SELF-bound attacks triggers).
-                if (trigger.requireAttackCause && !event.causedByAttack) return false
+                // "attacking / a permanent entering causes a triggered ability to trigger": only fire
+                // for abilities the engine stamped with that cause (see TriggerProcessor.triggerCauseOf).
+                val cause = trigger.cause
+                if (cause != null && event.triggerCause != cause) return false
                 // sourceFilter: the permanent whose ability triggered must match (null = any).
                 val sourceFilter = trigger.sourceFilter
                 if (sourceFilter != null) {

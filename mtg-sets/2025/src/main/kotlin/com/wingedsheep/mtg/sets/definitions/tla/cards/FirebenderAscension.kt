@@ -29,7 +29,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *  - The payoff trigger is the new `Triggers.you.attackTriggersAbility()`: it fires
  *    when a creature you control's *own* "whenever this creature attacks" ability (a SELF-bound
  *    attacks trigger — e.g. the token's firebending mana ability) is put on the stack. The engine
- *    stamps `causedByAttack` on that `AbilityTriggeredEvent`, so unrelated in-combat triggers
+ *    stamps `triggerCause = ATTACK` on that `AbilityTriggeredEvent`, so unrelated in-combat triggers
  *    (deals damage, dies) never fire this.
  *  - Putting the quest counter is mandatory; only if the enchantment then has four or more quest
  *    counters does the copy happen — sequenced as `AddCounters` then [Effects.If] gated on

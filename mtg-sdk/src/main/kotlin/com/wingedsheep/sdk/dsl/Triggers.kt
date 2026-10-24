@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.scripting.DrawStepFirstCard
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.EventPattern.*
 import com.wingedsheep.sdk.scripting.ExploreReveal
+import com.wingedsheep.sdk.scripting.AbilityTriggerCause
 import com.wingedsheep.sdk.scripting.TapSymbolInCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TapReason
@@ -956,7 +957,16 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
      * "a creature you control attacking causes a triggered ability of that creature to trigger"
      * (Firebender Ascension) — the triggering ability is `EffectTarget.TriggeringEntity`.
      */
-    fun attackTriggersAbility(): TriggerSpec = spec(AbilityTriggeredEvent(player = player, requireAttackCause = true))
+    fun attackTriggersAbility(): TriggerSpec =
+        spec(AbilityTriggeredEvent(player = player, cause = AbilityTriggerCause.ATTACK))
+
+    /**
+     * "a permanent entering causes a triggered ability [player] controls to trigger" —
+     * [Triggers.anyPlayer] for Strict Proctor's unscoped form. The triggering ability is
+     * `EffectTarget.TriggeringEntity`.
+     */
+    fun permanentEnteringTriggersAbility(): TriggerSpec =
+        spec(AbilityTriggeredEvent(player = player, cause = AbilityTriggerCause.PERMANENT_ENTERING))
 
     // ---- Combat ------------------------------------------------------------------------------
 

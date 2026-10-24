@@ -20275,6 +20275,50 @@
     ]
 }
 
+// Strict Proctor
+{
+    "name": "Strict Proctor",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Spirit Cleric",
+    "oracleText": "Flying\nWhenever a permanent entering causes a triggered ability to trigger, counter that ability unless its controller pays {2}.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Strict Proctor:1",
+                "trigger": {
+                    "type": "AbilityTriggeredEvent",
+                    "player": "Each",
+                    "cause": "PERMANENT_ENTERING"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Counter",
+                    "target": "CounterTarget.Ability",
+                    "targetSource": "CounterTargetSource.TriggeringEntity",
+                    "condition": {
+                        "type": "CounterCondition.UnlessPaysMana",
+                        "cost": "{2}"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "RARE",
+        "artist": "Jokubas Uogintas",
+        "flavorText": "\"You might believe being dead for centuries has made me more lenient. I think you'll find the opposite to be true.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/95f1e36a-6838-49de-b7dc-697cbcd1e892.jpg?1783927383"
+    }
+}
+
 // Strixhaven Stadium
 {
     "name": "Strixhaven Stadium",

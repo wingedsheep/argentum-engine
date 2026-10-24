@@ -47,9 +47,9 @@ import com.wingedsheep.sdk.scripting.EventPattern
  * because an object joined the stack (CR 117.4).
  *
  * Detection is single-pass: the events of putting abilities on the stack aren't scanned again. The
- * exception is CR 603.3b's second part, abilities that trigger on an attack-caused ability
- * triggering (Firebender Ascension). That wave is scoped by `causedByAttack`, which is what makes
- * it terminate.
+ * exception is CR 603.3b's second part, abilities that trigger on an attack- or entry-caused
+ * ability triggering (Firebender Ascension, Strict Proctor). That wave is scoped by
+ * `triggerCause`, which is what makes it terminate: the meta-triggers themselves carry no cause.
  *
  * Because every action's and every SBA's events pass through here, turn history that no single
  * emitter owns is recorded alongside detection: [CounterHistory] credits counters removed from
@@ -257,11 +257,11 @@ class Settler(
             placedAny = true
             state = placed.state
 
-            // CR 603.3b, second part: abilities that trigger on an attack-caused ability
+            // CR 603.3b, second part: abilities that trigger on an attack- or entry-caused ability
             // triggering go on the stack after the first wave.
-            val attackCaused = placed.events.filter { it is AbilityTriggeredEvent && it.causedByAttack }
-            if (attackCaused.isNotEmpty()) {
-                state = state.enqueue(triggerDetector.detectTriggers(state, attackCaused))
+            val causeStamped = placed.events.filter { it is AbilityTriggeredEvent && it.triggerCause != null }
+            if (causeStamped.isNotEmpty()) {
+                state = state.enqueue(triggerDetector.detectTriggers(state, causeStamped))
             }
             if (placed.pendingDecision != null) return ExecutionResult.propagatePause(state, events)
             // An automatically removed state trigger immediately fires again. With no state

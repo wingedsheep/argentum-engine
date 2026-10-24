@@ -26,7 +26,7 @@ import io.kotest.matchers.shouldBe
  *  copy that ability. You may choose new targets for the copy."
  *
  * Exercises the new `Triggers.you.attackTriggersAbility()` trigger + matcher and the
- * `causedByAttack` stamp on `AbilityTriggeredEvent`:
+ * `triggerCause = ATTACK` stamp on `AbilityTriggeredEvent`:
  *  - the ETB builds the firebending Soldier token;
  *  - a creature's own attack trigger firing adds a quest counter;
  *  - a NON-attack trigger (an ETB) never adds a counter;

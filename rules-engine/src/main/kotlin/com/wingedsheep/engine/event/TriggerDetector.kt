@@ -1049,19 +1049,10 @@ class TriggerDetector(
             }
         }
 
-        // Whether an ability's trigger is an enters-the-battlefield shape (the only triggers an
-        // entry causes); leaves/attack/etc. triggers are never suppressed even if their context
-        // entity happens to have entered this batch.
-        fun isEntersTrigger(trigger: com.wingedsheep.sdk.scripting.EventPattern): Boolean = when (trigger) {
-            is com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent -> trigger.to == Zone.BATTLEFIELD
-            is com.wingedsheep.sdk.scripting.EventPattern.PermanentsEnteredEvent -> true
-            else -> false
-        }
-
         val iterator = triggers.listIterator()
         while (iterator.hasNext()) {
             val trigger = iterator.next()
-            if (!isEntersTrigger(trigger.ability.trigger)) continue
+            if (!isEntersBattlefieldTrigger(trigger.ability.trigger)) continue
             val ctx = trigger.triggerContext
             val captured = ctx.capturedEntityIds
             if (captured != null) {
@@ -5119,4 +5110,17 @@ class TriggerDetector(
          */
         val NON_BATTLEFIELD_EVENT_TRIGGER_ZONES = listOf(Zone.GRAVEYARD, Zone.COMMAND)
     }
+}
+
+/**
+ * Whether [trigger] is an enters-the-battlefield shape — the only triggers a permanent entering
+ * causes (a [com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent] to the battlefield, or a
+ * "one or more permanents entered" batch). Leaves/attack/etc. triggers never count, even if their
+ * context entity happens to have entered in the same batch. Shared by Torpor Orb's suppression and
+ * the Strict Proctor entry-cause stamp, so both read "caused by entering" the same way.
+ */
+internal fun isEntersBattlefieldTrigger(trigger: com.wingedsheep.sdk.scripting.EventPattern): Boolean = when (trigger) {
+    is com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent -> trigger.to == Zone.BATTLEFIELD
+    is com.wingedsheep.sdk.scripting.EventPattern.PermanentsEnteredEvent -> true
+    else -> false
 }

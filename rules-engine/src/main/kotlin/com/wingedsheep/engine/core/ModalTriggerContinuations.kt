@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.core
 
+import com.wingedsheep.sdk.scripting.AbilityTriggerCause
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.scripting.effects.Mode
@@ -39,7 +40,7 @@ data class TriggerModalModeSelectionContinuation(
     val availableIndices: List<Int>? = null,
     val selectedModeIndices: List<Int> = emptyList(),
     val doneOptionOffered: Boolean = false,
-    val causedByAttack: Boolean = false,
+    val triggerCause: AbilityTriggerCause? = null,
     /** See [TriggerModalTargetSelectionContinuation.recordChosenModesOnSource]. */
     val recordChosenModesOnSource: Boolean = false,
     /** See [TriggerModalTargetSelectionContinuation.recordChosenModesThisTurn]. */
@@ -67,7 +68,7 @@ data class TriggerModalTargetSelectionContinuation(
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val resolvedModeTargetGroupCounts: List<List<Int>> = emptyList(),
     val currentOrdinal: Int,
-    val causedByAttack: Boolean = false,
+    val triggerCause: AbilityTriggerCause? = null,
     /**
      * "Choose one that hasn't been chosen" (Gandalf the Grey): record every chosen mode in the
      * source's [com.wingedsheep.engine.state.components.battlefield.ChosenModesEverComponent] once

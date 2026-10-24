@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.core
 
+import com.wingedsheep.sdk.scripting.AbilityTriggerCause
 import com.wingedsheep.sdk.core.BendType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
@@ -944,14 +945,13 @@ data class AbilityTriggeredEvent(
     val description: String,
     val abilityEntityId: EntityId? = null,
     /**
-     * True when this ability was put on the stack because its own source creature was declared as
-     * an attacker — a per-attacker "whenever this creature attacks" ability (SELF-bound
-     * [com.wingedsheep.sdk.scripting.EventPattern.AttackEvent]). Read by the
-     * [com.wingedsheep.sdk.scripting.EventPattern.AbilityTriggeredEvent] `requireAttackCause`
-     * pattern (Firebender Ascension). Defaults false for every other trigger and for ability copies
-     * (which don't re-fire the meta-trigger).
+     * What caused this ability to trigger, when a CR 603.3b meta-trigger can key on it: its own
+     * source creature attacking ([AbilityTriggerCause.ATTACK], Firebender Ascension) or a permanent
+     * entering the battlefield ([AbilityTriggerCause.PERMANENT_ENTERING], Strict Proctor). Read by
+     * the [com.wingedsheep.sdk.scripting.EventPattern.AbilityTriggeredEvent] `cause` pattern. Null
+     * for every other trigger and for ability copies (which don't re-fire the meta-trigger).
      */
-    val causedByAttack: Boolean = false
+    val triggerCause: AbilityTriggerCause? = null
 ) : GameEvent
 
 /**

@@ -7744,7 +7744,7 @@ For `enter()` and `die()`, a filter with no controller predicate means "you cont
 `castsOrCopies(spell)`,
 `choosesTargets()`, `putsSpellOrAbilityOnStack()`, `activatesAbility(of?, targeting?, loyalty,
 minLoyaltyRemoved, exhaust, includeManaAbilities, excludeManaAbilities, tapInCost?)`,
-`attackTriggersAbility()`, `attacks(with?, minAttackers?)` (you declare attackers), `isAttacked(…)`,
+`attackTriggersAbility()`, `permanentEnteringTriggersAbility()`, `attacks(with?, minAttackers?)` (you declare attackers), `isAttacked(…)`,
 `isDealtDamage(by?, damageType?)`, `isDealtCombatDamage()`, `getsCounters(type?)` (`you` only — counters
 put on the player by anyone: "whenever you get one or more {E}", `CountersPlacedEvent.recipient`),
 `draws(firstInDrawStep?)`,
@@ -8639,16 +8639,26 @@ The shapes in this family, with their engine notes.
   activated ability on the stack (the permanent itself for a mana ability, which never uses the stack), so
   `Effects.CounterTriggeringAbility()` is "counter that ability".
 - `Triggers.you.attackTriggersAbility()` — **a creature you control attacking causes a triggered ability of that
-  creature to trigger** (Firebender Ascension). Backed by `EventPattern.AbilityTriggeredEvent(player, requireAttackCause,
+  creature to trigger** (Firebender Ascension). Backed by `EventPattern.AbilityTriggeredEvent(player, cause,
   sourceFilter?)`, which matches the engine's `AbilityTriggeredEvent` when a triggered ability is put on the stack.
-  With `requireAttackCause = true` it fires only for a creature's **own** "whenever this creature attacks" ability — a
-  SELF-bound `AttackEvent`. The engine stamps `causedByAttack` on the event in `StackResolver.putTriggeredAbility` (from
-  `TriggerProcessor.isAttackCausedTrigger`) so unrelated in-combat triggers (deals damage, dies, ETB) never match; the
-  SELF binding is what ties the ability to "that [attacking] creature", excluding anthem-style ANY-bound
-  "whenever a creature you control attacks" abilities on other permanents. The triggering ability is exposed as
-  `EffectTarget.TriggeringEntity` (`AbilityTriggeredEvent` sets the triggering entity to the ability on the stack), so a
-  `Effects.CopyTargetTriggeredAbility(EffectTarget.TriggeringEntity)` can copy it and reprompt for new targets (CR
-  707.10c). `sourceFilter` optionally restricts which permanent's ability counts; `player` scopes whose ability it is.
+  With `cause = AbilityTriggerCause.ATTACK` it fires only for a creature's **own** "whenever this creature attacks"
+  ability — a SELF-bound `AttackEvent`. The engine stamps `triggerCause` on the event in
+  `StackResolver.putTriggeredAbility` (from `TriggerProcessor.triggerCauseOf`) so unrelated in-combat triggers (deals
+  damage, dies, ETB) never match; the SELF binding is what ties the ability to "that [attacking] creature", excluding
+  anthem-style ANY-bound "whenever a creature you control attacks" abilities on other permanents. The triggering
+  ability is exposed as `EffectTarget.TriggeringEntity` (`AbilityTriggeredEvent` sets the triggering entity to the
+  ability on the stack), so a `Effects.CopyTargetTriggeredAbility(EffectTarget.TriggeringEntity)` can copy it and
+  reprompt for new targets (CR 707.10c). `sourceFilter` optionally restricts which permanent's ability counts;
+  `player` scopes whose ability it is. `cause = null` matches any triggered ability.
+- `Triggers.anyPlayer.permanentEnteringTriggersAbility()` — **a permanent entering causes a triggered ability to
+  trigger** (Strict Proctor). `cause = AbilityTriggerCause.PERMANENT_ENTERING`: stamped on
+  enters-the-battlefield shaped triggers — a `ZoneChangeEvent` to the battlefield (the entering permanent's own ETB,
+  another permanent's "whenever a [...] enters", landfall) or a `PermanentsEnteredEvent` batch, the same
+  classification Torpor Orb's `SuppressEntersTriggers` uses — wherever the ability's source is (a graveyard card's
+  landfall counts under the current Oracle text). Both meta-triggers go on the stack in the second
+  CR 603.3b wave, above the ability they saw, so
+  `Effects.CounterUnlessPays("{2}", target = CounterTarget.Ability, targetSource = CounterTargetSource.TriggeringEntity)`
+  is "counter that ability unless its controller pays {2}".
 
 **Other casters.** The same shape, scoped to a different caster via the runtime
 `Player.Each` / `Player.EachOpponent` matching on `SpellCastEvent`. Bind the payoff to the

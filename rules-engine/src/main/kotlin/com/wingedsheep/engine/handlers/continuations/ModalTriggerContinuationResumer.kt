@@ -78,7 +78,7 @@ class ModalTriggerContinuationResumer(
                 ),
                 selectedModeIndices = newSelected,
                 availableIndices = nextAvailable,
-                causedByAttack = continuation.causedByAttack
+                triggerCause = continuation.triggerCause
             ).thenCheckForMore(checkForMore)
         }
 
@@ -91,7 +91,7 @@ class ModalTriggerContinuationResumer(
             chosenModeIndices = newSelected,
             resolvedModeTargets = emptyList(),
             currentOrdinal = 0,
-            causedByAttack = continuation.causedByAttack,
+            triggerCause = continuation.triggerCause,
             recordChosenModesOnSource = continuation.recordChosenModesOnSource,
             recordChosenModesThisTurn = continuation.recordChosenModesThisTurn
         ).thenCheckForMore(checkForMore)
@@ -131,7 +131,7 @@ class ModalTriggerContinuationResumer(
             resolvedModeTargetGroupCounts = if (trackCounts) continuation.resolvedModeTargetGroupCounts + listOf(counts)
                 else emptyList(),
             currentOrdinal = continuation.currentOrdinal + 1,
-            causedByAttack = continuation.causedByAttack,
+            triggerCause = continuation.triggerCause,
             recordChosenModesOnSource = continuation.recordChosenModesOnSource,
             recordChosenModesThisTurn = continuation.recordChosenModesThisTurn
         ).thenCheckForMore(checkForMore)

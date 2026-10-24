@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.stack
 
+import com.wingedsheep.sdk.scripting.AbilityTriggerCause
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -204,9 +205,9 @@ class StackResolver(
         ability: TriggeredAbilityOnStackComponent,
         targets: List<ChosenTarget> = emptyList(),
         targetRequirements: List<TargetRequirement> = emptyList(),
-        causedByAttack: Boolean = false
+        triggerCause: AbilityTriggerCause? = null
     ): ExecutionResult =
-        StackPlacement.putTriggeredAbility(state, ability, targets, targetRequirements, causedByAttack)
+        StackPlacement.putTriggeredAbility(state, ability, targets, targetRequirements, triggerCause)
 
     /** Put a copy of a spell on the stack (CR 707.10). See [StackPlacement.putSpellCopy]. */
     fun putSpellCopy(

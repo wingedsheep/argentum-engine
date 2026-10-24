@@ -8613,7 +8613,7 @@
                 "id": "Firebender Ascension:2",
                 "trigger": {
                     "type": "AbilityTriggeredEvent",
-                    "requireAttackCause": true
+                    "cause": "ATTACK"
                 },
                 "binding": "ANY",
                 "effect": {
