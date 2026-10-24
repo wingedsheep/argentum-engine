@@ -3795,6 +3795,125 @@
     ]
 }
 
+// Devastating Mastery
+{
+    "name": "Devastating Mastery",
+    "manaCost": "{2}{W}{W}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "You may pay {2}{W}{W} rather than pay this spell's mana cost.\nIf the {2}{W}{W} cost was paid, an opponent chooses up to two nonland permanents they control and returns them to their owner's hand.\nDestroy all nonland permanents.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "CastChoiceMade",
+                            "slot": "SELF_ALTERNATIVE_COST_PAID"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ChooseOpponentForSource",
+                                "prompt": "Choose an opponent to return up to two nonland permanents"
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "ControlledPermanents",
+                                    "player": "ChosenOpponent",
+                                    "filter": "nonland permanent"
+                                },
+                                "storeAs": "gathered1"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered1",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                "chooser": "ChosenOpponent",
+                                "storeSelected": "selected2",
+                                "prompt": "Choose up to two nonland permanents you control to return to their owner's hand",
+                                "selectedLabel": "Return to hand",
+                                "useTargetingUI": true
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "nonland permanent"
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                }
+            ]
+        },
+        "selfAlternativeCost": {
+            "manaCost": "{2}{W}{W}"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "RARE",
+        "artist": "Jake Murray",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b6be019-29b9-4c81-9899-aefeaf9cc977.jpg?1783927392",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If you choose to pay one alternative cost, you can't pay any other alternative costs. For example, if an effect lets you cast a \"Mastery\" spell \"without paying its mana cost,\" you can't also choose to pay its given alternative cost."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect increases or decreases the cost of spells you cast, that cost increase or decrease is applied to the alternative cost you chose to pay. In that case, the cost was still paid for the purposes of the effect, even if you paid more or less for it when it was cast."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If you copy a \"Mastery\" spell and the alternative cost was paid, the copy will resolve as though the cost was paid."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "In a multiplayer game, you choose which opponent takes the prescribed action as the spell resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Devouring Tendrils
 {
     "name": "Devouring Tendrils",
@@ -6261,6 +6380,185 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Fervent Mastery
+{
+    "name": "Fervent Mastery",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "You may pay {2}{R}{R} rather than pay this spell's mana cost.\nIf the {2}{R}{R} cost was paid, an opponent discards any number of cards, then draws that many cards.\nSearch your library for up to three cards, put them into your hand, shuffle, then discard three cards at random.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "CastChoiceMade",
+                            "slot": "SELF_ALTERNATIVE_COST_PAID"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ChooseOpponentForSource",
+                                "prompt": "Choose an opponent to discard any number of cards, then draw that many"
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "player": "ChosenOpponent"
+                                },
+                                "storeAs": "gathered1"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered1",
+                                "selection": "ChooseAnyNumber",
+                                "chooser": "ChosenOpponent",
+                                "storeSelected": "selected2",
+                                "prompt": "Discard any number of cards, then draw that many cards",
+                                "selectedLabel": "Discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard",
+                                    "player": "ChosenOpponent"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "VariableReference",
+                                    "variableName": "selected2_count"
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "ChosenOpponent"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for up to three cards to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "Random",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeSelected": "discarded"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                }
+            ]
+        },
+        "selfAlternativeCost": {
+            "manaCost": "{2}{R}{R}"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "RARE",
+        "artist": "Sean Sevestre",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1f824caf-b32c-442a-8631-887831a57360.jpg?1783927355",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If the {2}{R}{R} cost was paid, the opponent chooses how many and which cards to discard as Fervent Mastery resolves. They may choose to discard no cards."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If you choose to pay one alternative cost, you can't pay any other alternative costs. For example, if an effect lets you cast a \"Mastery\" spell \"without paying its mana cost,\" you can't also choose to pay its given alternative cost."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect increases or decreases the cost of spells you cast, that cost increase or decrease is applied to the alternative cost you chose to pay. In that case, the cost was still paid for the purposes of the effect, even if you paid more or less for it when it was cast."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If you copy a \"Mastery\" spell and the alternative cost was paid, the copy will resolve as though the cost was paid."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "In a multiplayer game, you choose which opponent takes the prescribed action as the spell resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -20500,6 +20798,169 @@
     "colorIdentityOverride": [
         "RED",
         "WHITE"
+    ]
+}
+
+// Verdant Mastery
+{
+    "name": "Verdant Mastery",
+    "manaCost": "{5}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "You may pay {3}{G} rather than pay this spell's mana cost.\nSearch your library for up to four basic land cards and reveal them. Put one of them onto the battlefield tapped under an opponent's control if the {3}{G} cost was paid. Put two of them onto the battlefield tapped under your control and the rest into your hand. Then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "basicland"
+                    },
+                    "storeAs": "gathered0",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "Search your library for up to four basic land cards"
+                },
+                {
+                    "type": "RevealCollection",
+                    "from": "selected1"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "CastChoiceMade",
+                            "slot": "SELF_ALTERNATIVE_COST_PAID"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ChooseOpponentForSource",
+                                "prompt": "Choose an opponent to put a land onto the battlefield under their control"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "selected1",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected5",
+                                "prompt": "Choose a land to put onto the battlefield tapped under your opponent's control",
+                                "selectedLabel": "Opponent's battlefield (tapped)"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected5",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield",
+                                    "player": "ChosenOpponent",
+                                    "placement": "Tapped"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "selected1",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "InZone",
+                                "zone": "Library"
+                            }
+                        ]
+                    },
+                    "storeMatching": "matching7"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "matching7",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "storeSelected": "selected8",
+                    "storeRemainder": "remainder8",
+                    "prompt": "Choose two lands to put onto the battlefield tapped; the rest go to your hand",
+                    "selectedLabel": "Onto the battlefield tapped",
+                    "remainderLabel": "Into your hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected8",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "remainder8",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        },
+        "selfAlternativeCost": {
+            "manaCost": "{3}{G}"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "146",
+        "rarity": "RARE",
+        "artist": "Cristi Balanescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/197455e5-7929-47b8-ad00-8d3918949eb7.jpg?1783927333",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If you choose to pay one alternative cost, you can't pay any other alternative costs. For example, if an effect lets you cast a \"Mastery\" spell \"without paying its mana cost,\" you can't also choose to pay its given alternative cost."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect increases or decreases the cost of spells you cast, that cost increase or decrease is applied to the alternative cost you chose to pay. In that case, the cost was still paid for the purposes of the effect, even if you paid more or less for it when it was cast."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If you copy a \"Mastery\" spell and the alternative cost was paid, the copy will resolve as though the cost was paid."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "In a multiplayer game, you choose which opponent takes the prescribed action as the spell resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
