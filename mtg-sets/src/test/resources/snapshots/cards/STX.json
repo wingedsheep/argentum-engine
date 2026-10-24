@@ -8983,6 +8983,73 @@
     ]
 }
 
+// Killian, Ink Duelist
+{
+    "name": "Killian, Ink Duelist",
+    "manaCost": "{W}{B}",
+    "typeLine": "Legendary Creature — Human Warlock",
+    "oracleText": "Lifelink\nMenace (This creature can't be blocked except by two or more creatures.)\nSpells you cast that target a creature cost {2} less to cast.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "LIFELINK",
+        "MENACE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": {}
+                },
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfAnyTargetMatches",
+                        "amount": 2,
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                "IsOnBattlefield"
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Pancoast",
+        "flavorText": "\"When your father is Dean Embrose, second best really isn't an option.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/23ef4f09-2aa1-4a03-b2e2-66d1522f1e46.jpg?1783927314",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If a spell has additional costs, apply those increases before applying cost reductions."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Killian, Ink Duelist can't reduce the colored mana requirement of a spell's mana cost."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Killian can reduce alternative costs. For example, if you choose to pay the {1}{B} alternative cost for Baleful Mastery while targeting a creature, that cost would be reduced to {B}."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Lash of Malice
 {
     "name": "Lash of Malice",
@@ -9023,6 +9090,142 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Leech Fanatic
+{
+    "name": "Leech Fanatic",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Warlock",
+    "oracleText": "During your turn, this creature has lifelink.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "artist": "Sean Sevestre",
+        "flavorText": "\"Everyone thinks that leeches maintain a strictly sanguivorous diet, but in fact, most freshwater leeches are carnivores. Wait, where are you going?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/307f9fe7-241b-4eb6-a059-be5384b4a1b6.jpg?1783927366"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Leonin Lightscribe
+{
+    "name": "Leonin Lightscribe",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Cat Cleric",
+    "oracleText": "Magecraft — Whenever you cast or copy an instant or sorcery spell, creatures you control get +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Leonin Lightscribe:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "SpellCopiedEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Magecraft — Whenever you cast or copy an instant or sorcery spell, creatures you control get +1/+1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "rarity": "RARE",
+        "artist": "Steven Belledin",
+        "flavorText": "All who hear his inspiring words are filled with hope and pride.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a465d7b-398c-444b-9eae-331ea2513f6d.jpg?1783927388",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates a copy of an instant or sorcery spell, this will also cause the magecraft ability to trigger."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates multiple copies of an instant or sorcery spell, magecraft abilities trigger once for each copy created by the effect."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Some effects instruct you to copy an instant or sorcery card in a zone other than the stack. These copies do not cause magecraft abilities to trigger. However, most effects that do this also allow you to cast the copy, and casting the copy will cause magecraft abilities to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -9074,6 +9277,61 @@
         "imageUri": "https://cards.scryfall.io/normal/front/3/4/34750231-34aa-401c-b192-47b56588923a.jpg?1783927280"
     },
     "colorIdentityOverride": []
+}
+
+// Leyline Invocation
+{
+    "name": "Leyline Invocation",
+    "manaCost": "{5}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a 0/0 green and blue Fractal creature token. Put X +1/+1 counters on it, where X is the number of lands you control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [
+                        "GREEN",
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Fractal"
+                    ]
+                },
+                {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    },
+                    "target": {
+                        "type": "PipelineTarget",
+                        "collectionName": "createdTokens"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "artist": "Liiga Smilshkalne",
+        "flavorText": "\"Do you still believe my work is nothing but dry, boring equations?\"\n—Cairu, Quandrix mage-student",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4edfbed0-0c0d-4aa5-bfe0-5268aff0f958.jpg?1783927341",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "The number of lands you control is counted as Leyline Invocation resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Lorehold Campus
