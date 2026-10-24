@@ -72,7 +72,9 @@ internal class CastCostTotaller(
             action.alternativeCostType in GRAVEYARD_ROUTES
         ) return false
         val waiver = tax.unlessAnyTargetMatches ?: return true
+        val battlefield = state.getBattlefield().toSet()
         val targets = (action.targets + action.modeTargetsOrdered.flatten()).map { it.toEntityId() }
+            .filter { it in battlefield }
         val context = PredicateContext(controllerId = action.playerId)
         return targets.none { predicateEvaluator.matches(state, state.projectedState, it, waiver, context) }
     }

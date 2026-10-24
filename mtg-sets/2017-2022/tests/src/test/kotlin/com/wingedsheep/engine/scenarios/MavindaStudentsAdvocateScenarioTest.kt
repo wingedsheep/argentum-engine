@@ -3,6 +3,7 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.state.components.identity.PlayWithCostIncreaseComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
@@ -27,6 +28,12 @@ class MavindaStudentsAdvocateScenarioTest : ScenarioTestBase() {
             targets = listOf(ChosenTarget.Card(card, player1Id, Zone.GRAVEYARD)),
         )).error shouldBe null
         resolveStack()
+    }
+
+    /** The cast offered through Mavinda's permission (not a flashback offer of the same card). */
+    private fun TestGame.offerFor(cardName: String) = getLegalActions(1).single {
+        val cast = it.action as? CastSpell
+        cast?.cardId == findCardsInGraveyard(1, cardName).single() && !cast.useAlternativeCost
     }
 
     private fun board(forests: Int, islands: Int = 0, inGraveyard: String = "Giant Growth") = scenario()
@@ -62,13 +69,42 @@ class MavindaStudentsAdvocateScenarioTest : ScenarioTestBase() {
             rich.castSpellFromGraveyard(1, "Giant Growth", rich.findPermanent("Grizzly Bears")!!).error shouldBe null
         }
 
-        test("the offered cast is affordable only when a waiver target exists") {
+        test("the offered cast is priced untaxed when one of its legal targets waives the tax") {
             val game = board(forests = 1)
             game.activateOn("Giant Growth")
-            val offer = game.getLegalActions(1).single {
-                (it.action as? CastSpell)?.cardId == game.findCardsInGraveyard(1, "Giant Growth").single()
-            }
-            offer.isAffordable shouldBe true
+            game.offerFor("Giant Growth").isAffordable shouldBe true
+        }
+
+        test("a modal spell's offer finds the waiver among its modes' targets") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Mavinda, Students' Advocate")
+                .withCardInGraveyard(1, "Lorehold Command")
+                .withLandsOnBattlefield(1, "Mountain", 4)
+                .withLandsOnBattlefield(1, "Plains", 1)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            game.activateOn("Lorehold Command")
+            game.offerFor("Lorehold Command").isAffordable shouldBe true
+        }
+
+        test("a spell with no targets is offered taxed") {
+            val game = board(forests = 0, islands = 9, inGraveyard = "Think Twice")
+            game.activateOn("Think Twice")
+            game.offerFor("Think Twice").isAffordable shouldBe false
+        }
+
+        test("the tax lapses with the permission once the turn ends") {
+            val game = board(forests = 1, inGraveyard = "Think Twice")
+            game.activateOn("Think Twice")
+            val card = game.findCardsInGraveyard(1, "Think Twice").single()
+            val tax = { game.state.getEntity(card)!!.get<PlayWithCostIncreaseComponent>()!! }
+            tax().appliesTo(game.state, game.player1Id) shouldBe true
+            game.passUntilPhase(Phase.ENDING, Step.END)
+            game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+            game.state.activePlayerId shouldBe game.player2Id
+            tax().appliesTo(game.state, game.player1Id) shouldBe false
         }
 
         test("a spell with no targets always pays the tax") {

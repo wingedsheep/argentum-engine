@@ -667,20 +667,20 @@ class CastFromZoneEnumerator(
                     // it is cast from (Vizier of the Menagerie).
                     val anyManaType = permissions.any { it.withAnyManaType } ||
                         context.castPermissionUtils.canSpendAnyManaTypeForSpell(state, playerId, cardId)
-                    // "As though it were mana of any color" (Stolen Strategy) relaxes only the
-                    // colored pips — a {C} pip still needs colorless (CR 609.4b).
                     // "Unless it targets a creature you control" (Mavinda): targets aren't chosen
-                    // yet, so price the cheapest cast — waived when the spell targets at all and a
-                    // permanent the waiver names is on the battlefield; CastCostTotaller charges it
-                    // against the targets actually chosen.
+                    // yet, so price the cheapest cast — waived when one of the spell's legal targets
+                    // (any mode's, for a modal spell) matches; CastCostTotaller charges it against
+                    // the targets actually chosen.
                     val offeredCostIncrease = runtimeCostIncrease?.takeUnless { tax ->
                         val waiver = tax.unlessAnyTargetMatches ?: return@takeUnless false
-                        val waiverContext = PredicateContext(controllerId = playerId)
-                        cardDef?.script?.targetRequirements?.isNotEmpty() == true &&
-                            state.getBattlefield().any {
-                                context.predicateEvaluator.matches(state, state.projectedState, it, waiver, waiverContext)
-                            }
+                        val scriptDef = if (cardDef != null && prepareFace != null) {
+                            context.costCalculator.faceCharacteristics(cardDef, prepareFace)
+                        } else cardDef
+                        scriptDef != null &&
+                            context.costCalculator.anyLegalTargetMatches(state, scriptDef, playerId, cardId, waiver)
                     }
+                    // "As though it were mana of any color" (Stolen Strategy) relaxes only the
+                    // colored pips — a {C} pip still needs colorless (CR 609.4b).
                     fun permitted(cost: ManaCost): ManaCost {
                         val relaxed = when {
                             anyManaType -> cost.relaxColors()

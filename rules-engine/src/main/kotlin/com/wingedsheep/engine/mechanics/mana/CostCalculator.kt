@@ -1224,6 +1224,26 @@ class CostCalculator(
     }
 
     /** The script's target requirements plus an Aura's enchant target, which is declared apart. */
+    /**
+     * Whether some legal target of [cardDef] — of any of its modes, for a modal spell — matches
+     * [filter]: the cheapest-cast check for a tax waived "unless it targets …" before the targets
+     * are chosen. False for a spell with no targets.
+     */
+    fun anyLegalTargetMatches(
+        state: GameState,
+        cardDef: CardDefinition,
+        casterId: EntityId,
+        spellId: EntityId,
+        filter: GameObjectFilter,
+    ): Boolean {
+        val modal = cardDef.script.spellEffect as? ModalEffect
+        val requirements = castRequirements(cardDef) + modal?.modes.orEmpty().flatMap { it.targetRequirements }
+        return requirements.any { requirement ->
+            val legal = targetFinder.findLegalTargets(state, requirement, casterId, sourceId = spellId)
+            findAnyMatch(state, casterId, legal, filter) != null
+        }
+    }
+
     private fun castRequirements(cardDef: CardDefinition): List<TargetRequirement> =
         cardDef.script.targetRequirements + listOfNotNull(cardDef.script.castAuraTarget)
 

@@ -164,8 +164,8 @@ data class PlayWithAdditionalCostComponent(
  *
  * @param controllerId The player who has this cost increase when casting.
  * @param cost Mana added to the spell's cost — generic for a tax, colored for an additional cost.
- * @param unlessAnyTargetMatches The tax is waived when any of the spell's chosen targets matches
- *   this filter — "if that spell doesn't target a creature you control, it costs {8} more" (Mavinda,
+ * @param unlessAnyTargetMatches The tax is waived when any of the spell's chosen permanent targets
+ *   matches this filter (a creature *spell* it targets is not "a creature you control") — "if that spell doesn't target a creature you control, it costs {8} more" (Mavinda,
  *   Students' Advocate). Null taxes every cast.
  * @param grantedPermissionId The [com.wingedsheep.engine.state.permissions.MayPlayPermission] the
  *   tax was stamped alongside ("costs {8} more to cast **this way**"): honoured only while that
