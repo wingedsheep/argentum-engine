@@ -6,8 +6,8 @@ import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
- * The one reading of a [TargetObject]'s dynamic target count — [TargetObject.dynamicMaxCount] and
- * [TargetObject.dynamicMinCount] — shared by every site that has to turn "X target creatures" or
+ * The one reading of a requirement's dynamic target count — [TargetRequirement.dynamicMaxCount] and
+ * [TargetRequirement.dynamicMinCount] — shared by every site that has to turn "X target creatures" or
  * "up to X target creatures" into numbers: cast validation ([TargetValidator]), the modal cast's
  * per-mode decision, the trigger snapshot and legal-action enumeration. Each of those used to carry
  * its own copy of the XValue special case; one copy per site is how the offered count and the
@@ -50,9 +50,8 @@ object DynamicTargetCount {
      * [TargetRequirement.effectiveMinCount] when there is no dynamic minimum or X is not yet known.
      */
     fun bounds(requirement: TargetRequirement, xValue: Int?, evaluate: (DynamicAmount) -> Int): Bounds {
-        val obj = objectOf(requirement) ?: return Bounds(requirement.effectiveMinCount, null)
-        val max = obj.dynamicMaxCount?.let { resolve(it, xValue, evaluate) }
-        val min = obj.dynamicMinCount?.let { resolve(it, xValue, evaluate) }
+        val max = requirement.dynamicMaxCount?.let { resolve(it, xValue, evaluate) }
+        val min = requirement.dynamicMinCount?.let { resolve(it, xValue, evaluate) }
             ?.let { if (max != null) minOf(it, max) else it }
             ?: requirement.effectiveMinCount
         return Bounds(min, max)

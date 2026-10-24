@@ -433,8 +433,8 @@ class TargetValidator(
          * [bindTargetGroups] would hand back the printed counts unchanged.
          */
         fun hasFixedGroups(requirements: List<TargetRequirement>): Boolean = requirements.all {
-            !it.unlimited && it.effectiveMinCount == it.count &&
-                DynamicTargetCount.objectOf(it)?.let { obj -> obj.dynamicMaxCount == null && obj.ownerDistribution == null } != false
+            !it.unlimited && it.effectiveMinCount == it.count && it.dynamicMaxCount == null &&
+                DynamicTargetCount.objectOf(it)?.ownerDistribution == null
         }
     }
 

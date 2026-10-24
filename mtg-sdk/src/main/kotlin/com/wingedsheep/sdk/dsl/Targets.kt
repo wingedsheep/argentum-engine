@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.dsl
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.AnyTarget
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.targets.TargetChooser
 import com.wingedsheep.sdk.scripting.targets.TargetCreatureOrPlaneswalker
 import com.wingedsheep.sdk.scripting.targets.TargetCreatureOrPlayer
@@ -55,6 +56,13 @@ object Targets {
      * zero-target cast is legal and resolves without targets (it is not a targeted spell).
      */
     val AnyNumber: TargetRequirement = AnyTarget(unlimited = true)
+
+    /**
+     * "Each of up to X targets" (Crackle with Power) — zero to [max] distinct creatures, players,
+     * planeswalkers, or battles, [max] resolved when targets are chosen (an announced X, or a board
+     * amount). Read them with `Effects.ForEachTarget(…)`.
+     */
+    fun AnyUpTo(max: DynamicAmount): TargetRequirement = AnyTarget(optional = true, dynamicMaxCount = max)
 
     /**
      * "Any target of an opponent's choice" — a real target of your spell/ability that an

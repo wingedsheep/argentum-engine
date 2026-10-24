@@ -42,6 +42,7 @@ import com.wingedsheep.engine.legalactions.utils.TargetEnumerationUtils
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.sdk.scripting.targets.withCount
+import com.wingedsheep.sdk.scripting.targets.AnyTarget
 import com.wingedsheep.sdk.scripting.targets.TargetChooser
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.targets.TargetOther
@@ -340,7 +341,7 @@ class TriggerProcessor(
         // Snapshot dynamicMaxCount on each requirement now (when the trigger is going on
         // the stack) so the resolved cap is what the player sees and the validator
         // enforces. CR 603.3d (applying 601.2c): X / target counts on triggered abilities are locked when
-        // the ability triggers. Only TargetObject carries dynamicMaxCount today.
+        // the ability triggers. TargetObject and AnyTarget carry dynamicMaxCount.
         val allRequirements = ability.allTargetRequirements.map { snapshotDynamicCount(state, trigger, it) }
 
         val sequential = DependentTargetSelection.isRequired(allRequirements)
@@ -417,7 +418,7 @@ class TriggerProcessor(
         // "any number of" requirement counts too once its dynamic cap is zero (Quirion Beastcaller
         // dying with no counters).
         if (allRequirements.all {
-                it.count == 0 && (!it.unlimited || DynamicTargetCount.objectOf(it)?.dynamicMaxCount != null)
+                it.count == 0 && (!it.unlimited || it.dynamicMaxCount != null)
             }) {
             return putTriggerOnStack(state, trigger, emptyList())
         }
@@ -473,7 +474,7 @@ class TriggerProcessor(
                 // A dynamic cap outranks `unlimited`, as in TargetValidator: "any number of target
                 // creatures" with X counters to distribute still can't take more than X targets.
                 // snapshotDynamicCount already baked the cap into `count`.
-                req.unlimited && DynamicTargetCount.objectOf(req)?.dynamicMaxCount != null ->
+                req.unlimited && req.dynamicMaxCount != null ->
                     minOf(req.count, legalCount)
                 req.unlimited -> legalCount
                 else -> req.count
@@ -1277,27 +1278,7 @@ class TriggerProcessor(
             } else if (requirement.dynamicMaxCount == null) {
                 requirement
             } else {
-                val context = EffectContext(
-                    sourceId = trigger.sourceId,
-                    objectReferences = trigger.objectReferences,
-                    controllerId = trigger.controllerId,
-                    triggeringEntityId = trigger.triggerContext.triggeringEntityId,
-                    triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
-                    xValue = trigger.triggerContext.xValue,
-                    // The dynamic cap may read trigger-context properties — e.g. Elrond,
-                    // Master of Healing's "up to X target creatures, where X is the number of
-                    // cards looked at while scrying" (ContextPropertyKey.TRIGGER_SCRY_COUNT).
-                    // Without this the cap resolves to 0 and the player can pick no targets.
-                    triggerContext = trigger.triggerContext,
-                    // A reflexive trigger's dynamic cap may read what its action half stashed
-                    // (e.g. `VariableReference("discarded_count")`, Amass's army reference), and a
-                    // batch trigger's cap may count what it captured (The Wise Mothman's "up to X
-                    // target creatures, where X is the number of nonland cards milled this way").
-                    pipeline = targetingPipeline(trigger),
-                )
-                val bounds = DynamicTargetCount.bounds(requirement, trigger.triggerContext.xValue) { amount ->
-                    amountEvaluator.evaluate(state, amount, context)
-                }
+                val bounds = snapshotBounds(state, trigger, requirement)
                 val newMax = bounds.max ?: requirement.count
                 if (requirement.dynamicMinCount != null) {
                     requirement.copy(
@@ -1314,11 +1295,44 @@ class TriggerProcessor(
                 }
             }
         }
+        is AnyTarget -> if (requirement.dynamicMaxCount == null) requirement else {
+            val newMax = snapshotBounds(state, trigger, requirement).max ?: requirement.count
+            requirement.copy(count = newMax, minCount = requirement.minCount.coerceAtMost(newMax))
+        }
         is TargetOther -> {
             val newBase = snapshotDynamicCount(state, trigger, requirement.baseRequirement)
             if (newBase !== requirement.baseRequirement) requirement.copy(baseRequirement = newBase) else requirement
         }
         else -> requirement
+    }
+
+    /** Resolve [requirement]'s dynamic target count against the pending trigger's context. */
+    private fun snapshotBounds(
+        state: GameState,
+        trigger: PendingTrigger,
+        requirement: TargetRequirement
+    ): DynamicTargetCount.Bounds {
+        val context = EffectContext(
+            sourceId = trigger.sourceId,
+            objectReferences = trigger.objectReferences,
+            controllerId = trigger.controllerId,
+            triggeringEntityId = trigger.triggerContext.triggeringEntityId,
+            triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
+            xValue = trigger.triggerContext.xValue,
+            // The dynamic cap may read trigger-context properties — e.g. Elrond,
+            // Master of Healing's "up to X target creatures, where X is the number of
+            // cards looked at while scrying" (ContextPropertyKey.TRIGGER_SCRY_COUNT).
+            // Without this the cap resolves to 0 and the player can pick no targets.
+            triggerContext = trigger.triggerContext,
+            // A reflexive trigger's dynamic cap may read what its action half stashed
+            // (e.g. `VariableReference("discarded_count")`, Amass's army reference), and a
+            // batch trigger's cap may count what it captured (The Wise Mothman's "up to X
+            // target creatures, where X is the number of nonland cards milled this way").
+            pipeline = targetingPipeline(trigger),
+        )
+        return DynamicTargetCount.bounds(requirement, trigger.triggerContext.xValue) { amount ->
+            amountEvaluator.evaluate(state, amount, context)
+        }
     }
 
     /**

@@ -1991,7 +1991,7 @@ Families:
 
 ## TargetRequirement
 
-- `AnyTarget(count: Int, minCount: Int, optional: Boolean, id: String?, chooser: TargetChooser, descriptionOverride: String?, filter: GameObjectFilter, unlimited: Boolean)` — "Any target" - can target any creature, player, planeswalker, or battle.
+- `AnyTarget(count: Int, minCount: Int, optional: Boolean, id: String?, chooser: TargetChooser, descriptionOverride: String?, filter: GameObjectFilter, unlimited: Boolean, dynamicMaxCount: DynamicAmount?)` — "Any target" - can target any creature, player, planeswalker, or battle.
 - `TargetCreatureOrPlaneswalker(count: Int, optional: Boolean, id: String?)` — "Target creature or planeswalker" - modern burn spell targeting.
 - `TargetCreatureOrPlayer(count: Int, optional: Boolean, id: String?)` — "Target creature or player" - classic burn spell targeting.
 - `TargetObject(count: Int, unlimited: Boolean, minCount: Int, optional: Boolean, filter: TargetFilter, id: String?, dynamicMaxCount: DynamicAmount?, dynamicMinCount: DynamicAmount?, sameController: Boolean, sameOwner: Boolean, ownerDistribution: OwnerDistribution?, sameNumericProperty: CardNumericProperty?, differentNumericProperty: CardNumericProperty?, sameCreatureType: Boolean, sameCardType: Boolean, totalManaValueAtMost: DynamicAmount?, differentNames: Boolean, differentControllers: Boolean, onePerCardType: Boolean, onePerColor: Boolean, chooser: TargetChooser)` — Target any game object matching a filter.

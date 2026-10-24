@@ -503,13 +503,12 @@ class TargetEnumerationUtils(
     }
 
     /**
-     * True when [requirement] is a [TargetObject] whose `dynamicMaxCount` is the
+     * True when [requirement]'s `dynamicMaxCount` is the
      * [DynamicAmount.XValue] sentinel. Surfaced to the client so the targeting UI
      * caps selectable targets at the X chosen for the spell's cost.
      */
     fun requirementXConstrainsCount(requirement: TargetRequirement): Boolean {
-        val target = DynamicTargetCount.objectOf(requirement) ?: return false
-        return target.dynamicMaxCount == DynamicAmount.XValue
+        return requirement.dynamicMaxCount == DynamicAmount.XValue
     }
 
     /**
@@ -517,8 +516,7 @@ class TargetEnumerationUtils(
      * X — so the client must require the chosen X selections rather than cap at them.
      */
     fun requirementXConstrainsCountExactly(requirement: TargetRequirement): Boolean {
-        val target = DynamicTargetCount.objectOf(requirement) ?: return false
-        return target.dynamicMaxCount == DynamicAmount.XValue && target.dynamicMinCount == DynamicAmount.XValue
+        return requirement.dynamicMaxCount == DynamicAmount.XValue && requirement.dynamicMinCount == DynamicAmount.XValue
     }
 
     /**

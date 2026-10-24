@@ -100,6 +100,19 @@ sealed interface TargetRequirement : TextReplaceable<TargetRequirement> {
     val unlimited: Boolean get() = false
     /** Named identifier for this target requirement. When set, enables BoundVariable resolution. */
     val id: String? get() = null
+    /**
+     * A target count only knowable at cast or trigger time — "up to X target creatures", "each of
+     * up to X targets". When set it is the maximum and the static [count] is only a placeholder;
+     * the engine resolves it (X is announced before targets are chosen, CR 601.2b–c) and locks it
+     * in once targets are chosen. Null — the default — means the static [count] is the cap.
+     * Carried by [TargetObject] and [AnyTarget]; other shapes don't take it yet.
+     */
+    val dynamicMaxCount: DynamicAmount? get() = null
+    /**
+     * The dynamic floor paired with [dynamicMaxCount] — "X target creatures", exactly X. Only
+     * [TargetObject] carries it; null means [effectiveMinCount] is the floor.
+     */
+    val dynamicMinCount: DynamicAmount? get() = null
 
     /** Effective minimum after considering optional/unlimited flags */
     val effectiveMinCount: Int get() = if (optional || unlimited) 0 else minCount
@@ -202,7 +215,12 @@ data class AnyTarget(
     /** Additional predicates shared by permanent and player candidates. */
     val filter: GameObjectFilter = GameObjectFilter.Any,
     /** "Any number of targets" (Fireball) — no upper bound, minimum 0. See [TargetRequirement.unlimited]. */
-    override val unlimited: Boolean = false
+    override val unlimited: Boolean = false,
+    /**
+     * "Each of up to X targets" (Crackle with Power) — see [TargetRequirement.dynamicMaxCount].
+     * Author it with `optional = true` so fewer (or none) may be chosen.
+     */
+    override val dynamicMaxCount: DynamicAmount? = null
 ) : TargetRequirement {
     override fun applyTextReplacement(replacer: TextReplacer): TargetRequirement {
         val replaced = filter.applyTextReplacement(replacer)
@@ -214,6 +232,7 @@ data class AnyTarget(
             append(
                 when {
                     unlimited -> "any number of targets"
+                    dynamicMaxCount != null -> "up to ${dynamicMaxCount.description} targets"
                     count == 1 -> "any target"
                     minCount < count -> "${countRange(maxOf(minCount, 1), count)} targets"
                     else -> "${numberToWord(count)} targets"
@@ -446,8 +465,8 @@ data class TargetObject(
     override val optional: Boolean = false,
     val filter: TargetFilter,
     override val id: String? = null,
-    val dynamicMaxCount: DynamicAmount? = null,
-    val dynamicMinCount: DynamicAmount? = null,
+    override val dynamicMaxCount: DynamicAmount? = null,
+    override val dynamicMinCount: DynamicAmount? = null,
     /**
      * When true and more than one target is chosen for this requirement, every chosen
      * target must be controlled by the same player ("two target creatures controlled by
@@ -698,6 +717,8 @@ data class TargetOther(
     override val optional: Boolean = baseRequirement.optional
     override val unlimited: Boolean = baseRequirement.unlimited
     override val chooser: TargetChooser = baseRequirement.chooser
+    override val dynamicMaxCount: DynamicAmount? get() = baseRequirement.dynamicMaxCount
+    override val dynamicMinCount: DynamicAmount? get() = baseRequirement.dynamicMinCount
     override val effectiveMinCount: Int get() = baseRequirement.effectiveMinCount
 
     override fun applyTextReplacement(replacer: TextReplacer): TargetRequirement {

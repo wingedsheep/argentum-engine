@@ -5753,6 +5753,9 @@ non-object shapes are the `Targets.*` presets.
   many are still legal ("divided evenly") must be frozen with `Effects.StoreNumber(name,
   DynamicAmounts.xValue() / DynamicAmounts.targetCount())` *before* the loop — the resolver hands the
   effect only still-legal targets (CR 608.2b), but inside `ForEachTarget` the context holds just one.
+- `Targets.AnyUpTo(max)` — "each of up to X targets" (Crackle with Power): `AnyTarget(optional = true,
+  dynamicMaxCount = max)`, zero to `max` targets, `max` resolved when targets are chosen (the announced X,
+  or a board amount snapshotted as a trigger goes on the stack). Read them with `Effects.ForEachTarget(…)`.
 - `Targets.AnyChosenByOpponent` — "any target **of an opponent's choice**" (Cuombajj Witches). A real
   target of *your* spell/ability that an **opponent** selects: announced at the same time as your own
   targets, equally respondable, and with legality (hexproof/protection/shroud) measured relative to
@@ -5944,7 +5947,7 @@ spell {
   unlimited = true, minCount = 1)` (**Touch of Darkness**) — still uncapped, but the spell can't be
   cast without a legal target and an empty target list is rejected (CR 601.2c).
 - **Any other shape** — players, "any target", the mixed "X or Y" shapes — is `target(Targets.X)`:
-  `Targets.Player`, `Targets.Opponent`, `Targets.Any`, `Targets.Any(filter)`, `Targets.AnyNumber`, `Targets.AnyChosenByOpponent`,
+  `Targets.Player`, `Targets.Opponent`, `Targets.Any`, `Targets.Any(filter)`, `Targets.AnyNumber`, `Targets.AnyUpTo(max)`, `Targets.AnyChosenByOpponent`,
   `Targets.AnyOtherThanEnchantedCreature`, `Targets.CreatureOrPlayer`, `Targets.PermanentOrPlayer`,
   `Targets.CreatureOrPlaneswalker`, `Targets.PlayerOrPlaneswalker`, `Targets.OpponentOrPlaneswalker`,
   `Targets.PlayerOrBattle` (`TargetPermanentOrPlayer(permanentFilter = TargetFilter.Battle)` — Onakke
@@ -6039,6 +6042,9 @@ Every `TargetRequirement` carries count semantics (defaults shown):
   `count` / `minCount` pair, and the Oracle wording says which spelling a card takes:
   - "**up to** X target creatures" — `targets(filter, optional = true, dynamicMaxCount = X)`
     (Crashing Wave, Prismabasher, Red Sun's Twilight): zero to X.
+  - "each of **up to X targets**" (players included) — `Targets.AnyUpTo(X)`, i.e.
+    `AnyTarget(optional = true, dynamicMaxCount = X)` (Crackle with Power). `AnyTarget` takes only
+    the cap, not `dynamicMinCount`.
   - "**X** target creatures" — `targets(filter, exactly = X)` (Icy Blast, Builder's Bane, Doppelgang,
     Foggy Swamp Visions, Lost in the Maze): exactly X. `exactly` sets `dynamicMinCount` and
     `dynamicMaxCount` to the same amount; it can't be combined with `dynamicMaxCount`, `optional` or
@@ -6046,7 +6052,9 @@ Every `TargetRequirement` carries count semantics (defaults shown):
   - `dynamicMaxCount` + `unlimited = true` — "any number of target …" with a cap the effect imposes
     (Chandra, Flameshaper's divided damage).
 
-  `dynamicMaxCount: DynamicAmount?` is the cap, `dynamicMinCount: DynamicAmount?` the floor. Both are
+  `dynamicMaxCount: DynamicAmount?` is the cap, `dynamicMinCount: DynamicAmount?` the floor — both
+  declared on `TargetRequirement` (default null), carried by `TargetObject` (and the cap by
+  `AnyTarget`), and passed through by a `TargetOther` wrapper. Both are
   resolved where X is known (CR 601.2b announces X before 601.2c chooses targets): cast and activation
   validation with the announced X — from mana, from a waterbend {X} additional cost, or from board
   state — and a trigger's snapshot as it goes on the stack (CR 603.3d), which turns an exact dynamic

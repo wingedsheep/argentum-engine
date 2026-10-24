@@ -3088,6 +3088,50 @@
     ]
 }
 
+// Crackle with Power
+{
+    "name": "Crackle with Power",
+    "manaCost": "{X}{X}{X}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Crackle with Power deals five times X damage to each of up to X targets.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Multiply",
+                    "amount": "XValue",
+                    "multiplier": 5
+                },
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "optional": true,
+                "id": "t0",
+                "dynamicMaxCount": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "rarity": "MYTHIC",
+        "artist": "Micah Epstein",
+        "flavorText": "Will gasped as Rowan drew from the raw power of the Strixhaven Snarl. For a moment, she was luminous, transcendent, terrible.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/de547f52-3798-4b3a-947d-24873251204b.jpg?1783927356"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Cram Session
 {
     "name": "Cram Session",
