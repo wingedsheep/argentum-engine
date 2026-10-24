@@ -113,6 +113,8 @@ class PlayersCantCastSpellsFaceTest : FunSpec({
         val theirInstant = d.putCardInHand(opp, instant.name)
         d.passPriority(me)
         d.state.priorityPlayerId shouldBe opp
+        offers(d, theirs, opp).any { it.faceIndex == null } shouldBe false
+        offers(d, theirs, opp).any { it.faceIndex == 0 } shouldBe true
         d.submitExpectFailure(CastSpell(opp, theirs))
         d.submitSuccess(CastSpell(opp, theirInstant))
     }

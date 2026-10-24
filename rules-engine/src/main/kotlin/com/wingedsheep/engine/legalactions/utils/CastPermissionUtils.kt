@@ -336,11 +336,11 @@ class CastPermissionUtils(
     }
 
     /**
-     * The per-card slice of [reasonCannotCast] that the enumerators can prune on before pricing a
-     * card — restrictions that depend on *which* card is being cast but not on the face chosen
-     * for it (Mana Maze's color sharing, a filtered per-turn limit, a blanket [PlayersCantCastSpells]
-     * such as Grand Abolisher's). A *filtered* [PlayersCantCastSpells] is face-dependent, so it is
-     * left to [blockedByResolvedCastRestriction] on the final offers. Separated from the blanket
+     * The per-card slice of [reasonCannotCast] that the enumerators prune on before pricing a
+     * card — Mana Maze's color sharing, a filtered per-turn limit (both still read the card's
+     * front face), and a blanket [PlayersCantCastSpells] such as Grand Abolisher's, which no face
+     * escapes. A *filtered* [PlayersCantCastSpells] is face-dependent, so it is left to
+     * [blockedByResolvedCastRestriction] on the final offers. Separated from the blanket
      * per-player locks so enumeration can cache the latter once per pass and only pay the
      * per-card scan when [anyPerSpellCastRestrictionPresent] says a relevant static is in play.
      */
