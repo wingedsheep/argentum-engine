@@ -510,6 +510,11 @@ data class CapCounterPlacementThisTurn(
  * countered on the stack is redirected too. It stops applying only while the source is on the
  * battlefield and has lost all abilities.
  *
+ * Granted with `GrantReplacementEffect`, [selfOnly] means the ability the *target* gained ("it
+ * gains 'If this creature would leave the battlefield, exile it instead …'" — Elemental
+ * Expressionist): it redirects only the grant's holder, and ends when the holder becomes a new
+ * object.
+ *
  * [shuffleIntoLibrary] pairs with `newDestination = Zone.LIBRARY` for the Darksteel Colossus /
  * Progenitus family ("reveal ~ and shuffle it into its owner's library instead") — the card is
  * shuffled in rather than placed on top. [reveal] shows the card as it is shuffled away.

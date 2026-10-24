@@ -1420,17 +1420,22 @@ data class GameState(
 
     /**
      * Drop the triggered, state-triggered and activated abilities granted to [entityId] — the
-     * object stopped existing as the object those grants were made to (CR 400.7).
+     * object stopped existing as the object those grants were made to (CR 400.7) — and the
+     * self-scoped replacement abilities it gained (a `selfOnly` [com.wingedsheep.sdk.scripting.RedirectZoneChange]).
+     * Other replacement grants anchored to it are floating riders that outlive their anchor
+     * (Forgotten Cellar's "this turn" exile rider), so they stay.
      */
     fun withoutObjectGrants(entityId: EntityId): GameState =
         if (grantedTriggeredAbilities.none { it.entityId == entityId } &&
             grantedStateTriggeredAbilities.none { it.entityId == entityId } &&
-            grantedActivatedAbilities.none { it.entityId == entityId }
+            grantedActivatedAbilities.none { it.entityId == entityId } &&
+            grantedReplacementEffects.none { it.isSelfScopedTo(entityId) }
         ) this
         else copy(
             grantedTriggeredAbilities = grantedTriggeredAbilities.filter { it.entityId != entityId },
             grantedStateTriggeredAbilities = grantedStateTriggeredAbilities.filter { it.entityId != entityId },
-            grantedActivatedAbilities = grantedActivatedAbilities.filter { it.entityId != entityId }
+            grantedActivatedAbilities = grantedActivatedAbilities.filter { it.entityId != entityId },
+            grantedReplacementEffects = grantedReplacementEffects.filterNot { it.isSelfScopedTo(entityId) }
         )
 
     /** A zone change ends the individual escape grant even though the physical card keeps its id. */

@@ -5633,6 +5633,148 @@
     ]
 }
 
+// Elemental Expressionist
+{
+    "name": "Elemental Expressionist",
+    "manaCost": "{U/R}{U/R}{U/R}{U/R}",
+    "typeLine": "Creature — Orc Wizard",
+    "oracleText": "Magecraft — Whenever you cast or copy an instant or sorcery spell, choose target creature you control. Until end of turn, it gains \"If this creature would leave the battlefield, exile it instead of putting it anywhere else\" and \"When this creature is put into exile, create a 4/4 blue and red Elemental creature token.\" (Each instance of that ability triggers separately.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Elemental Expressionist:2",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "SpellCopiedEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantReplacementEffect",
+                            "replacement": {
+                                "type": "RedirectZoneChange",
+                                "newDestination": "Exile",
+                                "appliesTo": {
+                                    "type": "ZoneChangeEvent",
+                                    "from": "Battlefield"
+                                },
+                                "selfOnly": true
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantTriggeredAbility",
+                            "ability": {
+                                "id": "Elemental Expressionist:1",
+                                "trigger": {
+                                    "type": "ZoneChangeEvent",
+                                    "from": "Battlefield",
+                                    "to": "Exile"
+                                },
+                                "effect": {
+                                    "type": "CreateToken",
+                                    "power": 4,
+                                    "toughness": 4,
+                                    "colors": [
+                                        "BLUE",
+                                        "RED"
+                                    ],
+                                    "creatureTypes": [
+                                        "Elemental"
+                                    ]
+                                },
+                                "descriptionOverride": "When this creature is put into exile, create a 4/4 blue and red Elemental creature token."
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Magecraft — Whenever you cast or copy an instant or sorcery spell, choose target creature you control. Until end of turn, it gains \"If this creature would leave the battlefield, exile it instead of putting it anywhere else\" and \"When this creature is put into exile, create a 4/4 blue and red Elemental creature token.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "RARE",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/7473db42-905b-4fda-af8c-fd24d906b642.jpg?1783927316",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Elemental Expressionist has received an update to its Oracle text. Specifically, the second ability granted to the target creature doesn't care that the creature's controller is the one exiling it. If the creature is put into exile for any reason, that ability will trigger."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If you target a creature token with Elemental Expressionist's ability, and that token would leave the battlefield, it is still exiled (very briefly) before it ceases to exist, and you will still create an Elemental token."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If the magecraft ability triggers and resolves more than once with the same creature as the target, that creature will have multiple instances of each of the two triggered abilities the magecraft ability grants it. Each instance of the second ability will trigger separately, and you'll create an Elemental token for each of them. (Multiple instances of the first granted ability are redundant.)"
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates a copy of an instant or sorcery spell, this will also cause the magecraft ability to trigger."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates multiple copies of an instant or sorcery spell, magecraft abilities trigger once for each copy created by the effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Elemental Masterpiece
 {
     "name": "Elemental Masterpiece",

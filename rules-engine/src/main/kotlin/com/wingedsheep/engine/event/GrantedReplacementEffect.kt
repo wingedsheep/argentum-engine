@@ -38,4 +38,12 @@ data class GrantedReplacementEffect(
     val replacement: ReplacementEffect,
     val duration: Duration,
     val spent: Boolean = false
-)
+) {
+    /**
+     * True when this grant is an ability [holder] itself gained rather than a floating rider: a
+     * `selfOnly` [com.wingedsheep.sdk.scripting.RedirectZoneChange] redirects only its holder, so it
+     * ends when the holder becomes a new object (CR 400.7).
+     */
+    fun isSelfScopedTo(holder: EntityId): Boolean =
+        entityId == holder && (replacement as? com.wingedsheep.sdk.scripting.RedirectZoneChange)?.selfOnly == true
+}

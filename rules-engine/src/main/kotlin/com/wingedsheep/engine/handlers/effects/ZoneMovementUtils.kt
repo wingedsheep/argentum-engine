@@ -1000,10 +1000,13 @@ object ZoneMovementUtils {
         // Granted (durational) replacement effects — e.g. Forgotten Cellar's "if a card would be
         // put into your graveyard from anywhere this turn, exile it instead". Recorded in
         // GameState.grantedReplacementEffects with the granting controller, and read here
-        // alongside permanents' printed replacement effects.
+        // alongside permanents' printed replacement effects. A `selfOnly` grant is an ability the
+        // holder gained ("it gains 'If this creature would leave the battlefield, exile it
+        // instead …'" — Elemental Expressionist), so it redirects only the holder itself.
         for (grant in state.grantedReplacementEffects) {
             val effect = grant.replacement
             if (effect !is RedirectZoneChange) continue
+            if (effect.selfOnly && grant.entityId != entityId) continue
 
             val event = effect.appliesTo
             if (event !is com.wingedsheep.sdk.scripting.EventPattern.ZoneChangeEvent) continue
