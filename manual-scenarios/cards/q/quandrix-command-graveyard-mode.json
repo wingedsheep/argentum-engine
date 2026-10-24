@@ -1,0 +1,25 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Quandrix Command"],
+    "battlefield": [{"name": "Forest"}, {"name": "Forest"}, {"name": "Island"}, {"name": "Grizzly Bears"}],
+    "graveyard": ["Savannah Lions"],
+    "library": ["Forest", "Island", "Forest"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [{"name": "Mountain"}],
+    "graveyard": ["Centaur Courser", "Grizzly Bears", "Mountain"],
+    "library": ["Mountain", "Mountain", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

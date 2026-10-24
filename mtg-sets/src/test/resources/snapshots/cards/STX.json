@@ -16340,6 +16340,141 @@
     ]
 }
 
+// Quandrix Command
+{
+    "name": "Quandrix Command",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Choose two —\n• Return target creature or planeswalker to its owner's hand.\n• Counter target artifact or enchantment spell.\n• Put two +1/+1 counters on target creature.\n• Target player shuffles up to three target cards from their graveyard into their library.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetCreatureOrPlaneswalker",
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Return target creature or planeswalker to its owner's hand"
+                },
+                {
+                    "effect": "Counter",
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact|enchantment",
+                                "zone": "Stack"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Counter target artifact or enchantment spell"
+                },
+                {
+                    "effect": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 2,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t2"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t2"
+                        }
+                    ],
+                    "description": "Put two +1/+1 counters on target creature"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.TargetsOf",
+                                    "group": "t4"
+                                },
+                                "body": {
+                                    "type": "MoveToZone",
+                                    "target": "IterationEntity",
+                                    "destination": "Library"
+                                }
+                            },
+                            {
+                                "type": "ShuffleLibrary",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t3"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t3"
+                        },
+                        {
+                            "type": "TargetObject",
+                            "count": 3,
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": "own:target-player",
+                                "zone": "Graveyard"
+                            },
+                            "id": "t4"
+                        }
+                    ],
+                    "description": "Target player shuffles up to three target cards from their graveyard into their library"
+                }
+            ],
+            "chooseCount": 2
+        }
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "rarity": "RARE",
+        "artist": "Viktor Titov",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/021b62d8-d160-47f5-bc51-0474f160d13f.jpg?1783927299",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If at least one target is still legal as Quandrix Command tries to resolve, it will resolve and do as much as it can."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "As Quandrix Command tries to resolve, if the fourth mode is chosen and all of the target cards are illegal, but the target player is still legal, that player will still shuffle their library."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If all of Quandrix Command's targets are illegal as it tries to resolve, it will do nothing."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Quandrix Cultivator
 {
     "name": "Quandrix Cultivator",

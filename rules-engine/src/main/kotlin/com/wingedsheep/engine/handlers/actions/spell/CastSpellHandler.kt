@@ -1295,12 +1295,20 @@ class CastSpellHandler(
                 sourceId = cardId,
                 xValue = baseCastAction.xValue
             )
+            // A slot whose filter reads an earlier slot of this mode ("up to three target cards
+            // from their graveyard" after "target player", Quandrix Command) is offered per prefix.
+            val prefixTables = if (com.wingedsheep.engine.handlers.DependentTargetSelection.isRequired(modeTargetReqs)) {
+                com.wingedsheep.engine.handlers.DependentTargetSelection.prefixTables(
+                    state, modeTargetReqs, xContext, targetFinder, TargetingSourceType.SPELL
+                )
+            } else null
             val legalTargetsMap = mutableMapOf<Int, List<EntityId>>()
             modeTargetReqs.forEachIndexed { index, req ->
-                legalTargetsMap[index] = targetFinder.findLegalTargets(
-                    state, req, casterId, cardId,
-                    targetingSourceType = TargetingSourceType.SPELL, pipelineContext = xContext
-                )
+                legalTargetsMap[index] = prefixTables?.get(index)?.values?.flatten()?.distinct()
+                    ?: targetFinder.findLegalTargets(
+                        state, req, casterId, cardId,
+                        targetingSourceType = TargetingSourceType.SPELL, pipelineContext = xContext
+                    )
             }
             val modeCounts = modeTargetReqs.map { req ->
                 resolveModeTargetCounts(state, req, casterId, cardId, baseCastAction.xValue)
@@ -1329,7 +1337,9 @@ class CastSpellHandler(
                     description = req.description,
                     mustDifferFromEarlier = req is com.wingedsheep.sdk.scripting.targets.TargetOther,
                     minTargets = counts.min,
-                    maxTargets = maxTargets
+                    maxTargets = maxTargets,
+                    legalTargetsByPrefix = prefixTables?.get(index)?.takeIf { index > 0 },
+                    prefixLength = index.takeIf { prefixTables != null && index > 0 }
                 ).withTargetConstraints(state, req, legalTargetsMap[index].orEmpty())
             }
 

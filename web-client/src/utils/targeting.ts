@@ -190,7 +190,7 @@ export function derivePileAction(effectHint: string | null | undefined): PileAct
     return { confirmText: 'Put onto Battlefield', verb: 'put onto the battlefield' }
   }
   if (hint.includes('shuffle') && hint.includes('library')) {
-    return { confirmText: 'Shuffle into Library', verb: 'shuffle into your library' }
+    return { confirmText: 'Shuffle into Library', verb: "shuffle into their owner's library" }
   }
   if (hint.includes('exile')) {
     return { confirmText: 'Exile', verb: 'exile' }

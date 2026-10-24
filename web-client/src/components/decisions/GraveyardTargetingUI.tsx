@@ -127,7 +127,11 @@ export function GraveyardTargetingUI({
   const isOptionalTarget = minTargets === 0
   const isMultiTarget = maxTargets > 1
   const sourceName = decision.context.sourceName ?? 'this ability'
-  const baseTitle = isOptionalTarget ? `Resolve ${sourceName}` : `Choose from ${pileNoun}`
+  // Targets chosen while casting belong to a spell, not a resolving trigger: "Cast X" / "Choose
+  // None", where an optional trigger target reads "Resolve X" / "Decline Trigger".
+  const isCasting = decision.context.phase === 'CASTING'
+  const declineLabel = isCasting ? 'Choose None' : 'Decline Trigger'
+  const baseTitle = isOptionalTarget ? `${isCasting ? 'Cast' : 'Resolve'} ${sourceName}` : `Choose from ${pileNoun}`
   const title = totalRequirements > 1
     ? `${baseTitle} (${requirementIndex + 1}/${totalRequirements})`
     : baseTitle
@@ -196,7 +200,7 @@ export function GraveyardTargetingUI({
         onConfirm={handleConfirm}
         confirmText={isOptionalTarget ? optionalConfirmText : 'Confirm Target'}
         showFailToFind={isOptionalTarget || !!targetReq?.emptyChoiceLabel}
-        failToFindText={targetReq?.emptyChoiceLabel ?? 'Decline Trigger'}
+        failToFindText={targetReq?.emptyChoiceLabel ?? declineLabel}
         confirmRequiresSelection={isOptionalTarget || !!targetReq?.emptyChoiceLabel}
         sortByType={true}
         useGlobalHover={true}
@@ -290,7 +294,7 @@ export function GraveyardTargetingUI({
         onMinimize={() => setMinimized(true)}
         {...(onViewBattlefield ? { onViewBattlefield } : {})}
         confirmText={isOptionalTarget ? optionalConfirmText : 'Confirm Target'}
-        declineText={targetReq?.emptyChoiceLabel ?? (isOptionalTarget ? 'Decline Trigger' : undefined)}
+        declineText={targetReq?.emptyChoiceLabel ?? (isOptionalTarget ? declineLabel : undefined)}
         confirmRequiresSelection={isOptionalTarget || !!targetReq?.emptyChoiceLabel}
         {...(onBack ? { onBack } : {})}
       />

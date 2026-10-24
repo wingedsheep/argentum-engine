@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers
 
 import com.wingedsheep.engine.handlers.continuations.entityIdToChosenTarget
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -16,7 +17,8 @@ import com.wingedsheep.sdk.scripting.targets.withCount
 /**
  * Select single targets in order when a filter reads an earlier target — an object's
  * characteristics ("power less than that creature's") or the player it names ("target creature
- * that player controls", Ravager of the Fells). A slot may be optional only when every slot after
+ * that player controls", Ravager of the Fells; "target cards from target player's graveyard",
+ * Drafna's Restoration). A slot may be optional only when every slot after
  * it is optional too, so declining one ends the selection without shifting a later target.
  *
  * Every slot picks one target except the last, which may pick several ("tap up to five target
@@ -24,6 +26,9 @@ import com.wingedsheep.sdk.scripting.targets.withCount
  * so it needs no completion search of its own. Chosen targets travel as one list per slot.
  */
 object DependentTargetSelection {
+    /** Zones whose cards stay put between the slot decisions — no priority passes in between. */
+    private val DEPENDENT_ZONES = setOf(Zone.BATTLEFIELD, Zone.GRAVEYARD)
+
     fun isRequired(requirements: List<TargetRequirement>): Boolean = requirements.any {
         it is TargetObject && referencesTarget(it.filter.baseFilter)
     }
@@ -42,6 +47,10 @@ object DependentTargetSelection {
             is EffectTarget.ContextTarget, is EffectTarget.BoundVariable, EffectTarget.TargetController -> true
             else -> false
         }
+        // "target cards from target player's graveyard" (Drafna's Restoration, Quandrix Command):
+        // the card slot can't be offered until the player slot is chosen.
+        ControllerPredicate.OwnedByTargetPlayer -> true
+        is ControllerPredicate.OwnedByReferencedPlayer -> isTargetReference(predicate.target)
         else -> false
     }
 
@@ -100,9 +109,9 @@ object DependentTargetSelection {
         targetFinder: TargetFinder,
         targetingSourceType: TargetingSourceType = TargetingSourceType.TRIGGERED_ABILITY
     ): List<EntityId> {
-        require(requirements.all { req -> req !is TargetObject || req.filter.zone == Zone.BATTLEFIELD } &&
+        require(requirements.all { req -> req !is TargetObject || req.filter.zone in DEPENDENT_ZONES } &&
             requirements.dropLast(1).all { req -> req.count == 1 && !req.unlimited }) {
-            "Dependent target selection requires players or permanents, single-target except the last slot"
+            "Dependent target selection requires players, permanents or graveyard cards, single-target except the last slot"
         }
         fun candidates(prefix: List<List<EntityId>>): List<EntityId> {
             val prefixTargets = prefix.flatten().map { entityIdToChosenTarget(state, it) }
@@ -116,6 +125,8 @@ object DependentTargetSelection {
                 pipelineContext = context.copy(
                     targets = prefixTargets,
                     namedTargets = EffectContext.buildNamedTargets(prefixRequirements, prefixTargets),
+                    // `OwnedByTargetPlayer` reads the cast's player target, as TargetValidator binds it.
+                    targetPlayerId = prefixTargets.firstNotNullOfOrNull { (it as? ChosenTarget.Player)?.playerId },
                 ),
             )
         }

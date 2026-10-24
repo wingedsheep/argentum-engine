@@ -223,7 +223,7 @@ describe('derivePileAction', () => {
   it('labels a shuffle-into-library effect', () => {
     expect(derivePileAction('Shuffle target card from a graveyard into its owner\'s library')).toEqual({
       confirmText: 'Shuffle into Library',
-      verb: 'shuffle into your library',
+      verb: "shuffle into their owner's library",
     })
   })
 

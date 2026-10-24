@@ -4256,17 +4256,23 @@
             "effects": [
                 {
                     "type": "ForEach",
-                    "space": "IterationSpace.Targets",
+                    "space": {
+                        "type": "IterationSpace.TargetsOf",
+                        "group": "t1"
+                    },
                     "body": {
                         "type": "MoveToZone",
-                        "target": {
-                            "type": "ContextTarget",
-                            "index": 0
-                        },
+                        "target": "IterationEntity",
                         "destination": "Library"
                     }
                 },
-                "ShuffleLibrary",
+                {
+                    "type": "ShuffleLibrary",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
                 {
                     "type": "DrawCards",
                     "count": {
@@ -4278,13 +4284,18 @@
         },
         "targetRequirements": [
             {
+                "type": "TargetPlayer",
+                "id": "t0"
+            },
+            {
                 "type": "TargetObject",
                 "count": 3,
                 "optional": true,
                 "filter": {
-                    "baseFilter": {},
+                    "baseFilter": "own:target-player",
                     "zone": "Graveyard"
-                }
+                },
+                "id": "t1"
             }
         ],
         "triggeredAbilities": [

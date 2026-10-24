@@ -6443,6 +6443,15 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   ChosenTargets)` → `MoveCollectionEffect(destination = ToZone(LIBRARY, player = Player.TargetPlayer,
   placement = Top), order = CardOrder.ControllerChooses)` to put the chosen cards on top of *their*
   (the target player's) library in a player-chosen order.
+  The card slot is offered **per chosen player** too: an owner predicate that reads an earlier target
+  (`.ownedByTargetPlayer()`, or `.ownedBy(player)` over a target handle) makes the slot dependent, so
+  legal actions, a modal spell's per-mode target prompt and trigger target selection all offer only
+  that player's graveyard once the player is picked (`DependentTargetSelection`, which covers
+  graveyard slots as well as permanents). "Target player shuffles up to three target cards from their
+  graveyard into their library" is `val player = target(Targets.Player)` then
+  `targets(TargetFilter(GameObjectFilter.Any.ownedByTargetPlayer(), zone = Zone.GRAVEYARD), count = 3,
+  optional = true)` and `ForEachTargetOf(cards, Move(IterationEntity, LIBRARY)) then ShuffleLibrary(player)`
+  — Gaea's Blessing, and Quandrix Command as a mode.
 - `.ownedByTriggeringPlayer()` (`ControllerPredicate.OwnedByTriggeringPlayer`, FQL
   `own:triggering-player`) — owned by the trigger's associated player: the damaged player for a
   combat/damage trigger, the event's player otherwise. The *non-targeted* "that player" sibling of
