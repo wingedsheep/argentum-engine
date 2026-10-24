@@ -18819,6 +18819,552 @@
     ]
 }
 
+// Tend the Pests
+{
+    "name": "Tend the Pests",
+    "manaCost": "{B}{G}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, sacrifice a creature.\nCreate X 1/1 black and green Pest creature tokens with \"When this token dies, you gain 1 life,\" where X is the sacrificed creature's power.",
+    "script": {
+        "spellEffect": {
+            "type": "CreatePredefinedToken",
+            "tokenType": "Pest",
+            "dynamicCount": {
+                "type": "EntityProperty",
+                "entity": "SacrificedAsCost",
+                "numericProperty": "Power"
+            }
+        },
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "242",
+        "rarity": "UNCOMMON",
+        "artist": "David Auden Nash",
+        "flavorText": "\"I've got a special treat for you today.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8f43ed93-008d-44db-8204-ef2cc3b7cf8a.jpg?1783927287",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Copies of Tend the Pests will use the power of the creature sacrificed for the original spell to determine the number of Pests each copy creates. Because the copies aren't cast, you won't sacrifice additional creatures for them."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Tenured Inkcaster
+{
+    "name": "Tenured Inkcaster",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Vampire Warlock",
+    "oracleText": "When this creature enters, put a +1/+1 counter on target creature.\nWhenever a creature you control with a +1/+1 counter on it attacks, each opponent loses 1 life and you gain 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tenured Inkcaster:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, put a +1/+1 counter on target creature."
+            },
+            {
+                "id": "Tenured Inkcaster:2",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever a creature you control with a +1/+1 counter on it attacks, each opponent loses 1 life and you gain 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "UNCOMMON",
+        "artist": "Jake Murray",
+        "flavorText": "\"Ah, another future archmage for my collection.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/92eba33e-efea-4e58-a832-1c6049fb211f.jpg?1783927361"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Test of Talents
+{
+    "name": "Test of Talents",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target instant or sorcery spell. Search its controller's graveyard, hand, and library for any number of cards with the same name as that spell and exile them. That player shuffles, then draws a card for each card exiled from their hand this way.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "testedSpell"
+                },
+                {
+                    "type": "CaptureControllers",
+                    "from": "testedSpell",
+                    "storeAs": "testedSpellControllers"
+                },
+                {
+                    "type": "StoreCardName",
+                    "from": "testedSpell",
+                    "storeAs": "testedSpellName"
+                },
+                "Counter",
+                {
+                    "type": "ForEachCapturedController",
+                    "collection": "testedSpell",
+                    "originalCollection": "testedSpell",
+                    "controllerSnapshot": "testedSpellControllers",
+                    "countVariable": "count4",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromMultipleZones",
+                                "zones": [
+                                    "Graveyard",
+                                    "Hand",
+                                    "Library"
+                                ],
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "NameEqualsChosen",
+                                            "variableName": "testedSpellName"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "testedMatches",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "testedMatches",
+                            "selection": "ChooseAnyNumber",
+                            "chooser": "SourceController",
+                            "storeSelected": "testedSelected",
+                            "prompt": "Choose any number of cards with that name to exile",
+                            "showAllCards": true,
+                            "alwaysPrompt": true
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "testedSelected",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "InZone",
+                                        "zone": "Hand"
+                                    }
+                                ]
+                            },
+                            "storeMatching": "testedSelectedFromHand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "testedSelected",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "VariableReference",
+                                "variableName": "testedSelectedFromHand_count"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "instant|sorcery",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "UNCOMMON",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6e2b6236-b40c-430c-98b0-7940b942657a.jpg?1783927374",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Countering a spell normally puts that card into the graveyard, so that card will be there to find and exile."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If the back face of a modal double-faced card is countered, you will not be able to exile any cards, including the one that you countered, because those cards have only their front-face characteristics (including name) in the graveyard, hand, and library."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// The Biblioplex
+{
+    "name": "The Biblioplex",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{2}, {T}: Look at the top card of your library. If it's an instant or sorcery card, you may reveal it and put it into your hand. If you don't put the card into your hand, you may put it into your graveyard. Activate only if you have exactly zero or seven cards in hand.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "The Biblioplex:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "The Biblioplex:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "instant|sorcery",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "Reveal the instant or sorcery card and put it into your hand?",
+                            "selectedLabel": "Reveal and put into your hand",
+                            "remainderLabel": "Leave it"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "remainder1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected3",
+                            "storeRemainder": "remainder3",
+                            "prompt": "Put the card into your graveyard?",
+                            "selectedLabel": "Put into your graveyard",
+                            "remainderLabel": "Leave on top of your library"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            }
+                        }
+                    ]
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Any",
+                            "conditions": [
+                                {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Hand",
+                                    "negate": true
+                                },
+                                {
+                                    "type": "All",
+                                    "conditions": [
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "Count",
+                                                "player": "You",
+                                                "zone": "Hand"
+                                            },
+                                            "operator": "GTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 7
+                                            }
+                                        },
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "Count",
+                                                "player": "You",
+                                                "zone": "Hand"
+                                            },
+                                            "operator": "LTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 7
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "descriptionOverride": "{2}, {T}: Look at the top card of your library. If it's an instant or sorcery card, you may reveal it and put it into your hand. If you don't put the card into your hand, you may put it into your graveyard. Activate only if you have exactly zero or seven cards in hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "264",
+        "rarity": "RARE",
+        "artist": "Piotr Dura",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8eae4481-977f-4bb7-bb1a-ab7100e6ba47.jpg?1783927275",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If you don't choose to either reveal the card or put it into your graveyard, the card stays on top of your library."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Although you must have exactly zero or seven cards in your hand to activate the last ability, it doesn't matter how many cards you have in your hand as that ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Thrilling Discovery
+{
+    "name": "Thrilling Discovery",
+    "manaCost": "{R}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "You gain 2 life. Then you may discard two cards. If you do, draw three cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Hand"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 2 cards to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                },
+                                {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
+                                }
+                            ]
+                        },
+                        "descriptionOverride": "You may discard two cards. If you do, draw three cards."
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "243",
+        "artist": "Campbell White",
+        "flavorText": "\"This must be the lost city of Zantafar, where my people lived before becoming nomads. Think of the history we'll learn here!\"\n—Quintorius, Lorehold mage-student",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/bac1f45e-1884-490e-a94f-f7d312f0e229.jpg?1783927286"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Twinscroll Shaman
 {
     "name": "Twinscroll Shaman",
