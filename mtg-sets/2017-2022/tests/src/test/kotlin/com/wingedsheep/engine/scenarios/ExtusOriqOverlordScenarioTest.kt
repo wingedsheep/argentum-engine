@@ -47,6 +47,7 @@ class ExtusOriqOverlordScenarioTest : FunSpec({
         withClue("the back face should be castable once its discount is counted") {
             back.affordable shouldBe true
         }
+        back.manaCostString shouldBe "{2}{B}{R}"
     }
 
     test("sacrificing two creatures casts it for {2}{B}{R}; opponent sacrifices and an Avatar appears") {
