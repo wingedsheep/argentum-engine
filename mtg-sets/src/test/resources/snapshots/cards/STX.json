@@ -14151,6 +14151,163 @@
     ]
 }
 
+// Quandrix Cultivator
+{
+    "name": "Quandrix Cultivator",
+    "manaCost": "{1}{G}{G/U}{U}",
+    "typeLine": "Creature — Turtle Druid",
+    "oracleText": "When this creature enters, you may search your library for a basic Forest or Island card, put it onto the battlefield, then shuffle.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Quandrix Cultivator:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "basicland Forest|Island"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a basic land Forest or Island card to put onto the battlefield",
+                                "selectedLabel": "Put onto the battlefield"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "UNCOMMON",
+        "artist": "Filip Burburan",
+        "flavorText": "In the gardens spread across the Quandrix campus, fern turns to forest before class is even over.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e3ca9ff7-0dcf-4ecc-879c-957d290ad7f5.jpg?1783927300"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
+// Quandrix Pledgemage
+{
+    "name": "Quandrix Pledgemage",
+    "manaCost": "{1}{G/U}{G/U}",
+    "typeLine": "Creature — Merfolk Druid",
+    "oracleText": "Magecraft — Whenever you cast or copy an instant or sorcery spell, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Quandrix Pledgemage:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "SpellCopiedEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Magecraft — Whenever you cast or copy an instant or sorcery spell, put a +1/+1 counter on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "artist": "Caroline Gariba",
+        "flavorText": "\"The first step toward transcending physical limitations is discarding assumptions about what is possible.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/07633b7f-4150-458b-89c3-d05dc0e3c4bd.jpg?1783927300",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates a copy of an instant or sorcery spell, this will also cause the magecraft ability to trigger."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates multiple copies of an instant or sorcery spell, magecraft abilities trigger once for each copy created by the effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Quintorius, Field Historian
 {
     "name": "Quintorius, Field Historian",
@@ -14199,6 +14356,111 @@
         "artist": "Bryan Sola",
         "flavorText": "\"Every life has a story to tell. I won't let them be forgotten.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/0/6/06c55ef1-8e62-4d43-bd4c-b2c3c5203338.jpg?1783927298"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Radiant Scrollwielder
+{
+    "name": "Radiant Scrollwielder",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Creature — Dwarf Cleric",
+    "oracleText": "Instant and sorcery spells you control have lifelink.\nAt the beginning of your upkeep, exile an instant or sorcery card at random from your graveyard. You may cast it this turn. If a spell cast this way would be put into your graveyard, exile it instead.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Radiant Scrollwielder:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "instant|sorcery"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "Random",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "selected1",
+                            "insteadOfGraveyard": "EXILE"
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, exile an instant or sorcery card at random from your graveyard. You may cast it this turn. If a spell cast this way would be put into your graveyard, exile it instead."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeywordToOwnSpells",
+                "keyword": "LIFELINK",
+                "spellFilter": {
+                    "cardPredicates": [
+                        {
+                            "type": "Or",
+                            "predicates": [
+                                "IsInstant",
+                                "IsSorcery"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "221",
+        "rarity": "RARE",
+        "artist": "Campbell White",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c8152ab0-c6fc-4568-b837-4e84129e7b57.jpg?1783927297",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "You still pay the mana cost when casting the exiled card, and you must follow all timing rules for it."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an instant or sorcery spell you control with lifelink deals damage to you, you gain and lose that much life simultaneously. In this case, your life total doesn't change. (You may gain life if the spell also deals damage to other permanents and/or players, however.)"
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Some instant and sorcery spells instruct other things to deal damage rather than deal damage themselves. In these cases, you won't gain life for that damage (unless the other things also have lifelink). Notably, a spell that instructs a creature you control to fight won't cause you to gain life."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "RED",
@@ -14263,6 +14525,274 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Reconstruct History
+{
+    "name": "Reconstruct History",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return up to one target artifact card, up to one target enchantment card, up to one target instant card, up to one target sorcery card, and up to one target planeswalker card from your graveyard to your hand.\nExile Reconstruct History.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t2"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t3"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t4"
+                    },
+                    "destination": "Hand"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "artifact own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "enchantment own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t1"
+            },
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "instant own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t2"
+            },
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "sorcery own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t3"
+            },
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "planeswalker own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t4"
+            }
+        ],
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "UNCOMMON",
+        "artist": "Campbell White",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3e565e38-43d5-482e-a911-ce525dfee74f.jpg?1783927298"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Reduce to Memory
+{
+    "name": "Reduce to Memory",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Sorcery — Lesson",
+    "oracleText": "Exile target nonland permanent. Its controller creates a 3/2 red and white Spirit creature token.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 2,
+                    "colors": [
+                        "RED",
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "controller": "TargetController"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "rarity": "UNCOMMON",
+        "artist": "Campbell White",
+        "flavorText": "\"Do not flinch from studying the horrors of the past. History's most important lessons are cloaked in terror and tragedy.\"\n—Augusta, Lorehold dean",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7bfc408e-34d6-4e94-8678-4cc229cbc6f5.jpg?1783927387"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Reflective Golem
+{
+    "name": "Reflective Golem",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "Whenever you cast an instant or sorcery spell that targets only this creature, you may pay {2}. If you do, copy that spell. You may choose new targets for the copy.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Reflective Golem:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    },
+                    "requires": [
+                        "SpellTargetsOnlySource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{2}"
+                        }
+                    },
+                    "then": {
+                        "type": "CopyTargetSpell",
+                        "target": "TriggeringEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever you cast an instant or sorcery spell that targets only this creature, you may pay {2}. If you do, copy that spell. You may choose new targets for the copy."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "257",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "\"We don't cut through Sedgemoor anymore. Can't get five steps without a groff trying to fight its own reflection.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c01770c4-8848-495d-8af4-26152d45e9d3.jpg?1783927279"
+    },
+    "colorIdentityOverride": []
+}
+
+// Reject
+{
+    "name": "Reject",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target creature or planeswalker spell unless its controller pays {3}. If that spell is countered this way, exile it instead of putting it into its owner's graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "counterDestination": "CounterDestination.Exile",
+            "condition": {
+                "type": "CounterCondition.UnlessPaysDynamic",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 3
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"Grux, for the last time, you have to do more than simply shout 'Apply!' at the administrators.\"\n—Pavil, admissions officer",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d77f0731-fb40-4dc2-8530-afcb5ce1f27f.jpg?1783927375"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
