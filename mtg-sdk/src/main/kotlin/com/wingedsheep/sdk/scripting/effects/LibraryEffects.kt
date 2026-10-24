@@ -390,6 +390,16 @@ data class ExileLibraryUntilManaValueEffect(
  * can't be skipped. The cost is stamped on the card for this one cast only and removed if the cast
  * never initiates. Mutually exclusive with [payManaCost].
  *
+ * **Paying other mana instead.** Set [alternativeManaCost] for "you may cast it by paying {1}
+ * rather than paying its mana cost" — Jadzi, Oracle of Arcavios. The fixed mana cost replaces the
+ * mana cost as an alternative cost (CR 118.9), from whatever zone the card is in (library, exile,
+ * graveyard, hand): {X} in the printed cost is 0 (CR 107.3b), cost increases and reductions still
+ * apply on top of it (CR 601.2f), and additional costs such as kicker may still be paid. It rides
+ * the same fixed-alternative-cost stamp madness and airbend use, for this one cast only, removed
+ * if the cast never initiates. A caster who can't pay simply doesn't cast it (CR 601.2h).
+ * Exclusive with [payManaCost], [alternativeCost], [castUsing] and [castFaceDown], each of which
+ * names a different price.
+ *
  * **Paying more on top.** Set [additionalManaCost] (with [payManaCost]) for "you may cast that card
  * by paying {R}{R} in addition to its other costs" — Ogre Battlecaster. It is an additional cost
  * (CR 601.2f): added to the mana cost and to every other cost increase, stamped on the card for this
@@ -452,8 +462,14 @@ data class CastFromCollectionWithoutPayingCostEffect(
     val turnsFaceUpInstead: Boolean = false,
     /** The keyword alternative cost the cast announces, or null — see the class KDoc. */
     val castUsing: Keyword? = null,
+    /** The fixed mana cost paid rather than the mana cost, or null — see the class KDoc. */
+    val alternativeManaCost: ManaCost? = null,
 ) : Effect {
     init {
+        require(alternativeManaCost == null || (!payManaCost && alternativeCost == null && castUsing == null &&
+            !castFaceDown)) {
+            "alternativeManaCost replaces the mana cost; it takes no other price"
+        }
         require(castUsing == null || (payManaCost && alternativeCost == null && additionalManaCost == null &&
             !castTransformed && !castFaceDown)) {
             "castUsing names the spell's whole price and face; it needs payManaCost and no other cost or face"
@@ -482,6 +498,7 @@ data class CastFromCollectionWithoutPayingCostEffect(
                 " by ${alternativeCost.description.replaceFirstChar { it.lowercaseChar() }.replaceFirst("pay ", "paying ")}" +
                     " rather than paying its mana cost"
             )
+            alternativeManaCost != null -> append(" by paying $alternativeManaCost rather than paying its mana cost")
             !payManaCost -> append(" without paying its mana cost")
             additionalManaCost != null -> append(" by paying $additionalManaCost in addition to its other costs")
         }

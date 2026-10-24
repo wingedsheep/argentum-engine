@@ -1301,7 +1301,8 @@ class LibraryAndZoneContinuationResumer(
             // it isn't stranded in exile; checkForMore keeps the rest of the trigger's
             // resolution (e.g. a discover follow-up frame) alive.
             var cleaned = CastFromCollectionWithoutPayingCostExecutor.revokeFreeCast(
-                state, continuation.cardId, continuation.grantedPermissionId
+                state, continuation.cardId, continuation.grantedPermissionId,
+                stampedAlternativeManaCost = continuation.stampedAlternativeManaCost,
             )
             val fallbackEvents = mutableListOf<GameEvent>()
             when (continuation.onCastFailure) {

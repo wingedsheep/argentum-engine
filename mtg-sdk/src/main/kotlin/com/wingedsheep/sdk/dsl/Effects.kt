@@ -5012,6 +5012,23 @@ object Effects {
         alternativeCost = cost,
     )
 
+    /**
+     * "Cast that card by paying [manaCost] rather than paying its mana cost" — the mana spelling of
+     * [CastFromCollectionByPaying]: a fixed alternative mana cost (CR 118.9), from whichever zone the
+     * card is in. Jadzi, Oracle of Arcavios: `CastFromCollectionByPaying(spell, "{1}")` over the
+     * revealed top card of the library. {X} is 0; cost increases, reductions and additional costs
+     * still apply. Nothing is cast when the caster can't pay.
+     */
+    fun CastFromCollectionByPaying(
+        from: CollectionSlot,
+        manaCost: String,
+        storeCastTo: String? = null,
+    ): Effect = CastFromCollectionWithoutPayingCostEffect(
+        from = from.key,
+        storeCastTo = storeCastTo,
+        alternativeManaCost = ManaCost.parse(manaCost),
+    )
+
     /** Play (land or spell) a card from [from] without paying its mana cost. */
     fun PlayFromCollectionWithoutPayingCost(from: CollectionSlot): Effect =
         PlayFromCollectionWithoutPayingCost(from.key)

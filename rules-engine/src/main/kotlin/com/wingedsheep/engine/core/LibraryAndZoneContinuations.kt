@@ -440,6 +440,9 @@ data class CastFromCollectionTargetsContinuation(
     /** The alternative cost the cast announces once targets are chosen (the miracle cast), or null. */
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val alternativeCostType: AlternativeCostType? = null,
+    /** The grant stamped a fixed alternative mana cost (Jadzi's {1}) to strip if the cast fails. */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val stampedAlternativeManaCost: Boolean = false,
 ) : AnswerContinuation
 
 /**

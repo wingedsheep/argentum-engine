@@ -9630,6 +9630,284 @@
     "colorIdentityOverride": []
 }
 
+// Jadzi, Oracle of Arcavios
+{
+    "name": "Jadzi, Oracle of Arcavios",
+    "manaCost": "{6}{U}{U}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "Discard a card: Return Jadzi to its owner's hand.\nMagecraft — Whenever you cast or copy an instant or sorcery spell, reveal the top card of your library. If it's a nonland card, you may cast it by paying {1} rather than paying its mana cost. If it's a land card, put it onto the battlefield.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jadzi, Oracle of Arcavios:2",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "SpellCopiedEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "filter": "land"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": "nonland",
+                            "storeMatching": "matching2"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching2",
+                            "selection": "ChooseSpell",
+                            "storeSelected": "selected3",
+                            "prompt": "You may cast the revealed card by paying {1} rather than its mana cost",
+                            "selectedLabel": "Cast for {1}"
+                        },
+                        {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "selected3",
+                            "alternativeManaCost": "{1}"
+                        }
+                    ],
+                    "descriptionOverride": "Magecraft — Reveal the top card of your library. If it's a nonland card, you may cast it by paying {1} rather than paying its mana cost. If it's a land card, put it onto the battlefield."
+                },
+                "descriptionOverride": "Magecraft — Whenever you cast or copy an instant or sorcery spell, reveal the top card of your library. If it's a nonland card, you may cast it by paying {1} rather than paying its mana cost. If it's a land card, put it onto the battlefield."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Jadzi, Oracle of Arcavios:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": "AtomDiscard"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand"
+                },
+                "descriptionOverride": "Discard a card: Return Jadzi to its owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d7148d24-373e-4485-860b-c3429c2337f2.jpg?1783927336",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Putting a land onto the battlefield does not count as playing a land for the turn and doesn't use the normal timing restrictions."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "You may choose not to cast a nonland card revealed by Jadzi's triggered ability. If you don't cast it, it stays on top of your library."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If you're casting the card you reveal with Jadzi's ability, you ignore normal timing restrictions."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If you reveal a modal double-faced card with Jadzi's triggered ability, and both faces are nonland, you may cast either face by paying {1} rather than its mana cost. If only the back face is a land, you may cast the front face. If both faces are lands, you will put onto the battlefield front face up."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If you cast a spell with {X} in its mana cost using Jadzi's magecraft ability, you must choose 0 as the value of X."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Because the magecraft ability supplies an alternative cost of {1} for the spell, you cannot pay any other alternative costs that may apply. However, you may pay additional costs and must pay any additional costs that are required."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "You may activate Jadzi's activated ability only while Jadzi is on the battlefield. If Jadzi is no longer on the battlefield as the ability resolves, it won't return her to your hand from any other zone."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ],
+    "layout": "MODAL_DFC",
+    "cardFaces": [
+        {
+            "name": "Journey to the Oracle",
+            "manaCost": "{2}{G}{G}",
+            "typeLine": "Sorcery",
+            "oracleText": "You may put any number of land cards from your hand onto the battlefield. Then if you control eight or more lands, you may discard a card. If you do, return Journey to the Oracle to its owner's hand.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "land"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "Choose any number of land cards to put onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "land"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 8
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.DoAction",
+                                    "action": {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "FromZone",
+                                                    "zone": "Hand"
+                                                },
+                                                "storeAs": "gathered0"
+                                            },
+                                            {
+                                                "type": "SelectFromCollection",
+                                                "from": "gathered0",
+                                                "selection": {
+                                                    "type": "ChooseUpTo",
+                                                    "count": {
+                                                        "type": "Fixed",
+                                                        "amount": 1
+                                                    }
+                                                },
+                                                "storeSelected": "selected1",
+                                                "prompt": "You may discard a card"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "selected1",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Graveyard"
+                                                },
+                                                "moveType": "Discard"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "then": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "Entity",
+                                                "entity": "Self"
+                                            },
+                                            "storeAs": "gathered0"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "gathered0",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand",
+                                                "player": "OwnerOfSource"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "imageUri": "https://cards.scryfall.io/normal/back/d/7/d7148d24-373e-4485-860b-c3429c2337f2.jpg?1783927336"
+        }
+    ]
+}
+
 // Karok Wrangler
 {
     "name": "Karok Wrangler",
