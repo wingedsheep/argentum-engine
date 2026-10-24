@@ -73,6 +73,7 @@ class TestOfTalentsScenarioTest : ScenarioTestBase() {
                 (select as SelectCardsDecision).options shouldContainExactlyInAnyOrder
                     listOf(countered, graveyardBolt, handBolt, libraryBolt)
                 select.minSelections shouldBe 0
+                select.playerId shouldBe game.player1Id
             }
             game.selectCards(listOf(countered, graveyardBolt, handBolt, libraryBolt)).error shouldBe null
             game.resolveStack()
