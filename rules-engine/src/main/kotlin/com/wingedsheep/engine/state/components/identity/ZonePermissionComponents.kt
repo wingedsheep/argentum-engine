@@ -194,13 +194,24 @@ data class PlayWithCostIncreaseComponent(
  *   entire cost is waterbend-reducible. The cast handler and enumerator surface the tap-to-help
  *   option and reduce the cost by the tapped permanents through the shared
  *   [com.wingedsheep.engine.mechanics.mana.AlternativePaymentHandler] machinery.
+ * @param grantedPermissionId Set for a one-shot resolution-time cast (Jadzi's "cast it by paying
+ *   {1}"): the stamp is honoured only while that [com.wingedsheep.engine.state.permissions.MayPlayPermission]
+ *   exists, so a cast cancelled mid-announcement can't leave the card discounted for a later cast.
+ *   Null for stamps that live as long as the card's zone (airbend, foretell, madness).
  */
 @Serializable
 data class PlayWithFixedAlternativeManaCostComponent(
     val controllerId: EntityId,
     val fixedCost: com.wingedsheep.sdk.core.ManaCost,
-    val waterbend: Boolean = false
-) : Component
+    val waterbend: Boolean = false,
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val grantedPermissionId: EntityId? = null,
+) : Component {
+    /** True when this stamp prices [playerId]'s cast in [state] — see [grantedPermissionId]. */
+    fun appliesTo(state: com.wingedsheep.engine.state.GameState, playerId: EntityId): Boolean =
+        controllerId == playerId &&
+            (grantedPermissionId == null || state.mayPlayPermissions.any { it.id == grantedPermissionId })
+}
 
 /**
  * Marks a spell so that if it would be put into a graveyard after resolving, being countered or

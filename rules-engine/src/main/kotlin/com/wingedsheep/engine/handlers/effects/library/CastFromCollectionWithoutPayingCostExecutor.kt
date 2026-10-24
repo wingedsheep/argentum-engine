@@ -278,7 +278,8 @@ class CastFromCollectionWithoutPayingCostExecutor(
             castFaceDown: Boolean = false,
             turnsFaceUpInstead: Boolean = false,
         ): Pair<EntityId, GameState> {
-            var stamped = if (!withoutPayingCost) state else state.updateEntity(cardId) { container ->
+            val (permId, withPermId) = state.newEntity()
+            var stamped = if (!withoutPayingCost) withPermId else withPermId.updateEntity(cardId) { container ->
                 container.with(PlayWithoutPayingCostComponent(controllerId = controllerId))
             }
             // "By paying [cost] rather than paying its mana cost": the mana cost is waived above and
@@ -299,10 +300,13 @@ class CastFromCollectionWithoutPayingCostExecutor(
             }
             // "By paying {1} rather than paying its mana cost" (Jadzi): a fixed alternative mana cost
             // (CR 118.9) through the stamp madness and airbend use. CastCostTotaller swaps it in for
-            // the printed cost in any zone; SpellCaster strips it once the cast is made.
+            // the printed cost in any zone while this grant's permission lives; SpellCaster strips
+            // it once the cast is made.
             if (alternativeManaCost != null) {
                 stamped = stamped.updateEntity(cardId) { container ->
-                    container.with(PlayWithFixedAlternativeManaCostComponent(controllerId, alternativeManaCost))
+                    container.with(
+                        PlayWithFixedAlternativeManaCostComponent(controllerId, alternativeManaCost, grantedPermissionId = permId)
+                    )
                 }
             }
             // The cast-this-way rider rides the card, not the permission, so it survives the move
@@ -314,7 +318,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
                     container.with(AfterResolveDestinationComponent(destination = insteadOfGraveyard))
                 }
             }
-            val (permId, stateWithPerm) = stamped.newEntity()
+            val stateWithPerm = stamped
             val granted = stateWithPerm.addMayPlayPermission(
                 MayPlayPermission(
                     id = permId,

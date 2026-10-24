@@ -792,7 +792,7 @@ internal class CastValidator(
         val playForFree = zoneResolver.hasPlayWithoutPayingCost(state, action.playerId, action.cardId) ||
             action.useWithoutPayingManaCost
         if (com.wingedsheep.engine.mechanics.BestowCasts.selected(action) && (playForFree ||
-            state.getEntity(action.cardId)?.has<PlayWithFixedAlternativeManaCostComponent>() == true)) {
+            state.getEntity(action.cardId)?.get<PlayWithFixedAlternativeManaCostComponent>()?.appliesTo(state, action.playerId) == true)) {
             return "Bestow cannot be combined with another alternative cost"
         }
         // CR 118.9a — a free cast can't also pay the card's own alternative cost (Mastery ruling).
@@ -800,7 +800,7 @@ internal class CastValidator(
             return "Cannot combine 'without paying its mana cost' with another alternative cost"
         }
         if (com.wingedsheep.engine.mechanics.MutateCasts.selected(action) && (playForFree ||
-            state.getEntity(action.cardId)?.has<PlayWithFixedAlternativeManaCostComponent>() == true)) {
+            state.getEntity(action.cardId)?.get<PlayWithFixedAlternativeManaCostComponent>()?.appliesTo(state, action.playerId) == true)) {
             return "Mutate cannot be combined with another alternative cost"
         }
         // The engine, not the client, decides what a convoke/delve/improvise choice is worth: every

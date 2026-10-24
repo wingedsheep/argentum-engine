@@ -625,7 +625,7 @@ class CastFromZoneEnumerator(
                     // The paid cast, priced by its target count (a prepare-spell copy is its face).
                     // A fixed alternative cost (below) replaces this price, so it carries no table.
                     val runtimeFixedAltCost = container.get<PlayWithFixedAlternativeManaCostComponent>()
-                        ?.takeIf { it.controllerId == playerId }
+                        ?.takeIf { it.appliesTo(state, playerId) }
                     val paidPricing = if (playForFree || cardDef == null) null else
                         context.costCalculator.priceByTargets(
                             state,

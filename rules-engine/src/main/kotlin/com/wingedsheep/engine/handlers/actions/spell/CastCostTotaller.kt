@@ -132,7 +132,7 @@ internal class CastCostTotaller(
         }
 
         // Apply runtime mana tax from exile permissions (e.g., Soul Partition) on top of whichever
-        // base applies (printed cost, the fixed alternative above, or a free cast's {0} — an
+        // base applies (printed cost, a fixed alternative cost from baseCost, or a free cast's {0} — an
         // increase survives "without paying its mana cost", CR 601.2f).
         val runtimeCostIncrease = state.getEntity(action.cardId)
             ?.get<PlayWithCostIncreaseComponent>()
@@ -143,8 +143,7 @@ internal class CastCostTotaller(
 
         // Splice (CR 702.47a): every revealed splice card's cost is an *additional* cost, so it lands
         // on top of whatever is paying for the spell itself — a free cast and an alternative cost both
-        // waive only the mana cost, never the additional costs (CR 601.2f–h). Added after the airbend
-        // branch above, which *replaces* effectiveCost outright and would otherwise wipe it.
+        // waive only the mana cost, never the additional costs (CR 601.2f–h).
         if (action.splicedCardIds.isNotEmpty()) {
             effectiveCost = SpliceCasts.addSpliceCosts(effectiveCost, state, action.splicedCardIds, cardRegistry)
         }
@@ -261,7 +260,7 @@ internal class CastCostTotaller(
     private fun fixedAlternativeManaCost(state: GameState, action: CastSpell): ManaCost? =
         state.getEntity(action.cardId)
             ?.get<PlayWithFixedAlternativeManaCostComponent>()
-            ?.takeIf { it.controllerId == action.playerId }
+            ?.takeIf { it.appliesTo(state, action.playerId) }
             ?.fixedCost
 
     private fun baseCost(
@@ -301,7 +300,7 @@ internal class CastCostTotaller(
                 action.targets.map { it.toEntityId() },
                 fromZone = if (castingFromCommandZone) Zone.COMMAND else castSourceZone(state, action.cardId),
                 declaredCostSlot = action.declaredCostSlot,
-                baseCost = fixedAlternativeManaCost(state, action)!!,
+                baseCost = checkNotNull(fixedAlternativeManaCost(state, action)),
                 card = cardDef,
             )
             action.useAlternativeCost && action.alternativeCostType == AlternativeCostType.ESCAPE && cardDef != null -> {

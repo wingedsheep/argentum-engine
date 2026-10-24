@@ -91,7 +91,8 @@ class JadziOracleOfArcaviosScenarioTest : ScenarioTestBase() {
         test("with no mana left for {1}, the card can't be cast and stays on top") {
             val game = board(top = "Divination", lands = 1)
             game.shockAndTrigger()
-            if (game.hasPendingDecision()) game.selectCards(game.findCardsInLibrary(1, "Divination"))
+            withClue("the offer is still made; the {1} just can't be paid") { game.hasPendingDecision() shouldBe true }
+            game.selectCards(game.findCardsInLibrary(1, "Divination"))
             game.resolveStack()
 
             game.topOfLibrary() shouldBe "Divination"
@@ -129,33 +130,61 @@ class JadziOracleOfArcaviosScenarioTest : ScenarioTestBase() {
             game.isInGraveyard(1, "Shock") shouldBe true
         }
 
-        test("Journey to the Oracle puts lands from hand, then at eight lands may discard to return itself") {
-            val game = scenario()
-                .withPlayers("Player", "Opponent")
-                .withCardInHand(1, "Jadzi, Oracle of Arcavios")
-                .withCardInHand(1, "Forest")
-                .withCardInHand(1, "Island")
-                .withCardInHand(1, "Shock")
-                .withLandsOnBattlefield(1, "Forest", 6)
-                .withCardInLibrary(1, "Island")
-                .withActivePlayer(1)
-                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
-                .build()
-            val journey = game.findCardsInHand(1, "Jadzi, Oracle of Arcavios").single()
-            game.execute(
-                com.wingedsheep.engine.core.CastSpell(game.player1Id, journey, faceIndex = 0)
-            ).error shouldBe null
-            game.resolveStack()
+        fun journeyBoard() = scenario()
+            .withPlayers("Player", "Opponent")
+            .withCardInHand(1, "Jadzi, Oracle of Arcavios")
+            .withCardInHand(1, "Forest")
+            .withCardInHand(1, "Island")
+            .withCardInHand(1, "Shock")
+            .withLandsOnBattlefield(1, "Forest", 6)
+            .withCardInLibrary(1, "Island")
+            .withActivePlayer(1)
+            .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+            .build()
 
-            // Put both lands: 6 + 2 = 8.
-            game.selectCards(game.findCardsInHand(1, "Forest") + game.findCardsInHand(1, "Island"))
+        /** Casts Journey to the Oracle and puts both lands from hand: 6 + 2 = 8 lands. */
+        fun TestGame.castJourneyToEightLands() {
+            val journey = findCardsInHand(1, "Jadzi, Oracle of Arcavios").single()
+            execute(com.wingedsheep.engine.core.CastSpell(player1Id, journey, faceIndex = 0)).error shouldBe null
+            resolveStack()
+            selectCards(findCardsInHand(1, "Forest") + findCardsInHand(1, "Island"))
+            findAllPermanents("Forest").size + findAllPermanents("Island").size shouldBe 8
+        }
+
+        test("Journey to the Oracle: at eight lands, discarding returns it to its owner's hand") {
+            val game = journeyBoard()
+            game.castJourneyToEightLands()
+
             withClue("eight lands → may discard") { game.hasPendingDecision() shouldBe true }
-            game.selectCards(game.findCardsInHand(1, "Shock"))
+            game.answerYesNo(true)
+            if (game.hasPendingDecision()) game.selectCards(game.findCardsInHand(1, "Shock"))
             game.resolveStack()
 
-            game.findAllPermanents("Forest").size + game.findAllPermanents("Island").size shouldBe 8
             game.isInGraveyard(1, "Shock") shouldBe true
             game.isInHand(1, "Jadzi, Oracle of Arcavios") shouldBe true
+        }
+
+        test("Journey to the Oracle: declining the discard sends it to the graveyard") {
+            val game = journeyBoard()
+            game.castJourneyToEightLands()
+            game.answerYesNo(false)
+            game.resolveStack()
+
+            game.isInHand(1, "Shock") shouldBe true
+            game.isInGraveyard(1, "Jadzi, Oracle of Arcavios") shouldBe true
+        }
+
+        test("Journey to the Oracle: below eight lands there is no discard offer") {
+            val game = journeyBoard()
+            val journey = game.findCardsInHand(1, "Jadzi, Oracle of Arcavios").single()
+            game.execute(com.wingedsheep.engine.core.CastSpell(game.player1Id, journey, faceIndex = 0)).error shouldBe null
+            game.resolveStack()
+            game.selectCards(game.findCardsInHand(1, "Forest")) // 7 lands
+            game.resolveStack()
+
+            game.hasPendingDecision() shouldBe false
+            game.isInHand(1, "Shock") shouldBe true
+            game.isInGraveyard(1, "Jadzi, Oracle of Arcavios") shouldBe true
         }
     }
 }

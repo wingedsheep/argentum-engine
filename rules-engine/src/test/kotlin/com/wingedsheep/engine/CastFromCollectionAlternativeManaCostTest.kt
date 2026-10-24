@@ -1,6 +1,8 @@
 package com.wingedsheep.engine
 
+import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.identity.PlayWithFixedAlternativeManaCostComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.GameTestDriver
@@ -164,6 +166,23 @@ class CastFromCollectionAlternativeManaCostTest : FunSpec({
         d.submitTargetSelection(d.player1, listOf(d.player2)).error shouldBe null
         d.getStackSpellNames() shouldBe listOf("Lightning Bolt")
         d.greenInPool() shouldBe 0
+    }
+
+    test("a stamp whose one-shot permission is gone no longer prices a later cast") {
+        // A cast cancelled mid-announcement (a modal prompt) leaves the stamp behind with its
+        // permission revoked; the card, drawn later, must cost its printed mana cost again.
+        val d = newDriver()
+        val bolt = d.putCardInHand(d.player1, "Lightning Bolt")
+        val (stalePermission, withId) = d.state.newEntity()
+        d.replaceState(withId.updateEntity(bolt) {
+            it.with(PlayWithFixedAlternativeManaCostComponent(d.player1, ManaCost.parse("{1}"), grantedPermissionId = stalePermission))
+        })
+
+        d.giveMana(d.player1, Color.GREEN, 1)
+        d.submitExpectFailure(CastSpell(d.player1, bolt, listOf(ChosenTarget.Player(d.player2))))
+        d.giveMana(d.player1, Color.RED, 1)
+        d.submit(CastSpell(d.player1, bolt, listOf(ChosenTarget.Player(d.player2)))).error shouldBe null
+        d.getStackSpellNames() shouldBe listOf("Lightning Bolt")
     }
 
     test("the SDK shape: a fixed mana cost replaces the mana cost and reads as the Oracle text does") {

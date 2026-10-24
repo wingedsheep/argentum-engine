@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -87,14 +88,13 @@ val JadziOracleOfArcavios = card("Jadzi, Oracle of Arcavios") {
                 move(chosen, CardDestination.ToZone(Zone.BATTLEFIELD, Player.You))
             } then Effects.If(
                 Conditions.ControlLandsAtLeast(8),
-                Effects.IfYouDo(
-                    action = Effects.Pipeline {
-                        val hand = gather(CardSource.FromZone(Zone.HAND, Player.You))
-                        discard(chooseUpTo(1, from = hand, prompt = "You may discard a card"))
-                    },
-                    then = Effects.Pipeline {
-                        toHand(gather(CardSource.Entity(EffectTarget.Self)), Player.OwnerOfSource)
-                    },
+                Effects.May(
+                    Effects.IfYouDo(
+                        Patterns.Hand.discardCards(1),
+                        Effects.Pipeline {
+                            toHand(gather(CardSource.Entity(EffectTarget.Self)), Player.OwnerOfSource)
+                        },
+                    )
                 ),
             )
         }
