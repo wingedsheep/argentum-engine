@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.costs
 
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.ManaValues
 import com.wingedsheep.engine.state.GameState
@@ -49,7 +50,8 @@ object CostAtomAmounts {
      *   rather than free.
      * @param payerId the player paying the cost. Prices the amounts read off the payer's own game
      *   state ([DynamicAmount.CommanderColorIdentityCount] — War Room's "the number of colors in your commanders'
-     *   color identity"); without a payer, or without [predicateEvaluator], those are
+     *   color identity"; a [DynamicAmount.Count] of the payer's objects — Hand of Vecna's "for each card in your
+     *   hand"); without a payer, or without [predicateEvaluator], those are
      *   [UNPRICEABLE] rather than free.
      * @param predicateEvaluator the engine's evaluator graph, through whose
      *   [com.wingedsheep.engine.handlers.DynamicAmountEvaluator] a state-read amount is priced —
@@ -87,6 +89,14 @@ object CostAtomAmounts {
             payerId == null || predicateEvaluator == null -> UNPRICEABLE
             !hasCommander(state, payerId) -> UNPRICEABLE
             else -> predicateEvaluator.commanderColorIdentity(state, payerId)?.size ?: UNPRICEABLE
+        }
+        // "1 life for each card in your hand" (Hand of Vecna) — a count of the payer's own objects,
+        // read now through the same evaluator an effect uses, with the payer as "you" and the cost's
+        // source as "this". Only `Player.You` counts are admitted into a cost (CostAtom.PayLife's
+        // whitelist), so no other player binding is ever asked for.
+        is DynamicAmount.Count -> when {
+            payerId == null || predicateEvaluator == null -> UNPRICEABLE
+            else -> predicateEvaluator.amounts.evaluate(state, amount, EffectContext(sourceId = sourceId, controllerId = payerId))
         }
         else -> 0
     }

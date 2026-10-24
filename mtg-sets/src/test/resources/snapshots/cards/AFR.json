@@ -2165,6 +2165,177 @@
     }
 }
 
+// Hand of Vecna
+{
+    "name": "Hand of Vecna",
+    "manaCost": "{3}",
+    "typeLine": "Legendary Artifact — Equipment",
+    "oracleText": "At the beginning of combat on your turn, equipped creature or a creature you control named Vecna gets +X/+X until end of turn, where X is the number of cards in your hand.\nEquip—Pay 1 life for each card in your hand.\nEquip {2}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hand of Vecna:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "anyOf": [
+                                        {
+                                            "cardPredicates": [
+                                                "IsCreature"
+                                            ],
+                                            "statePredicates": [
+                                                "IsAttachedToBySource"
+                                            ]
+                                        },
+                                        {
+                                            "cardPredicates": [
+                                                "IsCreature",
+                                                {
+                                                    "type": "NameEquals",
+                                                    "name": "Vecna"
+                                                }
+                                            ],
+                                            "controllerPredicate": "ControlledByYou"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Choose a creature to get +X/+X, where X is the number of cards in your hand",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "selected1"
+                            },
+                            "body": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Count",
+                                    "player": "You",
+                                    "zone": "Hand"
+                                },
+                                "toughnessModifier": {
+                                    "type": "Count",
+                                    "player": "You",
+                                    "zone": "Hand"
+                                },
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "Equipped creature or a creature you control named Vecna gets +X/+X until end of turn, where X is the number of cards in your hand."
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Hand of Vecna:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayLife",
+                        "amount": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Hand"
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true,
+                "descriptionOverride": "Equip—Pay 1 life for each card in your hand."
+            },
+            {
+                "id": "Hand of Vecna:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "246",
+        "rarity": "RARE",
+        "artist": "Irina Nordsol",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/ddd0beb7-80dc-4665-bab2-747c795d97db.jpg?1783926438",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "If you control both Vecna and Hand of Vecna equipped to another creature, you choose which creature to apply the bonus to as the triggered ability resolves."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Hand of Vecna's triggered ability uses the number of cards in your hand as it resolves to determine the bonus the creature gets. It won't change if the number of cards in your hand changes later in the turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Hill Giant Herdgorger
 {
     "name": "Hill Giant Herdgorger",

@@ -7,9 +7,6 @@ import com.wingedsheep.mtg.sets.definitions.afr.cards.TheBookOfVileDarkness
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.Triggers
-import com.wingedsheep.sdk.dsl.card
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 
@@ -21,29 +18,14 @@ import io.kotest.matchers.shouldBe
  *   {T}, Exile The Book of Vile Darkness and artifacts you control named Eye of Vecna and Hand of
  *   Vecna: Create Vecna, a legendary 8/8 black Zombie God creature token with indestructible and
  *   all triggered abilities of the exiled cards.
- *
- * Hand of Vecna isn't in the corpus yet, so the test registers a stand-in of that name whose only
- * ability is a marker trigger.
  */
 class TheBookOfVileDarknessScenarioTest : ScenarioTestBase() {
-
-    private val handStandIn = card("Hand of Vecna") {
-        manaCost = "{3}"
-        typeLine = "Legendary Artifact — Equipment"
-        oracleText = "At the beginning of combat on your turn, you gain 1 life."
-        triggeredAbility {
-            trigger = Triggers.you.beginningOf(Step.BEGIN_COMBAT)
-            effect = Effects.GainLife(1)
-        }
-    }
 
     private fun ScenarioTestBase.TestGame.activateBook() = execute(
         ActivateAbility(player1Id, findPermanent("The Book of Vile Darkness")!!, TheBookOfVileDarkness.activatedAbilities.single().id)
     )
 
     init {
-        cardRegistry.register(listOf(handStandIn))
-
         fun board(vararg artifacts: String) = scenario()
             .withPlayers("Player1", "Player2")
             .withCardOnBattlefield(1, "The Book of Vile Darkness")
