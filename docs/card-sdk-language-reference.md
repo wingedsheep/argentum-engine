@@ -11467,8 +11467,12 @@ staticAbility {
 - `PlayersCantCastSpells(affected = Player.EachOpponent, spellFilter = GameObjectFilter.Any, condition = null, conditionFromCaster = false, fromZones = null)`
   — continuous cast *prohibition* parameterized along independent axes, each a reused
   primitive: **who** (`affected`, a `Player` reference *relative to the source's controller* —
-  `EachOpponent`/`Opponent`, `You`, `Each`), **which** (`spellFilter`, matched against the card being
-  cast), and **when** (`condition`, evaluated in the controller's context, so `IsYourTurn` = "during
+  `EachOpponent`/`Opponent`, `You`, `Each`), **which** (`spellFilter`, matched against the spell *as
+  proposed* — the face or alternative cost chosen for it, CR 601.2e — so "you can't cast permanent
+  spells" (Codie, Vociferous Codex = `PlayersCantCastSpells(Player.You, GameObjectFilter.Permanent)`)
+  still lets an Adventure's instant half, a modal card's instant face or a face-down creature through
+  exactly when that spell isn't a match, and a mana-value filter reads the chosen X; the same check
+  a resolved `CantCastSpells` ban gets), and **when** (`condition`, evaluated in the controller's context, so `IsYourTurn` = "during
   your turn", `IsNotYourTurn` = "during an opponent's turn"; `null` = always). Read at cast-legality
   time through the single `CastPermissionUtils.reasonCannotCast` chokepoint, so it covers every
   casting zone (hand, flashback/harmonize, exile, top of library) uniformly; control is read from

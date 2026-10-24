@@ -181,9 +181,7 @@ class CastPermissionUtils(
         state: GameState, playerId: EntityId, spellCardId: EntityId,
         action: CastSpell = CastSpell(playerId, spellCardId)
     ): String? {
-        if (blockedByResolvedCastRestriction(state, action)) {
-            return "You can't cast spells right now"
-        }
+        proposedSpellRestriction(state, action)?.let { return it }
         // "… and can't play it" on this very hand object (Firestorm Phoenix).
         if (com.wingedsheep.engine.mechanics.HandObjectRestrictions.isCantBePlayed(state, spellCardId)) {
             return "That card can't be played right now"
@@ -197,9 +195,6 @@ class CastPermissionUtils(
         }
         if (sharesColorWithMostRecentCast(state, spellCardId)) {
             return "You can't cast a spell that shares a color with the spell most recently cast this turn"
-        }
-        if (blockedByPlayersCantCastSpells(state, playerId, spellCardId)) {
-            return "An effect prevents you from casting that spell right now"
         }
         if (lacksLegendaryControlForLegendarySpell(state, playerId, spellCardId)) {
             return "You can cast a legendary instant or sorcery only if you control a legendary creature or planeswalker"
@@ -223,16 +218,32 @@ class CastPermissionUtils(
     }
 
     /**
-     * Resolved bans are checked after the cast's face/alternative cost has been chosen. In
-     * enumeration this runs on the final offers, so a banned front never hides a legal back or
-     * face-down cast. No trial state or projection work is needed when the player has no ban.
+     * Whether [action]'s proposed spell is prohibited by a restriction that reads the spell itself:
+     * a resolved ban on the player ([CantCastSpellsComponent]) or a [PlayersCantCastSpells] static.
+     * Both are checked after the cast's face/alternative cost has been chosen (CR 601.2e: legality
+     * is judged on the spell as proposed), so a prohibited front never hides a legal Adventure,
+     * Omen, split half, back face or face-down cast — Codie's "can't cast permanent spells" leaves
+     * an Adventure's instant half castable. In enumeration this runs on the final offers; pass
+     * [staticRestrictionPresent] from the per-pass cache there so an empty board skips the scan.
      */
-    fun blockedByResolvedCastRestriction(state: GameState, action: CastSpell): Boolean {
-        val bans = state.getEntity(action.playerId)?.get<CantCastSpellsComponent>()?.restrictions
-            ?: return false
-        if (bans.any { it.spellFilter == GameObjectFilter.Any }) return true
+    fun blockedByResolvedCastRestriction(
+        state: GameState, action: CastSpell,
+        staticRestrictionPresent: Boolean = true,
+    ): Boolean = proposedSpellRestriction(state, action, staticRestrictionPresent) != null
+
+    private fun proposedSpellRestriction(
+        state: GameState, action: CastSpell,
+        staticRestrictionPresent: Boolean = true,
+    ): String? {
+        val bans = state.getEntity(action.playerId)?.get<CantCastSpellsComponent>()?.restrictions.orEmpty()
+        if (bans.any { it.spellFilter == GameObjectFilter.Any }) return BANNED
+        val statics = if (staticRestrictionPresent) {
+            applicablePlayersCantCastSpells(state, action.playerId, action.cardId)
+        } else emptyList()
+        if (bans.isEmpty() && statics.isEmpty()) return null
+        statics.firstOrNull { it.second.spellFilter == GameObjectFilter.Any }?.let { return PROHIBITED }
         val announced = CastCharacteristics.announce(state, action, cardRegistry)
-        val current = announced.getEntity(action.cardId)?.get<CardComponent>() ?: return false
+        val current = announced.getEntity(action.cardId)?.get<CardComponent>() ?: return null
         val definition = cardRegistry.getCard(current.cardDefinitionId)
         val face = action.faceIndex?.let { definition?.cardFaces?.getOrNull(it) }
         val back = (if (action.useAlternativeCost && action.altAllows(AlternativeCostType.DISTURB)) {
@@ -255,28 +266,41 @@ class CastPermissionUtils(
             else -> current
         }
         // CR 202.3e: the proposed spell's mana value counts the X chosen for it (CR 601.2b precedes
-        // the 601.2e legality check), so a mana-value ban reads it. An enumerated offer has no X
-        // yet: it is withheld only when the ban holds at X = 0 and at an arbitrarily large X, so a
-        // single-value or capped ban leaves the offer up and validation rejects a banned X.
+        // the 601.2e legality check), so a mana-value restriction reads it. An enumerated offer has
+        // no X yet: it is withheld only when the restriction holds at X = 0 and at an arbitrarily
+        // large X, so a single-value or capped one leaves the offer up and validation rejects a
+        // prohibited X.
         val xCount = if (castCard.manaValueOverride == null && castCard.manaCost.hasX) castCard.manaCost.xCount else 0
-        fun blockedWith(card: CardComponent): Boolean {
+        fun restrictionWith(card: CardComponent): String? {
             val matchingState = if (card == current) announced else announced.updateEntity(action.cardId) {
                 it.with(card)
             }
             // The candidate is outside the battlefield; the existing projection is sufficient and
             // its absence for this entity makes the predicate read the announced CardComponent.
-            return bans.any { ban ->
+            val banned = bans.any { ban ->
                 predicateEvaluator.matches(
                     matchingState, state.projectedState, action.cardId, ban.spellFilter,
                     PredicateContext(controllerId = ban.controllerId ?: action.playerId, sourceId = ban.sourceId)
                 )
             }
+            if (banned) return BANNED
+            // `sourceId` is the *granting* permanent, not the spell: a source-relative predicate in
+            // a continuous cast prohibition can only mean "relative to the permanent printing it"
+            // (Circu, Dimir Lobotomist's CardPredicate.SharesNameWithLinkedExile).
+            val prohibited = statics.any { (permanentId, sa) ->
+                predicateEvaluator.matches(
+                    matchingState, state.projectedState, action.cardId, sa.spellFilter,
+                    PredicateContext(controllerId = action.playerId, sourceId = permanentId)
+                )
+            }
+            return if (prohibited) PROHIBITED else null
         }
-        if (xCount == 0) return blockedWith(castCard)
+        if (xCount == 0) return restrictionWith(castCard)
         fun withX(x: Int) = castCard.copy(manaValueOverride = castCard.manaValue + x * xCount)
         val chosenX = action.xValue
-        return if (chosenX != null) blockedWith(withX(chosenX))
-            else blockedWith(withX(0)) && blockedWith(withX(UNBOUNDED_X))
+        if (chosenX != null) return restrictionWith(withX(chosenX))
+        val atZero = restrictionWith(withX(0)) ?: return null
+        return if (restrictionWith(withX(UNBOUNDED_X)) != null) atZero else null
     }
 
     /**
@@ -312,15 +336,19 @@ class CastPermissionUtils(
     }
 
     /**
-     * The per-spell slice of [reasonCannotCast] — restrictions that depend on *which* spell is
-     * being cast (Mana Maze's color sharing, a filtered [PlayersCantCastSpells]). Separated from
-     * the blanket per-player locks so enumeration can cache the latter once per pass and only pay
-     * the per-card scan when [anyPerSpellCastRestrictionPresent] says a relevant static is in play.
+     * The per-card slice of [reasonCannotCast] that the enumerators can prune on before pricing a
+     * card — restrictions that depend on *which* card is being cast but not on the face chosen
+     * for it (Mana Maze's color sharing, a filtered per-turn limit, a blanket [PlayersCantCastSpells]
+     * such as Grand Abolisher's). A *filtered* [PlayersCantCastSpells] is face-dependent, so it is
+     * left to [blockedByResolvedCastRestriction] on the final offers. Separated from the blanket
+     * per-player locks so enumeration can cache the latter once per pass and only pay the
+     * per-card scan when [anyPerSpellCastRestrictionPresent] says a relevant static is in play.
      */
     fun spellSpecificallyRestricted(state: GameState, playerId: EntityId, spellCardId: EntityId): Boolean =
         sharesColorWithMostRecentCast(state, spellCardId) ||
             hasReachedFilteredSpellCastLimit(state, playerId, spellCardId) ||
-            blockedByPlayersCantCastSpells(state, playerId, spellCardId)
+            applicablePlayersCantCastSpells(state, playerId, spellCardId)
+                .any { it.second.spellFilter == GameObjectFilter.Any }
 
     /**
      * Cheap guard: does any battlefield permanent carry a per-spell cast restriction
@@ -340,21 +368,23 @@ class CastPermissionUtils(
         }
 
     /**
-     * True when a [PlayersCantCastSpells] static forbids [castingPlayerId] from casting the card
-     * [spellCardId] — i.e. some battlefield permanent's ability whose [affected][PlayersCantCastSpells.affected]
-     * group (relative to the granter's controller) includes the caster, whose
-     * [condition][PlayersCantCastSpells.condition] holds in the controller's context (the caster's,
-     * with [conditionFromCaster][PlayersCantCastSpells.conditionFromCaster]), whose
-     * [fromZones][PlayersCantCastSpells.fromZones] include the zone the card is cast from, and whose
-     * [spellFilter][PlayersCantCastSpells.spellFilter] matches the card. Control is read from
-     * projected state; face-down permanents (no abilities) are skipped.
+     * The [PlayersCantCastSpells] statics that apply to [castingPlayerId] casting [spellCardId],
+     * paired with the permanent granting each — every battlefield permanent's ability whose
+     * [affected][PlayersCantCastSpells.affected] group (relative to the granter's controller)
+     * includes the caster, whose [condition][PlayersCantCastSpells.condition] holds in the
+     * controller's context (the caster's, with [conditionFromCaster][PlayersCantCastSpells.conditionFromCaster]),
+     * and whose [fromZones][PlayersCantCastSpells.fromZones] include the zone the card is cast from.
+     * The [spellFilter][PlayersCantCastSpells.spellFilter] is left to [proposedSpellRestriction],
+     * which matches it against the face actually being cast. Control is read from projected
+     * state; face-down permanents (no abilities) are skipped.
      */
-    private fun blockedByPlayersCantCastSpells(
+    private fun applicablePlayersCantCastSpells(
         state: GameState,
         castingPlayerId: EntityId,
         spellCardId: EntityId
-    ): Boolean {
+    ): List<Pair<EntityId, PlayersCantCastSpells>> {
         val projected = state.projectedState
+        var applicable: MutableList<Pair<EntityId, PlayersCantCastSpells>>? = null
         for (permanentId in state.getBattlefield()) {
             val container = state.getEntity(permanentId) ?: continue
             if (container.has<FaceDownComponent>()) continue
@@ -383,23 +413,11 @@ class CastPermissionUtils(
                     )
                     if (!conditionEvaluator.evaluate(state, condition, ctx)) continue
                 }
-                // Match the spell filter against the card being cast (card predicates apply in any zone).
-                //
-                // `sourceId` is the *granting* permanent, not the spell: a source-relative predicate
-                // in a continuous cast prohibition can only mean "relative to the permanent printing
-                // it". Circu, Dimir Lobotomist's "spells with the same name as a card exiled with
-                // Circu" needs it — CardPredicate.SharesNameWithLinkedExile reads the pile hanging
-                // off this permanent and fails closed without a source.
-                if (predicateEvaluator.matches(
-                        state, projected, spellCardId, sa.spellFilter,
-                        PredicateContext(controllerId = castingPlayerId, sourceId = permanentId)
-                    )
-                ) {
-                    return true
-                }
+                (applicable ?: mutableListOf<Pair<EntityId, PlayersCantCastSpells>>().also { applicable = it })
+                    .add(permanentId to sa)
             }
         }
-        return false
+        return applicable ?: emptyList()
     }
 
     /** Whether [affected] (interpreted relative to [controllerId]) includes [castingPlayerId]. */
@@ -2221,6 +2239,9 @@ data class TopOfLibraryCastGrant(
     val filter: GameObjectFilter,
     val additionalCost: com.wingedsheep.sdk.scripting.AdditionalCost?,
 )
+
+private const val BANNED = "You can't cast spells right now"
+private const val PROHIBITED = "An effect prevents you from casting that spell right now"
 
 /** Stands in for "some large X" when an enumerated X spell's offer is checked against a mana-value ban. */
 private const val UNBOUNDED_X = 1_000

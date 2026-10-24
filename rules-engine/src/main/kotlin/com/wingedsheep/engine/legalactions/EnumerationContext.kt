@@ -171,15 +171,17 @@ class EnumerationContext(
 
     // Whether any per-spell cast restriction (Mana Maze, PlayersCantCastSpells) is in play at all —
     // a cheap guard so cantCastSpell() stays O(1) when none exists (the common case).
-    private val perSpellCastRestrictionPresent: Boolean by lazy {
+    val perSpellCastRestrictionPresent: Boolean by lazy {
         castPermissionUtils.anyPerSpellCastRestrictionPresent(state)
     }
 
     /**
      * Whether this player can't cast the specific card [cardId] right now — the blanket lock, the
      * CR 205.4e legendary-instant/sorcery restriction, OR a per-spell static restriction (Mana
-     * Maze's color sharing, a filtered [PlayersCantCastSpells]). Every cast-enumeration site that
+     * Maze's color sharing, a blanket [PlayersCantCastSpells]). Every cast-enumeration site that
      * has a candidate card consults this, so the prohibitions are honoured across every casting zone.
+     * A filtered [PlayersCantCastSpells] depends on the face being cast, so it is applied to the
+     * final offers instead (`CastPermissionUtils.blockedByResolvedCastRestriction`).
      */
     fun cantCastSpell(cardId: EntityId): Boolean =
         cantCastSpells ||

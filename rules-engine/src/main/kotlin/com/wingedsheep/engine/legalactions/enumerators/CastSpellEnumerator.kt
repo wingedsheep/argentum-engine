@@ -151,7 +151,8 @@ class CastSpellEnumerator(
             }
 
             // Skip this spell if the player can't cast it — a blanket lock, Mana Maze color
-            // sharing, or a PlayersCantCastSpells restriction (all routed through one chokepoint).
+            // sharing, or a blanket PlayersCantCastSpells (all routed through one chokepoint; a
+            // filtered one reads the cast face, so it prunes the final offers instead).
             if (context.cantCastSpell(cardId)) continue
 
             // Look up card definition for target requirements and cast restrictions
@@ -1786,8 +1787,8 @@ class CastSpellEnumerator(
 
             val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
             if (!context.grantedKeywordResolver.hasKeyword(state, playerId, cardDef, Keyword.CONSPIRE, cardId)) continue
-            // A per-spell restriction (e.g. PlayersCantCastSpells with a filter) removes the
-            // conspire variant for this card even though the blanket check above passed.
+            // A per-spell restriction (e.g. Mana Maze) removes the conspire variant for this card
+            // even though the blanket check above passed.
             if (context.cantCastSpell(cardId)) continue
 
             val spellColors = cardDef.colors

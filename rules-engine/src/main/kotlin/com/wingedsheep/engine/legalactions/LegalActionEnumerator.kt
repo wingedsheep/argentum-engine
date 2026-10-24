@@ -108,7 +108,9 @@ class LegalActionEnumerator(
         // Normal priority: enumerate all action categories
         val offers = (enumerators.flatMap { it.enumerate(context) } + optionalPaymentOffers(context)).filter { offer ->
             val cast = offer.action as? com.wingedsheep.engine.core.CastSpell
-            if (cast != null && context.castPermissionUtils.blockedByResolvedCastRestriction(state, cast)) {
+            if (cast != null && context.castPermissionUtils.blockedByResolvedCastRestriction(
+                    state, cast, staticRestrictionPresent = context.perSpellCastRestrictionPresent)
+            ) {
                 return@filter false
             }
             // A half that can only be cast from a particular zone (aftermath, CR 702.127a) — the

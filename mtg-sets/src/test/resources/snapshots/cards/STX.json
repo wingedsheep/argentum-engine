@@ -2615,6 +2615,198 @@
     ]
 }
 
+// Codie, Vociferous Codex
+{
+    "name": "Codie, Vociferous Codex",
+    "manaCost": "{3}",
+    "typeLine": "Legendary Artifact Creature — Book Construct",
+    "oracleText": "You can't cast permanent spells.\n{4}, {T}: Add {W}{U}{B}{R}{G}. When you next cast a spell this turn, exile cards from the top of your library until you exile an instant or sorcery card with lesser mana value. Until end of turn, you may cast that card without paying its mana cost. Put each other card exiled this way on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Codie, Vociferous Codex:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "WHITE"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "BLUE"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "BLACK"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "RED"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "GREEN"
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherUntilMatch",
+                                        "filter": {
+                                            "cardPredicates": [
+                                                {
+                                                    "type": "Or",
+                                                    "predicates": [
+                                                        "IsInstant",
+                                                        "IsSorcery"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "ManaValueAtMostDynamic",
+                                                    "amount": {
+                                                        "type": "Subtract",
+                                                        "left": {
+                                                            "type": "ContextProperty",
+                                                            "key": "TRIGGERING_SPELL_MANA_VALUE"
+                                                        },
+                                                        "right": {
+                                                            "type": "Fixed",
+                                                            "amount": 1
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "storeMatch": "matched0",
+                                        "storeRevealed": "revealed0"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "revealed0",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Exile"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantMayPlayFromExile",
+                                        "from": "matched0"
+                                    },
+                                    {
+                                        "type": "GrantPlayWithoutPayingCost",
+                                        "from": "matched0"
+                                    },
+                                    {
+                                        "type": "FilterCollection",
+                                        "from": "revealed0",
+                                        "collectionFilter": {
+                                            "type": "ExcludeOtherCollection",
+                                            "otherCollectionName": "matched0"
+                                        },
+                                        "storeMatching": "matching4"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "matching4",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Library",
+                                            "placement": "Bottom"
+                                        },
+                                        "order": "Random"
+                                    }
+                                ]
+                            },
+                            "trigger": {
+                                "event": "SpellCastEvent",
+                                "binding": "ANY"
+                            },
+                            "fireOnce": true
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{4}, {T}: Add {W}{U}{B}{R}{G}. When you next cast a spell this turn, exile cards from the top of your library until you exile an instant or sorcery card with lesser mana value. Until end of turn, you may cast that card without paying its mana cost. Put each other card exiled this way on the bottom of your library in a random order."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "PlayersCantCastSpells",
+                "affected": "You",
+                "spellFilter": {
+                    "cardPredicates": [
+                        "IsPermanent"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "253",
+        "rarity": "RARE",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea476ee1-67d9-4dd8-a5ac-f68a155eb18b.jpg?1783927281",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "A permanent spell is an artifact, creature, enchantment, or planeswalker spell. You may still play lands and cast instant and sorcery spells. Other effects can still put permanents onto the battlefield."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "While you control Codie (as much as anyone can really \"control\" Codie), you may cast any face of a modal double-faced card that's an instant or sorcery face, even if the other face is a permanent face."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Codie's activated ability is a mana ability. It can't be countered or responded to, and you can activate it while casting a spell. If you do, that spell is \"the next spell\" you cast this turn."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "The delayed triggered ability created by Codie's second ability will resolve before the spell that caused it to trigger. That ability will resolve even if the spell is countered or otherwise doesn't resolve."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "The last card exiled is not cast immediately. You may cast it until the end of the current turn. If you do not cast it, that card will remain in exile."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If the card has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If you exile your entire library without exiling an instant or sorcery card with a lesser mana value, you will randomize the exiled cards and they again become your library, ending the effect. You will not continue to exile and shuffle your library forever."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Cogwork Archivist
 {
     "name": "Cogwork Archivist",
