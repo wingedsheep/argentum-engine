@@ -12468,6 +12468,8 @@ before `genericCostReduction` and the battlefield statics. Kami of Jealous Thirs
   opponents may activate this ability"* (Clergy of the Holy Nimbus) is `All(AnyPlayerMay,
   OnlyIfCondition(Conditions.SourceMatches(GameObjectFilter.Any.opponentControls())))`; Merseine's
   "only the controller of the enchanted creature" is the same shape with `EnchantedPermanentMatches`.
+  `timing = TimingRule.SorcerySpeed` on such an ability ("... and only as a sorcery", Detention Vortex)
+  is timed for the activating player too: their turn, their main phase, an empty stack.
 
 - `MaxPerTurn(n)` — at most N activations per turn.
 - `OncePerTurn` — once each turn (resets at end of turn).

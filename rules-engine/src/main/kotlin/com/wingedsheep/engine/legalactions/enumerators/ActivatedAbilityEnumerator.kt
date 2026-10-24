@@ -1289,6 +1289,10 @@ class ActivatedAbilityEnumerator(
                     if (picker.validate(state, ActivateAbility(playerId, entityId, ability.id), ability.effect) != null) continue
                 }
 
+                // "Only as a sorcery" is timed for the activating player — their turn, their main
+                // phase (Detention Vortex) — mirroring ActivationValidator.checkSorcerySpeedTiming.
+                if (ability.timing == TimingRule.SorcerySpeed && !context.canPlaySorcerySpeed) continue
+
                 // Kang the Conqueror's turn-scoped power-up lockout applies to every player, so it
                 // also covers an "any player may activate" power-up on an opponent's permanent.
                 if (context.castPermissionUtils.isPowerUpActivationRestricted(state, ability)) continue

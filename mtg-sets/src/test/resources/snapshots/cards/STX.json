@@ -3972,6 +3972,94 @@
     ]
 }
 
+// Detention Vortex
+{
+    "name": "Detention Vortex",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant nonland permanent\nEnchanted permanent can't attack or block, and its activated abilities can't be activated.\n{3}: Destroy this Aura. Only your opponents may activate this ability and only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Detention Vortex:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "timing": "SorcerySpeed",
+                "restrictions": [
+                    {
+                        "type": "ActivationAll",
+                        "restrictions": [
+                            "AnyPlayerMay",
+                            {
+                                "type": "ActivationOnlyIfCondition",
+                                "condition": {
+                                    "type": "EntityMatches",
+                                    "entity": "Self",
+                                    "filter": "ctrl:opponent"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "descriptionOverride": "{3}: Destroy this Aura. Only your opponents may activate this ability and only as a sorcery."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": {
+                    "cardPredicates": [
+                        "IsPermanent"
+                    ],
+                    "statePredicates": [
+                        "IsAttachedToBySource"
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "nonland permanent"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "UNCOMMON",
+        "artist": "Campbell White",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/54ebe581-be17-415a-a160-28d8f4e95636.jpg?1783927393"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Devastating Mastery
 {
     "name": "Devastating Mastery",
