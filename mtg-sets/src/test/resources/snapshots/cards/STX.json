@@ -14822,6 +14822,113 @@
     ]
 }
 
+// Resculpt
+{
+    "name": "Resculpt",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target artifact or creature. Its controller creates a 4/4 blue and red Elemental creature token.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "BLUE",
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Elemental"
+                    ],
+                    "controller": "TargetController"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|artifact"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "artist": "Torstein Nordstrand",
+        "flavorText": "Critics were struck first by the elemental's surprising grace, and then by its fists.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1bfb1fcb-a411-4c1c-b8fc-496242ae3a9b.jpg?1783927375"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Returned Pastcaller
+{
+    "name": "Returned Pastcaller",
+    "manaCost": "{3}{R}{R/W}{W}",
+    "typeLine": "Creature — Spirit Cleric",
+    "oracleText": "Flying\nWhen this creature enters, return target Spirit, instant, or sorcery card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Returned Pastcaller:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "Spirit|instant|sorcery own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "224",
+        "rarity": "UNCOMMON",
+        "artist": "Grzegorz Rutkowski",
+        "flavorText": "Lorehold spirit statues are not forbidden from raising statues of their own.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7aa0e762-0fec-4f6b-b3d7-ad8295bf557d.jpg?1783927301"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Rip Apart
 {
     "name": "Rip Apart",
@@ -15030,6 +15137,486 @@
     ]
 }
 
+// Rootha, Mercurial Artist
+{
+    "name": "Rootha, Mercurial Artist",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Legendary Creature — Orc Shaman",
+    "oracleText": "{2}, Return Rootha to its owner's hand: Copy target instant or sorcery spell you control. You may choose new targets for the copy.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Rootha, Mercurial Artist:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostReturnSelfToHand"
+                    ]
+                },
+                "effect": {
+                    "type": "CopyTargetSpell",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "instant|sorcery ctrl:you",
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}, Return Rootha to its owner's hand: Copy target instant or sorcery spell you control. You may choose new targets for the copy.",
+                "holdPriority": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "227",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rahn",
+        "flavorText": "\"Art is never finished. Merely abandoned.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/acb8f24d-8d1d-48aa-a534-238e969a474c.jpg?1783927296",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Rootha, Mercurial Artist's ability must have a target to be activated. You can't activate it without a target in order to return Rootha to your hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
+// Rowan, Scholar of Sparks
+{
+    "name": "Rowan, Scholar of Sparks",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Planeswalker — Rowan",
+    "oracleText": "Instant and sorcery spells you cast cost {1} less to cast.\n+1: Rowan deals 1 damage to each opponent. If you've drawn three or more cards this turn, she deals 3 damage to each opponent instead.\n−4: You get an emblem with \"Whenever you cast an instant or sorcery spell, you may pay {2}. If you do, copy that spell. You may choose new targets for the copy.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Rowan, Scholar of Sparks:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "TurnTracking",
+                                "player": "You",
+                                "tracker": "CARDS_DRAWN"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "EachOpponent"
+                        }
+                    },
+                    "otherwise": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "EachOpponent"
+                        }
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Rowan deals 1 damage to each opponent. If you've drawn three or more cards this turn, she deals 3 damage to each opponent instead."
+            },
+            {
+                "id": "Rowan, Scholar of Sparks:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -4
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "Rowan, Scholar of Sparks:2",
+                        "trigger": {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.MayPay",
+                                "cost": {
+                                    "type": "PayManaCost",
+                                    "cost": "{2}"
+                                }
+                            },
+                            "then": {
+                                "type": "CopyTargetSpell",
+                                "target": "TriggeringEntity"
+                            }
+                        },
+                        "descriptionOverride": "Whenever you cast an instant or sorcery spell, you may pay {2}. If you do, copy that spell. You may choose new targets for the copy."
+                    },
+                    "descriptionOverride": "Whenever you cast an instant or sorcery spell, you may pay {2}. If you do, copy that spell. You may choose new targets for the copy."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You get an emblem with \"Whenever you cast an instant or sorcery spell, you may pay {2}. If you do, copy that spell. You may choose new targets for the copy.\""
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "instant|sorcery"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Will, Scholar of Frost",
+        "manaCost": "{4}{U}",
+        "typeLine": "Legendary Planeswalker — Will",
+        "oracleText": "Instant and sorcery spells you cast cost {1} less to cast.\n+1: Up to one target creature has base power and toughness 0/2 until your next turn.\n−3: Draw two cards.\n−7: Exile up to five target permanents. For each permanent exiled this way, its controller creates a 4/4 blue and red Elemental creature token.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Will, Scholar of Frost:1",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": 1
+                    },
+                    "effect": {
+                        "type": "SetBaseStats",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "power": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "toughness": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "duration": "UntilYourNextTurn"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Up to one target creature has base power and toughness 0/2 until your next turn."
+                },
+                {
+                    "id": "Will, Scholar of Frost:2",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -3
+                    },
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Draw two cards."
+                },
+                {
+                    "id": "Will, Scholar of Frost:3",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -7
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": "ChosenTargets",
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                },
+                                "storeMovedAs": "moved1"
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Collection",
+                                    "collection": "moved1"
+                                },
+                                "body": {
+                                    "type": "CreateToken",
+                                    "power": 4,
+                                    "toughness": 4,
+                                    "colors": [
+                                        "BLUE",
+                                        "RED"
+                                    ],
+                                    "creatureTypes": [
+                                        "Elemental"
+                                    ],
+                                    "controller": {
+                                        "type": "PlayerRef",
+                                        "player": "ControllerOfIterationEntity"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "count": 5,
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": "permanent"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Exile up to five target permanents. For each permanent exiled this way, its controller creates a 4/4 blue and red Elemental creature token."
+                }
+            ],
+            "staticAbilities": [
+                {
+                    "type": "ModifySpellCost",
+                    "target": {
+                        "type": "YouCast",
+                        "filter": "instant|sorcery"
+                    },
+                    "modification": {
+                        "type": "ReduceGeneric",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "156",
+            "rarity": "MYTHIC",
+            "artist": "Magali Villeneuve",
+            "imageUri": "https://cards.scryfall.io/normal/back/1/8/18c16872-3675-4a4d-962a-2e17ad6f3886.jpg?1783927332"
+        },
+        "startingLoyalty": 4,
+        "colorIdentityOverride": [
+            "BLUE",
+            "RED"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "rarity": "MYTHIC",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/18c16872-3675-4a4d-962a-2e17ad6f3886.jpg?1783927332",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Neither face's first ability can reduce colored mana requirements of spells you cast."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions (such as that of Rowan or Will's first ability). The mana value of the spell is determined only by its mana cost, no matter what the total cost to cast the spell was."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "For Rowan's emblem, you can pay {2} only once. You can't pay more to copy the spell more than once."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "For Will's first loyalty ability, any effects that modify a creature's power and/or toughness without setting them to a specific value (i.e. ones that don't affect base power and/or toughness) will apply after its base power and toughness are set, regardless of the order those effects were created. The same is true for counters that modify its power and toughness."
+            }
+        ]
+    },
+    "startingLoyalty": 2,
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ],
+    "layout": "MODAL_DFC"
+}
+
+// Rushed Rebirth
+{
+    "name": "Rushed Rebirth",
+    "manaCost": "{B}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Choose target creature. When that creature dies this turn, search your library for a creature card with lesser mana value, put it onto the battlefield tapped, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "CreateDelayedTrigger",
+            "effect": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Library",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "ManaValueAtMostDynamic",
+                                        "amount": {
+                                            "type": "Subtract",
+                                            "left": {
+                                                "type": "EntityProperty",
+                                                "entity": "TriggeringEntity",
+                                                "numericProperty": "ManaValue"
+                                            },
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "storeAs": "searchable",
+                        "search": true
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "searchable",
+                        "selection": {
+                            "type": "ChooseUpTo",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "storeSelected": "found",
+                        "prompt": "Search your library for a creature card with mana value (that creature's mana value - 1) or less to put onto the battlefield tapped",
+                        "selectedLabel": "Put onto the battlefield tapped"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "found",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Battlefield",
+                            "placement": "Tapped"
+                        }
+                    },
+                    "ShuffleLibrary",
+                    "EmitLibrarySearchedEvent"
+                ]
+            },
+            "trigger": {
+                "event": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                }
+            },
+            "watchedTarget": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "RARE",
+        "artist": "Jason Kang",
+        "flavorText": "Witherbloom students learn to see death not as tragedy, but as opportunity.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/07b7c952-5ab7-4546-8369-4d213bf868bf.jpg?1783927295",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If you choose a creature or search for a creature card with {X} in its mana cost, X is considered to be 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Scurrid Colony
 {
     "name": "Scurrid Colony",
@@ -15132,6 +15719,626 @@
     ]
 }
 
+// Sedgemoor Witch
+{
+    "name": "Sedgemoor Witch",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Warlock",
+    "oracleText": "Menace\nWard—Pay 3 life. (Whenever this creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays 3 life.)\nMagecraft — Whenever you cast or copy an instant or sorcery spell, create a 1/1 black and green Pest creature token with \"When this token dies, you gain 1 life.\"",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Life",
+                "amount": 3
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sedgemoor Witch:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "SpellCopiedEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Pest"
+                },
+                "descriptionOverride": "Magecraft — Whenever you cast or copy an instant or sorcery spell, create a 1/1 black and green Pest creature token with \"When this token dies, you gain 1 life.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "rarity": "RARE",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/9/e900c1eb-968b-4046-b824-c167a7a5b682.jpg?1783927362",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates a copy of an instant or sorcery spell, this will also cause the magecraft ability to trigger."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates multiple copies of an instant or sorcery spell, magecraft abilities trigger once for each copy created by the effect."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If a player casts a spell that targets multiple permanents their opponent controls with ward, each of those ward abilities will trigger. If that player doesn't pay for all of them, the spell will be countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Selfless Glyphweaver
+{
+    "name": "Selfless Glyphweaver",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Exile this creature: Creatures you control gain indestructible until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Selfless Glyphweaver:1",
+                "cost": "CostExileSelf",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "INDESTRUCTIBLE",
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Exile this creature: Creatures you control gain indestructible until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "rarity": "RARE",
+        "artist": "Johannes Voss",
+        "flavorText": "He offered his light to make sure no others would be dimmed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/8982ff88-8595-4363-8cde-6e87fb57a2d8.jpg?1783927331",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "You may activate Selfless Glyphweaver's ability only if Selfless Glyphweaver is on the battlefield. Only creatures you control as that ability resolves will gain indestructible. Creatures that come under your control later in the turn will not."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "As Deadly Vanity resolves, you choose which creature or planeswalker you are saving. Once the choice is made, there is no window for players to respond before the rest of the creatures and planeswalkers are destroyed."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "You may choose any creature or planeswalker, even one controlled by an opponent."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "You must choose a creature or planeswalker if there is one on the battlefield."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Because Deadly Vanity does not target the permanent you choose to save, you may choose creatures with hexproof or protection from black."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ],
+    "layout": "MODAL_DFC",
+    "cardFaces": [
+        {
+            "name": "Deadly Vanity",
+            "manaCost": "{5}{B}{B}{B}",
+            "typeLine": "Sorcery",
+            "oracleText": "Choose a creature or planeswalker, then destroy all other creatures and planeswalkers.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature|planeswalker"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "Choose a creature or planeswalker to save",
+                            "selectedLabel": "Save",
+                            "remainderLabel": "Destroy",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                }
+            },
+            "imageUri": "https://cards.scryfall.io/normal/back/8/9/8982ff88-8595-4363-8cde-6e87fb57a2d8.jpg?1783927331"
+        }
+    ]
+}
+
+// Serpentine Curve
+{
+    "name": "Serpentine Curve",
+    "manaCost": "{3}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a 0/0 green and blue Fractal creature token. Put X +1/+1 counters on it, where X is one plus the total number of instant and sorcery cards you own in exile and in your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [
+                        "GREEN",
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Fractal"
+                    ]
+                },
+                {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "Add",
+                        "left": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "right": {
+                            "type": "Add",
+                            "left": {
+                                "type": "AggregateZone",
+                                "player": "You",
+                                "zone": "Exile",
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                "IsInstant",
+                                                "IsSorcery"
+                                            ]
+                                        }
+                                    ],
+                                    "statePredicates": [
+                                        "IsFaceUp"
+                                    ]
+                                }
+                            },
+                            "right": {
+                                "type": "AggregateZone",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                "IsInstant",
+                                                "IsSorcery"
+                                            ]
+                                        }
+                                    ],
+                                    "statePredicates": [
+                                        "IsFaceUp"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "target": {
+                        "type": "PipelineTarget",
+                        "collectionName": "createdTokens"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "artist": "Kekai Kotaki",
+        "flavorText": "\"Math bites.\"\n—Bim, Lorehold mage-student",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d651b9e9-d723-4340-a010-d71b2a697e73.jpg?1783927375",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Serpentine Curve itself is not yet in your graveyard when you determine the value of X."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If you own face-down cards in exile, they won't count toward the value of X, even if you're allowed to look at them and you know they are instant or sorcery cards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Shadewing Laureate
+{
+    "name": "Shadewing Laureate",
+    "manaCost": "{W}{W/B}{B}",
+    "typeLine": "Creature — Human Warlock",
+    "oracleText": "Flying\nWhenever another creature you control with flying dies, put a +1/+1 counter on target creature you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shadewing Laureate:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature kw:flying ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever another creature you control with flying dies, put a +1/+1 counter on target creature you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "229",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"Would you prefer I destroy you using prose or verse?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/64795a8b-8cf2-436e-8f95-9e8bb40c0d7d.jpg?1783927294"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Shineshadow Snarl
+{
+    "name": "Shineshadow Snarl",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "As this land enters, you may reveal a Plains or Swamp card from your hand. If you don't, this land enters tapped.\n{T}: Add {W} or {B}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Shineshadow Snarl:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Shineshadow Snarl:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "OnEnterRunEffect",
+                "effect": {
+                    "type": "MayRevealCardFromHand",
+                    "filter": "land Plains|Swamp",
+                    "otherwise": "EnterTapped"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "272",
+        "rarity": "RARE",
+        "artist": "Sam Burley",
+        "flavorText": "A flickering beacon of righteous corruption.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/84a46ebf-6938-4100-8f5f-0605ad2be4fc.jpg?1783927270",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "The \"Snarl\" itself doesn't have any land subtypes. You can't reveal one to satisfy the ability of another."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If a land card with an appropriate subtype is entering the battlefield from your hand at the same time as one of these lands, you may reveal the other land to have the \"Snarl\" enter untapped."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect instructs you to put one of these lands onto the battlefield tapped, it will still enter the battlefield tapped even if you reveal a land card from your hand."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "You may reveal any land card with either or both of the appropriate subtypes. It doesn't have to be a basic land card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Show of Confidence
+{
+    "name": "Show of Confidence",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "When you cast this spell, copy it for each other instant and sorcery spell you've cast this turn. You may choose new targets for the copies.\nPut a +1/+1 counter on target creature. It gains vigilance until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "VIGILANCE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "triggeredAbilities": [
+            {
+                "id": "Show of Confidence:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "CopyTargetSpell",
+                    "target": "TriggeringEntity",
+                    "copies": {
+                        "type": "SpellsCastThisTurn",
+                        "filter": "instant|sorcery",
+                        "excludeSelf": true
+                    }
+                },
+                "descriptionOverride": "When you cast this spell, copy it for each other instant and sorcery spell you've cast this turn. You may choose new targets for the copies."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "UNCOMMON",
+        "artist": "Paul Scott Canavan",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/65837f39-deb7-4a4b-8b67-125a71cd0d45.jpg?1783927386",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "The triggered ability counts all instants and sorceries that were cast before it resolves. If you cast instant spells in response to the ability, those spells will count."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Magecraft abilities trigger once for each copy created as Show of Confidence's triggered ability resolves."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If the target of the original Show of Confidence has become an illegal target when that spell is copied, the copies will initially still target the same creature. If you don't choose new targets for the copies, they each will fail to resolve. Notably, you don't have to change targets, especially not to opposing creatures, just because the current target of Show of Confidence is illegal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Silverquill Apprentice
+{
+    "name": "Silverquill Apprentice",
+    "manaCost": "{W}{B}",
+    "typeLine": "Creature — Human Warlock",
+    "oracleText": "Magecraft — Whenever you cast or copy an instant or sorcery spell, target creature gets +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Silverquill Apprentice:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "SpellCopiedEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Magecraft — Whenever you cast or copy an instant or sorcery spell, target creature gets +1/+0 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "231",
+        "rarity": "UNCOMMON",
+        "artist": "Mike Bierek",
+        "flavorText": "She had spoken the words a hundred times, but under the spotlight, in front of everyone, something new emerged. And the crowd went wild.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/42d0770e-9084-4aa7-b543-2b6ba18378dc.jpg?1783927292",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates a copy of an instant or sorcery spell, this will also cause the magecraft ability to trigger."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates multiple copies of an instant or sorcery spell, magecraft abilities trigger once for each copy created by the effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Silverquill Campus
 {
     "name": "Silverquill Campus",
@@ -15195,6 +16402,329 @@
     "colorIdentityOverride": [
         "BLACK",
         "WHITE"
+    ]
+}
+
+// Silverquill Command
+{
+    "name": "Silverquill Command",
+    "manaCost": "{2}{W}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose two —\n• Target creature gets +3/+3 and gains flying until end of turn.\n• Return target creature card with mana value 2 or less from your graveyard to the battlefield.\n• Target player draws a card and loses 1 life.\n• Target opponent sacrifices a creature of their choice.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "FLYING",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Target creature gets +3/+3 and gains flying until end of turn"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Battlefield",
+                        "fromZone": "Graveyard"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature mv<=2 own:you",
+                                "zone": "Graveyard"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Return target creature card with mana value 2 or less from your graveyard to the battlefield"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t2"
+                                }
+                            },
+                            {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t2"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t2"
+                        }
+                    ],
+                    "description": "Target player draws a card and loses 1 life"
+                },
+                {
+                    "effect": {
+                        "type": "ForceSacrifice",
+                        "filter": "creature",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t3"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetOpponent",
+                            "id": "t3"
+                        }
+                    ],
+                    "description": "Target opponent sacrifices a creature of their choice"
+                }
+            ],
+            "chooseCount": 2
+        }
+    },
+    "metadata": {
+        "collectorNumber": "232",
+        "rarity": "RARE",
+        "artist": "Bryan Sola",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c55f533-9d31-4ad1-b336-927aba6e74d6.jpg?1783927293",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If all of Silverquill Command's targets are illegal as it tries to resolve, it will do nothing."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If at least one target is still legal as Silverquill Command tries to resolve, it will resolve and do as much as it can."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Silverquill Pledgemage
+{
+    "name": "Silverquill Pledgemage",
+    "manaCost": "{1}{W/B}{W/B}",
+    "typeLine": "Creature — Vampire Cleric",
+    "oracleText": "Magecraft — Whenever you cast or copy an instant or sorcery spell, this creature gains your choice of flying or lifelink until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Silverquill Pledgemage:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "SpellCopiedEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "It gains flying until end of turn",
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "FLYING",
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "label": "It gains lifelink until end of turn",
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "LIFELINK",
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Magecraft — Whenever you cast or copy an instant or sorcery spell, this creature gains your choice of flying or lifelink until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "233",
+        "artist": "Denman Rooke",
+        "flavorText": "\"I avoid violence. It is the last resort of the witless. But if you insist, I'll make an exception for you.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a3f64ad2-4041-421d-baa2-206cedcecf0e.jpg?1783927292",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates a copy of an instant or sorcery spell, this will also cause the magecraft ability to trigger."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect creates multiple copies of an instant or sorcery spell, magecraft abilities trigger once for each copy created by the effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Silverquill Silencer
+{
+    "name": "Silverquill Silencer",
+    "manaCost": "{W}{B}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "As this creature enters, choose a nonland card name.\nWhenever an opponent casts a spell with the chosen name, they lose 3 life and you draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Silverquill Silencer:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "NameEqualsChosenComponent"
+                        ]
+                    },
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "TriggeringPlayer"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever an opponent casts a spell with the chosen name, they lose 3 life and you draw a card."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CARD_NAME",
+                "cardNamePool": "NONLAND"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "234",
+        "rarity": "RARE",
+        "artist": "Zezhou Chen",
+        "flavorText": "\"I am very much in the mood to start handing out expulsions.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8bb60dcc-cb4a-414d-850f-c98efd872894.jpg?1783927292",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Silverquill Silencer's second triggered ability resolves before the spell that caused it to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 
