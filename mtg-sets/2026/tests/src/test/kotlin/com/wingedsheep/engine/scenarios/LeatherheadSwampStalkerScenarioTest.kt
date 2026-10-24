@@ -208,6 +208,44 @@ class LeatherheadSwampStalkerScenarioTest : FunSpec({
         counts(driver, leatherhead).values.sum() shouldBe 0
     }
 
+    test("killed in the combat she tramples over in: no counter left to remove, so nothing is destroyed") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 20, "Swamp" to 20), startingLife = 20)
+
+        val attacker = driver.player1
+        val defender = driver.player2
+
+        val leatherhead = driver.putCreatureOnBattlefield(attacker, "Leatherhead, Swamp Stalker")
+        driver.removeSummoningSickness(leatherhead)
+        addCounters(driver, leatherhead, CounterType.HEXPROOF, 1)
+
+        val rat = driver.putCreatureOnBattlefield(defender, "Deathtouch Rat")
+        driver.putPermanentOnBattlefield(defender, "Test Enchantment")
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(attacker, listOf(leatherhead), defender)
+        driver.bothPass()
+        driver.declareBlockers(defender, mapOf(rat to listOf(leatherhead)))
+
+        // 1 to the rat, 4 tramples over, and the rat's deathtouch kills her in the same damage
+        // step. Her trigger still goes on the stack, but the hexproof counter left with her — a
+        // card in the graveyard is a new object (CR 400.7) — so there is no counter to remove.
+        var safety = 0
+        var asked = false
+        while (safety++ < 16) {
+            when (driver.pendingDecision) {
+                is YesNoDecision -> { asked = true; break }
+                null -> driver.bothPass()
+                else -> driver.autoResolveDecision()
+            }
+        }
+
+        driver.getLifeTotal(defender) shouldBe 16
+        driver.state.getBattlefield().contains(leatherhead) shouldBe false
+        asked shouldBe false
+        (driver.findPermanent(defender, "Test Enchantment") != null) shouldBe true
+    }
+
     test("no counters left: the may-clause is never offered and nothing is destroyed") {
         val driver = createDriver()
         driver.initMirrorMatch(deck = Deck.of("Forest" to 20, "Swamp" to 20), startingLife = 20)

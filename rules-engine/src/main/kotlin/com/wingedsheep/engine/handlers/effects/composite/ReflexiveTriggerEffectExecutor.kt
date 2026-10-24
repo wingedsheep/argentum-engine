@@ -271,6 +271,11 @@ class ReflexiveTriggerEffectExecutor(
      * `ChosenCreature`, …) that the stateless overload can't reach. Treating "don't know" as zero
      * would silently delete the whole ability, so callers fail open on it — the same policy as this
      * method's `else -> true`.
+     *
+     * An object that *was* resolvable but has since changed zones is not "don't know": it is a new
+     * object with no counters (CR 400.7). Leatherhead killed by a blocker in the very damage step
+     * she tramples over in still triggers, but "remove a counter from her" then names nothing —
+     * `resolveTarget` drops the lost source to `null`, which must read as zero, not fail open.
      */
     private fun countersOn(
         state: GameState,
@@ -278,6 +283,7 @@ class ReflexiveTriggerEffectExecutor(
         target: com.wingedsheep.sdk.scripting.targets.EffectTarget,
         kind: CounterType? = null
     ): Int? {
+        if (TargetResolutionUtils.isLostObject(target, context, state)) return 0
         val targetId = context.resolveTarget(target, state) ?: return null
         val counters = state.getEntity(targetId)
             ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()

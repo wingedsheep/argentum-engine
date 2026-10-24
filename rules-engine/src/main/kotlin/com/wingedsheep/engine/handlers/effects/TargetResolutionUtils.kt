@@ -74,7 +74,7 @@ object TargetResolutionUtils {
      * delayed trigger bound to its object, and that object has since become a new object (CR 400.7). [state] is null for the context-only
      * resolution, which reads the flags [EffectContext] froze at the start of the instruction.
      */
-    private fun isLostObject(target: EffectTarget, context: EffectContext, state: GameState?): Boolean {
+    fun isLostObject(target: EffectTarget, context: EffectContext, state: GameState?): Boolean {
         val references = context.objectReferences
         return when (target) {
             EffectTarget.Self -> context.sourceReferenceLost ||
