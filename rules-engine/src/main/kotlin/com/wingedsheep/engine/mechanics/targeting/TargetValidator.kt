@@ -158,7 +158,7 @@ class TargetValidator(
     /** One requirement's resolved minimum and maximum target count. */
     private data class CountBounds(val min: Int, val max: Int)
 
-    // For TargetObject with a dynamicMaxCount, the resolved dynamic value clamps the
+    // For a requirement with a dynamicMaxCount (TargetObject, AnyTarget), the resolved dynamic value clamps the
     // per-req max count (the static `count` field is just a placeholder). XValue is
     // threaded via the chosen [xValue]; every other DynamicAmount is evaluated against
     // board state here, mirroring TriggerProcessor.snapshotDynamicCount — so a cast-time

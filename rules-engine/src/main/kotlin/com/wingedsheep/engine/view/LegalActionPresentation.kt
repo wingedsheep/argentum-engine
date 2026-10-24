@@ -52,12 +52,12 @@ data class LegalActionTargetInfo(
     val xConstrainsPower: Boolean = false,
     /**
      * True when this requirement's max-count is dynamically driven by the chosen X
-     * (`TargetObject.dynamicMaxCount == DynamicAmount.XValue`). The client must
+     * (`TargetRequirement.dynamicMaxCount == DynamicAmount.XValue`). The client must
      * cap selectable targets at the chosen X after the cast-time `xSelection` phase.
      */
     val xConstrainsCount: Boolean = false,
     /**
-     * True when that X-driven count is exact — "X target creatures" (`TargetObject.dynamicMinCount`
+     * True when that X-driven count is exact — "X target creatures" (`TargetRequirement.dynamicMinCount`
      * is XValue too). The client must require exactly the chosen X selections, not merely cap them.
      */
     val xConstrainsCountExactly: Boolean = false,

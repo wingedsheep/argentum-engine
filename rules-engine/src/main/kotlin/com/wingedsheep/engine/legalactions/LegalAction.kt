@@ -66,7 +66,7 @@ data class LegalAction(
     val xConstrainsTargetPower: Boolean = false,
     /**
      * True when the (single) target requirement's max-count is dynamically driven by the
-     * chosen X (i.e. [TargetObject.dynamicMaxCount] is [DynamicAmount.XValue]).
+     * chosen X (i.e. [TargetRequirement.dynamicMaxCount] is [DynamicAmount.XValue]).
      *
      * At enumeration time X is unbound, so [targetCount] is a placeholder (the static
      * `count` field, typically 1 or 20 from the legacy workaround). After the player
@@ -77,7 +77,7 @@ data class LegalAction(
     val xConstrainsTargetCount: Boolean = false,
     /**
      * True when that X-driven count is also the *minimum* — "X target creatures", exactly X
-     * (`TargetObject.dynamicMinCount == DynamicAmount.XValue`), as opposed to "up to X target
+     * (`TargetRequirement.dynamicMinCount == DynamicAmount.XValue`), as opposed to "up to X target
      * creatures". Set only alongside [xConstrainsTargetCount]. Once the player picks X the client
      * requires exactly X selections, not merely at most X; and [maxAffordableX] is already capped
      * at the number of legal targets, so no X the client offers leaves the spell short of targets
@@ -360,12 +360,12 @@ data class TargetInfo(
     val xConstrainsPower: Boolean = false,
     /**
      * True when this requirement's max-count is dynamically driven by the chosen X
-     * (`TargetObject.dynamicMaxCount == DynamicAmount.XValue`). The client should
+     * (`TargetRequirement.dynamicMaxCount == DynamicAmount.XValue`). The client should
      * clamp selectable targets to the chosen X after X selection.
      */
     val xConstrainsCount: Boolean = false,
     /**
-     * True when the X-driven count is exact — "X target creatures" (`TargetObject.dynamicMinCount`
+     * True when the X-driven count is exact — "X target creatures" (`TargetRequirement.dynamicMinCount`
      * is also [DynamicAmount.XValue]). Set only alongside [xConstrainsCount]: the client requires
      * exactly the chosen X selections for this requirement.
      */

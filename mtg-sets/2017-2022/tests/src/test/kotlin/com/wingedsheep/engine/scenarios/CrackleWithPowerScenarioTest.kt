@@ -69,6 +69,16 @@ class CrackleWithPowerScenarioTest : ScenarioTestBase() {
                 game.isInHand(1, "Crackle with Power") shouldBe true
             }
 
+            test("the same target can't fill two of the X slots (CR 115.3)") {
+                val game = game(mountains = 8)
+                val cast = game.execute(
+                    CastSpell(game.player1Id, game.crackle(),
+                        listOf(ChosenTarget.Player(game.player2Id), ChosenTarget.Player(game.player2Id)), xValue = 2)
+                )
+                cast.error shouldNotBe null
+                game.getLifeTotal(2) shouldBe 20
+            }
+
             test("X = 0 casts with no targets and does nothing") {
                 val game = game(mountains = 2)
                 game.execute(CastSpell(game.player1Id, game.crackle(), emptyList(), xValue = 0)).error shouldBe null

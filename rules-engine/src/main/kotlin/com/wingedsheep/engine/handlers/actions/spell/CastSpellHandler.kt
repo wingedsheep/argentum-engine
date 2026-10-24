@@ -1226,9 +1226,9 @@ class CastSpellHandler(
     /**
      * How many targets a mode's requirement must and may take, for the cast-time per-mode decision.
      *
-     * A [TargetObject.dynamicMaxCount] is authoritative when present — the static `count` is only
+     * A [TargetRequirement.dynamicMaxCount] is authoritative when present — the static `count` is only
      * the placeholder the author writes when the real cap isn't knowable until cast time — and a
-     * [TargetObject.dynamicMinCount] ("X target creatures": exactly X) is the floor. Both are read
+     * [TargetRequirement.dynamicMinCount] ("X target creatures": exactly X) is the floor. Both are read
      * through [DynamicTargetCount], exactly as [TargetValidator] reads them, so the count the player
      * is *offered* and the count the cast is *validated* against are the same numbers; otherwise
      * "up to X target creatures" offers one target at X = 3, or offers unbounded picks the validator

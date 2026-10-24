@@ -610,7 +610,7 @@ object CardLinter {
     ) {
         when (element) {
             is JsonObject -> {
-                if ((element["type"] as? JsonPrimitive)?.contentOrNull == "TargetObject") {
+                if ((element["type"] as? JsonPrimitive)?.contentOrNull in DYNAMIC_COUNT_TARGET_TYPES) {
                     fun present(field: String) = element[field]?.takeIf { it !is JsonNull } != null
                     fun flag(field: String) = (element[field] as? JsonPrimitive)?.contentOrNull == "true"
                     val max = present("dynamicMaxCount")
@@ -655,6 +655,9 @@ object CardLinter {
      * missing here is silently exempt from [checkOpponentChoosers].
      */
     private val CHOOSER_BEARING_TARGET_TYPES = setOf("AnyTarget", "TargetObject")
+
+    /** Target requirements that carry a dynamic count (`dynamicMaxCount`) in their serialized form. */
+    private val DYNAMIC_COUNT_TARGET_TYPES = setOf("AnyTarget", "TargetObject")
 
     // =========================================================================================
     // Namespaces and registries

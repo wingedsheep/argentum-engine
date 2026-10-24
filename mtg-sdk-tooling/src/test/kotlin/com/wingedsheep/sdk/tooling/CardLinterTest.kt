@@ -400,6 +400,15 @@ class CardLinterTest : DescribeSpec({
             findings[0].message shouldContain "exactly = X"
         }
 
+        it("holds AnyTarget to the same rule: \"up to X targets\" must be optional") {
+            fun lint(requirement: AnyTarget) = CardLinter.lint(instant("Dynamic Any Probe",
+                CardScript(spellEffect = Effects.ForEachTarget(DealDamageEffect(DynamicAmount.Fixed(1), EffectTarget.ContextTarget(0))),
+                    targetRequirements = listOf(requirement))))
+                .filterIsInstance<CardValidationError.AmbiguousDynamicTargetCount>()
+            lint(AnyTarget(optional = true, dynamicMaxCount = DynamicAmount.XValue)).shouldBeEmpty()
+            lint(AnyTarget(dynamicMaxCount = DynamicAmount.XValue)).shouldHaveSize(1)
+        }
+
         it("flags a dynamic floor that optional waives") {
             val x = DynamicAmount.XValue
             CardLinter.lint(tapEach(TargetObject(filter = TargetFilter.Creature, optional = true, dynamicMaxCount = x, dynamicMinCount = x)))

@@ -46,7 +46,7 @@ object DynamicTargetCount {
     /**
      * The bounds of [requirement]: its dynamic maximum when it has one (null otherwise, so the
      * caller falls back to its own static or unlimited cap), and its minimum — the resolved
-     * [TargetObject.dynamicMinCount] clamped to that maximum, or the static
+     * [TargetRequirement.dynamicMinCount] clamped to that maximum, or the static
      * [TargetRequirement.effectiveMinCount] when there is no dynamic minimum or X is not yet known.
      */
     fun bounds(requirement: TargetRequirement, xValue: Int?, evaluate: (DynamicAmount) -> Int): Bounds {
