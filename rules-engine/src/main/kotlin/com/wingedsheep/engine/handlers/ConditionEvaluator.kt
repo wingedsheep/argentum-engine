@@ -877,6 +877,12 @@ class ConditionEvaluator(
                 } else if (sourceId?.let { state.getEntity(it) }?.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>()
                     ?.additionalCostChoices?.containsKey(condition.slot) == true) {
                     true
+                } else if (condition.slot == ChoiceSlot.SELF_ALTERNATIVE_COST_PAID &&
+                    sourceId?.let { state.getEntity(it) }?.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>()
+                        ?.alternativeCost == AlternativeCostType.SELF_ALTERNATIVE) {
+                    // A spell still on the stack (its own resolving rider) answers from the
+                    // alternative cost it was cast for; a copy inherited it (CR 707.10).
+                    true
                 } else if (selfCastChoice != null) {
                     selfCastChoice
                 } else if (declaredThisCast == condition.slot) {

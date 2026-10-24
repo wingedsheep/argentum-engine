@@ -1119,6 +1119,22 @@ object Conditions {
         CastChoiceMadeCondition(com.wingedsheep.sdk.scripting.ChoiceSlot.BARGAINED)
 
     /**
+     * "If the {1}{B} cost was paid" — this spell was cast by paying its own printed alternative
+     * cost ([com.wingedsheep.sdk.scripting.SelfAlternativeCost], CR 118.9), the Strixhaven Mastery
+     * cycle's rider (Baleful Mastery, Ingenious Mastery). False for a normal cast, for a cast
+     * through any *other* alternative cost (flashback, evoke, a battlefield-granted one) and for a
+     * cast without paying its mana cost. A copy of the spell answers as its original did, since
+     * CR 707.10 copies alternative-cost decisions.
+     *
+     * A facade over the durable choice-slot read
+     * ([com.wingedsheep.sdk.scripting.ChoiceSlot.SELF_ALTERNATIVE_COST_PAID]): read from the spell
+     * on the stack while it resolves, and from the flag stamped on the permanent a permanent spell
+     * becomes.
+     */
+    val SelfAlternativeCostWasPaid: ConditionInterface =
+        CastChoiceMadeCondition(com.wingedsheep.sdk.scripting.ChoiceSlot.SELF_ALTERNATIVE_COST_PAID)
+
+    /**
      * If **evidence was collected** for this spell (CR 701.59c, Murders at Karlov Manor) — its
      * optional "you may collect evidence N" additional cost was declared as it was cast.
      *

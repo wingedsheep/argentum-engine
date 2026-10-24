@@ -990,6 +990,8 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   `CastSpellEnumerator` (so the action isn't offered) and `CastSpellHandler.validate` (so an
   authorization can't outlive the enumeration that offered it). Omit for an unconditional
   alternative (Zahid, Djinn of the Lamp).
+  A rider on whether that cost was paid ("If the {1}{B} cost was paid, …") reads
+  `Conditions.SelfAlternativeCostWasPaid`.
   Optional `manaSources: GameObjectFilter` is "spend only mana produced by <sources> to cast it
   this way" (Security Rhox: `manaSources = GameObjectFilter.Artifact.withSubtype("Treasure")`).
   The alternative's payment only activates mana abilities of matching permanents, and floating
@@ -14828,6 +14830,7 @@ answer it and would silently return `false`.
   `ChoiceSlot.ESCAPED` flag stamped when its escape-cast spell resolved, or a spell on the stack cast with
   `AlternativeCostType.ESCAPE`. Dual-mode (resolution and projection), so it gates enters triggers, enters-with
   replacements and conditional statics alike. A hard-cast copy of the same card did not escape.
+- `SelfAlternativeCostWasPaid` — the spell was cast by paying the card's **own printed alternative cost** (`selfAlternativeCost`, CR 118.9): "If the {1}{B} cost was paid, …" — the Strixhaven Mastery cycle (*Baleful Mastery*, *Ingenious Mastery*). A facade over `CastChoiceMade(ChoiceSlot.SELF_ALTERNATIVE_COST_PAID)`: a resolving spell answers from the alternative cost recorded on it as it was cast (`SpellOnStackComponent.alternativeCost`, also recorded for a cast that didn't name its mechanic), and a permanent spell stamps the flag on the permanent it becomes. False for a normal cast, a cast through any other alternative cost (flashback, evoke, a granted one) and a free cast; a copy answers as its original did (CR 707.10). Compose the branch with `Effects.If(Conditions.SelfAlternativeCostWasPaid, paid, otherwise = unpaid)`.
 - `MayhemCostWasPaid` — the source was cast from the graveyard for its Mayhem cost (CR 702.187). Reads the durable `ChoiceSlot.MAYHEM_CAST` flag on a resolved permanent, falling back to the resolution context (`wasMayhem`) for a non-permanent spell's own effect. Backs riders like *Sandman's Quicksand* ("if this spell's mayhem cost was paid, creatures your opponents control get -2/-2 instead").
 - `YouDiscardedThisCardThisTurn` — the source card in a graveyard was discarded by its owner this turn (CR 702.187b). Reads the per-player `CardsDiscardedThisTurnComponent` id list (entity ids are stable across the hand→graveyard move). Engine-internal — the Mayhem enumerator and cast-permission check wire it up; cards don't reference it directly.
 - `GiftWasPromised` — the spell's **gift** additional cost was paid, i.e. "if the gift was promised"

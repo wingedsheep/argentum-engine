@@ -428,6 +428,14 @@ internal class PermanentEntry(
                 com.wingedsheep.engine.state.components.battlefield.ChoiceValue.Flag
             )
         }
+        // A card's own alternative cost (CR 118.9): durably mark the permanent so
+        // Conditions.SelfAlternativeCostWasPaid reads it for the permanent's whole life.
+        if (spellComponent.alternativeCost == com.wingedsheep.engine.core.AlternativeCostType.SELF_ALTERNATIVE) {
+            bag = bag.withChoice(
+                com.wingedsheep.sdk.scripting.ChoiceSlot.SELF_ALTERNATIVE_COST_PAID,
+                com.wingedsheep.engine.state.components.battlefield.ChoiceValue.Flag
+            )
+        }
         // Waterbend (Avatar): durably mark a permanent cast with its (optional) waterbend
         // cost paid so Conditions.WaterbendWasPaid reads it for the permanent's whole life.
         if (spellComponent.wasWaterbendPaid) {

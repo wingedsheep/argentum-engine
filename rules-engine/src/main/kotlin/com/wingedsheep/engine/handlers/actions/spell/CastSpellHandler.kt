@@ -769,9 +769,10 @@ class CastSpellHandler(
             spentManaProvenance = paid.payment.spentManaProvenance,
             castTimeValues = castTimeValues(state, action, castTimeScript, ledger.costDefinedX ?: action.xValue ?: 0),
             // Every enumerated alternative-cost offer names its mechanic explicitly, so this is the
-            // declared choice rather than a guess. Descriptive only — the rules consequences of each
-            // mechanic ride the `was*` flags above.
-            alternativeCost = action.alternativeCostType?.takeIf { action.useAlternativeCost },
+            // declared choice; an untyped cast records the base its price came from. Read by
+            // Conditions.SelfAlternativeCostWasPaid and Escaped; the other mechanics' rules
+            // consequences ride the `was*` flags above.
+            alternativeCost = castCostTotaller.paidAlternativeCostType(originState, action, cardDef),
             castOriginState = originState
         )
     }

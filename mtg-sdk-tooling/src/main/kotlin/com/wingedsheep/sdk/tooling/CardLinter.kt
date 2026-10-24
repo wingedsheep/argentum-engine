@@ -105,6 +105,11 @@ object CardLinter {
         if (Keyword.CONVOKE in card.keywords || card.cardFaces.any { Keyword.CONVOKE in it.keywords }) {
             slots.declared.add("CONVOKED_CREATURES")
         }
+        // A card's own alternative cost (CR 118.9) is a script field, not a node: paying it stamps
+        // SELF_ALTERNATIVE_COST_PAID (see PermanentEntry / ConditionEvaluator).
+        if (card.script.selfAlternativeCost != null || card.cardFaces.any { it.script.selfAlternativeCost != null }) {
+            slots.declared.add("SELF_ALTERNATIVE_COST_PAID")
+        }
 
         lintDefinition(card.name, fullTree, explicitTree, slots, findings)
         checkSlots(card.name, slots, findings)

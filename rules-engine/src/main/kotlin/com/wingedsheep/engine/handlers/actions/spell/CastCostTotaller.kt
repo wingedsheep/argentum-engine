@@ -359,6 +359,19 @@ internal class CastCostTotaller(
         return cost.withXAs(x)
     }
 
+    /**
+     * The alternative cost this cast actually pays (CR 118.9), or null for a cast that doesn't use
+     * one. An explicit [CastSpell.alternativeCostType] is that choice; an untyped
+     * `useAlternativeCost` cast resolves to the first available base in [alternativeBases]' order —
+     * the same base its price came from — so the spell still records which cost was paid.
+     */
+    fun paidAlternativeCostType(state: GameState, action: CastSpell, cardDef: CardDefinition?): AlternativeCostType? {
+        if (!action.useAlternativeCost) return null
+        action.alternativeCostType?.let { return it }
+        if (cardDef == null) return null
+        return alternativeBases.firstOrNull { (_, base) -> base(AlternativeBaseQuery(state, action, cardDef)) != null }?.first
+    }
+
     private class AlternativeBaseQuery(val state: GameState, val action: CastSpell, val cardDef: CardDefinition) {
         val playerId: EntityId get() = action.playerId
         val cardId: EntityId get() = action.cardId

@@ -195,6 +195,17 @@ enum class ChoiceSlot {
      */
     ESCAPED,
 
+    /**
+     * Whether the spell was cast by paying its own printed alternative cost
+     * ([com.wingedsheep.sdk.model.CardScript.selfAlternativeCost], CR 118.9 — "You may pay {1}{B}
+     * rather than pay this spell's mana cost"). A present value means "that cost was paid". Read back
+     * through [com.wingedsheep.sdk.dsl.Conditions.SelfAlternativeCostWasPaid] for the Strixhaven
+     * Mastery cycle's "If the {1}{B} cost was paid, …" riders. The engine answers it from the spell
+     * on the stack while it resolves (a copy keeps the original's answer, CR 707.10) and stamps it on
+     * a permanent the spell becomes.
+     */
+    SELF_ALTERNATIVE_COST_PAID,
+
     /** The X declared for a `blight X` additional cost when cast (e.g. Soul Immolation). */
     BLIGHT_AMOUNT,
 

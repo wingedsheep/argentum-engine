@@ -867,6 +867,95 @@
     ]
 }
 
+// Baleful Mastery
+{
+    "name": "Baleful Mastery",
+    "manaCost": "{3}{B}",
+    "typeLine": "Instant",
+    "oracleText": "You may pay {1}{B} rather than pay this spell's mana cost.\nIf the {1}{B} cost was paid, an opponent draws a card.\nExile target creature or planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "CastChoiceMade",
+                            "slot": "SELF_ALTERNATIVE_COST_PAID"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ChooseOpponentForSource",
+                                "prompt": "Choose an opponent to draw a card"
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "ChosenOpponent"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ],
+        "selfAlternativeCost": {
+            "manaCost": "{1}{B}"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "RARE",
+        "artist": "Chris Cold",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/35f1a6ba-e46f-44fb-93f4-fb883d677b36.jpg?1783927370",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If you choose to pay one alternative cost, you can't pay any other alternative costs. For example, if an effect lets you cast a \"Mastery\" spell \"without paying its mana cost,\" you can't also choose to pay its given alternative cost."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect increases or decreases the cost of spells you cast, that cost increase or decrease is applied to the alternative cost you chose to pay. In that case, the cost was still paid for the purposes of the effect, even if you paid more or less for it when it was cast."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If you copy a \"Mastery\" spell and the alternative cost was paid, the copy will resolve as though the cost was paid."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "In a multiplayer game, you choose which opponent takes the prescribed action as the spell resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Basic Conjuration
 {
     "name": "Basic Conjuration",
@@ -8393,6 +8482,139 @@
     "colorIdentityOverride": [
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Ingenious Mastery
+{
+    "name": "Ingenious Mastery",
+    "manaCost": "{X}{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "You may pay {2}{U} rather than pay this spell's mana cost.\nIf the {2}{U} cost was paid, you draw three cards, then an opponent creates two Treasure tokens and they scry 2. If that cost wasn't paid, you draw X cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "CastChoiceMade",
+                    "slot": "SELF_ALTERNATIVE_COST_PAID"
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    {
+                        "type": "ChooseOpponentForSource",
+                        "prompt": "Choose an opponent to create two Treasure tokens and scry 2"
+                    },
+                    {
+                        "type": "CreatePredefinedToken",
+                        "tokenType": "Treasure",
+                        "count": 2,
+                        "controller": {
+                            "type": "PlayerRef",
+                            "player": "ChosenOpponent"
+                        }
+                    },
+                    {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    },
+                                    "player": "ChosenOpponent",
+                                    "isScry": true
+                                },
+                                "storeAs": "scried"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "scried",
+                                "selection": "ChooseAnyNumber",
+                                "chooser": "TargetPlayer",
+                                "storeSelected": "toBottom",
+                                "storeRemainder": "toTop",
+                                "prompt": "Scry 2: choose cards to put on the bottom of your library",
+                                "selectedLabel": "Put on bottom",
+                                "remainderLabel": "Put on top"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "toBottom",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "player": "ChosenOpponent",
+                                    "placement": "Bottom"
+                                }
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "toTop",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "player": "ChosenOpponent",
+                                    "placement": "Top"
+                                },
+                                "order": "OwnerChooses"
+                            },
+                            {
+                                "type": "EmitScriedEvent",
+                                "player": "ChosenOpponent"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "DrawCards",
+                "count": "XValue"
+            }
+        },
+        "selfAlternativeCost": {
+            "manaCost": "{2}{U}"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "RARE",
+        "artist": "Cristi Balanescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/2386d020-a9ae-4d54-b5e4-f2cb5a7298cc.jpg?1783927380",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If you choose to pay one alternative cost, you can't pay any other alternative costs. For example, if an effect lets you cast a \"Mastery\" spell \"without paying its mana cost,\" you can't also choose to pay its given alternative cost."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If an effect increases or decreases the cost of spells you cast, that cost increase or decrease is applied to the alternative cost you chose to pay. In that case, the cost was still paid for the purposes of the effect, even if you paid more or less for it when it was cast."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If you copy a \"Mastery\" spell and the alternative cost was paid, the copy will resolve as though the cost was paid."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "In a multiplayer game, you choose which opponent takes the prescribed action as the spell resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
