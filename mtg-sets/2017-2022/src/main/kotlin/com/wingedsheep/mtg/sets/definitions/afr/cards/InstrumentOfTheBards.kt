@@ -43,6 +43,7 @@ val InstrumentOfTheBards = card("Instrument of the Bards") {
         trigger = Triggers.you.beginningOf(Step.UPKEEP)
         optional = true
         effect = Effects.AddCounters(CounterType.HARMONY, 1, EffectTarget.Self)
+        description = "At the beginning of your upkeep, you may put a harmony counter on Instrument of the Bards."
     }
 
     activatedAbility {
@@ -72,6 +73,9 @@ val InstrumentOfTheBards = card("Instrument of the Bards") {
             run(Effects.ShuffleLibrary())
             run(EmitLibrarySearchedEventEffect)
         }
+        description = "{3}{G}, {T}: Search your library for a creature card with mana value equal to the number " +
+            "of harmony counters on Instrument of the Bards, reveal it, and put it into your hand. If that card " +
+            "is legendary, create a Treasure token. Then shuffle."
     }
 
     metadata {

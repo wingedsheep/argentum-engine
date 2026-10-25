@@ -9523,8 +9523,10 @@
                         "counterType": "HARMONY",
                         "count": 1,
                         "target": "Self"
-                    }
-                }
+                    },
+                    "descriptionOverride": "At the beginning of your upkeep, you may put a harmony counter on Instrument of the Bards."
+                },
+                "descriptionOverride": "At the beginning of your upkeep, you may put a harmony counter on Instrument of the Bards."
             }
         ],
         "activatedAbilities": [
@@ -9609,7 +9611,8 @@
                         "ShuffleLibrary",
                         "EmitLibrarySearchedEvent"
                     ]
-                }
+                },
+                "descriptionOverride": "{3}{G}, {T}: Search your library for a creature card with mana value equal to the number of harmony counters on Instrument of the Bards, reveal it, and put it into your hand. If that card is legendary, create a Treasure token. Then shuffle."
             }
         ]
     },
