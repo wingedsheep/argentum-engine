@@ -428,9 +428,9 @@ class ConditionEvaluator(
             // "If you cast it" / "as long as it was cast" (The Tarrasque): a resolving spell knows
             // its cast zone; a permanent carries the cast-origin marker stamped as it resolved, so
             // a static gate reads the same answer under projection.
-            is WasCast -> evaluateWasCast(state, ctx.castFromZone(), ctx.sourceId)
-            is WasCastFromHand -> evaluateWasCastFromZone(state, Zone.HAND, ctx.castFromZone(), ctx.sourceId)
-            is WasCastFromZone -> evaluateWasCastFromZone(state, condition.zone, ctx.castFromZone(), ctx.sourceId)
+            is WasCast -> evaluateWasCast(state, ctx.castFromZone(), ctx.sourceId, ctx.departedSourceSnapshot())
+            is WasCastFromHand -> evaluateWasCastFromZone(state, Zone.HAND, ctx.castFromZone(), ctx.sourceId, ctx.departedSourceSnapshot())
+            is WasCastFromZone -> evaluateWasCastFromZone(state, condition.zone, ctx.castFromZone(), ctx.sourceId, ctx.departedSourceSnapshot())
 
             // CR 805 — "your turn" is the active team's turn for every member of that team.
             is IsYourTurn -> ctx.controllerId?.let { state.isActiveTurnFor(it) } ?: false
@@ -1713,9 +1713,27 @@ class ConditionEvaluator(
     private fun ConditionEvaluationContext.castFromZone(): Zone? =
         (this as? ConditionEvaluationContext.Resolution)?.effectContext?.castFromZone
 
-    private fun evaluateWasCast(state: GameState, castFromZone: Zone?, sourceId: EntityId?): Boolean {
+    /**
+     * The resolving ability's snapshot of its source as it left the battlefield, when it has left
+     * since the ability triggered or was activated (CR 608.2h); null while the source is still the
+     * same object, and under projection.
+     */
+    private fun ConditionEvaluationContext.departedSourceSnapshot() =
+        (this as? ConditionEvaluationContext.Resolution)?.effectContext?.lastKnownSourceSnapshot
+            ?.takeIf { it.entityId == sourceId }
+
+    private fun evaluateWasCast(
+        state: GameState,
+        castFromZone: Zone?,
+        sourceId: EntityId?,
+        departed: com.wingedsheep.engine.state.components.stack.EntitySnapshot?
+    ): Boolean {
         // For spells resolving, any non-null castFromZone means the spell is being cast
         if (castFromZone != null) return true
+        // An "if you cast it" intervening-if rechecked on resolution (CR 603.4) after its source
+        // left reads last-known information: the marker was stripped by the zone change, so a
+        // Retriever Phoenix that died with its trigger on the stack still learns (ruling).
+        departed?.let { return it.wasCast }
         // For permanents (ETB triggers, static gates), check the cast marker added when the spell
         // resolved. Reanimated, token, and "put onto battlefield" permanents lack it and are
         // correctly excluded; it is stripped when the permanent changes zones (CR 400.7).
@@ -1740,9 +1758,17 @@ class ConditionEvaluator(
         return state.zones.any { (key, ids) -> key.zoneType in condition.zones && sourceId in ids }
     }
 
-    private fun evaluateWasCastFromZone(state: GameState, zone: Zone, castFromZone: Zone?, sourceId: EntityId?): Boolean {
+    private fun evaluateWasCastFromZone(
+        state: GameState,
+        zone: Zone,
+        castFromZone: Zone?,
+        sourceId: EntityId?,
+        departed: com.wingedsheep.engine.state.components.stack.EntitySnapshot?
+    ): Boolean {
         // For spells resolving, check castFromZone (set from SpellOnStackComponent)
         if (castFromZone == zone) return true
+        // Source gone since the ability went on the stack: its last-known cast origin (see evaluateWasCast).
+        departed?.let { return it.castFromZone == zone }
         // For permanents (e.g. an entering creature's own "enters with a counter if cast from
         // graveyard" replacement, a triggered ability, or a static gate), fall back to the
         // cast-origin marker component stamped on the permanent as it resolved onto the battlefield.

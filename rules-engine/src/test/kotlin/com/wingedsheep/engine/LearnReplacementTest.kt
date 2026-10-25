@@ -1,6 +1,7 @@
 package com.wingedsheep.engine
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.YesNoDecision
@@ -50,6 +51,18 @@ class LearnReplacementTest : FunSpec({
     }
     val learnAbilityId = Learner.script.activatedAbilities.single().id
 
+    /** "{T}: Learn, then you gain 1 life." — the learn sits mid-pipeline. */
+    val LearnThenGain = card("Learn Then Gain") {
+        manaCost = "{1}"
+        typeLine = "Artifact"
+        oracleText = "{T}: Learn, then you gain 1 life."
+        activatedAbility {
+            cost = Costs.Tap
+            effect = Patterns.Mechanic.learn() then Effects.GainLife(1)
+        }
+    }
+    val learnThenGainAbilityId = LearnThenGain.script.activatedAbilities.single().id
+
     /** "If you would learn, instead you gain 5 life." — mandatory, from the battlefield. */
     val LifeInstead = card("Life Instead") {
         manaCost = "{1}"
@@ -85,7 +98,7 @@ class LearnReplacementTest : FunSpec({
 
     fun newDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(Learner, LifeInstead, OpponentLifeInstead, GraveyardExiler))
+        driver.registerCards(TestCards.all + listOf(Learner, LearnThenGain, LifeInstead, OpponentLifeInstead, GraveyardExiler))
         driver.initMirrorMatch(deck = Deck.of("Island" to 30, "Forest" to 30), startingLife = 20)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -155,6 +168,33 @@ class LearnReplacementTest : FunSpec({
             driver.state.getExile(player).contains(graveyardCard) shouldBe true
         }
         driver.pendingDecision shouldBe null
+    }
+
+    test("the effects after a replaced learn still run, whichever way the prompt is answered") {
+        for (answer in listOf(true, false)) {
+            val driver = newDriver()
+            val player = driver.activePlayer!!
+            val exiler = driver.putPermanentOnBattlefield(player, "Graveyard Exiler")
+            driver.moveToGraveyard(exiler)
+            val source = driver.putPermanentOnBattlefield(player, "Learn Then Gain")
+            driver.submit(ActivateAbility(playerId = player, sourceId = source, abilityId = learnThenGainAbilityId))
+                .outcome shouldBe Outcome.Done
+            driver.bothPass()
+
+            val prompt = driver.pendingDecision
+            prompt.shouldBeInstanceOf<YesNoDecision>()
+            driver.submitDecision(player, YesNoResponse(prompt.id, answer))
+            if (!answer) {
+                // Declined: the learn's own discard offer — pass on it.
+                val discard = driver.pendingDecision
+                discard.shouldBeInstanceOf<SelectCardsDecision>()
+                driver.submitDecision(player, CardsSelectedResponse(discard.id, emptyList()))
+            }
+
+            withClue("answered ${if (answer) "yes" else "no"}: the trailing life gain resolved") {
+                driver.getLifeTotal(player) shouldBe 21
+            }
+        }
     }
 
     test("'an opponent would learn' is measured from the replacement's controller") {

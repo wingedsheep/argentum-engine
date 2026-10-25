@@ -169,8 +169,42 @@ class RetrieverPhoenixScenarioTest : ScenarioTestBase() {
                 game.resolveStack()
                 game.answerYesNo(true)
 
-                withClue("both Phoenixes are on the battlefield, and the returned one doesn't learn") {
+                withClue("both Phoenixes are on the battlefield, and nothing more is asked") {
                     game.findAllPermanents("Retriever Phoenix").size shouldBe 2
+                    game.hasPendingDecision() shouldBe false
+                }
+            }
+
+            test("a Phoenix that dies with its trigger on the stack still learns, and can return itself") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Retriever Phoenix")
+                    .withCardInHand(1, "Lightning Bolt")
+                    .withLandsOnBattlefield(1, "Mountain", 5)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Retriever Phoenix").error shouldBe null
+                game.passPriority()
+                game.passPriority()   // the Phoenix resolves; its enters trigger goes on the stack
+                withClue("the enters trigger is waiting on the stack") {
+                    game.isOnBattlefield("Retriever Phoenix") shouldBe true
+                    game.state.stack.size shouldBe 1
+                }
+
+                val phoenix = game.findPermanent("Retriever Phoenix")!!
+                game.castSpell(1, "Lightning Bolt", phoenix).error shouldBe null
+                game.resolveStack()
+
+                withClue("'if you cast it' reads the Phoenix as it last existed (CR 603.4), so the learn " +
+                    "happens — and the Phoenix, now in the graveyard, may replace it") {
+                    game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
+                }
+                game.answerYesNo(true)
+
+                withClue("the Phoenix is back, returned by its own trigger's learn") {
+                    game.isOnBattlefield("Retriever Phoenix") shouldBe true
                     game.hasPendingDecision() shouldBe false
                 }
             }

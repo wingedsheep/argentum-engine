@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.scripting.effects.CreateTokenBatchEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.ConniveEffect
+import com.wingedsheep.sdk.scripting.effects.LearnEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 
 /**
@@ -22,9 +23,9 @@ import com.wingedsheep.sdk.scripting.effects.Effect
  *  - **Gates.** `asConditional()` / `asMayDecide()` recognize the *lowered* `GatedEffect` forms of
  *    "if X, do Y" and "you may do Y" (see `ConditionalGate.kt`). Both branches are visited.
  *  - **Composites.** [CompositeEffect] children are visited in order.
- *  - **Named keyword actions that wrap a composite.** [ConniveEffect] is a name and a subject
- *    around the ordinary connive pipeline, so the walk descends into its body. Without this the
- *    wrapper would hide the pipeline's `DrawCardsEffect` from every conniving card and silently
+ *  - **Named keyword actions that wrap a composite.** [ConniveEffect] and [LearnEffect] are a name
+ *    around an ordinary pipeline, so the walk descends into the body. Without this the wrapper
+ *    would hide the pipeline's `DrawCardsEffect` from every conniving or learning card and silently
  *    move their ratings and intent tags — the wrapper was introduced after this walk existed, and
  *    descending is what keeps the numbers identical to the pre-wrapper composite.
  *  - **Everything else is a leaf**, including [com.wingedsheep.sdk.scripting.effects.ModalEffect]
@@ -67,6 +68,7 @@ object EffectWalker {
         if (effect is CompositeEffect) return f.composite(effect.effects.map { fold(it, f) })
         if (effect is CreateTokenBatchEffect) return f.composite(effect.groups.map { fold(it, f) })
         if (effect is ConniveEffect) return fold(effect.body, f)
+        if (effect is LearnEffect) return fold(effect.body, f)
         return f.leaf(effect)
     }
 

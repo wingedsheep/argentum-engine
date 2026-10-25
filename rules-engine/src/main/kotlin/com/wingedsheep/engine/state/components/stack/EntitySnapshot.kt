@@ -177,6 +177,18 @@ data class EntitySnapshot(
      * [com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsModified].
      */
     val wasModified: Boolean = false,
+    /**
+     * True if this permanent was cast (it carried `WasCastComponent`) when it left. The marker is
+     * stripped on the zone change (CR 400.7), so an "if you cast it" intervening-if rechecked on
+     * resolution after its source died (CR 603.4) reads it from here — Retriever Phoenix's ruling.
+     */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val wasCast: Boolean = false,
+    /** The zone it was cast from (hand, graveyard, library, exile) when it left; null if not cast or untracked. */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val castFromZone: com.wingedsheep.sdk.core.Zone? = null,
     /** Creatures blocking, or blocked by, this one when it left (CR 509; Abu Ja'far). */
     val blockingOrBlockedByIds: List<EntityId> = emptyList(),
     /**
@@ -519,6 +531,8 @@ fun captureLastKnown(state: GameState, entityId: EntityId): EntitySnapshot {
         wasModified = com.wingedsheep.engine.handlers.predicates.isModified(state, entityId) {
             state.projectedState.getController(it)
         },
+        wasCast = container?.has<com.wingedsheep.engine.state.components.battlefield.WasCastComponent>() == true,
+        castFromZone = container?.let(::castFromZoneOf),
         attachmentIds = attachmentIdsOf(state, entityId),
         // The cost strips the cast-choices bag too; "the last noted …" reads it from here.
         numberChoices = numberChoicesOf(state, entityId),
@@ -591,3 +605,16 @@ fun captureCopyTriggeredAbilities(state: GameState, entityId: EntityId): List<co
 private fun permanentManaValue(state: GameState, entityId: EntityId): Int =
     if (state.getEntity(entityId)?.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>() == true) 0
     else state.getEntity(entityId)?.get<CardComponent>()?.manaValue ?: 0
+
+/**
+ * The zone [container] was cast from, read off the cast-origin markers stamped as it resolved onto
+ * the battlefield — null when it wasn't cast or the origin isn't tracked. Frozen into snapshots
+ * because zone changes strip the markers (CR 400.7).
+ */
+fun castFromZoneOf(container: com.wingedsheep.engine.state.ComponentContainer): com.wingedsheep.sdk.core.Zone? = when {
+    container.has<com.wingedsheep.engine.state.components.battlefield.CastFromHandComponent>() -> com.wingedsheep.sdk.core.Zone.HAND
+    container.has<com.wingedsheep.engine.state.components.battlefield.CastFromGraveyardComponent>() -> com.wingedsheep.sdk.core.Zone.GRAVEYARD
+    container.has<com.wingedsheep.engine.state.components.battlefield.CastFromLibraryComponent>() -> com.wingedsheep.sdk.core.Zone.LIBRARY
+    container.has<com.wingedsheep.engine.state.components.battlefield.CastFromExileComponent>() -> com.wingedsheep.sdk.core.Zone.EXILE
+    else -> null
+}

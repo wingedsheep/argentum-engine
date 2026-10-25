@@ -190,8 +190,10 @@ object KeywordActionReplacements {
     }
 
     /**
-     * Put [offers] to the player one at a time (CR 616.1: the affected player picks which
-     * replacement applies; once one has, the action is gone and the rest have nothing to replace).
+     * Put [offers] to the player one at a time, in sweep order with mandatory ones first. Once one
+     * has applied the action is gone and the rest have nothing left to replace. This is not a
+     * faithful CR 616.1 choice — the affected player doesn't order a mandatory against an optional
+     * one — but no printed card puts two such replacements on the same action today.
      * A mandatory offer applies at once; an optional one asks its source's controller yes or no,
      * through a [KeywordActionInsteadContinuation] whose "no" comes back here with the rest. With no
      * offers left, [reissue] — the keyword action again, with its replacements marked applied —
