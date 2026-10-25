@@ -17794,9 +17794,10 @@ The priority groups are (CR 616.1a–f):
   also runs `additionalEffect` when the replacement fires. `riderTiming` says when:
   - `WITH_REPLACEMENT` (default) — the rider is part of the replacement ("instead exile it and you gain
     2 life"), applied inline through a small executor whitelist (not the full pipeline):
-    `TakeExtraTurnEffect` (Ugin's Nexus), `AddCountersEffect` on the redirected card — target
-    `EffectTarget.TriggeringEntity` for another card ("exile it with a void counter on it", Dauthi
-    Voidwalker) or `EffectTarget.Self` for a `selfOnly` replacement (Darigaaz Reincarnated) —, `GainLifeEffect` (fixed amount, gained by the replacement source's controller;
+    `TakeExtraTurnEffect` (Ugin's Nexus), `AddCountersEffect` on the redirected card (target
+    `EffectTarget.TriggeringEntity` for another card, as in Dauthi Voidwalker's "exile it with a void
+    counter on it", or `EffectTarget.Self` for a `selfOnly` replacement like Darigaaz Reincarnated),
+    `GainLifeEffect` (fixed amount, gained by the replacement source's controller;
     emits `LifeChangedEvent` so life-gain triggers fire), the card-scoped hand restrictions
     `CantPlayCardsFromHandEffect` / `RevealCardInHandEffect` on the redirected card (Firestorm Phoenix),
     and a `CompositeEffect` of whitelisted parts, run in order.

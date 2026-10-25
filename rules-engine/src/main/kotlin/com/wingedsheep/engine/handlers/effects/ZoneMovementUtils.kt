@@ -1116,8 +1116,9 @@ object ZoneMovementUtils {
      *
      * [ReplacementRiderTiming.WITH_REPLACEMENT] riders run inline, as part of the replacement, from
      * a small whitelist: TakeExtraTurnEffect (Ugin's Nexus), AddCountersEffect on the redirected card
-     * (Darigaaz Reincarnated's `Self`, Dauthi Voidwalker's `TriggeringEntity`), a fixed GainLifeEffect (The Darkness Crystal), the card-scoped hand
-     * restrictions CantPlayCardsFromHandEffect / RevealCardInHandEffect on the redirected card
+     * (Darigaaz Reincarnated's `Self`, Dauthi Voidwalker's `TriggeringEntity`), a fixed
+     * GainLifeEffect (The Darkness Crystal), the card-scoped hand restrictions
+     * CantPlayCardsFromHandEffect / RevealCardInHandEffect on the redirected card
      * (Firestorm Phoenix), and a CompositeEffect of those.
      * [ReplacementRiderTiming.WHEN_YOU_DO] riders ("…exile it instead. When you do, create a 2/2
      * green Wolf creature token") run nothing here: they emit a [ReflexiveAbilityTriggeredEvent]
