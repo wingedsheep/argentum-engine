@@ -2528,6 +2528,7 @@ const passiveCounterPalette: Record<string, CounterBadgePalette> = {
   VITALITY: { bg: 'rgba(20, 40, 24, 0.95)', border: 'rgba(110, 190, 120, 0.7)', color: '#a8e0b0' },
   VOID: { bg: 'rgba(16, 12, 24, 0.95)', border: 'rgba(120, 100, 170, 0.7)', color: '#bfb0e0' },
   HARMONY: { bg: 'rgba(18, 36, 30, 0.95)', border: 'rgba(120, 200, 170, 0.7)', color: '#b0e6d2' },
+  ENLIGHTENED: { bg: 'rgba(44, 38, 16, 0.95)', border: 'rgba(230, 205, 120, 0.7)', color: '#f4e4a8' },
   PHYRESIS: { bg: 'rgba(24, 28, 30, 0.95)', border: 'rgba(150, 170, 160, 0.7)', color: '#c8d6cf' },
   MUSTER: { bg: 'rgba(52, 22, 18, 0.95)', border: 'rgba(210, 120, 90, 0.7)', color: '#eab49c' },
   BRAIN: { bg: 'rgba(44, 20, 48, 0.95)', border: 'rgba(200, 120, 210, 0.7)', color: '#ecb8f2' },

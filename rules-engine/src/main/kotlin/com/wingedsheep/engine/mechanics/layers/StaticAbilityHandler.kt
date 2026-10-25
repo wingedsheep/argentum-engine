@@ -727,6 +727,17 @@ class StaticAbilityHandler(
                 modification = Modification.GrantStaticAbility(ability),
                 affectsFilter = AffectsFilter.Self,
             )
+            // Printed, these are also stamped as controller-grant markers (addContinuousEffectComponent);
+            // projecting them too is what lets a resolved-effect grant count ("It gains 'You can't
+            // lose the game…'" — The Book of Exalted Deeds): PlayerLifeLossCheck reads both routes.
+            is GrantCantLoseGame -> ContinuousEffectData(
+                modification = Modification.GrantStaticAbility(ability),
+                affectsFilter = AffectsFilter.Self,
+            )
+            is com.wingedsheep.sdk.scripting.GrantOpponentsCantWinGame -> ContinuousEffectData(
+                modification = Modification.GrantStaticAbility(ability),
+                affectsFilter = AffectsFilter.Self,
+            )
             // Read at every targeting site from the holder's projected statics
             // (UntargetableByRules.zoneLocks), so losing all abilities lifts the lock.
             is com.wingedsheep.sdk.scripting.CardsInZonesCantBeTargeted -> ContinuousEffectData(
@@ -1310,9 +1321,7 @@ class StaticAbilityHandler(
             is CantBeTargetedByOpponentAbilities,
             is CantBeBlockedWhilePropertyAtMost,
             is com.wingedsheep.sdk.scripting.ChangeAllColorWordsToChosenColor,
-            is GrantCantLoseGame,
             is com.wingedsheep.sdk.scripting.PlayersCantPayLifeForCosts,
-            is com.wingedsheep.sdk.scripting.GrantOpponentsCantWinGame,
             is com.wingedsheep.sdk.scripting.GrantCantLoseGameFromLife,
             is GrantHexproofToController,
             is GrantProtectionToController,

@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantCantLoseGame
 import com.wingedsheep.sdk.scripting.GrantOpponentsCantWinGame
@@ -66,8 +67,26 @@ class GrantedCantLoseGameTest : FunSpec({
         }
     }
 
+    // The resolved-effect route (The Book of Exalted Deeds): "Target creature gains 'You can't lose
+    // the game and your opponents can't win the game.'" — recorded in grantedStaticAbilities.
+    val blessing = card("Lockward Blessing") {
+        manaCost = "{0}"
+        typeLine = "Instant"
+        spell {
+            val t = target(TargetFilter.Creature)
+            effect = Effects.GrantStaticAbility(GrantCantLoseGame, t, Duration.Permanent) then
+                Effects.GrantStaticAbility(GrantOpponentsCantWinGame, t, Duration.Permanent)
+        }
+    }
+
+    val shatter = card("Lockward Murder") {
+        manaCost = "{0}"
+        typeLine = "Instant"
+        spell { effect = Effects.Destroy(target(TargetFilter.Creature)) }
+    }
+
     fun driver(): GameTestDriver = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(ward, host, loseThirty, victory, disenchant))
+        registerCards(TestCards.all + listOf(ward, host, loseThirty, victory, disenchant, blessing, shatter))
         initMirrorMatch(deck = Deck.of("Plains" to 40))
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -114,5 +133,22 @@ class GrantedCantLoseGameTest : FunSpec({
         d.cast(d.player2, "Lockward Victory")
         d.state.gameOver.shouldBeFalse()
         d.state.winnerId shouldBe null
+    }
+
+    test("a resolved-effect grant protects the creature's controller until the creature leaves") {
+        val d = driver()
+        val creature = d.putCreatureOnBattlefield(d.player1, "Lockward Host")
+        d.cast(d.player1, "Lockward Blessing", listOf(creature))
+
+        d.cast(d.player2, "Lockward Victory")
+        d.state.gameOver.shouldBeFalse()
+
+        d.cast(d.player1, "Lockward Lifeloss")
+        d.getLifeTotal(d.player1) shouldBe -10
+        d.state.gameOver.shouldBeFalse()
+
+        d.cast(d.player2, "Lockward Murder", listOf(creature))
+        d.state.gameOver.shouldBeTrue()
+        d.state.winnerId shouldBe d.player2
     }
 })

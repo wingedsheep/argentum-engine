@@ -771,6 +771,13 @@ value class CounterType(val name: String) {
         val HARMONY = CounterType("HARMONY")
 
         /**
+         * Enlightened counter (AFR — The Book of Exalted Deeds). A pure marker with no inherent
+         * rule: the Book puts one on the Angel it grants "You can't lose the game and your
+         * opponents can't win the game", and nothing reads it.
+         */
+        val ENLIGHTENED = CounterType("ENLIGHTENED")
+
+        /**
          * Phyresis counter (DMU — Weatherlight Compleated). A passive tally with no inherent rule:
          * the card reads it as "four or more" (it's a Phyrexian creature) and "seven or more"
          * (draw instead of scry).
@@ -993,6 +1000,7 @@ value class CounterType(val name: String) {
             VITALITY,
             VOID,
             HARMONY,
+            ENLIGHTENED,
             PHYRESIS,
             MUSTER,
             BRAIN,

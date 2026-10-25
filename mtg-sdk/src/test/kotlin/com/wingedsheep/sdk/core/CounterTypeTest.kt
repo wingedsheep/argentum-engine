@@ -39,6 +39,7 @@ class CounterTypeTest : DescribeSpec({
             CounterType.VITALITY.printed shouldBe "vitality"
             CounterType.VOID.printed shouldBe "void"
             CounterType.HARMONY.printed shouldBe "harmony"
+            CounterType.ENLIGHTENED.printed shouldBe "enlightened"
             CounterType.MUSTER.printed shouldBe "muster"
             CounterType.AGE.printed shouldBe "age"
             CounterType.RAD.printed shouldBe "rad"
@@ -120,7 +121,7 @@ class CounterTypeTest : DescribeSpec({
         val NEW_KINDS = setOf(CounterType.BLOODLINE, CounterType.INVITATION, CounterType.IMPOSTOR, CounterType.DEVOTION,
             CounterType.THEFT, CounterType.TRAINING, CounterType.MIRE, CounterType.COLLECTION,
             CounterType.REPRIEVE, CounterType.BOUNTY, CounterType.CORPSE, CounterType.BRICK,
-            CounterType.VITALITY, CounterType.VOID, CounterType.HARMONY, CounterType.AGE, CounterType.EXPERIENCE, CounterType.VOW,
+            CounterType.VITALITY, CounterType.VOID, CounterType.HARMONY, CounterType.ENLIGHTENED, CounterType.AGE, CounterType.EXPERIENCE, CounterType.VOW,
             CounterType.ACORN, CounterType.INGREDIENT, CounterType.RAD, CounterType.PHYRESIS,
             CounterType.MUSTER, CounterType.GLYPH, CounterType.MATRIX, CounterType.HATCHLING,
             CounterType.SCREAM, CounterType.SLEEP, CounterType.PIN, CounterType.CARRION,

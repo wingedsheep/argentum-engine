@@ -868,6 +868,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.VOID,
   // Instrument of the Bards' harmony tally sets the mana value its search finds.
   CounterType.HARMONY,
+  // The Book of Exalted Deeds' enlightened marker on the Angel it made unbeatable.
+  CounterType.ENLIGHTENED,
   // Weatherlight Compleated's phyresis tally: a Phyrexian creature at four, card draw at seven.
   CounterType.PHYRESIS,
   // Assemble the Legion's muster tally sets how many Soldiers it makes each upkeep.

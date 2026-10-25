@@ -17226,6 +17226,135 @@
     ]
 }
 
+// The Book of Exalted Deeds
+{
+    "name": "The Book of Exalted Deeds",
+    "manaCost": "{W}{W}{W}",
+    "typeLine": "Legendary Artifact — Book",
+    "oracleText": "At the beginning of your end step, if you gained 3 or more life this turn, create a 3/3 white Angel creature token with flying.\n{W}{W}{W}, {T}, Exile The Book of Exalted Deeds: Put an enlightened counter on target Angel. It gains \"You can't lose the game and your opponents can't win the game.\" Activate only as a sorcery.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "The Book of Exalted Deeds:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Angel"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_GAINED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, if you gained 3 or more life this turn, create a 3/3 white Angel creature token with flying."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "The Book of Exalted Deeds:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}{W}{W}"
+                            }
+                        },
+                        "CostTap",
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "ENLIGHTENED",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantStaticAbility",
+                            "ability": "GrantCantLoseGame",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "Permanent"
+                        },
+                        {
+                            "type": "GrantStaticAbility",
+                            "ability": "GrantOpponentsCantWinGame",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "Permanent"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent Angel"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "{W}{W}{W}, {T}, Exile The Book of Exalted Deeds: Put an enlightened counter on target Angel. It gains \"You can't lose the game and your opponents can't win the game.\" Activate only as a sorcery."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "MYTHIC",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a1899bb1-dd8e-4437-8ea3-4ad637eabf2b.jpg?1783926538",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "The enlightenment counter placed by the last ability serves as a memory aid. It isn't connected to the granted ability. The Angel keeps that ability even if it loses the counter. Similarly, if the counter is somehow moved to another permanent, that permanent doesn't gain the ability."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "The Angel won't lose the ability it gains if it stops being an Angel after the ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // The Book of Vile Darkness
 {
     "name": "The Book of Vile Darkness",

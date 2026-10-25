@@ -11525,8 +11525,9 @@ staticAbility {
   Projected to `GrantsCantLoseGameComponent`, read by every player-loss SBA via `playerCantLoseGame`.
   Also a `ProjectedStaticAbility`: granted to a creature by the `GrantStaticAbility` static (Cloudsteel Kirin's
   equipped creature), it protects the *holder's* controller, read off projection
-  (`ControllerGrants.anyHoldingProjected`), and ends with the grant. (A one-shot `Effects.GrantStaticAbility` of
-  it isn't lowered yet — no card needs it.)
+  (`ControllerGrants.anyHoldingProjected`), and ends with the grant. A one-shot `Effects.GrantStaticAbility` of it
+  lowers the same way (The Book of Exalted Deeds: target Angel gains it with `Duration.Permanent`), so the lock
+  lasts until that creature leaves the battlefield.
 - `GrantOpponentsCantWinGame` — the complementary half: an effect that would make an *opponent* of this
   permanent's controller win the game does nothing at all (Herald of Eternal Dawn, "You can't lose the
   game and your opponents can't win the game" — pair it with `GrantCantLoseGame` for the full lock).
@@ -18433,6 +18434,7 @@ are their printed spellings (`CounterType.printed`). Text converts back only thr
 - `vitality` (`CounterType.VITALITY`): LEA — Living Artifact. Passive spendable store with no inherent rule: its `Triggers.you.isDealtDamage()` trigger adds `DynamicAmounts.triggerDamageAmount()` of them, and its upkeep trigger may remove one to gain 1 life. The passive-counter badge displays its count.
 - `void` (`CounterType.VOID`): AFR — Sphere of Annihilation. Passive tally with no inherent rule: `EntersWithDynamicCounters(VOID, xValue())` sets it, and the upkeep trigger snapshots it with `storeNumber(countersOnSelf(VOID))` before exiling everything whose mana value is at most that number (`CardPredicate.ManaValueAtMostDynamic(slot.amount)`). The passive-counter badge displays its count.
 - `harmony` (`CounterType.HARMONY`): AFR — Instrument of the Bards. Passive tally with no inherent rule: its optional upkeep trigger adds one, and its search ability finds a creature card with `CardPredicate.ManaValueEqualsDynamic(DynamicAmounts.countersOnSelf(HARMONY))`. The passive-counter badge displays its count.
+- `enlightened` (`CounterType.ENLIGHTENED`): AFR — The Book of Exalted Deeds. A pure marker nothing reads: the Book's sorcery-speed ability puts one on target Angel alongside two permanent `Effects.GrantStaticAbility` grants (`GrantCantLoseGame`, `GrantOpponentsCantWinGame`). The passive-counter badge displays its count.
 - `phyresis` (`CounterType.PHYRESIS`): DMU — Weatherlight Compleated. Passive tally with no inherent rule; `Conditions.SourceCounterCountAtLeast(PHYRESIS, 4)` gates its conditional Phyrexian-creature type change and `…AtLeast(PHYRESIS, 7)` its draw-or-scry branch. The passive-counter badge displays its count.
 - `muster` (`CounterType.MUSTER`): GTC — Assemble the Legion. Passive tally with no inherent rule: its upkeep trigger adds one, then creates a Soldier token for each (`DynamicAmounts.countersOnSelf(MUSTER)`). The passive-counter badge displays its count.
 - `hatching` (`CounterType.HATCHING`): NEO — The Dragon-Kami Reborn. A pure marker on a face-down card in exile: chapters I–II exile one of the top three with `move(..., faceDown = FaceDownMode.HIDDEN, lookableInExile = true, addCounterType = CounterType.HATCHING)`, and Dragon-Kami's Egg gathers `CardSource.FromZone(Zone.EXILE, Player.You, GameObjectFilter.Creature.withCounter(CounterType.HATCHING))` to cast one for free. The exile browser badges its count.
