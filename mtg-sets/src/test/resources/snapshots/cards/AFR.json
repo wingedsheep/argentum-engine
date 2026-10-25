@@ -3299,6 +3299,130 @@
     ]
 }
 
+// Demilich
+{
+    "name": "Demilich",
+    "manaCost": "{U}{U}{U}{U}",
+    "typeLine": "Creature — Skeleton Wizard",
+    "oracleText": "This spell costs {U} less to cast for each instant and sorcery spell you've cast this turn.\nWhenever this creature attacks, exile up to one target instant or sorcery card from your graveyard. Copy it. You may cast the copy.\nYou may cast this card from your graveyard by exiling four instant and/or sorcery cards from your graveyard in addition to paying its other costs.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Demilich:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "CopyCardIntoCollection",
+                            "source": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "storeAs": "copy1"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "CastFromCollectionWithoutPayingCost",
+                                "from": "copy1",
+                                "payManaCost": true
+                            },
+                            "descriptionOverride": "You may cast the copy."
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "instant|sorcery own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature attacks, exile up to one target instant or sorcery card from your graveyard. Copy it. You may cast the copy."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceColoredPerUnit",
+                    "symbols": "{U}",
+                    "countSource": {
+                        "type": "Dynamic",
+                        "amount": {
+                            "type": "SpellsCastThisTurn",
+                            "filter": "instant|sorcery"
+                        }
+                    }
+                }
+            },
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ],
+                "additionalCost": {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomExileFrom",
+                        "zone": "Graveyard",
+                        "filter": "instant|sorcery",
+                        "count": 4
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "rarity": "MYTHIC",
+        "artist": "Daniel Zrom",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a1351ed-b9df-4a6d-aaa1-ec6db673d265.jpg?1783926516",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "While casting Demilich, if you are required to pay an additional cost that includes a generic mana component, Demilich's cost reduction effect can apply to it. For example, if you're required to pay an additional {1} to cast Demilich (perhaps because of Sphere of Resistance), and you've cast five or more instant and/or sorcery spells this turn, you would pay {0} to cast Demilich."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If you exile a card as the triggered ability resolves, that card will remain exiled whether you cast the copy or not."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Casting the copy happens as part of the resolution of Demilich's triggered ability. If you choose to cast it, you must do so right away. If you choose not to cast it right away, the copy ceases to exist the next time a player would receive priority."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "You must pay all normal costs for casting the copy."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Demilich's last ability doesn't change when you can cast it. In most cases, you can cast Demilich only during your main phase."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Demogorgon's Clutches
 {
     "name": "Demogorgon's Clutches",
@@ -3781,6 +3905,57 @@
     ]
 }
 
+// Displacer Beast
+{
+    "name": "Displacer Beast",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Cat Beast",
+    "oracleText": "When this creature enters, venture into the dungeon. (Enter the first room or advance to the next room.)\nDisplacement — {3}{U}: Return this creature to its owner's hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Displacer Beast:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": "VentureIntoTheDungeon"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Displacer Beast:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "UNCOMMON",
+        "artist": "Bryan Sola",
+        "flavorText": "The only place you can be sure it's not is wherever it appears to be.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/95d5c36c-bcc8-459c-9f4b-b265ccdb1f06.jpg?1783926516"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Divine Smite
 {
     "name": "Divine Smite",
@@ -3967,6 +4142,91 @@
             }
         ]
     }
+}
+
+// Dragon Turtle
+{
+    "name": "Dragon Turtle",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Creature — Dragon Turtle",
+    "oracleText": "Flash\nDrag Below — When this creature enters, tap it and up to one target creature an opponent controls. They don't untap during their controllers' next untap steps.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dragon Turtle:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": "Self",
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Drag Below — When this creature enters, tap it and up to one target creature an opponent controls. They don't untap during their controllers' next untap steps."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d436ba80-386f-40ad-b0ca-a98cc50de964.jpg?1783926517",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "If you target an opponent's creature with Dragon Turtle's Drag Below ability and that target is illegal as the ability tries to resolve, the entire ability is removed from the stack and does nothing. Dragon Turtle will remain untapped and will untap as normal during its controller's next untap step."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If, however, there are no legal targets for the Drag Below ability when Dragon Turtle enters the battlefield (or you choose not to target anything), Dragon Turtle's ability will still resolve and cause it to be tapped and it won't untap during its controllers next untap step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Dragon's Fire
@@ -4753,6 +5013,121 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Eccentric Apprentice
+{
+    "name": "Eccentric Apprentice",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Tiefling Wizard",
+    "oracleText": "Flying\nWhen this creature enters, venture into the dungeon. (Enter the first room or advance to the next room.)\nAt the beginning of combat on your turn, if you've completed a dungeon, up to one target creature becomes a Bird with base power and toughness 1/1 and flying until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Eccentric Apprentice:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": "VentureIntoTheDungeon"
+            },
+            {
+                "id": "Eccentric Apprentice:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "SetCreatureSubtypes",
+                            "subtypes": [
+                                "Bird"
+                            ],
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "EndOfTurn"
+                        },
+                        {
+                            "type": "SetBaseStats",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "duration": "EndOfTurn"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FLYING",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": "DungeonsCompleted",
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "rarity": "UNCOMMON",
+        "artist": "Campbell White",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3baa08ac-9a94-4e22-91bb-c6966cd0a0de.jpg?1783926516",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "Eccentric Apprentice's last ability works even if it wasn't on the battlefield when you completed a dungeon and even if the dungeon was completed on a previous turn."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "A creature that becomes a Bird this way loses all other creature types but does not lose any of its abilities."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "The last ability will overwrite any previous effects that set the creature's power and toughness to specific numbers. Effects that otherwise modify the target creature's power and toughness will still apply no matter when they took effect. The same is true for +1/+1 counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -5959,6 +6334,52 @@
     ]
 }
 
+// Fly
+{
+    "name": "Fly",
+    "manaCost": "{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature has flying and \"Whenever this creature deals combat damage to a player, venture into the dungeon.\" (Enter the first room or advance to the next room.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Fly:1",
+                    "trigger": {
+                        "type": "DealsDamageEvent",
+                        "damageType": "DamageCombat",
+                        "recipient": {
+                            "type": "RecipientPlayer",
+                            "player": "Any"
+                        }
+                    },
+                    "effect": "VentureIntoTheDungeon"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "UNCOMMON",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1a91cc6-67e1-4f1b-86e2-eb388a75d6ad.jpg?1783926514"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Gloom Stalker
 {
     "name": "Gloom Stalker",
@@ -6615,6 +7036,68 @@
             }
         ]
     }
+}
+
+// Guild Thief
+{
+    "name": "Guild Thief",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Orc Rogue",
+    "oracleText": "Whenever this creature deals combat damage to a player, put a +1/+1 counter on it.\nCunning Action — {3}{U}: This creature can't be blocked this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Guild Thief:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, put a +1/+1 counter on it."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Guild Thief:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "CANT_BE_BLOCKED",
+                    "target": "Self"
+                },
+                "descriptionOverride": "Cunning Action — {3}{U}: This creature can't be blocked this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "UNCOMMON",
+        "artist": "Mike Jordana",
+        "flavorText": "She puts some coin in the Guild's pocket and sends a message at the same time.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd4348ec-fdb1-4c3b-bec5-42513c6c0662.jpg?1783926512"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Half-Elf Monk
@@ -8285,6 +8768,96 @@
     "colorIdentityOverride": []
 }
 
+// Iymrith, Desert Doom
+{
+    "name": "Iymrith, Desert Doom",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Legendary Creature — Dragon",
+    "oracleText": "Flying\nIymrith has ward {4} as long as it's untapped.\nWhenever Iymrith deals combat damage to a player, draw a card. Then if you have fewer than three cards in hand, draw cards equal to the difference.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Iymrith, Desert Doom:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "IfPositive",
+                                "amount": {
+                                    "type": "Subtract",
+                                    "left": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    },
+                                    "right": {
+                                        "type": "Count",
+                                        "player": "You",
+                                        "zone": "Hand"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantWard",
+                    "cost": {
+                        "type": "WardCost.Mana",
+                        "manaCost": "{4}"
+                    },
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "untapped"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "MYTHIC",
+        "artist": "Wisnu Tan",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c3e6025d-d273-4ae4-9929-5e588612f1b3.jpg?1783926511"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Jaded Sell-Sword
 {
     "name": "Jaded Sell-Sword",
@@ -9225,6 +9798,61 @@
             {
                 "date": "2021-07-23",
                 "text": "Mimic is still a Treasure after its last ability resolves, but Treasure is an artifact type, never a creature type."
+            }
+        ]
+    }
+}
+
+// Mind Flayer
+{
+    "name": "Mind Flayer",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Horror",
+    "oracleText": "Dominate Monster — When this creature enters, gain control of target creature for as long as you control this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mind Flayer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": {
+                        "type": "WhileYouControlSource",
+                        "sourceDescription": "Mind Flayer"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, gain control of target creature for as long as you control this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "flavorText": "\"Shed your thoughts and let my will flow through you.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c29ac797-a186-4224-94e1-9bb9dca4b029.jpg?1783926511",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "If Mind Flayer leaves the battlefield or you lose control of it before its Dominate Monster ability resolves, control of the target creature doesn't change at all."
             }
         ]
     }
@@ -11585,6 +12213,68 @@
     ]
 }
 
+// Ray of Frost
+{
+    "name": "Ray of Frost",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature\nWhen this Aura enters, if enchanted creature is red, tap it.\nAs long as enchanted creature is red, it loses all abilities.\nEnchanted creature doesn't untap during its controller's untap step.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ray of Frost:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EnchantedCreature"
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "creature red"
+                },
+                "descriptionOverride": "When this Aura enters, if enchanted creature is red, tap it."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "LoseAllAbilities",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "creature red"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "UNCOMMON",
+        "artist": "Kim Sokol",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7edd5058-a964-4288-937b-84df6e9ba7c4.jpg?1783926511"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Reaper's Talisman
 {
     "name": "Reaper's Talisman",
@@ -13387,6 +14077,39 @@
     ]
 }
 
+// Tasha's Hideous Laughter
+{
+    "name": "Tasha's Hideous Laughter",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each opponent exiles cards from the top of their library until that player has exiled cards with total mana value 20 or greater.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ExileLibraryUntilManaValue",
+                    "threshold": {
+                        "type": "Fixed",
+                        "amount": 20
+                    },
+                    "storeAs": "stored0"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "RARE",
+        "artist": "Ilse Gort",
+        "flavorText": "The raging behir reared back, opened its terrible maw . . . and collapsed in a fit of horrifying giggles.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4932113-904f-427a-9566-509cc008f3ef.jpg?1783926505"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Teleportation Circle
 {
     "name": "Teleportation Circle",
@@ -13453,6 +14176,77 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// The Blackstaff of Waterdeep
+{
+    "name": "The Blackstaff of Waterdeep",
+    "manaCost": "{U}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "You may choose not to untap The Blackstaff of Waterdeep during your untap step.\nAnimate Walking Statue — {1}{U}, {T}: Another target nontoken artifact you control becomes a 4/4 artifact creature for as long as The Blackstaff of Waterdeep remains tapped. Activate only as a sorcery.",
+    "flags": [
+        "MAY_NOT_UNTAP"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "The Blackstaff of Waterdeep:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "duration": {
+                        "type": "WhileSourceTapped",
+                        "sourceDescription": "The Blackstaff of Waterdeep"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact nontoken ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Animate Walking Statue — Another target nontoken artifact you control becomes a 4/4 artifact creature for as long as The Blackstaff of Waterdeep remains tapped. Activate only as a sorcery."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "RARE",
+        "artist": "Anna Steinbauer",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/3317cbf3-13a1-4471-a23c-de429941e8a4.jpg?1783926518"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -14661,6 +15455,56 @@
     ]
 }
 
+// True Polymorph
+{
+    "name": "True Polymorph",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Target artifact or creature becomes a copy of another target artifact or creature.",
+    "script": {
+        "spellEffect": {
+            "type": "EachPermanentBecomesCopyOfTarget",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t1"
+            },
+            "affected": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|artifact"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetOther",
+                "baseRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|artifact"
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "RARE",
+        "artist": "Steve Prescott",
+        "flavorText": "Maybe a little *too* convincing.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/04a1f384-9266-425c-b739-09d74871fc7b.jpg?1783926505"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Underdark Basilisk
 {
     "name": "Underdark Basilisk",
@@ -15355,6 +16199,236 @@
     ]
 }
 
+// Wizard's Spellbook
+{
+    "name": "Wizard's Spellbook",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Artifact — Book",
+    "oracleText": "{T}: Exile target instant or sorcery card from a graveyard. Roll a d20. Activate only as a sorcery.\n1—9 | Copy that card. You may cast the copy.\n10—19 | Copy that card. You may cast the copy by paying {1} rather than paying its mana cost.\n20 | Copy each card exiled with this artifact. You may cast any number of the copies without paying their mana costs.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Wizard's Spellbook:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true
+                        },
+                        {
+                            "type": "RollDice",
+                            "sides": 20,
+                            "storeTotalAs": "diceResult2"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "All",
+                                    "conditions": [
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult2"
+                                            },
+                                            "operator": "GTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult2"
+                                            },
+                                            "operator": "LTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 9
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "CopyCollectionIntoCollection",
+                                        "from": "gathered0",
+                                        "storeAs": "copies4"
+                                    },
+                                    {
+                                        "type": "Gated",
+                                        "gate": "Gate.MayDecide",
+                                        "then": {
+                                            "type": "CastFromCollectionWithoutPayingCost",
+                                            "from": "copies4",
+                                            "payManaCost": true
+                                        },
+                                        "descriptionOverride": "You may cast the copy."
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "All",
+                                    "conditions": [
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult2"
+                                            },
+                                            "operator": "GTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 10
+                                            }
+                                        },
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult2"
+                                            },
+                                            "operator": "LTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 19
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "CopyCollectionIntoCollection",
+                                        "from": "gathered0",
+                                        "storeAs": "copies7"
+                                    },
+                                    {
+                                        "type": "Gated",
+                                        "gate": "Gate.MayDecide",
+                                        "then": {
+                                            "type": "CastFromCollectionWithoutPayingCost",
+                                            "from": "copies7",
+                                            "alternativeManaCost": "{1}"
+                                        },
+                                        "descriptionOverride": "You may cast the copy by paying {1} rather than paying its mana cost."
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult2"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 20
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": "FromLinkedExile",
+                                        "storeAs": "gathered10"
+                                    },
+                                    {
+                                        "type": "CopyCollectionIntoCollection",
+                                        "from": "gathered10",
+                                        "storeAs": "copies11"
+                                    },
+                                    {
+                                        "type": "CastAnyNumberFromCollectionWithoutPayingCost",
+                                        "from": "copies11"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "instant|sorcery",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Exile target instant or sorcery card from a graveyard. Roll a d20. 1—9: copy that card; you may cast the copy. 10—19: copy that card; you may cast the copy by paying {1} rather than paying its mana cost. 20: copy each card exiled with this artifact; you may cast any number of the copies without paying their mana costs."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "rarity": "RARE",
+        "artist": "Iris Compiet",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b6ed0a4c-0234-4341-8dcb-5eea6a9632e7.jpg?1783926504",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "If your result is 1–9, you must still pay all costs to cast the copy. You may pay any additional or alternative costs the spell has. If it has any mandatory additional costs, those must be paid."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If your result is 10–19, you may pay {1} instead of its mana cost. You cannot pay its regular mana cost or any alternative costs the copy has. You may pay any additional costs and must pay mandatory additional costs."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If your result is 20, you may cast the copies without paying their mana costs. You cannot pay their regular mana costs or any alternative costs the copies have. You may pay any additional costs and must pay mandatory additional costs. You may cast the copies in any order you choose."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "In all cases, any copies you don't cast cease to exist after the ability is finished resolving."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If you control multiple copies of Wizard's Spellbook, each one tracks the cards it has exiled separately."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Xanathar, Guild Kingpin
 {
     "name": "Xanathar, Guild Kingpin",
@@ -15843,6 +16917,93 @@
     ]
 }
 
+// You Find the Villains' Lair
+{
+    "name": "You Find the Villains' Lair",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Foil Their Scheme — Counter target spell.\n• Learn Their Secrets — Draw two cards, then discard two cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": "Counter",
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {},
+                                "zone": "Stack"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Foil Their Scheme — Counter target spell."
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 2
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 2 cards to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "description": "Learn Their Secrets — Draw two cards, then discard two cards."
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "artist": "Gabor Szikszai",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c6704458-6e9e-4795-a56d-25b68fbf9672.jpg?1783926504"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // You Happen On a Glade
 {
     "name": "You Happen On a Glade",
@@ -16059,6 +17220,59 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Yuan-Ti Malison
+{
+    "name": "Yuan-Ti Malison",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Snake Rogue",
+    "oracleText": "This creature can't be blocked as long as it's attacking alone.\nWhenever this creature deals combat damage to a player, venture into the dungeon. (Enter the first room or advance to the next room.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Yuan-Ti Malison:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": "VentureIntoTheDungeon"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "CantBeBlocked",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "IsAttackingAlone"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "rarity": "RARE",
+        "artist": "Oriana Menendez",
+        "flavorText": "Silent. Slithering. Sinister.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f51afd9-7093-4aa3-ad5b-7383684d6285.jpg?1783926503"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
