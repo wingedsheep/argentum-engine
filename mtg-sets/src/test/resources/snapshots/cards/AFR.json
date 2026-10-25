@@ -2052,6 +2052,63 @@
     }
 }
 
+// Critical Hit
+{
+    "name": "Critical Hit",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gains double strike until end of turn.\nWhen you roll a natural 20, return this card from your graveyard to your hand. (A natural 20 is a roll that displays 20 on the die.)",
+    "script": {
+        "spellEffect": {
+            "type": "GrantKeyword",
+            "keyword": "DOUBLE_STRIKE",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "triggeredAbilities": [
+            {
+                "id": "Critical Hit:1",
+                "trigger": {
+                    "type": "DieRolledEvent",
+                    "player": "You",
+                    "naturalResult": 20
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
+                },
+                "activeZones": [
+                    "Graveyard"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "UNCOMMON",
+        "artist": "Francisco Miyara",
+        "flavorText": "\"How do you kill what's already dead? *That's* how.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2e9aaaf-0b51-4721-b75c-923892a41743.jpg?1783926482"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Dawnbringer Cleric
 {
     "name": "Dawnbringer Cleric",

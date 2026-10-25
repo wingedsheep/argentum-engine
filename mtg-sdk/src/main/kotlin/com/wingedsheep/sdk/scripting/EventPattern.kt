@@ -3432,20 +3432,29 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          * was N or higher" — Farideh, Devil's Chosen). A batch trigger takes no result interval.
          */
         val batch: Boolean = false,
+        /**
+         * "Whenever you roll a natural 20" (Critical Hit): match the face the die displays (CR 706.2),
+         * before any modifier, rather than its result. Composes with the result interval.
+         */
+        val naturalResult: Int? = null,
     ) : EventPattern {
         init {
             require(player in setOf(Player.You, Player.EachOpponent, Player.Each, Player.Any)) {
                 "Die-roll triggers require you, an opponent, or any player"
             }
+            require(naturalResult == null || naturalResult >= 1) { "A die's natural result is at least 1" }
             require(minimumResult == null || maximumResult == null || minimumResult <= maximumResult) {
                 "A die-result interval must not be inverted"
             }
-            require(!batch || (minimumResult == null && maximumResult == null)) {
+            require(!batch || (minimumResult == null && maximumResult == null && naturalResult == null)) {
                 "A one-or-more-dice trigger fires on the whole roll, not on a result interval"
             }
         }
-        override val description: String =
-            if (batch) "${player.description} rolls one or more dice" else "${player.description} rolls a die"
+        override val description: String = when {
+            batch -> "${player.description} rolls one or more dice"
+            naturalResult != null -> "${player.description} rolls a natural $naturalResult"
+            else -> "${player.description} rolls a die"
+        }
     }
 
     /**

@@ -805,7 +805,8 @@ class TriggerMatcher(
                 event is com.wingedsheep.engine.core.DieRolledEvent && !event.ignored &&
                     matchesPlayer(state, trigger.player, event.playerId, controllerId, sourceId) &&
                     (trigger.minimumResult?.let { event.result >= it } ?: true) &&
-                    (trigger.maximumResult?.let { event.result <= it } ?: true)
+                    (trigger.maximumResult?.let { event.result <= it } ?: true) &&
+                    (trigger.naturalResult?.let { event.natural == it } ?: true)
             }
             is EventPattern.TrainedEvent -> {
                 if (event !is com.wingedsheep.engine.core.TrainedEvent) return false

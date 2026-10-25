@@ -837,10 +837,14 @@ class BatchTriggerSubject internal constructor(
  * `Player.TriggeringPlayer`.
  */
 class PlayerTriggerSubject internal constructor(private val player: Player) {
-    /** Each die is a separate trigger, optionally restricted to an inclusive result interval. */
-    fun rollsDie(minimumResult: Int? = null, maximumResult: Int? = null): TriggerSpec {
+    /**
+     * Each die is a separate trigger, optionally restricted to an inclusive result interval and/or
+     * to the face the die displays before modifiers — `naturalResult = 20` is "whenever you roll a
+     * natural 20" (Critical Hit).
+     */
+    fun rollsDie(minimumResult: Int? = null, maximumResult: Int? = null, naturalResult: Int? = null): TriggerSpec {
         only("rollsDie", Player.You, Player.EachOpponent, Player.Each, Player.Any)
-        return spec(EventPattern.DieRolledEvent(player, minimumResult, maximumResult))
+        return spec(EventPattern.DieRolledEvent(player, minimumResult, maximumResult, naturalResult = naturalResult))
     }
 
     /**

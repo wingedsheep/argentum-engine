@@ -19676,6 +19676,10 @@ returns that sum as a `NumberSlot`, and a results table (CR 706.3a) is a run of
 `anyPlayer`) observes each individual numerical roll with inclusive result bounds. The roller is
 `TriggeringPlayer`; `ContextProperty(TRIGGER_DIE_RESULT)` reads its captured result. The engine
 emits public `DieRolledEvent`s and detects observers at the settle boundary, after resolution.
+`rollsDie(naturalResult = 20)` is "whenever you roll a natural 20" (Critical Hit): it matches the
+face the die displays (`DieRolledEvent.natural`, CR 706.2) instead of the modified result, so a
+modifier can neither make nor break it. Pair it with `triggerZone = Zone.GRAVEYARD` for "return this
+card from your graveyard to your hand".
 
 `Triggers.you.rollsDice()` (same subjects) is "whenever you roll one or more dice"
 (`DieRolledEvent(batch = true)`): it fires **once per roll instruction** for each matching roller,

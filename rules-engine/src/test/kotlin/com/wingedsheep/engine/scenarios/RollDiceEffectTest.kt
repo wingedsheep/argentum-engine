@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.scripting.RollAdditionalDice
 import com.wingedsheep.sdk.scripting.effects.RollDiceEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.*
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -249,5 +250,33 @@ class RollDiceEffectTest : FunSpec({
         val kept=rolls.single { !it.ignored }
         kept.result shouldBe kept.natural-4
         result.updatedStoredNumbers shouldBe mapOf("total" to kept.result)
+    }
+    test("a natural-result observer matches the face shown, not the modified result") {
+        // A d1 always shows 1; the +5 modifier makes every result 6.
+        val natural=card("Test Natural One Observer") {
+            typeLine="Enchantment"
+            triggeredAbility { trigger=Triggers.you.rollsDie(naturalResult=1); effect=Effects.GainLife(DynamicAmount.Fixed(1)) }
+        }
+        val byResult=card("Test Result One Observer") {
+            typeLine="Enchantment"
+            triggeredAbility { trigger=Triggers.you.rollsDie(minimumResult=1,maximumResult=1); effect=Effects.GainLife(DynamicAmount.Fixed(10)) }
+        }
+        val roller=card("Test Raised d1 Roller") {
+            typeLine="Artifact"
+            activatedAbility { cost=Costs.Tap; effect=Effects.RollDice(DynamicAmount.Fixed(2),1,modifier=DynamicAmount.Fixed(5)) }
+        }
+        val d=setup(); d.registerCards(listOf(natural,byResult,roller)); d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val player=d.activePlayer!!; val life=d.getLifeTotal(player)
+        d.putPermanentOnBattlefield(player,natural.name)
+        d.putPermanentOnBattlefield(player,byResult.name)
+        val source=d.putPermanentOnBattlefield(player,roller.name)
+        d.submit(ActivateAbility(player,source,roller.script.activatedAbilities.single().id)).outcome shouldBe Outcome.Done
+        d.bothPass().events.filterIsInstance<DieRolledEvent>().map { it.natural to it.result } shouldBe listOf(1 to 6, 1 to 6)
+        d.state.stack.size shouldBe 2
+        while (d.state.stack.isNotEmpty()) d.bothPass()
+        d.getLifeTotal(player) shouldBe life+2
+    }
+    test("a one-or-more-dice trigger takes no natural result") {
+        shouldThrow<IllegalArgumentException> { com.wingedsheep.sdk.scripting.EventPattern.DieRolledEvent(batch=true,naturalResult=20) }
     }
 })
