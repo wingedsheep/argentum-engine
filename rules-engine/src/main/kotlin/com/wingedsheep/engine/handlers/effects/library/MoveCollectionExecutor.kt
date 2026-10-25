@@ -151,7 +151,7 @@ class MoveCollectionExecutor(
             val attackController = resolvePlayer(destination.player, context, state) ?: context.controllerId
             chosenDefenders = EnteringAttackDefenderChooser.defenders(state, context, attackController, cards.size)
                 ?: return EnteringAttackDefenderChooser.pause(
-                    state, effect, context, attackController, count = 1,
+                    state, effect, context, attackController, count = cards.size,
                     tokenName = state.getEntity(cards[context.entryAttackDefenders.size])
                         ?.get<CardComponent>()?.name ?: "that card",
                 )
