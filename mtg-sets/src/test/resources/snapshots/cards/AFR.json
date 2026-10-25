@@ -497,6 +497,76 @@
     }
 }
 
+// Baleful Beholder
+{
+    "name": "Baleful Beholder",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Beholder",
+    "oracleText": "When this creature enters, choose one —\n• Antimagic Cone — Each opponent sacrifices an enchantment of their choice.\n• Fear Ray — Creatures you control gain menace until end of turn. (A creature with menace can't be blocked except by two or more creatures.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Baleful Beholder:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "ForceSacrifice",
+                                "filter": "enchantment",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "EachOpponent"
+                                }
+                            },
+                            "description": "Antimagic Cone — Each opponent sacrifices an enchantment"
+                        },
+                        {
+                            "effect": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "MENACE",
+                                    "target": "IterationEntity"
+                                }
+                            },
+                            "description": "Fear Ray — Creatures you control gain menace until end of turn"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "artist": "Lars Grant-West",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/5/e52d6ef6-d8a3-4288-8917-4c0a179ed4e0.jpg?1783926500",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "In a multiplayer game, each opponent in turn order will choose which enchantment to sacrifice, and they get to know the choices made before them by other players. Once those decisions are made, the chosen enchantments are all sacrificed at the same time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Bar the Gate
 {
     "name": "Bar the Gate",
@@ -1125,6 +1195,140 @@
     ]
 }
 
+// Check for Traps
+{
+    "name": "Check for Traps",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent reveals their hand. You choose a nonland card from it. Exile that card. If an instant card or a card with flash is exiled this way, they lose 1 life. Otherwise, you lose 1 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "nonland",
+                    "storeSelected": "selected2",
+                    "prompt": "Choose a nonland card to exile",
+                    "showAllCards": true,
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeMovedAs": "moved3"
+                },
+                {
+                    "type": "ConditionalOnCollection",
+                    "collection": "moved3",
+                    "ifNotEmpty": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "ifEmpty": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Controller"
+                    },
+                    "filter": "instant|kw:flash"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "UNCOMMON",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"Relax. I'm a professional.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6f58ea8a-30ac-45b0-a701-8b8d8262cfcf.jpg?1783926499"
+    }
+}
+
+// Clattering Skeletons
+{
+    "name": "Clattering Skeletons",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Skeleton",
+    "oracleText": "When this creature dies, venture into the dungeon. (Enter the first room or advance to the next room.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Clattering Skeletons:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": "VentureIntoTheDungeon"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "artist": "Aleksi Briclot",
+        "flavorText": "Those who die in the dungeon become its guardians.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/09ac0b2b-d4d3-4977-b241-7788239362de.jpg?1783926499"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Clever Conjurer
 {
     "name": "Clever Conjurer",
@@ -1556,6 +1760,88 @@
     ]
 }
 
+// Death-Priest of Myrkul
+{
+    "name": "Death-Priest of Myrkul",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Tiefling Cleric",
+    "oracleText": "Skeletons, Vampires, and Zombies you control get +1/+1.\nAt the beginning of your end step, if a creature died this turn, you may pay {1}. If you do, create a 1/1 black Skeleton creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Death-Priest of Myrkul:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}"
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "BLACK"
+                        ],
+                        "creatureTypes": [
+                            "Skeleton"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fa6fdb57-82f3-4695-b1fa-1f301ea4ef83.jpg?1783926346"
+                    }
+                },
+                "interveningIf": "CreatureDiedThisTurn",
+                "descriptionOverride": "At the beginning of your end step, if a creature died this turn, you may pay {1}. If you do, create a 1/1 black Skeleton creature token."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Skeleton|Vampire|Zombie ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "rarity": "UNCOMMON",
+        "artist": "Lius Lasahido",
+        "flavorText": "\"The Reaper bids you rise!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/126b2636-030a-4a0e-9307-54c3372afb52.jpg?1783926498",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "A creature you control that's more than one of the creature types listed in the first ability will get only +1/+1."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Death-Priest of Myrkul doesn't need to have been on the battlefield when the creature died."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Death-Priest of Myrkul's last ability will trigger only once during your end step, no matter how many creatures died this turn. However, if no creatures have died so far this turn as the end step begins, the ability won't trigger at all."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Delina, Wild Mage
 {
     "name": "Delina, Wild Mage",
@@ -1851,6 +2137,117 @@
     ]
 }
 
+// Demogorgon's Clutches
+{
+    "name": "Demogorgon's Clutches",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent discards two cards, mills two cards, and loses 2 life. (To mill a card, a player puts the top card of their library into their graveyard.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "hand"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "hand",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "chooser": "TargetPlayer",
+                    "storeSelected": "discarded",
+                    "prompt": "Choose 2 cards to discard"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "discarded",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "UNCOMMON",
+        "artist": "Alexander Mokhov",
+        "flavorText": "The good will be corrupted, the kind will be devoured, and all will be dragged into the bottomless Abyss.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/581e7ac6-65e5-4a16-ab0b-0988c3a3cfea.jpg?1783926498"
+    }
+}
+
 // Devoted Paladin
 {
     "name": "Devoted Paladin",
@@ -1911,6 +2308,146 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Devour Intellect
+{
+    "name": "Devour Intellect",
+    "manaCost": "{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent discards a card. If mana from a Treasure was spent to cast this spell, instead that player reveals their hand, you choose a nonland card from it, then that player discards that card.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "ManaSpentFromSubtype",
+                        "subtype": "Treasure"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "RevealHand",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Hand",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "storeAs": "gathered1"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "gathered1",
+                        "selection": {
+                            "type": "ChooseExactly",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "filter": "nonland",
+                        "storeSelected": "selected2",
+                        "prompt": "Choose a nonland card to discard",
+                        "showAllCards": true,
+                        "alwaysPrompt": true
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "selected2",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Graveyard",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "moveType": "Discard"
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Hand",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "storeAs": "hand"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "hand",
+                        "selection": {
+                            "type": "ChooseExactly",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "chooser": "TargetPlayer",
+                        "storeSelected": "discarded",
+                        "prompt": "Choose 1 card to discard"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "discarded",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Graveyard",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "moveType": "Discard"
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "artist": "Steven Russell Black",
+        "flavorText": "\"I'll know what you know soon enough.\"\n—Nihiloor, Xanathar Guild spymaster",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/13c34f2d-2eac-4241-8b23-9cab3268c254.jpg?1783926498"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3030,6 +3567,106 @@
     ]
 }
 
+// Fates' Reversal
+{
+    "name": "Fates' Reversal",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return up to one target creature card from your graveyard to your hand. Venture into the dungeon. (Enter the first room or advance to the next room.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "VentureIntoTheDungeon"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "artist": "Alix Branwyn",
+        "flavorText": "A doom denied—or, perhaps, delayed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19ff3d76-e985-4d8d-837e-89360cc23824.jpg?1783926496"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Feign Death
+{
+    "name": "Feign Death",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, target creature gains \"When this creature dies, return it to the battlefield tapped under its owner's control with a +1/+1 counter on it.\"",
+    "script": {
+        "spellEffect": {
+            "type": "GrantTriggeredAbility",
+            "ability": {
+                "id": "Feign Death:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Battlefield",
+                    "placement": "Tapped",
+                    "fromZone": "Graveyard",
+                    "entryCounters": [
+                        {
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature dies, return it to the battlefield tapped under its owner's control with a +1/+1 counter on it."
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "artist": "Maria Zolotukhina",
+        "flavorText": "A drastic measure for dangerous times.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/32af7061-fca6-4a06-be3c-01881e6b96f7.jpg?1783926495"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Feywild Trickster
 {
     "name": "Feywild Trickster",
@@ -3326,6 +3963,45 @@
             {
                 "date": "2021-07-23",
                 "text": "If the target is not legal as Grim Bounty tries to resolve, perhaps because the creature or planeswalker is no longer on the battlefield, it will do nothing. You will not create a Treasure token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Grim Wanderer
+{
+    "name": "Grim Wanderer",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Goblin Warlock",
+    "oracleText": "Flash\nTragic Backstory — Cast this spell only if a creature died this turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "castRestrictions": [
+            {
+                "type": "CastOnlyIfCondition",
+                "condition": "CreatureDiedThisTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "rarity": "UNCOMMON",
+        "artist": "Jason A. Engle",
+        "flavorText": "There is a stillness that walks with him, the quiet that follows great tragedy, when even the mourners are too exhausted to weep.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e339f0f7-a79d-4947-a9c4-b9a0949dd06a.jpg?1783926494",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "Grim Wanderer's ability doesn't care who controlled the creature that died."
             }
         ]
     },
@@ -3696,6 +4372,204 @@
     "colorIdentityOverride": []
 }
 
+// Herald of Hadar
+{
+    "name": "Herald of Hadar",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Human Warlock",
+    "oracleText": "Circle of Death — {5}{B}: Roll a d20.\n1—9 | Each opponent loses 2 life.\n10—19 | Each opponent loses 2 life and you gain 2 life.\n20 | Each opponent loses 2 life and you gain 2 life. Create two Treasure tokens. (They're artifacts with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Herald of Hadar:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RollDice",
+                            "sides": 20,
+                            "storeTotalAs": "diceResult0"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "All",
+                                    "conditions": [
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult0"
+                                            },
+                                            "operator": "GTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult0"
+                                            },
+                                            "operator": "LTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 9
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "EachOpponent"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "All",
+                                    "conditions": [
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult0"
+                                            },
+                                            "operator": "GTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 10
+                                            }
+                                        },
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult0"
+                                            },
+                                            "operator": "LTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 19
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "LoseLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "target": {
+                                            "type": "PlayerRef",
+                                            "player": "EachOpponent"
+                                        }
+                                    },
+                                    {
+                                        "type": "GainLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult0"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 20
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "LoseLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "target": {
+                                            "type": "PlayerRef",
+                                            "player": "EachOpponent"
+                                        }
+                                    },
+                                    {
+                                        "type": "GainLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    {
+                                        "type": "CreatePredefinedToken",
+                                        "tokenType": "Treasure",
+                                        "count": 2
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Circle of Death — {5}{B}: Roll a d20. 1—9: each opponent loses 2 life. 10—19: each opponent loses 2 life and you gain 2 life. 20: each opponent loses 2 life, you gain 2 life, and you create two Treasure tokens."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "artist": "Valera Lutfullina",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/baa74204-2593-4468-856d-a5791336126a.jpg?1783926492",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "The instruction to roll a die and the effect that occurs because of the result are all part of the same ability. Players do not get the chance to respond to the ability after knowing the result of the roll."
+            }
+        ]
+    }
+}
+
 // Hill Giant Herdgorger
 {
     "name": "Hill Giant Herdgorger",
@@ -3732,6 +4606,70 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Hired Hexblade
+{
+    "name": "Hired Hexblade",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Elf Warlock",
+    "oracleText": "When this creature enters, if mana from a Treasure was spent to cast it, you draw a card and you lose 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hired Hexblade:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "ManaSpentFromSubtype",
+                        "subtype": "Treasure"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "artist": "Irina Nordsol",
+        "flavorText": "\"I'll take care of it. You just be sure to hold up your end of the deal.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c23cbf01-90d0-4962-92d5-5e1566e8ef4b.jpg?1783926493"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4013,6 +4951,173 @@
     ]
 }
 
+// Lightfoot Rogue
+{
+    "name": "Lightfoot Rogue",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Halfling Rogue",
+    "oracleText": "Sneak Attack — Whenever this creature attacks, roll a d20.\n1—9 | This creature gains deathtouch until end of turn.\n10—19 | It gets +1/+0 and gains deathtouch until end of turn.\n20 | It gets +3/+0 and gains first strike and deathtouch until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lightfoot Rogue:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RollDice",
+                            "sides": 20,
+                            "storeTotalAs": "diceResult0"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult0"
+                                    },
+                                    "operator": "LTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 9
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "DEATHTOUCH",
+                                "target": "Self"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "All",
+                                    "conditions": [
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult0"
+                                            },
+                                            "operator": "GTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 10
+                                            }
+                                        },
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult0"
+                                            },
+                                            "operator": "LTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 19
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "ModifyStats",
+                                        "powerModifier": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "toughnessModifier": {
+                                            "type": "Fixed",
+                                            "amount": 0
+                                        },
+                                        "target": "Self"
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "DEATHTOUCH",
+                                        "target": "Self"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult0"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 20
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "ModifyStats",
+                                        "powerModifier": {
+                                            "type": "Fixed",
+                                            "amount": 3
+                                        },
+                                        "toughnessModifier": {
+                                            "type": "Fixed",
+                                            "amount": 0
+                                        },
+                                        "target": "Self"
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "FIRST_STRIKE",
+                                        "target": "Self"
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "DEATHTOUCH",
+                                        "target": "Self"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "rarity": "UNCOMMON",
+        "artist": "Michele Parisi",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f88de61-8dee-46b3-91b2-d4cdb4db36bf.jpg?1783926492",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "The instruction to roll a die and the effect that occurs because of the result are all part of the same ability. Players do not get the chance to respond to the ability after knowing the result of the roll."
+            }
+        ]
+    }
+}
+
 // Long Rest
 {
     "name": "Long Rest",
@@ -4205,6 +5310,65 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Manticore
+{
+    "name": "Manticore",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Manticore",
+    "oracleText": "Flash\nFlying\nTail Spikes — When this creature enters, destroy target creature an opponent controls that was dealt damage this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Manticore:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                "WasDealtDamageThisTurn"
+                            ],
+                            "controllerPredicate": "ControlledByOpponent"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "artist": "Billy Christian",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b3d9117-724a-4b67-be27-142b9c283788.jpg?1783926491"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -5004,6 +6168,153 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Power Word Kill
+{
+    "name": "Power Word Kill",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target non-Angel, non-Demon, non-Devil, non-Dragon creature.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Angel"
+                            },
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Demon"
+                            },
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Devil"
+                            },
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Dragon"
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "UNCOMMON",
+        "artist": "Izzy",
+        "flavorText": "Aramil issued a long, heroic challenge, then the lich felled him with a single word.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/9/395b6ce4-143f-4eed-b565-98aa3d6208ef.jpg?1783926493",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "A creature is a legal target for Power Word Kill if it doesn't have any of these four creature types. If it has one of these four creature types, it's not a legal target, even if it also has a creature type that's not among these four. For example, a Demon Rogue is not a valid target for this spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Precipitous Drop
+{
+    "name": "Precipitous Drop",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, venture into the dungeon. (Enter the first room or advance to the next room.)\nEnchanted creature gets -2/-2. It gets -5/-5 instead as long as you've completed a dungeon.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Precipitous Drop:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": "VentureIntoTheDungeon"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": -2,
+                    "toughnessBonus": -2
+                },
+                "condition": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "Compare",
+                        "left": "DungeonsCompleted",
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": -5,
+                    "toughnessBonus": -5
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": "DungeonsCompleted",
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "artist": "Gabor Szikszai",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/7293f9b4-565a-4065-940b-543f76ebecae.jpg?1783926491",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "Precipitous Drop does not need to be on the battlefield when you complete the dungeon in order for the enchanted creature to get -5/-5."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "The controller of Precipitous Drop ventures into the dungeon, not the controller of the enchanted creature. Similarly, Precipitous Drop cares whether its controller has completed a dungeon, not whether the creature's controller has completed a dungeon."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
