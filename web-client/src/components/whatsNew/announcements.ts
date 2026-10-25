@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-stx',
+    date: '2026-10-25',
+    kind: 'set',
+    setCode: 'STX',
+    title: 'Strixhaven: School of Mages is complete',
+    body:
+      "Enrol at Strixhaven, where five colleges each pair two colours: Silverquill's inkling wordsmiths, Prismari's elemental artists, Witherbloom's Pest-draining alchemists, Lorehold's spirited historians and Quandrix's fractal mathematicians. Magecraft rewards every instant and sorcery you cast or copy, learn fetches Lessons from outside the game, and ward, Masteries and the five Elder Dragon founders round out a set built for spell-heavy decks.",
+    tryIf: 'instants and sorceries, two-colour college decks and value from every spell you cast',
+  },
+  {
     id: 'set-mid',
     date: '2026-10-23',
     kind: 'set',

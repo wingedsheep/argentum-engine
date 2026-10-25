@@ -20,7 +20,6 @@ object StrixhavenSchoolOfMagesSet : MtgSet {
     override val displayName = "Strixhaven: School of Mages"
     override val releaseDate = "2021-04-23"
     override val sealedSupported = false
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
