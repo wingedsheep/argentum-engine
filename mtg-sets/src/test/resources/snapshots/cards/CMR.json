@@ -1386,6 +1386,39 @@
     ]
 }
 
+// Rograkh, Son of Rohgahh
+{
+    "name": "Rograkh, Son of Rohgahh",
+    "manaCost": "{0}",
+    "typeLine": "Legendary Creature — Kobold Warrior",
+    "oracleText": "First strike, menace, trample\nPartner (You can have two commanders if both have partner.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "MENACE",
+        "TRAMPLE"
+    ],
+    "keywordAbilities": [
+        "Partner"
+    ],
+    "metadata": {
+        "collectorNumber": "197",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Seaman",
+        "flavorText": "Strength is relative.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4fab67f-00c2-4125-9262-d21a29411797.jpg?1783928807"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ],
+    "colorIndicator": [
+        "RED"
+    ]
+}
+
 // Slash the Ranks
 {
     "name": "Slash the Ranks",

@@ -3340,6 +3340,53 @@
     ]
 }
 
+// Wayward Swordtooth
+{
+    "name": "Wayward Swordtooth",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Ascend (If you control ten or more permanents, you get the city's blessing for the rest of the game.)\nYou may play an additional land on each of your turns.\nThis creature can't attack or block unless you have the city's blessing.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "ASCEND"
+    ],
+    "script": {
+        "staticAbilities": [
+            "GrantAdditionalLandDrop",
+            {
+                "type": "CantAttackUnless",
+                "condition": "PlayerHasCitysBlessing"
+            },
+            {
+                "type": "CantBlockUnless",
+                "condition": "PlayerHasCitysBlessing"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/351e8b1b-4e4e-4ffc-a134-3cf0e2a1dd6d.jpg?1783935278",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Wayward Swordtooth's middle ability is cumulative if you control more than one. It's also cumulative with other effects that let you play additional lands, such as the one from Enter the Unknown."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "Once you have the city's blessing, you have it for the rest of the game, even if you lose control of some or all of your permanents."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // World Shaper
 {
     "name": "World Shaper",

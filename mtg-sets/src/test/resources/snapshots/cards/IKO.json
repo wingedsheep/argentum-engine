@@ -3476,6 +3476,85 @@
     ]
 }
 
+// Song of Creation
+{
+    "name": "Song of Creation",
+    "manaCost": "{1}{G}{U}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "You may play an additional land on each of your turns.\nWhenever you cast a spell, draw two cards.\nAt the beginning of your end step, discard your hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Song of Creation:1",
+                "trigger": "SpellCastEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            },
+            {
+                "id": "Song of Creation:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "discardedHand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discardedHand",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            "GrantAdditionalLandDrop"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "210",
+        "rarity": "RARE",
+        "artist": "Noah Bradley",
+        "flavorText": "She wept, not from perfect understanding, but from serene gratitude.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b7320233-1c83-4f61-8c08-cc8361867256.jpg?1783931016",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Song of Creation's first ability is cumulative if you control more than one. It's also cumulative with other effects that let you play additional lands, such as the one from Dryad of the Ilysian Grove."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Song of Creation's second ability doesn't trigger when you cast it because it's not on the battlefield yet."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Splendor Mare
 {
     "name": "Splendor Mare",

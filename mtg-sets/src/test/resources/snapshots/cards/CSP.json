@@ -266,6 +266,75 @@
     ]
 }
 
+// Mishra's Bauble
+{
+    "name": "Mishra's Bauble",
+    "manaCost": "{0}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}, Sacrifice this artifact: Look at the top card of target player's library. Draw a card at the beginning of the next turn's upkeep.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mishra's Bauble:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "step": "UPKEEP",
+                            "effect": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "timing": "NextTurn"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}, Sacrifice this artifact: Look at the top card of target player's library. Draw a card at the beginning of the next turn's upkeep."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "UNCOMMON",
+        "artist": "Chippy",
+        "flavorText": "\"Arcum is a babbling fool! Phyrexian technology is our greatest blessing. Take this delightful trinket for instance . . .\"\n—Heidar, Rimewind master",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8a720448-017f-4f4a-9501-678245eaed17.jpg?1783943319"
+    },
+    "colorIdentityOverride": []
+}
+
 // Phyrexian Ironfoot
 {
     "name": "Phyrexian Ironfoot",

@@ -1,1 +1,95 @@
-
+// Tataru Taru
+{
+    "name": "Tataru Taru",
+    "manaCost": "{1}{W}",
+    "typeLine": "Legendary Creature — Dwarf Advisor",
+    "oracleText": "When Tataru Taru enters, you draw a card and target opponent may draw a card.\nScions' Secretary — Whenever an opponent draws a card, if it isn't that player's turn, create a tapped Treasure token. This ability triggers only once each turn.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tataru Taru:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "decisionMaker": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "descriptionOverride": "Draw a card?"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Tataru Taru:2",
+                "trigger": {
+                    "type": "DrawEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure",
+                    "tapped": true
+                },
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "IsPlayersTurn",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "oncePerTurn": true,
+                "descriptionOverride": "Scions' Secretary — Whenever an opponent draws a card, if it isn't that player's turn, create a tapped Treasure token. This ability triggers only once each turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "RARE",
+        "artist": "Livia Prima",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/93176e85-2343-43a8-8578-69699b464b86.jpg?1783906365",
+        "rulings": [
+            {
+                "date": "2025-06-06",
+                "text": "If the target opponent is an illegal target as Tataru Taru's first ability tries to resolve, it won't resolve and none of its effects will happen. You won't draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}

@@ -3299,6 +3299,139 @@
     ]
 }
 
+// Koma, Cosmos Serpent
+{
+    "name": "Koma, Cosmos Serpent",
+    "manaCost": "{3}{G}{G}{U}{U}",
+    "typeLine": "Legendary Creature — Serpent",
+    "oracleText": "This spell can't be countered.\nAt the beginning of each upkeep, create a 3/3 blue Serpent creature token named Koma's Coil.\nSacrifice another Serpent: Choose one —\n• Tap target permanent. Its activated abilities can't be activated this turn.\n• Koma gains indestructible until end of turn.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Koma, Cosmos Serpent:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Serpent"
+                    ],
+                    "name": "Koma's Coil",
+                    "imageUri": "https://cards.scryfall.io/normal/front/5/4/54a1c6a9-3531-4432-9157-e4400dbc89fd.jpg?1783928080"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Koma, Cosmos Serpent:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "Serpent",
+                        "excludeSelf": true
+                    }
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "TapUntap",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantStaticAbility",
+                                        "ability": {
+                                            "type": "PreventActivatedAbilities",
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    "IsPermanent"
+                                                ],
+                                                "statePredicates": [
+                                                    "IsSource"
+                                                ]
+                                            }
+                                        },
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "permanent"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Tap target permanent. Its activated abilities can't be activated this turn"
+                        },
+                        {
+                            "effect": {
+                                "type": "GrantKeyword",
+                                "keyword": "INDESTRUCTIBLE",
+                                "target": "Self"
+                            },
+                            "description": "Koma gains indestructible until end of turn"
+                        }
+                    ],
+                    "countsAsModalSpell": false
+                },
+                "descriptionOverride": "Sacrifice another Serpent: Choose one — tap target permanent and its activated abilities can't be activated this turn; or Koma gains indestructible until end of turn."
+            }
+        ],
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "221",
+        "rarity": "MYTHIC",
+        "artist": "Jesper Ejsing",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2de25ea4-284a-4c16-b823-048ff00c6a03.jpg?1783928194",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "You can't sacrifice Koma itself to activate its last ability, but you can sacrifice any other Serpent you control, including Koma's Coil."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If you choose the first mode of Koma's activated ability, you can choose a permanent that's already tapped as the target. The effect stopping its activated abilities will still apply."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The first mode of Koma's activated ability doesn't stop static abilities from affecting the game, and it doesn't stop triggered abilities from triggering. Unlike similar effects, it does stop mana abilities from being activated."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Littjara Glade-Warden
 {
     "name": "Littjara Glade-Warden",

@@ -2565,3 +2565,140 @@
         "GREEN"
     ]
 }
+
+// Valakut Exploration
+{
+    "name": "Valakut Exploration",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Landfall — Whenever a land you control enters, exile the top card of your library. You may play that card for as long as it remains exiled.\nAt the beginning of your end step, if there are cards exiled with this enchantment, put them into their owner's graveyard, then this enchantment deals that much damage to each opponent.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Valakut Exploration:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "gathered0",
+                            "expiry": "Permanent"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Landfall — Whenever a land you control enters, exile the top card of your library. You may play that card for as long as it remains exiled."
+            },
+            {
+                "id": "Valakut Exploration:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "DistinctEntitiesInCollections",
+                                "collections": [
+                                    "gathered0"
+                                ]
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "Each",
+                        "zone": "Exile",
+                        "filter": {
+                            "statePredicates": [
+                                "ExiledWithSource"
+                            ]
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, if there are cards exiled with this enchantment, put them into their owner's graveyard, then this enchantment deals that much damage to each opponent."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "rarity": "RARE",
+        "artist": "Jesper Ejsing",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/18cb7bf6-9c7c-4e62-a678-7b75862e2f64.jpg?1783929344",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "If you play the card in response to the end step triggered ability, that card won't be put into your graveyard and won't be counted when determining how much damage to deal."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "You must follow the normal timing permissions and restrictions for the exiled card. If it's a land, you can't play it unless you have land plays available."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If Valakut Exploration leaves the battlefield, any cards exiled with it remain exiled and can be played. The end step triggered ability won't trigger, and the cards won't be put into their owner's graveyard."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If you play a card this way, it leaves exile and becomes a new object. If it returns to exile later in the turn, you can't play it again."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}

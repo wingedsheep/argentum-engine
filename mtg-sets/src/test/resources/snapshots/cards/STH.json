@@ -316,6 +316,64 @@
     ]
 }
 
+// Intruder Alarm
+{
+    "name": "Intruder Alarm",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Creatures don't untap during their controllers' untap steps.\nWhenever a creature enters, untap all creatures.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Intruder Alarm:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature"
+                        }
+                    },
+                    "body": {
+                        "type": "TapUntap",
+                        "target": "IterationEntity",
+                        "tap": false
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "UntapLimitPerStep",
+                "filter": "creature",
+                "max": 0
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "RARE",
+        "artist": "Donato Giancola",
+        "flavorText": "Mirri was startled by Volrath's apparition—it had no scent.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7e55f653-0952-4713-8d43-ca50acff9e3b.jpg?1783946569",
+        "rulings": [
+            {
+                "date": "2023-09-01",
+                "text": "If multiple creatures enter the battlefield at one time, this ability triggers once for each of those creatures."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Mulch
 {
     "name": "Mulch",

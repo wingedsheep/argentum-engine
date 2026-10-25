@@ -56,6 +56,142 @@
     ]
 }
 
+// Abundance
+{
+    "name": "Abundance",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "If you would draw a card, you may instead choose land or nonland and reveal cards from the top of your library until you reveal a card of the chosen kind. Put that card into your hand and put all other cards revealed this way on the bottom of your library in any order.",
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "ReplaceDrawWith",
+                "replacementEffect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Land",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherUntilMatch",
+                                        "filter": "land",
+                                        "storeMatch": "ignored",
+                                        "storeRevealed": "revealed"
+                                    },
+                                    {
+                                        "type": "RevealCollection",
+                                        "from": "revealed"
+                                    },
+                                    {
+                                        "type": "FilterCollection",
+                                        "from": "revealed",
+                                        "filter": "land",
+                                        "storeMatching": "matchedToHand",
+                                        "storeNonMatching": "rest"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "matchedToHand",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "rest",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Library",
+                                            "placement": "Bottom"
+                                        },
+                                        "order": "ControllerChooses"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "label": "Nonland",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherUntilMatch",
+                                        "filter": "nonland",
+                                        "storeMatch": "ignored",
+                                        "storeRevealed": "revealed"
+                                    },
+                                    {
+                                        "type": "RevealCollection",
+                                        "from": "revealed"
+                                    },
+                                    {
+                                        "type": "FilterCollection",
+                                        "from": "revealed",
+                                        "filter": "nonland",
+                                        "storeMatching": "matchedToHand",
+                                        "storeNonMatching": "rest"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "matchedToHand",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        },
+                                        "revealed": true
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "rest",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Library",
+                                            "placement": "Bottom"
+                                        },
+                                        "order": "ControllerChooses"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "optional": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "229",
+        "rarity": "RARE",
+        "artist": "Rebecca Guay",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6d051fa-bd3a-4c94-ae41-34d89a7bb77d.jpg?1783946322",
+        "rulings": [
+            {
+                "date": "2007-07-15",
+                "text": "If your library is empty, Abundance can prevent you from losing the game for being unable to draw a card. If an effect or turn-based action would cause you to draw a card, you can replace that draw with Abundance's replacement effect."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "This replacement effect replaces the draw, so nothing that triggers on a draw will trigger."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "If you use this on a multi-card draw, each replaced draw is handled separately. In a multi-card draw you do not have to choose how many of those draws will be replaced before you do any drawing or use of this card."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "If no card of the chosen type is found before your library empties, you don't get a card, but you do get to order all the cards in your library any way you choose."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Abyssal Horror
 {
     "name": "Abyssal Horror",

@@ -61,6 +61,140 @@
     ]
 }
 
+// Chakram Retriever
+{
+    "name": "Chakram Retriever",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Elemental Dog",
+    "oracleText": "Partner with Chakram Slinger (When this creature enters, target player may put Chakram Slinger into their hand from their library, then shuffle.)\nWhenever you cast a spell during your turn, untap target creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywordAbilities": [
+        {
+            "type": "Partner",
+            "kind": {
+                "type": "With",
+                "name": "Chakram Slinger"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Chakram Retriever:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "body": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Library",
+                                        "filter": "name:Chakram Slinger"
+                                    },
+                                    "storeAs": "searchable",
+                                    "search": true
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "searchable",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "found",
+                                    "prompt": "Search your library for a card named Chakram Slinger to put into your hand",
+                                    "selectedLabel": "Put into your hand"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "found",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Hand"
+                                    },
+                                    "revealed": true
+                                },
+                                "ShuffleLibrary",
+                                "EmitLibrarySearchedEvent"
+                            ]
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Chakram Retriever:2",
+                "trigger": "SpellCastEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "tap": false
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t1"
+                },
+                "triggerRestriction": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "UNCOMMON",
+        "artist": "Dmitry Burmak",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b57d518c-21bb-4451-8248-9ee838460c09.jpg?1783934874",
+        "rulings": [
+            {
+                "date": "2018-06-08",
+                "text": "\"Partner with [name]\" represents two abilities. The first is a triggered ability: \"When this permanent enters the battlefield, target player may search their library for a card named [name], reveal it, put it into their hand, then shuffle their library.\""
+            },
+            {
+                "date": "2018-06-08",
+                "text": "Note that the target player searches their library (which may be affected by effects such as that of Stranglehold) and that the card they find is revealed, even though these words aren't included in the ability's reminder text."
+            },
+            {
+                "date": "2018-06-08",
+                "text": "Chakram Retriever's last ability resolves before the spell that caused it to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Grothama, All-Devouring
 {
     "name": "Grothama, All-Devouring",

@@ -3676,6 +3676,78 @@
     ]
 }
 
+// Squirrel Sanctuary
+{
+    "name": "Squirrel Sanctuary",
+    "manaCost": "{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, create a 1/1 green Squirrel creature token.\nWhenever a nontoken creature you control dies, you may pay {1}. If you do, return this enchantment to its owner's hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Squirrel Sanctuary:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Squirrel"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/7/977ddd05-1aae-46fc-95ce-866710d1c5c6.jpg?1783926589"
+                }
+            },
+            {
+                "id": "Squirrel Sanctuary:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}"
+                        }
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Hand",
+                        "fromZone": "Battlefield"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Argyle",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/ed6ab503-5e9a-4339-a0e7-a909b2908f41.jpg?1783926824",
+        "rulings": [
+            {
+                "date": "2021-06-18",
+                "text": "The last ability functions only while Squirrel Sanctuary is on the battlefield. It won't return itself from your graveyard to your hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Squirrel Sovereign
 {
     "name": "Squirrel Sovereign",

@@ -3000,6 +3000,83 @@
     ]
 }
 
+// Kiora, Behemoth Beckoner
+{
+    "name": "Kiora, Behemoth Beckoner",
+    "manaCost": "{2}{G/U}",
+    "typeLine": "Legendary Planeswalker — Kiora",
+    "oracleText": "Whenever a creature you control with power 4 or greater enters, draw a card.\n−1: Untap target permanent.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kiora, Behemoth Beckoner:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature pow>=4 ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Kiora, Behemoth Beckoner:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -1
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "232",
+        "rarity": "UNCOMMON",
+        "artist": "Jaime Jones",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7a61b1a6-a75f-47b0-b215-de9708b6d773.jpg?1783933378",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "The entering creature must have power 4 or greater as it enters the battlefield, or Kiora's first ability won't trigger. Static abilities that raise or lower a creature's power are taken into account, as well as any +1/+1 counters the creature enters with. However, you can't have a creature with power 3 or less enter the battlefield, raise its power with a spell, an activated ability, or a triggered ability, and have Kiora's ability trigger."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the entering creature's power changes to 3 or less after it has entered the battlefield, you'll still draw a card."
+            }
+        ]
+    },
+    "startingLoyalty": 7,
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Kraul Stinger
 {
     "name": "Kraul Stinger",

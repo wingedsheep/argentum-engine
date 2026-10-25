@@ -97,6 +97,56 @@
     ]
 }
 
+// Kiora's Follower
+{
+    "name": "Kiora's Follower",
+    "manaCost": "{G}{U}",
+    "typeLine": "Creature — Merfolk",
+    "oracleText": "{T}: Untap another target permanent.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kiora's Follower:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Untap another target permanent."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "rarity": "UNCOMMON",
+        "artist": "Eric Deschamps",
+        "flavorText": "\"She may call herself Kiora but I believe she is Thassa, the embodiment of the sea and empress of the depths.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ec9ce307-8ec3-4db6-a4a3-49f92ebcc783.jpg?1783939523"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Stratus Walk
 {
     "name": "Stratus Walk",
