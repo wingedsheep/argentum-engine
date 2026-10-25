@@ -72,19 +72,12 @@ class AddCombatPhaseExecutor(
             ?: return EffectResult.success(
                 state.queueAdditionalPhase(activePlayer, ExtraPhaseKind.COMBAT, context, effect.attackerRestriction)
             )
-        var queued = false
-        val result = delayedTriggers.schedule(
+        return delayedTriggers.schedule(
             state,
             CreateDelayedTriggerEffect(step = Step.BEGIN_COMBAT, effect = rider),
             context
         ) { s, trigger ->
-            queued = true
             s.queueAdditionalPhase(activePlayer, ExtraPhaseKind.COMBAT, context, effect.attackerRestriction, trigger)
         }
-        if (queued || result.error != null) return result
-        // The rider scheduled nothing (it watched an object that wasn't there): the phase is still added.
-        return EffectResult.success(
-            state.queueAdditionalPhase(activePlayer, ExtraPhaseKind.COMBAT, context, effect.attackerRestriction)
-        )
     }
 }
