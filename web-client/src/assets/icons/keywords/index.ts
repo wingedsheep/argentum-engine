@@ -212,6 +212,7 @@ export const counterManaClass: Record<string, string> = {
   CORPSE: 'counter-doom',
   BRICK: 'counter-charge',
   VITALITY: 'counter-hope',
+  VOID: 'counter-doom',
   PHYRESIS: 'counter-doom',
   MUSTER: 'counter-charge',
   BRAIN: 'counter-charge',

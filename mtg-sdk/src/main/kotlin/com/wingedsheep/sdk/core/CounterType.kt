@@ -757,6 +757,13 @@ value class CounterType(val name: String) {
         val VITALITY = CounterType("VITALITY")
 
         /**
+         * Void counter (AFR — Sphere of Annihilation). A passive tally with no inherent rule: the
+         * card enters with X of them and its upkeep trigger exiles everything with mana value at
+         * most their number.
+         */
+        val VOID = CounterType("VOID")
+
+        /**
          * Phyresis counter (DMU — Weatherlight Compleated). A passive tally with no inherent rule:
          * the card reads it as "four or more" (it's a Phyrexian creature) and "seven or more"
          * (draw instead of scry).
@@ -977,6 +984,7 @@ value class CounterType(val name: String) {
             CORPSE,
             BRICK,
             VITALITY,
+            VOID,
             PHYRESIS,
             MUSTER,
             BRAIN,

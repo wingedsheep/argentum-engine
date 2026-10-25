@@ -864,6 +864,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.BRICK,
   // Living Artifact's vitality store is spent one at a time to gain life.
   CounterType.VITALITY,
+  // Sphere of Annihilation's void tally caps the mana value it exiles each upkeep.
+  CounterType.VOID,
   // Weatherlight Compleated's phyresis tally: a Phyrexian creature at four, card draw at seven.
   CounterType.PHYRESIS,
   // Assemble the Legion's muster tally sets how many Soldiers it makes each upkeep.

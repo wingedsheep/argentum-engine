@@ -14009,6 +14009,144 @@
     "colorIdentityOverride": []
 }
 
+// Sphere of Annihilation
+{
+    "name": "Sphere of Annihilation",
+    "manaCost": "{X}{B}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact enters with X void counters on it.\nAt the beginning of your upkeep, exile this artifact, all creatures and planeswalkers with mana value less than or equal to the number of void counters on it, and all creature and planeswalker cards in graveyards with mana value less than or equal to the number of void counters on it.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sphere of Annihilation:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "StoreNumber",
+                            "name": "voids",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": "VOID"
+                                }
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "Entity",
+                                "entity": "Self"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                "IsCreature",
+                                                "IsPlaneswalker"
+                                            ]
+                                        },
+                                        {
+                                            "type": "ManaValueAtMostDynamic",
+                                            "amount": {
+                                                "type": "VariableReference",
+                                                "variableName": "voids"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "excludeSelf": true
+                            },
+                            "storeAs": "gathered2"
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "player": "Each",
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                "IsCreature",
+                                                "IsPlaneswalker"
+                                            ]
+                                        },
+                                        {
+                                            "type": "ManaValueAtMostDynamic",
+                                            "amount": {
+                                                "type": "VariableReference",
+                                                "variableName": "voids"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered3"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "counterType": "VOID",
+                "count": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "RARE",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d2315a9-584b-4c59-af43-dd38bcb6c322.jpg?1783926488"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Spiked Pit Trap
 {
     "name": "Spiked Pit Trap",
