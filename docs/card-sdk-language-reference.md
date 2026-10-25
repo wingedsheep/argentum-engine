@@ -19341,6 +19341,21 @@ turn doesn't change the answer. A permanent that entered this turn (or left and 
 matches; phased-out permanents don't count; control changes don't matter. An imported board treats
 permanents marked as entered this turn as new.
 
+### Entered the battlefield this turn — and under whose control
+
+`StatePredicate.EnteredThisTurn()` and the fluent `.enteredThisTurn()` filter match a permanent
+that entered the battlefield this turn (the summoning-sickness marker; a permanent that has left
+answers from its last-known snapshot). `EnteredThisTurn(underYourControl = true)`, fluent
+`.enteredThisTurnUnderYourControl()`, narrows it to "entered the battlefield **under your control**
+this turn" — Shaile, Dean of Radiance's
+`Effects.ForEachInGroup(GroupFilter(GameObjectFilter.Creature.enteredThisTurnUnderYourControl()), …)`.
+"You" is the effect source's controller. It reads that player's per-turn entry log
+(`PermanentsEnteredUnderControlThisTurnComponent`, the same log behind Celebration) and matches the
+entry by its entry timestamp, so a permanent that left and came back counts only for its later
+entry (CR 400.7). Current control doesn't matter: a creature that entered under your control and was
+then stolen still matches; one an opponent cast that you then gained control of doesn't. Battlefield
+only — the narrowed form has no last-known answer.
+
 ### Continuous control during the current turn
 
 `StatePredicate.ControlledSinceTurnBegan` and the fluent `.controlledSinceTurnBegan()` filter

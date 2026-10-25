@@ -1923,7 +1923,13 @@ data class EnteredPermanentRecord(
     val cardTypes: Set<com.wingedsheep.sdk.core.CardType> = emptySet(),
     val subtypes: Set<String> = emptySet(),
     /** Whether the entering permanent was a token — i.e. this entry is its creation (CR 111.2). */
-    val isToken: Boolean = false
+    val isToken: Boolean = false,
+    /**
+     * The entering object's `BattlefieldEntryTimestampComponent.timestamp`, so a reader can tell
+     * whether the permanent now on the battlefield under [entityId] is the object that made this
+     * entry or a later one (CR 400.7). Null on records from saved games that predate it.
+     */
+    val entryTimestamp: Long? = null
 ) {
     val isLand: Boolean get() = com.wingedsheep.sdk.core.CardType.LAND in cardTypes
 }
@@ -1951,6 +1957,8 @@ data class EnteredPermanentRecord(
  *    turn", Idol of Oblivion) — a token's entry is its creation (CR 111.2).
  *  - [entries] directly → `DynamicAmount.SubtypeEnteredUnderControlThisTurn` ("each other Zombie
  *    that entered the battlefield under your control this turn", Geralf, the Fleshwright).
+ *  - [includes] → `StatePredicate.EnteredThisTurn(underYourControl = true)` ("each creature that entered the
+ *    battlefield under your control this turn", Shaile, Dean of Radiance).
  */
 @Serializable
 data class PermanentsEnteredUnderControlThisTurnComponent(
@@ -1965,6 +1973,10 @@ data class PermanentsEnteredUnderControlThisTurnComponent(
 
     /** Number of logged entries that were tokens — the tokens this player created this turn. */
     fun countTokens(): Int = entries.count { it.isToken }
+
+    /** Whether the object that entered as [entityId] at [entryTimestamp] is among this turn's entries. */
+    fun includes(entityId: EntityId, entryTimestamp: Long): Boolean =
+        entries.any { it.entityId == entityId && it.entryTimestamp == entryTimestamp }
 }
 
 /**

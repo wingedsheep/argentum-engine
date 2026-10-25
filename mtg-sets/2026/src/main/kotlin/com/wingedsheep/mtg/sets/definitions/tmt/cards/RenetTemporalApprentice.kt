@@ -37,7 +37,7 @@ val RenetTemporalApprentice = card("Renet, Temporal Apprentice") {
             filter = GroupFilter(
                 GameObjectFilter.NonlandPermanent.copy(
                     statePredicates = GameObjectFilter.NonlandPermanent.statePredicates +
-                        StatePredicate.EnteredThisTurn
+                        StatePredicate.EnteredThisTurn()
                 ),
                 excludeSelf = true
             ),

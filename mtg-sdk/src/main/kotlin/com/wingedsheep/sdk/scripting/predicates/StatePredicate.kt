@@ -432,11 +432,23 @@ sealed interface StatePredicate {
     // Summoning Sickness (Entity)
     // =============================================================================
 
-    /** Entered the battlefield this turn (has summoning sickness if creature) */
+    /**
+     * Entered the battlefield this turn (has summoning sickness if creature).
+     *
+     * [underYourControl] narrows it to "entered the battlefield **under your control** this turn"
+     * (Shaile, Dean of Radiance), as the object it is now; "you" is the effect source's controller.
+     * Who controls it now doesn't matter: a creature that entered under your control and was then
+     * stolen still matches, one that entered under an opponent's control and was then gained by you
+     * doesn't (the card's ruling). A permanent that left and returned is a new object (CR 400.7) and
+     * matches only if that later entry was under your control. It reads the per-player entry log, so
+     * unlike the plain form it has no last-known answer once the permanent has left.
+     */
     @SerialName("EnteredThisTurn")
     @Serializable
-    data object EnteredThisTurn : Entity {
-        override val description: String = "entered the battlefield this turn"
+    data class EnteredThisTurn(val underYourControl: Boolean = false) : Entity {
+        override val description: String =
+            if (underYourControl) "entered the battlefield under your control this turn"
+            else "entered the battlefield this turn"
     }
 
     /**

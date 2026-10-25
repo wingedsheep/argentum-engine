@@ -18849,6 +18849,174 @@
     ]
 }
 
+// Shaile, Dean of Radiance
+{
+    "name": "Shaile, Dean of Radiance",
+    "manaCost": "{1}{W}",
+    "typeLine": "Legendary Creature — Bird Cleric",
+    "oracleText": "Flying, vigilance\n{T}: Put a +1/+1 counter on each creature that entered the battlefield under your control this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Shaile, Dean of Radiance:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "EnteredThisTurn",
+                                        "underYourControl": true
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "{T}: Put a +1/+1 counter on each creature that entered the battlefield under your control this turn."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Embrose, Dean of Shadow",
+        "manaCost": "{2}{B}{B}",
+        "typeLine": "Legendary Creature — Human Warlock",
+        "oracleText": "{T}: Put a +1/+1 counter on another target creature, then Embrose deals 2 damage to that creature.\nWhenever a creature you control with a +1/+1 counter on it dies, draw a card.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Embrose, Dean of Shadow:2",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "HasCounter",
+                                    "counterType": "PLUS_ONE_PLUS_ONE"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        },
+                        "from": "Battlefield",
+                        "to": "Graveyard"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "descriptionOverride": "Whenever a creature you control with a +1/+1 counter on it dies, draw a card."
+                }
+            ],
+            "activatedAbilities": [
+                {
+                    "id": "Embrose, Dean of Shadow:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature",
+                                "excludeSelf": true
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "{T}: Put a +1/+1 counter on another target creature, then Embrose deals 2 damage to that creature."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "158",
+            "rarity": "RARE",
+            "artist": "Yongjae Choi",
+            "imageUri": "https://cards.scryfall.io/normal/back/9/3/938cee8f-ac2c-49a5-9ff7-1367d0edfabe.jpg?1783927332",
+            "rulings": [
+                {
+                    "date": "2021-04-16",
+                    "text": "If a creature entered the battlefield under your control this turn but is controlled by a different player when Shaile's activated ability resolves, it will still get a +1/+1 counter."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "WHITE",
+            "BLACK"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "rarity": "RARE",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/938cee8f-ac2c-49a5-9ff7-1367d0edfabe.jpg?1783927332",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "If a creature entered the battlefield under your control this turn but is controlled by a different player when Shaile's activated ability resolves, it will still get a +1/+1 counter."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ],
+    "layout": "MODAL_DFC"
+}
+
 // Shineshadow Snarl
 {
     "name": "Shineshadow Snarl",

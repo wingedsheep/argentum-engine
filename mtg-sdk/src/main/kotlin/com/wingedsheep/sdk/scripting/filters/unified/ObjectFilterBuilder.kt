@@ -613,6 +613,12 @@ interface ObjectFilterBuilder<out Self> {
     /** Was on the battlefield untapped, as this same object, when this turn began. */
     fun startedTurnUntapped() = withStatePredicate(StatePredicate.StartedTurnUntapped)
 
+    /**
+     * Entered the battlefield under your control this turn, as this same object — whoever controls
+     * it now (Shaile, Dean of Radiance).
+     */
+    fun enteredThisTurnUnderYourControl() = withStatePredicate(StatePredicate.EnteredThisTurn(underYourControl = true))
+
     /** Current controller has controlled this battlefield object continuously since this turn began. */
     fun controlledSinceTurnBegan() = withStatePredicate(StatePredicate.ControlledSinceTurnBegan)
 
@@ -934,7 +940,7 @@ interface ObjectFilterBuilder<out Self> {
         )
 
     /** Must have entered the battlefield this turn */
-    fun enteredThisTurn() = withStatePredicate(StatePredicate.EnteredThisTurn)
+    fun enteredThisTurn() = withStatePredicate(StatePredicate.EnteredThisTurn())
     fun activatedThisTurn() = withStatePredicate(StatePredicate.ActivatedThisTurn)
 
     /**

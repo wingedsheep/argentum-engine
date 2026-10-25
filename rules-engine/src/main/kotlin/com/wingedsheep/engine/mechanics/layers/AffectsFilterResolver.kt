@@ -640,7 +640,15 @@ internal class AffectsFilterResolver(
         StatePredicate.ExiledWithSource -> false
         // Exile-zone only; group statics project battlefield permanents.
         StatePredicate.ExiledByYou -> false
-        StatePredicate.EnteredThisTurn -> container.has<EnteredThisTurnComponent>()
+        // The under-your-control form reads the static controller's entry log — plain per-player
+        // history, no layered characteristic.
+        is StatePredicate.EnteredThisTurn ->
+            if (predicate.underYourControl) {
+                com.wingedsheep.engine.handlers.effects.PermanentEntryTracker
+                    .enteredThisTurnUnderControlOf(state, entityId, sourceController)
+            } else {
+                container.has<EnteredThisTurnComponent>()
+            }
         StatePredicate.ActivatedThisTurn -> container.get<AbilityActivatedThisTurnComponent>()?.anyActivated == true
         // Counter history — the per-permanent marker, so a group static gated on "each creature you
         // control that you've put one or more +1/+1 counters on this turn" (Kid Loki) resolves

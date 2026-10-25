@@ -12,6 +12,7 @@ import com.wingedsheep.engine.state.components.player.EnteredPermanentRecord
 import com.wingedsheep.engine.state.components.player.NontokenPermanentsPutOntoBattlefieldThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlThisTurnComponent
 import com.wingedsheep.sdk.core.CardType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 
 /**
@@ -43,6 +44,17 @@ import com.wingedsheep.sdk.model.EntityId
  * changes controller.
  */
 object PermanentEntryTracker {
+    /**
+     * `StatePredicate.EnteredThisTurn(underYourControl = true)`: the permanent now on the battlefield as
+     * [entityId] entered it this turn under [playerId]'s control, as this same object (CR 400.7).
+     * Who controls it now doesn't matter (Shaile, Dean of Radiance ruling).
+     */
+    fun enteredThisTurnUnderControlOf(state: GameState, entityId: EntityId, playerId: EntityId?): Boolean {
+        if (playerId == null || state.logicalZone(entityId)?.zoneType != Zone.BATTLEFIELD) return false
+        val entry = state.getEntity(entityId)?.get<BattlefieldEntryTimestampComponent>() ?: return false
+        return state.getEntity(playerId)?.get<PermanentsEnteredUnderControlThisTurnComponent>()
+            ?.includes(entityId, entry.timestamp) == true
+    }
 
     /** Entry filters and gates read only components and counts, never a printed script. */
     private val entryRiderEvaluator = PredicateEvaluator(cardRegistry = null)
@@ -97,6 +109,7 @@ object PermanentEntryTracker {
                         cardTypes,
                         subtypes,
                         isToken = stamped.getEntity(entityId)?.has<TokenComponent>() == true,
+                        entryTimestamp = state.timestamp,
                     )
                 )
             )

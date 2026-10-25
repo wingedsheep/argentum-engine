@@ -359,7 +359,9 @@ class PredicateEvaluator(
             StatePredicate.IsModified -> snapshot.wasModified
             StatePredicate.IsFaceDown -> snapshot.wasFaceDown
             StatePredicate.IsFaceUp -> !snapshot.wasFaceDown
-            StatePredicate.EnteredThisTurn -> snapshot.enteredOnTurn == state.turnNumber
+            // The under-your-control form reads the live entry log; the snapshot doesn't freeze it.
+            is StatePredicate.EnteredThisTurn ->
+                if (predicate.underYourControl) null else snapshot.enteredOnTurn == state.turnNumber
             is StatePredicate.Not -> matchesSnapshotState(state, snapshot, predicate.predicate)?.not()
             is StatePredicate.And -> {
                 val results = predicate.predicates.map { matchesSnapshotState(state, snapshot, it) }
@@ -2052,9 +2054,15 @@ class PredicateEvaluator(
             // Live marker on the battlefield; once the permanent has left, the marker is gone and
             // the frozen last-known snapshot answers (CR 608.2h) — "unless this creature entered
             // this turn" (Moon-Circuit Hacker) after the Ninja was bounced in response.
-            StatePredicate.EnteredThisTurn ->
-                container.has<EnteredThisTurnComponent>() ||
-                    container.get<LastKnownPermanentComponent>()?.snapshot?.enteredOnTurn == state.turnNumber
+            // The under-your-control form asks the source controller's entry log instead.
+            is StatePredicate.EnteredThisTurn ->
+                if (predicate.underYourControl) {
+                    com.wingedsheep.engine.handlers.effects.PermanentEntryTracker
+                        .enteredThisTurnUnderControlOf(state, entityId, context?.controllerId)
+                } else {
+                    container.has<EnteredThisTurnComponent>() ||
+                        container.get<LastKnownPermanentComponent>()?.snapshot?.enteredOnTurn == state.turnNumber
+                }
             StatePredicate.ActivatedThisTurn ->
                 container.get<AbilityActivatedThisTurnComponent>()?.anyActivated == true
 

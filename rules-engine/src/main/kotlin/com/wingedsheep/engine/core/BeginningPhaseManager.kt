@@ -654,7 +654,7 @@ class BeginningPhaseManager(
         StatePredicate.IsCombatPairedWithSource,
         StatePredicate.IsBlockingIterationEntity,
         StatePredicate.CreatedBySource,
-        StatePredicate.EnteredThisTurn,
+        is StatePredicate.EnteredThisTurn,
         StatePredicate.ActivatedThisTurn,
         is StatePredicate.WasDealtDamageThisTurn,
         StatePredicate.HasDealtCombatDamageToPlayer,

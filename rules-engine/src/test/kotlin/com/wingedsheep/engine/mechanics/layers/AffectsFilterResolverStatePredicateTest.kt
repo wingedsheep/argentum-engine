@@ -13,6 +13,7 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.ProtectorComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
+import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageToPlayerComponent
@@ -28,6 +29,8 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.HasMorphAbilityComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
+import com.wingedsheep.engine.state.components.player.EnteredPermanentRecord
+import com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlThisTurnComponent
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.ManaCost
@@ -330,8 +333,41 @@ class AffectsFilterResolverStatePredicateTest : FunSpec({
                 old to container(playerA, creature(playerA))
             )
         )
-        val matched = resolver.resolveAffectedEntities(state, fresh, filterWith(StatePredicate.EnteredThisTurn))
+        val matched = resolver.resolveAffectedEntities(state, fresh, filterWith(StatePredicate.EnteredThisTurn()))
         matched shouldContainExactlyInAnyOrder setOf(fresh)
+    }
+
+    test("EnteredThisTurn(underYourControl) reads the source controller's entry log by object identity") {
+        val fresh = EntityId.generate()
+        val stolen = EntityId.generate()
+        val gained = EntityId.generate()
+        val returned = EntityId.generate()
+        fun entered(timestamp: Long) = BattlefieldEntryTimestampComponent(timestamp)
+        var state = battlefield(
+            listOf(
+                fresh to container(playerA, creature(playerA), entered(1)),
+                // entered under A's control, now controlled by B
+                stolen to container(playerB, creature(playerA), entered(2)),
+                // entered under B's control, now controlled by A
+                gained to container(playerA, creature(playerB), entered(3)),
+                // logged by A at timestamp 4, but has since left and re-entered (timestamp 7)
+                returned to container(playerA, creature(playerA), entered(7)),
+            )
+        )
+        fun log(vararg records: Pair<EntityId, Long>) = PermanentsEnteredUnderControlThisTurnComponent(
+            records.map { (id, ts) -> EnteredPermanentRecord(id, setOf(CardType.CREATURE), entryTimestamp = ts) }
+        )
+        state = state
+            .updateEntity(playerA) { it.with(log(fresh to 1L, stolen to 2L, returned to 4L)) }
+            .updateEntity(playerB) { it.with(log(gained to 3L)) }
+
+        val filter = filterWith(StatePredicate.EnteredThisTurn(underYourControl = true))
+        withClue("source controlled by A") {
+            resolver.resolveAffectedEntities(state, fresh, filter) shouldContainExactlyInAnyOrder setOf(fresh, stolen)
+        }
+        withClue("source controlled by B") {
+            resolver.resolveAffectedEntities(state, stolen, filter) shouldContainExactlyInAnyOrder setOf(gained)
+        }
     }
 
     test("WasDealtDamageThisTurn matches only damaged creatures") {

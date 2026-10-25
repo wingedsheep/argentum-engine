@@ -2957,7 +2957,7 @@ class TriggerMatcher(
         // source: the zone-change gate — the one path any card uses it from — intercepts it above
         // and answers exactly.
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.CreatedBySource,
-        com.wingedsheep.sdk.scripting.predicates.StatePredicate.EnteredThisTurn,
+        is com.wingedsheep.sdk.scripting.predicates.StatePredicate.EnteredThisTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.ActivatedThisTurn,
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.WasDealtDamageThisTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasDealtCombatDamageToPlayer,
