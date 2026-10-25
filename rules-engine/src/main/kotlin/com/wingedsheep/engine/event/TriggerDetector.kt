@@ -523,15 +523,12 @@ class TriggerDetector(
         // more permanents entered" batch, and duplicated (Panharmonicon) copies uniformly.
         suppressEntersTriggers(state, events, triggers)
 
-        // Filter out once-per-turn triggers that have already fired this turn, and dedupe
-        // simultaneous fires (see [capOncePerTurnTriggers]).
-        val filteredTriggers = capOncePerTurnTriggers(state, triggers)
-
-        // Rule 603.4: Filter out triggers with unmet intervening-if conditions
-        return matcher.sortByApnapOrder(
-            state,
-            matcher.filterByTriggerCondition(state, assignGranterIds(state, filteredTriggers, events))
-        )
+        // Rule 603.4: an ability whose intervening-if is false doesn't trigger at all, so drop
+        // those first — a failing instance must not take a simultaneous instance's once-per-turn
+        // slot. Then cap once-per-turn triggers and dedupe simultaneous fires
+        // (see [capOncePerTurnTriggers]).
+        val conditionMet = matcher.filterByTriggerCondition(state, assignGranterIds(state, triggers, events))
+        return matcher.sortByApnapOrder(state, capOncePerTurnTriggers(state, conditionMet))
     }
 
     /**
@@ -863,15 +860,12 @@ class TriggerDetector(
         // abilities (e.g., Twinflame Travelers) — also applies to phase/step triggers.
         duplicateSourceTriggers(state, triggers)
 
-        // Filter out once-per-turn triggers that have already fired this turn, and dedupe
-        // simultaneous fires (see [capOncePerTurnTriggers]).
-        val filteredTriggers = capOncePerTurnTriggers(state, triggers)
-
-        // Rule 603.4: Filter out triggers with unmet intervening-if conditions
-        return matcher.sortByApnapOrder(
-            state,
-            matcher.filterByTriggerCondition(state, assignGranterIds(state, filteredTriggers))
-        )
+        // Rule 603.4: an ability whose intervening-if is false doesn't trigger at all, so drop
+        // those first — a failing instance must not take a simultaneous instance's once-per-turn
+        // slot. Then cap once-per-turn triggers and dedupe simultaneous fires
+        // (see [capOncePerTurnTriggers]).
+        val conditionMet = matcher.filterByTriggerCondition(state, assignGranterIds(state, triggers))
+        return matcher.sortByApnapOrder(state, capOncePerTurnTriggers(state, conditionMet))
     }
 
     /**
