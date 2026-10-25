@@ -29,86 +29,89 @@
                     "descriptionOverride": "You may have it gain reach until end of turn."
                 },
                 {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromZone",
-                                "zone": "Hand"
+                    "type": "Learn",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "learn_hand"
                             },
-                            "storeAs": "learn_hand"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "learn_hand",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "learn_discarded",
-                            "prompt": "Learn — you may discard a card to draw a card"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "learn_discarded",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            },
-                            "moveType": "Discard"
-                        },
-                        {
-                            "type": "ConditionalOnCollection",
-                            "collection": "learn_discarded",
-                            "ifNotEmpty": {
-                                "type": "DrawCards",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "ifEmpty": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Sideboard",
-                                            "filter": "Lesson"
-                                        },
-                                        "storeAs": "learn_lessons"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "learn_lessons",
-                                        "selection": {
-                                            "type": "ChooseUpTo",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "learn_lessonsFound"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "learn_lessonsFound",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Hand"
-                                        },
-                                        "revealed": true
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "learn_hand",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
                                     }
-                                ]
+                                },
+                                "storeSelected": "learn_discarded",
+                                "prompt": "Learn — you may discard a card to draw a card"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "learn_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "learn_discarded",
+                                "ifNotEmpty": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "ifEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Sideboard",
+                                                "filter": "Lesson"
+                                            },
+                                            "storeAs": "learn_lessons"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "learn_lessons",
+                                            "selection": {
+                                                "type": "ChooseUpTo",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "learn_lessonsFound"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "learn_lessonsFound",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            },
+                                            "revealed": true
+                                        }
+                                    ]
+                                }
                             }
-                        }
-                    ],
-                    "descriptionOverride": "Learn"
+                        ],
+                        "descriptionOverride": "Learn"
+                    }
                 }
             ]
         },
@@ -491,86 +494,89 @@
                     }
                 },
                 {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromZone",
-                                "zone": "Hand"
+                    "type": "Learn",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "learn_hand"
                             },
-                            "storeAs": "learn_hand"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "learn_hand",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "learn_discarded",
-                            "prompt": "Learn — you may discard a card to draw a card"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "learn_discarded",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            },
-                            "moveType": "Discard"
-                        },
-                        {
-                            "type": "ConditionalOnCollection",
-                            "collection": "learn_discarded",
-                            "ifNotEmpty": {
-                                "type": "DrawCards",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "ifEmpty": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Sideboard",
-                                            "filter": "Lesson"
-                                        },
-                                        "storeAs": "learn_lessons"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "learn_lessons",
-                                        "selection": {
-                                            "type": "ChooseUpTo",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "learn_lessonsFound"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "learn_lessonsFound",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Hand"
-                                        },
-                                        "revealed": true
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "learn_hand",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
                                     }
-                                ]
+                                },
+                                "storeSelected": "learn_discarded",
+                                "prompt": "Learn — you may discard a card to draw a card"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "learn_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "learn_discarded",
+                                "ifNotEmpty": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "ifEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Sideboard",
+                                                "filter": "Lesson"
+                                            },
+                                            "storeAs": "learn_lessons"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "learn_lessons",
+                                            "selection": {
+                                                "type": "ChooseUpTo",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "learn_lessonsFound"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "learn_lessonsFound",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            },
+                                            "revealed": true
+                                        }
+                                    ]
+                                }
                             }
-                        }
-                    ],
-                    "descriptionOverride": "Learn"
+                        ],
+                        "descriptionOverride": "Learn"
+                    }
                 }
             ]
         },
@@ -3342,86 +3348,89 @@
                     }
                 },
                 {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromZone",
-                                "zone": "Hand"
+                    "type": "Learn",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "learn_hand"
                             },
-                            "storeAs": "learn_hand"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "learn_hand",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "learn_discarded",
-                            "prompt": "Learn — you may discard a card to draw a card"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "learn_discarded",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            },
-                            "moveType": "Discard"
-                        },
-                        {
-                            "type": "ConditionalOnCollection",
-                            "collection": "learn_discarded",
-                            "ifNotEmpty": {
-                                "type": "DrawCards",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "ifEmpty": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Sideboard",
-                                            "filter": "Lesson"
-                                        },
-                                        "storeAs": "learn_lessons"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "learn_lessons",
-                                        "selection": {
-                                            "type": "ChooseUpTo",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "learn_lessonsFound"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "learn_lessonsFound",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Hand"
-                                        },
-                                        "revealed": true
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "learn_hand",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
                                     }
-                                ]
+                                },
+                                "storeSelected": "learn_discarded",
+                                "prompt": "Learn — you may discard a card to draw a card"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "learn_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "learn_discarded",
+                                "ifNotEmpty": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "ifEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Sideboard",
+                                                "filter": "Lesson"
+                                            },
+                                            "storeAs": "learn_lessons"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "learn_lessons",
+                                            "selection": {
+                                                "type": "ChooseUpTo",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "learn_lessonsFound"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "learn_lessonsFound",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            },
+                                            "revealed": true
+                                        }
+                                    ]
+                                }
                             }
-                        }
-                    ],
-                    "descriptionOverride": "Learn"
+                        ],
+                        "descriptionOverride": "Learn"
+                    }
                 }
             ]
         }
@@ -4566,86 +4575,89 @@
                     }
                 },
                 {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromZone",
-                                "zone": "Hand"
+                    "type": "Learn",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "learn_hand"
                             },
-                            "storeAs": "learn_hand"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "learn_hand",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "learn_discarded",
-                            "prompt": "Learn — you may discard a card to draw a card"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "learn_discarded",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            },
-                            "moveType": "Discard"
-                        },
-                        {
-                            "type": "ConditionalOnCollection",
-                            "collection": "learn_discarded",
-                            "ifNotEmpty": {
-                                "type": "DrawCards",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "ifEmpty": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Sideboard",
-                                            "filter": "Lesson"
-                                        },
-                                        "storeAs": "learn_lessons"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "learn_lessons",
-                                        "selection": {
-                                            "type": "ChooseUpTo",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "learn_lessonsFound"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "learn_lessonsFound",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Hand"
-                                        },
-                                        "revealed": true
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "learn_hand",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
                                     }
-                                ]
+                                },
+                                "storeSelected": "learn_discarded",
+                                "prompt": "Learn — you may discard a card to draw a card"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "learn_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "learn_discarded",
+                                "ifNotEmpty": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "ifEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Sideboard",
+                                                "filter": "Lesson"
+                                            },
+                                            "storeAs": "learn_lessons"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "learn_lessons",
+                                            "selection": {
+                                                "type": "ChooseUpTo",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "learn_lessonsFound"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "learn_lessonsFound",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            },
+                                            "revealed": true
+                                        }
+                                    ]
+                                }
                             }
-                        }
-                    ],
-                    "descriptionOverride": "Learn"
+                        ],
+                        "descriptionOverride": "Learn"
+                    }
                 }
             ]
         },
@@ -5166,86 +5178,89 @@
                     "to": "Graveyard"
                 },
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromZone",
-                                "zone": "Hand"
+                    "type": "Learn",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "learn_hand"
                             },
-                            "storeAs": "learn_hand"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "learn_hand",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "learn_discarded",
-                            "prompt": "Learn — you may discard a card to draw a card"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "learn_discarded",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            },
-                            "moveType": "Discard"
-                        },
-                        {
-                            "type": "ConditionalOnCollection",
-                            "collection": "learn_discarded",
-                            "ifNotEmpty": {
-                                "type": "DrawCards",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "ifEmpty": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Sideboard",
-                                            "filter": "Lesson"
-                                        },
-                                        "storeAs": "learn_lessons"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "learn_lessons",
-                                        "selection": {
-                                            "type": "ChooseUpTo",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "learn_lessonsFound"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "learn_lessonsFound",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Hand"
-                                        },
-                                        "revealed": true
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "learn_hand",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
                                     }
-                                ]
+                                },
+                                "storeSelected": "learn_discarded",
+                                "prompt": "Learn — you may discard a card to draw a card"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "learn_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "learn_discarded",
+                                "ifNotEmpty": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "ifEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Sideboard",
+                                                "filter": "Lesson"
+                                            },
+                                            "storeAs": "learn_lessons"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "learn_lessons",
+                                            "selection": {
+                                                "type": "ChooseUpTo",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "learn_lessonsFound"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "learn_lessonsFound",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            },
+                                            "revealed": true
+                                        }
+                                    ]
+                                }
                             }
-                        }
-                    ],
-                    "descriptionOverride": "Learn"
+                        ],
+                        "descriptionOverride": "Learn"
+                    }
                 }
             }
         ]
@@ -6115,86 +6130,89 @@
                     }
                 },
                 {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromZone",
-                                "zone": "Hand"
+                    "type": "Learn",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "learn_hand"
                             },
-                            "storeAs": "learn_hand"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "learn_hand",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "learn_discarded",
-                            "prompt": "Learn — you may discard a card to draw a card"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "learn_discarded",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            },
-                            "moveType": "Discard"
-                        },
-                        {
-                            "type": "ConditionalOnCollection",
-                            "collection": "learn_discarded",
-                            "ifNotEmpty": {
-                                "type": "DrawCards",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "ifEmpty": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Sideboard",
-                                            "filter": "Lesson"
-                                        },
-                                        "storeAs": "learn_lessons"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "learn_lessons",
-                                        "selection": {
-                                            "type": "ChooseUpTo",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "learn_lessonsFound"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "learn_lessonsFound",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Hand"
-                                        },
-                                        "revealed": true
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "learn_hand",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
                                     }
-                                ]
+                                },
+                                "storeSelected": "learn_discarded",
+                                "prompt": "Learn — you may discard a card to draw a card"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "learn_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "learn_discarded",
+                                "ifNotEmpty": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "ifEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Sideboard",
+                                                "filter": "Lesson"
+                                            },
+                                            "storeAs": "learn_lessons"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "learn_lessons",
+                                            "selection": {
+                                                "type": "ChooseUpTo",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "learn_lessonsFound"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "learn_lessonsFound",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            },
+                                            "revealed": true
+                                        }
+                                    ]
+                                }
                             }
-                        }
-                    ],
-                    "descriptionOverride": "Learn"
+                        ],
+                        "descriptionOverride": "Learn"
+                    }
                 }
             ]
         },
@@ -7065,86 +7083,89 @@
                     "to": "Graveyard"
                 },
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromZone",
-                                "zone": "Hand"
+                    "type": "Learn",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "learn_hand"
                             },
-                            "storeAs": "learn_hand"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "learn_hand",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "learn_discarded",
-                            "prompt": "Learn — you may discard a card to draw a card"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "learn_discarded",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            },
-                            "moveType": "Discard"
-                        },
-                        {
-                            "type": "ConditionalOnCollection",
-                            "collection": "learn_discarded",
-                            "ifNotEmpty": {
-                                "type": "DrawCards",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "ifEmpty": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Sideboard",
-                                            "filter": "Lesson"
-                                        },
-                                        "storeAs": "learn_lessons"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "learn_lessons",
-                                        "selection": {
-                                            "type": "ChooseUpTo",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "learn_lessonsFound"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "learn_lessonsFound",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Hand"
-                                        },
-                                        "revealed": true
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "learn_hand",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
                                     }
-                                ]
+                                },
+                                "storeSelected": "learn_discarded",
+                                "prompt": "Learn — you may discard a card to draw a card"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "learn_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "learn_discarded",
+                                "ifNotEmpty": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "ifEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Sideboard",
+                                                "filter": "Lesson"
+                                            },
+                                            "storeAs": "learn_lessons"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "learn_lessons",
+                                            "selection": {
+                                                "type": "ChooseUpTo",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "learn_lessonsFound"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "learn_lessonsFound",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            },
+                                            "revealed": true
+                                        }
+                                    ]
+                                }
                             }
-                        }
-                    ],
-                    "descriptionOverride": "Learn"
+                        ],
+                        "descriptionOverride": "Learn"
+                    }
                 }
             }
         ]
@@ -7386,86 +7407,89 @@
                 "ShuffleLibrary",
                 "EmitLibrarySearchedEvent",
                 {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromZone",
-                                "zone": "Hand"
+                    "type": "Learn",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "learn_hand"
                             },
-                            "storeAs": "learn_hand"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "learn_hand",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "learn_discarded",
-                            "prompt": "Learn — you may discard a card to draw a card"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "learn_discarded",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            },
-                            "moveType": "Discard"
-                        },
-                        {
-                            "type": "ConditionalOnCollection",
-                            "collection": "learn_discarded",
-                            "ifNotEmpty": {
-                                "type": "DrawCards",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "ifEmpty": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Sideboard",
-                                            "filter": "Lesson"
-                                        },
-                                        "storeAs": "learn_lessons"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "learn_lessons",
-                                        "selection": {
-                                            "type": "ChooseUpTo",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "learn_lessonsFound"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "learn_lessonsFound",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Hand"
-                                        },
-                                        "revealed": true
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "learn_hand",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
                                     }
-                                ]
+                                },
+                                "storeSelected": "learn_discarded",
+                                "prompt": "Learn — you may discard a card to draw a card"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "learn_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "learn_discarded",
+                                "ifNotEmpty": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "ifEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Sideboard",
+                                                "filter": "Lesson"
+                                            },
+                                            "storeAs": "learn_lessons"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "learn_lessons",
+                                            "selection": {
+                                                "type": "ChooseUpTo",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "learn_lessonsFound"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "learn_lessonsFound",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            },
+                                            "revealed": true
+                                        }
+                                    ]
+                                }
                             }
-                        }
-                    ],
-                    "descriptionOverride": "Learn"
+                        ],
+                        "descriptionOverride": "Learn"
+                    }
                 }
             ]
         }
@@ -7518,86 +7542,89 @@
                     }
                 },
                 {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromZone",
-                                "zone": "Hand"
+                    "type": "Learn",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "learn_hand"
                             },
-                            "storeAs": "learn_hand"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "learn_hand",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "learn_discarded",
-                            "prompt": "Learn — you may discard a card to draw a card"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "learn_discarded",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            },
-                            "moveType": "Discard"
-                        },
-                        {
-                            "type": "ConditionalOnCollection",
-                            "collection": "learn_discarded",
-                            "ifNotEmpty": {
-                                "type": "DrawCards",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "ifEmpty": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Sideboard",
-                                            "filter": "Lesson"
-                                        },
-                                        "storeAs": "learn_lessons"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "learn_lessons",
-                                        "selection": {
-                                            "type": "ChooseUpTo",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "learn_lessonsFound"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "learn_lessonsFound",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Hand"
-                                        },
-                                        "revealed": true
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "learn_hand",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
                                     }
-                                ]
+                                },
+                                "storeSelected": "learn_discarded",
+                                "prompt": "Learn — you may discard a card to draw a card"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "learn_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "learn_discarded",
+                                "ifNotEmpty": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "ifEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Sideboard",
+                                                "filter": "Lesson"
+                                            },
+                                            "storeAs": "learn_lessons"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "learn_lessons",
+                                            "selection": {
+                                                "type": "ChooseUpTo",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "learn_lessonsFound"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "learn_lessonsFound",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            },
+                                            "revealed": true
+                                        }
+                                    ]
+                                }
                             }
-                        }
-                    ],
-                    "descriptionOverride": "Learn"
+                        ],
+                        "descriptionOverride": "Learn"
+                    }
                 }
             ]
         }
@@ -8298,86 +8325,89 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromZone",
-                                "zone": "Hand"
+                    "type": "Learn",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "learn_hand"
                             },
-                            "storeAs": "learn_hand"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "learn_hand",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "learn_discarded",
-                            "prompt": "Learn — you may discard a card to draw a card"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "learn_discarded",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            },
-                            "moveType": "Discard"
-                        },
-                        {
-                            "type": "ConditionalOnCollection",
-                            "collection": "learn_discarded",
-                            "ifNotEmpty": {
-                                "type": "DrawCards",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "ifEmpty": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Sideboard",
-                                            "filter": "Lesson"
-                                        },
-                                        "storeAs": "learn_lessons"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "learn_lessons",
-                                        "selection": {
-                                            "type": "ChooseUpTo",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "learn_lessonsFound"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "learn_lessonsFound",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Hand"
-                                        },
-                                        "revealed": true
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "learn_hand",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
                                     }
-                                ]
+                                },
+                                "storeSelected": "learn_discarded",
+                                "prompt": "Learn — you may discard a card to draw a card"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "learn_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "learn_discarded",
+                                "ifNotEmpty": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "ifEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Sideboard",
+                                                "filter": "Lesson"
+                                            },
+                                            "storeAs": "learn_lessons"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "learn_lessons",
+                                            "selection": {
+                                                "type": "ChooseUpTo",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "learn_lessonsFound"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "learn_lessonsFound",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            },
+                                            "revealed": true
+                                        }
+                                    ]
+                                }
                             }
-                        }
-                    ],
-                    "descriptionOverride": "Learn"
+                        ],
+                        "descriptionOverride": "Learn"
+                    }
                 }
             }
         ]
@@ -8556,86 +8586,89 @@
                     }
                 },
                 {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromZone",
-                                "zone": "Hand"
+                    "type": "Learn",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "learn_hand"
                             },
-                            "storeAs": "learn_hand"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "learn_hand",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "learn_discarded",
-                            "prompt": "Learn — you may discard a card to draw a card"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "learn_discarded",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            },
-                            "moveType": "Discard"
-                        },
-                        {
-                            "type": "ConditionalOnCollection",
-                            "collection": "learn_discarded",
-                            "ifNotEmpty": {
-                                "type": "DrawCards",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "ifEmpty": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Sideboard",
-                                            "filter": "Lesson"
-                                        },
-                                        "storeAs": "learn_lessons"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "learn_lessons",
-                                        "selection": {
-                                            "type": "ChooseUpTo",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "learn_lessonsFound"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "learn_lessonsFound",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Hand"
-                                        },
-                                        "revealed": true
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "learn_hand",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
                                     }
-                                ]
+                                },
+                                "storeSelected": "learn_discarded",
+                                "prompt": "Learn — you may discard a card to draw a card"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "learn_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "learn_discarded",
+                                "ifNotEmpty": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "ifEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Sideboard",
+                                                "filter": "Lesson"
+                                            },
+                                            "storeAs": "learn_lessons"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "learn_lessons",
+                                            "selection": {
+                                                "type": "ChooseUpTo",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "learn_lessonsFound"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "learn_lessonsFound",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            },
+                                            "revealed": true
+                                        }
+                                    ]
+                                }
                             }
-                        }
-                    ],
-                    "descriptionOverride": "Learn"
+                        ],
+                        "descriptionOverride": "Learn"
+                    }
                 }
             ]
         },
@@ -9284,86 +9317,89 @@
                     "tokenType": "Pest"
                 },
                 {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromZone",
-                                "zone": "Hand"
+                    "type": "Learn",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "learn_hand"
                             },
-                            "storeAs": "learn_hand"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "learn_hand",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "learn_discarded",
-                            "prompt": "Learn — you may discard a card to draw a card"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "learn_discarded",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            },
-                            "moveType": "Discard"
-                        },
-                        {
-                            "type": "ConditionalOnCollection",
-                            "collection": "learn_discarded",
-                            "ifNotEmpty": {
-                                "type": "DrawCards",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "ifEmpty": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Sideboard",
-                                            "filter": "Lesson"
-                                        },
-                                        "storeAs": "learn_lessons"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "learn_lessons",
-                                        "selection": {
-                                            "type": "ChooseUpTo",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "learn_lessonsFound"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "learn_lessonsFound",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Hand"
-                                        },
-                                        "revealed": true
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "learn_hand",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
                                     }
-                                ]
+                                },
+                                "storeSelected": "learn_discarded",
+                                "prompt": "Learn — you may discard a card to draw a card"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "learn_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "learn_discarded",
+                                "ifNotEmpty": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "ifEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Sideboard",
+                                                "filter": "Lesson"
+                                            },
+                                            "storeAs": "learn_lessons"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "learn_lessons",
+                                            "selection": {
+                                                "type": "ChooseUpTo",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "learn_lessonsFound"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "learn_lessonsFound",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            },
+                                            "revealed": true
+                                        }
+                                    ]
+                                }
                             }
-                        }
-                    ],
-                    "descriptionOverride": "Learn"
+                        ],
+                        "descriptionOverride": "Learn"
+                    }
                 }
             ]
         }
@@ -9401,86 +9437,89 @@
                     "damageSource": "Self"
                 },
                 {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromZone",
-                                "zone": "Hand"
+                    "type": "Learn",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "learn_hand"
                             },
-                            "storeAs": "learn_hand"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "learn_hand",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "learn_discarded",
-                            "prompt": "Learn — you may discard a card to draw a card"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "learn_discarded",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            },
-                            "moveType": "Discard"
-                        },
-                        {
-                            "type": "ConditionalOnCollection",
-                            "collection": "learn_discarded",
-                            "ifNotEmpty": {
-                                "type": "DrawCards",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "ifEmpty": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Sideboard",
-                                            "filter": "Lesson"
-                                        },
-                                        "storeAs": "learn_lessons"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "learn_lessons",
-                                        "selection": {
-                                            "type": "ChooseUpTo",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "learn_lessonsFound"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "learn_lessonsFound",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Hand"
-                                        },
-                                        "revealed": true
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "learn_hand",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
                                     }
-                                ]
+                                },
+                                "storeSelected": "learn_discarded",
+                                "prompt": "Learn — you may discard a card to draw a card"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "learn_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "learn_discarded",
+                                "ifNotEmpty": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "ifEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Sideboard",
+                                                "filter": "Lesson"
+                                            },
+                                            "storeAs": "learn_lessons"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "learn_lessons",
+                                            "selection": {
+                                                "type": "ChooseUpTo",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "learn_lessonsFound"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "learn_lessonsFound",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            },
+                                            "revealed": true
+                                        }
+                                    ]
+                                }
                             }
-                        }
-                    ],
-                    "descriptionOverride": "Learn"
+                        ],
+                        "descriptionOverride": "Learn"
+                    }
                 }
             ]
         },
@@ -13954,86 +13993,89 @@
                     ]
                 },
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromZone",
-                                "zone": "Hand"
+                    "type": "Learn",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "learn_hand"
                             },
-                            "storeAs": "learn_hand"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "learn_hand",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "learn_discarded",
-                            "prompt": "Learn — you may discard a card to draw a card"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "learn_discarded",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            },
-                            "moveType": "Discard"
-                        },
-                        {
-                            "type": "ConditionalOnCollection",
-                            "collection": "learn_discarded",
-                            "ifNotEmpty": {
-                                "type": "DrawCards",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "ifEmpty": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Sideboard",
-                                            "filter": "Lesson"
-                                        },
-                                        "storeAs": "learn_lessons"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "learn_lessons",
-                                        "selection": {
-                                            "type": "ChooseUpTo",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "learn_lessonsFound"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "learn_lessonsFound",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Hand"
-                                        },
-                                        "revealed": true
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "learn_hand",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
                                     }
-                                ]
+                                },
+                                "storeSelected": "learn_discarded",
+                                "prompt": "Learn — you may discard a card to draw a card"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "learn_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "learn_discarded",
+                                "ifNotEmpty": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "ifEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Sideboard",
+                                                "filter": "Lesson"
+                                            },
+                                            "storeAs": "learn_lessons"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "learn_lessons",
+                                            "selection": {
+                                                "type": "ChooseUpTo",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "learn_lessonsFound"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "learn_lessonsFound",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            },
+                                            "revealed": true
+                                        }
+                                    ]
+                                }
                             }
-                        }
-                    ],
-                    "descriptionOverride": "Learn"
+                        ],
+                        "descriptionOverride": "Learn"
+                    }
                 }
             }
         ]
@@ -14921,86 +14963,89 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromZone",
-                                "zone": "Hand"
+                    "type": "Learn",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "learn_hand"
                             },
-                            "storeAs": "learn_hand"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "learn_hand",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "learn_discarded",
-                            "prompt": "Learn — you may discard a card to draw a card"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "learn_discarded",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            },
-                            "moveType": "Discard"
-                        },
-                        {
-                            "type": "ConditionalOnCollection",
-                            "collection": "learn_discarded",
-                            "ifNotEmpty": {
-                                "type": "DrawCards",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "ifEmpty": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Sideboard",
-                                            "filter": "Lesson"
-                                        },
-                                        "storeAs": "learn_lessons"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "learn_lessons",
-                                        "selection": {
-                                            "type": "ChooseUpTo",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "learn_lessonsFound"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "learn_lessonsFound",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Hand"
-                                        },
-                                        "revealed": true
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "learn_hand",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
                                     }
-                                ]
+                                },
+                                "storeSelected": "learn_discarded",
+                                "prompt": "Learn — you may discard a card to draw a card"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "learn_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "learn_discarded",
+                                "ifNotEmpty": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "ifEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Sideboard",
+                                                "filter": "Lesson"
+                                            },
+                                            "storeAs": "learn_lessons"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "learn_lessons",
+                                            "selection": {
+                                                "type": "ChooseUpTo",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "learn_lessonsFound"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "learn_lessonsFound",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            },
+                                            "revealed": true
+                                        }
+                                    ]
+                                }
                             }
-                        }
-                    ],
-                    "descriptionOverride": "Learn"
+                        ],
+                        "descriptionOverride": "Learn"
+                    }
                 }
             }
         ],
@@ -15076,86 +15121,89 @@
                     }
                 },
                 {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromZone",
-                                "zone": "Hand"
+                    "type": "Learn",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "learn_hand"
                             },
-                            "storeAs": "learn_hand"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "learn_hand",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "learn_discarded",
-                            "prompt": "Learn — you may discard a card to draw a card"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "learn_discarded",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            },
-                            "moveType": "Discard"
-                        },
-                        {
-                            "type": "ConditionalOnCollection",
-                            "collection": "learn_discarded",
-                            "ifNotEmpty": {
-                                "type": "DrawCards",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "ifEmpty": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Sideboard",
-                                            "filter": "Lesson"
-                                        },
-                                        "storeAs": "learn_lessons"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "learn_lessons",
-                                        "selection": {
-                                            "type": "ChooseUpTo",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "learn_lessonsFound"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "learn_lessonsFound",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Hand"
-                                        },
-                                        "revealed": true
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "learn_hand",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
                                     }
-                                ]
+                                },
+                                "storeSelected": "learn_discarded",
+                                "prompt": "Learn — you may discard a card to draw a card"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "learn_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "learn_discarded",
+                                "ifNotEmpty": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "ifEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Sideboard",
+                                                "filter": "Lesson"
+                                            },
+                                            "storeAs": "learn_lessons"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "learn_lessons",
+                                            "selection": {
+                                                "type": "ChooseUpTo",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "learn_lessonsFound"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "learn_lessonsFound",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            },
+                                            "revealed": true
+                                        }
+                                    ]
+                                }
                             }
-                        }
-                    ],
-                    "descriptionOverride": "Learn"
+                        ],
+                        "descriptionOverride": "Learn"
+                    }
                 }
             ]
         }
@@ -15899,86 +15947,89 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromZone",
-                                "zone": "Hand"
+                    "type": "Learn",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "learn_hand"
                             },
-                            "storeAs": "learn_hand"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "learn_hand",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "learn_discarded",
-                            "prompt": "Learn — you may discard a card to draw a card"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "learn_discarded",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            },
-                            "moveType": "Discard"
-                        },
-                        {
-                            "type": "ConditionalOnCollection",
-                            "collection": "learn_discarded",
-                            "ifNotEmpty": {
-                                "type": "DrawCards",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "ifEmpty": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Sideboard",
-                                            "filter": "Lesson"
-                                        },
-                                        "storeAs": "learn_lessons"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "learn_lessons",
-                                        "selection": {
-                                            "type": "ChooseUpTo",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "learn_lessonsFound"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "learn_lessonsFound",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Hand"
-                                        },
-                                        "revealed": true
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "learn_hand",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
                                     }
-                                ]
+                                },
+                                "storeSelected": "learn_discarded",
+                                "prompt": "Learn — you may discard a card to draw a card"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "learn_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "learn_discarded",
+                                "ifNotEmpty": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "ifEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Sideboard",
+                                                "filter": "Lesson"
+                                            },
+                                            "storeAs": "learn_lessons"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "learn_lessons",
+                                            "selection": {
+                                                "type": "ChooseUpTo",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "learn_lessonsFound"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "learn_lessonsFound",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            },
+                                            "revealed": true
+                                        }
+                                    ]
+                                }
                             }
-                        }
-                    ],
-                    "descriptionOverride": "Learn"
+                        ],
+                        "descriptionOverride": "Learn"
+                    }
                 }
             }
         ]
@@ -17200,6 +17251,154 @@
     ]
 }
 
+// Retriever Phoenix
+{
+    "name": "Retriever Phoenix",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Phoenix",
+    "oracleText": "Flying, haste\nWhen this creature enters, if you cast it, learn. (You may reveal a Lesson card you own from outside the game and put it into your hand, or discard a card to draw a card.)\nAs long as this card is in your graveyard, if you would learn, you may instead return this card to the battlefield.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Retriever Phoenix:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Learn",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "learn_hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "learn_hand",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "learn_discarded",
+                                "prompt": "Learn — you may discard a card to draw a card"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "learn_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "learn_discarded",
+                                "ifNotEmpty": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "ifEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Sideboard",
+                                                "filter": "Lesson"
+                                            },
+                                            "storeAs": "learn_lessons"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "learn_lessons",
+                                            "selection": {
+                                                "type": "ChooseUpTo",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "learn_lessonsFound"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "learn_lessonsFound",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            },
+                                            "revealed": true
+                                        }
+                                    ]
+                                }
+                            }
+                        ],
+                        "descriptionOverride": "Learn"
+                    }
+                },
+                "interveningIf": "WasCast"
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "ReplaceKeywordAction",
+                "replacementEffect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                "appliesTo": "LearnEvent",
+                "optional": true,
+                "activeZones": [
+                    "Graveyard"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "rarity": "RARE",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4dd6cb53-3c82-4ac3-be1e-311322729198.jpg?1783927349",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Retriever Phoenix must be in your graveyard at the moment you're instructed to learn if you want to use the last ability to return it to the battlefield."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If Retriever Phoenix somehow dies with its triggered ability on the stack, you may return it to the battlefield with that triggered ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Returned Pastcaller
 {
     "name": "Returned Pastcaller",
@@ -17347,86 +17546,89 @@
                     "destination": "Exile"
                 },
                 {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromZone",
-                                "zone": "Hand"
+                    "type": "Learn",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "learn_hand"
                             },
-                            "storeAs": "learn_hand"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "learn_hand",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "learn_discarded",
-                            "prompt": "Learn — you may discard a card to draw a card"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "learn_discarded",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            },
-                            "moveType": "Discard"
-                        },
-                        {
-                            "type": "ConditionalOnCollection",
-                            "collection": "learn_discarded",
-                            "ifNotEmpty": {
-                                "type": "DrawCards",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "ifEmpty": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Sideboard",
-                                            "filter": "Lesson"
-                                        },
-                                        "storeAs": "learn_lessons"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "learn_lessons",
-                                        "selection": {
-                                            "type": "ChooseUpTo",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "learn_lessonsFound"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "learn_lessonsFound",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Hand"
-                                        },
-                                        "revealed": true
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "learn_hand",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
                                     }
-                                ]
+                                },
+                                "storeSelected": "learn_discarded",
+                                "prompt": "Learn — you may discard a card to draw a card"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "learn_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "learn_discarded",
+                                "ifNotEmpty": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "ifEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Sideboard",
+                                                "filter": "Lesson"
+                                            },
+                                            "storeAs": "learn_lessons"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "learn_lessons",
+                                            "selection": {
+                                                "type": "ChooseUpTo",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "learn_lessonsFound"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "learn_lessonsFound",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            },
+                                            "revealed": true
+                                        }
+                                    ]
+                                }
                             }
-                        }
-                    ],
-                    "descriptionOverride": "Learn"
+                        ],
+                        "descriptionOverride": "Learn"
+                    }
                 }
             ]
         },
@@ -19329,86 +19531,89 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromZone",
-                                "zone": "Hand"
+                    "type": "Learn",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "learn_hand"
                             },
-                            "storeAs": "learn_hand"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "learn_hand",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "learn_discarded",
-                            "prompt": "Learn — you may discard a card to draw a card"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "learn_discarded",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            },
-                            "moveType": "Discard"
-                        },
-                        {
-                            "type": "ConditionalOnCollection",
-                            "collection": "learn_discarded",
-                            "ifNotEmpty": {
-                                "type": "DrawCards",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "ifEmpty": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Sideboard",
-                                            "filter": "Lesson"
-                                        },
-                                        "storeAs": "learn_lessons"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "learn_lessons",
-                                        "selection": {
-                                            "type": "ChooseUpTo",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "learn_lessonsFound"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "learn_lessonsFound",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Hand"
-                                        },
-                                        "revealed": true
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "learn_hand",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
                                     }
-                                ]
+                                },
+                                "storeSelected": "learn_discarded",
+                                "prompt": "Learn — you may discard a card to draw a card"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "learn_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "learn_discarded",
+                                "ifNotEmpty": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "ifEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Sideboard",
+                                                "filter": "Lesson"
+                                            },
+                                            "storeAs": "learn_lessons"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "learn_lessons",
+                                            "selection": {
+                                                "type": "ChooseUpTo",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "learn_lessonsFound"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "learn_lessonsFound",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            },
+                                            "revealed": true
+                                        }
+                                    ]
+                                }
                             }
-                        }
-                    ],
-                    "descriptionOverride": "Learn"
+                        ],
+                        "descriptionOverride": "Learn"
+                    }
                 }
             },
             {
@@ -20487,86 +20692,89 @@
                     }
                 },
                 {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromZone",
-                                "zone": "Hand"
+                    "type": "Learn",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "learn_hand"
                             },
-                            "storeAs": "learn_hand"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "learn_hand",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "learn_discarded",
-                            "prompt": "Learn — you may discard a card to draw a card"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "learn_discarded",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Graveyard"
-                            },
-                            "moveType": "Discard"
-                        },
-                        {
-                            "type": "ConditionalOnCollection",
-                            "collection": "learn_discarded",
-                            "ifNotEmpty": {
-                                "type": "DrawCards",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "ifEmpty": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Sideboard",
-                                            "filter": "Lesson"
-                                        },
-                                        "storeAs": "learn_lessons"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "learn_lessons",
-                                        "selection": {
-                                            "type": "ChooseUpTo",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
-                                            }
-                                        },
-                                        "storeSelected": "learn_lessonsFound"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "learn_lessonsFound",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Hand"
-                                        },
-                                        "revealed": true
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "learn_hand",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
                                     }
-                                ]
+                                },
+                                "storeSelected": "learn_discarded",
+                                "prompt": "Learn — you may discard a card to draw a card"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "learn_discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "learn_discarded",
+                                "ifNotEmpty": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "ifEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Sideboard",
+                                                "filter": "Lesson"
+                                            },
+                                            "storeAs": "learn_lessons"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "learn_lessons",
+                                            "selection": {
+                                                "type": "ChooseUpTo",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "learn_lessonsFound"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "learn_lessonsFound",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            },
+                                            "revealed": true
+                                        }
+                                    ]
+                                }
                             }
-                        }
-                    ],
-                    "descriptionOverride": "Learn"
+                        ],
+                        "descriptionOverride": "Learn"
+                    }
                 }
             ]
         },

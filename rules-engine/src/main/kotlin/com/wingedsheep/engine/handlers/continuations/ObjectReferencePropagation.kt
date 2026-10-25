@@ -101,6 +101,7 @@ internal fun AnswerContinuation.objectReferences(): ObjectReferenceEnvironment? 
     is TriggeredAbilityContinuation -> objectReferences
     is TriggerDamageDistributionContinuation -> objectReferences
     is MayAbilityContinuation -> effectContext.objectReferences
+    is KeywordActionInsteadContinuation -> actionContext.objectReferences
     is GatedEffectContinuation -> effectContext.objectReferences
     is MayRevealCardFromHandContinuation -> effectContext.objectReferences
     is BeholdContinuation -> effectContext.objectReferences
@@ -223,6 +224,7 @@ internal fun AnswerContinuation.withObjectReferences(refs: ObjectReferenceEnviro
     is TriggeredAbilityContinuation -> copy(objectReferences = refs)
     is TriggerDamageDistributionContinuation -> copy(objectReferences = refs)
     is MayAbilityContinuation -> copy(effectContext = effectContext.copy(objectReferences = refs))
+    is KeywordActionInsteadContinuation -> copy(actionContext = actionContext.copy(objectReferences = refs))
     is GatedEffectContinuation -> copy(effectContext = effectContext.copy(objectReferences = refs))
     is MayRevealCardFromHandContinuation -> copy(effectContext = effectContext.copy(objectReferences = refs))
     is BeholdContinuation -> copy(effectContext = effectContext.copy(objectReferences = refs))

@@ -937,6 +937,7 @@ Families:
 - `HijackNextTurnEffect(target: EffectTarget, scope: HijackScope)` — The ability's controller controls the target player during a scoped future window — either that player's next **turn** (HijackScope.NextTurn) or their next **combat phase** (HijackScope.NextCombatP…
 - `IncrementAbilityResolutionCountEffect` — Increments the ability resolution count on the source permanent.
 - `InvestigateEffect(count: DynamicAmount, controller: EffectTarget?)` — Investigate (keyword action, CR 701.16a): "create a Clue token", performed count times.
+- `LearnEffect(body: Effect, replacementsApplied: Boolean)` — "Learn" (CR 701.48) — the named keyword action, wrapping the pipeline that carries it out.
 - `LevelUpClassEffect(targetLevel: Int)` — Level up a Class enchantment to the specified target level.
 - `LinkCollectionToPermanentEffect(from: String, permanent: EffectTarget)` — Records the cards in the pipeline collection from in permanent's linked-exile pile (its `LinkedExileComponent`), so that permanent's own abilities can later name them as "the cards exiled with it"…
 - `LockDoorEffect(target: EffectTarget)` — Resolution-time "lock a door" effect (CR 709.5g) — the twin of UnlockDoorEffect.
@@ -1223,6 +1224,7 @@ Families:
 - `EventPattern.InvestigatedEvent(player: Player, firstTimeEachTurn: Boolean)` — Whenever player investigates — CR 701.16a, "create a Clue token".
 - `EventPattern.LandPlayedEvent(fromZoneOtherThan: Zone?, player: Player, fromZone: Zone?)` — Whenever player plays a land (CR 305.1 — the special land-play action).
 - `EventPattern.LandTappedForMana(player: Player, landFilter: GameObjectFilter?)` — When a player taps a land for mana (a land's mana ability resolves).
+- `EventPattern.LearnEvent(player: Player)` — When a player would learn (CR 701.48).
 - `EventPattern.LeaveBattlefieldWithoutDyingEvent(filter: GameObjectFilter, excludeSelf: Boolean)` — Whenever one or more creatures you control leave the battlefield without dying.
 - `EventPattern.LifeGainEvent(player: Player, firstTimeEachTurn: Boolean)` — When a player would gain life.
 - `EventPattern.LifeLossEvent(player: Player, batch: Boolean, exactAmount: Int?)` — When a player would lose life.
@@ -1582,6 +1584,7 @@ Families:
 - `ReplaceDamageWithMill(appliesTo: EventPattern, miller: Player, multiplier: Int)` — Prevent matched damage and mill multiplier times that many cards — miller does the milling.
 - `ReplaceDestructionWith(replacementEffect: Effect, appliesTo: EventPattern.DestroyEvent)` — "If <permanent> would be destroyed, instead <effect>" — the destruction doesn't happen and replacementEffect runs in its place (CR 614.1a).
 - `ReplaceDrawWith(replacementEffect: Effect, optional: Boolean, appliesTo: EventPattern, restrictions: List<Condition>)` — Replace drawing with another effect.
+- `ReplaceKeywordAction(replacementEffect: Effect, appliesTo: EventPattern, optional: Boolean, activeZones: Set<Zone>)` — Perform replacementEffect instead of a keyword action (CR 614.1a) — "If you would learn, you may instead return this card to the battlefield." The third member of the keyword-action family: ModifyK…
 - `ReplaceLifeGainWith(replacementEffect: Effect, appliesTo: EventPattern.LifeGainEvent, restrictions: List<Condition>)` — Replace a life-gain event with an effect, without gaining life or using the stack.
 - `ReplaceLifePaymentWithLibraryExile(appliesTo: EventPattern)` — A life *payment* becomes an exile of that many cards off the top of the payer's library, so long as the library is deep enough to cover it.
 - `ReplaceLifeReductionToZero(instead: Effect, restrictions: List<Condition>, appliesTo: EventPattern)` — "If your life total would be reduced to 0 or less, instead …" — the replaced reduction runs instead (Enduring Angel).

@@ -438,6 +438,22 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
+     * When a player would learn (CR 701.48). Replacement-only: the `appliesTo` of a
+     * [com.wingedsheep.sdk.scripting.ReplaceKeywordAction] over the Learn keyword action
+     * (Retriever Phoenix: "if you would learn, you may instead return this card to the
+     * battlefield"). [player] is matched with the replacement source's controller — or, for a
+     * card in a graveyard, its owner — as "you". No printed card triggers on learning, so this
+     * never matches a triggered ability.
+     */
+    @SerialName("LearnEvent")
+    @Serializable
+    data class LearnEvent(
+        val player: Player = Player.You
+    ) : EventPattern {
+        override val description: String = "${player.description} would learn"
+    }
+
+    /**
      * Fires on a `CardsDrawnEvent` when the drawing player's per-turn draw count
      * crosses the specified threshold (CR 121.2 — each card drawn is an individual
      * draw, so a single multi-card draw fires at most once when the Nth card lands

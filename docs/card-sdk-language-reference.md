@@ -3939,6 +3939,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
 - `AnimateLandEffect(target, subtypes, keywords, duration)` — land becomes a creature.
 - `MassAnimateEffect(filter, power, toughness, loseAllAbilities = true, duration = EndOfTurn)` — facade `Effects.MassAnimate(filter, power, toughness, loseAllAbilities, duration)`. One-shot: animate **every** permanent matching `filter` into a creature for `duration`, setting each one's base power and toughness to the `power`/`toughness` **`DynamicAmount`s** — resolved per affected permanent (Layer 7b `SetPowerToughnessDynamic`), so `EntityProperty(AffectedEntity, ManaValue)` gives "each equal to its own mana value" — and, when `loseAllAbilities`, stripping all of its abilities (Layer 6 `RemoveAllAbilities`); Layer 4 `AddType("CREATURE")` makes them creatures. The affected set is captured **once** at resolution against the current battlefield (CR 611.2c) and locked in for the duration. This is the fixed-set, one-shot companion to expressing the same effect *continuously* via the `GrantCardType` + `LoseAllAbilities` + `SetBasePowerToughnessDynamicStatic` group statics on a permanent (which take the same `DynamicAmount` P/T) — use the statics for the while-on-battlefield behavior and this effect for the "this effect continues until end of turn" linger when the generating permanent leaves. Used by **Titania's Song** ("Each noncreature artifact loses all abilities and becomes an artifact creature with power and toughness each equal to its mana value. If this enchantment leaves the battlefield, this effect continues until end of turn.") — a `LeavesBattlefield(SELF)` trigger replays the static set as until-EOT floating effects with `power = toughness = EntityProperty(AffectedEntity, ManaValue)`. The dynamic-P/T floating effect resolves its controller from the effect's captured controller (`ContinuousEffect.controllerId`) when the source has already left the battlefield.
 - `ExploreEffect(target)` — Explore mechanic (reveal top; land → battlefield, else hand + counter).
+- `LearnEffect(body, replacementsApplied = false)` — the Learn keyword action (CR 701.48), wrapping its pipeline. Built by `Patterns.Mechanic.learn()`; never constructed directly by a card. `body` runs unchanged; the wrapper names the action so `ReplaceKeywordAction` over `EventPattern.LearnEvent` can replace it (Retriever Phoenix). `replacementsApplied` is the CR 614.5 guard, set on the re-issue after every offered replacement was declined. Same shape as `ConniveEffect`.
 - `ConniveEffect(subject, body, replacementsApplied = false, count = Fixed(1))` — the connive keyword action (CR 701.50), wrapping the pipeline that carries it out. Built by `Patterns.Hand.connive` / `Effects.Connive(target)`; never constructed directly by a card. `body` is the ordinary draw → discard → conditional +1/+1 counter pipeline and runs unchanged — the wrapper exists to give the action a **name and a subject**, which is what `ModifyKeywordAction` needs to replace it (`EventPattern.ConnivedEvent`) and what lets `ConniveEffectExecutor` append `EmitConnivedEventEffect` as the pipeline's tail so `PermanentConnivedEvent` fires after the discard resolves (CR 701.50f). `replacementsApplied` is the CR 614.5 recursion guard, set only on the post-replacement re-issue. Mirrors `ExploreEffect`, the other replaceable/observable keyword action. `count` is N for connive N (CR 701.50d); the body computes N itself, and the executor evaluates `count` only to honour CR 701.50e — a connive 0 draws and discards nothing, is not replaced, and fires no connive event. **Departed subject (CR 701.50b).** A creature that convoked the resolving spell and has left the battlefield still connives as the object it last was: the executor finds its snapshot in the spell's `convokedLastKnown`, has the snapshot's controller draw and discard, puts no counter anywhere (the loop's binding is dropped, so `IterationEntity` names nothing), matches `ModifyKeywordAction` replacements against the snapshot, and emits `PermanentConnivedEvent(lastKnown = snapshot)`, which `TriggerMatcher` matches with `matchesSnapshot`. Any other unresolvable subject (a targeted permanent that left) still draws and discards, with nothing to match a replacement or trigger against.
 - `AttachEquipmentEffect(equip, target)` — attach an Equipment. Facade `Effects.AttachEquipment(...)`.
   `Effects.AttachTargetEquipmentToCreature(equipmentTarget, creatureTarget)` force-attaches one
@@ -4988,6 +4989,10 @@ one-off pipeline belongs inline in the card file via `Effects.Pipeline { }` (§5
   (`MoveType.Discard`), so madness and "whenever you discard a card" payoffs see it. Collection
   names are `learn_`-prefixed so a nested Learn can't collide with its host pipeline's `hand` /
   `discarded`. Academic Dispute.
+  Returned wrapped in `LearnEffect(body = …)`, which names the action so "if you would learn, …
+  instead" replacements apply to it — `ReplaceKeywordAction` over `EventPattern.LearnEvent`
+  (Retriever Phoenix). `LearnEffectExecutor` collects them first (battlefield and graveyards, by
+  `activeZones`), offers each in turn, and runs the body only if none applied.
 - `Patterns.Mechanic.temptingOffer(offer, description)` — **Tempting offer** (an ability word, CR
   207.2c): "[offer]. Each opponent may [offer]. For each opponent who does, [offer] again." Follows
   the cycle's ruling: you take the offer; every opponent answers yes/no in turn order, knowing the
@@ -18150,6 +18155,23 @@ not update an existing copy.
   - Tekuthal, Inquiry Dominus:
     `RepeatKeywordAction(times = 2, appliesTo = EventPattern.ProliferatedEvent())`
     ("If you would proliferate, proliferate twice instead").
+- `ReplaceKeywordAction(replacementEffect, appliesTo, optional = false, activeZones = {BATTLEFIELD})`
+  — perform `replacementEffect` **instead of** a keyword action (CR 614.1a), so the action doesn't
+  happen; the third member of the family beside `ModifyKeywordAction` (prefix) and
+  `RepeatKeywordAction` (repeat). Supported pattern: `EventPattern.LearnEvent(player)` (CR 701.48),
+  `player` matched with the source's controller as "you" (`You` / `Each` / `Any` / `EachOpponent` /
+  `AnOpponent`). `activeZones` is where the source functions (CR 113.6): `{GRAVEYARD}` for "as long
+  as this card is in your graveyard" — a graveyard source's "you" is its owner, and it must be in the
+  graveyard as the action would happen. `LearnEffectExecutor` gathers matches through
+  `KeywordActionReplacements.collectInstead` and offers them one at a time, mandatory first: a
+  mandatory one applies at once; an `optional` one asks its controller yes/no
+  (`KeywordActionInsteadContinuation`); the first applied replaces the action and the rest have
+  nothing left to replace; declining all performs the action. `replacementEffect` runs rooted at the
+  replacement's own source, so `EffectTarget.Self` is the card that printed it.
+  - Retriever Phoenix: `ReplaceKeywordAction(Effects.PutOntoBattlefieldFromGraveyard(EffectTarget.Self),
+    EventPattern.LearnEvent(), optional = true, activeZones = setOf(Zone.GRAVEYARD))`
+    ("As long as this card is in your graveyard, if you would learn, you may instead return this
+    card to the battlefield").
 - `ReplaceLifeGainWith(replacementEffect, appliesTo = LifeGainEvent(You), restrictions = emptyList())`
   replaces a positive life-gain event with an arbitrary effect, immediately and without using the stack.
   The original gain emits no life-gain event or tracker update. Compose the amount with

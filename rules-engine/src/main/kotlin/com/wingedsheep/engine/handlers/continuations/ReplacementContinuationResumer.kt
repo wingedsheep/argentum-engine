@@ -20,7 +20,8 @@ class ReplacementContinuationResumer(
 ) : ContinuationResumerModule, AutoResumerModule {
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
-        resumer(ReplacementChoiceContinuation::class, ::resumeReplacementChoice)
+        resumer(ReplacementChoiceContinuation::class, ::resumeReplacementChoice),
+        resumer(KeywordActionInsteadContinuation::class, ::resumeKeywordActionInstead)
     )
 
     override fun autoResumers(): List<AutoResumer<*>> = listOf(
@@ -43,6 +44,36 @@ class ReplacementContinuationResumer(
             resumeReplacementResolve(state, continuation, events, checkForMore)
         }
     )
+
+    /**
+     * Resume a keyword action after the player answered an optional "instead" replacement
+     * ([KeywordActionInsteadContinuation]). Yes: the replacement's effect runs rooted at its
+     * source, and the action doesn't happen. No: the remaining offers are put in turn, and with
+     * none left the action runs as printed.
+     */
+    private fun resumeKeywordActionInstead(
+        state: GameState,
+        continuation: KeywordActionInsteadContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is YesNoResponse) {
+            return ExecutionResult.error(state, "Expected yes/no response for a keyword-action replacement")
+        }
+        val execute = services.effectExecutorRegistry::execute
+        val offer = continuation.offers.first()
+        val result = if (response.choice) {
+            execute(state, offer.replacementEffect,
+                com.wingedsheep.engine.handlers.effects.KeywordActionReplacements.replacementContext(state, offer))
+        } else {
+            com.wingedsheep.engine.handlers.effects.KeywordActionReplacements.offerInstead(
+                state, continuation.action, continuation.offers.drop(1),
+                continuation.reissue, continuation.actionContext, execute
+            )
+        }.toExecutionResult()
+        if (result.outcome is Outcome.Paused) return result
+        return checkForMore(result.state, result.events.toList())
+    }
 
     /**
      * Resume after the player chose one of multiple competing replacement

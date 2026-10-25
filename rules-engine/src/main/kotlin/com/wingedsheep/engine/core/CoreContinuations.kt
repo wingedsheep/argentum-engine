@@ -183,6 +183,40 @@ data class MayAbilityContinuation(
 ) : AnswerContinuation
 
 /**
+ * One replacement that would perform its effect *instead of* a keyword action — a
+ * [com.wingedsheep.sdk.scripting.ReplaceKeywordAction] found by
+ * [com.wingedsheep.engine.handlers.effects.KeywordActionReplacements.collectInstead].
+ *
+ * @property sourceId The card that printed it (on the battlefield, or in a graveyard).
+ * @property controllerId Its controller — the graveyard's owner for a graveyard card.
+ * @property optional "You may instead": [controllerId] answers yes or no.
+ */
+@Serializable
+data class KeywordActionInsteadOffer(
+    val sourceId: EntityId,
+    val controllerId: EntityId,
+    val sourceName: String,
+    val replacementEffect: Effect,
+    val optional: Boolean
+)
+
+/**
+ * Resume a keyword action after its first optional [offers] entry was put to the player
+ * (CR 614.1a — "if you would learn, you may instead …"). Yes runs that offer's replacement effect,
+ * rooted at its own source, and the action never happens. No moves on to the remaining offers, then
+ * to [reissue] — the action again with its replacements marked applied — in [actionContext].
+ *
+ * @property actionContext The context the keyword action was performed in (the learning player's).
+ */
+@Serializable
+data class KeywordActionInsteadContinuation(
+    val action: com.wingedsheep.engine.handlers.effects.ReplaceableKeywordAction,
+    val offers: List<KeywordActionInsteadOffer>,
+    val reissue: Effect,
+    val actionContext: EffectContext
+) : AnswerContinuation
+
+/**
  * Resume a [com.wingedsheep.sdk.scripting.effects.GatedEffect] after its gate has been
  * resolved by a yes/no decision.
  *

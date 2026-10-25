@@ -126,6 +126,9 @@ class TriggerMatcher(
             // SurveiledEvent.
             is EventPattern.ScryEvent,
             is EventPattern.SurveilEvent -> false
+            // LearnEvent is replacement-only too (ReplaceKeywordAction, read by LearnEffectExecutor
+            // through KeywordActionReplacements); no printed card triggers on learning.
+            is EventPattern.LearnEvent -> false
             // DrawCardsEvent is a replacement-only pattern (ModifyDrawAmount for "N or more" draws);
             // it never matches a triggered ability. Checked at the draw announcement by
             // DrawReplacementDispatcher.checkDrawAmount.

@@ -1445,9 +1445,11 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.RegenerateInsteadOfDestruction,
             is com.wingedsheep.sdk.scripting.PreventExtraTurns,
             // Keyword-action modification, consulted from the battlefield when the action happens:
-            // explore (Twists and Turns), connive (Leader, Super-Genius), proliferate (Tekuthal).
+            // explore (Twists and Turns), connive (Leader, Super-Genius), proliferate (Tekuthal),
+            // learn (Retriever Phoenix — from the graveyard, swept by KeywordActionReplacements).
             is com.wingedsheep.sdk.scripting.ModifyKeywordAction,
             is com.wingedsheep.sdk.scripting.RepeatKeywordAction,
+            is com.wingedsheep.sdk.scripting.ReplaceKeywordAction,
             // Token creation:
             is com.wingedsheep.sdk.scripting.ReplaceTokenCreationWithAttachedCopy,
             is com.wingedsheep.sdk.scripting.MultiplyTokenCreation,

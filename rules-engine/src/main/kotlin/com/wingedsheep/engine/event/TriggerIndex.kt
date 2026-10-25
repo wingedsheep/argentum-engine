@@ -379,6 +379,7 @@ class TriggerIndex(
                 is SdkGameEvent.ExtraTurnEvent,
                 is SdkGameEvent.CounterSpellEvent,
                 is SdkGameEvent.LifePaymentEvent,
+                is SdkGameEvent.LearnEvent,
                 is SdkGameEvent.ScryEvent,
                 is SdkGameEvent.SurveilEvent -> emptyList()
 

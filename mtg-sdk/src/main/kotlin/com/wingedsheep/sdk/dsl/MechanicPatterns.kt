@@ -31,6 +31,7 @@ import com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.Gate
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
+import com.wingedsheep.sdk.scripting.effects.LearnEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -558,8 +559,13 @@ object MechanicPatterns {
      *
      * Collection names are `learn_`-prefixed so a Learn nested inside another pipeline can't
      * collide with that pipeline's own `hand` / `discarded` collections.
+     *
+     * The pipeline is wrapped in a [LearnEffect] so the action is *named*: "if you would learn,
+     * you may instead …" replacements (Retriever Phoenix, a
+     * [com.wingedsheep.sdk.scripting.ReplaceKeywordAction] over
+     * [com.wingedsheep.sdk.scripting.EventPattern.LearnEvent]) are consulted before it runs.
      */
-    fun learn(): CompositeEffect = CompositeEffect(
+    fun learn(): LearnEffect = LearnEffect(CompositeEffect(
         listOf(
             GatherCardsEffect(
                 source = CardSource.FromZone(Zone.HAND, Player.You),
@@ -587,7 +593,7 @@ object MechanicPatterns {
             )
         ),
         descriptionOverride = "Learn"
-    )
+    ))
 
     /**
      * Recruit (The Hobbit) — "Draw a card, then discard a card. If you discarded a nonland card,

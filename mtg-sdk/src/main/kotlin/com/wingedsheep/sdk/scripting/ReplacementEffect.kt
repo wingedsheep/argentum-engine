@@ -1741,6 +1741,56 @@ data class RepeatKeywordAction(
 }
 
 /**
+ * Perform [replacementEffect] instead of a keyword action (CR 614.1a) — "If you would learn, you
+ * may instead return this card to the battlefield." The third member of the keyword-action family:
+ * [ModifyKeywordAction] puts an effect *in front of* the action, [RepeatKeywordAction] repeats it,
+ * and this one replaces it outright, so the action doesn't happen at all.
+ *
+ *  - Retriever Phoenix — `ReplaceKeywordAction(Effects.PutOntoBattlefieldFromGraveyard(EffectTarget.Self),
+ *    EventPattern.LearnEvent(), optional = true, activeZones = setOf(Zone.GRAVEYARD))`
+ *
+ * Why not [ReplaceDrawWith]: a draw has its own per-card replacement pipeline (announcement,
+ * remaining draws, the draw step's first card); a keyword action is one instruction, consulted by
+ * its own executor at action time like the other two members of the family.
+ *
+ * Supported [appliesTo] patterns: [EventPattern.LearnEvent] (CR 701.48), whose `player` is matched
+ * with the replacement source's controller as "you" (its owner, for a card in a graveyard). Any
+ * other pattern never matches.
+ *
+ * [replacementEffect] runs with the replacement's *source* as its source and that source's
+ * controller as its controller — so `EffectTarget.Self` is the card that printed the replacement,
+ * not the spell or ability that said "learn". When several apply, they are offered one at a time
+ * (mandatory ones first); the first one applied replaces the action, and the rest no longer have
+ * an action to replace. Declining every optional one performs the action as printed.
+ *
+ * @property optional Printed "you may instead" — the source's controller answers yes or no.
+ * @property activeZones Where the source must be for the replacement to function (CR 113.6) —
+ *   `{GRAVEYARD}` for "As long as this card is in your graveyard, …".
+ */
+@SerialName("ReplaceKeywordAction")
+@Serializable
+data class ReplaceKeywordAction(
+    val replacementEffect: Effect,
+    override val appliesTo: EventPattern,
+    override val optional: Boolean = false,
+    override val activeZones: Set<Zone> = setOf(Zone.BATTLEFIELD)
+) : ReplacementEffect {
+    override val description: String = buildString {
+        append("If ${appliesTo.description}, ")
+        if (optional) append("you may ")
+        append("instead ${replacementEffect.description.replaceFirstChar { it.lowercase() }}")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val newAppliesTo = appliesTo.applyTextReplacement(replacer)
+        val newEffect = replacementEffect.applyTextReplacement(replacer)
+        return if (newAppliesTo !== appliesTo || newEffect !== replacementEffect)
+            copy(appliesTo = newAppliesTo, replacementEffect = newEffect)
+        else this
+    }
+}
+
+/**
  * Prevent drawing (with optional replacement).
  * Example: Spirit of the Labyrinth (second draw), Narset Parter of Veils
  */

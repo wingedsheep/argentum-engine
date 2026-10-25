@@ -36,6 +36,7 @@ class PlayerExecutors(
 
     override fun executors(): List<EffectExecutor<*>> = listOf(
         AmassExecutor(effectExecutor, amountEvaluator = zones.predicateEvaluator.amounts),
+        LearnEffectExecutor(effectExecutor, cardRegistry),
         CollectEvidenceExecutor(zones, decisionHandler),
         CollectEvidenceChosenAmountExecutor(predicateEvaluator = zones.predicateEvaluator),
         AddAdditionalUpkeepStepsExecutor(amountEvaluator = zones.predicateEvaluator.amounts),

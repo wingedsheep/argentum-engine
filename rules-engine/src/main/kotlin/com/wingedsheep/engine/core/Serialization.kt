@@ -434,6 +434,7 @@ val engineSerializersModule = SerializersModule {
         subclass(TriggerDamageDistributionContinuation::class)
         subclass(ResolveSpellContinuation::class)
         subclass(MayAbilityContinuation::class)
+        subclass(KeywordActionInsteadContinuation::class)
         subclass(GatedEffectContinuation::class)
         subclass(MayRevealCardFromHandContinuation::class)
         subclass(BeholdContinuation::class)
