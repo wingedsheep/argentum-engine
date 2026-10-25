@@ -3447,7 +3447,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
                 "A die-result interval must not be inverted"
             }
             require(!batch || (minimumResult == null && maximumResult == null && naturalResult == null)) {
-                "A one-or-more-dice trigger fires on the whole roll, not on a result interval"
+                "A one-or-more-dice trigger fires on the whole roll, not on a result interval or natural result"
             }
         }
         override val description: String = when {
