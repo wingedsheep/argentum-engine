@@ -36,3 +36,71 @@
         "imageUri": "https://cards.scryfall.io/normal/front/c/f/cfb49910-30fe-483e-b3b8-6268417f013c.jpg"
     }
 }
+
+// Ripples of Potential
+{
+    "name": "Ripples of Potential",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Proliferate, then choose any number of permanents you control that had a counter put on them this way. Those permanents phase out. (To proliferate, choose any number of permanents and/or players, then give each another counter of each kind already there. Treat phased-out permanents and anything attached to them as though they don't exist until their controller's next turn.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Proliferate",
+                    "storeAs": "stored0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "stored0",
+                    "selection": "ChooseAnyNumber",
+                    "filter": "permanent ctrl:you",
+                    "storeSelected": "selected1",
+                    "prompt": "Choose any number of permanents you control that got a counter to phase out",
+                    "selectedLabel": "Phase out",
+                    "remainderLabel": "Stay",
+                    "useTargetingUI": true
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Collection",
+                        "collection": "selected1"
+                    },
+                    "body": {
+                        "type": "PhaseOut",
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "RARE",
+        "artist": "Sam Hogg",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/38a1b5dd-73e7-4f9f-995f-a23eabafe134.jpg?1783913922",
+        "rulings": [
+            {
+                "date": "2023-11-10",
+                "text": "You don't have to choose every permanent or player that has a counter, only the ones you want to add another counter to. Since \"any number\" includes zero, you don't have to choose any permanents at all, and you don't have to choose any players at all."
+            },
+            {
+                "date": "2023-11-10",
+                "text": "As a creature is phased out, Auras and Equipment attached to it also phase out at the same time. Those Auras and Equipment will phase in at the same time that creature does, and they'll phase in still attached to that creature."
+            },
+            {
+                "date": "2023-11-10",
+                "text": "If a permanent had counters on it when it phased out, it will have those counters when it phases back in."
+            },
+            {
+                "date": "2023-11-10",
+                "text": "An attacking or blocking creature that phases out is removed from combat."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}

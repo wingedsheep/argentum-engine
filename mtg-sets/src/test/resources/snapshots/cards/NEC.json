@@ -66,3 +66,53 @@
         "BLUE"
     ]
 }
+
+// Yoshimaru, Ever Faithful
+{
+    "name": "Yoshimaru, Ever Faithful",
+    "manaCost": "{W}",
+    "typeLine": "Legendary Creature — Dog",
+    "oracleText": "Whenever another legendary permanent you control enters, put a +1/+1 counter on Yoshimaru.\nPartner (You can have two commanders if both have partner.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywordAbilities": [
+        "Partner"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Yoshimaru, Ever Faithful:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsPermanent",
+                            "IsLegendary"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "rarity": "MYTHIC",
+        "artist": "Ilse Gort",
+        "flavorText": "Day after day he sat there, knowing that the Wanderer would soon be back for him.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aa409269-3698-42a2-8c51-75557b27a6f6.jpg?1783923987"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}

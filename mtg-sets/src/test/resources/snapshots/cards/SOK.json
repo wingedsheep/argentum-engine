@@ -147,3 +147,58 @@
     },
     "colorIdentityOverride": []
 }
+
+// Reki, the History of Kamigawa
+{
+    "name": "Reki, the History of Kamigawa",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Human Shaman",
+    "oracleText": "Whenever you cast a legendary spell, draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Reki, the History of Kamigawa:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsLegendary"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "RARE",
+        "artist": "Edward P. Beard, Jr.",
+        "flavorText": "\"After his death, monks spent ten years transcribing the tattoos from Reki's body and gathering stories from those who spoke with him. Thus the volume you hold was written.\"\n—The History of Kamigawa",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/86317339-5a39-41eb-8aee-5ea926da8cd4.jpg?1783944138",
+        "rulings": [
+            {
+                "date": "2005-06-01",
+                "text": "Legendary spells are spells of any type that have the supertype legendary."
+            },
+            {
+                "date": "2005-06-01",
+                "text": "Lands aren't spells."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}

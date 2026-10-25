@@ -1989,6 +1989,178 @@
     ]
 }
 
+// Esika, God of the Tree
+{
+    "name": "Esika, God of the Tree",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Legendary Creature — God",
+    "oracleText": "Vigilance\n{T}: Add one mana of any color.\nOther legendary creatures you control have vigilance and \"{T}: Add one mana of any color.\"",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Esika, God of the Tree:1",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add one mana of any color."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsLegendary"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Esika, God of the Tree:2",
+                    "cost": "CostTap",
+                    "effect": "AddManaOfChoice",
+                    "timing": "ManaAbility",
+                    "isManaAbility": true,
+                    "descriptionOverride": "{T}: Add one mana of any color."
+                },
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsLegendary"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "The Prismatic Bridge",
+        "manaCost": "{W}{U}{B}{R}{G}",
+        "typeLine": "Legendary Enchantment",
+        "oracleText": "At the beginning of your upkeep, reveal cards from the top of your library until you reveal a creature or planeswalker card. Put that card onto the battlefield and the rest on the bottom of your library in a random order.",
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "The Prismatic Bridge:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherUntilMatch",
+                                "filter": "creature|planeswalker",
+                                "storeMatch": "matched0",
+                                "storeRevealed": "revealed0"
+                            },
+                            {
+                                "type": "RevealCollection",
+                                "from": "revealed0",
+                                "fromZone": "Library",
+                                "toZone": "Battlefield"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "matched0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "revealed0",
+                                "collectionFilter": {
+                                    "type": "ExcludeOtherCollection",
+                                    "otherCollectionName": "matched0"
+                                },
+                                "storeMatching": "matching3"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "matching3",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Bottom"
+                                },
+                                "order": "Random"
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "At the beginning of your upkeep, reveal cards from the top of your library until you reveal a creature or planeswalker card. Put that card onto the battlefield and the rest on the bottom of your library in a random order."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "168",
+            "rarity": "MYTHIC",
+            "artist": "Johannes Voss",
+            "flavorText": "Starnheim awaits.",
+            "imageUri": "https://cards.scryfall.io/normal/back/f/6/f6cd7465-9dd0-473c-ac5e-dd9e2f22f5f6.jpg?1783928221",
+            "rulings": [
+                {
+                    "date": "2021-02-05",
+                    "text": "While resolving the triggered ability of The Prismatic Bridge, if there are no creature or planeswalker cards in your library, you'll simply reveal your entire library, randomize it, and continue playing."
+                },
+                {
+                    "date": "2021-02-05",
+                    "text": "If you reveal a double-faced card whose front face is a creature or planeswalker, you'll put it onto the battlefield with its front face up."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "WHITE",
+            "BLUE",
+            "BLACK",
+            "RED",
+            "GREEN"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "rarity": "MYTHIC",
+        "artist": "Johannes Voss",
+        "flavorText": "\"I know this world, from canopy to roots.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6cd7465-9dd0-473c-ac5e-dd9e2f22f5f6.jpg?1783928221",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "If a creature loses vigilance after it attacks (perhaps because Esika leaves the battlefield), that creature will continue attacking. It won't become tapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
+    ],
+    "layout": "MODAL_DFC"
+}
+
 // Feed the Serpent
 {
     "name": "Feed the Serpent",
@@ -5441,6 +5613,62 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Vega, the Watcher
+{
+    "name": "Vega, the Watcher",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Legendary Creature — Bird Spirit",
+    "oracleText": "Flying\nWhenever you cast a spell from anywhere other than your hand, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vega, the Watcher:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        {
+                            "type": "SpellCastFromZoneOtherThan",
+                            "zone": "Hand"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "233",
+        "rarity": "UNCOMMON",
+        "artist": "Paul Scott Canavan",
+        "flavorText": "One eye sees the past, one the present, and one the future—and none can be deceived.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/28fced7f-3078-4a54-8f76-0ef14c732e97.jpg?1783928189",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Vega's ability will resolve before the spell that caused it to trigger. It will resolve even if that spell is countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
     ]
 }
 

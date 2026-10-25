@@ -3047,6 +3047,91 @@
     ]
 }
 
+// Retreat to Coralhelm
+{
+    "name": "Retreat to Coralhelm",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Landfall — Whenever a land you control enters, choose one —\n• You may tap or untap target creature.\n• Scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Retreat to Coralhelm:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "Modal",
+                                    "modes": [
+                                        {
+                                            "effect": {
+                                                "type": "TapUntap",
+                                                "target": {
+                                                    "type": "BoundVariable",
+                                                    "name": "t0"
+                                                }
+                                            },
+                                            "description": "Tap that creature"
+                                        },
+                                        {
+                                            "effect": {
+                                                "type": "TapUntap",
+                                                "target": {
+                                                    "type": "BoundVariable",
+                                                    "name": "t0"
+                                                },
+                                                "tap": false
+                                            },
+                                            "description": "Untap that creature"
+                                        }
+                                    ],
+                                    "countsAsModalSpell": false
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "You may tap or untap target creature"
+                        },
+                        {
+                            "effect": {
+                                "type": "Scry",
+                                "count": 1
+                            },
+                            "description": "Scry 1"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/68684c8e-dc19-4a56-b511-4e21140b137f.jpg?1783938208"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Retreat to Hagra
 {
     "name": "Retreat to Hagra",

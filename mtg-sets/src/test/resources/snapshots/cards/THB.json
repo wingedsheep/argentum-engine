@@ -4011,6 +4011,84 @@
     "colorIdentityOverride": []
 }
 
+// Thryx, the Sudden Storm
+{
+    "name": "Thryx, the Sudden Storm",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Legendary Creature — Elemental Giant",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nFlying\nSpells you cast with mana value 5 or greater cost {1} less to cast and can't be countered.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "mv>=5"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            },
+            {
+                "type": "GrantCantBeCountered",
+                "filter": {
+                    "cardPredicates": [
+                        {
+                            "type": "ManaValueAtLeast",
+                            "min": 5
+                        }
+                    ],
+                    "statePredicates": [
+                        "WasCast"
+                    ],
+                    "controllerPredicate": "ControlledByYou"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "rarity": "RARE",
+        "artist": "Mathias Kollros",
+        "flavorText": "Even in their mountain fortresses, the Akroans have learned not to anger Thassa.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/4238b089-c6d8-4e4b-b6a1-a0f89e3b4968.jpg?1783931574",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions (such as that of Thryx). The mana value of the spell remains unchanged, no matter what the total cost to cast it was."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "For spells with {X} in their mana costs, use the value chosen for X to determine the spell's mana value."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Thryx's last ability doesn't apply to itself while it's a spell."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "A spell or ability that counters spells can still target spells you control with mana value 5 or greater. When that spell or ability resolves, your spell won't be countered, but any additional effects of the countering spell or ability will still happen."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If Thryx enters the battlefield while a spell with mana value 5 or greater that you cast is on the stack, that spell can't be countered, even though you don't get the {1} discount."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Thundering Chariot
 {
     "name": "Thundering Chariot",
