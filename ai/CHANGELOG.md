@@ -28,7 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
-- In a multiplayer game, makes a lethal attack with only the creatures the kill needs (two fliers past a ground-only board, say) and keeps the rest home to block the opponents still in the game, instead of tapping out for an overkill alpha strike; in 1v1 it still sends everything
+- #3662 In a multiplayer game, makes a lethal attack with only the creatures the kill needs (two fliers past a ground-only board, say) and keeps the rest home to block the opponents still in the game, instead of tapping out for an overkill alpha strike; in 1v1 it still sends everything
 - #3594 Waits for the opponent's end step to use a creature's "{T}: put a counter on this creature" (Clockwork Hydra), instead of tapping it away from attacking and blocking
 - #3494 Knows when desertwalk, nonbasic landwalk and legendary landwalk make an attacker unblockable, so it no longer plans blocks the rules forbid against those creatures (it only modelled the five basic landwalks)
 - #3478 Holds "target creature can't attack this turn" for the opponent's turn and "can't block" for its own: no longer spends Edifice of Authority on its own turn (where it restrains nothing) just for the brick counter, keeping it untapped to stop the opponent's attacker before combat
