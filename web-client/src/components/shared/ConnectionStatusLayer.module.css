@@ -7,7 +7,7 @@
 .scrim {
   position: fixed;
   inset: 0;
-  z-index: 2100;
+  z-index: var(--z-system-notice);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -146,7 +146,7 @@
   position: fixed;
   bottom: 20px;
   left: 50%;
-  z-index: 2100;
+  z-index: var(--z-system-notice);
   transform: translateX(-50%);
   display: flex;
   align-items: center;

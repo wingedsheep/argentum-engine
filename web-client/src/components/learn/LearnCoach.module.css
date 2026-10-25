@@ -100,11 +100,11 @@
   font-weight: 600;
 }
 
-/* The game-over overlay (App.tsx) dims the board at z 1999–2000; the closing card sits above it
-   so "Next mission" is the first thing a finished player can click. */
+/* The game-over overlay (App.tsx) dims the board at --z-game-result; the closing card sits above
+   it so "Next mission" is the first thing a finished player can click. */
 .done {
   --coach-accent: #7ccf8a;
-  z-index: 2100;
+  z-index: calc(var(--z-game-result) + 1);
 }
 
 .head {

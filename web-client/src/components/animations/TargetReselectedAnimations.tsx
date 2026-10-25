@@ -59,7 +59,7 @@ function TargetReselectedNotification({
         position: 'fixed',
         left: 16 + slideX,
         top: 120 + yOffset,
-        zIndex: 10001,
+        zIndex: 'calc(var(--z-animation) + 1)' as unknown as number,
         pointerEvents: 'none',
         opacity,
         display: 'flex',

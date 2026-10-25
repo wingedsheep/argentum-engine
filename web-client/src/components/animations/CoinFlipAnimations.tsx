@@ -100,7 +100,7 @@ function CoinFlipAnimationCard({
         top: '50%',
         transform: `translate(calc(-50% + ${laneOffset}px), -50%) scale(${scale})`,
         opacity: ignored ? opacity * 0.75 : opacity,
-        zIndex: 10002,
+        zIndex: 'calc(var(--z-animation) + 2)' as unknown as number,
         pointerEvents: 'none',
         display: 'flex',
         flexDirection: 'column',

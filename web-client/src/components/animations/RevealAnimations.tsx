@@ -88,7 +88,7 @@ function RevealAnimationCard({
         top: '50%',
         transform: `translate(-50%, -50%) scale(${scale})`,
         opacity,
-        zIndex: 10002,
+        zIndex: 'calc(var(--z-animation) + 2)' as unknown as number,
         pointerEvents: 'none',
         display: 'flex',
         flexDirection: 'column',

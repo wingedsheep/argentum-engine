@@ -113,7 +113,7 @@ function LifeChangeAnimationNumber({
         top: y + offsetY,
         transform: `translate(-50%, -50%) scale(${scale})`,
         opacity,
-        zIndex: 10001,
+        zIndex: 'calc(var(--z-animation) + 1)' as unknown as number,
         pointerEvents: 'none',
         fontFamily: 'Impact, Arial Black, sans-serif',
         // Sized against the card rather than the screen. The glow is dropped entirely here: over

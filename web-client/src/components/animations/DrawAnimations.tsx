@@ -123,7 +123,7 @@ function DrawAnimationCard({
         top: currentY,
         transform: `translate(-50%, -50%) scale(${scale})`,
         opacity,
-        zIndex: 10000,
+        zIndex: 'var(--z-animation)' as unknown as number,
         pointerEvents: 'none',
       }}
     >
