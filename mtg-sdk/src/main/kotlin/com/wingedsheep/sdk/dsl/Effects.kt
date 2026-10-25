@@ -5118,19 +5118,22 @@ object Effects {
         entryCounters: List<EntryCounter> = emptyList(),
         attackDefender: com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender =
             com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender.JOIN_SOURCE
-    ): Effect = MoveToZoneEffect(
-        target = target,
-        destination = destination,
-        placement = placement,
-        byDestruction = byDestruction,
-        controllerOverride = controllerOverride,
-        fromZone = fromZone,
-        faceDown = faceDown,
-        linkToSource = linkToSource,
-        positionFromTop = positionFromTop,
-        entryCounters = listOfNotNull(addCounterType?.let { EntryCounter(it, addCounterIf) }) + entryCounters,
-        attackDefender = attackDefender
-    )
+    ): Effect {
+        require(addCounterIf == null || addCounterType != null) { "addCounterIf needs an addCounterType" }
+        return MoveToZoneEffect(
+            target = target,
+            destination = destination,
+            placement = placement,
+            byDestruction = byDestruction,
+            controllerOverride = controllerOverride,
+            fromZone = fromZone,
+            faceDown = faceDown,
+            linkToSource = linkToSource,
+            positionFromTop = positionFromTop,
+            entryCounters = listOfNotNull(addCounterType?.let { EntryCounter(it, addCounterIf) }) + entryCounters,
+            attackDefender = attackDefender
+        )
+    }
 
     /**
      * Apply [effect] to every entity matching [filter] (Rule: "each", "all"). Within the inner

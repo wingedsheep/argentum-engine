@@ -186,7 +186,7 @@ class CountersTest : StringSpec({
         fragment("~ enters with X oil counters on it.").script.replacementEffects.single()
             .shouldBeInstanceOf<EntersWithDynamicCounters>()
             .counterType shouldBe CounterType.OIL
-        declines("~ enters with X study counters on it.")
+        declines("~ enters with X tower counters on it.")
     }
 
     // Stag Beetle's sentence, with the amount vocabulary this band does not own. What matters here is

@@ -72,11 +72,16 @@ class EffectSuppliedEntryCountersTest : FunSpec({
         typeLine = "Legendary Planeswalker — Test"
         startingLoyalty = 3
     }
+    val creatureWalker = card("Entry Counter Creature Walker") {
+        typeLine = "Legendary Creature Planeswalker — Test"
+        power = 1; toughness = 1
+        startingLoyalty = 2
+    }
     val entrant = card("Entry Counter Recipient") {
         typeLine = "Creature"; power = 0; toughness = 0
     }
     fun driver() = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(doubler, blocker, selfBlocker, redirect, entrant, entryLock, chooser, aura, auraLock, auraRedirect, walker))
+        registerCards(TestCards.all + listOf(doubler, blocker, selfBlocker, redirect, entrant, entryLock, chooser, aura, auraLock, auraRedirect, walker, creatureWalker))
         initMirrorMatch(Deck.of("Island" to 40), skipMulligans = true)
     }
     // The same contract must hold for a single move and a pipeline batch, including face-down entry.
@@ -347,6 +352,16 @@ class EffectSuppliedEntryCountersTest : FunSpec({
         val counters = result.state.getEntity(id)!!.get<CountersComponent>()!!
         counters.getCount(CounterType.LOYALTY) shouldBe 4
         counters.getCount(kind) shouldBe 0
+    }
+    test("several conditional entry counters: a creature planeswalker gets both") {
+        val d = driver()
+        val id = d.putCardInGraveyard(d.player1, creatureWalker.name)
+        val result = d.services.effectExecutorRegistry.execute(d.state,
+            Effects.Move(EffectTarget.SpecificEntity(id), Zone.BATTLEFIELD, entryCounters = typedCounters),
+            EffectContext(sourceId = null, controllerId = d.player1))
+        val counters = result.state.getEntity(id)!!.get<CountersComponent>()!!
+        counters.getCount(kind) shouldBe 1
+        counters.getCount(CounterType.LOYALTY) shouldBe 3
     }
     test("several conditional entry counters are one entry event for counter replacements") {
         val d = driver()

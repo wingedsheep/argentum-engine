@@ -21,9 +21,8 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * counter on it if it's a planeswalker.
  *
  * Eerie Interlude's multi-blink shape. Both counters ride the return move as [EntryCounter]s, each
- * gated on the card's characteristics as it returns (the ruling): a permanent that was a creature
- * only through a type-changing effect comes back without the +1/+1 counter, and a creature
- * planeswalker gets both. The loyalty counter joins the printed loyalty in the same entry event.
+ * gated on the card's characteristics as it returns, per the ruling (a creature planeswalker gets
+ * both). The loyalty counter joins the printed loyalty in the same entry event.
  */
 val SemestersEnd = card("Semester's End") {
     manaCost = "{3}{W}"

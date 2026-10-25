@@ -4058,7 +4058,7 @@ The riders are rows with a genuinely **empty** surface, which is the whole point
 as required template text is precisely the shape that put 19 bare "…to the battlefield." lines in
 [the final period](#the-final-period). The counter rider is the corpus's spelling and not the SDK's
 shorter one — eight cards write `Composite(move, AddCounters(…, Self))` and none writes
-`MoveToZoneEffect.addCounterType`, which holds one counter where the sentence can print several.
+`MoveToZoneEffect.entryCounters` for this sentence.
 
 And a row **declares which riders it takes**. "To your hand" is never printed tapped and never lands
 with counters, so it is offered neither; the library row fixes its own `ZonePlacement.Top` instead.
