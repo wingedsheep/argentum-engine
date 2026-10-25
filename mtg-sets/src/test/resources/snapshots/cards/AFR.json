@@ -883,6 +883,108 @@
     ]
 }
 
+// Barrowin of Clan Undurr
+{
+    "name": "Barrowin of Clan Undurr",
+    "manaCost": "{2}{W}{B}",
+    "typeLine": "Legendary Creature — Dwarf Cleric",
+    "oracleText": "When Barrowin enters, venture into the dungeon. (Enter the first room or advance to the next room.)\nWhenever Barrowin attacks, return up to one creature card with mana value 3 or less from your graveyard to the battlefield if you've completed a dungeon.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Barrowin of Clan Undurr:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": "VentureIntoTheDungeon"
+            },
+            {
+                "id": "Barrowin of Clan Undurr:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": "DungeonsCompleted",
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Graveyard",
+                                    "filter": "creature mv<=3"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected1",
+                                "prompt": "Return up to one creature card with mana value 3 or less to the battlefield"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "UNCOMMON",
+        "artist": "Manuel Castañón",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/6896c311-5593-4437-b945-43ade9665e43.jpg?1783926450",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "Barrowin of Clan Undurr's last ability works even if it wasn't on the battlefield when you completed a dungeon."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "The player venturing into the dungeon chooses which dungeon they will venture into. They may choose a dungeon that they have already completed this game."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If you somehow venture into the dungeon while a room's ability is on the stack, you will continue on in the dungeon. If you're already in the last room, complete that dungeon and start a new one."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Battle Cry Goblin
 {
     "name": "Battle Cry Goblin",
@@ -1310,6 +1412,56 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Bruenor Battlehammer
+{
+    "name": "Bruenor Battlehammer",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Legendary Creature — Dwarf Warrior",
+    "oracleText": "Each creature you control gets +2/+0 for each Equipment attached to it.\nYou may pay {0} rather than pay the equip cost of the first equip ability you activate each turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "powerBonus": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "AffectedEntity",
+                        "numericProperty": {
+                            "type": "AttachmentCount",
+                            "kind": "EQUIPMENT"
+                        }
+                    },
+                    "multiplier": 2
+                },
+                "toughnessBonus": {
+                    "type": "Fixed",
+                    "amount": 0
+                }
+            },
+            "FreeFirstEquipEachTurn"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "UNCOMMON",
+        "artist": "Wayne Reynolds",
+        "flavorText": "\"Knew I'd find ye in trouble if I came out an' looked for ye!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/53e1eb00-412e-4c25-bc7b-6d074330fd97.jpg?1783926450"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
     ]
 }
 
@@ -2023,6 +2175,47 @@
                 "text": "If a creature's power is less than 0 when it's doubled, instead that creature gets -X/-0, where X is how much less than 0 its power is. For example, if an effect has given a 2/2 creature -4/-0 so that it's a -2/2 creature, doubling its power and toughness gives it -2/+2, and it becomes a -4/4 creature."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Circle of Dreams Druid
+{
+    "name": "Circle of Dreams Druid",
+    "manaCost": "{G}{G}{G}",
+    "typeLine": "Creature — Elf Druid",
+    "oracleText": "{T}: Add {G} for each creature you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Circle of Dreams Druid:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "rarity": "RARE",
+        "artist": "Sam Guay",
+        "flavorText": "The realms protected by druids of the Circle of Dreams are gleaming, fruitful places, where dream and reality blur together and the weary can find rest.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/be6fdec0-a2c4-4da2-ae14-961185eaee66.jpg?1783926466"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -4229,6 +4422,74 @@
     ]
 }
 
+// Dragon's Disciple
+{
+    "name": "Dragon's Disciple",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Monk",
+    "oracleText": "As this creature enters, you may reveal a Dragon card from your hand. If you do or if you control a Dragon, this creature enters with a +1/+1 counter on it.\nDragons you control have ward {1}. (Whenever a Dragon you control becomes the target of a spell or ability an opponent controls, counter it unless that player pays {1}.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantWard",
+                "cost": {
+                    "type": "WardCost.Mana",
+                    "manaCost": "{1}"
+                },
+                "filter": {
+                    "baseFilter": "permanent Dragon ctrl:you"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "OnEnterRunEffect",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "permanent Dragon"
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "Self"
+                    },
+                    "otherwise": {
+                        "type": "Behold",
+                        "filter": "Dragon",
+                        "ifBeheld": {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "UNCOMMON",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e5e6b78-3e99-49f5-9eaf-bbb2e9789fbe.jpg?1783926533"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Dragon's Fire
 {
     "name": "Dragon's Fire",
@@ -4378,6 +4639,109 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Drizzt Do'Urden
+{
+    "name": "Drizzt Do'Urden",
+    "manaCost": "{3}{G}{W}",
+    "typeLine": "Legendary Creature — Elf Ranger",
+    "oracleText": "Double strike\nWhen Drizzt enters, create Guenhwyvar, a legendary 4/1 green Cat creature token with trample.\nWhenever a creature dies, if it had power greater than Drizzt's power, put a number of +1/+1 counters on Drizzt equal to the difference.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "DOUBLE_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Drizzt Do'Urden:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Cat"
+                    ],
+                    "keywords": [
+                        "TRAMPLE"
+                    ],
+                    "name": "Guenhwyvar",
+                    "imageUri": "https://cards.scryfall.io/normal/front/6/b/6b2c8f52-1580-42d5-8434-c4c70e31e31b.jpg?1783926342",
+                    "legendary": true
+                },
+                "descriptionOverride": "When Drizzt enters, create Guenhwyvar, a legendary 4/1 green Cat creature token with trample."
+            },
+            {
+                "id": "Drizzt Do'Urden:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "Subtract",
+                        "left": {
+                            "type": "EntityProperty",
+                            "entity": "TriggeringEntity",
+                            "numericProperty": "Power"
+                        },
+                        "right": {
+                            "type": "EntityProperty",
+                            "entity": "Self",
+                            "numericProperty": "Power"
+                        }
+                    },
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "TriggeringEntity",
+                        "numericProperty": "Power"
+                    },
+                    "operator": "GT",
+                    "right": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    }
+                },
+                "descriptionOverride": "Whenever a creature dies, if it had power greater than Drizzt's power, put a number of +1/+1 counters on Drizzt equal to the difference."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "220",
+        "rarity": "RARE",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/46e3259e-93c2-48c0-8b96-835cdb883383.jpg?1783926449",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "Drizzt's last ability checks his power both at the time the creature dies and at the time the ability resolves. Notably, this means that if several creatures with power greater than Drizzt's die at the same time, Drizzt's ability will trigger that many times, but some of those abilities may not put counters on him as they resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }
 
@@ -7230,6 +7594,97 @@
     ]
 }
 
+// Gretchen Titchwillow
+{
+    "name": "Gretchen Titchwillow",
+    "manaCost": "{G}{U}",
+    "typeLine": "Legendary Creature — Halfling Druid",
+    "oracleText": "{2}{G}{U}: Draw a card. You may put a land card from your hand onto the battlefield.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Gretchen Titchwillow:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand",
+                                        "filter": "land"
+                                    },
+                                    "storeAs": "put_candidates"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "put_candidates",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "putting",
+                                    "prompt": "You may put a land card from your hand onto the battlefield"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "putting",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Battlefield"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "{2}{G}{U}: Draw a card. You may put a land card from your hand onto the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "UNCOMMON",
+        "artist": "Mila Pesic",
+        "flavorText": "\"Plant what you wish to see grow. Listen for the stories you want to hear told.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c8b248e-1460-4650-9721-85c134c21b89.jpg?1783926448",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "Putting a land onto the battlefield this way doesn't count as playing a land and can be done even if you've played a land this turn or if it isn't your turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Grim Bounty
 {
     "name": "Grim Bounty",
@@ -9264,6 +9719,53 @@
     ]
 }
 
+// Kalain, Reclusive Painter
+{
+    "name": "Kalain, Reclusive Painter",
+    "manaCost": "{B}{R}",
+    "typeLine": "Legendary Creature — Human Elf Bard",
+    "oracleText": "When Kalain enters, create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")\nOther creatures you control enter with an additional +1/+1 counter on them for each mana from a Treasure spent to cast them.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kalain, Reclusive Painter:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": {
+                    "type": "ManaSpentFromSubtype",
+                    "subtype": "Treasure"
+                },
+                "otherOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "225",
+        "rarity": "UNCOMMON",
+        "artist": "Justine Cruz",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e45e9552-7737-4c61-89b0-5a3bec3c8f34.jpg?1783926447"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Keen-Eared Sentry
 {
     "name": "Keen-Eared Sentry",
@@ -9359,6 +9861,203 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Krydle of Baldur's Gate
+{
+    "name": "Krydle of Baldur's Gate",
+    "manaCost": "{U}{B}",
+    "typeLine": "Legendary Creature — Human Elf Rogue",
+    "oracleText": "Whenever Krydle deals combat damage to a player, that player loses 1 life and mills a card, then you gain 1 life and scry 1.\nWhenever you attack, you may pay {2}. If you do, target creature can't be blocked this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Krydle of Baldur's Gate:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "TriggeringPlayer"
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "player": "TriggeringPlayer",
+                                        "isMill": true
+                                    },
+                                    "storeAs": "milled"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "milled",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard",
+                                        "player": "TriggeringPlayer"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Scry",
+                            "count": 1
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Krydle of Baldur's Gate:2",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{2}"
+                        }
+                    },
+                    "then": {
+                        "type": "GrantKeyword",
+                        "keyword": "CANT_BE_BLOCKED",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "226",
+        "rarity": "UNCOMMON",
+        "artist": "Bryan Sola",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/75f4d622-2d50-4e6e-87a5-5a1cc65d6919.jpg?1783926446"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Lair of the Hydra
+{
+    "name": "Lair of the Hydra",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "If you control two or more other lands, this land enters tapped.\n{T}: Add {G}.\n{X}{G}: Until end of turn, this land becomes an X/X green Hydra creature. It's still a land. X can't be 0.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Lair of the Hydra:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Lair of the Hydra:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{X}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": "XValue",
+                    "toughness": "XValue",
+                    "creatureTypes": [
+                        "Hydra"
+                    ],
+                    "colors": [
+                        "GREEN"
+                    ]
+                },
+                "descriptionOverride": "{X}{G}: Until end of turn, this land becomes an X/X green Hydra creature. It's still a land. X can't be 0.",
+                "minimumXValue": 1
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersTapped",
+                "unlessCondition": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "land",
+                            "excludeSelf": true
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "259",
+        "rarity": "RARE",
+        "artist": "Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b670bb0f-680f-4036-bdb6-ac73e866a398.jpg?1783926433"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -10358,6 +11057,106 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Minsc, Beloved Ranger
+{
+    "name": "Minsc, Beloved Ranger",
+    "manaCost": "{R}{G}{W}",
+    "typeLine": "Legendary Creature — Human Ranger",
+    "oracleText": "When Minsc enters, create Boo, a legendary 1/1 red Hamster creature token with trample and haste.\n{X}: Until end of turn, target creature you control has base power and toughness X/X and becomes a Giant in addition to its other types. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Minsc, Beloved Ranger:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Hamster"
+                    ],
+                    "keywords": [
+                        "TRAMPLE",
+                        "HASTE"
+                    ],
+                    "name": "Boo",
+                    "imageUri": "https://cards.scryfall.io/normal/front/c/4/c49e8e79-8673-41c2-a1ad-273c37e27aca.jpg?1783926344",
+                    "legendary": true
+                },
+                "descriptionOverride": "When Minsc enters, create Boo, a legendary 1/1 red Hamster creature token with trample and haste."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Minsc, Beloved Ranger:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{X}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "SetBaseStats",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "power": "XValue",
+                            "toughness": "XValue",
+                            "duration": "EndOfTurn"
+                        },
+                        {
+                            "type": "AddCreatureType",
+                            "subtype": "Giant",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "EndOfTurn"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Until end of turn, target creature you control has base power and toughness X/X and becomes a Giant in addition to its other types. Activate only as a sorcery."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "227",
+        "rarity": "MYTHIC",
+        "artist": "Howard Lyon",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/72405607-a60e-42af-b523-64008d3f89b9.jpg?1783926446"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN",
+        "WHITE"
     ]
 }
 
@@ -13375,6 +14174,90 @@
     ]
 }
 
+// Shessra, Death's Whisper
+{
+    "name": "Shessra, Death's Whisper",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Legendary Creature — Human Elf Warlock",
+    "oracleText": "Bewitching Whispers — When Shessra enters, target creature blocks this turn if able.\nWhispers of the Grave — At the beginning of your end step, if a creature died this turn, you may pay 2 life. If you do, draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shessra, Death's Whisper:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MarkMustBlockThisTurn",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When Shessra enters, target creature blocks this turn if able."
+            },
+            {
+                "id": "Shessra, Death's Whisper:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayLife",
+                            "amount": 2
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "interveningIf": "CreatureDiedThisTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "231",
+        "rarity": "UNCOMMON",
+        "artist": "Marie Magny",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/60ca5fef-af21-4e2b-9efa-61e08a638a1f.jpg?1783926444",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "If the creature affected by the Bewitching Whispers ability is tapped or is affected by a spell or ability that says it can't block, then it doesn't block. If there's a cost associated with having that creature block, its controller isn't forced to pay that cost, so it doesn't have to block in that case either."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Shessra, Death's Whisper's last ability will trigger only once during your end step, no matter how many creatures died this turn. However, if no creatures have died so far this turn as the end step begins, the ability won't trigger at all. It's not possible to cause a creature to die during the end step in time to have the ability trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Shocking Grasp
 {
     "name": "Shocking Grasp",
@@ -14810,6 +15693,102 @@
     ]
 }
 
+// Targ Nar, Demon-Fang Gnoll
+{
+    "name": "Targ Nar, Demon-Fang Gnoll",
+    "manaCost": "{R}{G}",
+    "typeLine": "Legendary Creature — Gnoll",
+    "oracleText": "Pack tactics — Whenever Targ Nar attacks, if you attacked with creatures with total power 6 or greater this combat, attacking creatures get +1/+0 until end of turn.\n{2}{R}{G}: Double Targ Nar's power and toughness until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Targ Nar, Demon-Fang Gnoll:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        {
+                            "type": "AttackersTotalPowerAtLeast",
+                            "n": 6
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature attacking"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Targ Nar, Demon-Fang Gnoll:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{R}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "toughnessModifier": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Toughness"
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "{2}{R}{G}: Double Targ Nar's power and toughness until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "234",
+        "rarity": "UNCOMMON",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5fe57856-9d35-470e-9138-360b02ac0c90.jpg?1783926443",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "If an effect instructs you to \"double\" a creature's power, that creature gets +X/+0, where X is its power as that effect begins to apply. The same is true for toughness."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If a creature's power is less than 0 when it's doubled, instead that creature gets -X/-0, where X is how much less than 0 its power is. For example, if an effect has given a 2/2 creature -4/-0 so that it's a -2/2 creature, doubling its power and toughness gives it -2/+2, and it becomes a -4/4 creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Tasha's Hideous Laughter
 {
     "name": "Tasha's Hideous Laughter",
@@ -15592,6 +16571,114 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Tiamat
+{
+    "name": "Tiamat",
+    "manaCost": "{2}{W}{U}{B}{R}{G}",
+    "typeLine": "Legendary Creature — Dragon God",
+    "oracleText": "Flying\nWhen Tiamat enters, if you cast it, search your library for up to five Dragon cards not named Tiamat that each have different names, reveal them, put them into your hand, then shuffle.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tiamat:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "HasSubtype",
+                                            "subtype": "Dragon"
+                                        },
+                                        {
+                                            "type": "Not",
+                                            "predicate": {
+                                                "type": "NameEquals",
+                                                "name": "Tiamat"
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Search for up to five Dragon cards not named Tiamat with different names",
+                            "restrictions": [
+                                "OnePerCardName"
+                            ]
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "interveningIf": "WasCast",
+                "descriptionOverride": "When Tiamat enters, if you cast it, search your library for up to five Dragon cards not named Tiamat that each have different names, reveal them, put them into your hand, then shuffle."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "235",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "flavorText": "\"My children will rule over all!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6dd0b9b0-55f4-4ce7-a916-6f23687f3fe4.jpg?1783926443",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "Tiamat's enters-the-battlefield ability will trigger if you cast Tiamat from any zone, not just from your hand. Still thinking command zone over here."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "A Dragon card is a card with the creature type Dragon in its type line. A card that has \"Dragon\" in the name (such as Dragon's Disciple) isn't a Dragon card unless it also has the Dragon creature type."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
     ]
 }
 
@@ -16462,6 +17549,81 @@
     ]
 }
 
+// Varis, Silverymoon Ranger
+{
+    "name": "Varis, Silverymoon Ranger",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Legendary Creature — Human Elf Ranger",
+    "oracleText": "Reach, ward {1}\nWhenever you cast a creature or planeswalker spell, venture into the dungeon. This ability triggers only once each turn. (To venture into the dungeon, enter the first room or advance to the next room.)\nWhenever you complete a dungeon, create a 2/2 green Wolf creature token.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{1}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Varis, Silverymoon Ranger:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsCreature",
+                                    "IsPlaneswalker"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": "VentureIntoTheDungeon",
+                "oncePerTurn": true
+            },
+            {
+                "id": "Varis, Silverymoon Ranger:2",
+                "trigger": "DungeonCompletedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Wolf"
+                    ]
+                },
+                "descriptionOverride": "Whenever you complete a dungeon, create a 2/2 green Wolf creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "rarity": "RARE",
+        "artist": "Jesper Ejsing",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e3bd3ea9-f06d-4df7-8b8d-ac6a0e591b09.jpg?1783926453"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Veteran Dungeoneer
 {
     "name": "Veteran Dungeoneer",
@@ -16862,6 +18024,61 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Westgate Regent
+{
+    "name": "Westgate Regent",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Vampire",
+    "oracleText": "Flying\nWard—Discard a card. (Whenever this creature becomes the target of a spell or ability an opponent controls, counter it unless that player discards a card.)\nWhenever this creature deals combat damage to a player, put that many +1/+1 counters on it.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": "WardCost.Discard"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Westgate Regent:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "rarity": "RARE",
+        "artist": "Mike Jordana",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e757cc7d-b9cc-4ef1-80c9-a22755a6d271.jpg?1783926487"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
