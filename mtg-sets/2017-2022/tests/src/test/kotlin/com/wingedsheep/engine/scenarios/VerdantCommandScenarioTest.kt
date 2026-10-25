@@ -134,6 +134,9 @@ class VerdantCommandScenarioTest : FunSpec({
             modes = listOf(counterLoyalty, gainLife),
             modeTargets = listOf(listOf(ChosenTarget.Spell(ability)), listOf(ChosenTarget.Player(opp))),
         ).error shouldNotBe null
+        // The cast was rejected: only the {T} ability is on the stack, and the Command is still in hand.
+        driver.stackSize shouldBe 1
+        driver.state.getZone(opp, Zone.HAND).any { driver.getCardName(it) == "Verdant Command" } shouldBe true
     }
 
     test("target player creates two tapped Squirrels; a card in a graveyard is exiled") {
