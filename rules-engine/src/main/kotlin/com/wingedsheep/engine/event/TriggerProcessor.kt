@@ -825,15 +825,27 @@ class TriggerProcessor(
         resolvedModeTargetGroupCounts: List<List<Int>> = emptyList(),
         eachModeTargetsDifferent: Boolean = false,
     ): ExecutionResult {
+        // Lock each chosen mode's dynamic target count ("up to X target creature cards") now, as
+        // the ability goes on the stack (CR 603.3d applies 601.2c) — the same snapshot the
+        // non-modal path takes, so the decision offers X slots and the stored requirement keeps X.
+        // Idempotent, so a resumed decision re-entering here with locked modes is unchanged.
+        // Owner-distributed counts stay dynamic: finalizeModalTrigger binds those from the picks.
+        val lockedModes = modes.mapIndexed { index, mode ->
+            if (index !in chosenModeIndices) mode
+            else mode.copy(targetRequirements = mode.targetRequirements.map { req ->
+                if (req.dynamicMaxCount == null || DynamicTargetCount.objectOf(req)?.ownerDistribution != null) req
+                else snapshotModeDynamicCount(state, ability, req)
+            })
+        }
         var ordinal = currentOrdinal
         var targetsAccum = resolvedModeTargets
         var countsAccum = resolvedModeTargetGroupCounts
         val trackCounts = chosenModeIndices.any { index ->
-            modes[index].targetRequirements.any { DynamicTargetCount.objectOf(it)?.ownerDistribution != null }
+            lockedModes[index].targetRequirements.any { DynamicTargetCount.objectOf(it)?.ownerDistribution != null }
         }
 
         while (ordinal < chosenModeIndices.size) {
-            val mode = modes[chosenModeIndices[ordinal]]
+            val mode = lockedModes[chosenModeIndices[ordinal]]
             if (mode.targetRequirements.isEmpty()) {
                 targetsAccum = targetsAccum + listOf(emptyList())
                 if (trackCounts) countsAccum = countsAccum + listOf(emptyList())
@@ -845,7 +857,7 @@ class TriggerProcessor(
             // target whose use here would leave a later mode without a distinct one of its own.
             val distinctFrom: ((EntityId) -> Boolean)? = if (!eachModeTargetsDifferent) null else {
                 val taken = targetsAccum.flatten().map { it.entityId() }.toSet()
-                val laterPools = chosenModeIndices.drop(ordinal + 1).map { modeTargetPool(state, ability, modes[it]) }
+                val laterPools = chosenModeIndices.drop(ordinal + 1).map { modeTargetPool(state, ability, lockedModes[it]) }
                 ({ id: EntityId -> id !in taken && DistinctModeTargets.assignable(laterPools, taken + id) })
             }
             val legalTargetsMap = mutableMapOf<Int, List<EntityId>>()
@@ -858,7 +870,12 @@ class TriggerProcessor(
                     description = req.description,
                     mustDifferFromEarlier = req is com.wingedsheep.sdk.scripting.targets.TargetOther,
                     minTargets = req.effectiveMinCount,
-                    maxTargets = if (req.unlimited) legalTargetsMap[index].orEmpty().size else req.count,
+                    maxTargets = when {
+                        // As in processTargetedTrigger: the snapshot baked a dynamic cap into `count`.
+                        req.unlimited && req.dynamicMaxCount != null -> minOf(req.count, legalTargetsMap[index].orEmpty().size)
+                        req.unlimited -> legalTargetsMap[index].orEmpty().size
+                        else -> req.count
+                    },
                     totalManaValueAtMost = resolveModeTotalManaValueAtMost(state, ability, req)
                 ).withTargetConstraints(state, req, legalTargetsMap[index].orEmpty())
             }
@@ -902,7 +919,7 @@ class TriggerProcessor(
                 ability = ability,
                 outerTargets = outerTargets,
                 outerTargetRequirements = outerTargetRequirements,
-                modes = modes,
+                modes = lockedModes,
                 chosenModeIndices = chosenModeIndices,
                 resolvedModeTargets = targetsAccum,
                 resolvedModeTargetGroupCounts = countsAccum,
@@ -918,7 +935,7 @@ class TriggerProcessor(
 
         return finalizeModalTrigger(
             state, ability, outerTargets, outerTargetRequirements,
-            modes, chosenModeIndices, targetsAccum, triggerCause,
+            lockedModes, chosenModeIndices, targetsAccum, triggerCause,
             recordChosenModesOnSource, recordChosenModesThisTurn, countsAccum
         )
     }
@@ -994,17 +1011,20 @@ class TriggerProcessor(
         ability: TriggeredAbilityOnStackComponent,
         requirement: TargetRequirement
     ): Int? = com.wingedsheep.engine.mechanics.targeting.resolveTotalManaValueCap(state, requirement, amountEvaluator) {
-        EffectContext(
-            sourceId = ability.sourceId,
-            objectReferences = ability.objectReferences,
-            controllerId = ability.controllerId,
-            triggeringEntityId = ability.triggerContext?.triggeringEntityId,
-            triggeringPlayerId = ability.triggerContext?.triggeringPlayerId,
-            xValue = ability.xValue,
-            triggerContext = ability.triggerContext,
-            pipeline = ability.carriedPipeline ?: com.wingedsheep.engine.handlers.PipelineState.EMPTY,
-        )
+        modeEffectContext(ability)
     }
+
+    /** The context a mode's target-time amounts read: the ability going on the stack. */
+    private fun modeEffectContext(ability: TriggeredAbilityOnStackComponent): EffectContext = EffectContext(
+        sourceId = ability.sourceId,
+        objectReferences = ability.objectReferences,
+        controllerId = ability.controllerId,
+        triggeringEntityId = ability.triggerContext?.triggeringEntityId,
+        triggeringPlayerId = ability.triggerContext?.triggeringPlayerId,
+        xValue = ability.xValue,
+        triggerContext = ability.triggerContext,
+        pipeline = ability.carriedPipeline ?: com.wingedsheep.engine.handlers.PipelineState.EMPTY,
+    )
 
     /** Legal targets for one of a mode's requirements, in the trigger's own targeting context. */
     private fun findModeLegalTargets(
@@ -1321,17 +1341,43 @@ class TriggerProcessor(
         state: GameState,
         trigger: PendingTrigger,
         requirement: TargetRequirement
+    ): TargetRequirement = snapshotDynamicCount(
+        state, requirement, trigger.controllerId, trigger.sourceId, trigger.triggerContext.triggeringEntityId
+    ) { snapshotBounds(state, trigger, it) }
+
+    /**
+     * [snapshotDynamicCount] for a modal trigger's mode requirement, read against the ability going
+     * on the stack — Orcus, Prince of Undeath's "return up to X target creature cards", X paid.
+     */
+    private fun snapshotModeDynamicCount(
+        state: GameState,
+        ability: TriggeredAbilityOnStackComponent,
+        requirement: TargetRequirement
+    ): TargetRequirement = snapshotDynamicCount(
+        state, requirement, ability.controllerId, ability.sourceId, ability.triggerContext?.triggeringEntityId
+    ) { req ->
+        val context = modeEffectContext(ability)
+        DynamicTargetCount.bounds(req, context.xValue) { amount -> amountEvaluator.evaluate(state, amount, context) }
+    }
+
+    private fun snapshotDynamicCount(
+        state: GameState,
+        requirement: TargetRequirement,
+        controllerId: EntityId,
+        sourceId: EntityId,
+        triggeringEntityId: EntityId?,
+        boundsOf: (TargetRequirement) -> DynamicTargetCount.Bounds,
     ): TargetRequirement = when (requirement) {
         is TargetObject -> {
             if (requirement.ownerDistribution != null) {
-                val candidates = targetFinder.findLegalTargets(state, requirement, trigger.controllerId, trigger.sourceId,
-                    triggeringEntityId = trigger.triggerContext.triggeringEntityId)
+                val candidates = targetFinder.findLegalTargets(state, requirement, controllerId, sourceId,
+                    triggeringEntityId = triggeringEntityId)
                 val bounds = com.wingedsheep.engine.mechanics.targeting.OwnerTargetDistribution.bounds(state, requirement, candidates)!!
                 requirement.copy(count = bounds.max ?: 0, minCount = bounds.min, optional = bounds.min == 0, unlimited = false)
             } else if (requirement.dynamicMaxCount == null) {
                 requirement
             } else {
-                val bounds = snapshotBounds(state, trigger, requirement)
+                val bounds = boundsOf(requirement)
                 val newMax = bounds.max ?: requirement.count
                 if (requirement.dynamicMinCount != null) {
                     requirement.copy(
@@ -1349,11 +1395,11 @@ class TriggerProcessor(
             }
         }
         is AnyTarget -> if (requirement.dynamicMaxCount == null) requirement else {
-            val newMax = snapshotBounds(state, trigger, requirement).max ?: requirement.count
+            val newMax = boundsOf(requirement).max ?: requirement.count
             requirement.copy(count = newMax, minCount = requirement.minCount.coerceAtMost(newMax))
         }
         is TargetOther -> {
-            val newBase = snapshotDynamicCount(state, trigger, requirement.baseRequirement)
+            val newBase = snapshotDynamicCount(state, requirement.baseRequirement, controllerId, sourceId, triggeringEntityId, boundsOf)
             if (newBase !== requirement.baseRequirement) requirement.copy(baseRequirement = newBase) else requirement
         }
         else -> requirement

@@ -11908,6 +11908,133 @@
     ]
 }
 
+// Orcus, Prince of Undeath
+{
+    "name": "Orcus, Prince of Undeath",
+    "manaCost": "{X}{2}{B}{R}",
+    "typeLine": "Legendary Creature — Demon",
+    "oracleText": "Flying, trample\nWhen Orcus enters, choose one —\n• Each other creature gets -X/-X until end of turn. You lose X life.\n• Return up to X target creature cards with total mana value X or less from your graveyard to the battlefield. They gain haste until end of turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Orcus, Prince of Undeath:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "ForEach",
+                                        "space": {
+                                            "type": "IterationSpace.Group",
+                                            "filter": {
+                                                "baseFilter": "creature",
+                                                "excludeSelf": true
+                                            }
+                                        },
+                                        "body": {
+                                            "type": "ModifyStats",
+                                            "powerModifier": {
+                                                "type": "Multiply",
+                                                "amount": "CastX",
+                                                "multiplier": -1
+                                            },
+                                            "toughnessModifier": {
+                                                "type": "Multiply",
+                                                "amount": "CastX",
+                                                "multiplier": -1
+                                            },
+                                            "target": "IterationEntity"
+                                        }
+                                    },
+                                    {
+                                        "type": "LoseLife",
+                                        "amount": "CastX",
+                                        "target": "Controller"
+                                    }
+                                ]
+                            },
+                            "description": "Each other creature gets -X/-X until end of turn. You lose X life."
+                        },
+                        {
+                            "effect": {
+                                "type": "ForEach",
+                                "space": "IterationSpace.Targets",
+                                "body": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "MoveToZone",
+                                            "target": {
+                                                "type": "ContextTarget",
+                                                "index": 0
+                                            },
+                                            "destination": "Battlefield",
+                                            "fromZone": "Graveyard"
+                                        },
+                                        {
+                                            "type": "GrantKeyword",
+                                            "keyword": "HASTE",
+                                            "target": {
+                                                "type": "ContextTarget",
+                                                "index": 0
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "optional": true,
+                                    "filter": {
+                                        "baseFilter": "creature own:you",
+                                        "zone": "Graveyard"
+                                    },
+                                    "id": "t0",
+                                    "dynamicMaxCount": "CastX",
+                                    "totalManaValueAtMost": "CastX"
+                                }
+                            ],
+                            "description": "Return up to X target creature cards with total mana value X or less from your graveyard to the battlefield. They gain haste until end of turn."
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "229",
+        "rarity": "RARE",
+        "artist": "Andrew Mar",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/91f5c6d3-fb04-4a2e-87b6-9ed2314085a8.jpg?1783926445",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "You may cast Orcus, Prince of Undeath with X equal to 0. If you do, the triggered ability will do nothing as it resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Owlbear
 {
     "name": "Owlbear",

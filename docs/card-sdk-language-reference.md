@@ -17224,6 +17224,10 @@ Consequences for authoring and testing:
 - A `chooseUpToDynamic` cap is evaluated **once**, against the state the ability goes onto the stack
   in, and then can't drift between picks (CR 601.2c via 603.3d). A cap of `0` means no mode is
   chosen, so the ability never reaches the stack.
+- A mode's own **dynamic target count** ("return up to X target creature cards", `dynamicMaxCount`
+  on the mode's `targets(...)`) is snapshotted the same way when that mode's targets are chosen — the
+  decision offers X slots and the stack object keeps the locked requirement (Orcus, Prince of
+  Undeath reads `CastX`, the X paid for it). Owner-distributed counts are bound from the picks instead.
 - The per-source memory of `chooseOneNotYetChosen` / `chooseOneNotYetChosenThisTurn` is written when
   the ability goes onto the stack, not when it resolves. That is what makes two simultaneous triggers
   of the same source pick *different* modes (Breeches, Eager Pillager: both attack triggers announce
