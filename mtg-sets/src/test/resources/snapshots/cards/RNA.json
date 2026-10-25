@@ -2766,6 +2766,150 @@
     ]
 }
 
+// Incubation Druid
+{
+    "name": "Incubation Druid",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elf Druid",
+    "oracleText": "{T}: Add one mana of any type that a land you control could produce. If this creature has a +1/+1 counter on it, add three mana of that type instead.\n{3}{G}{G}: Adapt 3. (If this creature has no +1/+1 counters on it, put three +1/+1 counters on it.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Incubation Druid:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "colorSet": {
+                        "type": "ManaColorSet.LandsCouldProduce",
+                        "scope": "YOU"
+                    },
+                    "amount": {
+                        "type": "Conditional",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "PLUS_ONE_PLUS_ONE"
+                                    }
+                                ]
+                            }
+                        },
+                        "ifTrue": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "ifFalse": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add one mana of any color that a land you control could produce (three if this creature has a +1/+1 counter on it)."
+            },
+            {
+                "id": "Incubation Druid:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Conditional",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "PLUS_ONE_PLUS_ONE"
+                                    }
+                                ]
+                            }
+                        },
+                        "ifTrue": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "ifFalse": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "timing": "ManaAbility",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsLand",
+                                    "CouldProduceColorlessMana"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {C} ({C}{C}{C} if this creature has a +1/+1 counter on it). Activate only if a land you control could produce colorless mana."
+            },
+            {
+                "id": "Incubation Druid:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{G}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Adapt",
+                    "amount": 3
+                },
+                "descriptionOverride": "{3}{G}{G}: Adapt 3."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "rarity": "RARE",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/075bbe5d-d0f3-4be3-a3a6-072d5d3d614c.jpg?1783933668",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "The types of mana are white, blue, black, red, green, and colorless."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "Incubation Druid doesn't care about any restrictions or riders your lands put on the mana they produce. It just produces one mana of the appropriate type, with no restrictions or riders."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "Incubation Druid checks the effects of all mana-producing abilities of lands you control, but it doesn't check their costs or legality."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "You can always activate an ability that will cause a creature to adapt. As that ability resolves, if the creature has a +1/+1 counter on it for any reason, you simply won't put any +1/+1 counters on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Justiciar's Portal
 {
     "name": "Justiciar's Portal",
@@ -4567,6 +4711,77 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Teysa Karlov
+{
+    "name": "Teysa Karlov",
+    "manaCost": "{2}{W}{B}",
+    "typeLine": "Legendary Creature — Human Advisor",
+    "oracleText": "If a creature dying causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time.\nCreature tokens you control have vigilance and lifelink.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "AdditionalDeathTriggers",
+                "permanentsYouControl": {}
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE",
+                "filter": {
+                    "baseFilter": "creature token ctrl:you"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "LIFELINK",
+                "filter": {
+                    "baseFilter": "creature token ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "RARE",
+        "artist": "Magali Villeneuve",
+        "flavorText": "While Kaya is guildmaster, Teysa waits patiently at the center of the Orzhov web of power.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bcfaa19e-995e-447d-a0a2-46e5d117d5ec.jpg?1783933635",
+        "rulings": [
+            {
+                "date": "2019-01-25",
+                "text": "Teysa affects a creature's own \"when this creature dies\" triggered abilities as well as other triggered abilities that trigger when that creature dies."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "Teysa's effect doesn't copy the triggered ability; it just causes the ability to trigger twice. Choices such as modes and targets are made separately for each instance."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "An ability that triggers when a creature \"leaves the battlefield\" will trigger twice if that creature leaves the battlefield by dying."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "An ability that triggers on an event that causes a creature to die doesn't trigger twice. For example, an ability that triggers \"whenever you sacrifice a creature\" triggers only once."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If a creature dying at the same time as Teysa (including Teysa itself dying) causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time."
+            },
+            {
+                "date": "2019-01-25",
+                "text": "If you somehow control two Teysas, a creature dying causes abilities to trigger three times, not four."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 

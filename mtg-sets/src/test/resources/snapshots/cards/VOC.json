@@ -153,3 +153,113 @@
         "WHITE"
     ]
 }
+
+// Wedding Ring
+{
+    "name": "Wedding Ring",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, if it was cast, target opponent creates a token that's a copy of it.\nWhenever an opponent who controls an artifact named Wedding Ring draws a card during their turn, you draw a card.\nWhenever an opponent who controls an artifact named Wedding Ring gains life during their turn, you gain that much life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wedding Ring:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "Self",
+                    "controller": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "interveningIf": "WasCast",
+                "descriptionOverride": "When this artifact enters, if it was cast, target opponent creates a token that's a copy of it."
+            },
+            {
+                "id": "Wedding Ring:2",
+                "trigger": {
+                    "type": "DrawEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "triggerRestriction": {
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "Exists",
+                            "player": "TriggeringPlayer",
+                            "zone": "Battlefield",
+                            "filter": "artifact name:Wedding Ring"
+                        },
+                        {
+                            "type": "IsPlayersTurn",
+                            "player": "TriggeringPlayer"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever an opponent who controls an artifact named Wedding Ring draws a card during their turn, you draw a card."
+            },
+            {
+                "id": "Wedding Ring:3",
+                "trigger": {
+                    "type": "LifeGainEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_LIFE_GAINED"
+                    }
+                },
+                "triggerRestriction": {
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "Exists",
+                            "player": "TriggeringPlayer",
+                            "zone": "Battlefield",
+                            "filter": "artifact name:Wedding Ring"
+                        },
+                        {
+                            "type": "IsPlayersTurn",
+                            "player": "TriggeringPlayer"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever an opponent who controls an artifact named Wedding Ring gains life during their turn, you gain that much life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "rarity": "MYTHIC",
+        "artist": "Olena Richards",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f0b1400-0608-47fd-9c73-b7730bcf6b7f.jpg?1783924997",
+        "rulings": [
+            {
+                "date": "2021-11-19",
+                "text": "The trigger conditions of Wedding Ring's second and third abilities care about opponents who control any artifact named Wedding Ring, not just the token copy created by its first ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}

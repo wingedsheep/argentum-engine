@@ -1966,6 +1966,42 @@
     ]
 }
 
+// Evolution Sage
+{
+    "name": "Evolution Sage",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elf Druid",
+    "oracleText": "Landfall — Whenever a land you control enters, proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Evolution Sage:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": "Proliferate"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "UNCOMMON",
+        "artist": "Simon Dominic",
+        "flavorText": "\"To care for yourself, cultivate the world. To care for the world, cultivate yourself.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b4042db8-6032-49a2-bc96-ad15f55db6c3.jpg?1783933415"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Finale of Revelation
 {
     "name": "Finale of Revelation",

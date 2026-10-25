@@ -669,6 +669,67 @@
     ]
 }
 
+// Mindcrank
+{
+    "name": "Mindcrank",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever an opponent loses life, that player mills that many cards. (Damage causes loss of life.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mindcrank:1",
+                "trigger": {
+                    "type": "LifeLossEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "ContextProperty",
+                                    "key": "TRIGGER_LIFE_LOST"
+                                },
+                                "player": "TriggeringPlayer",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "TriggeringPlayer"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever an opponent loses life, that player mills that many cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rahn",
+        "flavorText": "\"Let go of your memories and be reborn.\"\n—Argent Etchings, plate 106, passage 27",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d13a5ae0-d76a-4430-98c1-47a19e615e2c.jpg?1783941294",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "Damage dealt to an opponent usually causes that opponent to lose life. An opponent paying life also causes loss of life."
+            }
+        ]
+    }
+}
+
 // Noxious Revival
 {
     "name": "Noxious Revival",

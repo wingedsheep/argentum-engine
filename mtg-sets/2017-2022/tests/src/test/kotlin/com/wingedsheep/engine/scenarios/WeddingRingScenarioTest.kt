@@ -29,7 +29,8 @@ class WeddingRingScenarioTest : ScenarioTestBase() {
 
                 game.castSpell(1, "Wedding Ring").error shouldBe null
                 game.resolveStack()
-                game.selectTargets(listOf(game.player2Id)).error shouldBe null
+                // The lone opponent is the only legal target, so the trigger auto-targets them.
+                game.hasPendingDecision() shouldBe false
                 game.resolveStack()
 
                 val rings = game.findPermanents("Wedding Ring")

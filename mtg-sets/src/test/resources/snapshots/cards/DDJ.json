@@ -1,1 +1,46 @@
-
+// Goblin Electromancer
+{
+    "name": "Goblin Electromancer",
+    "manaCost": "{U}{R}",
+    "typeLine": "Creature — Goblin Wizard",
+    "oracleText": "Instant and sorcery spells you cast cost {1} less to cast.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "instant|sorcery"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "artist": "Svetlin Velinov",
+        "flavorText": "When asked how much power is required, Izzet mages always answer \"more.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/632af23c-eb5c-4725-afca-637e84cecf94.jpg?1783940425",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "Goblin Electromancer's effect reduces only generic mana in the spell's total cost."
+            },
+            {
+                "date": "2017-03-14",
+                "text": "Two Goblin Electromancers will make instant and sorcery spells you cast cost {2} less to cast, and so on."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}

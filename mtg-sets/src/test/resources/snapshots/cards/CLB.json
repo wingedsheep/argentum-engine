@@ -76,6 +76,116 @@
     ]
 }
 
+// Black Market Connections
+{
+    "name": "Black Market Connections",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your first main phase, choose one or more —\n• Sell Contraband — Create a Treasure token. You lose 1 life.\n• Buy Information — Draw a card. You lose 2 life.\n• Hire a Mercenary — Create a 3/2 colorless Shapeshifter creature token with changeling. You lose 3 life. (It is every creature type.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Black Market Connections:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "PRECOMBAT_MAIN"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "CreatePredefinedToken",
+                                        "tokenType": "Treasure",
+                                        "imageUri": "https://cards.scryfall.io/normal/front/7/7/770b988d-4f31-4746-8c23-4ed8d9a6b393.jpg?1783922318"
+                                    },
+                                    {
+                                        "type": "LoseLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "target": "Controller"
+                                    }
+                                ]
+                            },
+                            "description": "Sell Contraband — Create a Treasure token. You lose 1 life."
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    {
+                                        "type": "LoseLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "target": "Controller"
+                                    }
+                                ]
+                            },
+                            "description": "Buy Information — Draw a card. You lose 2 life."
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "CreateToken",
+                                        "power": 3,
+                                        "toughness": 2,
+                                        "colors": [],
+                                        "creatureTypes": [
+                                            "Shapeshifter"
+                                        ],
+                                        "keywords": [
+                                            "CHANGELING"
+                                        ],
+                                        "imageUri": "https://cards.scryfall.io/normal/front/1/1/1186b536-e6c8-433d-a906-b29f334d619c.jpg?1783922314"
+                                    },
+                                    {
+                                        "type": "LoseLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 3
+                                        },
+                                        "target": "Controller"
+                                    }
+                                ]
+                            },
+                            "description": "Hire a Mercenary — Create a 3/2 colorless Shapeshifter creature token with changeling. You lose 3 life."
+                        }
+                    ],
+                    "chooseCount": 3,
+                    "minChooseCount": 1
+                },
+                "descriptionOverride": "At the beginning of your first main phase, choose one or more — Sell Contraband (Treasure, lose 1 life); Buy Information (draw, lose 2 life); Hire a Mercenary (3/2 changeling, lose 3 life)."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "620",
+        "rarity": "RARE",
+        "artist": "Evyn Fong",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b28572c-d2ba-4834-8630-3d82202ebb6f.jpg?1783922535"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Bonecaller Cleric
 {
     "name": "Bonecaller Cleric",
@@ -1044,6 +1154,64 @@
     "colorIdentityOverride": [
         "GREEN",
         "WHITE"
+    ]
+}
+
+// Jaheira, Friend of the Forest
+{
+    "name": "Jaheira, Friend of the Forest",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Human Elf Druid",
+    "oracleText": "Tokens you control have \"{T}: Add {G}.\"\nChoose a Background (You can have a Background as a second commander.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywordAbilities": [
+        {
+            "type": "Partner",
+            "kind": "ChooseABackground"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Jaheira, Friend of the Forest:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "GREEN"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                },
+                "filter": {
+                    "baseFilter": "token ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "rarity": "RARE",
+        "artist": "Mila Pesic",
+        "flavorText": "\"The Harpers' movement grows, but it needs sunlight to blossom. We can be that light.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/feb7ad1b-4466-48f7-b46d-cc83d4e22b51.jpg?1783922710",
+        "rulings": [
+            {
+                "date": "2022-06-10",
+                "text": "Jaheira's ability gives the mana ability to all tokens you control, not just creature tokens."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "You won't be able to activate the mana abilities of creature tokens you control on the turn they're created unless they have haste. Conversely, you will be able to activate the mana abilities of noncreature tokens you control on the turn they're created (provided they're untapped)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 

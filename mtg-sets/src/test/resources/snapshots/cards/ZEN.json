@@ -411,6 +411,149 @@
     "colorIdentityOverride": []
 }
 
+// Bloodchief Ascension
+{
+    "name": "Bloodchief Ascension",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of each end step, if an opponent lost 2 or more life this turn, you may put a quest counter on this enchantment. (Damage causes loss of life.)\nWhenever a card is put into an opponent's graveyard from anywhere, if this enchantment has three or more quest counters on it, you may have that player lose 2 life. If you do, you gain 2 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bloodchief Ascension:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "QUEST",
+                        "count": 1,
+                        "target": "Self"
+                    },
+                    "descriptionOverride": "At the beginning of each end step, if an opponent lost 2 or more life this turn, you may put a quest counter on this enchantment."
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "CountPlayersWith",
+                        "scope": "EachOpponent",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "TurnTracking",
+                                "player": "You",
+                                "tracker": "LIFE_LOST_AMOUNT"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "At the beginning of each end step, if an opponent lost 2 or more life this turn, you may put a quest counter on this enchantment."
+            },
+            {
+                "id": "Bloodchief Ascension:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "nontoken own:opponent",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "OwnerOfTriggeringEntity"
+                                }
+                            },
+                            {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "Whenever a card is put into an opponent's graveyard from anywhere, if this enchantment has three or more quest counters on it, you may have that player lose 2 life. If you do, you gain 2 life."
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "QUEST"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "descriptionOverride": "Whenever a card is put into an opponent's graveyard from anywhere, if this enchantment has three or more quest counters on it, you may have that player lose 2 life. If you do, you gain 2 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "rarity": "RARE",
+        "artist": "Adi Granov",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aa213dbb-c52a-4084-92aa-d0b5d97a97d9.jpg?1783942156",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "Bloodchief Ascension's first ability has an \"intervening 'if' clause.\" It won't trigger at all unless an opponent has already lost 2 or more life by the time the end step begins."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "Bloodchief Ascension's second ability doesn't behave like a leaves-the-battlefield triggered ability, since the card put into an opponent's graveyard may come from anywhere. If a Bloodchief Ascension with three quest counters on it and a permanent an opponent owns are destroyed at the same time, for example, the game will not \"look back in time\" at the game state, and Bloodchief Ascension's second ability won't trigger."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "Bloodchief Ascension's first ability checks how much life was lost by each opponent over the course of the entire turn, even if Bloodchief Ascension wasn't on the battlefield the whole time."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "For the first ability to trigger, a single opponent must have lost 2 life. Two opponents each losing 1 life won't cause it to trigger. It will trigger a maximum of once per turn, no matter how many opponents have lost 2 or more life."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "Bloodchief Ascension's first ability checks only whether life was lost. It doesn't care whether life was also gained."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Bloodghast
 {
     "name": "Bloodghast",
