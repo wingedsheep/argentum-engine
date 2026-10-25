@@ -98,6 +98,8 @@ class FacadeBoundaryTest : FunSpec({
             "the cost's ChooseEntity storeAs is read by the spell effect — a cost is not inside any pipeline",
         "eoe/cards/CloseEncounter.kt" to
             "the cost's ChooseEntity storeAs is read by the spell effect — a cost is not inside any pipeline",
+        "afr/cards/DragonsFire.kt" to
+            "the cost's ChooseEntity storeAs is read by the spell effect — a cost is not inside any pipeline",
     )
 
     test("card definitions write pipelines with Effects.Pipeline, not raw string-keyed steps") {

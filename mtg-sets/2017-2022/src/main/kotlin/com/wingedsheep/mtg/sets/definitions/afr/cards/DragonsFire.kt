@@ -1,13 +1,15 @@
 package com.wingedsheep.mtg.sets.definitions.afr.cards
 
+import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -40,7 +42,15 @@ val DragonsFire = card("Dragon's Fire") {
 
     keywordAbility(
         KeywordAbility.optionalAdditionalCost(
-            Costs.additional.Behold(filter = Filters.WithSubtype("Dragon"))
+            Costs.additional.ChooseEntity(
+                zoneFilters = mapOf(
+                    Zone.HAND to GameObjectFilter.Any.withSubtype(Subtype.DRAGON),
+                    Zone.BATTLEFIELD to GameObjectFilter.Any.withSubtype(Subtype.DRAGON),
+                ),
+                storeAs = "beheld",
+                captureSnapshot = true,
+                descriptionOverride = "Reveal a Dragon card from your hand or choose a Dragon you control",
+            )
         )
     )
 

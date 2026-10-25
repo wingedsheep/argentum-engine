@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
@@ -105,7 +106,7 @@ class DragonsFireScenarioTest : ScenarioTestBase() {
                 .withPlayers("Caster", "Opponent")
                 .withCardInHand(1, "Dragon's Fire")
                 .withCardOnBattlefield(1, "Dragon Whelp")
-                .withLandsOnBattlefield(1, "Mountain", 2)
+                .withLandsOnBattlefield(1, "Mountain", 3)
                 .withCardOnBattlefield(2, "Colossal Dreadmaw")
                 .withCardInHand(2, "Lightning Bolt")
                 .withLandsOnBattlefield(2, "Mountain", 1)
@@ -115,13 +116,18 @@ class DragonsFireScenarioTest : ScenarioTestBase() {
             val dreadmaw = game.findPermanent("Colossal Dreadmaw").shouldNotBeNull()
             val whelp = game.findPermanent("Dragon Whelp").shouldNotBeNull()
 
+            // Firebreathing once: a 3/3 on the battlefield, a printed 2/3 in the graveyard.
+            val firebreathing = cardRegistry.getCard("Dragon Whelp")!!.activatedAbilities.single().id
+            game.execute(ActivateAbility(game.player1Id, whelp, firebreathing)).error shouldBe null
+            game.resolveStack()
+
             game.castFireChoosing(whelp, dreadmaw).error shouldBe null
             game.passPriority()
             game.castSpell(2, "Lightning Bolt", whelp).error shouldBe null
             game.resolveStack()
 
             game.isInGraveyard(1, "Dragon Whelp") shouldBe true
-            game.damageOn(dreadmaw) shouldBe 2
+            game.damageOn(dreadmaw) shouldBe 3
         }
 
         test("the behold variant is affordable only when you have a Dragon") {

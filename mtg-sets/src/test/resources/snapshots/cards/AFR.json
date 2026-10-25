@@ -3133,8 +3133,28 @@
         {
             "type": "Kicker",
             "additionalCost": {
-                "type": "Behold",
-                "filter": "Dragon"
+                "type": "ChooseEntity",
+                "zoneFilters": {
+                    "Hand": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Dragon"
+                            }
+                        ]
+                    },
+                    "Battlefield": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Dragon"
+                            }
+                        ]
+                    }
+                },
+                "storeAs": "beheld",
+                "captureSnapshot": true,
+                "descriptionOverride": "Reveal a Dragon card from your hand or choose a Dragon you control"
             },
             "displayPrefix": "Additional cost",
             "declaredSlot": "ADDITIONAL_COST_PAID"
@@ -4882,7 +4902,8 @@
                                 ],
                                 "creatureTypes": [
                                     "Goblin"
-                                ]
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/1/4/1425e965-7eea-419c-a7ec-c8169fa9edbf.jpg?1783926342"
                             }
                         },
                         {
@@ -4914,7 +4935,8 @@
                                         ],
                                         "creatureTypes": [
                                             "Goblin"
-                                        ]
+                                        ],
+                                        "imageUri": "https://cards.scryfall.io/normal/front/1/4/1425e965-7eea-419c-a7ec-c8169fa9edbf.jpg?1783926342"
                                     },
                                     {
                                         "type": "AttachEquipment",

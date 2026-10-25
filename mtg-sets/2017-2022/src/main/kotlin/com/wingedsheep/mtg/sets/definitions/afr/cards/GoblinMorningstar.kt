@@ -55,6 +55,7 @@ val GoblinMorningstar = card("Goblin Morningstar") {
                 toughness = 1,
                 colors = setOf(Color.RED),
                 creatureTypes = setOf("Goblin"),
+                imageUri = "https://cards.scryfall.io/normal/front/1/4/1425e965-7eea-419c-a7ec-c8169fa9edbf.jpg?1783926342",
             )
             ifThen(
                 Conditions.All(
