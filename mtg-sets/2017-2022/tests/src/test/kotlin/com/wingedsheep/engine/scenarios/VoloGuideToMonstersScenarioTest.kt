@@ -7,11 +7,12 @@ import com.wingedsheep.mtg.sets.definitions.lrw.cards.WoodlandChangeling
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.model.EntityId
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 class VoloGuideToMonstersScenarioTest : FunSpec({
-    fun setup(): Pair<GameTestDriver, com.wingedsheep.sdk.model.EntityId> {
+    fun setup(): Pair<GameTestDriver, EntityId> {
         val d = GameTestDriver().also {
             it.registerCards(TestCards.all + listOf(VoloGuideToMonsters, WoodlandChangeling))
             it.initMirrorMatch(Deck.of("Forest" to 40))
@@ -23,7 +24,7 @@ class VoloGuideToMonstersScenarioTest : FunSpec({
     }
 
     /** Casts [name] from hand, resolves everything, and returns how many copies of it are on the battlefield. */
-    fun castAndCount(d: GameTestDriver, player: com.wingedsheep.sdk.model.EntityId, name: String, triggers: Boolean): Int {
+    fun castAndCount(d: GameTestDriver, player: EntityId, name: String, triggers: Boolean): Int {
         val card = d.putCardInHand(player, name)
         d.giveMana(player, Color.GREEN, 3)
         d.castSpell(player, card)

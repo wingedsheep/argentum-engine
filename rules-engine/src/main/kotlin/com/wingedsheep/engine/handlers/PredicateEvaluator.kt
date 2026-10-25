@@ -640,7 +640,8 @@ class PredicateEvaluator(
         if (referenceId == context?.triggeringEntityId) {
             context.resolution?.triggerContext?.lastKnownSubtypes?.let { return it }
         }
-        return projected.getSubtypes(referenceId).ifEmpty { offBattlefieldSubtypes(state, referenceId) }
+        if (projected.getProjectedValues(referenceId) != null) return projected.getSubtypes(referenceId)
+        return offBattlefieldSubtypes(state, referenceId)
     }
 
     /**
@@ -1228,7 +1229,8 @@ class PredicateEvaluator(
                 val sourceId = context?.sourceId ?: return false
                 // Source may be a spell on the stack (e.g., Amplify resolution-time reveal) —
                 // projection only covers the battlefield, so fall back to base CardComponent.
-                val sourceSubtypes = projected.getSubtypes(sourceId).ifEmpty { offBattlefieldSubtypes(state, sourceId) }
+                val sourceSubtypes = if (projected.getProjectedValues(sourceId) != null) projected.getSubtypes(sourceId)
+                    else offBattlefieldSubtypes(state, sourceId)
                 if (sourceSubtypes.isEmpty()) return false
                 val entitySubtypes = effectiveSubtypes(state, projected, entityId, card, projectedValues)
                 entitySubtypes.any { entitySubtype ->
