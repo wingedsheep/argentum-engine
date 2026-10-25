@@ -366,29 +366,39 @@ internal class CastTriggers(
             predicateEvaluator.matches(state, state.projectedState, action.cardId, pending.spellFilter, copyEvalContext)
         }
         if (matchingCopies.isEmpty()) return null
-        val totalCopies = matchingCopies.sumOf { it.copies }
         // Remove consumed pending copies (keep persistent ones like The Mirari Conjecture Ch. III,
         // and any non-matching entries waiting for a different spell type).
         val newState = state.copy(
             pendingSpellCopies = state.pendingSpellCopies.filter { pending -> pending.persistent || pending !in matchingCopies }
         )
         val spellEffect = spell.cardDef?.script?.spellEffect
-        if (spellEffect == null || totalCopies <= 0) return ExecutionResult.success(newState)
+        if (spellEffect == null) return ExecutionResult.success(newState)
 
         // sourceId must point to the spell being copied (action.cardId), not the originating
         // permanent (e.g., Howl of the Horde). StormCopyEffectExecutor uses sourceId to clone the
         // SpellOnStackComponent via putSpellCopy; the originating permanent may be in the graveyard
         // by the time the trigger resolves.
+        // Each rider is its own delayed trigger and so its own copy instruction: a copy-count
+        // replacement (Twinning Staff) resizes each one, so they aren't merged into one copy effect.
         val self = newState.objectRef(action.cardId)
-        val copyAbility = TriggeredAbilityOnStackComponent(
-            sourceId = action.cardId,
-            objectReferences = ObjectReferenceEnvironment(captured = true, origin = self, source = self),
-            sourceName = spell.cardComponent.name,
-            controllerId = action.playerId,
-            effect = copyEffect(spell, spellEffect, totalCopies),
-            description = "Copy ${spell.cardComponent.name} $totalCopies time(s)"
-        )
-        return stackResolver.putTriggeredAbility(newState, copyAbility)
+        var currentState = newState
+        val events = mutableListOf<GameEvent>()
+        for (rider in matchingCopies) {
+            if (rider.copies <= 0) continue
+            val copyAbility = TriggeredAbilityOnStackComponent(
+                sourceId = action.cardId,
+                objectReferences = ObjectReferenceEnvironment(captured = true, origin = self, source = self),
+                sourceName = spell.cardComponent.name,
+                controllerId = action.playerId,
+                effect = copyEffect(spell, spellEffect, rider.copies),
+                description = "Copy ${spell.cardComponent.name} ${rider.copies} time(s)"
+            )
+            val put = stackResolver.putTriggeredAbility(currentState, copyAbility)
+            if (put.outcome !is Outcome.Done) return put
+            currentState = put.newState
+            events.addAll(put.events)
+        }
+        return ExecutionResult.success(currentState, events)
     }
 
     /**

@@ -101,9 +101,21 @@ class SpellCopyCountReplacementTest : FunSpec({
         }
     }
 
+    val howl = card("Test Copy Howl") {
+        manaCost = "{U}"; typeLine = "Instant"
+        spell { effect = Effects.CopyNextSpellCast(copies = 2, spellFilter = GameObjectFilter.Sorcery) }
+    }
+    val copyEach = card("Test Copy Each") {
+        manaCost = "{U}"; typeLine = "Instant"
+        spell {
+            target(TargetFilter.InstantOrSorcerySpellOnStack)
+            effect = Effects.CopyEachTargetSpell()
+        }
+    }
+
     fun driver() = GameTestDriver().also {
         it.registerCards(
-            TestCards.all + listOf(staff, instantStaff, lifeInstant, lifeSorcery, stormLife, ping, twincast, noCopy, chainPing)
+            TestCards.all + listOf(staff, instantStaff, lifeInstant, lifeSorcery, stormLife, ping, twincast, noCopy, chainPing, howl, copyEach)
         )
         it.initMirrorMatch(Deck.of("Island" to 40), startingPlayer = 0)
         it.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -178,6 +190,24 @@ class SpellCopyCountReplacementTest : FunSpec({
         d.cast(stormLife.name)
         d.resolveAll()
         d.getLifeTotal(d.player1) - before shouldBe 1 + 3
+    }
+
+    test("each copy-the-next-spell rider is its own instruction and is resized separately") {
+        val d = driver()
+        d.putPermanentOnBattlefield(d.player1, staff.name)
+        d.cast(howl.name); d.resolveAll()
+        d.cast(howl.name); d.resolveAll()
+        val before = d.getLifeTotal(d.player1)
+        d.cast(lifeSorcery.name)
+        d.resolveAll()
+        // Two riders of two copies each, each plus one: the original and six copies.
+        d.getLifeTotal(d.player1) - before shouldBe 1 + 3 + 3
+    }
+
+    test("copy each target spell resizes each spell's copy") {
+        val d = driver()
+        d.putPermanentOnBattlefield(d.player1, staff.name)
+        d.twincastLifeGain(copier = copyEach.name) shouldBe 3
     }
 
     test("every copy, the additional one included, may be given new targets") {
