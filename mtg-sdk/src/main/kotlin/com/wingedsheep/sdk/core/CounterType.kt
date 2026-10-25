@@ -833,6 +833,13 @@ value class CounterType(val name: String) {
          */
         val STUDY = CounterType("STUDY")
 
+        /**
+         * Refine counter (STX — Uvilda, Dean of Perfection). A countdown on a card in exile: Uvilda puts
+         * three on the instant or sorcery she exiles, the abilities that card gains remove one each
+         * upkeep, and removing the last lets its owner cast it for {4} less.
+         */
+        val REFINE = CounterType("REFINE")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -982,6 +989,7 @@ value class CounterType(val name: String) {
             EMBER,
             BOOK,
             STUDY,
+            REFINE,
         )
 
         /**

@@ -192,6 +192,29 @@ data class PlayWithCostIncreaseComponent(
 }
 
 /**
+ * Marks a card as costing **less** to cast for the specified player, for one resolution-time cast —
+ * "you may cast it. It costs {4} less to cast this way" (Uvilda, Dean of Perfection). A cost
+ * reduction (CR 601.2f): applied after the base and every increase, and it takes only generic mana
+ * off, never a colored requirement. Stamped by the cast-from-collection executor when its effect
+ * carries a `costReduction`, stripped once the cast is made or abandoned.
+ *
+ * @param controllerId The player whose cast is discounted.
+ * @param genericReduction The generic mana taken off the total cost.
+ * @param grantedPermissionId The one-shot permission the discount was stamped with; honoured only
+ *   while it exists, like [PlayWithFixedAlternativeManaCostComponent.grantedPermissionId].
+ */
+@Serializable
+data class PlayWithCostReductionComponent(
+    val controllerId: EntityId,
+    val genericReduction: Int,
+    val grantedPermissionId: EntityId,
+) : Component {
+    /** True when this discount prices [playerId]'s cast in [state]. */
+    fun appliesTo(state: com.wingedsheep.engine.state.GameState, playerId: EntityId): Boolean =
+        controllerId == playerId && state.mayPlayPermissions.any { it.id == grantedPermissionId }
+}
+
+/**
  * Marks a card in exile as castable for a *fixed alternative* mana cost — paid **instead of**
  * its printed mana cost — by the specified player, for as long as it remains exiled. Unlike
  * [PlayWithCostIncreaseComponent] (which adds generic mana on top of the printed cost), this

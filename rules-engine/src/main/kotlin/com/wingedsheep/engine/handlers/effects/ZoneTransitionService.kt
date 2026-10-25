@@ -729,6 +729,10 @@ class ZoneTransitionService(
         // separately because they bypass this service.
         if (fromZone == Zone.EXILE) {
             newState = ZoneMovementUtils.unlinkFromAllLinkedExiles(newState, entityId)
+            // The abilities an exiled card gained there (Uvilda, Dean of Perfection's refine
+            // countdown) belong to that object and end as it leaves (CR 400.7). The cast path drops
+            // them in SpellCaster, which bypasses this service.
+            newState = newState.withoutObjectGrants(entityId)
         }
 
         // A static ability granted to a card *while it sat in the graveyard* — Case of the Uneaten

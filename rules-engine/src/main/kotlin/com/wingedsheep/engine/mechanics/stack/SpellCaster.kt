@@ -507,6 +507,7 @@ internal class SpellCaster(
                 updated = updated.without<PlayWithoutPayingCostComponent>()
             }
             updated = updated.without<com.wingedsheep.engine.state.components.identity.PlayWithCostIncreaseComponent>()
+            updated = updated.without<com.wingedsheep.engine.state.components.identity.PlayWithCostReductionComponent>()
             updated = updated.without<com.wingedsheep.engine.state.components.identity.PlayWithFixedAlternativeManaCostComponent>()
             // A runtime substitute/additional cost (Cruelclaw's discard, Amped Raptor's energy) was
             // owed by this cast and has been paid; it must not be owed again by a later one.

@@ -14,17 +14,28 @@ import com.wingedsheep.sdk.model.EntityId
  * to that id simply survives the resolution; a stack object that ends any other way drops its
  * grants in [GameState.removeFromStack].
  *
+ * A **card in exile** may gain a *triggered* ability too ([allowExiledCard]) — "It gains 'At the
+ * beginning of your upkeep, if this card is exiled, …'" (Uvilda, Dean of Perfection). Such an ability
+ * functions only if it declares `activeZones = EXILE`, and it ends when the card leaves exile
+ * (`ZoneTransitionService`, or `SpellCaster` when it is cast). Activated and state-triggered grants
+ * stay permanent-only: nothing scans an exiled card for them.
+ *
  * Shared by the triggered, state-triggered and activated grant executors.
  */
 internal object ObjectGrantTarget {
 
-    fun canReceive(state: GameState, entityId: EntityId): Boolean {
+    fun canReceive(state: GameState, entityId: EntityId, allowExiledCard: Boolean = false): Boolean {
         if (state.getBattlefield().contains(entityId)) return true
+        if (allowExiledCard && isExiledCard(state, entityId)) return true
         if (entityId !in state.stack) return false
         val container = state.getEntity(entityId) ?: return false
         return container.has<SpellOnStackComponent>() &&
             container.get<CardComponent>()?.typeLine?.isPermanent == true
     }
+
+    private fun isExiledCard(state: GameState, entityId: EntityId): Boolean =
+        state.getEntity(entityId)?.get<CardComponent>() != null &&
+            state.turnOrder.any { entityId in state.getExile(it) }
 
     const val NOT_A_PERMANENT_OR_PERMANENT_SPELL = "Target is not a permanent or a permanent spell"
 }

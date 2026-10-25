@@ -406,6 +406,13 @@ data class ExileLibraryUntilManaValueEffect(
  * one cast only, and removed if the cast never initiates. A caster who can't pay the total simply
  * doesn't cast it (CR 601.2h).
  *
+ * **Paying less.** Set [costReduction] (with [payManaCost] or [alternativeManaCost]) for "you may
+ * cast it. It costs {4} less to cast this way" — Uvilda, Dean of Perfection's exiled instant or
+ * sorcery. It is a cost reduction (CR 601.2f): taken off the total after the base and every
+ * increase, generic mana only, so a colored requirement is never reduced and {X} is still chosen
+ * and paid (the card's mana value doesn't change). Stamped on the card for this one cast only and
+ * removed if the cast never initiates. A free cast has nothing to reduce, so it needs a price.
+ *
  * **Casting it face down.** Set [castFaceDown] for "you may cast that card face down as a 2/2
  * creature spell without paying its mana cost" (Illusionary Mask). The spell is a face-down spell
  * exactly as a morph cast makes one (CR 708.2, 708.4: a nameless, colorless 2/2 creature spell with no
@@ -464,8 +471,14 @@ data class CastFromCollectionWithoutPayingCostEffect(
     val castUsing: Keyword? = null,
     /** The fixed mana cost paid rather than the mana cost, or null — see the class KDoc. */
     val alternativeManaCost: ManaCost? = null,
+    /** Generic mana the cast costs less ("It costs {4} less to cast this way") — see the class KDoc. */
+    val costReduction: Int = 0,
 ) : Effect {
     init {
+        require(costReduction >= 0) { "costReduction is an amount of generic mana; it can't be negative" }
+        require(costReduction == 0 || payManaCost || alternativeManaCost != null) {
+            "costReduction reduces a price; a free cast needs payManaCost or alternativeManaCost"
+        }
         require(alternativeManaCost == null || (!payManaCost && alternativeCost == null && castUsing == null &&
             !castFaceDown)) {
             "alternativeManaCost replaces the mana cost; it takes no other price"
@@ -502,6 +515,7 @@ data class CastFromCollectionWithoutPayingCostEffect(
             !payManaCost -> append(" without paying its mana cost")
             additionalManaCost != null -> append(" by paying $additionalManaCost in addition to its other costs")
         }
+        if (costReduction > 0) append(". It costs {$costReduction} less to cast this way")
         insteadOfGraveyard?.let { append(it.riderText) }
         if (turnsFaceUpInstead) {
             append(". If the creature that spell becomes as it resolves has not been turned face up and would " +

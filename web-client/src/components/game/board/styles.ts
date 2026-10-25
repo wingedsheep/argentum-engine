@@ -2538,6 +2538,7 @@ const passiveCounterPalette: Record<string, CounterBadgePalette> = {
   EMBER: { bg: 'rgba(52, 28, 14, 0.95)', border: 'rgba(220, 150, 80, 0.7)', color: '#f0cfa4' },
   BOOK: { bg: 'rgba(40, 30, 20, 0.95)', border: 'rgba(196, 160, 110, 0.7)', color: '#e8d4b0' },
   STUDY: { bg: 'rgba(20, 36, 44, 0.95)', border: 'rgba(110, 180, 200, 0.7)', color: '#bfe2ec' },
+  REFINE: { bg: 'rgba(18, 30, 52, 0.95)', border: 'rgba(120, 160, 230, 0.7)', color: '#c6d8f6' },
   TRAINING: { bg: 'rgba(48, 40, 22, 0.95)', border: 'rgba(214, 170, 90, 0.7)', color: '#ecd09a' },
   MINUS_ZERO_MINUS_ONE: { bg: 'rgba(60, 20, 20, 0.95)', border: 'rgba(220, 120, 120, 0.7)', color: '#e09c9c' },
   MINUS_ZERO_MINUS_TWO: { bg: 'rgba(60, 20, 20, 0.95)', border: 'rgba(220, 120, 120, 0.7)', color: '#e09c9c' },

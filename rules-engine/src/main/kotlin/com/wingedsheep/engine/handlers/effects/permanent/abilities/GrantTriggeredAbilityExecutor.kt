@@ -34,7 +34,7 @@ class GrantTriggeredAbilityExecutor : EffectExecutor<GrantTriggeredAbilityEffect
             ?: return EffectResult.error(state, "Target no longer exists")
         targetContainer.get<CardComponent>()
             ?: return EffectResult.error(state, "Target is not a card")
-        if (!ObjectGrantTarget.canReceive(state, targetId)) {
+        if (!ObjectGrantTarget.canReceive(state, targetId, allowExiledCard = true)) {
             return EffectResult.error(state, ObjectGrantTarget.NOT_A_PERMANENT_OR_PERMANENT_SPELL)
         }
         // Deliberately *not* gated on the target being a creature. Nothing in the rules restricts

@@ -26,6 +26,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithCostIncreaseComponent
+import com.wingedsheep.engine.state.components.identity.PlayWithCostReductionComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithFixedAlternativeManaCostComponent
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
@@ -196,6 +197,16 @@ internal class CastCostTotaller(
                 castSourceZone(state, action.cardId), action.declaredCostSlot,
                 (action.paymentStrategy as? com.wingedsheep.engine.core.PaymentStrategy.Explicit)?.phyrexianLifePayments.orEmpty(),
                 announcedX = action.xValue)
+        }
+
+        // "It costs {4} less to cast this way" (Uvilda, Dean of Perfection): a one-cast reduction
+        // stamped by a resolution-time cast, applied after every increase (CR 601.2f) and taking
+        // only generic mana off.
+        val runtimeReduction = state.getEntity(action.cardId)
+            ?.get<PlayWithCostReductionComponent>()
+            ?.takeIf { it.appliesTo(state, action.playerId) }
+        if (runtimeReduction != null) {
+            effectiveCost = effectiveCost.reduceGeneric(runtimeReduction.genericReduction)
         }
         return effectiveCost
     }

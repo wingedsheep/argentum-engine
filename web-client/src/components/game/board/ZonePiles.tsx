@@ -18,7 +18,7 @@ const EMPTY_DECK: readonly ClientDeckCard[] = []
 
 const CARD_RATIO = 1.4
 /** Counters that only mark a card in exile for some effect, badged in the exile browser. */
-const EXILE_MARKER_COUNTERS = [CounterType.BRAIN, CounterType.HATCHING, CounterType.STUDY] as const
+const EXILE_MARKER_COUNTERS = [CounterType.BRAIN, CounterType.HATCHING, CounterType.STUDY, CounterType.REFINE] as const
 const LABEL_HEIGHT = 14
 // Deck + Graveyard + Exile are always present; extra "Plotted", "Paradigm", and "Suspended"
 // piles appear only when the player has those cards in exile (see `pileCount` below).

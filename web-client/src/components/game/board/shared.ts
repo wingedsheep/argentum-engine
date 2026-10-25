@@ -884,6 +884,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.BOOK,
   // Kianne / Imbraham's mark on exiled cards.
   CounterType.STUDY,
+  // Uvilda's countdown on an exiled instant or sorcery.
+  CounterType.REFINE,
   CounterType.PLUS_ONE_PLUS_TWO,
   CounterType.PLUS_TWO_PLUS_TWO,
   CounterType.MINUS_TWO_MINUS_TWO,

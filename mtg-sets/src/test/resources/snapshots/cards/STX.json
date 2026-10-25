@@ -22970,6 +22970,283 @@
     ]
 }
 
+// Uvilda, Dean of Perfection
+{
+    "name": "Uvilda, Dean of Perfection",
+    "manaCost": "{2}{U}",
+    "typeLine": "Legendary Creature — Djinn Wizard",
+    "oracleText": "{T}: You may exile an instant or sorcery card from your hand and put three refine counters on it. It gains \"At the beginning of your upkeep, if this card is exiled, remove a refine counter from it\" and \"When the last refine counter is removed from this card, if it's exiled, you may cast it. It costs {4} less to cast this way.\"",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Uvilda, Dean of Perfection:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "instant|sorcery"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may exile an instant or sorcery card from your hand",
+                            "selectedLabel": "Exile"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "selected1"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "REFINE",
+                                        "count": 3,
+                                        "target": "IterationEntity"
+                                    },
+                                    {
+                                        "type": "GrantTriggeredAbility",
+                                        "ability": {
+                                            "id": "Uvilda, Dean of Perfection:1",
+                                            "trigger": {
+                                                "type": "StepEvent",
+                                                "step": "UPKEEP"
+                                            },
+                                            "binding": "ANY",
+                                            "effect": {
+                                                "type": "RemoveCounters",
+                                                "counterType": "REFINE",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                },
+                                                "target": "Self"
+                                            },
+                                            "activeZones": [
+                                                "Exile"
+                                            ],
+                                            "interveningIf": {
+                                                "type": "SourceInZone",
+                                                "zones": [
+                                                    "Exile"
+                                                ]
+                                            },
+                                            "descriptionOverride": "At the beginning of your upkeep, if this card is exiled, remove a refine counter from it."
+                                        },
+                                        "target": "IterationEntity",
+                                        "duration": "Permanent"
+                                    },
+                                    {
+                                        "type": "GrantTriggeredAbility",
+                                        "ability": {
+                                            "id": "Uvilda, Dean of Perfection:2",
+                                            "trigger": {
+                                                "type": "CountersRemovedEvent",
+                                                "counterType": "REFINE",
+                                                "lastRemoved": true
+                                            },
+                                            "effect": {
+                                                "type": "Gated",
+                                                "gate": {
+                                                    "type": "Gate.MayDecide",
+                                                    "prompt": "Cast this card for {4} less?"
+                                                },
+                                                "then": {
+                                                    "type": "Composite",
+                                                    "effects": [
+                                                        {
+                                                            "type": "GatherCards",
+                                                            "source": {
+                                                                "type": "Entity",
+                                                                "entity": "Self"
+                                                            },
+                                                            "storeAs": "gathered0"
+                                                        },
+                                                        {
+                                                            "type": "CastFromCollectionWithoutPayingCost",
+                                                            "from": "gathered0",
+                                                            "payManaCost": true,
+                                                            "costReduction": 4
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            "activeZones": [
+                                                "Exile"
+                                            ],
+                                            "interveningIf": {
+                                                "type": "SourceInZone",
+                                                "zones": [
+                                                    "Exile"
+                                                ]
+                                            },
+                                            "descriptionOverride": "When the last refine counter is removed from this card, if it's exiled, you may cast it. It costs {4} less to cast this way."
+                                        },
+                                        "target": "IterationEntity",
+                                        "duration": "Permanent"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{T}: You may exile an instant or sorcery card from your hand and put three refine counters on it. It gains \"At the beginning of your upkeep, if this card is exiled, remove a refine counter from it\" and \"When the last refine counter is removed from this card, if it's exiled, you may cast it. It costs {4} less to cast this way.\""
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Nassari, Dean of Expression",
+        "manaCost": "{3}{R}{R}",
+        "typeLine": "Legendary Creature — Efreet Shaman",
+        "oracleText": "At the beginning of your upkeep, exile the top card of each opponent's library. Until end of turn, you may cast spells from among those exiled cards, and you may spend mana as though it were mana of any color to cast those spells.\nWhenever you cast a spell from exile, put a +1/+1 counter on Nassari.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Nassari, Dean of Expression:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "player": "EachOpponent"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            },
+                            {
+                                "type": "GrantMayPlayFromExile",
+                                "from": "gathered0",
+                                "withAnyManaColor": true,
+                                "nonLandOnly": true
+                            }
+                        ]
+                    }
+                },
+                {
+                    "id": "Nassari, Dean of Expression:2",
+                    "trigger": {
+                        "type": "SpellCastEvent",
+                        "requires": [
+                            {
+                                "type": "SpellCastFromZone",
+                                "zone": "Exile"
+                            }
+                        ]
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "Self"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "160",
+            "rarity": "RARE",
+            "artist": "Jason Rainville",
+            "imageUri": "https://cards.scryfall.io/normal/back/8/c/8cfd0887-0c83-4b33-a85e-8b8ec5bf758d.jpg?1785596047",
+            "rulings": [
+                {
+                    "date": "2021-04-16",
+                    "text": "You exile cards with Nassari, Dean of Expression face up. Casting those spells is subject to the normal timing restrictions for spells."
+                },
+                {
+                    "date": "2021-04-16",
+                    "text": "Any cards exiled with Nassari's ability that you don't cast will remain exiled. You won't be able to cast those cards on future turns, although Nassari's ability will give you another group of cards to choose from each time it resolves."
+                },
+                {
+                    "date": "2021-04-16",
+                    "text": "Nassari's last ability triggers when you cast any spell from exile, not just the cards that were exiled with its first ability."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "BLUE",
+            "RED"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "RARE",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8cfd0887-0c83-4b33-a85e-8b8ec5bf758d.jpg?1785596047",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "After removing the last hone counter, casting the spell is optional. Timing permissions based on the card's type are ignored. If an effect prohibits you from casting the card or you choose not to cast it, it remains exiled with no hone counters on it, and you won't be able to cast it later."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "The cost reduction given by Uvilda, Dean of Perfection won't reduce any colored mana requirements in the spell's cost."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions (such as that of Uvilda, Dean of Perfection). The mana value of the spell is determined only by its mana cost, no matter what the total cost to cast the spell was."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ],
+    "layout": "MODAL_DFC"
+}
+
 // Valentin, Dean of the Vein
 {
     "name": "Valentin, Dean of the Vein",

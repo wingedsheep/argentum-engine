@@ -46,6 +46,7 @@ import com.wingedsheep.engine.state.components.identity.MadnessExiledComponent
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.engine.state.components.stack.EntitySnapshot
 import com.wingedsheep.sdk.scripting.SuppressEntersTriggers
+import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.engine.state.components.identity.RoomComponent
 import com.wingedsheep.engine.state.components.identity.RoomFaceId
 import com.wingedsheep.engine.state.components.identity.RoomFaceStatics
@@ -1994,16 +1995,21 @@ class TriggerDetector(
         // cast another Vampire spell" has to fire while Edgar sits in the command zone, which no
         // battlefield scan reaches.
         //
-        // Exile is deliberately absent: every exile-active shape today (suspend, madness, paradigm)
-        // already has its own dedicated detection path, and a general exile pass here would fire
-        // those a second time.
-        for (zone in NON_BATTLEFIELD_EVENT_TRIGGER_ZONES) {
+        // Exile is scanned only for the triggered abilities an exiled card was *granted* there
+        // (Uvilda, Dean of Perfection's "when the last refine counter is removed from this card").
+        // Every printed or synthesized exile-active shape (suspend, madness, paradigm) already has
+        // its own dedicated detection path, which a general exile pass would fire a second time.
+        val exileGrantsInPlay = state.grantedTriggeredAbilities.any { Zone.EXILE in it.ability.activeZones }
+        for (zone in NON_BATTLEFIELD_ACTIVE_ZONES) {
+            val grantsOnly = zone !in NON_BATTLEFIELD_EVENT_TRIGGER_ZONES
+            if (grantsOnly && (zone != Zone.EXILE || !exileGrantsInPlay)) continue
             for (playerId in state.turnOrder) {
                 for (entityId in state.getZone(playerId, zone)) {
                     val container = state.getEntity(entityId) ?: continue
                     val cardComponent = container.get<CardComponent>() ?: continue
 
-                    val abilities = abilityResolver.getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state, index.statics)
+                    val abilities = if (grantsOnly) exileGrantedAbilities(state, entityId)
+                    else abilityResolver.getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state, index.statics)
 
                     for (ability in abilities) {
                         if (zone !in ability.activeZones) continue
@@ -5100,6 +5106,16 @@ class TriggerDetector(
         }
     }
 
+    /** The live triggered abilities granted to the exiled card [entityId] — see the per-event zone pass. */
+    private fun exileGrantedAbilities(state: GameState, entityId: EntityId): List<TriggeredAbility> =
+        state.grantedTriggeredAbilities.mapNotNull { grant ->
+            grant.ability.takeIf {
+                grant.entityId == entityId &&
+                    com.wingedsheep.engine.mechanics.durations.GrantDurationGate
+                        .holds(state, grant.entityId, grant.sourceId, grant.duration)
+            }
+        }
+
     private companion object {
         /**
          * Every non-battlefield zone an ability can declare in `activeZones` (CR 113.6b). All three
@@ -5109,9 +5125,10 @@ class TriggerDetector(
         val NON_BATTLEFIELD_ACTIVE_ZONES = listOf(Zone.GRAVEYARD, Zone.EXILE, Zone.COMMAND)
 
         /**
-         * The non-battlefield zones scanned for per-*event* triggers. Exile is excluded on purpose:
-         * suspend, madness and paradigm are the only exile-active shapes, and each already has a
-         * dedicated detection path that a general pass here would duplicate.
+         * The non-battlefield zones scanned for all of a card's per-*event* triggers. Exile is
+         * excluded on purpose: suspend, madness and paradigm each already have a dedicated detection
+         * path that a general pass would duplicate. The per-event pass still reads an exiled card's
+         * *granted* triggered abilities ([exileGrantedAbilities]).
          */
         val NON_BATTLEFIELD_EVENT_TRIGGER_ZONES = listOf(Zone.GRAVEYARD, Zone.COMMAND)
     }

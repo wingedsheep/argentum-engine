@@ -22,6 +22,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.AfterResolveDestinationComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithAdditionalCostComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithCostIncreaseComponent
+import com.wingedsheep.engine.state.components.identity.PlayWithCostReductionComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithFixedAlternativeManaCostComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
@@ -152,6 +153,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
             alternativeCost = alternativeCost,
             additionalManaCost = effect.additionalManaCost,
             alternativeManaCost = effect.alternativeManaCost,
+            costReduction = effect.costReduction,
             castFaceDown = effect.castFaceDown,
             turnsFaceUpInstead = effect.turnsFaceUpInstead,
         )
@@ -275,6 +277,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
             alternativeCost: AdditionalCost? = null,
             additionalManaCost: ManaCost? = null,
             alternativeManaCost: ManaCost? = null,
+            costReduction: Int = 0,
             castFaceDown: Boolean = false,
             turnsFaceUpInstead: Boolean = false,
         ): Pair<EntityId, GameState> {
@@ -307,6 +310,13 @@ class CastFromCollectionWithoutPayingCostExecutor(
                     container.with(
                         PlayWithFixedAlternativeManaCostComponent(controllerId, alternativeManaCost, grantedPermissionId = permId)
                     )
+                }
+            }
+            // "It costs {4} less to cast this way" (Uvilda): a reduction honoured only while this
+            // grant's permission lives; SpellCaster strips it once the cast is made.
+            if (costReduction > 0) {
+                stamped = stamped.updateEntity(cardId) { container ->
+                    container.with(PlayWithCostReductionComponent(controllerId, costReduction, grantedPermissionId = permId))
                 }
             }
             // The cast-this-way rider rides the card, not the permission, so it survives the move
@@ -352,6 +362,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
                     // Nor its substitute cost, which would otherwise be owed by a later cast.
                     .without<PlayWithAdditionalCostComponent>()
                     .without<PlayWithCostIncreaseComponent>()
+                    .without<PlayWithCostReductionComponent>()
                     // Only a cost this grant stamped: an airbend or madness cost the card already
                     // carried belongs to that other permission and must survive.
                     .let { if (stampedAlternativeManaCost) it.without<PlayWithFixedAlternativeManaCostComponent>() else it }

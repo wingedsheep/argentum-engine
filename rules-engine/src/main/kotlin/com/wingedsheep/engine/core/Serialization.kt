@@ -597,6 +597,7 @@ val engineSerializersModule = SerializersModule {
         subclass(com.wingedsheep.engine.state.components.identity.HasDisguiseAbilityComponent::class)
         subclass(PlayWithAdditionalCostComponent::class)
         subclass(PlayWithCostIncreaseComponent::class)
+        subclass(com.wingedsheep.engine.state.components.identity.PlayWithCostReductionComponent::class)
         subclass(PlayWithFixedAlternativeManaCostComponent::class)
         subclass(PlayWithoutPayingCostComponent::class)
         subclass(WarpExiledComponent::class)
