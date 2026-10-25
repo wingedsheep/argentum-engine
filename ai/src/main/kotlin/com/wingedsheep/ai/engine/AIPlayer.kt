@@ -300,6 +300,7 @@ class AIPlayer(
                 pressWhenAhead = profile.pressWhenAhead,
                 anticipateCombatResponses = profile.anticipateCombatResponses,
                 minimalLethalInPods = profile.minimalLethalInPods,
+                blockTriggersKill = profile.blockTriggersKill,
             )
             val responder = DecisionResponder(
                 simulator, evaluator,

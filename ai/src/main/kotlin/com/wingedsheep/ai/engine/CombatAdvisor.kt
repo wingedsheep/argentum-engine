@@ -1,5 +1,6 @@
 package com.wingedsheep.ai.engine
 
+import com.wingedsheep.ai.engine.knowledge.BlockTriggerRemoval
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.ai.engine.advisor.CardAdvisorRegistry
 import com.wingedsheep.ai.engine.budget.DecisionBudget
@@ -134,6 +135,13 @@ class CombatAdvisor(
      * [AiProfile.minimalLethalInPods] carries the argument.
      */
     internal val minimalLethalInPods: Boolean = false,
+    /**
+     * Let the block heuristic see a blocker whose block trigger destroys the attacker it blocks
+     * (Alaborn Zealot), as it sees deathtouch ([BlockTriggerRemoval]). The attack evaluator predicts
+     * the defender's blocks with that heuristic, so this is also what prices such a blocker into an
+     * attack. [AiProfile.blockTriggersKill] carries the argument; needs [cardRegistry].
+     */
+    private val blockTriggersKill: Boolean = false,
 ) {
     /** See [anticipateCombatResponses]; null when off. */
     private val responses: CombatResponses? =
@@ -149,6 +157,11 @@ class CombatAdvisor(
      */
     private val blockEvasionRules: List<BlockEvasionRule>? by lazy {
         cardRegistry?.let { defaultBlockEvasionRules(PredicateEvaluator(it)) }
+    }
+
+    /** Matches a block trigger's attacker filter ("blocks a creature with flying"); see [blockTriggersKill]. */
+    private val blockTriggerPredicates: PredicateEvaluator? by lazy {
+        if (blockTriggersKill) cardRegistry?.let { PredicateEvaluator(it) } else null
     }
 
     companion object {
@@ -986,10 +999,17 @@ class CombatAdvisor(
                 val bHasFirstStrike = Keyword.FIRST_STRIKE.name in bKeywords || Keyword.DOUBLE_STRIKE.name in bKeywords
                 val blockerValue = CombatMath.combatTradeValue(projected, blockerId)
 
+                // A block trigger that destroys the attacker resolves before any combat damage, so
+                // first strike cannot stop it; when it also destroys the blocker, the blocker dies.
+                val blockTrigger = blockTriggerPredicates?.let { predicates ->
+                    BlockTriggerRemoval.against(state, projected, cardRegistry!!, predicates, blockerId, attacker)
+                }
                 val weKillThem = bPower >= aToughness || bHasDeathtouch
                 val bIsIndestructible = Keyword.INDESTRUCTIBLE.name in bKeywords
                 val weSurvive = if (bIsIndestructible) {
                     true // indestructible creatures always survive combat
+                } else if (blockTrigger != null) {
+                    !blockTrigger.destroysItself
                 } else if (!aHasDeathtouch) {
                     (bToughness > aPower) ||
                         (bHasFirstStrike && !aHasFirstStrike && weKillThem)
@@ -997,7 +1017,7 @@ class CombatAdvisor(
                     false
                 }
                 val blockerDealsDamage = CombatMath.blockerDealsDamage(state, projected, attacker, blockerId)
-                val effectivelyKillThem = weKillThem && blockerDealsDamage
+                val effectivelyKillThem = blockTrigger != null || (weKillThem && blockerDealsDamage)
 
                 val info = BlockInfo(blockerId, effectivelyKillThem, weSurvive, blockerValue)
                 if (predicate(info)) info else null

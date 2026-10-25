@@ -1263,6 +1263,21 @@ data class AiProfile(
      * that margin). Mandatory, vigilant and can't-block attackers stay. 1v1 is untouched. Pinned by `MinimalLethalInPodsTest`.
      */
     val minimalLethalInPods: Boolean = false,
+    /**
+     * Read a blocker whose block trigger destroys the attacker it blocks as a killer, the way
+     * deathtouch is read.
+     *
+     * Off a 4-player AI-vs-AI playtest (2026-10-25, game 01, turn 29): a hexproof 6/5 Leviathan
+     * token attacked alone into an untapped Alaborn Zealot ("When this creature blocks a creature,
+     * destroy both creatures") and traded for the 1/1. The attack evaluator predicts the defender's
+     * blocks with the stats-and-keywords block heuristic, which saw a 1/1 in front of a 6/5 as a
+     * chump it would never make — so the Zealot block was never simulated and the trigger never
+     * priced. With this on, the heuristic reads the untargeted self-blocks destroy-the-blocked
+     * trigger ([com.wingedsheep.ai.engine.knowledge.BlockTriggerRemoval]) as a kill that first
+     * strike cannot stop, and a trade when it destroys the blocker too. Pinned by
+     * `BlockTriggersKillTest`.
+     */
+    val blockTriggersKill: Boolean = false,
     /** Non-null profiles may only be selected automatically for this set. Arena selection stays explicit. */
     val restrictedToSet: String? = null,
 ) {
@@ -2221,6 +2236,7 @@ data class AiProfile(
             lifelinkWaitsForBlocks = true,
             tapToGrowAtTheirEndStep = true,
             minimalLethalInPods = true,
+            blockTriggersKill = true,
         )
 
         /**
