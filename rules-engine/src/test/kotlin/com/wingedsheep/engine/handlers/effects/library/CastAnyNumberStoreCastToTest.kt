@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers.effects.library
 
+import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -10,6 +12,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -49,9 +52,16 @@ class CastAnyNumberStoreCastToTest : FunSpec({
         }
     }
 
+    /** A modal spell: casting it pauses inside the cast for the mode choice (CR 601.2b). */
+    val modal = card("Test Modal Probe") {
+        manaCost = "{2}{G}"
+        typeLine = "Sorcery"
+        spell { effect = Effects.Modal(listOf(Mode.noTarget(Effects.GainLife(2)), Mode.noTarget(Effects.GainLife(4)))) }
+    }
+
     fun setup(): Triple<GameTestDriver, com.wingedsheep.sdk.model.EntityId, com.wingedsheep.sdk.model.EntityId> {
         val d = GameTestDriver()
-        d.registerCards(TestCards.all + raid)
+        d.registerCards(TestCards.all + raid + modal)
         d.initMirrorMatch(Deck.of("Swamp" to 40))
         d.passPriorityUntil(Step.PRECOMBAT_MAIN)
         val me = d.activePlayer!!
@@ -93,6 +103,18 @@ class CastAnyNumberStoreCastToTest : FunSpec({
         d.submitCardSelection(me, listOf(bears)).error shouldBe null
 
         withClue("2 + 3 mana value, one life loss each") { d.getLifeTotal(opp) shouldBe 15 }
+    }
+
+    test("a cast that pauses inside the cast for a mode is still recorded") {
+        val (d, me, opp) = setup()
+        val probe = d.putCardInGraveyard(opp, "Test Modal Probe")
+
+        d.castRaid(me)
+        d.submitCardSelection(me, listOf(probe)).error shouldBe null
+        (d.pendingDecision is ChooseOptionDecision) shouldBe true
+        d.submitDecision(me, OptionChosenResponse(d.pendingDecision!!.id, 0)).error shouldBe null
+
+        withClue("the modal spell (mana value 3) was cast; its owner loses 3") { d.getLifeTotal(opp) shouldBe 17 }
     }
 
     test("declining before any cast records nothing") {

@@ -44,32 +44,46 @@ class CastModalContinuationResumer(
         resumer(com.wingedsheep.engine.core.CastChooseXContinuation::class, ::resumeChooseX)
     )
 
+    /**
+     * A cast-time picker answered mid-resolution — a free cast of a modal, X or extra-cost spell
+     * from Cascade, Etali or a "cast any number" loop — must hand control back to the resolution
+     * that started the cast once the cast is done (or cancelled), or the rest of that effect never
+     * runs. A cast that pauses again keeps its own question; a cast from hand has nothing beneath.
+     */
+    private inline fun finishCast(checkForMore: CheckForMore, cast: () -> ExecutionResult): ExecutionResult {
+        val result = cast()
+        return if (result.outcome is com.wingedsheep.engine.core.Outcome.Done) checkForMore(result.state, result.events)
+        else result
+    }
+
     private fun resumeChooseX(
         state: GameState,
         continuation: com.wingedsheep.engine.core.CastChooseXContinuation,
         response: DecisionResponse,
-        @Suppress("UNUSED_PARAMETER") checkForMore: CheckForMore,
+        checkForMore: CheckForMore,
     ): ExecutionResult {
         val action = continuation.baseCastAction
         val x = (response as? com.wingedsheep.engine.core.NumberChosenResponse)?.number?.coerceAtLeast(0)
             ?: return ExecutionResult.error(state, "Expected a number for X")
-        return castSpellHandler.execute(state.withPriority(action.playerId), action.copy(xValue = x))
+        return finishCast(checkForMore) { castSpellHandler.execute(state.withPriority(action.playerId), action.copy(xValue = x)) }
     }
 
     private fun resumeCostChoice(
         state: GameState,
         continuation: com.wingedsheep.engine.core.CastCostChoiceContinuation,
         response: DecisionResponse,
-        @Suppress("UNUSED_PARAMETER") checkForMore: CheckForMore,
+        checkForMore: CheckForMore,
     ): ExecutionResult {
         val action = continuation.baseCastAction
-        if (response is CancelDecisionResponse) return ExecutionResult.success(state.withPriority(action.playerId))
+        if (response is CancelDecisionResponse) {
+            return finishCast(checkForMore) { ExecutionResult.success(state.withPriority(action.playerId)) }
+        }
         val index = (response as? OptionChosenResponse)?.optionIndex
             ?.let { continuation.offeredIndices.getOrNull(it) }
             ?: return ExecutionResult.error(state, "Invalid additional-cost branch")
-        return castSpellHandler.execute(state.withPriority(action.playerId), action.copy(
+        return finishCast(checkForMore) { castSpellHandler.execute(state.withPriority(action.playerId), action.copy(
             additionalCostChoices = action.additionalCostChoices + (continuation.slot to index)
-        ))
+        )) }
     }
 
     /**
@@ -83,10 +97,10 @@ class CastModalContinuationResumer(
         state: GameState,
         continuation: CastSpellAdditionalCostContinuation,
         response: DecisionResponse,
-        @Suppress("UNUSED_PARAMETER") checkForMore: CheckForMore
+        checkForMore: CheckForMore
     ): ExecutionResult {
         if (response is CancelDecisionResponse) {
-            return ExecutionResult.success(state.withPriority(continuation.casterId))
+            return finishCast(checkForMore) { ExecutionResult.success(state.withPriority(continuation.casterId)) }
         }
         if (response !is CardsSelectedResponse) {
             return ExecutionResult.error(state, "Expected card selection response for additional-cost payment")
@@ -96,18 +110,18 @@ class CastModalContinuationResumer(
             continuation.costKind,
             response.selectedCards
         )
-        return castSpellHandler.execute(state.withPriority(continuation.casterId), finalAction)
+        return finishCast(checkForMore) { castSpellHandler.execute(state.withPriority(continuation.casterId), finalAction) }
     }
 
     fun resumeCastModalModeSelection(
         state: GameState,
         continuation: CastModalModeSelectionContinuation,
         response: DecisionResponse,
-        @Suppress("UNUSED_PARAMETER") checkForMore: CheckForMore
+        checkForMore: CheckForMore
     ): ExecutionResult {
         if (response is CancelDecisionResponse) {
             // Pause happened before any cost was paid — safe to bail without mutations.
-            return ExecutionResult.success(state.withPriority(continuation.casterId))
+            return finishCast(checkForMore) { ExecutionResult.success(state.withPriority(continuation.casterId)) }
         }
         if (response !is OptionChosenResponse) {
             return ExecutionResult.error(state, "Expected option response for modal cast-time mode selection")
@@ -145,7 +159,7 @@ class CastModalContinuationResumer(
                 minChooseCount = continuation.minChooseCount,
                 allowRepeat = continuation.allowRepeat
             )
-            return castSpellHandler.presentCastModalModeDecision(
+            return finishCast(checkForMore) { castSpellHandler.presentCastModalModeDecision(
                 state = state,
                 cardId = continuation.cardId,
                 casterId = continuation.casterId,
@@ -155,12 +169,12 @@ class CastModalContinuationResumer(
                 selectedModeIndices = newSelected,
                 availableIndices = nextAvailable,
                 repeatAvailableIndices = repeatAvailable
-            )
+            ) }
         }
 
         // All modes picked — transition to target selection (skipping modes with no
         // target requirements) or finalize directly.
-        return castSpellHandler.presentCastModalTargetDecision(
+        return finishCast(checkForMore) { castSpellHandler.presentCastModalTargetDecision(
             state = state,
             cardId = continuation.cardId,
             casterId = continuation.casterId,
@@ -170,17 +184,17 @@ class CastModalContinuationResumer(
             chosenModeIndices = newSelected,
             resolvedModeTargets = emptyList(),
             currentOrdinal = 0
-        )
+        ) }
     }
 
     fun resumeCastModalTargetSelection(
         state: GameState,
         continuation: CastModalTargetSelectionContinuation,
         response: DecisionResponse,
-        @Suppress("UNUSED_PARAMETER") checkForMore: CheckForMore
+        checkForMore: CheckForMore
     ): ExecutionResult {
         if (response is CancelDecisionResponse) {
-            return ExecutionResult.success(state.withPriority(continuation.casterId))
+            return finishCast(checkForMore) { ExecutionResult.success(state.withPriority(continuation.casterId)) }
         }
         if (response !is TargetsResponse) {
             return ExecutionResult.error(state, "Expected targets response for modal cast-time target selection")
@@ -197,7 +211,7 @@ class CastModalContinuationResumer(
 
         val cardName = state.getEntity(continuation.cardId)?.get<CardComponent>()?.name ?: "modal spell"
 
-        return castSpellHandler.presentCastModalTargetDecision(
+        return finishCast(checkForMore) { castSpellHandler.presentCastModalTargetDecision(
             state = state,
             cardId = continuation.cardId,
             casterId = continuation.casterId,
@@ -207,6 +221,6 @@ class CastModalContinuationResumer(
             chosenModeIndices = continuation.chosenModeIndices,
             resolvedModeTargets = newResolvedTargets,
             currentOrdinal = nextOrdinal
-        )
+        ) }
     }
 }

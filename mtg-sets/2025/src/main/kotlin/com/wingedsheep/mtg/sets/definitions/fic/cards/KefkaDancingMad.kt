@@ -80,10 +80,10 @@ val KefkaDancingMad = card("Kefka, Dancing Mad") {
         collectorNumber = "84"
         artist = "Anton Solovianchyk"
         imageUri = "https://cards.scryfall.io/normal/front/2/1/21cfc161-11b8-4253-a872-3b08a13b6991.jpg?1783906346"
-        ruling("2025-06-13", "If a spell you cast has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost.")
-        ruling("2025-06-13", "Cards you choose not to cast this way (or can't cast this way) remain in exile.")
-        ruling("2025-06-13", "If you cast a spell \"without paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs, such as kicker costs. If the card has any mandatory additional costs, those must be paid to cast the spell.")
-        ruling("2025-06-13", "You cast the spells one at a time, choosing modes, targets, and so on. The last spell you cast will be the first one to resolve.")
-        ruling("2025-06-13", "You choose which spells to cast (if any) as Kefka's last ability resolves. You can't wait to cast them later in the turn. Timing restrictions based on their types are ignored.")
+        ruling("2025-06-06", "If a spell you cast has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost.")
+        ruling("2025-06-06", "Cards you choose not to cast this way (or can't cast this way) remain in exile.")
+        ruling("2025-06-06", "If you cast a spell \"without paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs, such as kicker costs. If the card has any mandatory additional costs, those must be paid to cast the spell.")
+        ruling("2025-06-06", "You cast the spells one at a time, choosing modes, targets, and so on. The last spell you cast will be the first one to resolve.")
+        ruling("2025-06-06", "You choose which spells to cast (if any) as Kefka's last ability resolves. You can't wait to cast them later in the turn. Timing restrictions based on their types are ignored.")
     }
 }

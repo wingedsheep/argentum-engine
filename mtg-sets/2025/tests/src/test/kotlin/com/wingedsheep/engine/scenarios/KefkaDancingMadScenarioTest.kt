@@ -128,6 +128,23 @@ class KefkaDancingMadScenarioTest : FunSpec({
         withClue("then Lightning Bolt resolves at its target") { d.getLifeTotal(oppB) shouldBe 16 }
     }
 
+    test("a land exiled this way is never offered, and an empty graveyard gives nothing") {
+        val (d, players) = setup(playerCount = 3)
+        val oppA = players[1]
+        val oppB = players[2]
+        val mountain = d.putCardInGraveyard(oppA, "Mountain")
+
+        d.resolveToPrompt()
+
+        withClue("the land is exiled but not offered, so the trigger finishes without a prompt") {
+            d.getExile(oppA) shouldContain mountain
+            d.pendingDecision shouldBe null
+            d.stackSize shouldBe 0
+        }
+        players.forEach { d.getLifeTotal(it) shouldBe 20 }
+        d.getExile(oppB) shouldBe emptyList()
+    }
+
     test("Kefka has indestructible only during its controller's turn") {
         val (d, players) = setup()
         val kefka = d.getCreatures(players[0]).single()

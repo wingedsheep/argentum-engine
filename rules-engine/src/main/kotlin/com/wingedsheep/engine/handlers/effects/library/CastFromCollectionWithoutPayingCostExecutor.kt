@@ -11,6 +11,7 @@ import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.TargetRequirementInfo
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.continuations.exposeCollectionsToNextFrame
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.handlers.effects.ChooserResolution
@@ -192,7 +193,12 @@ class CastFromCollectionWithoutPayingCostExecutor(
         alternativeCostType: AlternativeCostType? = null,
         stampedAlternativeManaCost: Boolean = false,
     ): EffectResult {
-        val stateForCast = state.copy(priorityPlayerId = casterId)
+        // Publish the cast card to the program frame beneath *before* casting: a cast that pauses
+        // inside the cast (a mode, X, kicker) pushes its own frame on top, and a paused leaf's
+        // `updatedCollections` are not handed on. A cast that fails falls back to `state`, which
+        // never saw the record.
+        val castCollections = storeCastTo?.let { mapOf(it to listOf(cardId)) } ?: emptyMap()
+        val stateForCast = exposeCollectionsToNextFrame(state, castCollections).copy(priorityPlayerId = casterId)
         val castResult = castSpellHandlerProvider().execute(
             stateForCast,
             CastSpell(
@@ -205,10 +211,9 @@ class CastFromCollectionWithoutPayingCostExecutor(
             return EffectResult.success(revokeFreeCast(state, cardId, grantedPermissionId, stampedAlternativeManaCost))
         }
 
-        // The cast initiated (synchronously or pausing for X / further input). Publish the cast
-        // card so an enclosing Effects.IfYouDo can gate a follow-up on "if you do" (Kaervek).
-        val castCollections = storeCastTo?.let { mapOf(it to listOf(cardId)) } ?: emptyMap()
-
+        // The cast initiated (synchronously or pausing for X / further input). The record is
+        // also returned on the result so a synchronous caller folds it in directly; an enclosing
+        // Effects.IfYouDo can gate a follow-up on "if you do" (Kaervek).
         if (castResult.pendingDecision != null) {
             return EffectResult.propagatePause(
                 castResult.state,
