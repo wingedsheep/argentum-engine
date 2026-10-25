@@ -205,9 +205,10 @@ class CastFromZoneEnumerator(
                 val availableSources = context.manaSolver.getAvailableManaCount(
                     state, playerId, precomputedSources = cachedSources,
                 )
-                val fixedCost = effectiveCost.cmc
-                val xSymbolCount = effectiveCost.xCount.coerceAtLeast(1)
-                ((availableSources - fixedCost) / xSymbolCount).coerceAtLeast(0)
+                context.costCalculator.maxAffordableX(
+                    state, cardDef, playerId, cardId, payable = availableSources - effectiveCost.cmc,
+                    xCount = effectiveCost.xCount, fromZone = Zone.COMMAND,
+                )
             } else null
             val autoTapPreview = if (context.skipAutoTapPreview) null else {
                 context.manaSolver.solve(state, playerId, effectiveCost, precomputedSources = cachedSources)
@@ -466,9 +467,14 @@ class CastFromZoneEnumerator(
                         val hasXCost = topEffectiveCost.hasX
                         val maxAffordableX: Int? = if (hasXCost) {
                             val availableSources = context.manaSolver.getAvailableManaCount(state, playerId, precomputedSources = cachedSources)
-                            val fixedCost = topEffectiveCost.cmc
-                            val xSymbolCount = topEffectiveCost.xCount.coerceAtLeast(1)
-                            ((availableSources - fixedCost) / xSymbolCount).coerceAtLeast(0)
+                            val payable = availableSources - topEffectiveCost.cmc
+                            // An alternative cost replaces the printed one the X-aware pricing reads.
+                            if (topCardDef == null || topAltCost != null) {
+                                (payable / topEffectiveCost.xCount.coerceAtLeast(1)).coerceAtLeast(0)
+                            } else context.costCalculator.maxAffordableX(
+                                state, topCardDef, playerId, topCardId, payable = payable,
+                                xCount = topEffectiveCost.xCount, fromZone = Zone.LIBRARY,
+                            )
                         } else null
                         val autoTapPreview = if (context.skipAutoTapPreview) null else {
                             context.manaSolver.solve(state, playerId, if (freeCastFromTop) topFreeCost else topPayableCost, precomputedSources = cachedSources)
@@ -731,9 +737,14 @@ class CastFromZoneEnumerator(
                     val hasXCost = !playForFree && effectiveCost.hasX
                     val maxAffordableX: Int? = if (hasXCost) {
                         val availableSources = context.manaSolver.getAvailableManaCount(state, playerId, precomputedSources = context.availableManaSources)
-                        val fixedCost = effectiveCost.cmc  // X contributes 0 to CMC
-                        val xSymbolCount = effectiveCost.xCount.coerceAtLeast(1)
-                        ((availableSources - fixedCost) / xSymbolCount).coerceAtLeast(0)
+                        val payable = availableSources - effectiveCost.cmc  // X contributes 0 to CMC
+                        if (cardDef == null || runtimeFixedAltCost != null) {
+                            (payable / effectiveCost.xCount.coerceAtLeast(1)).coerceAtLeast(0)
+                        } else context.costCalculator.maxAffordableX(
+                            state,
+                            if (prepareFace != null) context.costCalculator.faceCharacteristics(cardDef, prepareFace) else cardDef,
+                            playerId, cardId, payable = payable, xCount = effectiveCost.xCount, fromZone = castZone,
+                        )
                     } else null
 
                     // Build additional cost info from runtime component

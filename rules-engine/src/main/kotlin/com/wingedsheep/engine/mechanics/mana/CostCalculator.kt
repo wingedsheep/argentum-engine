@@ -1290,12 +1290,35 @@ class CostCalculator(
      * prices like the cast itself does (kept symbolic for "spend only <colour> mana on X"), so the
      * difference is only the modifiers that start or stop matching.
      */
-    fun announcedXPriceShift(state: GameState, cardDef: CardDefinition, casterId: EntityId, spellId: EntityId, x: Int): Int {
+    fun announcedXPriceShift(
+        state: GameState, cardDef: CardDefinition, casterId: EntityId, spellId: EntityId, x: Int, fromZone: Zone? = null,
+    ): Int {
         val printed = cardDef.manaCost
         val base = if (cardDef.script.xManaRestriction.isEmpty()) printed.withXAs(x) else printed
-        val aware = calculateMinPossibleCost(state, cardDef, casterId, spellId, base, announcedX = x)
-        val blind = calculateMinPossibleCost(state, cardDef, casterId, spellId, base)
-        return aware.cmc - blind.cmc
+        fun priced(announcedX: Int?) = priceByTargets(
+            state, cardDef, casterId, spellId, base, withTable = false, fromZone = fromZone, announcedX = announcedX,
+        ).min.cmc
+        return priced(x) - priced(null)
+    }
+
+    /**
+     * The largest X [casterId] can announce for [cardDef] with [payable] mana left once the
+     * X-blind price's fixed part is paid: `payable / xCount`, unless a modifier keyed to mana
+     * value ([manaValueSensitiveBound]) moves the price as the X grows (CR 202.3e) — then each X
+     * it could reach is priced from the furthest downward. Every offer priced from the printed
+     * mana cost — hand, face, kicked, command zone, may-play and top-of-library casts — takes its
+     * X ceiling from here; an alternative cost's own {X} (warp {X}{G}) is not the mana cost's X.
+     */
+    fun maxAffordableX(
+        state: GameState, cardDef: CardDefinition, casterId: EntityId, spellId: EntityId,
+        payable: Int, xCount: Int, fromZone: Zone? = null,
+    ): Int {
+        val perX = xCount.coerceAtLeast(1)
+        val linear = (payable / perX).coerceAtLeast(0)
+        val bound = manaValueSensitiveBound(state, cardDef, casterId) ?: return linear
+        return (linear + bound / perX + 1 downTo 0).firstOrNull { x ->
+            perX * x + announcedXPriceShift(state, cardDef, casterId, spellId, x, fromZone) <= payable
+        } ?: 0
     }
 
     private fun spellFilterOf(target: SpellCostTarget): GameObjectFilter? = when (target) {
@@ -1311,6 +1334,8 @@ class CostCalculator(
     private fun readsManaValue(filter: GameObjectFilter): Boolean =
         filter.cardPredicates.any(::readsManaValue) || filter.anyOf.any(::readsManaValue)
 
+    // Every predicate [matchesCardPredicate] answers from `manaValue` — keep the two in step, or
+    // a new one falls back to the X-blind ceiling.
     private fun readsManaValue(predicate: CardPredicate): Boolean = when (predicate) {
         is CardPredicate.ManaValueEquals, is CardPredicate.ManaValueAtMost, is CardPredicate.ManaValueAtLeast,
         is CardPredicate.ManaValueAtMostDynamic, is CardPredicate.ManaValueEqualsDynamic,
@@ -1835,6 +1860,7 @@ class CostCalculator(
             is CardPredicate.HasKeyword -> predicate.keyword in cardDef.keywords
             is CardPredicate.NotKeyword -> predicate.keyword !in cardDef.keywords
 
+            // Each predicate read from `manaValue` is also listed in `readsManaValue`.
             is CardPredicate.ManaValueEquals -> manaValue == predicate.value
             is CardPredicate.ManaValueAtMost -> manaValue <= predicate.max
             is CardPredicate.ManaValueAtLeast -> manaValue >= predicate.min

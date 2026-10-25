@@ -10974,10 +10974,10 @@ staticAbility {
   - **A filter on mana value counts the announced X** (CR 202.3e — the spell is on the stack as its
     cost is determined). Spectacle Mage: `YouCast(InstantOrSorcery.manaValueAtLeast(5))` +
     `ReduceGeneric(1)` discounts `{X}{U}` cast with X = 4 (mana value 5), not with X = 3. The cast is
-    priced with `CastSpell.xValue`, and the enumerator's X ceiling prices each X a mana-value
-    modifier could move (`CostCalculator.manaValueSensitiveBound` / `announcedXPriceShift`), so the
-    offered `maxAffordableX` reaches the discounted X — and stops where a "mana value N or less"
-    discount ends. Nothing extra to author.
+    priced with `CastSpell.xValue`, and every offer priced from the printed mana cost takes its X
+    ceiling from `CostCalculator.maxAffordableX`, which prices each X a mana-value modifier could
+    move — so the offered `maxAffordableX` reaches the discounted X, and stops where a "mana value
+    N or less" discount ends. Nothing extra to author.
   - `PlayerCasts(player, filter = Any)` — spells matching `filter` cast by the **one player the source names**: `Player.EnchantedPlayer` (the player an "enchant player" Aura is attached to), `Player.ChosenOpponent` or `Player.ChosenPlayer` (recorded as the source entered). Any other reference is rejected at construction — "you" / "your opponents" are `YouCast` / `OpponentsCast` — and a source that names no player right now taxes nobody. Curse of Silence: `PlayerCasts(Player.EnchantedPlayer, GameObjectFilter.Any.namedFromChosenComponent())` + `IncreaseGeneric(2)` = "Spells with the chosen name enchanted player casts cost {2} more to cast."
 - `optionalLifePayment: Int? = null` — an optional additional life cost declared once per source
   instance while casting. Paying it enables this modifier; declining leaves the cost unchanged.

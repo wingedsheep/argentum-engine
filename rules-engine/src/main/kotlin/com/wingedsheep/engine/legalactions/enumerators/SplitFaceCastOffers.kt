@@ -68,7 +68,10 @@ internal object SplitFaceCastOffers {
         val hasXCost = effectiveCost.hasX
         val maxAffordableX = if (hasXCost) {
             val available = context.manaSolver.getAvailableManaCount(state, playerId, precomputedSources = cachedSources)
-            ((available - effectiveCost.cmc) / effectiveCost.xCount.coerceAtLeast(1)).coerceAtLeast(0)
+            context.costCalculator.maxAffordableX(
+                state, faceDef, playerId, cardId, payable = available - effectiveCost.cmc, xCount = effectiveCost.xCount,
+                fromZone = if (sourceZone == "GRAVEYARD") com.wingedsheep.sdk.core.Zone.GRAVEYARD else null,
+            )
         } else null
 
 

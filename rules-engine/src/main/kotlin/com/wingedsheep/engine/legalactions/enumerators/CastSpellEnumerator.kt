@@ -668,17 +668,12 @@ class CastSpellEnumerator(
                 } else 0
                 val fixedCost = effectiveCost.cmc  // X contributes 0 to CMC
                 val xSymbolCount = effectiveCost.xCount.coerceAtLeast(1)
-                val payable = availableSources + delveAvailable + waterbendAvailable + convokeAvailable + improviseAvailable + xCredit + reducingXCredit - fixedCost
-                val linearMaxX = (payable / xSymbolCount).coerceAtLeast(0)
                 // A modifier keyed to mana value starts or stops matching as the X grows (CR
-                // 202.3e: on the stack the X counts) — Spectacle Mage's discount reaches an X the
-                // X-blind price can't. Price each X from the furthest it could reach downward.
-                val mvBound = context.costCalculator.manaValueSensitiveBound(state, cardDef, playerId)
-                if (mvBound == null) linearMaxX else {
-                    (linearMaxX + mvBound / xSymbolCount + 1 downTo 0).firstOrNull { x ->
-                        xSymbolCount * x + context.costCalculator.announcedXPriceShift(state, cardDef, playerId, cardId, x) <= payable
-                    } ?: 0
-                }
+                // 202.3e) — Spectacle Mage's discount reaches an X the X-blind price can't.
+                context.costCalculator.maxAffordableX(
+                    state, cardDef, playerId, cardId, xCount = xSymbolCount,
+                    payable = availableSources + delveAvailable + waterbendAvailable + convokeAvailable + improviseAvailable + xCredit + reducingXCredit - fixedCost,
+                )
             } else null
 
             val affordableX = listOfNotNull(manaMaxX, counterMaxX).minOrNull()
@@ -2233,9 +2228,12 @@ class CastSpellEnumerator(
                     val kickedHasXCost = kickedCost.hasX
                     val kickedMaxAffordableX: Int? = if (kickedHasXCost) {
                         val availableSources = context.manaSolver.getAvailableManaCount(state, playerId, precomputedSources = context.availableManaSources, spellContext = kickedSpellContext)
-                        val fixedCost = kickedCost.cmc  // X contributes 0 to CMC
-                        val xSymbolCount = kickedCost.xCount.coerceAtLeast(1)
-                        ((availableSources - fixedCost) / xSymbolCount).coerceAtLeast(0)
+                        // The kicker adds to the cost, never to the mana value: only a printed {X}
+                        // moves a mana-value modifier (CR 202.3e).
+                        context.costCalculator.maxAffordableX(
+                            state, cardDef, playerId, cardId,
+                            payable = availableSources - kickedCost.cmc, xCount = kickedCost.xCount,  // X contributes 0 to CMC
+                        )
                     } else null
 
                     // Check additional cost payability (e.g., sacrifice a creature)
@@ -3294,9 +3292,10 @@ class CastSpellEnumerator(
             val availableSources = context.manaSolver.getAvailableManaCount(
                 state, playerId, precomputedSources = cachedSources, spellContext = spellContext
             )
-            val fixedCost = effectiveCost.cmc // X contributes 0 to CMC
-            val xSymbolCount = effectiveCost.xCount.coerceAtLeast(1)
-            ((availableSources - fixedCost) / xSymbolCount).coerceAtLeast(0)
+            context.costCalculator.maxAffordableX(
+                state, context.costCalculator.faceCharacteristics(cardDef, face), playerId, cardId,
+                payable = availableSources - effectiveCost.cmc, xCount = effectiveCost.xCount, // X contributes 0 to CMC
+            )
         } else null
 
         if (targetReqs.isEmpty()) {
