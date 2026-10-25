@@ -2835,6 +2835,64 @@
     "colorIdentityOverride": []
 }
 
+// Grim Draugr
+{
+    "name": "Grim Draugr",
+    "manaCost": "{2}{B}",
+    "typeLine": "Snow Creature — Zombie Berserker",
+    "oracleText": "{1}{S}: This creature gets +1/+0 and gains menace until end of turn. (It can't be blocked except by two or more creatures. {S} can be paid with one mana from a snow source.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Grim Draugr:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{S}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "MENACE",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{1}{S}: This creature gets +1/+0 and gains menace until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "artist": "Grzegorz Rutkowski",
+        "flavorText": "She was a ragged shadow of her living form, but she had lost none of her deadly prowess.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/54340c59-03a9-4d9d-bd27-9aed337ce75a.jpg?1783928247"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Grizzled Outrider
 {
     "name": "Grizzled Outrider",
@@ -2903,6 +2961,59 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Hailstorm Valkyrie
+{
+    "name": "Hailstorm Valkyrie",
+    "manaCost": "{3}{B}",
+    "typeLine": "Snow Creature — Angel Wizard",
+    "oracleText": "Flying, trample\n{S}{S}: This creature gets +2/+2 until end of turn. ({S} can be paid with one mana from a snow source.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hailstorm Valkyrie:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{S}{S}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "{S}{S}: This creature gets +2/+2 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "UNCOMMON",
+        "artist": "Bram Sels",
+        "flavorText": "When the path to Starnheim was opened, vengeance rained down upon the enemies of Bretagard.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a5a272b3-aaab-4c98-86a8-85c67a5f3d4d.jpg?1783928246"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3282,6 +3393,77 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Jarl of the Forsaken
+{
+    "name": "Jarl of the Forsaken",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Zombie Cleric",
+    "oracleText": "Flash\nWhen this creature enters, destroy target creature or planeswalker an opponent controls that was dealt damage this turn.\nForetell {1}{B} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH",
+        "FORETELL"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Foretell",
+            "cost": "{1}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jarl of the Forsaken:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        "IsCreature",
+                                        "IsPlaneswalker"
+                                    ]
+                                }
+                            ],
+                            "statePredicates": [
+                                "WasDealtDamageThisTurn"
+                            ],
+                            "controllerPredicate": "ControlledByOpponent"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "artist": "Chris Cold",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f5b12c6c-c3d6-4b8a-bed4-d61f67f565b9.jpg?1783928245"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4156,6 +4338,108 @@
         "artist": "Aaron Miller",
         "imageUri": "https://cards.scryfall.io/normal/front/f/5/f572cbb1-49ee-4c95-90a3-82704cf92454.jpg?1783928184"
     }
+}
+
+// Rally the Ranks
+{
+    "name": "Rally the Ranks",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "As this enchantment enters, choose a creature type.\nCreatures you control of the chosen type get +1/+1.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature ctrl:you",
+                    "chosenSubtypeKey": "chosenCreatureType"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CREATURE_TYPE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "rarity": "RARE",
+        "artist": "Lie Setiawan",
+        "flavorText": "Halvar united the spirits of all the clans into a single, devastating force.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/03595195-3be2-4d18-b5c0-43b2dcc1c0f5.jpg?1783928282"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Ravenform
+{
+    "name": "Ravenform",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile target artifact or creature. Its controller creates a 1/1 blue Bird creature token with flying.\nForetell {U} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "keywords": [
+        "FORETELL"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Foretell",
+            "cost": "{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Bird"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a0cb299-057d-4c39-9d73-3a3512526e4a.jpg?1783928081",
+                    "controller": "TargetController"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "artist": "Anna Steinbauer",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2c2cfcd7-b43a-4dad-a033-e661f55ceecd.jpg?1783928258"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Ravenous Lindwurm
