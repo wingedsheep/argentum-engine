@@ -299,6 +299,7 @@ class AIPlayer(
                 raceWeight = EvalWeights.resolve(profile.evalWeightsId).threatAssessment,
                 pressWhenAhead = profile.pressWhenAhead,
                 anticipateCombatResponses = profile.anticipateCombatResponses,
+                minimalLethalInPods = profile.minimalLethalInPods,
             )
             val responder = DecisionResponder(
                 simulator, evaluator,

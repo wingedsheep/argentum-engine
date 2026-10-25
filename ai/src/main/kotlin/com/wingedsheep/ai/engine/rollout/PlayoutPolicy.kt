@@ -93,6 +93,7 @@ class PlayoutPolicy(
                 state, state.projectedState, action, playerId, cardRegistry,
                 aimAtPlaneswalkers = combatAdvisor.attackPlaneswalkers,
                 walkerEngines = combatAdvisor.walkerEngines,
+                minimalLethalInPods = combatAdvisor.minimalLethalInPods,
             )
             return DeclareAttackers(playerId, seed.attackers) to rng
         }

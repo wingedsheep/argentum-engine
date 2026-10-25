@@ -128,6 +128,12 @@ class CombatAdvisor(
      * argument; needs [cardRegistry].
      */
     anticipateCombatResponses: Boolean = false,
+    /**
+     * In a pod, shrink a lethal alpha strike to the attackers the kill needs, keeping the rest home
+     * for the opponents still in the game ([CombatSeed.minimalLethal]).
+     * [AiProfile.minimalLethalInPods] carries the argument.
+     */
+    internal val minimalLethalInPods: Boolean = false,
 ) {
     /** See [anticipateCombatResponses]; null when off. */
     private val responses: CombatResponses? =
@@ -286,6 +292,7 @@ class CombatAdvisor(
             },
             aimAtPlaneswalkers = attackPlaneswalkers,
             walkerEngines = walkerEngines,
+            minimalLethalInPods = minimalLethalInPods,
         )
         val opponentId = seed.defenderId ?: return DeclareAttackers(playerId, emptyMap())
         // Which defender each attacker may legally take (CR 508.1b–c) — the engine lists it per

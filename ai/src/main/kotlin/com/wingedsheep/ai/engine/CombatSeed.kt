@@ -32,7 +32,8 @@ object CombatSeed {
      *
      * Three passes, in order:
      * 1. **Lethal alpha strike** — if damage gets through even against optimal blocking, everything
-     *    attacks and nothing else matters. Deliberately ignores [attackPenalty]: a `CardAdvisor`
+     *    attacks and nothing else matters (in a pod under [minimalLethalInPods], only the fewest
+     *    attackers that still kill — [minimalLethal]). Deliberately ignores [attackPenalty]: a `CardAdvisor`
      *    that would rather keep a wall home does not get a vote on the turn we win.
      * 2. **No-downside and clearly profitable attackers** — evasive, vigilant, indestructible,
      *    survives every blocker, profitable trades.
@@ -47,6 +48,8 @@ object CombatSeed {
      *   attacker goes at the primary seat, the behaviour before `AiProfile.attackPlaneswalkers`.
      * @param walkerEngines prices each walker as an engine, reading its abilities through this
      *   catalog ([PlaneswalkerThreat], `AiProfile.walkersPricedAsEngines`); null is the legacy reading.
+     * @param minimalLethalInPods with more than one opponent left, shrink the lethal alpha strike to
+     *   [minimalLethal] (`AiProfile.minimalLethalInPods`). 1v1 is unaffected.
      */
     fun attackers(
         state: GameState,
@@ -57,6 +60,7 @@ object CombatSeed {
         attackPenalty: (EntityId) -> Double = { 0.0 },
         aimAtPlaneswalkers: Boolean = false,
         walkerEngines: IntentCatalog? = null,
+        minimalLethalInPods: Boolean = false,
     ): AttackSeed {
         val defendingPlayers = legalAction.validAttackTargets ?: emptyList()
         if (defendingPlayers.isEmpty()) {
@@ -91,7 +95,14 @@ object CombatSeed {
         // Only creatures that can attack the primary seat count toward killing it.
         val reachPrimary = validAttackers.filter { defenderOf[it] == opponentId }
         if (CombatMath.isLethalAttack(state, projected, reachPrimary, opponentCreatures, opponentLife)) {
-            val alphaStrike = defenderOf
+            // In 1v1 the game ends, so everything attacks. In a pod the kill only needs enough to
+            // finish the dying seat; the rest stays home for the opponents still at the table.
+            val alphaStrike = if (minimalLethalInPods && state.getOpponents(playerId).size > 1) {
+                minimalLethal(state, projected, reachPrimary, opponentCreatures, opponentLife, mandatory.toSet())
+                    .associateWith { defenderOf.getValue(it) }
+            } else {
+                defenderOf
+            }
             val affordable = CombatTaxBudget.affordableAttack(
                 state, projected, playerId, cardRegistry, alphaStrike, mandatory.toSet()
             )
@@ -223,6 +234,40 @@ object CombatSeed {
             opponentId,
             lethal = false,
         )
+    }
+
+    /**
+     * The fewest attackers out of [lethal] that still kill the dying seat through optimal blocking
+     * ([CombatMath.isLethalAttack]), for a pod, where whatever attacks is not home for the next
+     * opponent's swing. [mandatory] attackers always stay in; the rest are dropped greedily while
+     * the attack stays lethal, the best blockers for next turn first: a creature that can block and
+     * would be tapped by attacking (no vigilance), not one of the evasive attackers that make the
+     * kill reliable, then by toughness and power. Non-mandatory attackers that cannot reach the
+     * dying seat are left out — they are not part of the kill.
+     */
+    internal fun minimalLethal(
+        state: GameState,
+        projected: ProjectedState,
+        lethal: List<EntityId>,
+        blockers: List<EntityId>,
+        life: Int,
+        mandatory: Set<EntityId>,
+    ): List<EntityId> {
+        val keep = lethal.toMutableList()
+        val dropOrder = lethal
+            .filter { it !in mandatory }
+            .sortedWith(
+                compareBy<EntityId> { projected.cantBlock(it) }
+                    .thenBy { Keyword.VIGILANCE.name in projected.getKeywords(it) }
+                    .thenBy { CombatMath.isEvasive(state, projected, it, blockers) }
+                    .thenByDescending { projected.getToughness(it) ?: 0 }
+                    .thenByDescending { projected.getPower(it) ?: 0 }
+            )
+        for (attacker in dropOrder) {
+            keep.remove(attacker)
+            if (!CombatMath.isLethalAttack(state, projected, keep, blockers, life)) keep.add(attacker)
+        }
+        return (keep + mandatory.filter { it !in keep })
     }
 
     /**

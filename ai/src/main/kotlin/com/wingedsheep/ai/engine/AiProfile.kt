@@ -1235,6 +1235,23 @@ data class AiProfile(
      * [com.wingedsheep.ai.engine.knowledge.SelfTapGrowthWindow]. Pinned by `SelfTapGrowthWindowTest`.
      */
     val tapToGrowAtTheirEndStep: Boolean = false,
+    /**
+     * In a pod, make a lethal attack with only what the kill needs and keep the rest home for the
+     * opponents still at the table.
+     *
+     * Off a 4-player AI-vs-AI playtest (2026-10-25, game 01): turn 38, Seat1 sent all six attackers
+     * at a seat on 2 life with no flying blockers, when two Drakes or the Griffin alone were enough;
+     * turn 40, the next seat swung 21 power into the tapped-out board and Seat1 died at −7. When
+     * [CombatSeed]'s lethal check passes, the alpha strike is returned without local search or
+     * crack-back pricing — right in 1v1, where the game ends, wrong while another opponent lives.
+     *
+     * With this on and more than one opponent left, the lethal seed is shrunk to a minimal subset
+     * aimed at the dying seat ([CombatSeed.minimalLethal]): attackers are dropped greedily while
+     * [CombatMath.isLethalAttack] still holds, the best blockers for next turn first (able to block,
+     * no vigilance, not evasive against the dying seat, high toughness); mandatory attackers stay.
+     * 1v1 is untouched. Pinned by `MinimalLethalInPodsTest`.
+     */
+    val minimalLethalInPods: Boolean = false,
     /** Non-null profiles may only be selected automatically for this set. Arena selection stays explicit. */
     val restrictedToSet: String? = null,
 ) {
@@ -2192,6 +2209,7 @@ data class AiProfile(
             pressWhenAhead = true,
             lifelinkWaitsForBlocks = true,
             tapToGrowAtTheirEndStep = true,
+            minimalLethalInPods = true,
         )
 
         /**
