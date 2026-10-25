@@ -45,14 +45,12 @@ class AddOneManaOfEachColorAmongExecutor(
                 }
             }
             ManaColorSource.CraftedMaterials -> {
-                // Printed colors of the exile-zone materials — off-battlefield cards are never
-                // projected, so base CardComponent state is the correct read.
+                // The exile-zone materials' colors: printed, unless an off-battlefield color
+                // effect (Mycosynth Lattice) sets them.
                 val materials = context.sourceId?.let { state.getEntity(it) }
                     ?.get<com.wingedsheep.engine.state.components.battlefield.CraftedFromExiledComponent>()
                 materials?.exiledIds?.forEach { exiledId ->
-                    state.getEntity(exiledId)
-                        ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
-                        ?.colors?.let(availableColors::addAll)
+                    availableColors.addAll(state.projectedState.colorSetOf(exiledId))
                 }
             }
         }

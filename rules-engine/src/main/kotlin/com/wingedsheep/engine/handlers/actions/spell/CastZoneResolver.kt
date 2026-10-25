@@ -31,6 +31,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.engine.state.permissions.hasMayPlayFor
 import com.wingedsheep.engine.state.components.player.MayCastCreaturesFromGraveyardWithForageComponent
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
@@ -829,12 +830,12 @@ class CastZoneResolver(
                         ?.get<CastFromTopOfLibraryUsesThisTurnComponent>()?.uses ?: 0
                     val maxCasts = unwrapped.maxCastsPerTurn
                     val hasUse = maxCasts == null || uses < maxCasts
-                    if (hasUse && matchesCardFilter(cardComponent, unwrapped.filter, state, entityId)) return true
+                    if (hasUse && matchesCardFilter(cardComponent, unwrapped.filter, state, entityId, state.projectedState.colorSetOf(cardId))) return true
                 }
                 if (unwrapped is PlayLandsAndCastFilteredFromTopOfLibrary) {
                     // A null spellFilter is a lands-only permission: nothing is castable.
                     val spellFilter = unwrapped.spellFilter
-                    if (spellFilter != null && matchesCardFilter(cardComponent, spellFilter)) return true
+                    if (spellFilter != null && matchesCardFilter(cardComponent, spellFilter, colors = state.projectedState.colorSetOf(cardId))) return true
                 }
             }
         }
@@ -867,10 +868,10 @@ class CastZoneResolver(
                 } else ability
                 if (unwrapped is PlayFromTopOfLibrary) return null
                 if (unwrapped is PlayLandsAndCastFilteredFromTopOfLibrary &&
-                    unwrapped.spellFilter?.let { matchesCardFilter(cardComponent, it) } == true
+                    unwrapped.spellFilter?.let { matchesCardFilter(cardComponent, it, colors = state.projectedState.colorSetOf(cardId)) } == true
                 ) return null
                 if (unwrapped !is CastSpellTypesFromTopOfLibrary ||
-                    !matchesCardFilter(cardComponent, unwrapped.filter, state, entityId)
+                    !matchesCardFilter(cardComponent, unwrapped.filter, state, entityId, state.projectedState.colorSetOf(cardId))
                 ) continue
                 // An unlimited cost-free grant wins outright. An unlimited *costed* one (Falco Spara)
                 // doesn't: a limited free grant covering the card is what waives that cost, so its
@@ -913,10 +914,10 @@ class CastZoneResolver(
                     ability.ability
                 } else ability
                 if (unwrapped is PlayLandsAndCastFilteredFromTopOfLibrary &&
-                    unwrapped.spellFilter?.let { matchesCardFilter(cardComponent, it) } == true
+                    unwrapped.spellFilter?.let { matchesCardFilter(cardComponent, it, colors = state.projectedState.colorSetOf(cardId)) } == true
                 ) return null
                 if (unwrapped !is CastSpellTypesFromTopOfLibrary ||
-                    !matchesCardFilter(cardComponent, unwrapped.filter, state, entityId)
+                    !matchesCardFilter(cardComponent, unwrapped.filter, state, entityId, state.projectedState.colorSetOf(cardId))
                 ) continue
                 val maxCasts = unwrapped.maxCastsPerTurn
                 val uses = state.getEntity(entityId)
@@ -1045,9 +1046,10 @@ class CastZoneResolver(
             filter: GameObjectFilter,
             state: GameState? = null,
             grantingSourceId: EntityId? = null,
+            colors: Set<Color> = card.colors,
         ): Boolean {
             for (predicate in filter.cardPredicates) {
-                if (!matchesCardPredicate(card, predicate, state, grantingSourceId)) return false
+                if (!matchesCardPredicate(card, predicate, state, grantingSourceId, colors)) return false
             }
             return true
         }
@@ -1057,6 +1059,7 @@ class CastZoneResolver(
             predicate: CardPredicate,
             state: GameState? = null,
             grantingSourceId: EntityId? = null,
+            colors: Set<Color> = card.colors,
         ): Boolean {
             val cmc = card.manaCost.cmc
             val power = card.baseStats?.basePower
@@ -1086,13 +1089,13 @@ class CastZoneResolver(
                 is CardPredicate.IsSnow -> card.typeLine.isSnow
                 is CardPredicate.IsNonlegendary -> !card.typeLine.isLegendary
                 // --- Colors ---
-                is CardPredicate.HasColor -> predicate.color in card.colors
-                is CardPredicate.NotColor -> predicate.color !in card.colors
-                is CardPredicate.IsColorless -> card.colors.isEmpty()
-                is CardPredicate.IsColored -> card.colors.isNotEmpty()
-                is CardPredicate.IsMulticolored -> card.colors.size >= 2
-                is CardPredicate.IsMonocolored -> card.colors.size == 1
-                is CardPredicate.HasExactlyColors -> card.colors.size == predicate.count
+                is CardPredicate.HasColor -> predicate.color in colors
+                is CardPredicate.NotColor -> predicate.color !in colors
+                is CardPredicate.IsColorless -> colors.isEmpty()
+                is CardPredicate.IsColored -> colors.isNotEmpty()
+                is CardPredicate.IsMulticolored -> colors.size >= 2
+                is CardPredicate.IsMonocolored -> colors.size == 1
+                is CardPredicate.HasExactlyColors -> colors.size == predicate.count
                 // --- Subtypes ---
                 is CardPredicate.HasSubtype -> card.typeLine.hasSubtype(predicate.subtype)
                 is CardPredicate.HasAnyOfSubtypes ->
@@ -1139,11 +1142,11 @@ class CastZoneResolver(
                 is CardPredicate.HasCycling -> card.hasCycling
                 is CardPredicate.HasNonManaActivatedAbility -> card.hasNonManaActivatedAbility
                 // --- Combinators ---
-                is CardPredicate.Or -> predicate.predicates.any { matchesCardPredicate(card, it, state, grantingSourceId) }
-                is CardPredicate.And -> predicate.predicates.all { matchesCardPredicate(card, it, state, grantingSourceId) }
+                is CardPredicate.Or -> predicate.predicates.any { matchesCardPredicate(card, it, state, grantingSourceId, colors) }
+                is CardPredicate.And -> predicate.predicates.all { matchesCardPredicate(card, it, state, grantingSourceId, colors) }
                 is CardPredicate.Not ->
                     !com.wingedsheep.engine.handlers.predicates.LiveBattlefieldPredicates.answerableOnlyLive(predicate.predicate) &&
-                        !matchesCardPredicate(card, predicate.predicate, state, grantingSourceId)
+                        !matchesCardPredicate(card, predicate.predicate, state, grantingSourceId, colors)
                 // Predicates that can't be judged from a card's static characteristics alone —
                 // they need runtime/interaction context (a chosen value, another entity, X, a
                 // pipeline variable/stored group, the recipient/source of an effect), or describe

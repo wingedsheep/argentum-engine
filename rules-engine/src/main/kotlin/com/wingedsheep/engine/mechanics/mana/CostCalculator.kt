@@ -146,6 +146,7 @@ class CostCalculator(
         announcedX: Int? = null,
     ): ManaCost {
         val manaValue = spellManaValue(cardDef, announcedX)
+        val spellColors = spellColorsFor(state, cardDef, casterId)
         var totalReduction = 0
         var totalIncrease = 0
         val coloredReductionSymbols = mutableListOf<ManaSymbol>()
@@ -185,7 +186,7 @@ class CostCalculator(
         // consumed by CastSpellHandler when the spell is actually cast.
         for (rider in state.pendingNextSpellAffinities) {
             if (rider.controllerId != casterId) continue
-            if (!matchesCardDefinition(cardDef, rider.spellFilter, null, state, state.projectedState, manaValue)) continue
+            if (!matchesCardDefinition(cardDef, rider.spellFilter, null, state, state.projectedState, manaValue, spellColors)) continue
             totalReduction += countPermanentsOfType(state, casterId, rider.forType)
         }
 
@@ -197,14 +198,14 @@ class CostCalculator(
         // CastTriggers.consumeNextSpellRiders spends.
         for (modifier in state.spellCostModifiers) {
             if (modifier.controllerId != casterId) continue
-            if (!matchesCardDefinition(cardDef, modifier.spellFilter, null, state, state.projectedState, manaValue)) continue
+            if (!matchesCardDefinition(cardDef, modifier.spellFilter, null, state, state.projectedState, manaValue, spellColors)) continue
             if (modifier.increase) totalIncrease += modifier.amount else totalReduction += modifier.amount
         }
 
         // ModifySpellCost abilities on battlefield permanents and emblems.
         for ((sourceId, ability) in modifiers) {
             if (ability.optionalLifePayment != null) continue
-            if (!targetMatchesSpell(ability.target, cardDef, casterId, sourceId, state, chosenTargets, fromZone, manaValue)) continue
+            if (!targetMatchesSpell(ability.target, cardDef, casterId, sourceId, state, chosenTargets, fromZone, manaValue, spellColors)) continue
             if (!gatingApplies(state, casterId, cardDef, ability, declaredCostSlot, sourceId)) continue
             applyToSpellCast(
                 state, cardDef, casterId, ability.modification, chosenTargets, sourceId = sourceId,
@@ -258,6 +259,7 @@ class CostCalculator(
     ): ManaCost {
         if (optionalCostPayments.isEmpty()) return cost
         val manaValue = spellManaValue(cardDef, announcedX)
+        val spellColors = spellColorsFor(state, cardDef, casterId)
         var genericReduction = 0
         var genericIncrease = 0
         val coloredReductionSymbols = mutableListOf<ManaSymbol>()
@@ -265,7 +267,7 @@ class CostCalculator(
         val coloredIncreaseSymbols = mutableListOf<ManaSymbol>()
         for (payment in optionalCostPayments) {
             val ability = optionalModifier(state, payment) ?: continue
-            if (!targetMatchesSpell(ability.target, cardDef, casterId, payment.sourceId, state, chosenTargets, fromZone, manaValue)) continue
+            if (!targetMatchesSpell(ability.target, cardDef, casterId, payment.sourceId, state, chosenTargets, fromZone, manaValue, spellColors)) continue
             if (!gatingApplies(state, casterId, cardDef, ability, declaredCostSlot, payment.sourceId)) continue
             applyToSpellCast(
                 state, cardDef, casterId, ability.modification, chosenTargets, sourceId = payment.sourceId,
@@ -405,19 +407,20 @@ class CostCalculator(
         chosenTargets: List<EntityId> = emptyList(),
         fromZone: Zone? = null,
         manaValue: Int = cardDef.manaCost.cmc,
+        spellColors: Set<Color> = cardDef.colors,
     ): Boolean {
         return when (target) {
             SpellCostTarget.SelfCast -> false
             is SpellCostTarget.YouCast -> {
                 val controller = modifierController(state, sourceId)
                 controller == casterId &&
-                    matchesCardDefinition(cardDef, target.filter, sourceId, state, state.projectedState, manaValue)
+                    matchesCardDefinition(cardDef, target.filter, sourceId, state, state.projectedState, manaValue, spellColors)
             }
-            is SpellCostTarget.AnyCaster -> matchesCardDefinition(cardDef, target.filter, sourceId, state, state.projectedState, manaValue)
-            is SpellCostTarget.OpponentsCast -> opponentsCastMatches(target, cardDef, casterId, sourceId, state, manaValue)
+            is SpellCostTarget.AnyCaster -> matchesCardDefinition(cardDef, target.filter, sourceId, state, state.projectedState, manaValue, spellColors)
+            is SpellCostTarget.OpponentsCast -> opponentsCastMatches(target, cardDef, casterId, sourceId, state, manaValue, spellColors)
             is SpellCostTarget.PlayerCasts ->
                 namedPlayerOf(state, sourceId, target.player) == casterId &&
-                    matchesCardDefinition(cardDef, target.filter, sourceId, state, state.projectedState, manaValue)
+                    matchesCardDefinition(cardDef, target.filter, sourceId, state, state.projectedState, manaValue, spellColors)
             is SpellCostTarget.OpponentsCastTargeting ->
                 opponentsCastTargetingMatches(state, casterId, sourceId, target.targetFilter, chosenTargets)
             is SpellCostTarget.OpponentsCastFromZones -> {
@@ -426,7 +429,7 @@ class CostCalculator(
                 if (fromZone == null || fromZone !in target.zones) return false
                 val sourceController = modifierController(state, sourceId) ?: return false
                 if (sourceController == casterId) return false
-                matchesCardDefinition(cardDef, target.filter, sourceId, state, state.projectedState, manaValue)
+                matchesCardDefinition(cardDef, target.filter, sourceId, state, state.projectedState, manaValue, spellColors)
             }
             is SpellCostTarget.YouCastFromZones -> {
                 // Source must be controlled by the caster, the spell must be cast from one of the
@@ -434,7 +437,7 @@ class CostCalculator(
                 if (fromZone == null || fromZone !in target.zones) return false
                 val sourceController = modifierController(state, sourceId) ?: return false
                 if (sourceController != casterId) return false
-                matchesCardDefinition(cardDef, target.filter, sourceId, state, state.projectedState, manaValue)
+                matchesCardDefinition(cardDef, target.filter, sourceId, state, state.projectedState, manaValue, spellColors)
             }
             // FaceDown / Morph targets are spell-cast modifiers only when applied to a face-down cast.
             // calculateEffectiveCost is only called for face-up casts; face-down handling is in
@@ -472,10 +475,11 @@ class CostCalculator(
         sourceId: EntityId,
         state: GameState,
         manaValue: Int = cardDef.manaCost.cmc,
+        spellColors: Set<Color> = cardDef.colors,
     ): Boolean {
         val sourceController = modifierController(state, sourceId) ?: return false
         if (sourceController == casterId) return false
-        return matchesCardDefinition(cardDef, target.filter, sourceId, state, state.projectedState, manaValue)
+        return matchesCardDefinition(cardDef, target.filter, sourceId, state, state.projectedState, manaValue, spellColors)
     }
 
     /**
@@ -1189,7 +1193,7 @@ class CostCalculator(
             for ((sourceId, ability) in modifiers) {
                 val src = sourceFromModification(ability.modification) as? CostReductionSource.FixedIfAnyTargetMatches
                     ?: continue
-                if (!targetMatchesSpell(ability.target, cardDef, casterId, sourceId, state, manaValue = spellManaValue(cardDef, announcedX))) continue
+                if (!targetMatchesSpell(ability.target, cardDef, casterId, sourceId, state, manaValue = spellManaValue(cardDef, announcedX), spellColors = spellColorsFor(state, cardDef, casterId))) continue
                 addOptimisticMatch(src, sourceId)
             }
         }
@@ -1409,6 +1413,7 @@ class CostCalculator(
         modifiers: List<Pair<EntityId, ModifySpellCost>>,
         fromZone: Zone? = null,
         manaValue: Int = cardDef.manaCost.cmc,
+        spellColors: Set<Color> = cardDef.colors,
     ): List<Boolean> = buildList {
         for (ability in cardDef.script.staticAbilities) {
             if (ability !is ModifySpellCost || ability.target != SpellCostTarget.SelfCast) continue
@@ -1416,7 +1421,7 @@ class CostCalculator(
         }
         for ((sourceId, ability) in modifiers) {
             val direction = targetCountDirection(ability.modification) ?: continue
-            if (targetMatchesSpell(ability.target, cardDef, casterId, sourceId, state, fromZone = fromZone, manaValue = manaValue)) add(direction)
+            if (targetMatchesSpell(ability.target, cardDef, casterId, sourceId, state, fromZone = fromZone, manaValue = manaValue, spellColors = spellColors)) add(direction)
         }
     }
 
@@ -1754,6 +1759,23 @@ class CostCalculator(
     }
 
     /**
+     * The colors [cardDef] has as a spell [casterId] casts: its printed colors, unless an
+     * off-battlefield `SetColors` reaching that player's spells sets them (Mycosynth Lattice makes
+     * every spell colorless, so a Medallion stops discounting it). Spell-cost filters only see the
+     * definition, so this is their stand-in for `ProjectedState.colorSetOf` on the spell.
+     */
+    private fun spellColorsFor(state: GameState, cardDef: CardDefinition, casterId: EntityId): Set<Color> {
+        val projected = state.projectedState
+        var colors = cardDef.colors
+        for (rule in projected.offBattlefieldColorRules) {
+            if (casterId !in rule.players) continue
+            if (!matchesCardDefinition(cardDef, rule.eligibility, rule.sourceId, state, projected)) continue
+            colors = rule.colors.mapNotNullTo(linkedSetOf()) { name -> Color.entries.firstOrNull { it.name == name } }
+        }
+        return colors
+    }
+
+    /**
      * Match a CardDefinition against a GameObjectFilter's card predicates.
      * Only evaluates card predicates (type, subtype, color, mana value, etc.)
      * since state and controller predicates don't apply to spells being cast.
@@ -1771,13 +1793,14 @@ class CostCalculator(
         state: GameState? = null,
         projectedState: com.wingedsheep.engine.mechanics.layers.ProjectedState? = null,
         manaValue: Int = cardDef.manaCost.cmc,
+        spellColors: Set<Color> = cardDef.colors,
     ): Boolean {
         if (filter.cardPredicates.isEmpty() && filter.anyOf.isEmpty()) return true
         // Conjunction over card predicates; OR lives inside a CardPredicate.Or.
-        if (!filter.cardPredicates.all { matchesCardPredicate(cardDef, it, sourceEntityId, state, projectedState, manaValue) }) return false
+        if (!filter.cardPredicates.all { matchesCardPredicate(cardDef, it, sourceEntityId, state, projectedState, manaValue, spellColors) }) return false
         // Recursive union (`or` infix): match if any branch matches.
         if (filter.anyOf.isNotEmpty()) {
-            return filter.anyOf.any { matchesCardDefinition(cardDef, it, sourceEntityId, state, projectedState, manaValue) }
+            return filter.anyOf.any { matchesCardDefinition(cardDef, it, sourceEntityId, state, projectedState, manaValue, spellColors) }
         }
         return true
     }
@@ -1810,6 +1833,7 @@ class CostCalculator(
         state: GameState? = null,
         projectedState: com.wingedsheep.engine.mechanics.layers.ProjectedState? = null,
         manaValue: Int = cardDef.manaCost.cmc,
+        spellColors: Set<Color> = cardDef.colors,
     ): Boolean {
         val typeLine = cardDef.typeLine
         return when (predicate) {
@@ -1840,15 +1864,15 @@ class CostCalculator(
             CardPredicate.HasActivatedAbility -> cardDef.hasActivatedAbility
             CardPredicate.HasCycling -> cardDef.hasCycling
 
-            is CardPredicate.HasColor -> predicate.color in cardDef.colors
-            is CardPredicate.NotColor -> predicate.color !in cardDef.colors
+            is CardPredicate.HasColor -> predicate.color in spellColors
+            is CardPredicate.NotColor -> predicate.color !in spellColors
             // CostCalculator has no resolution-time chosen color; no static answer here.
             CardPredicate.HasChosenColor -> false
-            CardPredicate.IsColorless -> cardDef.colors.isEmpty()
-            CardPredicate.IsColored -> cardDef.colors.isNotEmpty()
-            CardPredicate.IsMulticolored -> cardDef.colors.size > 1
-            CardPredicate.IsMonocolored -> cardDef.colors.size == 1
-            is CardPredicate.HasExactlyColors -> cardDef.colors.size == predicate.count
+            CardPredicate.IsColorless -> spellColors.isEmpty()
+            CardPredicate.IsColored -> spellColors.isNotEmpty()
+            CardPredicate.IsMulticolored -> spellColors.size > 1
+            CardPredicate.IsMonocolored -> spellColors.size == 1
+            is CardPredicate.HasExactlyColors -> spellColors.size == predicate.count
 
             is CardPredicate.HasSubtype -> typeLine.hasSubtype(predicate.subtype)
             is CardPredicate.NotSubtype -> !typeLine.hasSubtype(predicate.subtype)
@@ -1982,7 +2006,7 @@ class CostCalculator(
                 val chosenColor = state.getEntity(sourceEntityId)
                     ?.chosenColor()
                     ?: return false
-                cardDef.colors.contains(chosenColor)
+                spellColors.contains(chosenColor)
             }
 
             is CardPredicate.HasSubtypeFromVariable -> true
@@ -2004,9 +2028,9 @@ class CostCalculator(
                 cardDef.typeLine.cardTypes.any { it.displayName.equals(chosenType, ignoreCase = true) }
             }
 
-            is CardPredicate.And -> predicate.predicates.all { matchesCardPredicate(cardDef, it, sourceEntityId, state, projectedState, manaValue) }
-            is CardPredicate.Or -> predicate.predicates.any { matchesCardPredicate(cardDef, it, sourceEntityId, state, projectedState, manaValue) }
-            is CardPredicate.Not -> !matchesCardPredicate(cardDef, predicate.predicate, sourceEntityId, state, projectedState, manaValue)
+            is CardPredicate.And -> predicate.predicates.all { matchesCardPredicate(cardDef, it, sourceEntityId, state, projectedState, manaValue, spellColors) }
+            is CardPredicate.Or -> predicate.predicates.any { matchesCardPredicate(cardDef, it, sourceEntityId, state, projectedState, manaValue, spellColors) }
+            is CardPredicate.Not -> !matchesCardPredicate(cardDef, predicate.predicate, sourceEntityId, state, projectedState, manaValue, spellColors)
 
             CardPredicate.IsActivatedOrTriggeredAbility -> false
             CardPredicate.IsTriggeredAbility -> false
@@ -2260,7 +2284,7 @@ class CostCalculator(
                 // hand (a generic "does any free-cast source exist?" probe) a filtered source still
                 // counts, since some castable spell may match.
                 if (spellCardDef != null && ability.spellFilter != GameObjectFilter.Any &&
-                    !matchesCardDefinition(spellCardDef, ability.spellFilter, entityId, state, state.projectedState)
+                    !matchesCardDefinition(spellCardDef, ability.spellFilter, entityId, state, state.projectedState, spellColors = spellColorsFor(state, spellCardDef, casterId))
                 ) continue
                 return true
             }
@@ -2305,7 +2329,8 @@ class CostCalculator(
                         rider.spellFilter,
                         rider.sourceId,
                         state,
-                        state.projectedState
+                        state.projectedState,
+                        spellColors = spellColorsFor(state, spellCardDef, casterId)
                     )
             )
     }
@@ -2340,7 +2365,7 @@ class CostCalculator(
                 if (!ability.allowsCastFrom(castFromZone)) continue
                 if (ability.controllerOnly && emblemController != casterId) continue
                 if (spellCardDef != null && ability.spellFilter != GameObjectFilter.Any &&
-                    !matchesCardDefinition(spellCardDef, ability.spellFilter, entityId, state, state.projectedState)
+                    !matchesCardDefinition(spellCardDef, ability.spellFilter, entityId, state, state.projectedState, spellColors = spellColorsFor(state, spellCardDef, casterId))
                 ) continue
                 return true
             }
@@ -2383,7 +2408,7 @@ class CostCalculator(
                     if (controllerId != casterId) continue
                 }
                 if (spellCardDef != null && ability.spellFilter != GameObjectFilter.Any &&
-                    !matchesCardDefinition(spellCardDef, ability.spellFilter, entityId, state, state.projectedState)
+                    !matchesCardDefinition(spellCardDef, ability.spellFilter, entityId, state, state.projectedState, spellColors = spellColorsFor(state, spellCardDef, casterId))
                 ) continue
                 if (ability.oncePerTurn) {
                     if (!state.isActiveTurnFor(casterId)) continue

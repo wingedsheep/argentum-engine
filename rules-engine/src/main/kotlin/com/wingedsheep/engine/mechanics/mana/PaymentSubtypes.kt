@@ -41,7 +41,7 @@ internal fun spellPaymentContextFor(
     isDisturbCast: Boolean = false,
     // The spell's actual colors — `ProjectedState.colorSetOf`, so an off-battlefield SetColors
     // (Mycosynth Lattice) decides "colorless spells only" mana, not the printed card.
-    colors: Set<com.wingedsheep.sdk.core.Color> = cardComponent.colors,
+    colors: Set<com.wingedsheep.sdk.core.Color>,
 ): SpellPaymentContext = SpellPaymentContext(
     isInstantOrSorcery = cardComponent.typeLine.isInstant || cardComponent.typeLine.isSorcery,
     isKicked = isKicked,

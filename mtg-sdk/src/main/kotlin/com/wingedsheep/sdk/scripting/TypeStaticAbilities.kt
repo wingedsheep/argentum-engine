@@ -290,6 +290,12 @@ data class SetColors(
     val filter: GroupFilter,
     val offBattlefield: Player? = null
 ) : StaticAbility {
+    init {
+        require(offBattlefield == null || offBattlefield == Player.You || offBattlefield == Player.Each || offBattlefield == Player.EachOpponent) {
+            "SetColors.offBattlefield must be null, You, Each or EachOpponent, was $offBattlefield"
+        }
+    }
+
     override val description: String = buildString {
         append(filter.description)
         append(if (colors.isEmpty()) " are colorless" else " are ${colors.joinToString(" and ") { it.name.lowercase() }}")

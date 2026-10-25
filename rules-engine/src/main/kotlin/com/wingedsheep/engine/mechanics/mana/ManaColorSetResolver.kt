@@ -116,9 +116,7 @@ object ManaColorSetResolver {
         val colors = mutableSetOf<Color>()
         for (entityId in state.getGraveyard(controllerId)) {
             if (!predicateEvaluator.matches(state, projected, entityId, colorSet.filter, predCtx)) continue
-            val cardColors = state.getEntity(entityId)
-                ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.colors.orEmpty()
-            colors.addAll(cardColors)
+            colors.addAll(projected.colorSetOf(entityId))
         }
         return colors
     }

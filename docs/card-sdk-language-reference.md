@@ -10165,10 +10165,13 @@ staticAbility {
   zone — `Player.You` for "the same is true for spells you control and cards you own that aren't on the battlefield",
   `Player.Each` for every player's. Only the card predicates of `filter` qualify an off-battlefield object, so a
   `GameObjectFilter.Any` filter reaches instants and sorceries too. Off the battlefield it is an overlay
-  `StateProjector` resolves eagerly (never loops without such a static); every engine read of "what color is this"
+  `ProjectedState` applies lazily, per object, from rules `StateProjector` collects (so a spell mid-resolution is
+  still reached, and nothing is allocated without such a static); every engine read of "what color is this"
   for an object that may be a spell or a card off the battlefield goes through `ProjectedState.colorsOf` /
   `colorSetOf` (color predicates, cast triggers and cast history, protection and hexproof against a spell, damage
-  source colors, "colorless spells only" mana, the client's card view), so the overlay reaches all of them.
+  source colors, "colorless spells only" mana, the client's card view), and spell-cost / spell-keyword /
+  cast-permission filters that only hold a card definition read `ProjectedState.spellColors(caster, printed, cardId)`
+  — so a Medallion stops discounting a spell Lattice made colorless.
   **Mycosynth Lattice** — "All cards that aren't on the battlefield, spells, and permanents are colorless" →
   `SetColors(emptySet(), GroupFilter(GameObjectFilter.Any), offBattlefield = Player.Each)`.
 - `GrantCardType(cardType, filter)` / `RemoveCardType(cardType, filter)` — Layer 4 type-changing statics that add or

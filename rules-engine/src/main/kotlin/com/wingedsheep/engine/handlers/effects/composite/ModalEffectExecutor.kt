@@ -301,7 +301,7 @@ internal fun processPreTargetedEffectQueue(
     // skip the mode entirely. Partial per-target filtering is a future refinement — for now
     // we mirror the all-or-nothing shape used by the resolution-time ModalContinuation path.
     val cardComponent = ctx.sourceId?.let { state.getEntity(it)?.get<CardComponent>() }
-    val sourceColors = cardComponent?.colors ?: emptySet()
+    val sourceColors = if (cardComponent == null) emptySet() else state.projectedState.colorSetOf(ctx.sourceId)
     val sourceSubtypes = cardComponent?.typeLine?.subtypes?.map { it.value }?.toSet() ?: emptySet()
 
     val validationError = if (head.alignedTargets == null && head.targetRequirements.isNotEmpty()) {

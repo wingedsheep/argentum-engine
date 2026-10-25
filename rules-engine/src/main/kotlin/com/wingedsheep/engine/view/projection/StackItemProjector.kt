@@ -227,7 +227,12 @@ internal class StackItemProjector(
             state.projectedState.getColors(sourceId).mapNotNull { name ->
                 Color.entries.firstOrNull { it.name == name }
             }.toSet()
-        } else visibleCard?.colors.orEmpty()
+        } else visibleCard?.let { card ->
+            // An off-battlefield color effect (Mycosynth Lattice) overrides the shown printed colors.
+            state.projectedState.offBattlefieldColors(sourceId)
+                ?.mapNotNullTo(linkedSetOf()) { name -> Color.entries.firstOrNull { it.name == name } }
+                ?: card.colors
+        }.orEmpty()
 
     /**
      * Find which zone an entity is currently in.

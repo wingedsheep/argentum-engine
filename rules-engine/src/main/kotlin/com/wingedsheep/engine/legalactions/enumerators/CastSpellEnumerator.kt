@@ -1804,7 +1804,7 @@ class CastSpellEnumerator(
             // even though the blanket check above passed.
             if (context.cantCastSpell(cardId)) continue
 
-            val spellColors = cardDef.colors
+            val spellColors = state.projectedState.spellColors(playerId, cardDef.colors, cardId)
             if (spellColors.isEmpty()) continue
 
             // Check timing (same rules as normal cast)

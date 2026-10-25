@@ -25,6 +25,12 @@ data class SpendManaAsColor(
     val toColor: Color?,
     val players: Player = Player.You
 ) : StaticAbility {
+    init {
+        require(players == Player.You || players == Player.Each || players == Player.EachOpponent) {
+            "SpendManaAsColor.players must be You, Each or EachOpponent, was $players"
+        }
+    }
+
     override val description: String = buildString {
         append(
             when (players) {

@@ -609,7 +609,11 @@ class CastFromZoneEnumerator(
                     // so a red MDFC's blue back face stays uncastable through this permission. A
                     // permission with no restriction authorizes any colour, and only *one* of the
                     // applicable permissions needs to authorize the cast.
-                    val castColors = prepareFace?.manaCost?.colors ?: cardDef?.colors ?: cardComponent.manaCost.colors
+                    val castColors = state.projectedState.spellColors(
+                        playerId,
+                        prepareFace?.manaCost?.colors ?: cardDef?.colors ?: cardComponent.manaCost.colors,
+                        cardId,
+                    )
                     if (permissions.none { it.authorizesSpellColors(castColors) }) {
                         continue
                     }

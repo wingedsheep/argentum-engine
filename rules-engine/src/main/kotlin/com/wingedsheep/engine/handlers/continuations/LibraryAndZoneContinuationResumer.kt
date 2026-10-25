@@ -572,9 +572,7 @@ class LibraryAndZoneContinuationResumer(
                                 )
                             )
                         is SelectionRestriction.OnePerColor -> {
-                            val cardColors = state.getEntity(cardId)
-                                ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
-                                ?.colors ?: emptySet()
+                            val cardColors = state.projectedState.colorSetOf(cardId)
                             // Colourless cards are not constrained by this restriction.
                             cardColors.isEmpty() || cardColors.none { it in claimedColors }
                         }
@@ -621,9 +619,7 @@ class LibraryAndZoneContinuationResumer(
                                 keptTypeSets += com.wingedsheep.engine.mechanics.targeting.OnePerCardType.cardTypesOf(state, cardId)
                             }
                             is SelectionRestriction.OnePerColor -> {
-                                claimedColors += state.getEntity(cardId)
-                                    ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
-                                    ?.colors ?: emptySet()
+                                claimedColors += state.projectedState.colorSetOf(cardId)
                             }
                             is SelectionRestriction.OnePerCardName -> {
                                 val cardName = state.getEntity(cardId)

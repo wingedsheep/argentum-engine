@@ -96,8 +96,8 @@ class FearRule : BlockEvasionRule {
     override fun check(ctx: BlockCheckContext): String? {
         if (ctx.projected.hasKeyword(ctx.attackerId, Keyword.FEAR)) {
             val blockerCard = ctx.state.getEntity(ctx.blockerId)?.get<CardComponent>() ?: return null
-            val isArtifactCreature = blockerCard.typeLine.isArtifactCreature
-            val isBlackCreature = Color.BLACK in blockerCard.colors
+            val isArtifactCreature = ctx.projected.hasType(ctx.blockerId, "ARTIFACT")
+            val isBlackCreature = Color.BLACK in ctx.projected.colorSetOf(ctx.blockerId)
             if (!isArtifactCreature && !isBlackCreature) {
                 val attackerName = ctx.state.getEntity(ctx.attackerId)?.get<CardComponent>()?.name ?: "Creature"
                 return "${blockerCard.name} cannot block $attackerName (fear)"
@@ -341,7 +341,7 @@ class CantBeBlockedExceptByColorRule : BlockEvasionRule {
 
         val blockerCard = ctx.state.getEntity(ctx.blockerId)?.get<CardComponent>() ?: return null
         val requiredColor = Color.valueOf(colorRestriction.color)
-        if (!blockerCard.colors.contains(requiredColor)) {
+        if (requiredColor !in ctx.projected.colorSetOf(ctx.blockerId)) {
             val attackerName = ctx.state.getEntity(ctx.attackerId)?.get<CardComponent>()?.name ?: "Creature"
             return "${blockerCard.name} cannot block $attackerName (can only be blocked by ${requiredColor.displayName.lowercase()} creatures)"
         }
@@ -365,7 +365,7 @@ class CantBeBlockedByColorRule : BlockEvasionRule {
 
         val blockerCard = ctx.state.getEntity(ctx.blockerId)?.get<CardComponent>() ?: return null
         val forbiddenColor = Color.valueOf(colorRestriction.color)
-        if (blockerCard.colors.contains(forbiddenColor)) {
+        if (forbiddenColor in ctx.projected.colorSetOf(ctx.blockerId)) {
             val attackerName = ctx.state.getEntity(ctx.attackerId)?.get<CardComponent>()?.name ?: "Creature"
             return "${blockerCard.name} cannot block $attackerName (can't be blocked by ${forbiddenColor.displayName.lowercase()} creatures)"
         }

@@ -1097,7 +1097,7 @@ class DynamicAmountEvaluator(
                     state.getEntity(sourceId)
                         ?.get<com.wingedsheep.engine.state.components.battlefield.CraftedFromExiledComponent>()
                         ?.exiledIds
-                        ?.flatMap { exiledId -> state.projectedState.colorSetOf(exiledId) }
+                        ?.flatMap { exiledId -> resolveProjection(state, projectedState).colorSetOf(exiledId) }
                         ?.toSet()?.size
                         ?: 0
                 }
@@ -1513,13 +1513,17 @@ class DynamicAmountEvaluator(
                 }.size
             }
             Aggregation.DISTINCT_COLORS -> {
-                matchingEntities.flatMapTo(mutableSetOf()) { entityId -> state.projectedState.colorsOf(entityId) }.size
+                // Through [resolveProjection], never `state.projectedState` directly: a CDA reading
+                // this mid-projection must not re-enter the projection's own lazy initializer.
+                val colors = resolveProjection(state, explicitProjection)
+                matchingEntities.flatMapTo(mutableSetOf()) { entityId -> colors.colorsOf(entityId) }.size
             }
             // Zone counterpart of the battlefield branch: cards outside the battlefield have no
             // projection entry, so their printed colours (or an off-battlefield SetColors') count.
             Aggregation.DISTINCT_COLOR_PAIRS -> {
+                val projected = resolveProjection(state, explicitProjection)
                 matchingEntities.mapNotNullTo(mutableSetOf()) { entityId ->
-                    val colors = state.projectedState.colorsOf(entityId)
+                    val colors = projected.colorsOf(entityId)
                     if (colors.size == 2) colors.sorted().joinToString("/") else null
                 }.size
             }
@@ -1891,7 +1895,7 @@ class DynamicAmountEvaluator(
             return resolveProjection(state, explicitProjected).getColors(entityId).size
         }
         if (state.getEntity(entityId)?.get<CardComponent>() == null) return 0
-        return state.projectedState.offBattlefieldColors(entityId)?.size
+        return resolveProjection(state, explicitProjected).offBattlefieldColors(entityId)?.size
             ?: state.getEntity(entityId)?.get<CardComponent>()?.colors?.size ?: 0
     }
 

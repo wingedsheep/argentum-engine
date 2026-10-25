@@ -666,11 +666,13 @@ class StateProjector {
             val players = when (reach.players) {
                 com.wingedsheep.sdk.scripting.references.Player.Each -> state.turnOrder.toSet()
                 com.wingedsheep.sdk.scripting.references.Player.EachOpponent -> state.turnOrder.filterTo(mutableSetOf()) { it != controllerId }
-                else -> setOf(controllerId)
+                com.wingedsheep.sdk.scripting.references.Player.You -> setOf(controllerId)
+                // SetColors' init admits only the three above; anything else reaches nobody.
+                else -> emptySet()
             }
             val context = com.wingedsheep.engine.handlers.PredicateContext(controllerId = controllerId, sourceId = effect.sourceId)
             val unrestricted = reach.eligibility.cardPredicates.isEmpty()
-            OffBattlefieldColorRule(players, mod.colors) { id ->
+            OffBattlefieldColorRule(players, mod.colors, effect.sourceId, reach.eligibility) { id ->
                 unrestricted || predicateEvaluator.matches(state, eligibilityProjection, id, reach.eligibility, context)
             }
         }

@@ -11,7 +11,10 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.CostModification
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.ModifySpellCost
+import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.ProtectionScope
 import com.wingedsheep.sdk.scripting.SetColors
@@ -74,11 +77,28 @@ class SetColorsOffBattlefieldTest : FunSpec({
         keywordAbility(KeywordAbility.Protection(ProtectionScope.Color(Color.RED)))
     }
 
+    val redMedallion = card("Test Red Medallion") {
+        manaCost = "{2}"
+        typeLine = "Artifact"
+        staticAbility {
+            ability = ModifySpellCost(
+                target = SpellCostTarget.YouCast(GameObjectFilter.Any.withColor(Color.RED)),
+                modification = CostModification.ReduceGeneric(1),
+            )
+        }
+    }
+
+    val redCantrip = card("Test Red Cantrip") {
+        manaCost = "{1}{R}"
+        typeLine = "Instant"
+        spell { effect = Effects.DrawCards(1) }
+    }
+
     val predicates = PredicateEvaluator(cardRegistry = null)
 
     fun newDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(everythingColorless, mineColorless, battlefieldBlue, redWatcher, proRedBear))
+        driver.registerCards(TestCards.all + listOf(everythingColorless, mineColorless, battlefieldBlue, redWatcher, proRedBear, redMedallion, redCantrip))
         driver.initMirrorMatch(deck = Deck.of("Mountain" to 40), skipMulligans = true, startingPlayer = 0)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -202,5 +222,20 @@ class SetColorsOffBattlefieldTest : FunSpec({
         driver.moveToGraveyard(source)
         driver.isRed(inHand) shouldBe true
         driver.state.projectedState.getColors(courser) shouldBe setOf(Color.GREEN.name)
+    }
+
+    test("a red-spell cost reduction doesn't apply to a spell the static made colorless") {
+        val with = newDriver()
+        with.putPermanentOnBattlefield(with.player1, "Test Red Medallion")
+        with.putPermanentOnBattlefield(with.player1, "Test Everything Colorless")
+        with.putLandOnBattlefield(with.player1, "Mountain")
+        val colorless = with.putCardInHand(with.player1, "Test Red Cantrip")
+        with.castSpell(with.player1, colorless).error shouldNotBe null
+
+        val without = newDriver()
+        without.putPermanentOnBattlefield(without.player1, "Test Red Medallion")
+        without.putLandOnBattlefield(without.player1, "Mountain")
+        val red = without.putCardInHand(without.player1, "Test Red Cantrip")
+        without.castSpell(without.player1, red).error shouldBe null
     }
 })

@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.mechanics.layers
 
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Supertype
 import com.wingedsheep.sdk.model.EntityId
@@ -110,6 +111,10 @@ data class ProjectedValues(
 class OffBattlefieldColorRule(
     val players: Set<EntityId>,
     val colors: Set<String>,
+    /** The permanent whose static this is, for source-relative predicates in [eligibility]. */
+    val sourceId: EntityId,
+    /** Which objects the rule reaches, for callers that only hold a card definition. */
+    val eligibility: GameObjectFilter,
     val eligible: (EntityId) -> Boolean
 )
 
@@ -138,7 +143,7 @@ class ProjectedState(
      * colorless". In layer order; empty for virtually every game state. Read lazily per object, so
      * a spell mid-resolution (popped off the stack list, still a spell) is reached too.
      */
-    private val offBattlefieldColorRules: List<OffBattlefieldColorRule> = emptyList()
+    val offBattlefieldColorRules: List<OffBattlefieldColorRule> = emptyList()
 ) {
     /**
      * The colors of any object, in any zone: its projected colors on the battlefield, else the
@@ -178,6 +183,22 @@ class ProjectedState(
         var result: Set<String>? = null
         for (rule in offBattlefieldColorRules) {
             if (player in rule.players && rule.eligible(entityId)) result = rule.colors
+        }
+        return result
+    }
+
+    /**
+     * The colors a spell printed with [printed] has as [casterId] casts it: [printed], unless an
+     * off-battlefield `SetColors` reaching that player's spells sets them (Mycosynth Lattice). For
+     * callers that judge a spell from its definition before or while it is cast; [entityId] is the
+     * card being cast, needed only by a rule whose reach is filtered.
+     */
+    fun spellColors(casterId: EntityId, printed: Set<Color>, entityId: EntityId? = null): Set<Color> {
+        var result = printed
+        for (rule in offBattlefieldColorRules) {
+            if (casterId !in rule.players) continue
+            val reaches = rule.eligibility.cardPredicates.isEmpty() || (entityId != null && rule.eligible(entityId))
+            if (reaches) result = rule.colors.mapNotNullTo(linkedSetOf()) { name -> Color.entries.firstOrNull { it.name == name } }
         }
         return result
     }

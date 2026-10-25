@@ -5,8 +5,10 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.SpendManaAsColor
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.references.Player
@@ -41,9 +43,28 @@ class SpendManaAsAnyColorTest : FunSpec({
         staticAbility { ability = SpendManaAsColor(fromColor = Color.BLUE, toColor = null) }
     }
 
+    val wastes = card("Test Wastes") {
+        typeLine = "Land"
+        activatedAbility {
+            cost = AbilityCost.Tap
+            manaAbility = true
+            effect = Effects.AddColorlessMana(1)
+        }
+    }
+    val redAndColorless = card("Test Red Colorless Cantrip") {
+        manaCost = "{R}{C}"
+        typeLine = "Instant"
+        spell { effect = Effects.DrawCards(1) }
+    }
+    val hybrid = card("Test Hybrid Cantrip") {
+        manaCost = "{R/G}"
+        typeLine = "Instant"
+        spell { effect = Effects.DrawCards(1) }
+    }
+
     fun newDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(everyone, onlyMe, blueAsAny))
+        driver.registerCards(TestCards.all + listOf(everyone, onlyMe, blueAsAny, wastes, redAndColorless, hybrid))
         driver.initMirrorMatch(deck = Deck.of("Island" to 40), skipMulligans = true, startingPlayer = 0)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -136,5 +157,43 @@ class SpendManaAsAnyColorTest : FunSpec({
         driver.services.manaSolver.canPay(driver.state, driver.player1, cost("{R}")) shouldBe true
         driver.moveToGraveyard(source)
         driver.services.manaSolver.canPay(driver.state, driver.player1, cost("{R}")) shouldBe false
+    }
+
+    test("a colorless land auto-pays a red spell") {
+        val driver = newDriver()
+        driver.putPermanentOnBattlefield(driver.player1, "Test Any Color For Everyone")
+        driver.putLandOnBattlefield(driver.player1, "Test Wastes")
+        val bolt = driver.putCardInHand(driver.player1, "Lightning Bolt")
+
+        driver.castSpell(driver.player1, bolt, listOf(driver.player2)).error shouldBe null
+        driver.bothPass()
+        driver.getLifeTotal(driver.player2) shouldBe 17
+    }
+
+    test("the solver sends the colorless land to {C} and the Island to {R}") {
+        val driver = newDriver()
+        driver.putPermanentOnBattlefield(driver.player1, "Test Any Color For Everyone")
+        driver.putLandOnBattlefield(driver.player1, "Test Wastes")
+        driver.putLandOnBattlefield(driver.player1, "Island")
+        val spell = driver.putCardInHand(driver.player1, "Test Red Colorless Cantrip")
+
+        driver.castSpell(driver.player1, spell).error shouldBe null
+    }
+
+    test("a colorless land pays a hybrid pip") {
+        val driver = newDriver()
+        driver.putPermanentOnBattlefield(driver.player1, "Test Any Color For Everyone")
+        driver.putLandOnBattlefield(driver.player1, "Test Wastes")
+        val spell = driver.putCardInHand(driver.player1, "Test Hybrid Cantrip")
+
+        driver.castSpell(driver.player1, spell).error shouldBe null
+    }
+
+    test("without the permission a colorless land pays neither") {
+        val driver = newDriver()
+        driver.putLandOnBattlefield(driver.player1, "Test Wastes")
+        val spell = driver.putCardInHand(driver.player1, "Test Hybrid Cantrip")
+
+        driver.castSpell(driver.player1, spell).error shouldNotBe null
     }
 })

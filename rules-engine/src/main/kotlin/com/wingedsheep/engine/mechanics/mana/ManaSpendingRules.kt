@@ -91,7 +91,9 @@ object ManaSpendingRules {
     private fun Player.reaches(payerId: EntityId, controllerId: EntityId): Boolean = when (this) {
         Player.Each -> true
         Player.EachOpponent -> payerId != controllerId
-        else -> payerId == controllerId
+        Player.You -> payerId == controllerId
+        // SpendManaAsColor's init admits only the three above; anything else reaches nobody.
+        else -> false
     }
 }
 

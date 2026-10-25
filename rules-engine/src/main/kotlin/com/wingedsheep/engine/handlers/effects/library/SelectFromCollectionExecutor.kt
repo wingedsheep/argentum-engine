@@ -523,7 +523,7 @@ class SelectFromCollectionExecutor(
                 manaCost = cardComponent?.manaCost?.toString() ?: "",
                 typeLine = cardComponent?.typeLine?.toString() ?: "",
                 imageUri = null,
-                colors = cardComponent?.colors?.map { it.name }?.toList() ?: emptyList(),
+                colors = if (cardComponent == null) emptyList() else state.projectedState.colorsOf(cardId).toList(),
                 power = cardComponent?.baseStats?.basePower
             )
         }

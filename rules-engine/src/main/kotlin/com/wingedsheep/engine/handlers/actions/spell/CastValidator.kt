@@ -459,10 +459,14 @@ internal class CastValidator(
         // MDFC's blue back face is not castable through such a permission even though the exiled
         // card is red. Authoritative: the enumerator applies the same rule, but the action is
         // client-supplied.
-        val castColors = action.faceIndex
-            ?.let { cardDef?.cardFaces?.getOrNull(it)?.manaCost?.colors }
-            ?: cardDef?.colors
-            ?: cardComponent.manaCost.colors
+        val castColors = state.projectedState.spellColors(
+            action.playerId,
+            action.faceIndex
+                ?.let { cardDef?.cardFaces?.getOrNull(it)?.manaCost?.colors }
+                ?: cardDef?.colors
+                ?: cardComponent.manaCost.colors,
+            action.cardId,
+        )
         if (permissions.none { it.authorizesSpellColors(castColors) }) {
             val required = permissions.firstNotNullOfOrNull { it.castColorRestriction }?.name?.lowercase()?.let { "$it spells" }
                 ?: permissions.firstNotNullOfOrNull { it.castColorCount }?.let { "spells with exactly $it colors" }
@@ -1048,7 +1052,7 @@ internal class CastValidator(
         val chosen = action.conspiredCreatures
         if (chosen.size != 2) return "Conspire requires tapping exactly two creatures"
         if (chosen[0] == chosen[1]) return "Conspire requires two distinct creatures"
-        val spellColors = cardDef.colors
+        val spellColors = state.projectedState.spellColors(action.playerId, cardDef.colors, action.cardId)
         if (spellColors.isEmpty()) return "Cannot conspire: a colorless spell has no color to share"
         val projected = state.projectedState
         val battlefield = state.getBattlefield()
