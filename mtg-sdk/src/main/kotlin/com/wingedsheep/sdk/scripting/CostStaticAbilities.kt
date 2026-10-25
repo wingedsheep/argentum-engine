@@ -504,10 +504,13 @@ sealed interface CostGating {
     data class NthOfTypePerTurn(val n: Int) : CostGating
 
     /**
-     * Modifier applies only while [condition] holds at cast time. The condition is evaluated with
-     * the casting player as `controllerId`, so player-scoped conditions ("during your turn",
-     * "if you've cast another spell this turn", "if your opponents control three or more creatures")
-     * all work out of the box.
+     * Modifier applies only while [condition] holds at cast time. "You" in the condition is the
+     * modifier's controller: the controller of the permanent or emblem it's printed on, or the
+     * casting player for a [SpellCostTarget.SelfCast] modifier (the card *is* the spell). So
+     * player-scoped conditions ("during your turn", "if you've cast another spell this turn",
+     * "if your opponents control three or more creatures") read the right player even when the
+     * modifier taxes someone else's spells — Paladin Class's "spells your opponents cast during
+     * your turn cost {1} more" is `OpponentsCast(Any)` gated by `OnlyIf(IsYourTurn)`.
      *
      * Gates the *entire* modification, so it composes with any [CostModification] — including the
      * dynamic per-unit reductions ([CostModification.ReduceGenericBy]) that a fixed-amount source

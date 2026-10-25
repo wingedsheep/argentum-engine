@@ -11171,8 +11171,11 @@ staticAbility {
     `NthOfTypePerTurn(2)` with `target = YouCast(GameObjectFilter.Any)` for Uthros Psionicist's "the
     second spell you cast each turn costs {2} less". Requires a filter-bearing target
     (`YouCast` / `AnyCaster`) — it needs a notion of "type" to count.
-  - `OnlyIf(condition)` — applies only while `condition` holds at cast time (evaluated with the
-    caster as controller). Gates the *whole* modification, so it composes with the dynamic per-unit
+  - `OnlyIf(condition)` — applies only while `condition` holds at cast time. "You" in the condition
+    is the modifier's controller (the caster only for a `SelfCast` modifier), so a tax on other
+    players' spells reads its own controller's state: Paladin Class's "spells your opponents cast
+    during your turn cost {1} more" is `OpponentsCast(GameObjectFilter.Any)` gated by
+    `OnlyIf(Conditions.IsYourTurn)`. Gates the *whole* modification, so it composes with the dynamic per-unit
     reductions that a fixed-amount source can't express: Temur Battlecrier's "During your turn, …"
     is `OnlyIf(Conditions.IsYourTurn)` over `ReduceGenericBy(PermanentsYouControlMatching(…))`. For a
     fixed conditional reduction pair it with `ReduceGeneric` (Mental Modulation:

@@ -113,7 +113,7 @@ class CostCalculator(
         return targetMatchesSpell(
             ability.target, cardDef, casterId, payment.sourceId, state, targets, fromZone, spellManaValue(cardDef, announcedX),
         ) &&
-            gatingApplies(state, casterId, cardDef, ability, declaredCostSlot)
+            gatingApplies(state, casterId, cardDef, ability, declaredCostSlot, payment.sourceId)
     }
 
     private val conditionEvaluator = predicateEvaluator.conditions
@@ -157,7 +157,7 @@ class CostCalculator(
             if (ability !is ModifySpellCost) continue
             if (ability.optionalLifePayment != null) continue
             if (ability.target != SpellCostTarget.SelfCast) continue
-            if (!gatingApplies(state, casterId, cardDef, ability, declaredCostSlot)) continue
+            if (!gatingApplies(state, casterId, cardDef, ability, declaredCostSlot, sourceId = null)) continue
             applyToSpellCast(
                 // A self-cast modifier has no source *permanent*: the card is the spell being cast,
                 // so source-relative reduction sources read nothing and "you" is the caster.
@@ -205,7 +205,7 @@ class CostCalculator(
         for ((sourceId, ability) in modifiers) {
             if (ability.optionalLifePayment != null) continue
             if (!targetMatchesSpell(ability.target, cardDef, casterId, sourceId, state, chosenTargets, fromZone, manaValue)) continue
-            if (!gatingApplies(state, casterId, cardDef, ability, declaredCostSlot)) continue
+            if (!gatingApplies(state, casterId, cardDef, ability, declaredCostSlot, sourceId)) continue
             applyToSpellCast(
                 state, cardDef, casterId, ability.modification, chosenTargets, sourceId = sourceId,
                 addGenericReduction = { totalReduction += it },
@@ -266,7 +266,7 @@ class CostCalculator(
         for (payment in optionalCostPayments) {
             val ability = optionalModifier(state, payment) ?: continue
             if (!targetMatchesSpell(ability.target, cardDef, casterId, payment.sourceId, state, chosenTargets, fromZone, manaValue)) continue
-            if (!gatingApplies(state, casterId, cardDef, ability, declaredCostSlot)) continue
+            if (!gatingApplies(state, casterId, cardDef, ability, declaredCostSlot, payment.sourceId)) continue
             applyToSpellCast(
                 state, cardDef, casterId, ability.modification, chosenTargets, sourceId = payment.sourceId,
                 addGenericReduction = { genericReduction += it }, addGenericIncrease = { genericIncrease += it },
@@ -517,13 +517,17 @@ class CostCalculator(
 
     /**
      * Whether the [ability]'s gating allows it to apply to a cast of [cardDef] by [casterId].
+     *
+     * [sourceId] is the permanent or emblem the modifier is printed on, or null for a self-cast
+     * modifier printed on the spell itself.
      */
     private fun gatingApplies(
         state: GameState,
         casterId: EntityId,
         cardDef: CardDefinition,
         ability: ModifySpellCost,
-        declaredCostSlot: ChoiceSlot? = null,
+        declaredCostSlot: ChoiceSlot?,
+        sourceId: EntityId?,
     ): Boolean {
         return when (val gating = ability.gating) {
             CostGating.None -> true
@@ -534,16 +538,18 @@ class CostCalculator(
                 priorMatching == gating.n - 1
             }
             is CostGating.OnlyIf -> {
-                // Player-scoped conditions ("during your turn", "you've cast another spell", ...)
-                // evaluate against the caster. The cost modifier's source is a non-spell permanent
-                // (or the spell card itself for SelfCast), neither of which the condition needs.
+                // "You" in a static ability is its controller, so player-scoped conditions
+                // ("during your turn", "you've gained life this turn", ...) evaluate against the
+                // modifier's controller: Paladin Class taxes opponents' spells during *its
+                // controller's* turn, not the caster's. A self-cast modifier has no source
+                // permanent; the card is the spell, so "you" is the caster.
                 // The optional additional cost this cast declares is part of the branch being
                 // priced, not of the game state — a "costs {2} less to cast if it's bargained"
                 // reduction (CR 702.166, Hamlet Glutton) applies only to the bargained variant, and
                 // the spell has no durable choice bag yet, so the declaration rides the context.
                 val ctx = EffectContext(
-                    sourceId = null,
-                    controllerId = casterId,
+                    sourceId = sourceId,
+                    controllerId = sourceId?.let { modifierController(state, it) } ?: casterId,
                     declaredCostSlot = declaredCostSlot,
                 )
                 conditionEvaluator.evaluate(state, gating.condition, ctx)

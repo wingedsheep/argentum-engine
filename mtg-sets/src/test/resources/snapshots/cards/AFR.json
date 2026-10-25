@@ -10177,6 +10177,136 @@
     ]
 }
 
+// Paladin Class
+{
+    "name": "Paladin Class",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment — Class",
+    "oracleText": "(Gain the next level as a sorcery to add its ability.)\nSpells your opponents cast during your turn cost {1} more to cast.\n{2}{W}: Level 2 — Creatures you control get +1/+1.\n{4}{W}: Level 3 — Whenever you attack, until end of turn, target attacking creature gets +1/+1 for each other attacking creature and gains double strike.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "OpponentsCast",
+                "modification": {
+                    "type": "IncreaseGeneric",
+                    "amount": 1
+                },
+                "gating": {
+                    "type": "OnlyIf",
+                    "condition": "IsYourTurn"
+                }
+            }
+        ],
+        "classLevels": [
+            {
+                "level": 2,
+                "cost": "{2}{W}",
+                "staticAbilities": [
+                    {
+                        "type": "ModifyStats",
+                        "powerBonus": 1,
+                        "toughnessBonus": 1,
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    }
+                ]
+            },
+            {
+                "level": 3,
+                "cost": "{4}{W}",
+                "triggeredAbilities": [
+                    {
+                        "id": "Paladin Class:1",
+                        "trigger": "YouAttackEvent",
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "ModifyStats",
+                                    "powerModifier": {
+                                        "type": "Subtract",
+                                        "left": {
+                                            "type": "AggregateBattlefield",
+                                            "player": "Each",
+                                            "filter": "creature attacking"
+                                        },
+                                        "right": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "toughnessModifier": {
+                                        "type": "Subtract",
+                                        "left": {
+                                            "type": "AggregateBattlefield",
+                                            "player": "Each",
+                                            "filter": "creature attacking"
+                                        },
+                                        "right": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                {
+                                    "type": "GrantKeyword",
+                                    "keyword": "DOUBLE_STRIKE",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            ]
+                        },
+                        "targetRequirement": {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature attacking"
+                            },
+                            "id": "t0"
+                        },
+                        "descriptionOverride": "Whenever you attack, until end of turn, target attacking creature gets +1/+1 for each other attacking creature and gains double strike."
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "RARE",
+        "artist": "Campbell White",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5bf81fb1-7992-4ae9-b1a8-80c31579a2bf.jpg?1783926526",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "Additional costs from Paladin Class cards are cumulative. For example, if you control two Paladin Class cards, spells your opponents cast cost {2} more to cast."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If Paladin Class is level 3 and you attack with exactly one creature, it won't get a power and toughness bonus, but it will get double strike."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Gaining a level is a normal activated ability. It uses the stack and can be responded to."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Gaining a level won't remove abilities that a Class had at a previous level."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Paladin's Shield
 {
     "name": "Paladin's Shield",
