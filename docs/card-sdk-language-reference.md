@@ -2584,7 +2584,14 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   announced with the spell/ability, respects hexproof/shroud, and the ability is countered if that
   target is illegal on resolution (CR 608.2b). Pair it with `Targets.PermanentOrPlayer`. Both forms
   place counters identically: replacement effects honored, placement attributed to the controller,
-  and a recipient that "can't have counters put on it" (Blossombind) skipped.
+  and a recipient that "can't have counters put on it" (Blossombind) skipped. Pass `storeAs` to
+  publish **the permanents that had a counter put on them this way** to a pipeline collection —
+  `runStoringCollection { Effects.Proliferate(storeAs = it) }` — for a follow-up that acts on them.
+  Only permanents a counter actually landed on are stored (a chosen recipient whose placement was
+  prevented or replaced to zero isn't; players never are); under "proliferate twice instead" it is
+  the union of every proliferate in the run. Ripples of Potential: `Pipeline { val countered =
+  runStoringCollection { Proliferate(storeAs = it) }; val chosen = chooseAnyNumber(countered, filter
+  = Permanent.youControl()); run(ForEachInCollection(chosen, PhaseOut(IterationEntity))) }`.
 - `AddCountersOfChosenKind(target?, count = 1)` — "choose a counter on target permanent. Put an additional
   counter of that kind on that permanent" (Ichormoon Gauntlet). The one-kind sibling of the targeted
   `Proliferate(target)`: at resolution the controller picks one kind among those on the recipient

@@ -2722,9 +2722,13 @@ object Effects {
      * permanent or player, give that permanent or player another counter of that kind"
      * (Powerful Broker). The recipient is then a real target chosen on announcement rather than
      * a resolution-time choice; pair it with `Targets.PermanentOrPlayer`.
+     *
+     * Pass [storeAs] (in a pipeline, `runStoringCollection { Effects.Proliferate(storeAs = it) }`)
+     * to publish the permanents that had a counter put on them this way, for "then choose any
+     * number of permanents you control that had a counter put on them this way".
      */
-    fun Proliferate(target: EffectTarget? = null): Effect =
-        com.wingedsheep.sdk.scripting.effects.ProliferateEffect(target)
+    fun Proliferate(target: EffectTarget? = null, storeAs: String? = null): Effect =
+        com.wingedsheep.sdk.scripting.effects.ProliferateEffect(target, storeAs)
 
     /**
      * Add a card type to a target permanent.

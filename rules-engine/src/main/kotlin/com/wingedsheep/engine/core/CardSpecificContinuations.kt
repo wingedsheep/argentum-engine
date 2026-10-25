@@ -302,6 +302,9 @@ data class MoveChosenCountersToTargetContinuation(
  * @property sourceId The proliferating source, for the next decision's context
  * @property proliferatesRemaining Proliferates still owed after this one — non-zero only under a
  *   "proliferate twice instead" replacement (Tekuthal, Inquiry Dominus)
+ * @property storeAs The effect's `storeAs` — the pipeline collection the permanents given a counter
+ *   are published to once the last proliferate completes; null when the effect doesn't store them
+ * @property countered Permanents given a counter by earlier proliferates of the same run
  */
 @Serializable
 data class ProliferateContinuation(
@@ -309,7 +312,9 @@ data class ProliferateContinuation(
     val eligibleEntities: List<EntityId>,
     val sourceName: String = "Proliferate",
     val sourceId: EntityId? = null,
-    val proliferatesRemaining: Int = 0
+    val proliferatesRemaining: Int = 0,
+    val storeAs: String? = null,
+    val countered: List<EntityId> = emptyList()
 ) : AnswerContinuation
 
 /**

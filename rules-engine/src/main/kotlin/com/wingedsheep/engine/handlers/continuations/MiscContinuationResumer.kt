@@ -1148,10 +1148,12 @@ class MiscContinuationResumer(
             continuation.sourceId,
             continuation.sourceName,
             continuation.proliferatesRemaining,
-            events + proliferated
+            events + proliferated,
+            storeAs = continuation.storeAs,
+            countered = (continuation.countered + ProliferateExecutor.permanentsGivenCounters(newState, events)).distinct()
         )
-        if (result.outcome is Outcome.Paused) return result
-        return checkForMore(result.state, result.events)
+        if (result.outcome is Outcome.Paused) return result.toExecutionResult()
+        return checkForMore(exposeCollectionsToNextFrame(result.state, result.updatedCollections), result.events)
     }
 
     private fun resumeAddDynamicMana(

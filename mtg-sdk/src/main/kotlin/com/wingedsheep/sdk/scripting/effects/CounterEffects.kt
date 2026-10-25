@@ -647,11 +647,20 @@ data class DistributeCountersFromSelfEffect(
  * The counters added are identical in both shapes: one of each kind the recipient currently has,
  * honoring counter-placement replacement effects, and attributed to the effect's controller so
  * counter-history predicates see the placement.
+ *
+ * [storeAs] publishes the **permanents that had a counter put on them this way** to that pipeline
+ * collection, for a follow-up that acts on them — "proliferate, then choose any number of
+ * permanents you control that had a counter put on them this way" (Ripples of Potential). Only
+ * permanents still on the battlefield whose placement actually happened are recorded: a chosen
+ * recipient that can't have counters put on it, or whose every counter a replacement reduced to
+ * zero, is left out, and players are never recorded (the follow-ups all choose permanents). Under
+ * "proliferate twice instead" the collection is the union of every proliferate in the run.
  */
 @SerialName("Proliferate")
 @Serializable
 data class ProliferateEffect(
-    val target: EffectTarget? = null
+    val target: EffectTarget? = null,
+    val storeAs: String? = null
 ) : Effect {
     override val description: String = if (target == null) {
         "Proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)"

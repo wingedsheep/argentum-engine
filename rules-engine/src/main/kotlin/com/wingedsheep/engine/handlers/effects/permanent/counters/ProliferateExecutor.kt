@@ -6,7 +6,6 @@ import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.DecisionContext
 import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.EffectResult
-import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.ProliferateContinuation
 import com.wingedsheep.engine.core.ProliferatedEvent
@@ -84,7 +83,10 @@ class ProliferateExecutor(
             }
 
             val (newState, events) = addOneOfEachKind(state, listOf(recipientId), context.controllerId, predicateEvaluator = predicateEvaluator)
-            return EffectResult.success(newState, events)
+            return EffectResult(
+                newState, events,
+                updatedCollections = stored(effect.storeAs, permanentsGivenCounters(newState, events)),
+            )
         }
 
         val sourceName = context.sourceId
@@ -96,8 +98,9 @@ class ProliferateExecutor(
         val times = KeywordActionReplacements.repetitions(
             state, context.controllerId, ReplaceableKeywordAction.PROLIFERATE
         )
-        return EffectResult.from(
-            proliferate(state, context.controllerId, context.sourceId, sourceName, times, emptyList())
+        return proliferate(
+            state, context.controllerId, context.sourceId, sourceName, times, emptyList(),
+            storeAs = effect.storeAs,
         )
     }
 
@@ -108,7 +111,9 @@ class ProliferateExecutor(
          * emits its own [ProliferatedEvent]. A proliferate with nothing eligible completes on the
          * spot; the first one that has a choice to make pauses, carrying the proliferates still
          * owed on its [ProliferateContinuation] so the resumer can pick the loop back up.
-         * [events] are the events already produced by earlier proliferates in the same loop.
+         * [events] are the events already produced by earlier proliferates in the same loop, and
+         * [countered] the permanents they gave a counter — published to [storeAs] (when set) once
+         * the run completes, alongside whatever the rest of the run adds.
          */
         fun proliferate(
             state: GameState,
@@ -116,8 +121,10 @@ class ProliferateExecutor(
             sourceId: EntityId?,
             sourceName: String,
             times: Int,
-            events: List<GameEvent>
-        ): ExecutionResult {
+            events: List<GameEvent>,
+            storeAs: String? = null,
+            countered: List<EntityId> = emptyList(),
+        ): EffectResult {
             val accumulated = events.toMutableList()
             repeat(times) { done ->
                 val eligible = findEntitiesWithCounters(state)
@@ -146,13 +153,34 @@ class ProliferateExecutor(
                     eligibleEntities = eligible,
                     sourceName = sourceName,
                     sourceId = sourceId,
-                    proliferatesRemaining = times - done - 1
+                    proliferatesRemaining = times - done - 1,
+                    storeAs = storeAs,
+                    countered = countered
                 )
 
-                return state.suspendForDecision(decision, continuation, accumulated, eventType = "PROLIFERATE")
+                return EffectResult.from(
+                    state.suspendForDecision(decision, continuation, accumulated, eventType = "PROLIFERATE")
+                )
             }
-            return ExecutionResult.success(state, accumulated)
+            return EffectResult(state, accumulated, updatedCollections = stored(storeAs, countered))
         }
+
+        /** The `storeAs` collection, or nothing when the effect doesn't store one. */
+        fun stored(storeAs: String?, countered: List<EntityId>): Map<String, List<EntityId>> =
+            if (storeAs == null) emptyMap() else mapOf(storeAs to countered)
+
+        /**
+         * The permanents [events] put at least one counter on — the "permanents that had a counter
+         * put on them this way". A placement a replacement reduced to zero emits no event, so it
+         * isn't counted; players (poison, experience) are dropped.
+         */
+        fun permanentsGivenCounters(state: GameState, events: List<GameEvent>): List<EntityId> =
+            events.asSequence()
+                .filterIsInstance<CountersAddedEvent>()
+                .map { it.entityId }
+                .filter { it !in state.turnOrder }
+                .distinct()
+                .toList()
 
         /**
          * All battlefield permanents + all players that currently have at least one
