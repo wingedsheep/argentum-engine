@@ -1377,3 +1377,38 @@
     },
     "colorIdentityOverride": []
 }
+
+// Terra Eternal
+{
+    "name": "Terra Eternal",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "All lands have indestructible.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "INDESTRUCTIBLE",
+                "filter": {
+                    "baseFilter": "land"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "RARE",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "\"If this world could make a wish, it would be to survive the parasites who loot its treasures and threaten its life force.\"\n—Saidah, Joraga hunter",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9bad0759-4132-42b5-9a26-0fcf321a60e0.jpg?1783942063",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "Effects that say \"destroy\" won't cause a land with indestructible to be put into its owner's graveyard. If that land is also a creature, lethal damage won't cause it to be put into its owner's graveyard either. However, a land with indestructible can be put into the graveyard for a number of reasons. The most likely reasons are if it's sacrificed, if it's legendary and another legendary land with the same name is controlled by the same player, or if it's also a creature and its toughness is 0 or less."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}

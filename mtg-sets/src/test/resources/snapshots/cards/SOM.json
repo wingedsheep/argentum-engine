@@ -2341,6 +2341,59 @@
     ]
 }
 
+// Liquimetal Coating
+{
+    "name": "Liquimetal Coating",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Target permanent becomes an artifact in addition to its other types until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Liquimetal Coating:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddCardType",
+                    "cardType": "ARTIFACT",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}: Target permanent becomes an artifact in addition to its other types until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "rarity": "UNCOMMON",
+        "artist": "Johann Bodin",
+        "flavorText": "\"They'll soon become accustomed to wearing skin that is not their own.\"\n—Elesh Norn, Grand Cenobite",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/43ec9201-06e7-4a70-8dcf-7462a019965d.jpg?1783941706",
+        "rulings": [
+            {
+                "date": "2011-01-01",
+                "text": "You may target any permanent with the ability, including an artifact."
+            },
+            {
+                "date": "2011-01-01",
+                "text": "Becoming an artifact doesn't change what color(s) a permanent is."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Loxodon Wayfarer
 {
     "name": "Loxodon Wayfarer",

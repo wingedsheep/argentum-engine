@@ -597,6 +597,86 @@
     "colorIdentityOverride": []
 }
 
+// Bolas's Citadel
+{
+    "name": "Bolas's Citadel",
+    "manaCost": "{3}{B}{B}{B}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "You may look at the top card of your library any time.\nYou may play lands and cast spells from the top of your library. If you cast a spell this way, pay life equal to its mana value rather than pay its mana cost.\n{T}, Sacrifice ten nonland permanents: Each opponent loses 10 life.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Bolas's Citadel:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "nonland permanent",
+                                "count": 10
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 10
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "descriptionOverride": "{T}, Sacrifice ten nonland permanents: Each opponent loses 10 life."
+            }
+        ],
+        "staticAbilities": [
+            "LookAtTopOfLibrary",
+            {
+                "type": "PlayFromTopWithAlternativeCost",
+                "withoutPayingManaCost": true,
+                "additionalCost": "PayLifeEqualToManaValueOfSpell"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "rarity": "RARE",
+        "artist": "Jonas De Ro",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2124603-d20e-40eb-97f0-a66323397ac2.jpg?1783933451",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "You must follow the normal timing permissions and restrictions of the cards you play from your library."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "You can play a land card from the top of your library only if you have available land plays remaining."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If a spell has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If you cast a spell for another cost \"rather than pay its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs. If the card has any mandatory additional costs, such as that of Spark Harvest, those must be paid to cast the card."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Bolas's Citadel may be one of the permanents you sacrifice to activate its last ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Bolt Bend
 {
     "name": "Bolt Bend",

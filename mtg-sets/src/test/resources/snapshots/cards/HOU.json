@@ -422,6 +422,80 @@
     ]
 }
 
+// Hour of Revelation
+{
+    "name": "Hour of Revelation",
+    "manaCost": "{3}{W}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "This spell costs {3} less to cast if there are ten or more nonland permanents on the battlefield.\nDestroy all nonland permanents.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "nonland permanent"
+                    },
+                    "storeAs": "destroyAll_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "destroyAll_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy"
+                }
+            ]
+        },
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 3
+                },
+                "gating": {
+                    "type": "OnlyIf",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "AggregateBattlefield",
+                            "player": "Each",
+                            "filter": "nonland permanent"
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 10
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "RARE",
+        "artist": "Raymond Swanland",
+        "flavorText": "In the first moments, the gate to the afterlife opened, and the people were prostrate in the light of the God-Pharaoh.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/89a89652-95ef-45b4-80c3-02241483f3c0.jpg?1783936060",
+        "rulings": [
+            {
+                "date": "2017-07-14",
+                "text": "You determine the cost to cast Hour of Revelation before you pay any of that cost. For example, if the only nonland permanents on the battlefield are Tezzeret the Schemer and nine Etherium Cells he's given you, Hour of Revelation costs {W}{W}{W} to cast. You may sacrifice three Etherium Cells to pay this cost, even though there are no longer ten or more nonland permanents after you produce {W}{W}{W}."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Marauding Boneslasher
 {
     "name": "Marauding Boneslasher",

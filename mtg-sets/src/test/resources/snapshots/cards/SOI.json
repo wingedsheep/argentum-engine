@@ -5147,6 +5147,77 @@
     ]
 }
 
+// Port Town
+{
+    "name": "Port Town",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "As this land enters, you may reveal a Plains or Island card from your hand. If you don't, this land enters tapped.\n{T}: Add {W} or {U}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Port Town:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Port Town:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "OnEnterRunEffect",
+                "effect": {
+                    "type": "MayRevealCardFromHand",
+                    "filter": "land Plains|Island",
+                    "otherwise": "EnterTapped"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "278",
+        "rarity": "RARE",
+        "artist": "Noah Bradley",
+        "flavorText": "A haunted fog known as the Nebelgast shrouds the cities along Nephalia's coast.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/8/b866712a-c3ef-4a43-ac0f-146c7836f0d6.jpg?1783937697",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "If an effect instructs you to put Port Town onto the battlefield tapped, it will still enter the battlefield tapped even if you reveal a land card from your hand."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "Lands don't have a subtype just because they can produce mana of the corresponding color. Port Town itself is neither a Plains nor an Island, even though it produces white and blue mana, so you can't reveal one to satisfy the ability of another."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "You may reveal any land card with either or both of the appropriate subtypes. It doesn't have to be a basic land. For example, you could reveal Canopy Vista from the Battle for Zendikar set to satisfy the ability of Port Town."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If a Plains or Island is entering the battlefield from your hand at the same time as Port Town, you may reveal the other land to have Port Town enter untapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Press for Answers
 {
     "name": "Press for Answers",

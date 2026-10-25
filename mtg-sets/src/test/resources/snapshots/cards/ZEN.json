@@ -3733,6 +3733,82 @@
     ]
 }
 
+// Roil Elemental
+{
+    "name": "Roil Elemental",
+    "manaCost": "{3}{U}{U}{U}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Flying\nLandfall — Whenever a land you control enters, you may gain control of target creature for as long as you control this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Roil Elemental:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "GainControl",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "duration": {
+                            "type": "WhileYouControlSource",
+                            "sourceDescription": "this creature"
+                        }
+                    },
+                    "descriptionOverride": "Landfall — Whenever a land you control enters, you may gain control of target creature for as long as you control this creature."
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Landfall — Whenever a land you control enters, you may gain control of target creature for as long as you control this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "RARE",
+        "artist": "Raymond Swanland",
+        "flavorText": "A vortex that devours everything—even the souls of the living.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66139c73-8e14-433d-bcb6-ae3e518bcdfb.jpg?1783942161",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "If Roil Elemental leaves the battlefield, you no longer control it, so all of its control-change effects end."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "If Roil Elemental ceases to be under your control before its ability resolves, you won't gain control of the targeted creature at all."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "You may target a creature you already control with Roil Elemental's ability. This will usually have no visible effect, but it will overwrite any previous control-change effects."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Scalding Tarn
 {
     "name": "Scalding Tarn",

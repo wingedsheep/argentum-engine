@@ -2382,6 +2382,62 @@
     ]
 }
 
+// Liquimetal Torque
+{
+    "name": "Liquimetal Torque",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {C}.\n{T}: Target nonland permanent becomes an artifact in addition to its other types until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Liquimetal Torque:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Liquimetal Torque:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddCardType",
+                    "cardType": "ARTIFACT",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "nonland permanent"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}: Target nonland permanent becomes an artifact in addition to its other types until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "UNCOMMON",
+        "artist": "Brian Snõddy",
+        "flavorText": "\"Weaponized jewelry has a long and respected history.\"\n—Ervos Trax",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/13c6101a-da40-4785-8ccb-4e779bbbdb55.jpg?1783926804"
+    },
+    "colorIdentityOverride": []
+}
+
 // Marble Gargoyle
 {
     "name": "Marble Gargoyle",

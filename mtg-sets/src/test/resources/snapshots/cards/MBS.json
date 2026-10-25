@@ -292,6 +292,62 @@
     "colorIdentityOverride": []
 }
 
+// Ichor Wellspring
+{
+    "name": "Ichor Wellspring",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters or is put into a graveyard from the battlefield, draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ichor Wellspring:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "When this artifact enters, draw a card."
+            },
+            {
+                "id": "Ichor Wellspring:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "When this artifact is put into a graveyard from the battlefield, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "artist": "Steven Belledin",
+        "flavorText": "\"Our glorious infection has taken hold.\"\n—Elesh Norn, Grand Cenobite",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d1ea522-a0f6-45a8-8985-6fcca95d60cc.jpg?1783941368",
+        "rulings": [
+            {
+                "date": "2011-06-01",
+                "text": "The ability will trigger when Ichor Wellspring is put into a graveyard from the battlefield, even if the ability that triggered when it entered hasn't resolved yet."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Kuldotha Flamefiend
 {
     "name": "Kuldotha Flamefiend",

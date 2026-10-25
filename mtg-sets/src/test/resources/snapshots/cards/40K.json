@@ -1,1 +1,93 @@
-
+// Commissar Severina Raine
+{
+    "name": "Commissar Severina Raine",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Leading from the Front — Whenever Commissar Severina Raine attacks, each opponent loses X life, where X is the number of other attacking creatures.\nSummary Execution — {2}, Sacrifice another creature: You gain 2 life and draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Commissar Severina Raine:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "Each",
+                        "filter": "creature attacking",
+                        "excludeSelf": true
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Commissar Severina Raine:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{2}, Sacrifice another creature: You gain 2 life and draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "RARE",
+        "artist": "Jake Murray",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/94ba8b76-8de7-46da-b641-2503903f0f8a.jpg?1783920859",
+        "rulings": [
+            {
+                "date": "2022-10-07",
+                "text": "In Two-Headed Giant and other formats where multiple players can attack at the same time, Commissar Severina Raine's triggered ability counts all attacking creatures, even those controlled by other players."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}

@@ -5041,6 +5041,84 @@
     ]
 }
 
+// Snuff Out
+{
+    "name": "Snuff Out",
+    "manaCost": "{3}{B}",
+    "typeLine": "Instant",
+    "oracleText": "If you control a Swamp, you may pay 4 life rather than pay this spell's mana cost.\nDestroy target nonblack creature. It can't be regenerated.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CantBeRegenerated",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotColor",
+                                "color": "BLACK"
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ],
+        "selfAlternativeCost": {
+            "manaCost": "{0}",
+            "additionalCosts": [
+                {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomPayLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    }
+                }
+            ],
+            "condition": {
+                "type": "Exists",
+                "player": "You",
+                "zone": "Battlefield",
+                "filter": "land Swamp"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "artist": "Mike Ploog",
+        "flavorText": "Squee watched his Kyren cousins fall with a mixture of sympathy and relief.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/18a3cca1-e50e-49b6-9e1a-f86640e3b177.jpg?1783945946"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Soothing Balm
 {
     "name": "Soothing Balm",
