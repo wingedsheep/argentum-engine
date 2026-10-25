@@ -1481,6 +1481,72 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  AFR: {
+    setCode: 'AFR',
+    setName: 'Adventures in the Forgotten Realms',
+    archetypes: [
+      {
+        name: 'Dungeon Delvers',
+        colors: ['W', 'U'],
+        keyCard: 'Hama Pashar, Ruin Seeker',
+        description: 'Venture into the dungeon again and again while flyers and tappers keep the board in check. A tempo deck that wins on the value of completed dungeons and evasive damage.',
+      },
+      {
+        name: 'Evasive Control',
+        colors: ['U', 'B'],
+        keyCard: "Krydle of Baldur's Gate",
+        description: 'Answer threats with removal and card draw, then slip unblockable or flying attackers past the board. A patient control deck that drains the opponent in small, steady chunks.',
+      },
+      {
+        name: 'Treasure Sacrifice',
+        colors: ['B', 'R'],
+        keyCard: 'Kalain, Reclusive Painter',
+        description: 'Make Treasure tokens and cash them in for bigger spells, sacrifice payoffs and creatures that enter larger. An aggressive value deck that turns every leftover token into pressure.',
+      },
+      {
+        name: 'Pack Tactics',
+        colors: ['R', 'G'],
+        keyCard: 'Targ Nar, Demon-Fang Gnoll',
+        description: 'Attack with big creatures and reach 6 total power to switch on pack tactics bonuses every combat. A stompy aggro deck that rewards curving into ever-larger attackers.',
+      },
+      {
+        name: 'Life Gain Counters',
+        colors: ['G', 'W'],
+        keyCard: 'Trelasarra, Moon Dancer',
+        description: 'Gain life in small bursts and grow creatures with +1/+1 counters each time you do. A go-wide midrange deck whose team outsizes blockers while the life total keeps it out of reach.',
+      },
+      {
+        name: 'Venture Recursion',
+        colors: ['W', 'B'],
+        keyCard: 'Barrowin of Clan Undurr',
+        description: 'Venture into the dungeon and bring cheap creatures back from the graveyard to keep the board full. A grindy midrange deck that never runs out of bodies.',
+      },
+      {
+        name: 'Dice Rolling',
+        colors: ['U', 'R'],
+        keyCard: "Farideh, Devil's Chosen",
+        description: 'Roll dice with spells and creatures, and cash in the high rolls for cards, damage and evasion. A spell-heavy tempo deck that turns every d20 into extra value.',
+      },
+      {
+        name: 'Death Value',
+        colors: ['B', 'G'],
+        keyCard: "Shessra, Death's Whisper",
+        description: 'Force bad blocks, trade creatures freely and draw cards whenever something dies. A grindy attrition deck that wins the long game on card advantage.',
+      },
+      {
+        name: 'Equipment Aggro',
+        colors: ['R', 'W'],
+        keyCard: 'Bruenor Battlehammer',
+        description: 'Suit up creatures with cheap Equipment and swing hard with the extra power. A fast aggro deck that makes every equipped creature a threat.',
+      },
+      {
+        name: 'Ramp Value',
+        colors: ['G', 'U'],
+        keyCard: 'Gretchen Titchwillow',
+        description: 'Put extra lands onto the battlefield, draw cards and grow into big creatures and expensive spells. A ramp deck that outvalues the opponent once its mana gets going.',
+      },
+    ],
+  },
   VOW: {
     setCode: 'VOW',
     setName: 'Innistrad: Crimson Vow',

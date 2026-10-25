@@ -669,6 +669,32 @@ object SetArchetypes {
                     "Mill your own library to stock flashback cards, then cast them from the graveyard with ramp and mana that only spells from there can use. A value deck that gets stronger the longer the game runs."),
             )
         ),
+        "AFR" to SetSynergies(
+            setCode = "AFR",
+            setName = "Adventures in the Forgotten Realms",
+            archetypes = listOf(
+                Archetype("Dungeon Delvers", listOf(Color.WHITE, Color.BLUE),
+                    "Venture into the dungeon again and again while flyers and tappers keep the board in check. A tempo deck that wins on the value of completed dungeons and evasive damage."),
+                Archetype("Evasive Control", listOf(Color.BLUE, Color.BLACK),
+                    "Answer threats with removal and card draw, then slip unblockable or flying attackers past the board. A patient control deck that drains the opponent in small, steady chunks."),
+                Archetype("Treasure Sacrifice", listOf(Color.BLACK, Color.RED),
+                    "Make Treasure tokens and cash them in for bigger spells, sacrifice payoffs and creatures that enter larger. An aggressive value deck that turns every leftover token into pressure."),
+                Archetype("Pack Tactics", listOf(Color.RED, Color.GREEN),
+                    "Attack with big creatures and reach 6 total power to switch on pack tactics bonuses every combat. A stompy aggro deck that rewards curving into ever-larger attackers."),
+                Archetype("Life Gain Counters", listOf(Color.GREEN, Color.WHITE),
+                    "Gain life in small bursts and grow creatures with +1/+1 counters each time you do. A go-wide midrange deck whose team outsizes blockers while the life total keeps it out of reach."),
+                Archetype("Venture Recursion", listOf(Color.WHITE, Color.BLACK),
+                    "Venture into the dungeon and bring cheap creatures back from the graveyard to keep the board full. A grindy midrange deck that never runs out of bodies."),
+                Archetype("Dice Rolling", listOf(Color.BLUE, Color.RED),
+                    "Roll dice with spells and creatures, and cash in the high rolls for cards, damage and evasion. A spell-heavy tempo deck that turns every d20 into extra value."),
+                Archetype("Death Value", listOf(Color.BLACK, Color.GREEN),
+                    "Force bad blocks, trade creatures freely and draw cards whenever something dies. A grindy attrition deck that wins the long game on card advantage."),
+                Archetype("Equipment Aggro", listOf(Color.RED, Color.WHITE),
+                    "Suit up creatures with cheap Equipment and swing hard with the extra power. A fast aggro deck that makes every equipped creature a threat."),
+                Archetype("Ramp Value", listOf(Color.GREEN, Color.BLUE),
+                    "Put extra lands onto the battlefield, draw cards and grow into big creatures and expensive spells. A ramp deck that outvalues the opponent once its mana gets going."),
+            )
+        ),
         "VOW" to SetSynergies(
             setCode = "VOW",
             setName = "Innistrad: Crimson Vow",

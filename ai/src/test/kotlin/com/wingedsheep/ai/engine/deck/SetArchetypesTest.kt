@@ -244,6 +244,24 @@ class SetArchetypesTest : StringSpec({
         )
         synergies.archetypes.all { it.creatureTypes.isEmpty() } shouldBe true
     }
+    "Adventures in the Forgotten Realms exposes its ten signpost color-pair archetypes" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("afr"))
+
+        synergies.setName shouldBe "Adventures in the Forgotten Realms"
+        synergies.archetypes.map { it.name } shouldContainExactly listOf(
+            "Dungeon Delvers",
+            "Evasive Control",
+            "Treasure Sacrifice",
+            "Pack Tactics",
+            "Life Gain Counters",
+            "Venture Recursion",
+            "Dice Rolling",
+            "Death Value",
+            "Equipment Aggro",
+            "Ramp Value",
+        )
+        synergies.archetypes.map { it.colors.toSet() } shouldContainExactly ALL_COLOR_PAIRS.toList()
+    }
 })
 
 private val ALL_COLOR_PAIRS = linkedSetOf(

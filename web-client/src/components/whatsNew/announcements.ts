@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-afr',
+    date: '2026-10-25',
+    kind: 'set',
+    setCode: 'AFR',
+    title: 'Adventures in the Forgotten Realms is complete',
+    body:
+      "Grab your party and head into Dungeons & Dragons: venture into dungeons room by room, roll a d20 for spells with tiered results, and level up Classes that grow stronger as the game goes on. Pack tactics rewards big attacks, Treasure fuels splashy spells, and Equipment and life gain decks give every colour pair its own adventure.",
+    tryIf: 'dice rolling, dungeon crawling and Dungeons & Dragons flavour',
+  },
+  {
     id: 'set-stx',
     date: '2026-10-25',
     kind: 'set',
