@@ -8415,6 +8415,38 @@
     ]
 }
 
+// Magic Missile
+{
+    "name": "Magic Missile",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "This spell can't be countered.\nMagic Missile deals 3 damage divided as you choose among one, two, or three targets.",
+    "script": {
+        "spellEffect": {
+            "type": "DividedDamage",
+            "totalDamage": 3
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "count": 3,
+                "minCount": 1
+            }
+        ],
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "UNCOMMON",
+        "artist": "PINDURSKI",
+        "flavorText": "A tried-and-true favorite of many wizards, whatever their school.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c814ac58-8826-48cd-8209-4af6803866e3.jpg?1783926476"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Manticore
 {
     "name": "Manticore",
@@ -8471,6 +8503,57 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Meteor Swarm
+{
+    "name": "Meteor Swarm",
+    "manaCost": "{X}{R}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Meteor Swarm deals 8 damage divided as you choose among X target creatures and/or planeswalkers.",
+    "script": {
+        "spellEffect": {
+            "type": "DividedDamage",
+            "totalDamage": 8,
+            "minTargets": 0,
+            "maxTargets": 8
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker"
+                },
+                "id": "t0",
+                "dynamicMaxCount": "XValue",
+                "dynamicMinCount": "XValue"
+            }
+        ],
+        "xMaximum": {
+            "type": "Fixed",
+            "amount": 8
+        }
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "rarity": "RARE",
+        "artist": "Olivier Bernard",
+        "flavorText": "Sometimes one fireball isn't enough.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/8/b8f5e669-4e69-4763-bbb9-e9685bde912c.jpg?1783926474",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "You divide the damage as you cast Meteor Swarm. Each target must be assigned at least 1 damage. Because there is a maximum of eight targets, X can't be greater than 8."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If Meteor Swarm has one or more targets, and some (but not all) of them are illegal as Meteor Swarm tries to resolve, the amount of damage dealt to the remaining legal targets doesn't change. If all targets become illegal, Meteor Swarm won't resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -9410,6 +9493,70 @@
     }
 }
 
+// Plundering Barbarian
+{
+    "name": "Plundering Barbarian",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Dwarf Barbarian",
+    "oracleText": "When this creature enters, choose one —\n• Smash the Chest — Destroy target artifact.\n• Pry It Open — Create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Plundering Barbarian:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "artifact"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Smash the Chest — Destroy target artifact."
+                        },
+                        {
+                            "effect": {
+                                "type": "CreatePredefinedToken",
+                                "tokenType": "Treasure"
+                            },
+                            "description": "Pry It Open — Create a Treasure token."
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "artist": "Andrew Mar",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d875881c-c285-47f1-8a37-e4a0239d47ec.jpg?1783926473"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Portable Hole
 {
     "name": "Portable Hole",
@@ -9684,6 +9831,96 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Price of Loyalty
+{
+    "name": "Price of Loyalty",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of target creature until end of turn. Untap that creature. It gains haste until end of turn. If mana from a Treasure was spent to cast this spell, that creature gets +2/+0 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "ManaSpentFromSubtype",
+                                "subtype": "Treasure"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "artist": "Oriana Menendez",
+        "flavorText": "\"Most folks got mayhem in their hearts. Just gotta know their price.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/47634528-cc34-406a-8572-812a41d6a86a.jpg?1783926473"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -10139,6 +10376,53 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Red Dragon
+{
+    "name": "Red Dragon",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nFire Breath — When this creature enters, it deals 4 damage to each opponent.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Red Dragon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "UNCOMMON",
+        "artist": "Andrey Kuzinskiy",
+        "flavorText": "Red dragons consider the world and every creature in it as theirs to command.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7cf57369-b8e2-481c-89d4-c83c617499a3.jpg?1783926472"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -11253,6 +11537,176 @@
     ]
 }
 
+// Swarming Goblins
+{
+    "name": "Swarming Goblins",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Goblin",
+    "oracleText": "When this creature enters, roll a d20.\n1—9 | Create a 1/1 red Goblin creature token.\n10—19 | Create two of those tokens.\n20 | Create three of those tokens.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Swarming Goblins:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RollDice",
+                            "sides": 20,
+                            "storeTotalAs": "diceResult0"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "All",
+                                    "conditions": [
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult0"
+                                            },
+                                            "operator": "GTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult0"
+                                            },
+                                            "operator": "LTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 9
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "CreateToken",
+                                "power": 1,
+                                "toughness": 1,
+                                "colors": [
+                                    "RED"
+                                ],
+                                "creatureTypes": [
+                                    "Goblin"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/1/4/1425e965-7eea-419c-a7ec-c8169fa9edbf.jpg?1783926342"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "All",
+                                    "conditions": [
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult0"
+                                            },
+                                            "operator": "GTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 10
+                                            }
+                                        },
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult0"
+                                            },
+                                            "operator": "LTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 19
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "CreateToken",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "power": 1,
+                                "toughness": 1,
+                                "colors": [
+                                    "RED"
+                                ],
+                                "creatureTypes": [
+                                    "Goblin"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/1/4/1425e965-7eea-419c-a7ec-c8169fa9edbf.jpg?1783926342"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult0"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 20
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "CreateToken",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "power": 1,
+                                "toughness": 1,
+                                "colors": [
+                                    "RED"
+                                ],
+                                "creatureTypes": [
+                                    "Goblin"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/1/4/1425e965-7eea-419c-a7ec-c8169fa9edbf.jpg?1783926342"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "artist": "Andrew Mar",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/623c1d1b-69a4-4bc4-b388-17a7600fd960.jpg?1783926472"
+    }
+}
+
 // Sylvan Shepherd
 {
     "name": "Sylvan Shepherd",
@@ -12016,6 +12470,118 @@
     ]
 }
 
+// Tiger-Tribe Hunter
+{
+    "name": "Tiger-Tribe Hunter",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Human Barbarian",
+    "oracleText": "Trample\nPack tactics — Whenever this creature attacks, if you attacked with creatures with total power 6 or greater this combat, you may sacrifice another creature. When you do, this creature deals damage equal to the sacrificed creature's power to target creature.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tiger-Tribe Hunter:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        {
+                            "type": "AttackersTotalPowerAtLeast",
+                            "n": 6
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectTarget",
+                                "requirement": {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you",
+                                        "excludeSelf": true
+                                    }
+                                },
+                                "storeAs": "target0",
+                                "nonTargeting": true,
+                                "prompt": "Choose another creature to sacrifice"
+                            },
+                            {
+                                "type": "StoreNumber",
+                                "name": "tigerTribeHunterSacrificedPower",
+                                "amount": {
+                                    "type": "EntityProperty",
+                                    "entity": {
+                                        "type": "PipelineTarget",
+                                        "collectionName": "target0"
+                                    },
+                                    "numericProperty": "Power"
+                                }
+                            },
+                            {
+                                "type": "SacrificeTarget",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "target0"
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveEffect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "VariableReference",
+                            "variableName": "tigerTribeHunterSacrificedPower"
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "You may sacrifice another creature. When you do, Tiger-Tribe Hunter deals damage equal to the sacrificed creature's power to target creature."
+                },
+                "descriptionOverride": "Pack tactics — Whenever Tiger-Tribe Hunter attacks, if you attacked with creatures with total power 6 or greater this combat, you may sacrifice another creature. When you do, Tiger-Tribe Hunter deals damage equal to the sacrificed creature's power to target creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "rarity": "UNCOMMON",
+        "artist": "Grzegorz Rutkowski",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/46e0c229-aa31-4c79-bafe-28a8d8e64c61.jpg?1783926471",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "The pack tactics ability goes on the stack without a target. If you sacrifice another creature as it resolves, the reflexive triggered ability will trigger and choose a target for it at that time."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Use the sacrificed creature's power as it last existed on the battlefield to determine how much damage is dealt."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Treasure Chest
 {
     "name": "Treasure Chest",
@@ -12563,6 +13129,61 @@
     ]
 }
 
+// Valor Singer
+{
+    "name": "Valor Singer",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Tiefling Bard",
+    "oracleText": "Combat Inspiration — At the beginning of combat on your turn, target creature you control gets +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Valor Singer:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "artist": "Justyna Dura",
+        "flavorText": "\"There is only one way forward: into legend.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/89bc162c-bdf1-43f7-882f-d8cee4f3f415.jpg?1783926470"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Vampire Spawn
 {
     "name": "Vampire Spawn",
@@ -12743,6 +13364,45 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Wandering Troubadour
+{
+    "name": "Wandering Troubadour",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Dragon Bard",
+    "oracleText": "At the beginning of your end step, if you had a land enter the battlefield under your control this turn, venture into the dungeon. (Enter the first room or advance to the next room.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wandering Troubadour:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": "VentureIntoTheDungeon",
+                "interveningIf": {
+                    "type": "PermanentTypeEnteredBattlefieldThisTurn",
+                    "cardType": "LAND"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "210",
+        "rarity": "UNCOMMON",
+        "artist": "Rudy Siswanto",
+        "flavorText": "\"There's a new ballad waiting to be born around every corner.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/3/d3c7f123-31c8-469b-85e5-d20c4d21b2a0.jpg?1783926452"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -13027,6 +13687,44 @@
     ]
 }
 
+// Xorn
+{
+    "name": "Xorn",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "If you would create one or more Treasure tokens, instead create those tokens plus an additional Treasure token.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "CreateAdditionalToken",
+                "additionalTokenType": "Treasure",
+                "inheritTapped": true,
+                "appliesTo": {
+                    "type": "TokenCreationEvent",
+                    "tokenFilter": "artifact Treasure"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "rarity": "RARE",
+        "artist": "Yigit Koroglu",
+        "flavorText": "Xorns are native to the Elemental Plane of Earth, where gems and rare stones are plentiful. When summoned elsewhere they can be quite destructive in search of food.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f73fdf76-e3a6-49d0-bfb0-4b7cdbd4271e.jpg?1783926470",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "If you control multiple copies of Xorn, you'll create that many additional Treasure tokens."
+            }
+        ]
+    }
+}
+
 // You Come to a River
 {
     "name": "You Come to a River",
@@ -13107,6 +13805,203 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// You Come to the Gnoll Camp
+{
+    "name": "You Come to the Gnoll Camp",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Intimidate Them — Up to two target creatures can't block this turn.\n• Fend Them Off — Target creature gets +3/+1 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": "IterationSpace.Targets",
+                        "body": {
+                            "type": "CantBlockTargetCreatures",
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            }
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "count": 2,
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Intimidate Them — Up to two target creatures can't block this turn."
+                },
+                {
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Fend Them Off — Target creature gets +3/+1 until end of turn."
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "artist": "Billy Christian",
+        "flavorText": "\"Easy now, everyone. I'll take care of this.\"\n—Nadaar",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e893613-423e-409b-9334-292bd252405b.jpg?1783926469",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "Casting this spell and choosing the Intimidate Them mode after blockers have been declared won't change or undo any blocks."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// You Find Some Prisoners
+{
+    "name": "You Find Some Prisoners",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Break Their Chains — Destroy target artifact.\n• Interrogate Them — Exile the top three cards of target opponent's library. Choose one of them. Until the end of your next turn, you may play that card, and you may spend mana as though it were mana of any color to cast it.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Break Their Chains — Destroy target artifact."
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    },
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected2",
+                                "prompt": "Choose a card you may play until the end of your next turn"
+                            },
+                            {
+                                "type": "GrantMayPlayFromExile",
+                                "from": "selected2",
+                                "expiry": {
+                                    "type": "UntilControllerStep",
+                                    "step": "CLEANUP",
+                                    "includeCurrentTurn": false
+                                },
+                                "withAnyManaColor": true
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetOpponent",
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Interrogate Them — Exile the top three cards of target opponent's library. Choose one of them. Until the end of your next turn, you may play that card, and you may spend mana as though it were mana of any color to cast it."
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "rarity": "UNCOMMON",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f2a95ae-feb2-42c3-99b4-9ea7a491d326.jpg?1783926469",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "For the Interrogate Them mode, the cards you didn't choose remain in exile. If you don't play the chosen card, it also remains in exile."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -13336,5 +14231,281 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// You See a Pair of Goblins
+{
+    "name": "You See a Pair of Goblins",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Charge Them — Creatures you control get +2/+0 until end of turn.\n• Befriend Them — Create two 1/1 red Goblin creature tokens.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "description": "Charge Them — Creatures you control get +2/+0 until end of turn."
+                },
+                {
+                    "effect": {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "RED"
+                        ],
+                        "creatureTypes": [
+                            "Goblin"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/1/4/1425e965-7eea-419c-a7ec-c8169fa9edbf.jpg?1783926342"
+                    },
+                    "description": "Befriend Them — Create two 1/1 red Goblin creature tokens."
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "rarity": "UNCOMMON",
+        "artist": "Aaron Miller",
+        "flavorText": "\"I have the shot. Shall I take it?\"\n—Varis, Silverymoon ranger",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b69e7200-96ea-4455-83cc-0a497d56efe5.jpg?1783926468"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Zalto, Fire Giant Duke
+{
+    "name": "Zalto, Fire Giant Duke",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Legendary Creature — Giant Barbarian",
+    "oracleText": "Trample\nWhenever Zalto is dealt damage, venture into the dungeon. (Enter the first room or advance to the next room.)",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Zalto, Fire Giant Duke:1",
+                "trigger": "DamageReceivedEvent",
+                "effect": "VentureIntoTheDungeon"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "rarity": "RARE",
+        "artist": "Zezhou Chen",
+        "flavorText": "Fire giants love to fight on a large scale, and Duke Zalto is one of the greatest warmongers of his age.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c6da066-accb-4c09-9acb-4de263dadad3.jpg?1783926468",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "If Zalto is dealt lethal damage, you will still get to venture into the dungeon."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If Zalto is dealt damage by multiple sources at the same time (usually creatures blocking it), you will only venture into the dungeon once."
+            }
+        ]
+    }
+}
+
+// Zariel, Archduke of Avernus
+{
+    "name": "Zariel, Archduke of Avernus",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Legendary Planeswalker — Zariel",
+    "oracleText": "+1: Creatures you control get +1/+0 and gain haste until end of turn.\n0: Create a 1/1 red Devil creature token with \"When this token dies, it deals 1 damage to any target.\"\n−6: You get an emblem with \"At the end of the first combat phase on your turn, untap target creature you control. After this phase, there is an additional combat phase.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Zariel, Archduke of Avernus:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Zariel, Archduke of Avernus:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 0
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Devil"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/e/f/efbc2ca1-4aad-4dfa-9eab-e783f5802078.jpg?1783926343",
+                    "triggeredAbilities": [
+                        {
+                            "id": "Zariel, Archduke of Avernus:2",
+                            "trigger": {
+                                "type": "ZoneChangeEvent",
+                                "from": "Battlefield",
+                                "to": "Graveyard"
+                            },
+                            "effect": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirement": {
+                                "type": "AnyTarget",
+                                "id": "t0"
+                            },
+                            "descriptionOverride": "When this token dies, it deals 1 damage to any target."
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Zariel, Archduke of Avernus:5",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -6
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "Zariel, Archduke of Avernus:4",
+                        "trigger": {
+                            "type": "StepEvent",
+                            "step": "END_COMBAT"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "TapUntap",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    },
+                                    "tap": false
+                                },
+                                "AddCombatPhase"
+                            ]
+                        },
+                        "targetRequirement": {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "t1"
+                        },
+                        "triggerRestriction": "IsFirstCombatPhaseOfTurn",
+                        "descriptionOverride": "At the end of the first combat phase on your turn, untap target creature you control. After this phase, there is an additional combat phase."
+                    },
+                    "descriptionOverride": "At the end of the first combat phase on your turn, untap target creature you control. After this phase, there is an additional combat phase."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "rarity": "MYTHIC",
+        "artist": "Heonhwa",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7be5b866-d479-4698-98b2-87a973f6b8f6.jpg?1783926467",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "There is no main phase between the combat phases. You move from the first combat phase directly into the second combat phase."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If the target of the emblem's ability becomes an illegal target by the time the ability tries to resolve, the ability won't resolve and none of its effects will happen. You won't get an additional combat phase."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If you have more than one of Zariel's emblem, the abilities will each trigger at the end of the first combat phase on your turn. You can choose the same creature as the target of each ability. Those targets will untap before any additional combats."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
