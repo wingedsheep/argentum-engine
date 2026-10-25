@@ -750,6 +750,139 @@
     ]
 }
 
+// Bard Class
+{
+    "name": "Bard Class",
+    "manaCost": "{R}{G}",
+    "typeLine": "Enchantment — Class",
+    "oracleText": "(Gain the next level as a sorcery to add its ability.)\nLegendary creatures you control enter with an additional +1/+1 counter on them.\n{R}{G}: Level 2 — Legendary spells you cast cost {R}{G} less to cast. This effect reduces only the amount of colored mana you pay.\n{3}{R}{G}: Level 3 — Whenever you cast a legendary spell, exile the top two cards of your library. You may play them this turn.",
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsLegendary"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "to": "Battlefield"
+                }
+            }
+        ],
+        "classLevels": [
+            {
+                "level": 2,
+                "cost": "{R}{G}",
+                "staticAbilities": [
+                    {
+                        "type": "ModifySpellCost",
+                        "target": {
+                            "type": "YouCast",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsLegendary"
+                                ]
+                            }
+                        },
+                        "modification": {
+                            "type": "ReduceColored",
+                            "symbols": "{R}{G}"
+                        }
+                    }
+                ]
+            },
+            {
+                "level": 3,
+                "cost": "{3}{R}{G}",
+                "triggeredAbilities": [
+                    {
+                        "id": "Bard Class:1",
+                        "trigger": {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    "IsLegendary"
+                                ]
+                            }
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "storeAs": "impulseExiled"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "impulseExiled",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Exile"
+                                    }
+                                },
+                                {
+                                    "type": "GrantMayPlayFromExile",
+                                    "from": "impulseExiled"
+                                }
+                            ]
+                        },
+                        "descriptionOverride": "Whenever you cast a legendary spell, exile the top two cards of your library. You may play them this turn."
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "rarity": "RARE",
+        "artist": "Andrew Mar",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/37d6343a-c514-4ca6-a415-62d1a473ae20.jpg?1783926450",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "If you control multiple Bard Classes, legendary creatures you control enter the battlefield with that many additional +1/+1 counters."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Unlike most abilities that reduce the costs of spells, Bard Class's Level 2 ability cannot be applied to generic mana costs. For example, a spell that costs {2}{G} to cast would instead cost {2} to cast."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If you do not play the cards exiled with Bard Classes Level 3 ability on the turn they are exiled, they will remain exiled indefinitely and cannot be played on a later turn."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If you exile a modal double-faced card this way, you may cast either face of that card."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Gaining a level is a normal activated ability. It uses the stack and can be responded to."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Gaining a level won't remove abilities that a Class had at a previous level."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Battle Cry Goblin
 {
     "name": "Battle Cry Goblin",
@@ -1980,6 +2113,143 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Cleric Class
+{
+    "name": "Cleric Class",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment — Class",
+    "oracleText": "(Gain the next level as a sorcery to add its ability.)\nIf you would gain life, you gain that much life plus 1 instead.\n{3}{W}: Level 2 — Whenever you gain life, put a +1/+1 counter on target creature you control.\n{4}{W}: Level 3 — When this Class becomes level 3, return target creature card from your graveyard to the battlefield. You gain life equal to that creature's toughness.",
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "ModifyLifeGain",
+                "multiplier": 1,
+                "modifier": 1
+            }
+        ],
+        "classLevels": [
+            {
+                "level": 2,
+                "cost": "{3}{W}",
+                "triggeredAbilities": [
+                    {
+                        "id": "Cleric Class:1",
+                        "trigger": "LifeGainEvent",
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "targetRequirement": {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "t0"
+                        },
+                        "descriptionOverride": "Whenever you gain life, put a +1/+1 counter on target creature you control."
+                    }
+                ]
+            },
+            {
+                "level": 3,
+                "cost": "{4}{W}",
+                "triggeredAbilities": [
+                    {
+                        "id": "Cleric Class:2",
+                        "trigger": {
+                            "type": "ZoneChangeEvent",
+                            "to": "Battlefield"
+                        },
+                        "effect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "MoveToZone",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t1"
+                                    },
+                                    "destination": "Battlefield",
+                                    "fromZone": "Graveyard"
+                                },
+                                {
+                                    "type": "GainLife",
+                                    "amount": {
+                                        "type": "EntityProperty",
+                                        "entity": {
+                                            "type": "BoundVariable",
+                                            "name": "t1"
+                                        },
+                                        "numericProperty": "Toughness"
+                                    }
+                                }
+                            ]
+                        },
+                        "targetRequirement": {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature own:you",
+                                "zone": "Graveyard"
+                            },
+                            "id": "t1"
+                        },
+                        "descriptionOverride": "When this Class becomes level 3, return target creature card from your graveyard to the battlefield. You gain life equal to that creature's toughness."
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "UNCOMMON",
+        "artist": "Alayna Danner",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/47ce8b7e-d8e1-489a-a69e-99089eeb8739.jpg?1783926538",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "If you gain life at the same time a creature is dealt lethal damage, it dies before Cleric Class's level 2 ability can put a +1/+1 counter on it."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "An ability that triggers \"whenever you gain life\" triggers just once for each life gain event, no matter how much life you gain."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Each creature with lifelink dealing combat damage causes a separate life gain event. For example, if two creatures you control with lifelink deal combat damage at the same time, you will gain 2 additional life from Cleric Class's first ability and its level 2 ability will trigger twice. However, if a single creature you control with lifelink deals combat damage to multiple creatures, players, and/or planeswalkers at the same time (perhaps because it has trample or was blocked by more than one creature), you will only gain 1 additional life and the ability will trigger only once."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If you gain an amount of life \"for each\" of something, that life is gained as one event and the ability will trigger only once."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "When Cleric Class's level 3 ability resolves, you gain life equal to the creature's toughness as it exists on battlefield, which may be different than its toughness in the graveyard."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Gaining a level is a normal activated ability. It uses the stack and can be responded to."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Gaining a level won't remove abilities that a Class had at a previous level."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "You can't activate the first level ability of a Class unless that Class is level 1. Similarly, you can't activate the second level ability of a Class unless that Class is level 2."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -4100,6 +4370,80 @@
     ]
 }
 
+// Dungeon Descent
+{
+    "name": "Dungeon Descent",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped.\n{T}: Add {C}.\n{4}, {T}, Tap an untapped legendary creature you control: Venture into the dungeon. Activate only as a sorcery. (Enter the first room or advance to the next room.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dungeon Descent:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Dungeon Descent:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomTapPermanents",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        "IsLegendary"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": "VentureIntoTheDungeon",
+                "timing": "SorcerySpeed"
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "255",
+        "rarity": "RARE",
+        "artist": "Kasia 'Kafis' Zielińska",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f4cccdbc-f4f4-42b6-9747-6ef703ff949a.jpg?1783926435",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "The player venturing into the dungeon chooses which dungeon they will venture into. They may choose a dungeon that they have already completed this game."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Choosing the dungeon or room to venture into is part of resolving the venture into the dungeon keyword action. Once that choice is made, players may not respond until after the appropriate room ability has triggered."
+            }
+        ]
+    }
+}
+
 // Dungeon Map
 {
     "name": "Dungeon Map",
@@ -5176,6 +5520,141 @@
     }
 }
 
+// Fighter Class
+{
+    "name": "Fighter Class",
+    "manaCost": "{R}{W}",
+    "typeLine": "Enchantment — Class",
+    "oracleText": "(Gain the next level as a sorcery to add its ability.)\nWhen this Class enters, search your library for an Equipment card, reveal it, put it into your hand, then shuffle.\n{1}{R}{W}: Level 2 — Equip abilities you activate cost {2} less to activate.\n{3}{R}{W}: Level 3 — Whenever a creature you control attacks, up to one target creature blocks it this combat if able.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fighter Class:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "artifact Equipment"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for an Equipment artifact card to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "descriptionOverride": "When this Class enters, search your library for an Equipment card, reveal it, put it into your hand, then shuffle."
+            }
+        ],
+        "classLevels": [
+            {
+                "level": 2,
+                "cost": "{1}{R}{W}",
+                "staticAbilities": [
+                    {
+                        "type": "ReduceEquipCost",
+                        "amount": 2
+                    }
+                ]
+            },
+            {
+                "level": 3,
+                "cost": "{3}{R}{W}",
+                "triggeredAbilities": [
+                    {
+                        "id": "Fighter Class:2",
+                        "trigger": {
+                            "type": "AttackEvent",
+                            "filter": "creature ctrl:you"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "ForceBlock",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "attacker": "TriggeringEntity"
+                        },
+                        "targetRequirement": {
+                            "type": "TargetObject",
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        },
+                        "descriptionOverride": "Whenever a creature you control attacks, up to one target creature blocks it this combat if able."
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "RARE",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d54a8329-b940-42c9-8ace-1d74407d14cb.jpg?1783926448",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "The discount to equip abilities applies only to generic mana requirements. If you control multiple Fighter Classes that are level 2 or higher, equip abilities cost {2} less for each one. This can't make an ability cost less than {0}."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "For the last triggered ability, if the target creature is tapped or is affected by a spell or ability that says it can't block, then it doesn't block. If there's a cost associated with having that creature block, its controller isn't forced to pay that cost, so it doesn't have to block in that case either."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If the last triggered ability triggers more than once in the same combat, a single creature may be required to block more than one creature. As long as it doesn't have an ability that would allow that, its controller choose which attacking creature it blocks."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Gaining a level is a normal activated ability. It uses the stack and can be responded to."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Gaining a level won't remove abilities that a Class had at a previous level."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Find the Path
 {
     "name": "Find the Path",
@@ -5415,6 +5894,68 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Flumph
+{
+    "name": "Flumph",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Jellyfish",
+    "oracleText": "Defender, flying\nWhenever this creature is dealt damage, you and target opponent each draw a card.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEFENDER",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Flumph:1",
+                "trigger": "DamageReceivedEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever this creature is dealt damage, you and target opponent each draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "RARE",
+        "artist": "Brian Valeza",
+        "flavorText": "Flumphs siphon thoughts and energy from evil aberrations, and are often eager to share the dark knowledge they obtain with friendly adventurers.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cdc86e78-8911-4a0d-ba3a-7802f8d991ef.jpg?1783926532"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -6007,6 +6548,73 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Guardian of Faith
+{
+    "name": "Guardian of Faith",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Creature — Spirit Knight",
+    "oracleText": "Flash\nVigilance\nWhen this creature enters, any number of other target creatures you control phase out. (Treat them and anything attached to them as though they don't exist until their controller's next turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH",
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Guardian of Faith:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "PhaseOut",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "unlimited": true,
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "RARE",
+        "artist": "Brian Valeza",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/08e3dda1-a1d3-48c9-8c81-da7eae20ac8a.jpg?1783926532",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "An attacking or blocking creature that phases out is removed from combat."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Permanents phase back in during their controller's untap step, immediately before that player untaps their permanents. Creatures that phase in this way are able to attack and pay a cost of {T} during that turn."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Phasing out doesn't cause any \"leaves the battlefield\" abilities to trigger. Similarly, phasing in won't cause any \"enters the battlefield\" abilities to trigger."
+            }
+        ]
+    }
 }
 
 // Half-Elf Monk
@@ -8622,6 +9230,72 @@
     }
 }
 
+// Minimus Containment
+{
+    "name": "Minimus Containment",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant nonland permanent\nEnchanted permanent is a Treasure artifact with \"{T}, Sacrifice this artifact: Add one mana of any color,\" and it loses all other abilities. (If it was a creature, it's no longer a creature.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "TransformPermanent",
+                "setCardTypes": [
+                    "ARTIFACT"
+                ],
+                "setSubtypes": [
+                    "Treasure"
+                ]
+            },
+            "LoseAllAbilities",
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Minimus Containment:1",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            "CostTap",
+                            "CostSacrificeSelf"
+                        ]
+                    },
+                    "effect": "AddManaOfChoice",
+                    "isManaAbility": true,
+                    "descriptionOverride": "{T}, Sacrifice this artifact: Add one mana of any color."
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "nonland permanent"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "artist": "Steve Prescott",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/0556f0d9-50d2-4c67-8522-de366d96500a.jpg?1783926530",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "A creature enchanted with Minimus Containment stops being a creature. Equipment attached to that creature become unattached. Auras attached to that creature will be put into their owner's graveyard (unless they could also enchant a Treasure artifact)."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "The enchanted permanent still retains its name, colors, mana cost, and mana value. It isn't a token unless it already was one."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If an effect refers to a Treasure, it means any Treasure artifact, not just a Treasure artifact token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Minion of the Mighty
 {
     "name": "Minion of the Mighty",
@@ -8709,6 +9383,146 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Monk Class
+{
+    "name": "Monk Class",
+    "manaCost": "{W}{U}",
+    "typeLine": "Enchantment — Class",
+    "oracleText": "(Gain the next level as a sorcery to add its ability.)\nThe second spell you cast each turn costs {1} less to cast.\n{W}{U}: Level 2 — When this Class becomes level 2, return up to one target nonland permanent to its owner's hand.\n{1}{W}{U}: Level 3 — At the beginning of your upkeep, exile the top card of your library. For as long as it remains exiled, it has \"You may cast this card from exile as long as you've cast another spell this turn.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": {}
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                },
+                "gating": {
+                    "type": "NthOfTypePerTurn",
+                    "n": 2
+                }
+            }
+        ],
+        "classLevels": [
+            {
+                "level": 2,
+                "cost": "{W}{U}",
+                "triggeredAbilities": [
+                    {
+                        "id": "Monk Class:1",
+                        "trigger": {
+                            "type": "ZoneChangeEvent",
+                            "to": "Battlefield"
+                        },
+                        "effect": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Hand"
+                        },
+                        "targetRequirement": {
+                            "type": "TargetObject",
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": "nonland permanent"
+                            },
+                            "id": "t0"
+                        },
+                        "descriptionOverride": "When this Class becomes level 2, return up to one target nonland permanent to its owner's hand."
+                    }
+                ]
+            },
+            {
+                "level": 3,
+                "cost": "{1}{W}{U}",
+                "triggeredAbilities": [
+                    {
+                        "id": "Monk Class:2",
+                        "trigger": {
+                            "type": "StepEvent",
+                            "step": "UPKEEP"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "gathered0",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Exile"
+                                    }
+                                },
+                                {
+                                    "type": "GrantMayPlayFromExile",
+                                    "from": "gathered0",
+                                    "expiry": "Permanent",
+                                    "condition": {
+                                        "type": "PlayerCastSpellsThisTurn",
+                                        "atLeast": 1
+                                    },
+                                    "nonLandOnly": true
+                                }
+                            ]
+                        },
+                        "descriptionOverride": "At the beginning of your upkeep, exile the top card of your library. For as long as it remains exiled, it has \"You may cast this card from exile as long as you've cast another spell this turn.\""
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "RARE",
+        "artist": "Randy Vargas",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b2edd708-46ee-4963-b7e6-b631616d78fe.jpg?1783926446",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "If Monk Class is the first spell you cast, the next spell is the second spell and costs {1} less. If Monk Class is the second (or later) spell you cast, its bonus won't apply until the next turn."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If you have more than one Monk Class on the battlefield, their abilities are cumulative. For example, if you control two Monk Classes, the second spell you cast each turn costs {2} less to cast."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Gaining a level is a normal activated ability. It uses the stack and can be responded to."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Gaining a level won't remove abilities that a Class had at a previous level."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "You can't activate the first level ability of a Class unless that Class is level 1. Similarly, you can't activate the second level ability of a Class unless that Class is level 2."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
     ]
 }
 
@@ -9841,6 +10655,162 @@
     ]
 }
 
+// Power of Persuasion
+{
+    "name": "Power of Persuasion",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose target creature an opponent controls, then roll a d20.\n1—9 | Return it to its owner's hand.\n10—19 | Its owner puts it on their choice of the top or bottom of their library.\n20 | Gain control of it until the end of your next turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RollDice",
+                    "sides": 20,
+                    "storeTotalAs": "diceResult0"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult0"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult0"
+                                    },
+                                    "operator": "LTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 9
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult0"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 10
+                                    }
+                                },
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult0"
+                                    },
+                                    "operator": "LTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 19
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "PutOnLibraryPositionOfChoice",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "VariableReference",
+                                "variableName": "diceResult0"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 20
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "GainControl",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "duration": "EndOfYourNextTurn"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "UNCOMMON",
+        "artist": "Brian Valeza",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d84cb72-d0a0-4af0-aded-47e5fb7addef.jpg?1783926511",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "The instruction to roll a die and the effect that occurs because of the result are all part of the same ability. Players do not get the chance to respond to the ability after knowing the result of the roll."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "An effect that says \"choose a target, then roll a d20\" or similar still uses the normal process of putting an ability on the stack and resolving it. Choosing targets is part of putting the ability on the stack and rolling the d20 happens later, as the ability resolves."
+            }
+        ]
+    }
+}
+
 // Precipitous Drop
 {
     "name": "Precipitous Drop",
@@ -10259,6 +11229,117 @@
     ]
 }
 
+// Ranger Class
+{
+    "name": "Ranger Class",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment — Class",
+    "oracleText": "(Gain the next level as a sorcery to add its ability.)\nWhen this Class enters, create a 2/2 green Wolf creature token.\n{1}{G}: Level 2 — Whenever you attack, put a +1/+1 counter on target attacking creature.\n{3}{G}: Level 3 — You may look at the top card of your library any time.\nYou may cast creature spells from the top of your library.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ranger Class:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Wolf"
+                    ]
+                },
+                "descriptionOverride": "When this Class enters, create a 2/2 green Wolf creature token."
+            }
+        ],
+        "classLevels": [
+            {
+                "level": 2,
+                "cost": "{1}{G}",
+                "triggeredAbilities": [
+                    {
+                        "id": "Ranger Class:2",
+                        "trigger": "YouAttackEvent",
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "targetRequirement": {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature attacking"
+                            },
+                            "id": "t0"
+                        },
+                        "descriptionOverride": "Whenever you attack, put a +1/+1 counter on target attacking creature."
+                    }
+                ]
+            },
+            {
+                "level": 3,
+                "cost": "{3}{G}",
+                "staticAbilities": [
+                    "LookAtTopOfLibrary",
+                    {
+                        "type": "CastSpellTypesFromTopOfLibrary",
+                        "filter": "creature"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "rarity": "RARE",
+        "artist": "Suzanne Helmigh",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7ca392ca-3219-4694-9a74-aa079c76b91e.jpg?1783926456",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "The triggered ability Ranger Class gets at level 2 can trigger only once per combat, no matter how many creatures you attack with."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If Ranger Class is level 3, you can look at the top card of your library whenever you want (with one restriction; see below), even if you don't have priority. This action doesn't use the stack. Knowing what that card is becomes part of the information you have access to, just like you can look at the cards in your hand."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If the top card of your library changes while you're casting a spell, playing a land, or activating an ability, you can't look at the new top card until you finish doing so. This means that if you cast a spell from the top of your library, you can't look at the next one until you're done paying for that spell."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Ranger Class doesn't change when you can cast creature spells. Normally, this means during your main phase when the stack is empty, although flash may change this."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "You'll still pay all costs for the spell, including additional costs. You may also pay alternative costs if any are available."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Gaining a level won't remove abilities that a Class had at a previous level."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Gaining a level is a normal activated ability. It uses the stack and can be responded to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ranger's Hawk
 {
     "name": "Ranger's Hawk",
@@ -10546,6 +11627,115 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Rogue Class
+{
+    "name": "Rogue Class",
+    "manaCost": "{U}{B}",
+    "typeLine": "Enchantment — Class",
+    "oracleText": "(Gain the next level as a sorcery to add its ability.)\nWhenever a creature you control deals combat damage to a player, exile the top card of that player's library face down. You may look at it for as long as it remains exiled.\n{1}{U}{B}: Level 2 — Creatures you control have menace.\n{2}{U}{B}: Level 3 — You may play cards exiled with this Class, and you may spend mana as though it were mana of any color to cast those spells.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rogue Class:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    },
+                    "sourceFilter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": "TriggeringPlayer"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": "TriggeringPlayer"
+                            },
+                            "linkToSource": true,
+                            "faceDown": "HIDDEN",
+                            "lookableInExile": true
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever a creature you control deals combat damage to a player, exile the top card of that player's library face down. You may look at it for as long as it remains exiled."
+            }
+        ],
+        "classLevels": [
+            {
+                "level": 2,
+                "cost": "{1}{U}{B}",
+                "staticAbilities": [
+                    {
+                        "type": "GrantKeyword",
+                        "keyword": "MENACE",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    }
+                ]
+            },
+            {
+                "level": 3,
+                "cost": "{2}{U}{B}",
+                "staticAbilities": [
+                    {
+                        "type": "MayPlayCardsFromExile",
+                        "filter": {
+                            "statePredicates": [
+                                "ExiledWithSource"
+                            ]
+                        },
+                        "withAnyManaColor": true
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "RARE",
+        "artist": "Véronique Meignaud",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/0727f65b-cfbe-47d5-87c6-239cf8d93ca6.jpg?1783926444",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "If you have more than one Rogue Class on the battlefield, they each track exiled cards individually."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Gaining a level won't remove abilities that a Class had at a previous level."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Gaining a level is a normal activated ability. It uses the stack and can be responded to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -11529,6 +12719,84 @@
     }
 }
 
+// Split the Party
+{
+    "name": "Split the Party",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose target player. Return half the creatures they control to their owner's hand, rounded up.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "ControlledPermanents",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "filter": "creature"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Divide",
+                            "numerator": {
+                                "type": "VariableReference",
+                                "variableName": "gathered0_count"
+                            },
+                            "denominator": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "Choose half the creatures they control, rounded up, to return to their owner's hand",
+                    "useTargetingUI": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "rarity": "UNCOMMON",
+        "artist": "Zoltan Boros",
+        "flavorText": "Don't.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/743a0a96-f90a-4852-9a92-848795518e0a.jpg?1783926506",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "The player that controls Split the Party chooses which creatures to return to their owner's hand as it resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Spoils of the Hunt
 {
     "name": "Spoils of the Hunt",
@@ -11624,6 +12892,47 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Sudden Insight
+{
+    "name": "Sudden Insight",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Draw a card for each different mana value among nonland cards in your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "AggregateZone",
+                "player": "You",
+                "zone": "Graveyard",
+                "filter": "nonland",
+                "aggregation": "DISTINCT_VALUES",
+                "property": "MANA_VALUE"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "A lucky draw from the Deck of Many Things gave Voltusk an inexplicable flash of understanding that he spent the rest of his life trying to repeat.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/06ec3c87-d5aa-4f8a-a9bf-ef4e38e21ad1.jpg?1783926506",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "If a card in your graveyard has {X} in its mana cost, X is 0 when determining that card's mana value."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Although land cards aren't considered, nonland cards with mana value 0 are. For example if the cards in your graveyard are an artifact card with mana cost {X} and a sorcery card with mana cost {2}{U}, you'll draw two cards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -11945,6 +13254,75 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Teleportation Circle
+{
+    "name": "Teleportation Circle",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your end step, exile up to one target artifact or creature you control, then return that card to the battlefield under its owner's control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Teleportation Circle:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Battlefield"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "artifact|creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "rarity": "RARE",
+        "artist": "Chris Cold",
+        "flavorText": "\"Hold on to your lunch!\"\n—Bartleby, gnome wizard",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/90140bc0-4a9c-4422-b07c-3400c7ccde56.jpg?1783926523",
+        "rulings": [
+            {
+                "date": "2026-01-27",
+                "text": "Once a permanent exiled this way returns, it's considered a new object with no relation to the object that it was. Auras attached to the exiled permanent will be put into their owners' graveyards. Equipment attached to the exiled permanent will become unattached and remain on the battlefield. Any counters on the exiled permanent will cease to exist."
+            },
+            {
+                "date": "2026-01-27",
+                "text": "If a token is exiled this way, it will cease to exist and won't return to the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -13493,6 +14871,168 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Warlock Class
+{
+    "name": "Warlock Class",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment — Class",
+    "oracleText": "(Gain the next level as a sorcery to add its ability.)\nAt the beginning of your end step, if a creature died this turn, each opponent loses 1 life.\n{1}{B}: Level 2 — When this Class becomes level 2, look at the top three cards of your library. Put one of them into your hand and the rest into your graveyard.\n{6}{B}: Level 3 — At the beginning of your end step, each opponent loses life equal to the life they lost this turn. (Damage causes loss of life.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Warlock Class:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "interveningIf": "CreatureDiedThisTurn",
+                "descriptionOverride": "At the beginning of your end step, if a creature died this turn, each opponent loses 1 life."
+            }
+        ],
+        "classLevels": [
+            {
+                "level": 2,
+                "cost": "{1}{B}",
+                "triggeredAbilities": [
+                    {
+                        "id": "Warlock Class:2",
+                        "trigger": {
+                            "type": "ZoneChangeEvent",
+                            "to": "Battlefield"
+                        },
+                        "effect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 3
+                                        }
+                                    },
+                                    "storeAs": "looked"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "looked",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "kept",
+                                    "storeRemainder": "rest",
+                                    "selectedLabel": "Put in hand",
+                                    "remainderLabel": "Put in graveyard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "kept",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Hand"
+                                    }
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "rest",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                }
+                            ]
+                        },
+                        "descriptionOverride": "When this Class becomes level 2, look at the top three cards of your library. Put one of them into your hand and the rest into your graveyard."
+                    }
+                ]
+            },
+            {
+                "level": 3,
+                "cost": "{6}{B}",
+                "triggeredAbilities": [
+                    {
+                        "id": "Warlock Class:3",
+                        "trigger": {
+                            "type": "StepEvent",
+                            "step": "END"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "TurnTracking",
+                                    "player": "You",
+                                    "tracker": "LIFE_LOST_AMOUNT"
+                                },
+                                "target": "Controller"
+                            }
+                        },
+                        "descriptionOverride": "At the beginning of your end step, each opponent loses life equal to the life they lost this turn."
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b7faf899-96b7-454e-b634-6684c2d72f26.jpg?1783926487",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "Warlock Class does not need to have been on the battlefield when the creature died for its first ability. For example, if a creature died in combat and you cast Warlock Class in your second main phase, the ability will trigger at the beginning of your end step."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Warlock Class's first ability will trigger only once during your end step, no matter how many creatures died this turn. However, if no creatures have died so far this turn as the end step begins, the ability won't trigger at all. It's not possible to cause a creature to die during the end step in time to have the ability trigger."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Gaining a level is a normal activated ability. It uses the stack and can be responded to."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Gaining a level won't remove abilities that a Class had at a previous level."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "You can't activate the first level ability of a Class unless that Class is level 1. Similarly, you can't activate the second level ability of a Class unless that Class is level 2."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "You can multiclass or even control multiple Class enchantments of the same class. Each Class permanent tracks its own level separately."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
