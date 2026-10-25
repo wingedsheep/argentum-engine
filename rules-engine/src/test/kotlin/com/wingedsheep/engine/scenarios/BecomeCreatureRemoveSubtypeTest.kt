@@ -17,9 +17,10 @@ import io.kotest.matchers.shouldBe
  * `BecomeCreatureEffect.removeSubtypes` — a layer-4 removal of single subtypes that leaves every
  * other type and subtype alone ("it isn't an Equipment", Dancing Sword).
  *
- * Covers: only the named subtype goes (the card type and unrelated subtypes stay); it ends with the
- * effect's duration; an attached Equipment that stops being one comes off its host (CR 704.5p); and
- * the attach check reads the projected subtype, so the former Equipment can't equip.
+ * Covers: only the named subtype goes (the card type and unrelated subtypes stay), matched without
+ * regard to case; it ends with the effect's duration; and the animated former Equipment comes off its
+ * host (CR 704.5p — here the creature half of that rule fires too, since `BecomeCreature` always
+ * animates).
  */
 class BecomeCreatureRemoveSubtypeTest : ScenarioTestBase() {
 
@@ -35,7 +36,7 @@ class BecomeCreatureRemoveSubtypeTest : ScenarioTestBase() {
                 power = 1,
                 toughness = 1,
                 creatureTypes = setOf("Construct"),
-                removeSubtypes = setOf("Equipment"),
+                removeSubtypes = setOf("equipment"),
                 duration = Duration.EndOfTurn,
             )
         }

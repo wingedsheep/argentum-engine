@@ -228,8 +228,8 @@ internal class EffectApplicator(
                     values.removedCardTypes.add(mod.type)
                 }
                 is Modification.RemoveSubtype -> {
-                    values.types.remove(mod.subtype)
-                    values.subtypes.remove(mod.subtype)
+                    values.types.removeAll { it.equals(mod.subtype, ignoreCase = true) }
+                    values.subtypes.removeAll { it.equals(mod.subtype, ignoreCase = true) }
                 }
                 is Modification.SetCreatureSubtypes -> {
                     val creatureTypes = com.wingedsheep.sdk.core.Subtype.ALL_CREATURE_TYPES.toSet()
