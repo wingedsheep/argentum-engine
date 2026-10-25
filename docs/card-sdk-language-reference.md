@@ -19354,7 +19354,8 @@ this turn" — Shaile, Dean of Radiance's
 entry by its entry timestamp, so a permanent that left and came back counts only for its later
 entry (CR 400.7). Current control doesn't matter: a creature that entered under your control and was
 then stolen still matches; one an opponent cast that you then gained control of doesn't. Battlefield
-only — the narrowed form has no last-known answer.
+only — the narrowed form has no last-known answer. It needs a recorded entry, so on an imported board
+(or a game saved before entries carried a timestamp) nothing matches it until something enters.
 
 ### Continuous control during the current turn
 

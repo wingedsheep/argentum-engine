@@ -110,6 +110,28 @@ class ShaileDeanOfRadianceScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("a creature flickered after it entered is a new object that entered once more — one counter") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Shaile, Dean of Radiance")
+                    .withLandsOnBattlefield(1, "Plains", 3)
+                    .withCardInHand(1, "Shaile Test Bear")
+                    .withCardInHand(1, "Cloudshift")
+                    .withCardInLibrary(1, "Plains")
+                    .withCardInLibrary(2, "Plains")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                game.castSpell(1, "Shaile Test Bear").error shouldBe null
+                game.resolveStack()
+                game.castSpell(1, "Cloudshift", game.findPermanent("Shaile Test Bear")!!).error shouldBe null
+                game.resolveStack()
+
+                game.activateShaile()
+
+                game.plusOneCounters(game.findPermanent("Shaile Test Bear")!!) shouldBe 1
+            }
+
             test("a creature that entered under your control still gets one after an opponent takes it") {
                 val game = board()
                 game.castSpell(1, "Shaile Test Bear").error shouldBe null
@@ -160,7 +182,7 @@ class ShaileDeanOfRadianceScenarioTest : ScenarioTestBase() {
                 resolveStack()
             }
 
-            test("the counter lands before the damage, so a 2/2 survives as a 3/3") {
+            test("the target gets a +1/+1 counter and 2 damage, so a 2/2 survives as a 3/3") {
                 val game = embroseBoard()
                 val bearId = game.findPermanent("Shaile Test Bear")!!
 
