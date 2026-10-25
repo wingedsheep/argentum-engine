@@ -19,7 +19,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * controls is dealt damage, destroy it.
  *
  * The enters trigger installs a filter-scoped event delayed trigger (`fireOnce = false`,
- * `expiry = EndOfTurn`) on the observer form of `isDealtDamage()`; the damaged creature is the
+ * `expiry = EndOfTurn`) on the recipient form of `isDealtDamage()`; the damaged creature is the
  * triggering entity. It lives on its own, so it keeps working after the Dragon leaves (ruling).
  */
 val GreenDragon = card("Green Dragon") {

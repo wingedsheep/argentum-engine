@@ -4,7 +4,9 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.*
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
@@ -63,6 +65,14 @@ class DelayedDamageReceivedTriggerTest : FunSpec({
             )
         }
     }
+    val bouncer = card("Test Bouncer") {
+        typeLine = "Artifact"
+        activatedAbility {
+            cost = Costs.Tap
+            val creature = target(TargetFilter.Creature)
+            effect = Effects.Move(creature, Zone.HAND)
+        }
+    }
     val pinger = card("Test Pinger") {
         typeLine = "Artifact"
         activatedAbility {
@@ -74,7 +84,7 @@ class DelayedDamageReceivedTriggerTest : FunSpec({
 
     fun setup(): Pair<GameTestDriver, EntityId> {
         val d = GameTestDriver().also {
-            it.registerCards(TestCards.all + listOf(observer, watcher, breather, pinger))
+            it.registerCards(TestCards.all + listOf(observer, watcher, breather, bouncer, pinger))
             it.initMirrorMatch(Deck.of("Island" to 40))
             it.passPriorityUntil(Step.PRECOMBAT_MAIN)
         }
@@ -168,5 +178,19 @@ class DelayedDamageReceivedTriggerTest : FunSpec({
         d.ping(player, watched)
         d.ping(player, watched)
         d.getLifeTotal(player) shouldBe 26
+    }
+
+    test("an entity-scoped watcher ignores the same card back on the battlefield as a new object") {
+        val (d, player) = setup()
+        val courser = d.putPermanentOnBattlefield(player, "Centaur Courser")
+        d.activate(player, watcher.name, courser)
+        d.activate(player, bouncer.name, courser)
+        d.giveMana(player, Color.GREEN, 1)
+        d.giveColorlessMana(player, 2)
+        d.castSpell(player, courser).error shouldBe null
+        d.bothPass()
+        (courser in d.getPermanents(player)) shouldBe true
+        d.ping(player, courser)
+        d.getLifeTotal(player) shouldBe 20
     }
 })
