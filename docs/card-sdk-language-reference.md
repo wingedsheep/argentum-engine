@@ -8081,6 +8081,12 @@ The shapes in this family, with their engine notes.
   it enters, CR 508.4), so creatures entering outside combat don't match. A creature that enters attacking
   was never declared as an attacker, so it never fires `attacks()`; "attacks or enters attacking" (Arni
   Metalbrow) is `Triggers.or(Triggers.a(f).attacks(), Triggers.a(f).entersAttacking())`.
+- `Triggers.a(filter).entersTapped()` — "whenever a permanent you control **enters tapped**" (Amulet of
+  Vigor): the enters trigger with `.tapped()` folded into the filter. A zone-change trigger reads
+  `.tapped()` / `.untapped()` as the entrant's status **as it entered** (`EntryTapStateComponent`, frozen by
+  the first tap/untap transition of the visit), not its tap state at detection — so a permanent that enters
+  untapped and is then tapped doesn't match, per the card's ruling. On a leaves/dies trigger the same
+  predicates read the last-known tap state (`.tapped()` on `dies()` is "whenever a tapped creature dies").
 
 **Leaves / dies**
 

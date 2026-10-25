@@ -1,3 +1,36 @@
+// Amulet of Vigor
+{
+    "name": "Amulet of Vigor",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever a permanent you control enters tapped, untap it.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Amulet of Vigor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent tapped ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "TriggeringEntity",
+                    "tap": false
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "RARE",
+        "artist": "Warren Mahy",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/997bc933-ac30-477b-a4e1-5333b796a99d.jpg?1783942040"
+    },
+    "colorIdentityOverride": []
+}
+
 // Avenger of Zendikar
 {
     "name": "Avenger of Zendikar",

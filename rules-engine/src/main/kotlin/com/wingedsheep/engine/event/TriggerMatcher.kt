@@ -2771,6 +2771,27 @@ class TriggerMatcher(
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsBlockedBySource,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsCombatPairedWithSource ->
             combatPairedWithSourceForZoneChange(predicate, state, event, sourceId)
+        // "Whenever a permanent you control enters tapped" (Amulet of Vigor): an arrival is matched
+        // by how it *entered*, not by its tap state at detection — one that enters untapped and is
+        // tapped in the same resolution didn't enter tapped, and one that entered tapped and was
+        // untapped since did. A departure ("whenever a tapped creature dies") reads the snapshot
+        // frozen as it left; any other move reads the live state (nothing off the battlefield is
+        // tapped). Without these arms the gate failed open and every entrant matched.
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsTapped,
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsUntapped -> {
+            val tapped = if (event.isBattlefieldDeparture) {
+                event.lastKnown?.wasTapped == true
+            } else {
+                val container = state.getEntity(event.entityId)
+                when {
+                    container == null -> false
+                    event.toZone == Zone.BATTLEFIELD ->
+                        com.wingedsheep.engine.core.enteredBattlefieldTapped(container)
+                    else -> container.has<com.wingedsheep.engine.state.components.battlefield.TappedComponent>()
+                }
+            }
+            if (predicate == com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsTapped) tapped else !tapped
+        }
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.Or ->
             predicate.predicates.any { matchesStatePredicateForZoneChangeTrigger(it, state, event, sourceId) }
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.And ->

@@ -170,6 +170,16 @@ class ObjectTriggerSubject internal constructor(
         spec(ZoneChangeEvent(filter = filterOrAny.attacking(), to = Zone.BATTLEFIELD))
 
     /**
+     * "Whenever a permanent you control **enters tapped**" (Amulet of Vigor): the enters trigger with
+     * `.tapped()` folded into the filter. Matched by how the permanent *entered* — put onto the
+     * battlefield tapped, a tapland, a token created tapped — so one that enters untapped and is
+     * tapped afterwards never matches, and one that entered tapped still does after being untapped
+     * in the same resolution.
+     */
+    fun entersTapped(): TriggerSpec =
+        spec(ZoneChangeEvent(filter = filterOrAny.tapped(), to = Zone.BATTLEFIELD))
+
+    /**
      * "leaves the battlefield", to [to] (any zone when null), or anywhere but [excludeTo] ("leaves
      * without dying" is `excludeTo = Zone.GRAVEYARD`). [excludeSacrifice] skips a leave caused by a
      * sacrifice. [asCraftMaterial] is "is exiled from the battlefield while you're activating a craft

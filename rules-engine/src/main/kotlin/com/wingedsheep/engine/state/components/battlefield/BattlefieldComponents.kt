@@ -1637,6 +1637,25 @@ data class HasBecomeTappedComponent(
 ) : Component
 
 /**
+ * Whether this permanent **entered the battlefield tapped** — frozen the first time its tap state
+ * changes during this battlefield visit, so "whenever a permanent you control enters tapped"
+ * (Amulet of Vigor) reads how it entered rather than how it is now.
+ *
+ * Every entry path sets [TappedComponent] directly as the permanent enters (taplands, "put onto
+ * the battlefield tapped", tokens created tapped, an `OnEnterRun` "enters tapped" rider), and every
+ * later change of tap state goes through the [com.wingedsheep.engine.core.tap] /
+ * [com.wingedsheep.engine.core.untapOrConsumeStun] atoms. So the atoms stamp this component with the
+ * tap state *just before* the first transition they make, which is exactly the entry state; until
+ * then the live [TappedComponent] still is. Read it through
+ * [com.wingedsheep.engine.core.enteredBattlefieldTapped], which applies that fallback. A permanent
+ * that enters untapped and is tapped afterwards therefore did not enter tapped (Amulet of Vigor
+ * ruling). Stripped as the permanent leaves the battlefield: what returns is a new object
+ * (CR 400.7).
+ */
+@Serializable
+data class EntryTapStateComponent(val enteredTapped: Boolean) : Component
+
+/**
  * Marks a permanent as having dealt combat damage to a player since entering the battlefield.
  * NOT cleared at end of turn — persists for the permanent's lifetime on the battlefield.
  * Used for StatePredicate.HasDealtCombatDamageToPlayer and SourceHasDealtCombatDamageToPlayer condition.

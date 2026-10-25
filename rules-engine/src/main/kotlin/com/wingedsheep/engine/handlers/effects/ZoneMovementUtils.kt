@@ -577,6 +577,7 @@ object ZoneMovementUtils {
             // A permanent that leaves and returns is a new object (CR 400.7) that has never become
             // tapped, so its "first time tapped this turn" window starts over.
             .without<HasBecomeTappedComponent>()
+            .without<com.wingedsheep.engine.state.components.battlefield.EntryTapStateComponent>()
             .without<HasDealtCombatDamageToPlayerComponent>()
             .without<CountersComponent>()
             // A battle's protector is a designation on the battlefield object (CR 310.9); the
