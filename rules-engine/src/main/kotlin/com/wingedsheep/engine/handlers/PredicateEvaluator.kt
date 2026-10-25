@@ -640,10 +640,18 @@ class PredicateEvaluator(
         if (referenceId == context?.triggeringEntityId) {
             context.resolution?.triggerContext?.lastKnownSubtypes?.let { return it }
         }
-        return projected.getSubtypes(referenceId).ifEmpty {
-            state.getEntity(referenceId)?.get<CardComponent>()?.typeLine?.subtypes?.map { it.value }?.toSet()
-                ?: emptySet()
-        }
+        return projected.getSubtypes(referenceId).ifEmpty { offBattlefieldSubtypes(state, referenceId) }
+    }
+
+    /**
+     * The subtypes of an object projection doesn't cover (a spell on the stack, a card in another
+     * zone): its printed ones, or every creature type for a Changeling, which has them in all zones
+     * (CR 702.73a) — Volo, Guide to Monsters reading a Changeling creature spell.
+     */
+    private fun offBattlefieldSubtypes(state: GameState, entityId: EntityId): Set<String> {
+        val card = state.getEntity(entityId)?.get<CardComponent>() ?: return emptySet()
+        val printed = card.typeLine.subtypes.mapTo(mutableSetOf()) { it.value }
+        return if (Keyword.CHANGELING in card.baseKeywords) printed + ALL_CREATURE_TYPE_SET else printed
     }
 
     /**
@@ -1220,10 +1228,7 @@ class PredicateEvaluator(
                 val sourceId = context?.sourceId ?: return false
                 // Source may be a spell on the stack (e.g., Amplify resolution-time reveal) —
                 // projection only covers the battlefield, so fall back to base CardComponent.
-                val sourceSubtypes = projected.getSubtypes(sourceId).ifEmpty {
-                    state.getEntity(sourceId)?.get<CardComponent>()?.typeLine?.subtypes?.map { it.value }?.toSet()
-                        ?: emptySet()
-                }
+                val sourceSubtypes = projected.getSubtypes(sourceId).ifEmpty { offBattlefieldSubtypes(state, sourceId) }
                 if (sourceSubtypes.isEmpty()) return false
                 val entitySubtypes = effectiveSubtypes(state, projected, entityId, card, projectedValues)
                 entitySubtypes.any { entitySubtype ->
@@ -2855,6 +2860,9 @@ class PredicateEvaluator(
         }
     }
 }
+
+/** Every creature type, as a set: a Changeling's subtypes off the battlefield. */
+private val ALL_CREATURE_TYPE_SET: Set<String> = Subtype.ALL_CREATURE_TYPES.toSet()
 
 /**
  * Context for predicate evaluation, providing player references.
