@@ -505,5 +505,11 @@ data class CastAnyNumberFromCollectionContinuation(
     val playLands: Boolean = false,
     /** Where each spell cast by the loop goes instead of its owner's graveyard ("exile them instead"). */
     val insteadOfGraveyard: com.wingedsheep.sdk.scripting.effects.AfterResolveDestination? = null,
+    /**
+     * Collection the loop records every cast card under, or `null`. The record so far sits in
+     * [effectContext]'s pipeline under the executor's private `castSoFarKey`; a decline publishes
+     * it under this name to the next frame.
+     */
+    val storeCastTo: String? = null,
 ) : AnswerContinuation
 

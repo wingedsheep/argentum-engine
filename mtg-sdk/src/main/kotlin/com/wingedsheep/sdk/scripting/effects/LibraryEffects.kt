@@ -624,11 +624,21 @@ data class PlayFromCollectionWithoutPayingCostEffect(
  * goes there instead of its owner's graveyard — on resolution, when countered, or when it fizzles.
  * The same rider, under the same name, as [CastFromCollectionWithoutPayingCostEffect.insteadOfGraveyard].
  *
+ * **Remembering what was cast.** [storeCastTo] names a pipeline collection that ends up holding
+ * every card the loop actually cast, in cast order — "then each player who owns a spell you cast
+ * this way loses life equal to its mana value" (Kefka, Dancing Mad). A pick whose cast never
+ * initiates (no legal target, CR 601.2c; a cost the caster can't pay) is not recorded, and a land
+ * played under [playLands] is not a spell, so it is not recorded either. The collection is written
+ * even when nothing is cast (empty), so a later step reads "none" rather than a missing slot.
+ * The same name and meaning as [CastFromCollectionWithoutPayingCostEffect.storeCastTo], widened to
+ * every cast of the loop.
+ *
  * @property maxTotalManaValue Remaining total-mana-value budget for the casts, or `null` for no
  *   cap. Only meaningful alongside the default `payManaCost = false`.
  * @property playLands When true, land cards in the collection may be played as lands.
  * @property insteadOfGraveyard Where each spell cast by this loop goes instead of its owner's
  *   graveyard, or `null` for the normal destination.
+ * @property storeCastTo Pipeline collection the loop publishes every cast card to, or `null`.
  */
 @SerialName("CastAnyNumberFromCollectionWithoutPayingCost")
 @Serializable
@@ -639,6 +649,7 @@ data class CastAnyNumberFromCollectionWithoutPayingCostEffect(
     val maxTotalManaValue: Int? = null,
     val playLands: Boolean = false,
     val insteadOfGraveyard: AfterResolveDestination? = null,
+    val storeCastTo: String? = null,
 ) : Effect {
     override val description: String = buildString {
         append(if (playLands) "Play lands and cast spells from among " else "Cast ")

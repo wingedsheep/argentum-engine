@@ -1573,9 +1573,9 @@ class DynamicAmountEvaluator(
             is Player.ControllerOfAffectedEntity -> listOfNotNull(
                 context.affectedEntityId?.let { controllerOf(state, resolveProjection(state, projectedState), it) }
             )
-            // "its controller" inside a ForEach over entities — a single player, or none outside
-            // such a loop.
-            is Player.ControllerOfIterationEntity ->
+            // "its controller" / "its owner" inside a ForEach over entities — a single player, or
+            // none outside such a loop.
+            is Player.ControllerOfIterationEntity, is Player.OwnerOfIterationEntity ->
                 listOfNotNull(TargetResolutionUtils.resolvePlayerRef(player, context, state))
             is Player.EachOpponent -> state.getOpponents(context.controllerId)
             is Player.TargetOpponent, is Player.TargetPlayer -> listOfNotNull(

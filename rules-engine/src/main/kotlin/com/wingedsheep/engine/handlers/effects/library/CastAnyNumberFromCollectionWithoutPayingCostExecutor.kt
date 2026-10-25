@@ -49,6 +49,14 @@ import kotlin.reflect.KClass
  * cards are offered too, but only while the controller could play one right now (their turn, a
  * land play left, no lock — asked of the land-play pipeline itself). Without it, land cards are
  * offered exactly as before: callers filter them out upstream.
+ *
+ * With `storeCastTo` the loop keeps a running record of what it cast. Each iteration's single
+ * cast publishes its card under a private per-iteration key ([lastCastKey]) only when the cast
+ * initiates; the next iteration folds that into the record so far ([castSoFarKey]) and clears it,
+ * and every exit of the loop — including the very first, when nothing is offered — publishes the
+ * record under `storeCastTo`, so the step after the loop sees exactly the spells actually cast.
+ * The record travels under its own key rather than `storeCastTo` because a composite hands on only
+ * the keys it added: a key already in the context a resumed iteration starts from would be dropped.
  */
 class CastAnyNumberFromCollectionWithoutPayingCostExecutor(
     private val playLandHandlerProvider: () -> PlayLandHandler,
@@ -62,11 +70,20 @@ class CastAnyNumberFromCollectionWithoutPayingCostExecutor(
         effect: CastAnyNumberFromCollectionWithoutPayingCostEffect,
         context: EffectContext,
     ): EffectResult {
+        // The running "cast this way" record: what earlier iterations cast, plus the card the
+        // previous iteration's single cast just published (absent when that cast never initiated).
+        val castSoFar = effect.storeCastTo?.let { key ->
+            val collections = context.pipeline.storedCollections
+            collections[castSoFarKey(key)].orEmpty() + collections[lastCastKey(key)].orEmpty()
+        }
+        val recorded = effect.storeCastTo?.let { key -> mapOf(key to castSoFar.orEmpty()) }.orEmpty()
+        val done = EffectResult.success(state).copy(updatedCollections = recorded)
+
         val remainingCasts = effect.maxCasts
-        if (remainingCasts != null && remainingCasts <= 0) return EffectResult.success(state)
+        if (remainingCasts != null && remainingCasts <= 0) return done
 
         val remainingManaValue = effect.maxTotalManaValue
-        if (remainingManaValue != null && remainingManaValue < 0) return EffectResult.success(state)
+        if (remainingManaValue != null && remainingManaValue < 0) return done
 
         // A "total mana value N or less" budget offers only the cards that still fit in it; a card
         // that doesn't fit now never will (the budget only shrinks), so it leaves the pool.
@@ -80,7 +97,7 @@ class CastAnyNumberFromCollectionWithoutPayingCostExecutor(
                         state, playLandHandlerProvider(), context.controllerId, context.sourceId, id
                     )
             }
-        if (candidates.isEmpty()) return EffectResult.success(state)
+        if (candidates.isEmpty()) return done
 
         val controllerId = context.controllerId
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
@@ -125,9 +142,13 @@ class CastAnyNumberFromCollectionWithoutPayingCostExecutor(
 
         // Normalize the collection to the still-castable set so the resumer's bookkeeping
         // (remaining = collection − chosen) matches exactly what was offered.
+        // The cast record rides along too, folded and with the per-iteration key cleared, so a
+        // decline publishes it and the next cast's publication is the only thing under that key.
         val normalizedContext = context.copy(
             pipeline = context.pipeline.copy(
-                storedCollections = context.pipeline.storedCollections + (effect.from to candidates)
+                storedCollections = context.pipeline.storedCollections + (effect.from to candidates) +
+                    effect.storeCastTo?.let { key -> mapOf(castSoFarKey(key) to castSoFar.orEmpty()) }.orEmpty() -
+                    listOfNotNull(effect.storeCastTo?.let(::lastCastKey)).toSet()
             )
         )
 
@@ -139,6 +160,7 @@ class CastAnyNumberFromCollectionWithoutPayingCostExecutor(
             maxTotalManaValue = effect.maxTotalManaValue,
             playLands = effect.playLands,
             insteadOfGraveyard = effect.insteadOfGraveyard,
+            storeCastTo = effect.storeCastTo,
         )
 
         return EffectResult.from(state.withPriority(controllerId).suspendForDecision(decision, continuation, emptyList()))
@@ -150,6 +172,12 @@ class CastAnyNumberFromCollectionWithoutPayingCostExecutor(
         /** A card's mana value off the stack — X counts as 0, which a free cast also forces (CR 107.3b). */
         fun manaValueOf(state: GameState, id: EntityId): Int =
             state.getEntity(id)?.get<CardComponent>()?.manaValue ?: 0
+
+        /** Where one iteration's single cast publishes its card, for the next iteration to fold in. */
+        fun lastCastKey(storeCastTo: String): String = "$storeCastTo\$lastCast"
+
+        /** Where the loop carries what earlier iterations cast, between a pause and its resume. */
+        fun castSoFarKey(storeCastTo: String): String = "$storeCastTo\$castSoFar"
 
         fun isLand(state: GameState, id: EntityId): Boolean =
             state.getEntity(id)?.get<CardComponent>()?.typeLine?.isLand == true

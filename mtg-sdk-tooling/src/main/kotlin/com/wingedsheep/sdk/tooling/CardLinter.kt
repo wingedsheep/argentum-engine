@@ -724,6 +724,7 @@ object CardLinter {
         put("CopyCollectionIntoCollection" to "storeAs", write(Space.COLLECTION))
         put("ForcePlay" to "storePlayedTo", write(Space.COLLECTION))
         put("CastFromCollectionWithoutPayingCost" to "storeCastTo", write(Space.COLLECTION))
+        put("CastAnyNumberFromCollectionWithoutPayingCost" to "storeCastTo", write(Space.COLLECTION))
         put("CounterAllOnStack" to "storeCountAs", write(Space.COLLECTION))
         put("Behold" to "storeAs", write(Space.COLLECTION))
         put("ChooseEntity" to "storeAs", write(Space.COLLECTION))

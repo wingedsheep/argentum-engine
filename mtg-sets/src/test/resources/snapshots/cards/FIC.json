@@ -1,3 +1,152 @@
+// Kefka, Dancing Mad
+{
+    "name": "Kefka, Dancing Mad",
+    "manaCost": "{5}{B}{R}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "During your turn, Kefka has indestructible.\nAt the beginning of your end step, exile a card at random from each opponent's graveyard. You may cast any number of spells from among cards exiled this way without paying their mana costs. Then each player who owns a spell you cast this way loses life equal to its mana value.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kefka, Dancing Mad:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "storeAs": "gathered1"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered1",
+                                        "selection": {
+                                            "type": "Random",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected2"
+                                    }
+                                ]
+                            },
+                            "collectCollections": {
+                                "selected2": "collected3"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "collected3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "collected3",
+                            "filter": "nonland",
+                            "storeMatching": "matching5"
+                        },
+                        {
+                            "type": "CastAnyNumberFromCollectionWithoutPayingCost",
+                            "from": "matching5",
+                            "storeCastTo": "stored6"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "stored6"
+                            },
+                            "body": {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "EntityProperty",
+                                    "entity": "IterationEntity",
+                                    "numericProperty": "ManaValue"
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "OwnerOfIterationEntity"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your end step, exile a card at random from each opponent's graveyard. You may cast any number of spells from among cards exiled this way without paying their mana costs. Then each player who owns a spell you cast this way loses life equal to its mana value."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "RARE",
+        "artist": "Anton Solovianchyk",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21cfc161-11b8-4253-a872-3b08a13b6991.jpg?1783906346",
+        "rulings": [
+            {
+                "date": "2025-06-13",
+                "text": "If a spell you cast has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            },
+            {
+                "date": "2025-06-13",
+                "text": "Cards you choose not to cast this way (or can't cast this way) remain in exile."
+            },
+            {
+                "date": "2025-06-13",
+                "text": "If you cast a spell \"without paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs, such as kicker costs. If the card has any mandatory additional costs, those must be paid to cast the spell."
+            },
+            {
+                "date": "2025-06-13",
+                "text": "You cast the spells one at a time, choosing modes, targets, and so on. The last spell you cast will be the first one to resolve."
+            },
+            {
+                "date": "2025-06-13",
+                "text": "You choose which spells to cast (if any) as Kefka's last ability resolves. You can't wait to cast them later in the turn. Timing restrictions based on their types are ignored."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Tataru Taru
 {
     "name": "Tataru Taru",

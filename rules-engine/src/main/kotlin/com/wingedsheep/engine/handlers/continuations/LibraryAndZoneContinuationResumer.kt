@@ -1386,9 +1386,13 @@ class LibraryAndZoneContinuationResumer(
         val chosenId = response.selectedCards.firstOrNull()
 
         // Declined, or a stale / no-longer-offered pick: end the loop. Uncast cards remain
-        // wherever they are.
+        // wherever they are; the "cast this way" record is handed to the step after the loop.
         if (chosenId == null || chosenId !in collection) {
-            return checkForMore(state, emptyList())
+            val recorded = continuation.storeCastTo?.let { key ->
+                val castSoFar = CastAnyNumberFromCollectionWithoutPayingCostExecutor.castSoFarKey(key)
+                mapOf(key to ctx.pipeline.storedCollections[castSoFar].orEmpty())
+            }.orEmpty()
+            return checkForMore(exposeCollectionsToNextFrame(state, recorded), emptyList())
         }
 
         val singleKey = "${continuation.from}\$next"
@@ -1427,6 +1431,9 @@ class LibraryAndZoneContinuationResumer(
                 from = singleKey,
                 payManaCost = continuation.payManaCost,
                 insteadOfGraveyard = continuation.insteadOfGraveyard,
+                // Published only if the cast initiates; the next iteration folds it into the record.
+                storeCastTo = continuation.storeCastTo
+                    ?.let(CastAnyNumberFromCollectionWithoutPayingCostExecutor::lastCastKey),
             ),
             CastAnyNumberFromCollectionWithoutPayingCostEffect(
                 from = continuation.from,
@@ -1444,6 +1451,7 @@ class LibraryAndZoneContinuationResumer(
                 },
                 playLands = continuation.playLands,
                 insteadOfGraveyard = continuation.insteadOfGraveyard,
+                storeCastTo = continuation.storeCastTo,
             ),
         )
         val result = effectRunner.runBuilt(state, effects, loopContext)

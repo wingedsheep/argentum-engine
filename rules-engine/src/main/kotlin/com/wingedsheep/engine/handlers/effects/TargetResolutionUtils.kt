@@ -379,6 +379,13 @@ object TargetResolutionUtils {
                 controllerOf(state, id)
                     ?: context.departedPermanents.lastOrNull { it.entityId == id }?.controllerId
             }
+            // "its owner", inside a ForEach over entities — differs from the controller for a spell
+            // cast from another player's graveyard. Ownership never changes, so a card left behind
+            // still answers; a token that has ceased to exist answers from its departed snapshot.
+            Player.OwnerOfIterationEntity -> context.iterationEntityId?.let { id ->
+                state.getEntity(id)?.get<CardComponent>()?.ownerId
+                    ?: context.departedPermanents.lastOrNull { it.entityId == id }?.ownerId
+            }
             // "its controller" for the permanent a continuous effect is modifying.
             Player.ControllerOfAffectedEntity -> context.affectedEntityId
                 ?.let { controllerOf(state, it) }

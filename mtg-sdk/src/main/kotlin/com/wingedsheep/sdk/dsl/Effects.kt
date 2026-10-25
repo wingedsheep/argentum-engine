@@ -5054,9 +5054,12 @@ object Effects {
     fun PlayFromCollectionWithoutPayingCost(from: CollectionSlot): Effect =
         PlayFromCollectionWithoutPayingCost(from.key)
 
-    /** Cast any number of the cards in [from] without paying their mana costs. */
-    fun CastAnyNumberFromCollectionWithoutPayingCost(from: CollectionSlot): Effect =
-        CastAnyNumberFromCollectionWithoutPayingCost(from.key)
+    /**
+     * Cast any number of the cards in [from] without paying their mana costs; [storeCastTo], when
+     * set, collects every card actually cast (use it through `runStoringCollection`).
+     */
+    fun CastAnyNumberFromCollectionWithoutPayingCost(from: CollectionSlot, storeCastTo: String? = null): Effect =
+        CastAnyNumberFromCollectionWithoutPayingCost(from.key, storeCastTo)
 
     /** Play lands and cast spells from among the cards in [from] without paying their mana costs. */
     fun PlayAnyNumberFromCollectionWithoutPayingCost(from: CollectionSlot): Effect =
@@ -5298,9 +5301,13 @@ object Effects {
      * during this effect's resolution, with card-type timing restrictions ignored. The
      * controller is offered the cards one at a time and may stop at any point; cards left
      * uncast stay where they are. Filter the collection to the eligible set upstream.
+     *
+     * [storeCastTo] names a collection that ends up holding every card the loop actually cast —
+     * "then each player who owns a spell you cast this way loses life equal to its mana value"
+     * (Kefka, Dancing Mad). It is written (possibly empty) even when nothing is cast.
      */
-    fun CastAnyNumberFromCollectionWithoutPayingCost(from: String): Effect =
-        CastAnyNumberFromCollectionWithoutPayingCostEffect(from = from)
+    fun CastAnyNumberFromCollectionWithoutPayingCost(from: String, storeCastTo: String? = null): Effect =
+        CastAnyNumberFromCollectionWithoutPayingCostEffect(from = from, storeCastTo = storeCastTo)
 
     /**
      * "You may **play lands and cast spells** from among [them] without paying their mana costs"

@@ -298,6 +298,22 @@ sealed interface Player {
     }
 
     /**
+     * Owner of the entity the enclosing ForEach-over-entities is currently iterating over — "each
+     * player who owns a spell you cast this way loses life equal to its mana value" (Kefka, Dancing
+     * Mad), read as a `ForEachInCollection` over the cast spells whose body names **its owner**.
+     *
+     * Distinct from [ControllerOfIterationEntity] exactly when ownership and control diverge — a
+     * spell you cast from an opponent's graveyard is controlled by you and owned by them — and from
+     * [OwnerOfSource] / [OwnerOf], which read the effect's source and first chosen target. Null
+     * outside a ForEach-over-entities.
+     */
+    @SerialName("OwnerOfIterationEntity")
+    @Serializable
+    data object OwnerOfIterationEntity : Player {
+        override val description: String = "its owner"
+    }
+
+    /**
      * Controller of the permanent a continuous effect is currently modifying — "enchanted creature
      * gets -X/-0, where X is the number of cards in **its controller's** graveyard" (Disturbing
      * Conversion). Pairs with [com.wingedsheep.sdk.scripting.targets.EffectTarget.AffectedEntity]:
@@ -483,6 +499,7 @@ sealed interface Player {
             TargetOpponent -> "target opponent's"
             TargetPlayer -> "target player's"
             ControllerOfIterationEntity -> "its controller's"
+            OwnerOfIterationEntity -> "its owner's"
             ControllerOfAffectedEntity -> "its controller's"
             EachTargetedPlayer -> "those players'"
             is InCollection -> "those players'"
