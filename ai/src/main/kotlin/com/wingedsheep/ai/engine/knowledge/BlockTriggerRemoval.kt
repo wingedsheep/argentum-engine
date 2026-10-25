@@ -34,9 +34,11 @@ import java.util.IdentityHashMap
  * simulation never put the Zealot in front of the token and the trigger was never priced.
  *
  * The shape is narrow on purpose:
- *  - a [TriggerBinding.SELF] [EventPattern.BlockEvent] — one trigger per blocked attacker, the
- *    attacker as the triggering entity — that is not a batch, not "blocks two or more", and carries
- *    no intervening-if or restriction;
+ *  - a [TriggerBinding.SELF] [EventPattern.BlockEvent] **with an attacker filter** ("blocks a
+ *    creature") — the only shape the engine fires once per blocked attacker with that attacker as
+ *    the triggering entity; a bare "blocks" trigger gets an empty trigger context, so its
+ *    [EffectTarget.TriggeringEntity] resolves to nothing — that is not a batch, not "blocks two or
+ *    more", and carries no intervening-if or restriction;
  *  - **no targets**, so hexproof, shroud and protection-from-targeting cannot stop it;
  *  - an effect that is an unconditional destroy of [EffectTarget.TriggeringEntity], alone or in a
  *    plain composite (no "you may", no "if") — optionally beside a destroy of [EffectTarget.Self]
@@ -101,6 +103,7 @@ internal object BlockTriggerRemoval {
         val trigger = ability.trigger as? EventPattern.BlockEvent ?: return null
         if (ability.binding != TriggerBinding.SELF) return null
         if (trigger.batch || trigger.minBlockedAttackers != 1) return null
+        if (trigger.attackerFilter == null) return null
         if (ability.targetRequirement != null || ability.additionalTargetRequirements.isNotEmpty()) return null
         if (ability.interveningIf != null || ability.triggerRestriction != null) return null
         val leaves = plainLeaves(ability.effect) ?: return null

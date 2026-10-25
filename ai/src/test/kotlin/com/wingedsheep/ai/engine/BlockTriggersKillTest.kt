@@ -8,9 +8,12 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.p02.cards.AlabornZealot
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
@@ -40,7 +43,18 @@ class BlockTriggersKillTest : FunSpec({
         power = 1
         toughness = 1
     }
-    val cards = TestCards.all + listOf(leviathan, squire, AlabornZealot)
+    // A bare "blocks" trigger: the engine gives it no triggering entity, so the destroy is inert.
+    val bareBlocker = card("Test Bare Zealot") {
+        manaCost = "{W}"
+        typeLine = "Creature — Human Soldier"
+        power = 1
+        toughness = 1
+        triggeredAbility {
+            trigger = Triggers.self.blocks()
+            effect = Effects.Destroy(EffectTarget.TriggeringEntity)
+        }
+    }
+    val cards = TestCards.all + listOf(leviathan, squire, bareBlocker, AlabornZealot)
     val registry = CardRegistry().apply { register(cards) }
 
     fun advisor(blockTriggersKill: Boolean) = CombatAdvisor(
@@ -87,6 +101,11 @@ class BlockTriggersKillTest : FunSpec({
 
     test("control: a vanilla 1/1 cannot stop the 6/5, so it attacks") {
         val board = board("Test Squire")
+        board.attackers(advisor(blockTriggersKill = true)) shouldContain board.attacker
+    }
+
+    test("a bare blocks trigger has no triggering entity, so it is not read as a kill") {
+        val board = board("Test Bare Zealot")
         board.attackers(advisor(blockTriggersKill = true)) shouldContain board.attacker
     }
 
