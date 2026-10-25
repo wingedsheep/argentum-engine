@@ -1351,6 +1351,17 @@ class TriggerDetector(
                 if (watchedRecipientId != null && event.targetId != watchedRecipientId) return false
                 matcher.matchesDealsDamageTrigger(specEvent, event, state, controllerId, sourceId)
             }
+            // "Until end of turn, whenever a creature an opponent controls is dealt damage, destroy
+            // it" (Green Dragon). The recipient form only — the per-source form ("a source deals
+            // damage to …") has no delayed reading. Entity-scoped: the damaged entity must be the
+            // watched one. Filter-scoped: the canonical matcher applies the recipient filter, and
+            // the damaged permanent is the triggering entity (TriggerContext.fromEvent).
+            // Simultaneous combat damage to one recipient folds into one trigger below (CR 603.2c).
+            is com.wingedsheep.sdk.scripting.EventPattern.DamageReceivedEvent -> {
+                if (event !is com.wingedsheep.engine.core.DamageDealtEvent || specEvent.source != null) return false
+                if (watchedEntityId != null) event.targetId == watchedEntityId
+                else matcher.matchesTrigger(specEvent, spec.binding, event, sourceId, controllerId, state)
+            }
             // "When damage is prevented this way": fires only for this delayed trigger's own
             // shield, matched by the linkId echoed back on the DamagePreventedEvent.
             is com.wingedsheep.sdk.scripting.EventPattern.DamagePreventedEvent -> {

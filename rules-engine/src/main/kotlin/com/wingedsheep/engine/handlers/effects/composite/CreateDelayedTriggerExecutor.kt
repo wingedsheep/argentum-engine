@@ -81,7 +81,13 @@ class CreateDelayedTriggerExecutor(
         // Copiable values of departed objects a token-copy payoff names ("a copy of it"), frozen now
         // because a token that died has ceased to exist by the time the trigger fires (CR 704.5d).
         val snapshots = mutableListOf<EntitySnapshot>()
-        val resolvedEffect = resolveContextTargets(effect.effect, context, state, bound, snapshots)
+        // A filter-scoped event trigger ("until end of turn, whenever a creature an opponent
+        // controls is dealt damage, destroy *it*" — Green Dragon) names its own event's object as
+        // the triggering entity, so that reference stays late-bound rather than being baked to the
+        // creating trigger's triggering entity (the Dragon itself, for an enters trigger).
+        val filterScoped = effect.trigger != null && effect.watchedTarget == null && effect.watchedRecipient == null
+        val bakingContext = if (filterScoped) context.copy(triggeringEntityId = null) else context
+        val resolvedEffect = resolveContextTargets(effect.effect, bakingContext, state, bound, snapshots)
 
         // Bake any chosen-value references in the trigger's filter into concrete predicates.
         // Long List of the Ents (LTR) needs "when you cast a creature spell of the type just

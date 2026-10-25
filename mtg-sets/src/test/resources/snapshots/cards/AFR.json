@@ -5444,6 +5444,72 @@
     "colorIdentityOverride": []
 }
 
+// Green Dragon
+{
+    "name": "Green Dragon",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nPoison Breath — When this creature enters, until end of turn, whenever a creature an opponent controls is dealt damage, destroy it.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Green Dragon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": "TriggeringEntity",
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "DamageReceivedEvent",
+                            "recipient": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "controllerPredicate": "ControlledByOpponent"
+                            }
+                        },
+                        "binding": "ANY"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "rarity": "UNCOMMON",
+        "artist": "Ilse Gort",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/45804134-cc04-4587-9674-2c884964083d.jpg?1783926462",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "Green Dragon's Poison Breath ability continues to function until end of turn even if Green Dragon is destroyed or otherwise leaves the battlefield. It takes some time for toxic gas to dissipate."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Green Dragon's Poison Breath ability is different than deathtouch. Notably, creatures still need to deal damage to a blocking creature equal to its toughness before dealing damage to another blocking creature or trampling over to a player or planeswalker."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Grim Bounty
 {
     "name": "Grim Bounty",

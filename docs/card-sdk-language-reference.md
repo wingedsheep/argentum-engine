@@ -9695,7 +9695,12 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
 - **Event-based delayed triggers** — pass `trigger = <TriggerSpec>` (instead of `step`) and the
   delayed ability fires whenever a matching *event* occurs, staying resident until `expiry`
   (`DelayedTriggerExpiry.EndOfTurn`) removes it. Supported events include `DealsDamageEvent`,
-  `ZoneChangeEvent`, the internal `DamagePreventedEvent`, and the attack-declaration events
+  `ZoneChangeEvent`, the recipient form of `DamageReceivedEvent` ("until end of turn, whenever a creature an
+  opponent controls is dealt damage, destroy it" — Green Dragon: `trigger =
+  Triggers.a(Creature.opponentControls()).isDealtDamage()`, the damaged creature the triggering entity;
+  simultaneous combat damage to one creature is one trigger; in a filter-scoped trigger
+  `EffectTarget.TriggeringEntity` stays late-bound to the delayed trigger's own event, never to the creating
+  trigger's object), the internal `DamagePreventedEvent`, and the attack-declaration events
   `YouAttackEvent` / `AttackEvent` and the defender-side batch events `CreaturesAttackYouEvent` /
   `CreaturesAttackYourOpponentEvent` (Garruk, Curse Breaker's −4: `trigger =
   Triggers.anOpponent.isAttacked(), expiry = UntilControllersNextTurn`, paying off "those
@@ -9703,7 +9708,8 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   which events match:
   - **Entity-scoped** — set `watchedTarget` to bind the trigger to one concrete entity (resolved at
     creation time): "when **that** creature deals combat damage / dies this turn" (Long River Lurker,
-    Deflecting Palm). Only `DealsDamageEvent` (scoped on the damage source) and `ZoneChangeEvent`
+    Deflecting Palm). Only `DealsDamageEvent` (scoped on the damage source), `DamageReceivedEvent`
+    (scoped on the damaged entity — "whenever that creature is dealt damage this turn") and `ZoneChangeEvent`
     (scoped on the moving entity) use this, plus `SpellCastEvent`, where a `PlayerRef` watched
     target scopes the **caster** ("that player gets two rad counters whenever they cast a spell" —
     Nuka-Nuke Launcher: `trigger = Triggers.anyPlayer.casts(), watchedTarget =
