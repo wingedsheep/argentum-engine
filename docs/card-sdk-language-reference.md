@@ -18119,12 +18119,13 @@ not update an existing copy.
   the draw. `restrictions` is also the seam a "Max speed —" gate folds into — declare the replacement
   inside `maxSpeed { replacementEffect(…) }` and the builder fills the slot.
 - `ModifyKeywordActionAmount(appliesTo, modifier, restrictions)` — resize the count a **mill, scry or
-  surveil** announces by a fixed amount (the keyword-action twin of `ModifyDrawAmount`): a player who
+  surveil** announces, or the number of times a **spell is copied**, by a fixed amount (the keyword-action twin of `ModifyDrawAmount`): a player who
   would act on N cards instead acts on `N + modifier`, clamped to ≥ 0. One type across the three
   actions, like `ModifyKeywordAction`: `appliesTo` names the action and whose — an
   `EventPattern.KeywordActionCountEvent`: `EventPattern.MillEvent(player)` (CR 701.17, which also
   serves as the mill trigger — see **Mill** under the triggers; its `cardFilter`/`batch` don't apply here), `EventPattern.ScryEvent(player)` (CR 701.22) or
-  `EventPattern.SurveilEvent(player)` (CR 701.25), `player` (`Player.You` / `Player.EachOpponent` /
+  `EventPattern.SurveilEvent(player)` (CR 701.25), `EventPattern.SpellCopiedEvent(spellFilter, player)`
+  (CR 707.10, which also serves as the "whenever you copy a spell" trigger), `player` (`Player.You` / `Player.EachOpponent` /
   `Player.Each`) relative to the source's (projected) controller; any other pattern doesn't compile.
   "Whenever you scry / surveil" triggers stay on `ScriedEvent` / `SurveiledEvent`; scry and surveil
   patterns are replacement-only. `restrictions` (a
@@ -18146,6 +18147,20 @@ not update an existing copy.
   - Enhanced Surveillance: "You may look at an additional two cards each time you surveil" →
     `ModifyKeywordActionAmount(EventPattern.SurveilEvent(), modifier = 2)` (the "may" is a superset
     choice — every extra card can go back on top — so it isn't modelled).
+  - Twinning Staff: "If you would copy a spell one or more times, instead copy it that many times plus
+    an additional time. You may choose new targets for the additional copy." →
+    `ModifyKeywordActionAmount(EventPattern.SpellCopiedEvent(), modifier = 1)`. `player` is the
+    **copier** (the copies' controller) and `spellFilter` is matched against the spell being copied.
+    Applied once per copy instruction, before any copy is put on the stack, at every spell-copy site:
+    `CopyTargetSpell` (and `CopyTargetSpellOrAbility`'s spell branch — Dualcaster Mage, Twincast, the
+    Staff's own ability), storm / conspire / casualty and the `CopyNextSpellCast` /
+    `CopyEachSpellCast` riders (one instruction each, so storm 3 becomes 4), `CopyEachTargetSpell`
+    (each targeted spell is its own instruction), `CopyForEachOtherPossibleTarget` (the added copies
+    are ordinary copies of the original, keeping its targets unless the copier picks new ones, CR
+    707.10c) and `ChainCopy` (each added copy picks its own target). Every added copy may be
+    retargeted. Zero copies ("copy it for each …" over nothing) is no copy and is never resized; a
+    card copied and then cast (CR 707.12, `CopyCardIntoCollection`) is not a spell copy and is
+    untouched; copies of abilities are untouched. Multiple instances sum (two Staffs: two extra).
 - `ModifyKeywordAction(prefixEffect, appliesTo)` — insert an extra effect *in front of* a keyword
   action (CR 614): replaces "[a matching permanent] <acts>" with "[prefixEffect], then that permanent
   <acts>". One type across keyword actions rather than one per action — `appliesTo` carries which

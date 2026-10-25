@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.library.KeywordActionAmountModifier
 import com.wingedsheep.engine.mechanics.stack.StackPlacement
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CantBeCopiedComponent
@@ -44,6 +45,14 @@ class CopyEachTargetSpellExecutor(
             .filterIsInstance<ChosenTarget.Spell>()
             .map { it.spellEntityId }
             .distinct()
+            // Each spell is its own copy instruction, so a copy-count replacement (Twinning Staff)
+            // resizes each one: the queue holds a spell once per copy it gets.
+            .flatMap { spellId ->
+                val copies = KeywordActionAmountModifier.copySpell(
+                    state, context.controllerId, spellId, 1, targetFinder.predicateEvaluator
+                )
+                List(copies) { spellId }
+            }
 
         return EffectResult.from(
             driveCopyEachSpell(

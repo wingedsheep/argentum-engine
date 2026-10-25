@@ -415,3 +415,63 @@
     },
     "colorIdentityOverride": []
 }
+
+// Twinning Staff
+{
+    "name": "Twinning Staff",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "If you would copy a spell one or more times, instead copy it that many times plus an additional time. You may choose new targets for the additional copy.\n{7}, {T}: Copy target instant or sorcery spell you control. You may choose new targets for the copy.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Twinning Staff:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{7}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CopyTargetSpell",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "instant|sorcery ctrl:you",
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{7}, {T}: Copy target instant or sorcery spell you control. You may choose new targets for the copy.",
+                "holdPriority": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "ModifyKeywordActionAmount",
+                "appliesTo": "SpellCopiedEvent",
+                "modifier": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "RARE",
+        "artist": "Mike Bierek",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e7971306-700e-4677-bf52-83e4f9ac04c1.jpg?1783931206"
+    }
+}

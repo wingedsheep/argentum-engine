@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.library.KeywordActionAmountModifier
 import com.wingedsheep.engine.mechanics.stack.StackPlacement
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -48,9 +49,29 @@ class CopyTargetSpellExecutor(
 
         // "Copy it for each …" clauses resolve their count here (Thousand-Year Storm). Zero
         // matching prior spells means no copies at all — the ability still resolved.
-        val copyCount = dynamicAmountEvaluator.evaluate(state, effect.copies, context)
+        // A copy-count replacement ("copy it that many times plus an additional time") resizes the
+        // instruction once, before any copy exists; zero copies stays zero.
+        val copyCount = KeywordActionAmountModifier.copySpell(
+            state, context.controllerId, spellEntityId,
+            dynamicAmountEvaluator.evaluate(state, effect.copies, context), targetFinder.predicateEvaluator
+        )
         if (copyCount <= 0) return EffectResult.success(state)
+        return copySpellTimes(state, effect, context, spellEntityId, copyCount)
+    }
 
+    /**
+     * Put [copyCount] copies of [spellEntityId] on the stack under `context.controllerId`, each of
+     * which may be given new targets — the body of "copy target spell", after the count (and any
+     * copy-count replacement) is settled. [CopyForEachOtherPossibleTargetExecutor] calls it for the
+     * additional copies a replacement adds to its own auto-targeted ones, so it must not resize again.
+     */
+    internal fun copySpellTimes(
+        state: GameState,
+        effect: CopyTargetSpellEffect,
+        context: EffectContext,
+        spellEntityId: EntityId,
+        copyCount: Int
+    ): EffectResult {
         val container = state.spellOrLastKnown(spellEntityId)
             ?: return EffectResult.error(state, "Target spell entity not found on stack")
 

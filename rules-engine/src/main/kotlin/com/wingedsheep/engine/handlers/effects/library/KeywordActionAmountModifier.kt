@@ -1,20 +1,23 @@
 package com.wingedsheep.engine.handlers.effects.library
 
+import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount
 import com.wingedsheep.sdk.scripting.references.Player
 
 /**
  * Applies [ModifyKeywordActionAmount] replacement effects to an announced keyword-action count —
- * mill (CR 701.17), scry (CR 701.22) or surveil (CR 701.25) — before any card moves. Called once at
- * each action's announcement site ([GatherCardsExecutor]'s `CardSource.TopOfLibrary` branch for the
- * flagged gather, and the mill cost atom), NOT per moved card, so a paused-and-resumed pipeline
- * never double-modifies.
+ * mill (CR 701.17), scry (CR 701.22) or surveil (CR 701.25) — before any card moves, or to the
+ * number of times a spell is about to be copied (CR 707.10) before any copy is put on the stack.
+ * Called once at each action's announcement site ([GatherCardsExecutor]'s `CardSource.TopOfLibrary`
+ * branch for the flagged gather, the mill cost atom, each spell-copy executor), NOT per moved card
+ * or per copy, so a paused-and-resumed pipeline never double-modifies.
  *
  * The keyword-action twin of `DrawReplacementDispatcher.applyDrawAmountModifier`: it scans every
  * battlefield permanent's replacement effects for the matching action's pattern, gates each by that
@@ -37,6 +40,31 @@ object KeywordActionAmountModifier {
     fun surveil(state: GameState, playerId: EntityId, originalCount: Int, predicateEvaluator: PredicateEvaluator): Int =
         applyAmountModifiers(state, playerId, originalCount, predicateEvaluator) {
             (it as? EventPattern.SurveilEvent)?.player
+        }
+
+    /**
+     * How many copies [copierId] makes when an effect would copy [spellId] [originalCount] times —
+     * "instead copy it that many times plus an additional time" (Twinning Staff). Each pattern's
+     * `spellFilter` is matched against the spell being copied; zero copies is no copy and is never
+     * resized ("one or more times").
+     */
+    fun copySpell(
+        state: GameState,
+        copierId: EntityId,
+        spellId: EntityId,
+        originalCount: Int,
+        predicateEvaluator: PredicateEvaluator
+    ): Int =
+        applyAmountModifiers(state, copierId, originalCount, predicateEvaluator) { pattern ->
+            (pattern as? EventPattern.SpellCopiedEvent)
+                ?.takeIf {
+                    it.spellFilter == GameObjectFilter.Any ||
+                        predicateEvaluator.matches(
+                            state, state.projectedState, spellId, it.spellFilter,
+                            PredicateContext(controllerId = copierId)
+                        )
+                }
+                ?.player
         }
 }
 

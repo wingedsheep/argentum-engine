@@ -51,7 +51,7 @@ enum class TargetingSourceType {
  * and returns a list of valid target EntityIds.
  */
 class TargetFinder(
-    private val predicateEvaluator: PredicateEvaluator
+    internal val predicateEvaluator: PredicateEvaluator
 ) {
     /** Authoritative per-candidate checks, shared with cast-time validation. */
     internal val validator by lazy { com.wingedsheep.engine.mechanics.targeting.TargetValidator(predicateEvaluator) }

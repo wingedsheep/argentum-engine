@@ -358,10 +358,11 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
-     * A player would perform a counted library keyword action — mill, scry or surveil — the
+     * A player would perform a counted action — mill, scry or surveil, or copy a spell — the
      * family [com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount] resizes; [player] is whose
      * action it is, relative to the replacement's controller. Scry and surveil are replacement-only;
-     * [MillEvent] doubles as the mill trigger, as [DiscardEvent] does for discards.
+     * [MillEvent] doubles as the mill trigger, as [DiscardEvent] does for discards, and
+     * [SpellCopiedEvent] as the "whenever you copy a spell" trigger.
      */
     @Serializable
     sealed interface KeywordActionCountEvent : EventPattern {
@@ -1716,13 +1717,18 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * `Triggers.or` (or `Triggers.you.castsOrCopies`). [player] is the copy's controller — the
      * player under whose control it was put on the stack (CR 707.10), so a copy an opponent's effect
      * hands you is one *you* copied. A copy that is *cast* (CR 707.12) is a cast, not this event.
+     *
+     * Also the copy *announcement* for [com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount]:
+     * "If you would copy a spell one or more times, instead copy it that many times plus an
+     * additional time" (Twinning Staff). There [player] is the copier and [spellFilter] is matched
+     * against the spell being copied.
      */
     @SerialName("SpellCopiedEvent")
     @Serializable
     data class SpellCopiedEvent(
         val spellFilter: GameObjectFilter = GameObjectFilter.Any,
-        val player: Player = Player.You,
-    ) : EventPattern {
+        override val player: Player = Player.You,
+    ) : KeywordActionCountEvent {
         override val description: String = buildString {
             append(player.description)
             append(" copies ")

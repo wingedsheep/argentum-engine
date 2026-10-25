@@ -73,6 +73,8 @@ data class ChainCopyCostContinuation(
  * @property copyControllerId The player who is creating the copy
  * @property sourceId The source entity of the original spell/ability
  * @property candidateTargets The list of valid target entity IDs (for validation)
+ * @property remainingCopies Copies still to be made, this one included — more than one when a
+ *   copy-count replacement (Twinning Staff) resized "copy this spell"; each gets its own target
  */
 @Serializable
 data class ChainCopyTargetContinuation(
@@ -80,5 +82,6 @@ data class ChainCopyTargetContinuation(
     val copyControllerId: EntityId,
     val sourceId: EntityId?,
     val candidateTargets: List<EntityId>,
+    val remainingCopies: Int = 1,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : AnswerContinuation

@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.continuations
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.handlers.effects.chain.ChainCopyExecutor
+import com.wingedsheep.engine.handlers.effects.library.KeywordActionAmountModifier
 import com.wingedsheep.engine.handlers.effects.composite.payManaCostFromPool
 import com.wingedsheep.engine.mechanics.mana.ManaPaymentWindow
 import com.wingedsheep.sdk.core.ManaCost
@@ -276,6 +277,12 @@ class ChainSpellContinuationResumer(
             return putResult
         }
 
+        if (continuation.remainingCopies > 1) {
+            return presentTargetSelection(
+                putResult.state, putResult.events.toList(), continuation.copyControllerId, effect,
+                continuation.sourceId, checkForMore, copies = continuation.remainingCopies - 1
+            )
+        }
         return checkForMore(putResult.state, putResult.events.toList())
     }
 
@@ -388,11 +395,17 @@ class ChainSpellContinuationResumer(
         controllerId: EntityId,
         effect: ChainCopyEffect,
         sourceId: EntityId?,
-        checkForMore: CheckForMore
+        checkForMore: CheckForMore,
+        copies: Int? = null
     ): ExecutionResult {
         val legalTargets = services.targetFinder.findLegalTargets(
             state, effect.copyTargetRequirement, controllerId, sourceId
         )
+        // "Copy this spell" is one copy instruction: a copy-count replacement (Twinning Staff)
+        // resizes it once, here, and each copy then picks its own target in turn.
+        val copiesToMake = copies ?: sourceId?.let {
+            KeywordActionAmountModifier.copySpell(state, controllerId, it, 1, services.predicateEvaluator)
+        } ?: 1
 
         if (legalTargets.isEmpty()) {
             return checkForMore(state, priorEvents)
@@ -417,7 +430,8 @@ class ChainSpellContinuationResumer(
             effect = effect,
             copyControllerId = controllerId,
             sourceId = sourceId,
-            candidateTargets = legalTargets
+            candidateTargets = legalTargets,
+            remainingCopies = copiesToMake
         )
 
         return state.suspendForDecision(

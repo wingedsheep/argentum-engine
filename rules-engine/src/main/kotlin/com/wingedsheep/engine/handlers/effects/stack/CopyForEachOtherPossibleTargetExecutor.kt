@@ -11,6 +11,7 @@ import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
+import com.wingedsheep.engine.handlers.effects.library.KeywordActionAmountModifier
 import com.wingedsheep.engine.mechanics.stack.StackPlacement
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
@@ -22,6 +23,7 @@ import com.wingedsheep.engine.state.components.stack.TargetsComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.CopyForEachOtherPossibleTargetEffect
+import com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import kotlin.reflect.KClass
 
@@ -59,6 +61,8 @@ class CopyForEachOtherPossibleTargetExecutor(
 
     override val effectType: KClass<CopyForEachOtherPossibleTargetEffect> =
         CopyForEachOtherPossibleTargetEffect::class
+
+    private val spellCopier = CopyTargetSpellExecutor(predicateEvaluator.amounts, targetFinder)
 
     override fun execute(
         state: GameState,
@@ -118,6 +122,20 @@ class CopyForEachOtherPossibleTargetExecutor(
                 currentState = copyResult.newState
                 allEvents.addAll(copyResult.events)
             }
+        }
+
+        // "Copy it for each …" is one copy instruction, so a copy-count replacement (Twinning Staff)
+        // adds copies to it. Those aren't aimed at a candidate: each is an ordinary copy of the
+        // original, keeping its targets unless the copier chooses new ones.
+        val additional = if (isAbility) 0 else KeywordActionAmountModifier.copySpell(
+            state, copierId, originalId, candidates.size, predicateEvaluator
+        ) - candidates.size
+        if (additional > 0) {
+            val extra = spellCopier.copySpellTimes(
+                currentState, CopyTargetSpellEffect(target = effect.target), context.copy(controllerId = copierId),
+                originalId, additional
+            )
+            return extra.copy(events = allEvents + extra.events)
         }
 
         return EffectResult.success(currentState, allEvents)

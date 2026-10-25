@@ -1534,9 +1534,10 @@ data class ModifyDrawAmount(
 }
 
 /**
- * Modify how many cards a player mills, scries or surveils — "mill that many cards plus four
- * instead", "scry that many cards plus one instead", "look at an additional two cards each time you
- * surveil". Additive: a [modifier] of `+N` turns the announced count C into `C + N`; negative values
+ * Modify how many cards a player mills, scries or surveils, or how many times they copy a spell —
+ * "mill that many cards plus four instead", "scry that many cards plus one instead", "look at an
+ * additional two cards each time you surveil", "copy it that many times plus an additional time".
+ * Additive: a [modifier] of `+N` turns the announced count C into `C + N`; negative values
  * reduce it (clamped to ≥ 0 by the caller). One type across these keyword actions rather than one
  * per action, like [ModifyKeywordAction]: [appliesTo] says which action and whose —
  *
@@ -1547,6 +1548,12 @@ data class ModifyDrawAmount(
  *  - [EventPattern.SurveilEvent] — surveil (CR 701.25). Applied at the surveil pipeline's gather,
  *    so the extra cards are part of what is surveiled (CR 701.25b): each may go to the graveyard or
  *    back on top, and the `SurveiledEvent` count includes them.
+ *  - [EventPattern.SpellCopiedEvent] — copying a spell (CR 707.10). Applied once per copy
+ *    instruction, at every spell-copy site (copy target spell, storm / conspire / casualty and
+ *    "copy the next spell" riders, copy-each-target, copy-for-each-other-target, chain copies),
+ *    before any copy is put on the stack; its `spellFilter` is matched against the spell being
+ *    copied and `player` against the copier. Each added copy may be given new targets. A card
+ *    that is copied and then cast (CR 707.12) is not a spell copy and is not resized.
  *
  * Each pattern's `player` gates whose action is affected relative to the source's controller
  * (`Player.You` / `Player.EachOpponent` / `Player.Each`). Applied once per instruction, so a
@@ -1559,7 +1566,8 @@ data class ModifyDrawAmount(
  *
  * Examples — The Water Crystal: `ModifyKeywordActionAmount(MillEvent(Player.EachOpponent), 4)`;
  * Kenessos, Priest of Thassa: `ModifyKeywordActionAmount(ScryEvent(), 1)`; Enhanced Surveillance:
- * `ModifyKeywordActionAmount(SurveilEvent(), 2)`.
+ * `ModifyKeywordActionAmount(SurveilEvent(), 2)`; Twinning Staff:
+ * `ModifyKeywordActionAmount(SpellCopiedEvent(), 1)`.
  */
 @SerialName("ModifyKeywordActionAmount")
 @Serializable
@@ -1577,6 +1585,13 @@ data class ModifyKeywordActionAmount(
         } else {
             append("If ")
         }
+        if (appliesTo is EventPattern.SpellCopiedEvent) {
+            val filterDesc = appliesTo.spellFilter.description
+            val spell = if (filterDesc == "card" || filterDesc.isBlank()) "a spell" else "a $filterDesc spell"
+            append("${appliesTo.player.description} would copy $spell one or more times, instead copy it that many times plus ")
+            append(if (modifier == 1) "an additional time" else "$modifier additional times")
+            return@buildString
+        }
         append(
             when (appliesTo) {
                 is EventPattern.MillEvent -> "${appliesTo.player.description} would mill one or more cards"
@@ -1587,15 +1602,18 @@ data class ModifyKeywordActionAmount(
             is EventPattern.MillEvent -> "mill"
             is EventPattern.ScryEvent -> "scry"
             is EventPattern.SurveilEvent -> "surveil"
+            is EventPattern.SpellCopiedEvent -> "copy"
         }
         append(", they $verb that many cards plus $modifier instead")
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
-        // A keyword-action pattern carries only a Player — no replaceable text.
+        // Only the spell-copy pattern's filter carries replaceable text; the others are a Player.
+        val newAppliesTo = appliesTo.applyTextReplacement(replacer) as? EventPattern.KeywordActionCountEvent ?: appliesTo
         val newRestrictions = restrictions.map { it.applyTextReplacement(replacer) }
-        val anyChanged = newRestrictions.zip(restrictions).any { (n, o) -> n !== o }
-        return if (anyChanged) copy(restrictions = newRestrictions) else this
+        val anyChanged = newAppliesTo !== appliesTo ||
+            newRestrictions.zip(restrictions).any { (n, o) -> n !== o }
+        return if (anyChanged) copy(appliesTo = newAppliesTo, restrictions = newRestrictions) else this
     }
 }
 
