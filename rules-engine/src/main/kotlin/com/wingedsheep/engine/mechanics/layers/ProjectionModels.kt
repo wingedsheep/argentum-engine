@@ -277,7 +277,7 @@ data class ContinuousEffect(
      * For an effect a permanent generates from a static ability another permanent's static grants
      * it (a Rune's Equipment generating "Equipped creature gets +1/+1"), the granting permanent.
      * The effect stops when the granter loses all abilities or [grantCondition] fails, because the
-     * holder then no longer has the ability (CR 611.3b). The holder's own ability loss is covered by
+     * holder then no longer has the ability (CR 604.2). The holder's own ability loss is covered by
      * [sourceId] being the holder. Null for every other effect.
      */
     val grantedBy: EntityId? = null,

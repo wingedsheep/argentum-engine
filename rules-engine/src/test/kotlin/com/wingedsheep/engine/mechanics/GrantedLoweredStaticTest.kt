@@ -68,11 +68,13 @@ class GrantedLoweredStaticTest : FunSpec({
         replaceState(next)
     }
 
+    /** A resolved "loses all abilities" from a third permanent (a self-sourced one would exempt its target). */
     fun GameTestDriver.loseAllAbilities(target: EntityId) {
+        val caster = putPermanentOnBattlefield(activePlayer!!, trinket.name)
         val result = services.effectExecutorRegistry.execute(
             state,
             Effects.RemoveAllAbilities(EffectTarget.ContextTarget(0)),
-            EffectContext(sourceId = target, controllerId = activePlayer!!, targets = listOf(ChosenTarget.Permanent(target)))
+            EffectContext(sourceId = caster, controllerId = activePlayer!!, targets = listOf(ChosenTarget.Permanent(target)))
         )
         result.error shouldBe null
         replaceState(result.state)
@@ -138,7 +140,9 @@ class GrantedLoweredStaticTest : FunSpec({
         d.isPumped(bears) shouldBe true
 
         d.loseAllAbilities(aura)
-        d.isPumped(bears) shouldBe false
+        // Both halves end — the granted keyword too, though the removal is newer than the grant.
+        d.state.projectedState.getPower(bears) shouldBe 2
+        d.state.projectedState.hasKeyword(bears, Keyword.TRAMPLE) shouldBe false
     }
 
     test("the effect ends when the holder loses its abilities") {
@@ -150,7 +154,8 @@ class GrantedLoweredStaticTest : FunSpec({
         d.attach(aura, gear)
 
         d.loseAllAbilities(gear)
-        d.isPumped(bears) shouldBe false
+        d.state.projectedState.getPower(bears) shouldBe 2
+        d.state.projectedState.hasKeyword(bears, Keyword.TRAMPLE) shouldBe false
     }
 
     test("granting a static that neither projects nor lowers fails loudly") {

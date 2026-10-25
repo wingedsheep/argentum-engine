@@ -57,8 +57,9 @@ data class GrantTriggeredAbility(
  *   grant's condition fails. A Rune's "As long as enchanted permanent is an Equipment, it has
  *   'Equipped creature gets +1/+1 and has trample'" is
  *   `ConditionalStaticAbility(GrantStaticAbility(CompositeStaticAbility(ModifyStats(1, 1),
- *   GrantKeyword(TRAMPLE)), Filters.EnchantedPermanent), Conditions.EnchantedPermanentMatches(Equipment))`
- *   — the inner statics' default attached-creature scope is read from the Equipment.
+ *   GrantKeyword(TRAMPLE))), Conditions.EnchantedPermanentMatches(Equipment))` — the default
+ *   attached scope makes the Equipment the holder, and the inner statics' own default attached
+ *   scope is then read from the Equipment.
  *
  * @property ability The static ability to grant.
  * @property filter The permanents that gain the ability, relative to the granting permanent.

@@ -18,7 +18,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
 
 /**
  * Rune of Might {1}{G}
- * Enchantment — Aura
+ * Enchantment — Aura Rune
  *
  * Enchant permanent
  * When this Aura enters, draw a card.
@@ -31,7 +31,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
 val RuneOfMight = card("Rune of Might") {
     manaCost = "{1}{G}"
     colorIdentity = "G"
-    typeLine = "Enchantment — Aura"
+    typeLine = "Enchantment — Aura Rune"
     oracleText = "Enchant permanent\n" +
         "When this Aura enters, draw a card.\n" +
         "As long as enchanted permanent is a creature, it gets +1/+1 and has trample.\n" +

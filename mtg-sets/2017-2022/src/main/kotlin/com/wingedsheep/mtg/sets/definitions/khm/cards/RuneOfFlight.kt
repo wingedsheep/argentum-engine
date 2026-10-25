@@ -16,7 +16,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
 
 /**
  * Rune of Flight {1}{U}
- * Enchantment — Aura
+ * Enchantment — Aura Rune
  *
  * Enchant permanent
  * When this Aura enters, draw a card.
@@ -29,7 +29,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
 val RuneOfFlight = card("Rune of Flight") {
     manaCost = "{1}{U}"
     colorIdentity = "U"
-    typeLine = "Enchantment — Aura"
+    typeLine = "Enchantment — Aura Rune"
     oracleText = "Enchant permanent\n" +
         "When this Aura enters, draw a card.\n" +
         "As long as enchanted permanent is a creature, it has flying.\n" +

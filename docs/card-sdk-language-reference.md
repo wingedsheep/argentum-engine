@@ -10057,7 +10057,9 @@ staticAbility {
   Conditions.EnchantedPermanentMatches(GameObjectFilter.Artifact.withSubtype(Subtype.EQUIPMENT)))` — the default
   attached scope makes the Equipment the holder, and the inner statics' default attached scope is then read from
   the Equipment, reaching whichever creature it equips. Granting a kind that neither projects nor lowers fails
-  loudly when the granter's statics are lowered.
+  loudly when the granter's statics are lowered. This holder-generation is the *static* grant's; a resolved
+  `Effects.GrantStaticAbility` lowers its ability on the holder by its own route (its step 3 in `StateProjector`)
+  and does not nest a further `GrantStaticAbility` inside it.
 - `GrantTriggeredAbility(ability, filter)` — "[filter] have '<triggered ability>'". On a battlefield-scoped
   `GroupFilter` it is the lord shape — Unctus, Grand Metatect's "Other blue creatures you control have 'Whenever
   this creature becomes tapped, draw a card, then discard a card'" is `GrantTriggeredAbility(<becomesTapped → loot>,

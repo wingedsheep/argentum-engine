@@ -106,6 +106,9 @@ internal class EffectSorter {
             (effectA.modification is Modification.GrantKeyword || effectA.modification is Modification.GrantStaticAbility)) {
             if (effectA.sourceId in effectB.affectedEntities ||
                 effectA.affectedEntities.any { it in effectB.affectedEntities }) return true
+            // A holder's effect from a granted static also exists only while its *granter* keeps
+            // its abilities (a Rune stripped of its abilities stops the Equipment's trample).
+            if (effectA.grantedBy != null && effectA.grantedBy in effectB.affectedEntities) return true
         }
         // An effect whose affected set reads keywords ("creatures with flying have vigilance")
         // depends on a same-layer effect that grants or removes one of those keywords

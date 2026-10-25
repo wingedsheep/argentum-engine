@@ -4706,7 +4706,7 @@
 {
     "name": "Rune of Flight",
     "manaCost": "{1}{U}",
-    "typeLine": "Enchantment — Aura",
+    "typeLine": "Enchantment — Aura Rune",
     "oracleText": "Enchant permanent\nWhen this Aura enters, draw a card.\nAs long as enchanted permanent is a creature, it has flying.\nAs long as enchanted permanent is an Equipment, it has \"Equipped creature has flying.\"",
     "script": {
         "triggeredAbilities": [
@@ -4776,7 +4776,7 @@
 {
     "name": "Rune of Might",
     "manaCost": "{1}{G}",
-    "typeLine": "Enchantment — Aura",
+    "typeLine": "Enchantment — Aura Rune",
     "oracleText": "Enchant permanent\nWhen this Aura enters, draw a card.\nAs long as enchanted permanent is a creature, it gets +1/+1 and has trample.\nAs long as enchanted permanent is an Equipment, it has \"Equipped creature gets +1/+1 and has trample.\"",
     "script": {
         "triggeredAbilities": [
