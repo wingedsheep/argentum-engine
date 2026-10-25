@@ -112,7 +112,9 @@ class GameLogWriter(
     fun humanize(state: GameState, text: String): String {
         // The acting player is already the line's label; other seat ids (attack targets, chosen
         // players) read as their label — server seat ids are UUIDs, not `eN`, so they get their own pass.
-        val t = PLAYER_FIELD.replace(NOISE.replace(NOISE.replace(text, ""), ""), "")
+        // A chosen player target's `playerId=` is the choice itself, so it is unwrapped before the strip.
+        val unwrapped = PLAYER_TARGET.replace(text, "Player(")
+        val t = PLAYER_FIELD.replace(NOISE.replace(NOISE.replace(unwrapped, ""), ""), "")
         return ENTITY.replace(seatPattern.replace(t) { m -> labels.getValue(EntityId(m.value)) }) { m ->
             nameOf(state, EntityId(m.value))
         }
@@ -155,6 +157,9 @@ class GameLogWriter(
 
     private companion object {
         val ENTITY = Regex("\\be\\d+\\b")
+
+        /** A `Player(playerId=…)` target or attack target, rendered as `Player(<seat>)`. */
+        val PLAYER_TARGET = Regex("\\bPlayer\\(playerId=")
 
         /** The `playerId=` field every action/decision opens with. */
         val PLAYER_FIELD = Regex("(?<=\\()playerId=[^,)]+(?:, )?|, playerId=[^,)]+")
