@@ -11073,6 +11073,155 @@
     ]
 }
 
+// Lolth, Spider Queen
+{
+    "name": "Lolth, Spider Queen",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Legendary Planeswalker — Lolth",
+    "oracleText": "Whenever a creature you control dies, put a loyalty counter on Lolth.\n0: You draw a card and you lose 1 life.\n−3: Create two 2/1 black Spider creature tokens with reach and menace.\n−8: You get an emblem with \"Whenever an opponent is dealt combat damage by one or more creatures you control, if that player lost less than 8 life this turn, they lose life equal to the difference.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lolth, Spider Queen:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "LOYALTY",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Lolth, Spider Queen:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 0
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Lolth, Spider Queen:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 2,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Spider"
+                    ],
+                    "keywords": [
+                        "REACH",
+                        "MENACE"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Lolth, Spider Queen:5",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -8
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "Lolth, Spider Queen:4",
+                        "trigger": "OneOrMoreDealCombatDamageToPlayerEvent",
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Subtract",
+                                "left": {
+                                    "type": "Fixed",
+                                    "amount": 8
+                                },
+                                "right": {
+                                    "type": "TurnTracking",
+                                    "player": "TriggeringPlayer",
+                                    "tracker": "LIFE_LOST_AMOUNT"
+                                }
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "TriggeringPlayer"
+                            }
+                        },
+                        "interveningIf": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "TurnTracking",
+                                "player": "TriggeringPlayer",
+                                "tracker": "LIFE_LOST_AMOUNT"
+                            },
+                            "operator": "LT",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 8
+                            }
+                        },
+                        "descriptionOverride": "Whenever an opponent is dealt combat damage by one or more creatures you control, if that player lost less than 8 life this turn, they lose life equal to the difference."
+                    },
+                    "descriptionOverride": "Whenever an opponent is dealt combat damage by one or more creatures you control, if that player lost less than 8 life this turn, they lose life equal to the difference."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You get an emblem with \"Whenever an opponent is dealt combat damage by one or more creatures you control, if that player lost less than 8 life this turn, they lose life equal to the difference.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "MYTHIC",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/420a5689-d73e-4dda-82fd-8b8897ff5b55.jpg?1783926491"
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Long Rest
 {
     "name": "Long Rest",

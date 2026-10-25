@@ -561,6 +561,59 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
         }
     }
 
+    context("combat-damage batch on a global ability (a planeswalker emblem)") {
+
+        // An emblem's trigger sits on no permanent, so it is outside the trigger index; the batch
+        // detector has to walk GameState.globalGrantedTriggeredAbilities itself (Lolth, Spider Queen).
+        fun withEmblem(driver: GameTestDriver, controller: com.wingedsheep.sdk.model.EntityId) {
+            val ability = com.wingedsheep.sdk.scripting.TriggeredAbility.create(
+                trigger = Triggers.oneOrMore(GameObjectFilter.Creature).dealCombatDamageToAPlayer(),
+                effect = LoseLifeEffect(1, EffectTarget.PlayerRef(Player.TriggeringPlayer)),
+                id = com.wingedsheep.sdk.scripting.AbilityId("test-emblem")
+            )
+            driver.replaceState(
+                driver.state.copy(
+                    globalGrantedTriggeredAbilities = listOf(
+                        GlobalGrantedTriggeredAbility(
+                            ability = ability,
+                            controllerId = controller,
+                            sourceId = controller,
+                            sourceName = "Test Emblem",
+                            duration = com.wingedsheep.sdk.scripting.Duration.Permanent
+                        )
+                    )
+                )
+            )
+        }
+
+        test("fires once for several of its controller's creatures hitting the same player") {
+            val driver = createDriver(birdCreature)
+            val birdA = driver.putCreatureOnBattlefield(driver.player1, "Test Sparrow")
+            val birdB = driver.putCreatureOnBattlefield(driver.player1, "Test Sparrow")
+            withEmblem(driver, driver.player1)
+
+            val events = listOf(
+                DamageDealtEvent(birdA, driver.player2, 1, isCombatDamage = true, targetIsPlayer = true),
+                DamageDealtEvent(birdB, driver.player2, 1, isCombatDamage = true, targetIsPlayer = true)
+            )
+            val triggers = detectorFor(driver).detectTriggers(driver.state, events)
+
+            triggers shouldHaveSize 1
+            triggers[0].controllerId shouldBe driver.player1
+            triggers[0].sourceName shouldBe "Test Emblem"
+            triggers[0].triggerContext.triggeringPlayerId shouldBe driver.player2
+        }
+
+        test("an opponent's creatures dealing combat damage don't fire it") {
+            val driver = createDriver(birdCreature)
+            val bird = driver.putCreatureOnBattlefield(driver.player2, "Test Sparrow")
+            withEmblem(driver, driver.player1)
+
+            val event = DamageDealtEvent(bird, driver.player1, 1, isCombatDamage = true, targetIsPlayer = true)
+            detectorFor(driver).detectTriggers(driver.state, listOf(event)).shouldBeEmpty()
+        }
+    }
+
     context("combat-damage batch: a source that died to the same damage (last-known information)") {
 
         test("a Bird that died before detection still fires Kastral from its snapshot") {

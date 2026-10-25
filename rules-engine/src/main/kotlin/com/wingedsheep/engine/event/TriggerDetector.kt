@@ -3738,101 +3738,108 @@ class TriggerDetector(
         }
         if (combatDamageByController.isEmpty()) return
 
-        for (entry in index.getEntitiesForCategory(TriggerCategory.COMBAT_DAMAGE_BATCH)) {
-            for (ability in entry.abilities) {
-                val trigger = ability.trigger
+        fun detect(ability: TriggeredAbility, sourceId: EntityId, sourceName: String, controllerId: EntityId) {
+            val trigger = ability.trigger
 
-                // Defensive variant: "one or more creatures deal combat damage to you" — group by
-                // the damaged player (the observer's controller) instead of the source controller.
-                if (trigger is EventPattern.OneOrMoreDealCombatDamageToYouEvent) {
-                    val controllerId = entry.controllerId
-                    val damageEvents = combatDamageByDamagedPlayer[controllerId] ?: continue
-                    val firstMatchingInfo = damageEvents.firstOrNull { info ->
-                        combatDamageSourceMatches(
-                            state, projected, info.sourceId, info.lastKnown, trigger.sourceFilter,
-                            PredicateContext(controllerId = controllerId, sourceId = entry.entityId)
-                        )
-                    }
-                    if (firstMatchingInfo != null) {
-                        triggers.add(
-                            PendingTrigger(
-                                ability = ability,
-                                sourceId = entry.entityId,
-                                sourceName = entry.cardComponent.name,
-                                controllerId = controllerId,
-                                triggerContext = TriggerContext(triggeringEntityId = firstMatchingInfo.sourceId)
-                            )
-                        )
-                    }
-                    continue
-                }
-
-                // "One or more of your opponents are dealt combat damage" — keyed on the damaged
-                // players, any source: one trigger per batch however many opponents were hit.
-                if (trigger is EventPattern.OpponentsDealtCombatDamageEvent) {
-                    val controllerId = entry.controllerId
-                    val hit = combatDamageByDamagedPlayer.entries
-                        .firstOrNull { (playerId, _) -> state.isOpponentOf(playerId, controllerId) }
-                        ?: continue
-                    triggers.add(
-                        PendingTrigger(
-                            ability = ability,
-                            sourceId = entry.entityId,
-                            sourceName = entry.cardComponent.name,
-                            controllerId = controllerId,
-                            triggerContext = TriggerContext(
-                                triggeringEntityId = hit.value.first().sourceId,
-                                triggeringPlayerId = hit.key
-                            )
-                        )
-                    )
-                    continue
-                }
-
-                if (trigger !is EventPattern.OneOrMoreDealCombatDamageToPlayerEvent) continue
-
-                val controllerId = entry.controllerId
-                val damageEvents = combatDamageByController[controllerId] ?: continue
-
-                // Find every matching damage event. Damage events are already grouped by source
-                // controller and matched to observers with the same controller, so "you control"
-                // is satisfied; we still run the full filter via the canonical evaluator so state
-                // predicates (e.g. +1/+1 counters) and any other card/controller predicates are
-                // honored — not just the handful of card predicates handled inline.
-                val matchingInfos = damageEvents.filter { info ->
-                    if (info.toBattle && !trigger.orBattle) return@filter false
+            // Defensive variant: "one or more creatures deal combat damage to you" — group by
+            // the damaged player (the observer's controller) instead of the source controller.
+            if (trigger is EventPattern.OneOrMoreDealCombatDamageToYouEvent) {
+                val damageEvents = combatDamageByDamagedPlayer[controllerId] ?: return
+                val firstMatchingInfo = damageEvents.firstOrNull { info ->
                     combatDamageSourceMatches(
                         state, projected, info.sourceId, info.lastKnown, trigger.sourceFilter,
-                        PredicateContext(controllerId = controllerId, sourceId = entry.entityId)
+                        PredicateContext(controllerId = controllerId, sourceId = sourceId)
                     )
                 }
-
-                // "deal combat damage to a player" batches per damaged player: the ability
-                // triggers once for each player dealt combat damage by one or more matching
-                // creatures (multiple matching creatures hitting the same player still fire a
-                // single trigger). `triggeringPlayerId` is set to the damaged player so effects
-                // can reference "that player" (Vaan, Street Thief); `triggeringEntityId` is an
-                // arbitrary matching source for that player — batch triggers don't dispatch
-                // per source, so cards needing per-source dispatch use a singular trigger event.
-                // The "or battle" variant also fires once per battle hit (no triggering player).
-                // Either way the matching sources that hit that recipient are captured, so a
-                // payoff can act on "those creatures" (Zurgo and Ojutai).
-                for ((recipientId, infos) in matchingInfos.groupBy { it.targetPlayerId }) {
+                if (firstMatchingInfo != null) {
                     triggers.add(
                         PendingTrigger(
                             ability = ability,
-                            sourceId = entry.entityId,
-                            sourceName = entry.cardComponent.name,
+                            sourceId = sourceId,
+                            sourceName = sourceName,
                             controllerId = controllerId,
-                            triggerContext = TriggerContext(
-                                triggeringEntityId = infos.first().sourceId,
-                                triggeringPlayerId = recipientId.takeUnless { infos.first().toBattle },
-                                capturedEntityIds = infos.map { it.sourceId }.distinct()
-                            )
+                            triggerContext = TriggerContext(triggeringEntityId = firstMatchingInfo.sourceId)
                         )
                     )
                 }
+                return
             }
+
+            // "One or more of your opponents are dealt combat damage" — keyed on the damaged
+            // players, any source: one trigger per batch however many opponents were hit.
+            if (trigger is EventPattern.OpponentsDealtCombatDamageEvent) {
+                val hit = combatDamageByDamagedPlayer.entries
+                    .firstOrNull { (playerId, _) -> state.isOpponentOf(playerId, controllerId) }
+                    ?: return
+                triggers.add(
+                    PendingTrigger(
+                        ability = ability,
+                        sourceId = sourceId,
+                        sourceName = sourceName,
+                        controllerId = controllerId,
+                        triggerContext = TriggerContext(
+                            triggeringEntityId = hit.value.first().sourceId,
+                            triggeringPlayerId = hit.key
+                        )
+                    )
+                )
+                return
+            }
+
+            if (trigger !is EventPattern.OneOrMoreDealCombatDamageToPlayerEvent) return
+
+            val damageEvents = combatDamageByController[controllerId] ?: return
+
+            // Find every matching damage event. Damage events are already grouped by source
+            // controller and matched to observers with the same controller, so "you control"
+            // is satisfied; we still run the full filter via the canonical evaluator so state
+            // predicates (e.g. +1/+1 counters) and any other card/controller predicates are
+            // honored — not just the handful of card predicates handled inline.
+            val matchingInfos = damageEvents.filter { info ->
+                if (info.toBattle && !trigger.orBattle) return@filter false
+                combatDamageSourceMatches(
+                    state, projected, info.sourceId, info.lastKnown, trigger.sourceFilter,
+                    PredicateContext(controllerId = controllerId, sourceId = sourceId)
+                )
+            }
+
+            // "deal combat damage to a player" batches per damaged player: the ability
+            // triggers once for each player dealt combat damage by one or more matching
+            // creatures (multiple matching creatures hitting the same player still fire a
+            // single trigger). `triggeringPlayerId` is set to the damaged player so effects
+            // can reference "that player" (Vaan, Street Thief); `triggeringEntityId` is an
+            // arbitrary matching source for that player — batch triggers don't dispatch
+            // per source, so cards needing per-source dispatch use a singular trigger event.
+            // The "or battle" variant also fires once per battle hit (no triggering player).
+            // Either way the matching sources that hit that recipient are captured, so a
+            // payoff can act on "those creatures" (Zurgo and Ojutai).
+            for ((recipientId, infos) in matchingInfos.groupBy { it.targetPlayerId }) {
+                triggers.add(
+                    PendingTrigger(
+                        ability = ability,
+                        sourceId = sourceId,
+                        sourceName = sourceName,
+                        controllerId = controllerId,
+                        triggerContext = TriggerContext(
+                            triggeringEntityId = infos.first().sourceId,
+                            triggeringPlayerId = recipientId.takeUnless { infos.first().toBattle },
+                            capturedEntityIds = infos.map { it.sourceId }.distinct()
+                        )
+                    )
+                )
+            }
+        }
+
+        for (entry in index.getEntitiesForCategory(TriggerCategory.COMBAT_DAMAGE_BATCH)) {
+            for (ability in entry.abilities) {
+                detect(ability, entry.entityId, entry.cardComponent.name, entry.controllerId)
+            }
+        }
+        // A global ability (a planeswalker emblem's "whenever an opponent is dealt combat damage by
+        // one or more creatures you control", Lolth, Spider Queen) sits on no permanent, so it is
+        // outside the trigger index and joins the same batches here.
+        for (global in state.globalGrantedTriggeredAbilities) {
+            detect(global.ability, global.sourceId, global.sourceName, global.controllerId)
         }
     }
 
