@@ -67,6 +67,9 @@ data class AnimateLandEffect(
  * @property creatureTypes Creature subtypes to *set*, replacing all existing subtypes (e.g.,
  *   "Dragon"; "Fractal" loses all other creature types — Layer 4 set effect)
  * @property removeTypes Types to remove (e.g., "PLANESWALKER")
+ * @property removeSubtypes Subtypes to remove, keeping every other subtype — "it isn't an
+ *   Equipment" when an Equipment animates itself (Dancing Sword). Card types go in [removeTypes];
+ *   replacing *all* creature subtypes is [creatureTypes].
  * @property colors Colors to set, replacing all existing colors (null = keep existing). An explicit
  *   set loses all other colors (e.g. green+blue for a Fractal).
  * @property imageUri Optional *display-only* card-image override shown for the animated permanent
@@ -105,7 +108,8 @@ data class BecomeCreatureEffect(
      */
     val dynamicPower: DynamicAmount? = null,
     /** Optional dynamic base toughness — see [dynamicPower]. */
-    val dynamicToughness: DynamicAmount? = null
+    val dynamicToughness: DynamicAmount? = null,
+    val removeSubtypes: Set<String> = emptySet()
 ) : Effect {
     override val description: String = buildString {
         val ptText = if (dynamicPower != null && dynamicToughness != null) "*/*"

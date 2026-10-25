@@ -380,6 +380,15 @@ sealed interface Modification {
     }
 
     /**
+     * Remove one subtype, leaving every other type and subtype alone — "it isn't an Equipment"
+     * (Dancing Sword). The removal counterpart of [AddSubtype].
+     */
+    @Serializable
+    data class RemoveSubtype(val subtype: String) : Modification {
+        override val layer get() = Layer.TYPE
+    }
+
+    /**
      * Add a subtype (also adds to types set).
      * Used for effects like "is a Wall in addition to its other creature types."
      */

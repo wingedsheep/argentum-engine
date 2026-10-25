@@ -92,4 +92,20 @@ class FloatingEffectSerializationRoundTripTest : FunSpec({
         val encoded = json.encodeToString(ActiveFloatingEffect.serializer(), effect)
         json.decodeFromString(ActiveFloatingEffect.serializer(), encoded) shouldBe effect
     }
+    test("an ActiveFloatingEffect carrying RemoveSubtype round-trips through persistence-shaped JSON") {
+        val effect = ActiveFloatingEffect(
+            id = EntityId("floating-3"),
+            effect = FloatingEffectData(
+                layer = Layer.TYPE,
+                modification = SerializableModification.RemoveSubtype("Equipment"),
+                affectedEntities = setOf(EntityId("sword-1"))
+            ),
+            duration = Duration.Permanent,
+            sourceId = EntityId("sword-1"),
+            controllerId = EntityId("player-1"),
+            timestamp = 44L
+        )
+        val encoded = json.encodeToString(ActiveFloatingEffect.serializer(), effect)
+        json.decodeFromString(ActiveFloatingEffect.serializer(), encoded) shouldBe effect
+    }
 })

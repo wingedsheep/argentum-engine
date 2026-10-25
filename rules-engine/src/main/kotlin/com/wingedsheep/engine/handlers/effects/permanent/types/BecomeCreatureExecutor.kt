@@ -72,6 +72,17 @@ class BecomeCreatureExecutor(
             )
         }
 
+        // Layer 4 (TYPE): Remove specified subtypes, keeping the rest ("it isn't an Equipment")
+        for (subtype in effect.removeSubtypes) {
+            newState = newState.addFloatingEffect(
+                layer = Layer.TYPE,
+                modification = SerializableModification.RemoveSubtype(subtype),
+                affectedEntities = affectedEntities,
+                duration = effect.duration,
+                context = context
+            )
+        }
+
         // Layer 4 (TYPE): Set creature subtypes
         if (effect.creatureTypes.isNotEmpty()) {
             newState = newState.addFloatingEffect(

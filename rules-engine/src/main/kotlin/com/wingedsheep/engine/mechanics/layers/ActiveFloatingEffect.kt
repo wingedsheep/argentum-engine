@@ -434,6 +434,13 @@ sealed interface SerializableModification {
     data class AddSubtype(val subtype: String) : SerializableModification
 
     /**
+     * Remove one subtype, keeping the rest — "it isn't an Equipment" when an Equipment animates
+     * itself (Dancing Sword, via [com.wingedsheep.sdk.scripting.effects.BecomeCreatureEffect.removeSubtypes]).
+     */
+    @Serializable
+    data class RemoveSubtype(val subtype: String) : SerializableModification
+
+    /**
      * Set a permanent's basic land subtypes, replacing all existing land subtypes
      * (Rule 305.7). The one-shot counterpart to the [SetEnchantedLandType] static
      * ability. Used by "target land becomes the basic land type of your choice"
@@ -925,6 +932,7 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.PreventAllCombatDamage -> Modification.NoOp
     is SerializableModification.SetCreatureSubtypes -> Modification.SetCreatureSubtypes(subtypes)
     is SerializableModification.AddSubtype -> Modification.AddSubtype(subtype)
+    is SerializableModification.RemoveSubtype -> Modification.RemoveSubtype(subtype)
     is SerializableModification.SetName -> Modification.SetName(name)
     is SerializableModification.SetCardTypes -> Modification.SetCardTypes(types)
     is SerializableModification.SetAllSubtypes -> Modification.SetAllSubtypes(subtypes)

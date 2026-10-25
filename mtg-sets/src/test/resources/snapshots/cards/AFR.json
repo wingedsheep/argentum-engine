@@ -2405,6 +2405,121 @@
     ]
 }
 
+// Dancing Sword
+{
+    "name": "Dancing Sword",
+    "manaCost": "{1}{W}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +2/+1.\nWhen equipped creature dies, you may have this Equipment become a 2/1 Construct artifact creature with flying and ward {1}. If you do, it isn't an Equipment. (Whenever it becomes the target of a spell or ability an opponent controls, counter it unless that player pays {1}.)\nEquip {1}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dancing Sword:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "BecomeCreature",
+                                "power": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "toughness": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "keywords": [
+                                    "FLYING"
+                                ],
+                                "creatureTypes": [
+                                    "Construct"
+                                ],
+                                "duration": "Permanent",
+                                "removeSubtypes": [
+                                    "Equipment"
+                                ]
+                            },
+                            {
+                                "type": "GrantStaticAbility",
+                                "ability": {
+                                    "type": "GrantWard",
+                                    "cost": {
+                                        "type": "WardCost.Mana",
+                                        "manaCost": "{1}"
+                                    },
+                                    "filter": {
+                                        "baseFilter": "permanent",
+                                        "scope": "Self"
+                                    }
+                                },
+                                "target": "Self",
+                                "duration": "Permanent"
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "You may have this Equipment become a 2/1 Construct artifact creature with flying and ward {1}. If you do, it isn't an Equipment."
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Dancing Sword:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "RARE",
+        "artist": "Wisnu Tan",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c3d7824-1297-408c-a11f-0622cab9c4c3.jpg?1783926537"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Dawnbringer Cleric
 {
     "name": "Dawnbringer Cleric",
