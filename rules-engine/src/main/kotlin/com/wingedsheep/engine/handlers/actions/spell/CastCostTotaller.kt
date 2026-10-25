@@ -194,7 +194,8 @@ internal class CastCostTotaller(
             effectiveCost = costCalculator.withOptionalPayments(action.optionalCostPayments).applyOptionalPayments(
                 state, spell, action.playerId, effectiveCost, action.targets.map { it.toEntityId() },
                 castSourceZone(state, action.cardId), action.declaredCostSlot,
-                (action.paymentStrategy as? com.wingedsheep.engine.core.PaymentStrategy.Explicit)?.phyrexianLifePayments.orEmpty())
+                (action.paymentStrategy as? com.wingedsheep.engine.core.PaymentStrategy.Explicit)?.phyrexianLifePayments.orEmpty(),
+                announcedX = action.xValue)
         }
         return effectiveCost
     }
@@ -322,6 +323,7 @@ internal class CastCostTotaller(
                 declaredCostSlot = action.declaredCostSlot,
                 baseCost = checkNotNull(fixedAlternativeManaCost(state, action)),
                 card = cardDef,
+                announcedX = action.xValue,
             )
             action.useAlternativeCost && action.alternativeCostType == AlternativeCostType.ESCAPE && cardDef != null -> {
                 val escape = EscapeCasts.effectiveEscape(
@@ -332,6 +334,7 @@ internal class CastCostTotaller(
                     state, spell, action.playerId, action.targets.map { it.toEntityId() },
                     fromZone = Zone.GRAVEYARD, declaredCostSlot = action.declaredCostSlot,
                     baseCost = withAnnouncedX(escape.cost, action, cardDef), card = cardDef,
+                    announcedX = action.xValue,
                 )
             }
             castFace != null && cardDef != null ->
@@ -343,6 +346,7 @@ internal class CastCostTotaller(
                     action.targets.map { it.toEntityId() },
                     fromZone = if (castingFromCommandZone) Zone.COMMAND else castSourceZone(state, action.cardId),
                     declaredCostSlot = action.declaredCostSlot,
+                    announcedX = action.xValue,
                 )
             action.useAlternativeCost && cardDef != null ->
                 alternativeBases.firstNotNullOfOrNull { (type, base) ->
@@ -368,6 +372,9 @@ internal class CastCostTotaller(
                     // it's bargained" reduction is gated on the declaration (CR 702.166).
                     declaredCostSlot = action.declaredCostSlot,
                     baseCost = withAnnouncedX(cardDef.manaCost, action, cardDef),
+                    // CR 202.3e: the spell is on the stack as its cost is determined, so a filter on
+                    // its mana value ("mana value 5 or greater", Spectacle Mage) counts the X.
+                    announcedX = action.xValue,
                 )
             }
             else -> cardComponent.manaCost
@@ -415,6 +422,7 @@ internal class CastCostTotaller(
             state, cardDef, base, playerId, action.targets.map { it.toEntityId() },
             fromZone = if (zoneResolver.hasCommanderCastPermission(state, playerId, cardId)) Zone.COMMAND
                 else castSourceZone(state, cardId),
+            announcedX = action.xValue,
         )
 
     /**
@@ -472,7 +480,7 @@ internal class CastCostTotaller(
             zoneResolver.modalBackCastFace(state, playerId, cardId)?.let { back ->
                 costCalculator.calculateEffectiveCost(
                     state, back, playerId, action.targets.map { it.toEntityId() },
-                    declaredCostSlot = action.declaredCostSlot, card = cardDef,
+                    declaredCostSlot = action.declaredCostSlot, card = cardDef, announcedX = action.xValue,
                 )
             }
         },
@@ -501,7 +509,8 @@ internal class CastCostTotaller(
                         chosenTargets = action.targets.map { target -> target.toEntityId() },
                         fromZone = if (zoneResolver.hasCommanderCastPermission(state, playerId, cardId)) Zone.COMMAND else castSourceZone(state, cardId),
                         declaredCostSlot = action.declaredCostSlot,
-                        baseCost = action.xValue?.let { x -> it.cost.withXAs(x) } ?: it.cost)
+                        baseCost = action.xValue?.let { x -> it.cost.withXAs(x) } ?: it.cost,
+                        announcedX = action.xValue)
                 }
             } else null
         },

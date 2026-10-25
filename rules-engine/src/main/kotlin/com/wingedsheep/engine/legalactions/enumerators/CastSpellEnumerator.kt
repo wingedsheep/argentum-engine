@@ -668,8 +668,17 @@ class CastSpellEnumerator(
                 } else 0
                 val fixedCost = effectiveCost.cmc  // X contributes 0 to CMC
                 val xSymbolCount = effectiveCost.xCount.coerceAtLeast(1)
-                ((availableSources + delveAvailable + waterbendAvailable + convokeAvailable + improviseAvailable + xCredit + reducingXCredit - fixedCost) / xSymbolCount)
-                    .coerceAtLeast(0)
+                val payable = availableSources + delveAvailable + waterbendAvailable + convokeAvailable + improviseAvailable + xCredit + reducingXCredit - fixedCost
+                val linearMaxX = (payable / xSymbolCount).coerceAtLeast(0)
+                // A modifier keyed to mana value starts or stops matching as the X grows (CR
+                // 202.3e: on the stack the X counts) — Spectacle Mage's discount reaches an X the
+                // X-blind price can't. Price each X from the furthest it could reach downward.
+                val mvBound = context.costCalculator.manaValueSensitiveBound(state, cardDef, playerId)
+                if (mvBound == null) linearMaxX else {
+                    (linearMaxX + mvBound / xSymbolCount + 1 downTo 0).firstOrNull { x ->
+                        xSymbolCount * x + context.costCalculator.announcedXPriceShift(state, cardDef, playerId, cardId, x) <= payable
+                    } ?: 0
+                }
             } else null
 
             val affordableX = listOfNotNull(manaMaxX, counterMaxX).minOrNull()

@@ -256,7 +256,7 @@ internal class CastValidator(
             val fromZone = castCostTotaller.castSourceZone(state, action.cardId)
             for (payment in action.optionalCostPayments) {
                 if (!costCalculator.optionalPaymentApplies(state, payment, spell, action.playerId, fromZone,
-                    action.targets.map { it.toEntityId() }, action.declaredCostSlot)) return "Optional cost is not available for this spell"
+                    action.targets.map { it.toEntityId() }, action.declaredCostSlot, action.xValue)) return "Optional cost is not available for this spell"
             }
             val life = action.optionalCostPayments.sumOf { costCalculator.optionalModifier(state, it)?.optionalLifePayment ?: 0 }
             if (!state.canPayLife(action.playerId, life, LifePaymentPurpose.CAST_SPELL)) return "Cannot pay optional life cost"

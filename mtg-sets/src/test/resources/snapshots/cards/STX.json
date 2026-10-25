@@ -20063,6 +20063,46 @@
     ]
 }
 
+// Spectacle Mage
+{
+    "name": "Spectacle Mage",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Creature — Bird Shaman",
+    "oracleText": "Flying\nInstant and sorcery spells you cast with mana value 5 or greater cost {1} less to cast.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "instant|sorcery mv>=5"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "235",
+        "artist": "Caroline Gariba",
+        "flavorText": "\"It would be a crime to withhold my light from the world.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f74223e1-b66b-42fa-aaac-001f5dab2aac.jpg?1783927290"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Specter of the Fens
 {
     "name": "Specter of the Fens",
