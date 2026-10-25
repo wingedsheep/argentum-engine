@@ -1346,6 +1346,90 @@
     ]
 }
 
+// Cave of the Frost Dragon
+{
+    "name": "Cave of the Frost Dragon",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "If you control two or more other lands, this land enters tapped.\n{T}: Add {W}.\n{4}{W}: This land becomes a 3/4 white Dragon creature with flying until end of turn. It's still a land.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Cave of the Frost Dragon:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Cave of the Frost Dragon:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "creatureTypes": [
+                        "Dragon"
+                    ],
+                    "colors": [
+                        "WHITE"
+                    ]
+                },
+                "descriptionOverride": "{4}{W}: This land becomes a 3/4 white Dragon creature with flying until end of turn. It's still a land."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersTapped",
+                "unlessCondition": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "land",
+                            "excludeSelf": true
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "253",
+        "rarity": "RARE",
+        "artist": "Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bdb41396-5008-4a5f-92ca-54ecac42e926.jpg?1783926436"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Celestial Unicorn
 {
     "name": "Celestial Unicorn",
@@ -2939,6 +3023,114 @@
         "flavorText": "The good will be corrupted, the kind will be devoured, and all will be dragged into the bottomless Abyss.",
         "imageUri": "https://cards.scryfall.io/normal/front/5/8/581e7ac6-65e5-4a16-ab0b-0988c3a3cfea.jpg?1783926498"
     }
+}
+
+// Den of the Bugbear
+{
+    "name": "Den of the Bugbear",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "If you control two or more other lands, this land enters tapped.\n{T}: Add {R}.\n{3}{R}: Until end of turn, this land becomes a 3/2 red Goblin creature with \"Whenever this creature attacks, create a 1/1 red Goblin creature token that's tapped and attacking.\" It's still a land.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Den of the Bugbear:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Den of the Bugbear:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "BecomeCreature",
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "creatureTypes": [
+                                "Goblin"
+                            ],
+                            "colors": [
+                                "RED"
+                            ]
+                        },
+                        {
+                            "type": "GrantTriggeredAbility",
+                            "ability": {
+                                "id": "Den of the Bugbear:2",
+                                "trigger": "AttackEvent",
+                                "effect": {
+                                    "type": "CreateToken",
+                                    "power": 1,
+                                    "toughness": 1,
+                                    "colors": [
+                                        "RED"
+                                    ],
+                                    "creatureTypes": [
+                                        "Goblin"
+                                    ],
+                                    "tapped": true,
+                                    "attacking": true
+                                },
+                                "descriptionOverride": "Whenever this creature attacks, create a 1/1 red Goblin creature token that's tapped and attacking."
+                            },
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{3}{R}: Until end of turn, this land becomes a 3/2 red Goblin creature with \"Whenever this creature attacks, create a 1/1 red Goblin creature token that's tapped and attacking.\" It's still a land."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersTapped",
+                "unlessCondition": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "land",
+                            "excludeSelf": true
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "254",
+        "rarity": "RARE",
+        "artist": "Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f231caf8-56c0-4719-a90d-5e5efbee3148.jpg?1783926435"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Devoted Paladin
@@ -4765,6 +4957,110 @@
     ]
 }
 
+// Fifty Feet of Rope
+{
+    "name": "Fifty Feet of Rope",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "Climb Over — {T}: Target Wall can't block this turn.\nTie Up — {3}, {T}: Target creature doesn't untap during its controller's next untap step.\nRappel Down — {4}, {T}: Venture into the dungeon. Activate only as a sorcery. (Enter the first room or advance to the next room.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Fifty Feet of Rope:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "CantBlockTargetCreatures",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature Wall"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            },
+            {
+                "id": "Fifty Feet of Rope:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DOESNT_UNTAP",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "duration": "UntilAfterAffectedControllersNextUntap"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            },
+            {
+                "id": "Fifty Feet of Rope:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": "VentureIntoTheDungeon",
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "244",
+        "rarity": "UNCOMMON",
+        "artist": "Andrew Mar",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba7ebe7b-732f-4245-a194-e087c3878f61.jpg?1783926439",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "Activating the Climb Over ability after a Wall has blocked won't change or undo that block."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "The Tie Up ability doesn't tap the creature, it just prevents it from untapping if it is already tapped or becomes tapped through some other means."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Choosing the dungeon or room to venture into is part of resolving the venture into the dungeon keyword action. Once that choice is made, players may not respond until after the appropriate room ability has triggered."
+            }
+        ]
+    }
+}
+
 // Find the Path
 {
     "name": "Find the Path",
@@ -6261,6 +6557,127 @@
     ]
 }
 
+// Hive of the Eye Tyrant
+{
+    "name": "Hive of the Eye Tyrant",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "If you control two or more other lands, this land enters tapped.\n{T}: Add {B}.\n{3}{B}: Until end of turn, this land becomes a 3/3 black Beholder creature with menace and \"Whenever this creature attacks, exile target card from defending player's graveyard.\" It's still a land.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hive of the Eye Tyrant:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Hive of the Eye Tyrant:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "BecomeCreature",
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "keywords": [
+                                "MENACE"
+                            ],
+                            "creatureTypes": [
+                                "Beholder"
+                            ],
+                            "colors": [
+                                "BLACK"
+                            ]
+                        },
+                        {
+                            "type": "GrantTriggeredAbility",
+                            "ability": {
+                                "id": "Hive of the Eye Tyrant:2",
+                                "trigger": "AttackEvent",
+                                "effect": {
+                                    "type": "MoveToZone",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "destination": "Exile"
+                                },
+                                "targetRequirement": {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": {
+                                            "controllerPredicate": {
+                                                "type": "OwnedByReferencedPlayer",
+                                                "target": {
+                                                    "type": "PlayerRef",
+                                                    "player": "DefendingPlayer"
+                                                }
+                                            }
+                                        },
+                                        "zone": "Graveyard"
+                                    },
+                                    "id": "t0"
+                                }
+                            },
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{3}{B}: Until end of turn, this land becomes a 3/3 black Beholder creature with menace and \"Whenever this creature attacks, exile target card from defending player's graveyard.\" It's still a land."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersTapped",
+                "unlessCondition": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "land",
+                            "excludeSelf": true
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "258",
+        "rarity": "RARE",
+        "artist": "Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9eb391dc-0378-4793-a5de-899b09792a4b.jpg?1783926433"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Hoard Robber
 {
     "name": "Hoard Robber",
@@ -7116,6 +7533,35 @@
     ]
 }
 
+// Iron Golem
+{
+    "name": "Iron Golem",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "Vigilance\nThis creature attacks or blocks each combat if able.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "staticAbilities": [
+            "MustAttack",
+            "MustBlock"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "247",
+        "rarity": "UNCOMMON",
+        "artist": "Nicholas Gregory",
+        "flavorText": "Once an iron golem is set to a task, it won't turn aside until that task is complete or it has been destroyed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5ae24ef5-b12c-48ee-935a-00e048fb8d0f.jpg?1783926437"
+    },
+    "colorIdentityOverride": []
+}
+
 // Jaded Sell-Sword
 {
     "name": "Jaded Sell-Sword",
@@ -7271,6 +7717,70 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Leather Armor
+{
+    "name": "Leather Armor",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +0/+1 and has ward {1}. (Whenever equipped creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {1}.)\nEquip {0}. Activate only once each turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Leather Armor:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{0}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "restrictions": [
+                    "OncePerTurn"
+                ],
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 0,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantWard",
+                "cost": {
+                    "type": "WardCost.Mana",
+                    "manaCost": "{1}"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "248",
+        "artist": "Martina Pilcerova",
+        "flavorText": "Lightweight, flexible, and protective.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e62d4e76-cdb0-48c7-aa1c-b1f514057b68.jpg?1783926437"
+    },
+    "colorIdentityOverride": []
 }
 
 // Lightfoot Rogue
@@ -7847,6 +8357,71 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Mimic
+{
+    "name": "Mimic",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Treasure",
+    "oracleText": "{T}, Sacrifice this artifact: Add one mana of any color.\n{2}: This artifact becomes a Shapeshifter artifact creature with base power and toughness 3/3 until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mimic:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Mimic:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "creatureTypes": [
+                        "Shapeshifter"
+                    ]
+                },
+                "descriptionOverride": "{2}: This artifact becomes a 3/3 Shapeshifter artifact creature until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "249",
+        "artist": "Scott Murphy",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9da96aab-cf84-4150-b9d0-a4b84fcf585f.jpg?1783926437",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "If an effect refers to a Treasure, it means any Treasure artifact, not just a Treasure artifact token."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Mimic is still a Treasure after its last ability resolves, but Treasure is an artifact type, never a creature type."
+            }
+        ]
+    }
 }
 
 // Monk of the Open Hand
@@ -8643,6 +9218,83 @@
     ]
 }
 
+// Plate Armor
+{
+    "name": "Plate Armor",
+    "manaCost": "{2}{W}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +3/+3 and has ward {1}. (Whenever equipped creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {1}.)\nEquip {3}. This ability costs {1} less to activate for each other Equipment you control. ({3}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Plate Armor:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true,
+                "genericCostReduction": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "artifact Equipment",
+                    "excludeSelf": true
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 3
+            },
+            {
+                "type": "GrantWard",
+                "cost": {
+                    "type": "WardCost.Mana",
+                    "manaCost": "{1}"
+                }
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "32",
+        "rarity": "UNCOMMON",
+        "artist": "Martina Pilcerova",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/ad447e50-cfb1-40df-ae01-a65c46f2f572.jpg?1783926524",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "If a creature with ward is equipped with Plate Armor, becoming the target of a spell or ability an opponent controls will cause both ward abilities to trigger."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If a player casts a spell that targets multiple permanents their opponent controls with ward, each of those ward abilities will trigger. If that player doesn't pay for all of them, the spell will be countered."
+            }
+        ]
+    }
+}
+
 // Portable Hole
 {
     "name": "Portable Hole",
@@ -9277,6 +9929,101 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Reaper's Talisman
+{
+    "name": "Reaper's Talisman",
+    "manaCost": "{B}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Whenever equipped creature attacks, it gains deathtouch until end of turn.\nWhenever equipped creature attacks alone, defending player loses 2 life and you gain 2 life.\nEquip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Reaper's Talisman:1",
+                "trigger": "AttackEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DEATHTOUCH",
+                    "target": "TriggeringEntity"
+                }
+            },
+            {
+                "id": "Reaper's Talisman:2",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        "AttacksAlone"
+                    ]
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "DefendingPlayer"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Reaper's Talisman:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "117",
+        "rarity": "UNCOMMON",
+        "artist": "Olena Richards",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/93b68168-e77d-4745-9393-726ef9fb72ec.jpg?1783926490"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -10053,6 +10800,247 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Spare Dagger
+{
+    "name": "Spare Dagger",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+0 and has \"Whenever this creature attacks, you may sacrifice Spare Dagger. When you do, this creature deals 1 damage to any target.\"\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Spare Dagger:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Spare Dagger:1",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "ReflexiveTrigger",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "SelectTarget",
+                                    "requirement": {
+                                        "type": "TargetObject",
+                                        "filter": {
+                                            "baseFilter": {
+                                                "cardPredicates": [
+                                                    "IsArtifact",
+                                                    {
+                                                        "type": "NameEquals",
+                                                        "name": "Spare Dagger"
+                                                    }
+                                                ],
+                                                "statePredicates": [
+                                                    "IsAttachedToSource"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "storeAs": "target0",
+                                    "nonTargeting": true,
+                                    "prompt": "Sacrifice Spare Dagger"
+                                },
+                                {
+                                    "type": "SacrificeTarget",
+                                    "target": {
+                                        "type": "PipelineTarget",
+                                        "collectionName": "target0"
+                                    }
+                                }
+                            ]
+                        },
+                        "reflexiveEffect": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        "reflexiveTargetRequirements": [
+                            {
+                                "type": "AnyTarget",
+                                "id": "t0"
+                            }
+                        ],
+                        "descriptionOverride": "You may sacrifice Spare Dagger. When you do, this creature deals 1 damage to any target."
+                    }
+                }
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "250",
+        "artist": "Khurrum",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/ab6b0291-00f8-45bf-9f3a-ee43739c2b77.jpg?1783926437"
+    },
+    "colorIdentityOverride": []
+}
+
+// Spiked Pit Trap
+{
+    "name": "Spiked Pit Trap",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "Flash\n{5}, {T}, Sacrifice this artifact: Choose target creature, then roll a d20.\n1—9 | This artifact deals 5 damage to that creature.\n10—20 | This artifact deals 5 damage to that creature. Create a Treasure token.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Spiked Pit Trap:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RollDice",
+                            "sides": 20,
+                            "storeTotalAs": "diceResult0"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult0"
+                                    },
+                                    "operator": "LTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 9
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult0"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 10
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "DealDamage",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 5
+                                        },
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    {
+                                        "type": "CreatePredefinedToken",
+                                        "tokenType": "Treasure"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Roll a d20. 1—9: this artifact deals 5 damage to target creature. 10—20: this artifact deals 5 damage to that creature and you create a Treasure token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "251",
+        "artist": "Deruchenko Alexander",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/59fbf45a-23b4-4d06-abd9-4cc3895cb29d.jpg?1783926437"
+    }
 }
 
 // Spoils of the Hunt
@@ -10841,6 +11829,343 @@
     ]
 }
 
+// Thieves' Tools
+{
+    "name": "Thieves' Tools",
+    "manaCost": "{1}{B}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "When this Equipment enters, create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")\nEquipped creature can't be blocked as long as its power is 3 or less.\nEquip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thieves' Tools:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Thieves' Tools:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedWhilePropertyAtMost",
+                "maxValue": 3,
+                "properties": [
+                    "Power"
+                ],
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "122",
+        "artist": "Deruchenko Alexander",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f50b922e-32dd-4645-b6f4-c07d1a0c70fc.jpg?1783926487"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Treasure Chest
+{
+    "name": "Treasure Chest",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{4}, Sacrifice this artifact: Roll a d20.\n1 | Trapped! — You lose 3 life.\n2—9 | Create five Treasure tokens.\n10—19 | You gain 3 life and draw three cards.\n20 | Search your library for a card. If it's an artifact card, you may put it onto the battlefield. Otherwise, put that card into your hand. Then shuffle.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Treasure Chest:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RollDice",
+                            "sides": 20,
+                            "storeTotalAs": "diceResult0"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult0"
+                                    },
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": "Controller"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "All",
+                                    "conditions": [
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult0"
+                                            },
+                                            "operator": "GTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 2
+                                            }
+                                        },
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult0"
+                                            },
+                                            "operator": "LTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 9
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "CreatePredefinedToken",
+                                "tokenType": "Treasure",
+                                "count": 5
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "All",
+                                    "conditions": [
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult0"
+                                            },
+                                            "operator": "GTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 10
+                                            }
+                                        },
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult0"
+                                            },
+                                            "operator": "LTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 19
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GainLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 3
+                                        }
+                                    },
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 3
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult0"
+                                    },
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 20
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Library"
+                                        },
+                                        "storeAs": "gathered9",
+                                        "search": true
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered9",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected10",
+                                        "prompt": "Choose a card"
+                                    },
+                                    {
+                                        "type": "FilterCollection",
+                                        "from": "selected10",
+                                        "filter": "artifact",
+                                        "storeMatching": "matching11",
+                                        "storeNonMatching": "rest11"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "rest11",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        }
+                                    },
+                                    {
+                                        "type": "ConditionalOnCollection",
+                                        "collection": "matching11",
+                                        "ifNotEmpty": {
+                                            "type": "Gated",
+                                            "gate": "Gate.MayDecide",
+                                            "then": {
+                                                "type": "MoveToZone",
+                                                "target": {
+                                                    "type": "PipelineTarget",
+                                                    "collectionName": "matching11"
+                                                },
+                                                "destination": "Battlefield"
+                                            },
+                                            "otherwise": {
+                                                "type": "MoveToZone",
+                                                "target": {
+                                                    "type": "PipelineTarget",
+                                                    "collectionName": "matching11"
+                                                },
+                                                "destination": "Hand"
+                                            },
+                                            "descriptionOverride": "Put the artifact card onto the battlefield? (Otherwise it goes to your hand.)"
+                                        }
+                                    },
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Roll a d20. 1: you lose 3 life. 2—9: create five Treasure tokens. 10—19: you gain 3 life and draw three cards. 20: search your library for a card; if it's an artifact card, you may put it onto the battlefield, otherwise put it into your hand; then shuffle."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "252",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6ecbeb07-0f45-49bf-9a12-f4ca09969122.jpg?1783926436",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "The “otherwise” in the last ability refers to whether or not you put it onto the battlefield, not whether or not it's an artifact card. You may put it into your hand even if it's an artifact card."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If you choose to put the card into your hand, you don't need to reveal it."
+            }
+        ]
+    }
+}
+
 // Treasure Vault
 {
     "name": "Treasure Vault",
@@ -10941,6 +12266,122 @@
     "colorIdentityOverride": [
         "GREEN",
         "WHITE"
+    ]
+}
+
+// Trickster's Talisman
+{
+    "name": "Trickster's Talisman",
+    "manaCost": "{U}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Invoke Duplicity — Equipped creature gets +1/+1 and has \"Whenever this creature deals combat damage to a player, you may sacrifice Trickster's Talisman. If you do, create a token that's a copy of this creature.\"\nEquip {2}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Trickster's Talisman:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Trickster's Talisman:1",
+                    "trigger": {
+                        "type": "DealsDamageEvent",
+                        "damageType": "DamageCombat",
+                        "recipient": {
+                            "type": "RecipientPlayer",
+                            "player": "Any"
+                        }
+                    },
+                    "effect": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.DoAction",
+                                "action": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "SelectTarget",
+                                            "requirement": {
+                                                "type": "TargetObject",
+                                                "filter": {
+                                                    "baseFilter": {
+                                                        "cardPredicates": [
+                                                            "IsArtifact"
+                                                        ],
+                                                        "statePredicates": [
+                                                            "IsGrantingPermanent"
+                                                        ],
+                                                        "controllerPredicate": "ControlledByYou"
+                                                    }
+                                                }
+                                            },
+                                            "storeAs": "target0",
+                                            "nonTargeting": true,
+                                            "prompt": "Sacrifice Trickster's Talisman"
+                                        },
+                                        {
+                                            "type": "SacrificeTarget",
+                                            "target": {
+                                                "type": "PipelineTarget",
+                                                "collectionName": "target0"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "successCriterion": "SuccessCriterion.PermanentsSacrificed"
+                            },
+                            "then": "CreateTokenCopyOfSource"
+                        },
+                        "descriptionOverride": "You may sacrifice Trickster's Talisman. If you do, create a token that's a copy of this creature."
+                    }
+                }
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "79",
+        "rarity": "UNCOMMON",
+        "artist": "Sam White",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/33cb9973-c9ce-48f1-9972-651092624751.jpg?1783926505"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -11094,6 +12535,102 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Vorpal Sword
+{
+    "name": "Vorpal Sword",
+    "manaCost": "{B}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +2/+0 and has deathtouch.\n{5}{B}{B}{B}: Until end of turn, this Equipment gains \"Whenever equipped creature deals combat damage to a player, that player loses the game.\"\nEquip {B}{B}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Vorpal Sword:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{B}{B}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantTriggeredAbility",
+                    "ability": {
+                        "id": "Vorpal Sword:1",
+                        "trigger": {
+                            "type": "DealsDamageEvent",
+                            "damageType": "DamageCombat",
+                            "recipient": {
+                                "type": "RecipientPlayer",
+                                "player": "Any"
+                            }
+                        },
+                        "binding": "ATTACHED",
+                        "effect": {
+                            "type": "LoseGame",
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "TriggeringPlayer"
+                            },
+                            "message": "Vorpal Sword's equipped creature dealt combat damage"
+                        },
+                        "descriptionOverride": "Whenever equipped creature deals combat damage to a player, that player loses the game."
+                    },
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Vorpal Sword:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 0
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "DEATHTOUCH"
+            }
+        ]
+    },
+    "equipCost": "{B}{B}",
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "RARE",
+        "artist": "Caio Monteiro",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7adbe69f-326d-4b4f-850f-c57a1860d17c.jpg?1783926486"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

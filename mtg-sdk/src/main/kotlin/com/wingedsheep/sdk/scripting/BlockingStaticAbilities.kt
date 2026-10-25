@@ -191,8 +191,9 @@ data class CantBeBlockedByMoreThan(
  *   [maxValue] ("power **or** toughness"). Only [EntityNumericProperty.Power] and
  *   [EntityNumericProperty.Toughness] are meaningful — no other property is settled in the layers.
  * @property filter Whose creatures it applies to. Defaults to the ability's controller's creatures
- *   (a lord); use [GroupFilter.source] for a creature that only grants it to itself. [description]
- *   renders those two printed shapes; a third filter would need a wording branch here.
+ *   (a lord); use [GroupFilter.source] for a creature that only grants it to itself, or
+ *   [GroupFilter.attachedCreature] for an Equipment (Thieves' Tools). [description] renders those
+ *   three printed shapes; another filter would need a wording branch here.
  */
 @SerialName("CantBeBlockedWhilePropertyAtMost")
 @Serializable
@@ -210,10 +211,12 @@ data class CantBeBlockedWhilePropertyAtMost(
         ).joinToString(" or ")
 
     override val description: String =
-        if (filter.scope is Scope.Self)
-            "This creature can't be blocked if its $propertyDescription is $maxValue or less"
-        else
-            "Creatures you control with $propertyDescription $maxValue or less can't be blocked"
+        when (filter.scope) {
+            is Scope.Self -> "This creature can't be blocked if its $propertyDescription is $maxValue or less"
+            is Scope.AttachedTo ->
+                "Equipped creature can't be blocked as long as its $propertyDescription is $maxValue or less"
+            else -> "Creatures you control with $propertyDescription $maxValue or less can't be blocked"
+        }
 }
 
 /**
