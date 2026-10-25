@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 
@@ -55,6 +56,7 @@ val ElvenPassage = card("Elven Passage") {
                 CardDestination.ToZone(Zone.BATTLEFIELD, placement = ZonePlacement.Tapped)
             )
             run(Effects.ShuffleLibrary())
+            run(EmitLibrarySearchedEventEffect)
             run(Effects.Behold(
                 filter = GameObjectFilter.Any.withSubtype(Subtype.ELF),
                 ifBeheld = Effects.TapCollection(collection = passageMovedLand, tap = false)

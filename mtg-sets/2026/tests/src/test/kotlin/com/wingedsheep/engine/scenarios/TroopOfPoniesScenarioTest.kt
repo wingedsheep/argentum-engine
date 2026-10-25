@@ -2,8 +2,10 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.SelectCardsDecision
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.assertions.withClue
@@ -17,6 +19,10 @@ import io.kotest.matchers.shouldBe
  * The Cultivate split: a *second* selection decides which found card enters tapped and which goes
  * to hand. The regression this guards against is both cards landing in the same zone — the shape a
  * single-destination `searchLibrary(destination = HAND, entersTapped = true)` produces.
+ *
+ * Because the pipeline is spelled out by hand, it must also mark the gather as a library search
+ * (`search = true`) and emit the searched event itself — otherwise Shadow of Doubt can't stop it and
+ * "whenever a player searches their library" triggers (Wan Shi Tong, Librarian) never see it.
  */
 class TroopOfPoniesScenarioTest : ScenarioTestBase() {
 
@@ -102,6 +108,76 @@ class TroopOfPoniesScenarioTest : ScenarioTestBase() {
                 g.isOnBattlefield("Forest") shouldBe true
                 (g.state.getEntity(g.findPermanent("Forest")!!)?.has<TappedComponent>() ?: false) shouldBe true
                 g.isInHand(1, "Forest") shouldBe false
+            }
+        }
+
+        test("under Shadow of Doubt the search finds nothing") {
+            val g = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(1, "Troop of Ponies", tapped = false, summoningSickness = false)
+                .withCardInHand(1, "Shadow of Doubt")
+                .withLandsOnBattlefield(1, "Island", 2)
+                .withLandsOnBattlefield(1, "Plains", 2)
+                .withCardInLibrary(1, "Forest")
+                .withCardInLibrary(1, "Mountain")
+                .withActivePlayer(1)
+                .withPriorityPlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            // Shadow of Doubt also draws a card — one of the two basics. The other stays behind.
+            g.castSpell(1, "Shadow of Doubt").error shouldBe null
+            g.resolveStack()
+            val handBefore = g.handSize(1)
+            val libraryBefore = g.librarySize(1)
+            libraryBefore shouldBe 1
+
+            val ponies = g.findPermanent("Troop of Ponies")!!
+            g.execute(ActivateAbility(playerId = g.player1Id, sourceId = ponies, abilityId = searchAbilityId))
+                .error shouldBe null
+            g.resolveStack()
+
+            withClue("no search choice is offered — players can't search libraries this turn") {
+                g.hasPendingDecision() shouldBe false
+            }
+            withClue("the basic stays in the library; nothing reaches the battlefield or hand") {
+                g.librarySize(1) shouldBe libraryBefore
+                g.handSize(1) shouldBe handBefore
+                g.isOnBattlefield("Forest") shouldBe false
+                g.isOnBattlefield("Mountain") shouldBe false
+            }
+        }
+
+        test("an opponent's Wan Shi Tong, Librarian sees the search") {
+            val g = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(1, "Troop of Ponies", tapped = false, summoningSickness = false)
+                .withLandsOnBattlefield(1, "Plains", 2)
+                .withCardInLibrary(1, "Forest")
+                .withCardOnBattlefield(2, "Wan Shi Tong, Librarian")
+                .withCardInLibrary(2, "Island")
+                .withActivePlayer(1)
+                .withPriorityPlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val wan = g.findPermanent("Wan Shi Tong, Librarian")!!
+            val opponentHandBefore = g.handSize(2)
+
+            val ponies = g.findPermanent("Troop of Ponies")!!
+            g.execute(ActivateAbility(playerId = g.player1Id, sourceId = ponies, abilityId = searchAbilityId))
+                .error shouldBe null
+            g.resolveStack()
+            var guard = 0
+            while (g.getPendingDecision() is SelectCardsDecision && guard++ < 4) {
+                val forest = g.findCardsInLibrary(1, "Forest").firstOrNull()
+                if (forest != null) g.selectCards(listOf(forest)) else g.skipSelection()
+                g.resolveStack()
+            }
+            g.resolveStack()
+
+            withClue("Wan Shi Tong's searched-library trigger fired: a +1/+1 counter and a card") {
+                (g.state.getEntity(wan)?.get<CountersComponent>()?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0) shouldBe 1
+                g.handSize(2) shouldBe opponentHandBefore + 1
             }
         }
     }

@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeywordToOwnSpells
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 import com.wingedsheep.sdk.scripting.effects.FaceDownMode
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
 import com.wingedsheep.sdk.scripting.references.Player
@@ -48,6 +49,7 @@ val HoardingBroodlord = card("Hoarding Broodlord") {
             val found = chooseExactly(1, from = library, prompt = "Search your library for a card")
             val exiled = moveTracked(found, CardDestination.ToZone(Zone.EXILE), faceDown = FaceDownMode.HIDDEN)
             run(Effects.ShuffleLibrary())
+            run(EmitLibrarySearchedEventEffect)
             run(Effects.GrantMayPlayFromExile(exiled, expiry = MayPlayExpiry.Permanent))
         }
     }

@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 import com.wingedsheep.sdk.scripting.references.Player
 
 /**
@@ -71,7 +72,8 @@ val Sunforger = card("Sunforger") {
                     GameObjectFilter.Instant
                         .withAnyColor(Color.RED, Color.WHITE)
                         .manaValueAtMost(4)
-                )
+                ),
+                search = true
             )
             val sunforgerFound = chooseUpTo(
                 1,
@@ -80,6 +82,7 @@ val Sunforger = card("Sunforger") {
                     "cast without paying its mana cost"
             )
             run(Effects.ShuffleLibrary())
+            run(EmitLibrarySearchedEventEffect)
             run(Effects.CastFromCollectionWithoutPayingCost(from = sunforgerFound))
         }
     }

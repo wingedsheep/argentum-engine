@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.j22.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
@@ -10,6 +9,8 @@ import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -42,6 +43,7 @@ val RampagingGrowth = card("Rampaging Growth") {
             val found = chooseUpTo(1, from = searchable)
             val landed = moveTracked(found, CardDestination.ToZone(Zone.BATTLEFIELD))
             run(Effects.ShuffleLibrary())
+            run(EmitLibrarySearchedEventEffect)
             run(
                 Effects.ForEachInCollection(
                     landed,

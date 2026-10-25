@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -39,6 +40,7 @@ val OriqLoremage = card("Oriq Loremage") {
             val found = chooseUpTo(1, from = library, prompt = "Search your library for a card to put into your graveyard")
             toGraveyard(found)
             run(Effects.ShuffleLibrary())
+            run(EmitLibrarySearchedEventEffect)
             run(
                 Effects.If(
                     condition = whenMatches(found, GameObjectFilter.InstantOrSorcery),

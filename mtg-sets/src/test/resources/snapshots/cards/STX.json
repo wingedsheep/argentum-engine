@@ -10507,6 +10507,7 @@
                             "storeMovedAs": "moved2"
                         },
                         "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent",
                         {
                             "type": "Gated",
                             "gate": "Gate.MayDecide",
@@ -10642,6 +10643,7 @@
                                 "storeMovedAs": "moved2"
                             },
                             "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent",
                             {
                                 "type": "Gated",
                                 "gate": "Gate.MayDecide",
@@ -13916,6 +13918,7 @@
                             }
                         },
                         "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent",
                         {
                             "type": "Gated",
                             "gate": {

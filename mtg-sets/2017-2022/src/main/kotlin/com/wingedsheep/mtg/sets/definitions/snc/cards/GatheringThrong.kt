@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 import com.wingedsheep.sdk.scripting.references.Player
 
 /**
@@ -34,7 +35,8 @@ val GatheringThrong = card("Gathering Throng") {
         effect = Effects.May(
             Effects.Pipeline {
                 val searchable = gather(
-                    CardSource.FromZone(Zone.LIBRARY, Player.You, GameObjectFilter.Any.named("Gathering Throng"))
+                    CardSource.FromZone(Zone.LIBRARY, Player.You, GameObjectFilter.Any.named("Gathering Throng")),
+                    search = true
                 )
                 val found = chooseAnyNumber(
                     from = searchable,
@@ -42,6 +44,7 @@ val GatheringThrong = card("Gathering Throng") {
                 )
                 toHand(found, revealed = true)
                 run(Effects.ShuffleLibrary())
+                run(EmitLibrarySearchedEventEffect)
             }
         )
     }

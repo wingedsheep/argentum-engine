@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.big.cards
 
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
@@ -8,10 +9,10 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionRestriction
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.core.Step
 
 /**
  * Omenpath Journey — {3}{G} Enchantment (The Big Score, mythic).
@@ -56,6 +57,7 @@ val OmenpathJourney = card("Omenpath Journey") {
             )
             exile(found, linkToSource = true)
             run(Effects.ShuffleLibrary())
+            run(EmitLibrarySearchedEventEffect)
         }
     }
 

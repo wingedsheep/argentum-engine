@@ -12818,7 +12818,8 @@
                         "zone": "Library"
                     }
                 },
-                "ShuffleLibrary"
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
             ]
         }
     },

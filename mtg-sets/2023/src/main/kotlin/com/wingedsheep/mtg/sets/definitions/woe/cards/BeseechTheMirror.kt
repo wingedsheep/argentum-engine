@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 import com.wingedsheep.sdk.scripting.effects.FaceDownMode
 import com.wingedsheep.sdk.scripting.references.Player
 
@@ -44,6 +45,7 @@ val BeseechTheMirror = card("Beseech the Mirror") {
                 faceDown = FaceDownMode.HIDDEN
             )
             run(Effects.ShuffleLibrary())
+            run(EmitLibrarySearchedEventEffect)
             run(Effects.If(
                 condition = Conditions.WasBargained,
                 then = Effects.Pipeline {

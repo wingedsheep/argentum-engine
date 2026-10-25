@@ -537,6 +537,7 @@
                     }
                 },
                 "ShuffleLibrary",
+                "EmitLibrarySearchedEvent",
                 {
                     "type": "ConditionalOnCollection",
                     "collection": "selected1",
@@ -12396,7 +12397,8 @@
                                         ]
                                     }
                                 },
-                                "storeAs": "gathered0"
+                                "storeAs": "gathered0",
+                                "search": true
                             },
                             {
                                 "type": "SelectFromCollection",

@@ -1330,7 +1330,8 @@
                                     "zone": "Library",
                                     "filter": "creature|land"
                                 },
-                                "storeAs": "gathered0"
+                                "storeAs": "gathered0",
+                                "search": true
                             },
                             {
                                 "type": "SelectFromCollection",

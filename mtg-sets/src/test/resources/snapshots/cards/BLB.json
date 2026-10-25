@@ -6022,6 +6022,7 @@
                             "storeMovedAs": "moved2"
                         },
                         "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent",
                         {
                             "type": "Gated",
                             "gate": {

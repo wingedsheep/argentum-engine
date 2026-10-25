@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 import com.wingedsheep.sdk.scripting.references.Player
 
 /**
@@ -90,6 +91,7 @@ val SayItsName = card("Say Its Name") {
             move(altanakChosen, CardDestination.ToZone(Zone.BATTLEFIELD))
             // If you search your library this way, shuffle. The library is always searched, so always shuffle.
             run(Effects.ShuffleLibrary())
+            run(EmitLibrarySearchedEventEffect)
         }
         description = "Exile this card and two other cards named Say Its Name from your " +
             "graveyard: Search your graveyard, hand, and/or library for a card named Altanak, the " +

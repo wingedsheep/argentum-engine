@@ -55,7 +55,7 @@ val RepurposingBay = card("Repurposing Bay") {
         )
         timing = TimingRule.SorcerySpeed
         effect = Effects.Pipeline {
-            val libraryArtifacts = gather(CardSource.FromZone(Zone.LIBRARY, Player.You, GameObjectFilter.Artifact))
+            val libraryArtifacts = gather(CardSource.FromZone(Zone.LIBRARY, Player.You, GameObjectFilter.Artifact), search = true)
             val candidates = filter(
                 libraryArtifacts,
                 GameObjectFilter.Any.manaValueEqualsDynamic(

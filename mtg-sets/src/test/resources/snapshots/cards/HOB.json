@@ -4217,6 +4217,7 @@
                             "storeMovedAs": "moved2"
                         },
                         "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent",
                         {
                             "type": "Behold",
                             "filter": "Elf",
@@ -10226,6 +10227,7 @@
                             "linkToSource": true
                         },
                         "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent",
                         {
                             "type": "GainLife",
                             "amount": {
@@ -14014,7 +14016,8 @@
                                 "zone": "Library",
                                 "filter": "basicland"
                             },
-                            "storeAs": "gathered0"
+                            "storeAs": "gathered0",
+                            "search": true
                         },
                         {
                             "type": "SelectFromCollection",
@@ -14064,9 +14067,11 @@
                             },
                             "revealed": true
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
-                }
+                },
+                "descriptionOverride": "{2}, {T}, Sacrifice this creature: Search your library for up to two basic land cards, reveal them, put one onto the battlefield tapped and the other into your hand, then shuffle."
             }
         ]
     },

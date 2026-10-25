@@ -48,7 +48,8 @@ private val InvasionOfIkoriaFront = card("Invasion of Ikoria") {
                     filter = GameObjectFilter.Creature
                         .notSubtype(Subtype.HUMAN)
                         .manaValueAtMostDynamic(DynamicAmounts.castX())
-                )
+                ),
+                search = true
             )
             val found = chooseUpTo(
                 1,

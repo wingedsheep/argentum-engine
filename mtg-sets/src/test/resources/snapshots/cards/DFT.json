@@ -7721,7 +7721,8 @@
                                     "zone": "Library",
                                     "filter": "artifact"
                                 },
-                                "storeAs": "gathered0"
+                                "storeAs": "gathered0",
+                                "search": true
                             },
                             {
                                 "type": "SelectFromCollection",
@@ -13523,7 +13524,8 @@
                                 "zone": "Library",
                                 "filter": "artifact"
                             },
-                            "storeAs": "gathered0"
+                            "storeAs": "gathered0",
+                            "search": true
                         },
                         {
                             "type": "FilterCollection",

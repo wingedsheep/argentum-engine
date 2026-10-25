@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 import com.wingedsheep.sdk.scripting.references.Player
 
 /**
@@ -55,6 +56,7 @@ val DinasGuidance = card("Dina's Guidance") {
             move(placed.selected, CardDestination.ToZone(Zone.HAND))
             move(placed.remainder, CardDestination.ToZone(Zone.GRAVEYARD))
             run(Effects.ShuffleLibrary())
+            run(EmitLibrarySearchedEventEffect)
         }
     }
 

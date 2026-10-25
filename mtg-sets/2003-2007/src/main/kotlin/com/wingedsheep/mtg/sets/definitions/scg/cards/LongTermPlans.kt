@@ -1,13 +1,14 @@
 package com.wingedsheep.mtg.sets.definitions.scg.cards
 
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.dsl.Effects
 
 val LongTermPlans = card("Long-Term Plans") {
     manaCost = "{2}{U}"
@@ -23,6 +24,7 @@ val LongTermPlans = card("Long-Term Plans") {
             )
             val found = chooseExactly(1, from = searchable)
             run(Effects.ShuffleLibrary())
+            run(EmitLibrarySearchedEventEffect)
             toLibraryBottom(found, order = CardOrder.Preserve)
             val aboveCards = gather(CardSource.TopOfLibrary(2))
             toLibraryTop(found, order = CardOrder.Preserve)

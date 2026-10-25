@@ -55,7 +55,8 @@ val LightPawsEmperorsVoice = card("Light-Paws, Emperor's Voice") {
                     GameObjectFilter.Enchantment.withSubtype("Aura")
                         .manaValueAtMostEntity(EffectTarget.TriggeringEntity)
                         .nameNotSharedWithPermanentYouControl(GameObjectFilter.Enchantment.withSubtype("Aura"))
-                )
+                ),
+                search = true
             )
             val found = chooseUpTo(
                 1,

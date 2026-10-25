@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 
@@ -50,6 +51,7 @@ val KodamasReach = card("Kodama's Reach") {
             )
             toHand(toHandCards, revealed = true)
             run(Effects.ShuffleLibrary())
+            run(EmitLibrarySearchedEventEffect)
         }
     }
     metadata {

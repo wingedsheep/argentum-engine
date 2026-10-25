@@ -5686,6 +5686,7 @@
                             }
                         },
                         "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent",
                         {
                             "type": "ConditionalOnCollection",
                             "collection": "selected1",
@@ -6895,7 +6896,8 @@
                                     "zone": "Library",
                                     "filter": "name:Gathering Throng"
                                 },
-                                "storeAs": "gathered0"
+                                "storeAs": "gathered0",
+                                "search": true
                             },
                             {
                                 "type": "SelectFromCollection",
@@ -6913,7 +6915,8 @@
                                 },
                                 "revealed": true
                             },
-                            "ShuffleLibrary"
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
                         ]
                     }
                 }

@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 
@@ -24,7 +25,9 @@ import com.wingedsheep.sdk.scripting.references.Player
  * `Patterns.Library.searchLibrary(destination = HAND, entersTapped = true)` would silently send
  * *both* cards to hand and drop the tapped land entirely, so the pipeline is spelled out here
  * (same shape as Bloomvine Regent's Claim Territory). Finding only one card still works: the
- * second select is "exactly one" of what was found, so that card can go either way.
+ * second select is "exactly one" of what was found, so that card can go either way. The gather is
+ * a real search (`search = true` + the searched event), so Shadow of Doubt stops it and "whenever a
+ * player searches their library" triggers see it.
  */
 val TroopOfPonies = card("Troop of Ponies") {
     manaCost = "{2}"
@@ -37,7 +40,10 @@ val TroopOfPonies = card("Troop of Ponies") {
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{2}"), Costs.Tap, Costs.SacrificeSelf)
         effect = Effects.Pipeline {
-            val searchable = gather(CardSource.FromZone(Zone.LIBRARY, Player.You, GameObjectFilter.BasicLand))
+            val searchable = gather(
+                CardSource.FromZone(Zone.LIBRARY, Player.You, GameObjectFilter.BasicLand),
+                search = true
+            )
             val found = chooseUpTo(
                 2,
                 from = searchable,
@@ -57,7 +63,11 @@ val TroopOfPonies = card("Troop of Ponies") {
             )
             toHand(toHandCards, revealed = true)
             run(Effects.ShuffleLibrary())
+            run(EmitLibrarySearchedEventEffect)
         }
+        // The two-select split doesn't fuse into one "Search your library…" sentence.
+        description = "{2}, {T}, Sacrifice this creature: Search your library for up to two basic land " +
+            "cards, reveal them, put one onto the battlefield tapped and the other into your hand, then shuffle."
     }
 
     metadata {

@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionRestriction
 import com.wingedsheep.sdk.scripting.references.Player
 
@@ -64,6 +65,7 @@ val TurtlesForever = card("Turtles Forever") {
             toHand(chosen)
             move(rest, CardDestination.ToZone(Zone.LIBRARY, Player.You))
             run(Effects.ShuffleLibrary())
+            run(EmitLibrarySearchedEventEffect)
         }
     }
 

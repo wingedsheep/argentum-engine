@@ -1662,7 +1662,8 @@
                             },
                             "linkToSource": true
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             },

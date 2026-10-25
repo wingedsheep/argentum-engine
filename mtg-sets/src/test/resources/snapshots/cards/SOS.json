@@ -3322,7 +3322,8 @@
                         "zone": "Graveyard"
                     }
                 },
-                "ShuffleLibrary"
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
             ]
         }
     },

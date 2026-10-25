@@ -1,12 +1,13 @@
 package com.wingedsheep.mtg.sets.definitions.inv.cards
 
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 
 /**
  * Scouting Trek
@@ -31,6 +32,7 @@ val ScoutingTrek = card("Scouting Trek") {
             )
             reveal(found)
             run(Effects.ShuffleLibrary())
+            run(EmitLibrarySearchedEventEffect)
             toLibraryTop(found, order = CardOrder.Preserve)
         }
     }

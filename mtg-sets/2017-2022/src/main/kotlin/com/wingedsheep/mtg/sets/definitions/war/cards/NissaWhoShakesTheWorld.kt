@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -82,7 +83,8 @@ val NissaWhoShakesTheWorld = card("Nissa, Who Shakes the World") {
             emblemDescription = "Lands you control have indestructible.",
         ) then Effects.Pipeline {
             val forests = gather(
-                CardSource.FromZone(Zone.LIBRARY, Player.You, GameObjectFilter.Any.withSubtype(Subtype.FOREST))
+                CardSource.FromZone(Zone.LIBRARY, Player.You, GameObjectFilter.Any.withSubtype(Subtype.FOREST)),
+                search = true
             )
             val found = chooseAnyNumber(
                 from = forests,
@@ -90,6 +92,7 @@ val NissaWhoShakesTheWorld = card("Nissa, Who Shakes the World") {
             )
             move(found, CardDestination.ToZone(Zone.BATTLEFIELD, player = Player.You, placement = ZonePlacement.Tapped))
             run(Effects.ShuffleLibrary())
+            run(EmitLibrarySearchedEventEffect)
         }
     }
 

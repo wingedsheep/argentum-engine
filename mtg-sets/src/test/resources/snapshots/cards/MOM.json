@@ -8751,6 +8751,7 @@
                             "storeMovedAs": "moved2"
                         },
                         "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent",
                         {
                             "type": "GrantMayPlayFromExile",
                             "from": "moved2",
@@ -10932,7 +10933,8 @@
                                     ]
                                 }
                             },
-                            "storeAs": "gathered0"
+                            "storeAs": "gathered0",
+                            "search": true
                         },
                         {
                             "type": "SelectFromCollection",
@@ -19533,7 +19535,8 @@
                                 "zone": "Library",
                                 "filter": "Praetor"
                             },
-                            "storeAs": "gathered0"
+                            "storeAs": "gathered0",
+                            "search": true
                         },
                         {
                             "type": "SelectFromCollection",
@@ -19550,7 +19553,8 @@
                                 "zone": "Battlefield"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 },
                 "descriptionOverride": "{10}, {T}, Sacrifice Realmbreaker: Search your library for any number of Praetor cards, put them onto the battlefield, then shuffle."

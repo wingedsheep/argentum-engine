@@ -54,6 +54,7 @@ val GuidelightPathmaker = card("Guidelight Pathmaker") {
             Effects.Pipeline {
                 val searchable = gather(
                     CardSource.FromZone(Zone.LIBRARY, Player.You, GameObjectFilter.Artifact),
+                    search = true
                 )
                 val found = chooseUpTo(1, from = searchable, prompt = "Search for an artifact card")
                 reveal(found)

@@ -4701,6 +4701,7 @@
                     "storeSelected": "selected1"
                 },
                 "ShuffleLibrary",
+                "EmitLibrarySearchedEvent",
                 {
                     "type": "MoveCollection",
                     "from": "selected1",
@@ -4719,7 +4720,7 @@
                             "amount": 2
                         }
                     },
-                    "storeAs": "gathered4"
+                    "storeAs": "gathered5"
                 },
                 {
                     "type": "MoveCollection",
@@ -4732,7 +4733,7 @@
                 },
                 {
                     "type": "MoveCollection",
-                    "from": "gathered4",
+                    "from": "gathered5",
                     "destination": {
                         "type": "ToZone",
                         "zone": "Library",
@@ -5351,7 +5352,8 @@
                             "linkToSource": true,
                             "faceDown": "HIDDEN"
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }

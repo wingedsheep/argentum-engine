@@ -3243,7 +3243,8 @@
                         ]
                     }
                 },
-                "ShuffleLibrary"
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
             ]
         }
     },

@@ -1,12 +1,13 @@
 package com.wingedsheep.mtg.sets.definitions.dom.cards
 
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Final Parting
@@ -43,6 +44,7 @@ val FinalParting = card("Final Parting") {
             toGraveyard(toGraveyardCards)
             // Shuffle library
             run(Effects.ShuffleLibrary())
+            run(EmitLibrarySearchedEventEffect)
         }
     }
 

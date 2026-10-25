@@ -7296,7 +7296,8 @@
                     },
                     "revealed": true
                 },
-                "ShuffleLibrary"
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
             ]
         },
         "selfAlternativeCost": {
@@ -20454,7 +20455,8 @@
                             "linkToSource": true,
                             "faceDown": "HIDDEN"
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             },

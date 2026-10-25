@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Chooser
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -45,6 +46,7 @@ val ManipulateFate = card("Manipulate Fate") {
             exile(exiled)
             // Then shuffle.
             run(Effects.ShuffleLibrary(EffectTarget.Controller))
+            run(EmitLibrarySearchedEventEffect)
             // Draw a card.
             run(Effects.DrawCards(1))
         }

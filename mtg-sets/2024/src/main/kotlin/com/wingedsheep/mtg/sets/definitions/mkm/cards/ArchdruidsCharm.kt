@@ -76,7 +76,8 @@ val ArchdruidsCharm = card("Archdruid's Charm") {
                             Zone.LIBRARY,
                             Player.You,
                             GameObjectFilter.Creature or GameObjectFilter.Land,
-                        )
+                        ),
+                        search = true
                     )
                     val found = chooseUpTo(
                         1,

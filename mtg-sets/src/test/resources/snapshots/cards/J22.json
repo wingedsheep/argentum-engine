@@ -3626,6 +3626,7 @@
                     "storeMovedAs": "moved2"
                 },
                 "ShuffleLibrary",
+                "EmitLibrarySearchedEvent",
                 {
                     "type": "ForEach",
                     "space": {

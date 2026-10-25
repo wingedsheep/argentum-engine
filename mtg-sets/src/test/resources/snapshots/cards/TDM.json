@@ -1907,7 +1907,8 @@
                             },
                             "revealed": true
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }
@@ -17712,6 +17713,7 @@
                             }
                         },
                         "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent",
                         {
                             "type": "GrantMayPlayFromExile",
                             "from": "selected1"

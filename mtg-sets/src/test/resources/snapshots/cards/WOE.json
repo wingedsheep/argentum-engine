@@ -1749,6 +1749,7 @@
                     "storeMovedAs": "moved2"
                 },
                 "ShuffleLibrary",
+                "EmitLibrarySearchedEvent",
                 {
                     "type": "Gated",
                     "gate": {
@@ -1775,17 +1776,17 @@
                                         }
                                     ]
                                 },
-                                "storeMatching": "matching4"
+                                "storeMatching": "matching5"
                             },
                             {
                                 "type": "ConditionalOnCollection",
-                                "collection": "matching4",
+                                "collection": "matching5",
                                 "ifNotEmpty": {
                                     "type": "Gated",
                                     "gate": "Gate.MayDecide",
                                     "then": {
                                         "type": "CastFromCollectionWithoutPayingCost",
-                                        "from": "matching4"
+                                        "from": "matching5"
                                     }
                                 }
                             }
@@ -1803,11 +1804,11 @@
                             }
                         ]
                     },
-                    "storeMatching": "matching8"
+                    "storeMatching": "matching9"
                 },
                 {
                     "type": "MoveCollection",
-                    "from": "matching8",
+                    "from": "matching9",
                     "destination": {
                         "type": "ToZone",
                         "zone": "Hand"

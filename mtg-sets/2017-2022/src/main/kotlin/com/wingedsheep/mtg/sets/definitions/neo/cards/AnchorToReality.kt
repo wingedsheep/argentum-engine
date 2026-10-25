@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -57,6 +58,7 @@ val AnchorToReality = card("Anchor to Reality") {
             )
             move(found, CardDestination.ToZone(Zone.BATTLEFIELD, Player.You))
             run(Effects.ShuffleLibrary())
+            run(EmitLibrarySearchedEventEffect)
             ifNotEmpty(found) {
                 run(Effects.If(
                     condition = Conditions.CompareAmounts(

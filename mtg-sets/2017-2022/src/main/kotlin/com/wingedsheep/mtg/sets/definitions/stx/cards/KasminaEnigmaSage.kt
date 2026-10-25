@@ -17,6 +17,7 @@ import com.wingedsheep.sdk.scripting.effects.CREATED_TOKENS
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -74,6 +75,7 @@ private fun kasminaUltimate(): Effect = Effects.Pipeline {
     )
     val kasminaExiled = moveTracked(kasminaFound, CardDestination.ToZone(Zone.EXILE))
     run(Effects.ShuffleLibrary())
+    run(EmitLibrarySearchedEventEffect)
     run(Effects.May(Effects.CastFromCollectionWithoutPayingCost(kasminaExiled)))
 }
 

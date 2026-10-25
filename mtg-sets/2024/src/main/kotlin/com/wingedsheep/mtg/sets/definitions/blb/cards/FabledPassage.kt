@@ -1,17 +1,18 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
-import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Fabled Passage
@@ -52,6 +53,7 @@ val FabledPassage = card("Fabled Passage") {
             )
             // Shuffle library
             run(Effects.ShuffleLibrary())
+            run(EmitLibrarySearchedEventEffect)
             // Then if you control 4+ lands, untap that land
             run(Effects.If(
                 condition = Conditions.ControlLandsAtLeast(4),

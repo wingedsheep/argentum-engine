@@ -47,7 +47,8 @@ val AuratouchedMage = card("Auratouched Mage") {
                     Zone.LIBRARY,
                     Player.You,
                     GameObjectFilter.Enchantment.withSubtype("Aura").couldAttachTo(EffectTarget.Self)
-                )
+                ),
+                search = true
             )
             val found = chooseUpTo(
                 1,

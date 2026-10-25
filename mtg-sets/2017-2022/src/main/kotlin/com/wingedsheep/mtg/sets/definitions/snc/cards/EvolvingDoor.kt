@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -51,6 +52,7 @@ val EvolvingDoor = card("Evolving Door") {
             val found = chooseUpTo(1, from = searchable, prompt = "Search your library for a creature card")
             exile(found)
             run(Effects.ShuffleLibrary())
+            run(EmitLibrarySearchedEventEffect)
             ifNotEmpty(found) {
                 run(Effects.May(
                     Effects.CastFromCollection(found),

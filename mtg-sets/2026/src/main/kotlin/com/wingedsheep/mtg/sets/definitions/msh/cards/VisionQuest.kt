@@ -63,7 +63,8 @@ val VisionQuest = card("Vision Quest") {
                     player = Player.You,
                     filter = GameObjectFilter.ArtifactCreature
                         .manaValueAtMostDynamic(DynamicAmounts.xValue())
-                )
+                ),
+                search = true
             )
             val visionQuestFound = chooseUpTo(
                 1,

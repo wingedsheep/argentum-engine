@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 
@@ -63,7 +64,8 @@ val RealmbreakerTheInvasionTree = card("Realmbreaker, the Invasion Tree") {
         cost = Costs.Composite(Costs.Mana("{10}"), Costs.Tap, Costs.SacrificeSelf)
         effect = Effects.Pipeline {
             val praetors = gather(
-                CardSource.FromZone(Zone.LIBRARY, Player.You, GameObjectFilter.Any.withSubtype(Subtype.PRAETOR))
+                CardSource.FromZone(Zone.LIBRARY, Player.You, GameObjectFilter.Any.withSubtype(Subtype.PRAETOR)),
+                search = true
             )
             val found = chooseAnyNumber(
                 from = praetors,
@@ -71,6 +73,7 @@ val RealmbreakerTheInvasionTree = card("Realmbreaker, the Invasion Tree") {
             )
             move(found, CardDestination.ToZone(Zone.BATTLEFIELD, player = Player.You))
             run(Effects.ShuffleLibrary())
+            run(EmitLibrarySearchedEventEffect)
         }
         description = "{10}, {T}, Sacrifice Realmbreaker: Search your library for any number of Praetor " +
             "cards, put them onto the battlefield, then shuffle."

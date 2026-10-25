@@ -116,7 +116,8 @@
                                     ]
                                 }
                             },
-                            "storeAs": "gathered0"
+                            "storeAs": "gathered0",
+                            "search": true
                         },
                         {
                             "type": "SelectFromCollection",
@@ -15225,7 +15226,8 @@
                                 "zone": "Library",
                                 "filter": "instant red|white mv<=4"
                             },
-                            "storeAs": "gathered0"
+                            "storeAs": "gathered0",
+                            "search": true
                         },
                         {
                             "type": "SelectFromCollection",
@@ -15241,6 +15243,7 @@
                             "prompt": "Search for a red or white instant card with mana value 4 or less to cast without paying its mana cost"
                         },
                         "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent",
                         {
                             "type": "CastFromCollectionWithoutPayingCost",
                             "from": "selected1"
