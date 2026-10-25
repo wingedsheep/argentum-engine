@@ -61,9 +61,8 @@ class PapalymoTotolymoScenarioTest : ScenarioTestBase() {
                 }
 
                 game.activatePapalymo()
-                if (game.hasPendingDecision()) {
-                    game.selectCards(listOf(game.findPermanent("Hill Giant")!!))
-                    game.resolveStack()
+                withClue("Only Hill Giant has the greatest power, so the opponent has no choice to make") {
+                    game.hasPendingDecision() shouldBe false
                 }
 
                 withClue("Hill Giant (power 3) was sacrificed; Grizzly Bears stays") {
