@@ -55,6 +55,158 @@
     ]
 }
 
+// Aberrant Mind Sorcerer
+{
+    "name": "Aberrant Mind Sorcerer",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Human Elf Shaman Sorcerer",
+    "oracleText": "Psionic Spells — When this creature enters, choose target instant or sorcery card in your graveyard, then roll a d20.\n1—9 | You may put that card on top of your library.\n10—20 | Return that card to your hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aberrant Mind Sorcerer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RollDice",
+                            "sides": 20,
+                            "storeTotalAs": "diceResult0"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "All",
+                                    "conditions": [
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult0"
+                                            },
+                                            "operator": "GTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult0"
+                                            },
+                                            "operator": "LTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 9
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.MayDecide",
+                                    "prompt": "Put that card on top of your library?"
+                                },
+                                "then": {
+                                    "type": "MoveToZone",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "destination": "Library",
+                                    "placement": "Top"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "All",
+                                    "conditions": [
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult0"
+                                            },
+                                            "operator": "GTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 10
+                                            }
+                                        },
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult0"
+                                            },
+                                            "operator": "LTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 20
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "instant|sorcery own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, choose target instant or sorcery card in your graveyard, then roll a d20. 1—9: you may put that card on top of your library. 10—20: return that card to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "UNCOMMON",
+        "artist": "Lius Lasahido",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d9c6401a-e152-4acf-a2ca-75c484f296d5.jpg?1783926519",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "An effect that says \"choose a target, then roll a d20\" or similar still uses the normal process of putting an ability on the stack and resolving it. Choosing targets is part of putting the ability on the stack and rolling the d20 happens later, as the ability resolves."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "The instruction to roll a die and the effect that occurs because of the result are all part of the same ability. Players do not get the chance to respond to the ability after knowing the result of the roll."
+            }
+        ]
+    }
+}
+
 // Adult Gold Dragon
 {
     "name": "Adult Gold Dragon",
@@ -80,6 +232,58 @@
     "colorIdentityOverride": [
         "RED",
         "WHITE"
+    ]
+}
+
+// Air-Cult Elemental
+{
+    "name": "Air-Cult Elemental",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Flying\nWhirlwind — When this creature enters, return up to one other target creature to its owner's hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Air-Cult Elemental:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "artist": "Kari Christensen",
+        "flavorText": "Elemental Evil distorts the natural elements, limiting them to aspects of destruction.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fba82564-a9a9-4ded-a5fa-0e5fab2a3faa.jpg?1783926520"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -150,6 +354,182 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Arcane Investigator
+{
+    "name": "Arcane Investigator",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Elf Wizard",
+    "oracleText": "Search the Room — {5}{U}: Roll a d20.\n1—9 | Draw a card.\n10—20 | Look at the top three cards of your library. Put one of them into your hand and the rest on the bottom of your library in any order.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Arcane Investigator:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RollDice",
+                            "sides": 20,
+                            "storeTotalAs": "diceResult0"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult0"
+                                    },
+                                    "operator": "LTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 9
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult0"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 10
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "TopOfLibrary",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 3
+                                            }
+                                        },
+                                        "storeAs": "looked"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "looked",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "kept",
+                                        "storeRemainder": "rest",
+                                        "selectedLabel": "Put in hand",
+                                        "remainderLabel": "Put on bottom"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "kept",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        }
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "rest",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Library",
+                                            "placement": "Bottom"
+                                        },
+                                        "order": "ControllerChooses"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Search the Room — {5}{U}: Roll a d20. 1—9: draw a card. 10—20: look at the top three cards of your library, put one into your hand and the rest on the bottom in any order."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "artist": "Bram Sels",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dc457520-9947-4f65-bbe7-9b95bd2c23af.jpg?1783926518",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "The instruction to roll a die and the effect that occurs because of the result are all part of the same ability. Players do not get the chance to respond to the ability after knowing the result of the roll."
+            }
+        ]
+    }
+}
+
+// Bar the Gate
+{
+    "name": "Bar the Gate",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target creature or planeswalker spell. Venture into the dungeon. (Enter the first room or advance to the next room.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                "Counter",
+                "VentureIntoTheDungeon"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "artist": "Johannes Voss",
+        "flavorText": "\"This path is closed to you!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b9b1e53f-1384-4860-9944-e68922afc65c.jpg?1783926518"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -351,6 +731,137 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Blue Dragon
+{
+    "name": "Blue Dragon",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nLightning Breath — When this creature enters, until your next turn, target creature an opponent controls gets -3/-0, up to one other target creature gets -2/-0, and up to one other target creature gets -1/-0.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Blue Dragon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": -3
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": -2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": -1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t2"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "additionalTargetRequirements": [
+                    {
+                        "type": "TargetOther",
+                        "baseRequirement": {
+                            "type": "TargetObject",
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        },
+                        "id": "t1",
+                        "excludeSource": false
+                    },
+                    {
+                        "type": "TargetOther",
+                        "baseRequirement": {
+                            "type": "TargetObject",
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        },
+                        "id": "t2",
+                        "excludeSource": false
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/98dea71b-2778-4374-8ea2-7fa82f0f6110.jpg?1783926518",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "Blue Dragon's Lightning Breath ability cannot target the same creature multiple times."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "The last two targets are optional, but the first target is not. If an opponent has at least one creature the ability could target, you must choose a target to get -3/-0. (Note that the last two targets can be any creature, not just one an opponent controls.)"
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -614,6 +1125,71 @@
     ]
 }
 
+// Clever Conjurer
+{
+    "name": "Clever Conjurer",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Gnome Wizard",
+    "oracleText": "Mage Hand — {T}: Untap target permanent not named Clever Conjurer. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Clever Conjurer:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsPermanent",
+                                    {
+                                        "type": "Not",
+                                        "predicate": {
+                                            "type": "NameEquals",
+                                            "name": "Clever Conjurer"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Mage Hand — {T}: Untap target permanent not named Clever Conjurer."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"I'm always happy to lend a hand!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b9784c97-3839-4a4b-ae8a-965844dbeb70.jpg?1783926517",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "If Clever Conjurer somehow loses the name Clever Conjurer, perhaps because you mutated another creature on top of it or copied it with Sakashima the Impostor, it can target itself with its Mage Hand ability. How clever!"
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Cloister Gargoyle
 {
     "name": "Cloister Gargoyle",
@@ -688,6 +1264,164 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Contact Other Plane
+{
+    "name": "Contact Other Plane",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Roll a d20.\n1—9 | Draw two cards.\n10—19 | Scry 2, then draw two cards.\n20 | Scry 3, then draw three cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RollDice",
+                    "sides": 20,
+                    "storeTotalAs": "diceResult0"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult0"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult0"
+                                    },
+                                    "operator": "LTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 9
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult0"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 10
+                                    }
+                                },
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult0"
+                                    },
+                                    "operator": "LTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 19
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "Scry",
+                                "count": 2
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "VariableReference",
+                                "variableName": "diceResult0"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 20
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "Scry",
+                                "count": 3
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "artist": "Alix Branwyn",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6fefb38-c6f2-43c4-a6b9-ac82f8827bc2.jpg?1783926518",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "The instruction to roll a die and the effect that occurs because of the result are all part of the same ability. Players do not get the chance to respond to the ability after knowing the result of the roll."
+            }
+        ]
+    }
 }
 
 // Dawnbringer Cleric
@@ -1296,6 +2030,136 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Djinni Windseer
+{
+    "name": "Djinni Windseer",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Djinn",
+    "oracleText": "Flying\nWhen this creature enters, roll a d20.\n1—9 | Scry 1.\n10—19 | Scry 2.\n20 | Scry 3.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Djinni Windseer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RollDice",
+                            "sides": 20,
+                            "storeTotalAs": "diceResult0"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult0"
+                                    },
+                                    "operator": "LTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 9
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Scry",
+                                "count": 1
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "All",
+                                    "conditions": [
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult0"
+                                            },
+                                            "operator": "GTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 10
+                                            }
+                                        },
+                                        {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "VariableReference",
+                                                "variableName": "diceResult0"
+                                            },
+                                            "operator": "LTE",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 19
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "then": {
+                                "type": "Scry",
+                                "count": 2
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult0"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 20
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Scry",
+                                "count": 3
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "artist": "Livia Prima",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/67a42698-bf3b-4352-8178-9c98abfc5b09.jpg?1783926516",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "The instruction to roll a die and the effect that occurs because of the result are all part of the same ability. Players do not get the chance to respond to the ability after knowing the result of the roll."
+            }
+        ]
+    }
 }
 
 // Drider
@@ -3463,6 +4327,84 @@
     ]
 }
 
+// Mordenkainen's Polymorph
+{
+    "name": "Mordenkainen's Polymorph",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, target creature becomes a Dragon with base power and toughness 4/4 and gains flying. (It loses all other creature types.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "SetCreatureSubtypes",
+                    "subtypes": [
+                        "Dragon"
+                    ],
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "SetBaseStats",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "artist": "Oriana Menendez",
+        "flavorText": "\"Your purpose may change along with your shape, but you will serve regardless.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b6551442-d74c-4f16-a9de-0cfdc88208a5.jpg?1783926511",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "The creature doesn't lose any of its abilities."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Mordenkainen's Polymorph will overwrite any previous effects that set the creature's power and toughness to specific values. Effects that otherwise modify the target creature's power and toughness will still apply no matter when they took effect. The same is true for +1/+1 counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Nadaar, Selfless Paladin
 {
     "name": "Nadaar, Selfless Paladin",
@@ -4509,6 +5451,165 @@
     ]
 }
 
+// Scion of Stygia
+{
+    "name": "Scion of Stygia",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Tiefling Shaman",
+    "oracleText": "Flash\nCone of Cold — When this creature enters, choose target creature an opponent controls, then roll a d20.\n1—9 | Tap that creature.\n10—20 | Tap that creature. It doesn't untap during its controller's next untap step.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Scion of Stygia:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RollDice",
+                            "sides": 20,
+                            "storeTotalAs": "diceResult0"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult0"
+                                    },
+                                    "operator": "LTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 9
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "diceResult0"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 10
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "TapUntap",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "DOESNT_UNTAP",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        },
+                                        "duration": "UntilAfterAffectedControllersNextUntap"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Cone of Cold — When this creature enters, choose target creature an opponent controls, then roll a d20. 1—9: tap that creature. 10—20: tap that creature; it doesn't untap during its controller's next untap step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "artist": "Cristi Balanescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8f0abdb4-4898-4818-b7e2-24a90f15e49d.jpg?1783926509",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "An effect that says \"choose a target, then roll a d20\" or similar still uses the normal process of putting an ability on the stack and resolving it. Choosing targets is part of putting the ability on the stack and rolling the d20 happens later, as the ability resolves."
+            }
+        ]
+    }
+}
+
+// Secret Door
+{
+    "name": "Secret Door",
+    "manaCost": "{U}",
+    "typeLine": "Artifact Creature — Wall",
+    "oracleText": "Defender\n{4}{U}: Venture into the dungeon. Activate only as a sorcery. (Enter the first room or advance to the next room.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Secret Door:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{U}"
+                    }
+                },
+                "effect": "VentureIntoTheDungeon",
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "artist": "Francisco Miyara",
+        "flavorText": "The way opened before him, and the dust of centuries stirred in the air.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/3191e400-aa4e-4955-aca0-ecbe63ea240f.jpg?1783926508"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sepulcher Ghoul
 {
     "name": "Sepulcher Ghoul",
@@ -4628,6 +5729,98 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Shocking Grasp
+{
+    "name": "Shocking Grasp",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets -2/-0 until end of turn.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "artist": "Jason Felix",
+        "flavorText": "\"Metal armor? A poor choice.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/ab95fe13-c09b-4eed-aeae-fb1c5b6eb476.jpg?1783926509"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Shortcut Seeker
+{
+    "name": "Shortcut Seeker",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Whenever this creature deals combat damage to a player, venture into the dungeon. (Enter the first room or advance to the next room.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shortcut Seeker:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": "VentureIntoTheDungeon"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "artist": "Artur Treffner",
+        "flavorText": "\"Ah, the old 'trap door under a rug' trick. This is almost too easy.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/122d2635-c4f4-44cd-8f82-37e3016e421e.jpg?1783926508"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -5980,5 +7173,151 @@
     "colorIdentityOverride": [
         "BLUE",
         "BLACK"
+    ]
+}
+
+// You Come to a River
+{
+    "name": "You Come to a River",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Fight the Current — Return target nonland permanent to its owner's hand.\n• Find a Crossing — Target creature gets +1/+0 until end of turn and can't be blocked this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "nonland permanent"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Fight the Current — Return target nonland permanent to its owner's hand."
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "CANT_BE_BLOCKED",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Find a Crossing — Target creature gets +1/+0 and can't be blocked this turn."
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "artist": "Viko Menezes",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/ebf9bab7-98a0-4394-90c0-e7c52e14eb37.jpg?1783926504"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// You See a Guard Approach
+{
+    "name": "You See a Guard Approach",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Distract the Guard — Tap target creature.\n• Hide — Target creature you control gains hexproof until end of turn. (It can't be the target of spells or abilities your opponents control.)",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Distract the Guard — Tap target creature."
+                },
+                {
+                    "effect": {
+                        "type": "GrantKeyword",
+                        "keyword": "HEXPROOF",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Hide — Target creature you control gains hexproof until end of turn."
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "artist": "Mila Pesic",
+        "flavorText": "\"Looks like we've got company.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/30c5fd8e-753a-45e1-bcdd-fb6e072ffbb0.jpg?1783926504"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
