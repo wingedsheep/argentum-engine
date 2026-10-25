@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import com.wingedsheep.engine.core.Outcome
 
 /**
@@ -86,5 +87,20 @@ class DryadArborScenarioTest : FunSpec({
         result.outcome shouldBe Outcome.Done
         driver.isTapped(arbor) shouldBe true
         driver.state.getEntity(me)?.get<ManaPoolComponent>()?.green shouldBe 1
+    }
+
+    test("auto-pay won't tap it for a spell while it's summoning sick") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40), startingLife = 20)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val me = driver.activePlayer!!
+        val arbor = driver.putCardInHand(me, "Dryad Arbor")
+        driver.playLand(me, arbor)
+        driver.putCreatureOnBattlefield(me, "Grizzly Bears").also(driver::removeSummoningSickness)
+        val growth = driver.putCardInHand(me, "Giant Growth")
+
+        driver.castSpell(me, growth).error shouldNotBe null
+        driver.isTapped(arbor) shouldBe false
     }
 })

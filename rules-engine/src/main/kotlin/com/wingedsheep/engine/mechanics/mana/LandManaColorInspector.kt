@@ -88,7 +88,7 @@ object LandManaColorInspector {
     ): List<Effect> {
         val container = state.getEntity(entityId) ?: return emptyList()
         val card = container.get<CardComponent>() ?: return emptyList()
-        if (!card.typeLine.isLand) return emptyList()
+        if (!projected.hasType(entityId, "LAND")) return emptyList()
 
         val effects = mutableListOf<Effect>()
 

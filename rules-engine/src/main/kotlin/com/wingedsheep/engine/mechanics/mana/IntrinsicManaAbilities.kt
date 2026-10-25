@@ -46,9 +46,7 @@ object IntrinsicManaAbilities {
         projected: ProjectedState,
         entityId: EntityId,
     ): List<ActivatedAbility> {
-        val container = state.getEntity(entityId) ?: return emptyList()
-        val card = container.get<CardComponent>() ?: return emptyList()
-        if (!card.typeLine.isLand) return emptyList()
+        if (!projected.hasType(entityId, "LAND")) return emptyList()
 
         return forSubtypes(projected.getSubtypes(entityId))
     }

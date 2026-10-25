@@ -10167,6 +10167,11 @@ staticAbility {
   object's creature subtypes for as long as the removal lasts unless it is still a creature or kindred (CR 205.1a — a
   god below its threshold loses the creature type God), and an attacking or blocking creature that stops being a
   creature is removed from combat by a state-based check (CR 506.4) and doesn't rejoin it.
+  Granting `"LAND"` together with a basic land subtype (`GrantSubtype("Forest", …)` over the same filter) makes a
+  real land with that type's intrinsic mana ability: the mana enumerator, activation and `ManaSolver` auto-pay all
+  read the *projected* type line, so a creature that is a Forest only by the grant taps for {G} — still subject to
+  summoning sickness while it's a creature (Ashaya, Soul of the Wild: "Nontoken creatures you control are Forest lands
+  in addition to their other types").
   `GrantCardType` also takes `includeControlledSpells` / `includeOwnedCardsOutsideBattlefield` (default `false`), the
   card-type twin of `GrantChosenSubtype`'s flags, for "the same is true for permanent spells you control and nonland
   permanent cards you own that aren't on the battlefield" (Encroaching Mycosynth:

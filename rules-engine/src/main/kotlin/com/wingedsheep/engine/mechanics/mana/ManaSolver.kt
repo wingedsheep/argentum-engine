@@ -1440,7 +1440,9 @@ class ManaSolver private constructor(
             // restrictions/riders/activation costs) fold in correctly.
             var landSubtypeSeedColors: Set<Color>? = null
             var landSubtypeSeedColorless = false
-            if (card.typeLine.isLand) {
+            // A land that is also a creature can't use its intrinsic {T} ability while summoning
+            // sick (Dryad Arbor, a creature made a Forest by Ashaya) — same gate as the loop below.
+            if (projected.hasType(entityId, "LAND") && !(isCreature && tapBlockedBySickness)) {
                 val projectedSubtypes = projected.getSubtypes(entityId)
                 val subtypeColors = mutableSetOf<Color>()
                 if (projectedSubtypes.contains("Plains")) subtypeColors.add(Color.WHITE)
@@ -1938,7 +1940,7 @@ class ManaSolver private constructor(
                     producesColors = combinedColors,
                     producesColorless = producesColorless,
                     isBasicLand = isBasicLand,
-                    isLand = card.typeLine.isLand,
+                    isLand = projected.hasType(entityId, "LAND"),
                     isCreature = isCreature,
                     hasNonManaAbilities = hasNonManaAbilities,
                     hasPainCost = hasPainCost,
@@ -1985,12 +1987,14 @@ class ManaSolver private constructor(
             // Skip lands that have non-mana activated abilities but no mana abilities
             // (e.g., fetch lands like Windswept Heath)
             if (!card.typeLine.isLand) return@mapNotNull null
+            // A summoning-sick creature-land can't pay {T} at all, so it has no fallback mana either.
+            if (isCreature && tapBlockedBySickness) return@mapNotNull null
             if (allAbilities.isNotEmpty() && manaAbilities.isEmpty()) return@mapNotNull null
             // A land whose mana ability is dry right now (Gaea's Cradle with no creatures) must not
             // fall through to the colorless default — that would invent a {C} the land cannot
             // produce, which is the same phantom mana this fix exists to remove. Lands whose
             // abilities the loop rejected for *other* reasons (an unsatisfied activation
-            // restriction, a cost shape auto-tap doesn't model, a summoning-sick creature-land)
+            // restriction, a cost shape auto-tap doesn't model)
             // still reach the fallback exactly as before; whether they should is a separate
             // question from this one, and not one to settle silently here.
             if (hadDryManaAbility || hadUnpayableLifeAbility) return@mapNotNull null
@@ -2477,7 +2481,7 @@ class ManaSolver private constructor(
         if (manaAbilities.any { abilityCostHasTap(it.cost) }) return true
         // No printed mana ability: a land with a basic subtype still has the intrinsic tap ability.
         return manaAbilities.isEmpty() &&
-            card.typeLine.isLand &&
+            state.projectedState.hasType(entityId, "LAND") &&
             state.projectedState.getSubtypes(entityId).any { it in basicLandSubtypeNames }
     }
 

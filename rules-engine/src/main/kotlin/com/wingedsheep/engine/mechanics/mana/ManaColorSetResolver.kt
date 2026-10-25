@@ -137,9 +137,7 @@ object ManaColorSetResolver {
         }
         if (targetPlayers.isEmpty()) return emptySet()
         val landIds = state.getBattlefield().filter { permId ->
-            val container = state.getEntity(permId) ?: return@filter false
-            val card = container.get<CardComponent>() ?: return@filter false
-            card.typeLine.isLand && projected.getController(permId) in targetPlayers
+            projected.hasType(permId, "LAND") && projected.getController(permId) in targetPlayers
         }
         return LandManaColorInspector.colorsLandsCouldProduce(state, projected, landIds, cardRegistry)
     }

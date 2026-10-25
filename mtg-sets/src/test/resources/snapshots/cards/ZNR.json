@@ -57,6 +57,81 @@
     }
 }
 
+// Ashaya, Soul of the Wild
+{
+    "name": "Ashaya, Soul of the Wild",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Legendary Creature — Elemental",
+    "oracleText": "Ashaya's power and toughness are each equal to the number of lands you control.\nNontoken creatures you control are Forest lands in addition to their other types. (They're still affected by summoning sickness.)",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land"
+            }
+        }
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantCardType",
+                "cardType": "LAND",
+                "filter": {
+                    "baseFilter": "creature nontoken ctrl:you"
+                }
+            },
+            {
+                "type": "GrantSubtype",
+                "subtype": "Forest",
+                "filter": {
+                    "baseFilter": "creature nontoken ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/74943390-d25f-47cb-90bb-cbf70c87f4a2.jpg?1783929342",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "The ability that defines Ashaya's power and toughness applies in all zones, not just the battlefield."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "As long as Ashaya is on the battlefield, it's affected by its second ability and thus its first ability counts itself."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Because damage remains marked on a creature until the damage is removed as the turn ends, nonlethal damage dealt to Ashaya may become lethal if lands you control leave the battlefield during that turn."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "You can't play creature cards as lands; you'll still have to cast them as spells, and they'll enter the battlefield as lands (in addition to their other types)."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "A land that's a Forest has the intrinsic mana ability \"{T}: Add {G}.\""
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Attended Healer
 {
     "name": "Attended Healer",
