@@ -1116,7 +1116,7 @@ object ZoneMovementUtils {
      *
      * [ReplacementRiderTiming.WITH_REPLACEMENT] riders run inline, as part of the replacement, from
      * a small whitelist: TakeExtraTurnEffect (Ugin's Nexus), AddCountersEffect on the redirected card
-     * (Darigaaz Reincarnated), a fixed GainLifeEffect (The Darkness Crystal), the card-scoped hand
+     * (Darigaaz Reincarnated's `Self`, Dauthi Voidwalker's `TriggeringEntity`), a fixed GainLifeEffect (The Darkness Crystal), the card-scoped hand
      * restrictions CantPlayCardsFromHandEffect / RevealCardInHandEffect on the redirected card
      * (Firestorm Phoenix), and a CompositeEffect of those.
      * [ReplacementRiderTiming.WHEN_YOU_DO] riders ("…exile it instead. When you do, create a 2/2
@@ -1208,9 +1208,18 @@ object ZoneMovementUtils {
             return newState to emptyList()
         }
         if (effect is com.wingedsheep.sdk.scripting.effects.AddCountersEffect && entityId != null) {
+            // "Exile it with a void counter on it" (Dauthi Voidwalker) names the redirected card as
+            // the triggering entity; a self-replacement's "exile it with three egg counters"
+            // (Darigaaz) names Self, which is that same card. Anything else isn't the moved card.
+            val counteredId = when (effect.target) {
+                com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity -> entityId
+                com.wingedsheep.sdk.scripting.targets.EffectTarget.Self ->
+                    entityId.takeIf { sourceId == null || sourceId == entityId }
+                else -> null
+            } ?: return state to emptyList()
             val counterType = effect.counterType
-            val current = state.getEntity(entityId)?.get<CountersComponent>() ?: CountersComponent()
-            val newState = state.updateEntity(entityId) { container ->
+            val current = state.getEntity(counteredId)?.get<CountersComponent>() ?: CountersComponent()
+            val newState = state.updateEntity(counteredId) { container ->
                 container.with(current.withAdded(counterType, effect.count))
             }
             return newState to emptyList()

@@ -951,6 +951,132 @@
     ]
 }
 
+// Dauthi Voidwalker
+{
+    "name": "Dauthi Voidwalker",
+    "manaCost": "{B}{B}",
+    "typeLine": "Creature — Dauthi Rogue",
+    "oracleText": "Shadow (This creature can block or be blocked by only creatures with shadow.)\nIf a card would be put into an opponent's graveyard from anywhere, instead exile it with a void counter on it.\n{T}, Sacrifice this creature: Choose an exiled card an opponent owns with a void counter on it. You may play it this turn without paying its mana cost.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "SHADOW"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dauthi Voidwalker:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Exile",
+                                "player": "Each",
+                                "filter": {
+                                    "statePredicates": [
+                                        {
+                                            "type": "HasCounter",
+                                            "counterType": "VOID"
+                                        }
+                                    ],
+                                    "controllerPredicate": "OwnedByOpponent"
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Choose an exiled card with a void counter to play this turn without paying its mana cost"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "selected1"
+                        },
+                        {
+                            "type": "GrantPlayWithoutPayingCost",
+                            "from": "selected1"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Choose an exiled card an opponent owns with a void counter on it. You may play it this turn without paying its mana cost."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChangeWithEffect",
+                "newDestination": "Exile",
+                "additionalEffect": {
+                    "type": "AddCounters",
+                    "counterType": "VOID",
+                    "count": 1,
+                    "target": "TriggeringEntity"
+                },
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "nontoken own:opponent",
+                    "to": "Graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "RARE",
+        "artist": "Sidharth Chaturvedi",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dce5db87-4a78-4b8d-b5c2-918ccd1ba4e3.jpg?1783926864",
+        "rulings": [
+            {
+                "date": "2021-06-18",
+                "text": "If your opponent discards a card while you control Dauthi Voidwalker, abilities that function when that card is discarded still work, even though that card never reaches that player's graveyard. In addition, spells or abilities that check the characteristics of the discarded card can find that card in exile."
+            },
+            {
+                "date": "2021-06-18",
+                "text": "While Dauthi Voidwalker is on the battlefield, nontoken creatures your opponents control won't die. They'll be exiled instead. Abilities that would trigger when those creatures die won't trigger."
+            },
+            {
+                "date": "2021-06-18",
+                "text": "Tokens still die while Dauthi Voidwalker is on the battlefield."
+            },
+            {
+                "date": "2021-06-18",
+                "text": "If a card has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            },
+            {
+                "date": "2021-06-18",
+                "text": "Playing a card with Dauthi Voidwalker's last ability is still subject to normal timing restrictions."
+            },
+            {
+                "date": "2021-06-18",
+                "text": "If you cast a card this way, you may not cast it for any other alternative costs it has, but you may pay for additional costs, such as kicker costs. If the spell requires an additional cost, you must pay that cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Drey Keeper
 {
     "name": "Drey Keeper",

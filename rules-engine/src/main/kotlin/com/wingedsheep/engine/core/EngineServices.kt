@@ -87,7 +87,7 @@ class EngineServices(
      * Counters and exiles stack objects. Shared by [stackResolver] and the counter / exile-a-spell
      * executors, which need nothing else of the stack machinery.
      */
-    val spellCounterer = SpellCounterer(cardRegistry, predicateEvaluator)
+    val spellCounterer = SpellCounterer(zones)
 
     /**
      * The one effect-executor registry. The cast and land-play pipelines and the cost-payment

@@ -59,6 +59,7 @@ class StackResolver(
         cardRegistry, effects, predicateEvaluator, permanentEntry, entersWithChoicePrompt
     )
     private val spellResolver = SpellResolver(
+        zones = zones,
         cardRegistry = cardRegistry,
         predicateEvaluator = predicateEvaluator,
         targetValidator = targetValidator,
