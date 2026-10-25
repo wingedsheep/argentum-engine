@@ -734,6 +734,11 @@ class ZoneTransitionService(
             // them in SpellCaster, which bypasses this service.
             newState = newState.withoutObjectGrants(entityId)
         }
+        // A card arriving in exile is a new object too: drop any exile grant a path that bypassed
+        // this service left behind, so a re-exiled card never wakes up with its old countdown.
+        if (actualDestZone == Zone.EXILE && fromZone != Zone.BATTLEFIELD) {
+            newState = newState.withoutObjectGrants(entityId)
+        }
 
         // A static ability granted to a card *while it sat in the graveyard* — Case of the Uneaten
         // Feast's "creature cards in your graveyard gain 'You may cast this card from your

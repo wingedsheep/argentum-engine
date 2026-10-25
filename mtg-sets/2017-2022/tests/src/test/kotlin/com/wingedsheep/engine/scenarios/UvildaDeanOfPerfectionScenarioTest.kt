@@ -51,8 +51,15 @@ class UvildaDeanOfPerfectionScenarioTest : ScenarioTestBase() {
         spell { effect = Effects.GainLife(5) }
     }
 
+    /** {6}{U}: only four of the six generic come off, so it still costs {2}{U}. */
+    private val big = card("Uvilda Test Torrent") {
+        manaCost = "{6}{U}"
+        typeLine = "Sorcery"
+        spell { effect = Effects.GainLife(5) }
+    }
+
     init {
-        listOf(insight, doubleBlue, cheap).forEach { cardRegistry.register(it) }
+        listOf(insight, doubleBlue, cheap, big).forEach { cardRegistry.register(it) }
 
         fun TestGame.exiled(name: String): EntityId? =
             state.getExile(player1Id).firstOrNull { state.getEntity(it)!!.get<CardComponent>()!!.name == name }
@@ -87,10 +94,10 @@ class UvildaDeanOfPerfectionScenarioTest : ScenarioTestBase() {
             }
         }
 
-        fun board(spell: String, vararg extra: String) = scenario()
+        fun board(spell: String, vararg extra: String, islands: Int = 1) = scenario()
             .withPlayers("Player", "Opponent")
             .withCardOnBattlefield(1, "Uvilda, Dean of Perfection")
-            .withCardOnBattlefield(1, "Island")
+            .withLandsOnBattlefield(1, "Island", islands)
             .withCardInHand(1, spell)
             .apply { extra.forEach { withCardOnBattlefield(2, it) } }
             .apply { repeat(6) { withCardInLibrary(1, "Island"); withCardInLibrary(2, "Island") } }
@@ -160,6 +167,32 @@ class UvildaDeanOfPerfectionScenarioTest : ScenarioTestBase() {
             withClue("one Island can't pay {U}{U}; the card stays exiled") {
                 game.getLifeTotal(1) shouldBe life
                 game.exiled("Uvilda Test Tide") shouldBe card
+            }
+        }
+
+        test("the reduction takes exactly four generic: {6}{U} costs {2}{U}") {
+            val oneIsland = board("Uvilda Test Torrent")
+            oneIsland.exileWithUvilda("Uvilda Test Torrent")
+            val card = oneIsland.exiled("Uvilda Test Torrent")!!
+            oneIsland.setRefine(card, 1)
+            val life = oneIsland.getLifeTotal(1)
+            oneIsland.toOwnUpkeep()
+            oneIsland.answerYesNo(true)
+            oneIsland.resolveStack()
+            withClue("one Island can't pay {2}{U}") {
+                oneIsland.getLifeTotal(1) shouldBe life
+                oneIsland.exiled("Uvilda Test Torrent") shouldBe card
+            }
+
+            val threeIslands = board("Uvilda Test Torrent", islands = 3)
+            threeIslands.exileWithUvilda("Uvilda Test Torrent")
+            val again = threeIslands.exiled("Uvilda Test Torrent")!!
+            threeIslands.setRefine(again, 1)
+            threeIslands.toOwnUpkeep()
+            threeIslands.answerYesNo(true)
+            threeIslands.resolveStack()
+            withClue("three Islands pay {2}{U}") {
+                threeIslands.isInGraveyard(1, "Uvilda Test Torrent") shouldBe true
             }
         }
 
