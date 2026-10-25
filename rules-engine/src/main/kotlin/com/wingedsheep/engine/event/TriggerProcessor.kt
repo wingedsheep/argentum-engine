@@ -1029,18 +1029,19 @@ class TriggerProcessor(
         ),
     )
 
-    /** True when every mandatory target requirement of [mode] has at least one legal target. */
     /**
      * Every legal target of [mode]'s requirements — the pool [DistinctModeTargets] matches modes
-     * against — or `null` for a mode that targets nothing and so claims no target.
+     * against — or `null` for a mode that needn't claim one: no target requirements, or only
+     * optional ("up to one") ones, which can be chosen with zero targets.
      */
     private fun modeTargetPool(
         state: GameState,
         ability: TriggeredAbilityOnStackComponent,
         mode: com.wingedsheep.sdk.scripting.effects.Mode
-    ): Set<EntityId>? = mode.targetRequirements.takeIf { it.isNotEmpty() }
+    ): Set<EntityId>? = mode.targetRequirements.takeIf { reqs -> reqs.any { it.effectiveMinCount > 0 } }
         ?.flatMapTo(mutableSetOf()) { findModeLegalTargets(state, ability, it) }
 
+    /** True when every mandatory target requirement of [mode] has at least one legal target. */
     private fun modeHasLegalTargets(
         state: GameState,
         ability: TriggeredAbilityOnStackComponent,

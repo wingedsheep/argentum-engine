@@ -92,6 +92,24 @@ class ShadrixSilverquillScenarioTest : ScenarioTestBase() {
             game.getLifeTotal(1) shouldBe 19
         }
 
+        test("the counter mode may target an opponent who controls no creatures") {
+            val game = board()
+            game.passUntilPhase(Phase.COMBAT, Step.BEGIN_COMBAT)
+
+            game.pickMode("draws a card")
+            game.pickMode("+1/+1 counter")
+            game.selectTargets(listOf(game.player1Id)).error shouldBe null
+            withClue("Player2 controls no creatures yet is the counter mode's target") {
+                game.getPendingDecision() shouldBe null
+            }
+            val myHand = game.handSize(1)
+            game.resolveStack()
+
+            game.handSize(1) shouldBe myHand + 1
+            game.getLifeTotal(1) shouldBe 19
+            game.plusOneCounters("Grizzly Bears") shouldBe 0
+        }
+
         test("you may choose no mode, but never just one") {
             val game = board()
             game.passUntilPhase(Phase.COMBAT, Step.BEGIN_COMBAT)

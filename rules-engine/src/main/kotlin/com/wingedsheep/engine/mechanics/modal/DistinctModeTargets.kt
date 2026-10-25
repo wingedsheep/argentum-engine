@@ -8,9 +8,12 @@ import com.wingedsheep.sdk.model.EntityId
  *
  * Every targeting mode claims a target no other chosen mode may share, so whether a set of modes
  * can be chosen together is a bipartite matching of modes to targets. A mode's *pool* is the union
- * of its requirements' legal targets; a mode with no target requirements has a `null` pool and
- * claims nothing. Mode menus and target pools are tiny (a handful of modes, the players at the
- * table), so a plain augmenting-path matching is all this needs.
+ * of its requirements' legal targets; a mode with no mandatory target requirement has a `null`
+ * pool and claims nothing. Each claiming mode is counted as taking one target — exact for every
+ * printed card with this wording, whose modes each have a single "target player/opponent"; a mode
+ * with several mandatory targets would need one slot per target here. Mode menus and target
+ * pools are tiny (a handful of modes, the players at the table), so a plain augmenting-path
+ * matching is all this needs.
  */
 internal object DistinctModeTargets {
 
