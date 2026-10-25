@@ -38,7 +38,7 @@ val BlueDragon = card("Blue Dragon") {
     triggeredAbility {
         trigger = Triggers.self.enters()
         val first = target(TargetFilter.Creature.opponentControls())
-        // Distinct names: target bindings are keyed by name, so the two optional slots must differ.
+        // "Other" = other than the earlier targets (TargetOther); the Dragon itself stays legal.
         val second = target(
             TargetOther(TargetObject(filter = TargetFilter.Creature, optional = true), excludeSource = false)
         )
