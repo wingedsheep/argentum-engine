@@ -682,7 +682,7 @@ object SetArchetypes {
                 Archetype("Pack Tactics", listOf(Color.RED, Color.GREEN),
                     "Attack with big creatures and reach 6 total power to switch on pack tactics bonuses every combat. A stompy aggro deck that rewards curving into ever-larger attackers."),
                 Archetype("Life Gain Counters", listOf(Color.GREEN, Color.WHITE),
-                    "Gain life in small bursts and grow creatures with +1/+1 counters each time you do. A go-wide midrange deck whose team outsizes blockers while the life total keeps it out of reach."),
+                    "Gain life in small bursts and grow lifegain payoffs with +1/+1 counters each time you do. A go-wide midrange deck whose team outsizes blockers while the life total keeps it out of reach."),
                 Archetype("Venture Recursion", listOf(Color.WHITE, Color.BLACK),
                     "Venture into the dungeon and bring cheap creatures back from the graveyard to keep the board full. A grindy midrange deck that never runs out of bodies."),
                 Archetype("Dice Rolling", listOf(Color.BLUE, Color.RED),

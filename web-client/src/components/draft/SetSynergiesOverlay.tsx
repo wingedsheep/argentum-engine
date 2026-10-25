@@ -1513,7 +1513,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Life Gain Counters',
         colors: ['G', 'W'],
         keyCard: 'Trelasarra, Moon Dancer',
-        description: 'Gain life in small bursts and grow creatures with +1/+1 counters each time you do. A go-wide midrange deck whose team outsizes blockers while the life total keeps it out of reach.',
+        description: 'Gain life in small bursts and grow lifegain payoffs with +1/+1 counters each time you do. A go-wide midrange deck whose team outsizes blockers while the life total keeps it out of reach.',
       },
       {
         name: 'Venture Recursion',
