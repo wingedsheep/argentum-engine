@@ -40,7 +40,7 @@ val Mimic = card("Mimic") {
             creatureTypes = setOf("Shapeshifter"),
             duration = Duration.EndOfTurn,
         )
-        description = "{2}: This artifact becomes a 3/3 Shapeshifter artifact creature until end of turn."
+        description = "{2}: This artifact becomes a Shapeshifter artifact creature with base power and toughness 3/3 until end of turn."
     }
 
     metadata {

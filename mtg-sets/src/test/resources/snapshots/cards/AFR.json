@@ -8403,7 +8403,7 @@
                         "Shapeshifter"
                     ]
                 },
-                "descriptionOverride": "{2}: This artifact becomes a 3/3 Shapeshifter artifact creature until end of turn."
+                "descriptionOverride": "{2}: This artifact becomes a Shapeshifter artifact creature with base power and toughness 3/3 until end of turn."
             }
         ]
     },
@@ -10862,15 +10862,12 @@
                                         "filter": {
                                             "baseFilter": {
                                                 "cardPredicates": [
-                                                    "IsArtifact",
-                                                    {
-                                                        "type": "NameEquals",
-                                                        "name": "Spare Dagger"
-                                                    }
+                                                    "IsArtifact"
                                                 ],
                                                 "statePredicates": [
-                                                    "IsAttachedToSource"
-                                                ]
+                                                    "IsGrantingPermanent"
+                                                ],
+                                                "controllerPredicate": "ControlledByYou"
                                             }
                                         }
                                     },

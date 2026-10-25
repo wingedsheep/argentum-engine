@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 
 /**
@@ -29,12 +30,11 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  *   the stack to choose any target and deal 1 damage. The damage source defaults to the granted
  *   ability's source — the equipped creature — matching "this creature deals 1 damage."
  *
- * "sacrifice Spare Dagger" — a card naming itself means that object, so the name refers only to the specific granting
- * Equipment. A granted *triggered* ability resolves with the equipped creature as its source
- * (not the Equipment), so the sacrifice is scoped with `.attachedToSource()` to "the Spare
- * Dagger attached to this creature" — i.e. the Equipment that granted the ability. With a second
- * Spare Dagger elsewhere on the battlefield this correctly leaves it untouched (only the one
- * attached to the attacking creature is a legal sacrifice).
+ * "sacrifice Spare Dagger" — a card naming itself means that object: the Equipment that granted
+ * the ability. A granted *triggered* ability resolves with the equipped creature as its source, so
+ * the sacrifice is scoped to [StatePredicate.IsGrantingPermanent] (the Trickster's Talisman idiom)
+ * rather than by name — a second Spare Dagger, even one on the same creature, is never offered —
+ * and to `youControl()`, since you can only sacrifice a permanent you control.
  */
 val SpareDagger = card("Spare Dagger") {
     manaCost = "{1}"
@@ -60,7 +60,9 @@ val SpareDagger = card("Spare Dagger") {
                         val toSacrifice = selectTarget(
                             TargetObject(
                                 filter = TargetFilter(
-                                    GameObjectFilter.Artifact.named("Spare Dagger").attachedToSource()
+                                    GameObjectFilter.Artifact
+                                        .withStatePredicate(StatePredicate.IsGrantingPermanent)
+                                        .youControl()
                                 )
                             ),
                             nonTargeting = true,
