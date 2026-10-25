@@ -282,6 +282,7 @@ class Strategist(
         lifelinkWaitsForBlocks = lifelinkWaitsForBlocks,
         tapToGrowAtTheirEndStep = tapToGrowAtTheirEndStep,
         boardPresenceWeight = boardPresenceWeight,
+        legalActions = simulator::getLegalActions,
     )
 
     /**

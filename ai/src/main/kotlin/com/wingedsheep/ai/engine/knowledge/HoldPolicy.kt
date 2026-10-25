@@ -4,6 +4,7 @@ import com.wingedsheep.ai.engine.evaluation.EvaluationWeights
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
@@ -121,8 +122,10 @@ class HoldPolicy(
     private val taxCountersReadTheirMana: Boolean = false,
     /**
      * [AiProfile.refuseWastedPayoffs][com.wingedsheep.ai.engine.AiProfile.refuseWastedPayoffs] —
-     * refuse a permanent whose entry trigger has nothing to target ([TargetlessEntry]) and an
-     * end-of-turn shrink on a creature with no fight left ([ExpiringGrantWindow]).
+     * refuse a permanent whose entry trigger has nothing to target ([TargetlessEntry]), an
+     * end-of-turn shrink on a creature with no fight left ([ExpiringGrantWindow]), an end-of-combat
+     * sweep keyed on blocks its creature will never make ([IdleBlockWatcher]) and a spells-only
+     * mana grant nothing castable would spend ([UnspendableManaGrant]).
      */
     private val refuseWastedPayoffs: Boolean = false,
     /**
@@ -142,6 +145,12 @@ class HoldPolicy(
      * fallback's, which is what every profile that does not opt in would have used anyway.
      */
     private val boardPresenceWeight: Double = EvaluationWeights.DEFAULT.boardPresence,
+    /**
+     * The engine's legal actions for a player in a position — what [UnspendableManaGrant] asks of
+     * the leaf a mana grant resolves to. Null where no engine is wired, and that reader then
+     * declines.
+     */
+    private val legalActions: ((GameState, EntityId) -> List<LegalAction>)? = null,
 ) {
 
     /** Whether this policy can say anything. False when the agent has no card knowledge. */
@@ -184,13 +193,17 @@ class HoldPolicy(
         val intent = intents.forName(cardName) ?: return TimingVerdict.Neutral
 
         // A permanent whose entry has nothing to point at — or an Aura whose entry is gated on a
-        // creature it is not being cast onto — does nothing in any window.
+        // creature it is not being cast onto — does nothing in any window. Nor does a sweep over
+        // what a creature blocked when it can block nothing more, or borrowed spell mana with no
+        // spell to spend it on.
         if (refuseWastedPayoffs && cast != null) {
             val definition = intents.definition(cardName)
             val predicates = intents.predicates
             if (definition != null && predicates != null &&
                 (TargetlessEntry.holds(state, playerId, definition, cast.cardId, predicates) ||
-                    UnmetAuraEntry.holds(state, playerId, definition, cast.cardId, cast.targets, predicates))
+                    UnmetAuraEntry.holds(state, playerId, definition, cast.cardId, cast.targets, predicates) ||
+                    IdleBlockWatcher.holds(state, definition, cast.targets) ||
+                    UnspendableManaGrant.holds(playerId, definition, leaf, legalActions))
             ) {
                 return TimingVerdict.NoWindow
             }

@@ -1159,6 +1159,16 @@ data class AiProfile(
      *   this-turn can't-attack/can't-block where it restrains nothing — and, when the only other
      *   payoff is a counter on a source that taps, where activating now keeps it tapped through the
      *   window that matters.
+     * - **An end-of-combat sweep over blocks that won't happen.** 2026-10-25 playtest, turn 27:
+     *   Glyph of Doom cast on our own Wall in our own precombat main, where the Wall can't block.
+     *   [com.wingedsheep.ai.engine.knowledge.IdleBlockWatcher] floors a spell whose only effect is an
+     *   end-of-combat sweep over what its target blocked this turn, when that creature has blocked
+     *   nothing and can't block before the sweep fires.
+     * - **Borrowed spell mana with no spell to spend it on.** Same playtest, turn 26: Piracy cast
+     *   holding only counterspells, with nothing to counter.
+     *   [com.wingedsheep.ai.engine.knowledge.UnspendableManaGrant] floors a spell whose only effect is
+     *   an until-end-of-turn, spells-only "tap permanents you don't control for mana" grant when the
+     *   position it resolves to offers no affordable spell with fillable targets.
      */
     val refuseWastedPayoffs: Boolean = false,
     /**
