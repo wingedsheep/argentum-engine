@@ -3,6 +3,7 @@ package com.wingedsheep.ai.engine
 import com.wingedsheep.ai.engine.knowledge.HoldPolicy
 import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.ai.engine.knowledge.TimingVerdict
+import com.wingedsheep.ai.engine.knowledge.UnspendableManaGrant
 import com.wingedsheep.ai.puzzles.advanceToPriority
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.GameAction
@@ -10,7 +11,9 @@ import com.wingedsheep.engine.legalactions.EnumerationMode
 import com.wingedsheep.engine.legalactions.LegalActionEnumerator
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.core.Zone
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -74,6 +77,30 @@ class RefuseUnspendableManaGrantTest : ScenarioTestBase() {
 
             game.piracyVerdict() shouldNotBe TimingVerdict.NoWindow
             game.castName(game.choice()) shouldBe "Piracy"
+        }
+
+        test("an instant copy of the grant cast in an opponent's upkeep is not refused") {
+            val game = position("Extinguish", "Extinguish")
+            // Test-local instant reuse of Piracy's shape: same spell effect, instant speed.
+            val instantPiracy = cardRegistry.requireCard("Piracy").copy(typeLine = TypeLine.instant())
+            val enumerate = { s: com.wingedsheep.engine.state.GameState, p: com.wingedsheep.sdk.model.EntityId ->
+                enumerator.enumerate(s, p, EnumerationMode.ACTIONS_ONLY)
+            }
+            val ownMain = game.state
+            game.castSpell(1, "Piracy")
+            game.resolveStack()
+            val leaf = game.state
+            // Nothing castable afterwards: our own main phase, empty stack — refused.
+            UnspendableManaGrant.holds(ownMain, game.player1Id, instantPiracy, leaf, enumerate) shouldBe true
+
+            // Same hand and board, but cast in the opponent's upkeep with an empty stack: the borrowed
+            // mana could still pay for a counter later that turn, so the grant is not refused.
+            val theirUpkeep = ownMain.copy(
+                activePlayerId = game.player2Id,
+                phase = Phase.BEGINNING,
+                step = Step.UPKEEP,
+            )
+            UnspendableManaGrant.holds(theirUpkeep, game.player1Id, instantPiracy, leaf, enumerate) shouldBe false
         }
     }
 }

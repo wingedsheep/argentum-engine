@@ -25,6 +25,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *  - an **instant or sorcery** with no faces whose spell effect is exactly one
  *    [TapForManaPermanentsYouDontControlEffect] for its controller, lasting **until end of turn**,
  *    with the [ManaRestriction.SpellsOnly] restriction — so no activated ability can spend it either;
+ *  - cast in **our own main phase with an empty stack** — the position the closing paragraph's
+ *    assumption needs, so an instant copy cast on an opponent's turn (or in response) is never
+ *    refused;
  *  - and in the position the cast resolves to (the [leaf]: stack empty, nothing pending, priority
  *    back with us), the engine offers us **no affordable spell cast** whose targets can be filled.
  *    That enumeration already counts the borrowed sources, so a spell that becomes castable only
@@ -38,6 +41,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 internal object UnspendableManaGrant {
 
     fun holds(
+        state: GameState,
         playerId: EntityId,
         definition: CardDefinition,
         leaf: GameState?,
@@ -53,6 +57,8 @@ internal object UnspendableManaGrant {
         ) {
             return false
         }
+        // The assumption below only holds where the cast happens: our main phase, nothing on the stack.
+        if (state.activePlayerId != playerId || !state.step.isMainPhase || state.stack.isNotEmpty()) return false
 
         // Only a fully resolved leaf, back in our hands, says what we could do with the grant.
         if (leaf.gameOver || leaf.pendingDecision != null || leaf.stack.isNotEmpty() ||

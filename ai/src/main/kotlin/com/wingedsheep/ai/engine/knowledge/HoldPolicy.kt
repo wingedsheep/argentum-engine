@@ -203,7 +203,7 @@ class HoldPolicy(
                 (TargetlessEntry.holds(state, playerId, definition, cast.cardId, predicates) ||
                     UnmetAuraEntry.holds(state, playerId, definition, cast.cardId, cast.targets, predicates) ||
                     IdleBlockWatcher.holds(state, definition, cast.targets) ||
-                    UnspendableManaGrant.holds(playerId, definition, leaf, legalActions))
+                    UnspendableManaGrant.holds(state, playerId, definition, leaf, legalActions))
             ) {
                 return TimingVerdict.NoWindow
             }
