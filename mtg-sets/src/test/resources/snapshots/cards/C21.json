@@ -70,6 +70,137 @@
     ]
 }
 
+// Archaeomancer's Map
+{
+    "name": "Archaeomancer's Map",
+    "manaCost": "{2}{W}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, search your library for up to two basic Plains cards, reveal them, put them into your hand, then shuffle.\nWhenever a land an opponent controls enters, if that player controls more lands than you, you may put a land card from your hand onto the battlefield.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Archaeomancer's Map:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland Plains"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for up to two basic Plains cards to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            },
+            {
+                "id": "Archaeomancer's Map:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:opponent",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "land"
+                            },
+                            "storeAs": "put_candidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "put_candidates",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "putting"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "putting",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "ControllerOfTriggeringEntity",
+                        "filter": "land"
+                    },
+                    "operator": "GT",
+                    "right": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "RARE",
+        "artist": "Ovidio Cartagena",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/703d0bdc-01a0-4ba8-8536-e7425dfb3b1f.jpg?1783927609",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "The last ability triggers only if that opponent controls more lands than you after the land enters the battlefield. The ability will check again as it tries to resolve. If that opponent doesn't still control more lands than you at that time, the ability won't resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Curiosity Crafter
 {
     "name": "Curiosity Crafter",

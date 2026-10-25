@@ -1,3 +1,263 @@
+// Emet-Selch of the Third Seat
+{
+    "name": "Emet-Selch of the Third Seat",
+    "manaCost": "{2}{U}{B}",
+    "typeLine": "Legendary Creature — Elder Wizard",
+    "oracleText": "Spells you cast from your graveyard cost {2} less to cast.\nWhenever one or more opponents lose life, you may cast target instant or sorcery card from your graveyard. If that spell would be put into your graveyard, exile it instead. Do this only once each turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Emet-Selch of the Third Seat:1",
+                "trigger": {
+                    "type": "LifeLossEvent",
+                    "player": "EachOpponent",
+                    "batch": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "CastFromCollectionWithoutPayingCost",
+                                "from": "gathered0",
+                                "payManaCost": true,
+                                "insteadOfGraveyard": "EXILE"
+                            },
+                            "descriptionOverride": "You may cast target instant or sorcery card from your graveyard."
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "instant|sorcery own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "effectOncePerTurn": true,
+                "descriptionOverride": "Whenever one or more opponents lose life, you may cast target instant or sorcery card from your graveyard. If that spell would be put into your graveyard, exile it instead. Do this only once each turn."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCastFromZones",
+                    "zones": [
+                        "Graveyard"
+                    ]
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "RARE",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd3141de-633e-48e3-a89f-a91339f5e882.jpg?1783906347",
+        "rulings": [
+            {
+                "date": "2025-06-06",
+                "text": "You choose whether to cast the target card while Emet-Selch of the Third Seat's second ability is still on the stack. You can't wait to cast it later in the turn. Timing restrictions based on the card's type are ignored."
+            },
+            {
+                "date": "2025-06-06",
+                "text": "The cost reduction applies only to generic mana in the total cost of spells you cast from your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Fandaniel, Telophoroi Ascian
+{
+    "name": "Fandaniel, Telophoroi Ascian",
+    "manaCost": "{4}{B}",
+    "typeLine": "Legendary Creature — Elder Wizard",
+    "oracleText": "Whenever you cast an instant or sorcery spell, surveil 1.\nAt the beginning of your end step, each opponent may sacrifice a nontoken creature of their choice. Each opponent who doesn't loses 2 life for each instant and sorcery card in your graveyard.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Fandaniel, Telophoroi Ascian:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Surveil",
+                    "count": 1
+                }
+            },
+            {
+                "id": "Fandaniel, Telophoroi Ascian:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "BattlefieldMatching",
+                                            "filter": "creature nontoken",
+                                            "player": "You"
+                                        },
+                                        "storeAs": "gathered1"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered1",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected2",
+                                        "prompt": "You may sacrifice a nontoken creature, or lose 2 life for each instant and sorcery card in Fandaniel's controller's graveyard",
+                                        "selectedLabel": "Sacrifice",
+                                        "useTargetingUI": true
+                                    },
+                                    {
+                                        "type": "Gated",
+                                        "gate": {
+                                            "type": "Gate.WhenCondition",
+                                            "condition": {
+                                                "type": "Not",
+                                                "condition": {
+                                                    "type": "CollectionContainsMatch",
+                                                    "collection": "selected2"
+                                                }
+                                            }
+                                        },
+                                        "then": {
+                                            "type": "StorePlayer",
+                                            "storeAs": "players3"
+                                        }
+                                    }
+                                ]
+                            },
+                            "collectCollections": {
+                                "selected2": "collected4",
+                                "players3": "collected5"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "collected4",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Sacrifice"
+                        },
+                        {
+                            "type": "StoreNumber",
+                            "name": "number7",
+                            "amount": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Graveyard",
+                                "filter": "instant|sorcery"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": {
+                                    "type": "InCollection",
+                                    "collection": "collected5"
+                                }
+                            },
+                            "body": {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Multiply",
+                                    "amount": {
+                                        "type": "VariableReference",
+                                        "variableName": "number7"
+                                    },
+                                    "multiplier": 2
+                                },
+                                "target": "Controller"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your end step, each opponent may sacrifice a nontoken creature of their choice. Each opponent who doesn't loses 2 life for each instant and sorcery card in your graveyard."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "RARE",
+        "artist": "Paulius Daščioras",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/08c9bf6c-fc52-4565-96d1-951a314e59e5.jpg?1783906359",
+        "rulings": [
+            {
+                "date": "2025-06-06",
+                "text": "While resolving Fandaniel's second ability, the next opponent in turn order chooses up to one nontoken creature to be sacrificed, then each other opponent in turn order does the same. Then each of the chosen creatures are sacrificed simultaneously. Finally, each opponent who didn't sacrifice a creature this way loses 2 life for each instant and sorcery card in your graveyard."
+            },
+            {
+                "date": "2025-06-06",
+                "text": "Fandaniel's first ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered or otherwise leaves the stack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Kefka, Dancing Mad
 {
     "name": "Kefka, Dancing Mad",
@@ -147,6 +407,292 @@
     ]
 }
 
+// Lyse Hext
+{
+    "name": "Lyse Hext",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Legendary Creature — Human Rebel Monk",
+    "oracleText": "Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\nNoncreature spells you cast cost {1} less to cast.\nAs long as you've cast two or more noncreature spells this turn, Lyse Hext has double strike.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "PROWESS"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lyse Hext:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "noncreature"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "DOUBLE_STRIKE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "SpellsCastThisTurn",
+                        "filter": "noncreature"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "RARE",
+        "artist": "Ramza Psyru",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/97845ece-ceef-468c-a4e3-6fde1413c9f0.jpg?1783906345",
+        "rulings": [
+            {
+                "date": "2025-06-06",
+                "text": "Noncreature spells that were cast before Lyse Hext entered count. For example, if Lyse Hext enters on a turn where you've already cast two noncreature spells, she'll have double strike immediately."
+            },
+            {
+                "date": "2025-06-06",
+                "text": "The cost reduction applies only to generic mana in the total cost of noncreature spells you cast."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
+// Papalymo Totolymo
+{
+    "name": "Papalymo Totolymo",
+    "manaCost": "{W}{B}",
+    "typeLine": "Legendary Creature — Dwarf Wizard",
+    "oracleText": "Whenever you cast a noncreature spell, Papalymo Totolymo deals 1 damage to each opponent and you gain 1 life.\n{4}, {T}, Sacrifice Papalymo Totolymo: Each opponent who lost life this turn sacrifices a creature with the greatest power among creatures they control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Papalymo Totolymo:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you cast a noncreature spell, Papalymo Totolymo deals 1 damage to each opponent and you gain 1 life."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Papalymo Totolymo:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "Compare",
+                                        "left": {
+                                            "type": "TurnTracking",
+                                            "player": "You",
+                                            "tracker": "LIFE_LOST_AMOUNT"
+                                        },
+                                        "operator": "GTE",
+                                        "right": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "type": "StorePlayer",
+                                    "storeAs": "players1"
+                                }
+                            },
+                            "collectCollections": {
+                                "players1": "collected2"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": {
+                                    "type": "InCollection",
+                                    "collection": "collected2"
+                                }
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "BattlefieldMatching",
+                                            "filter": "creature",
+                                            "player": "You"
+                                        },
+                                        "storeAs": "gathered4"
+                                    },
+                                    {
+                                        "type": "FilterCollection",
+                                        "from": "gathered4",
+                                        "collectionFilter": "GreatestPower",
+                                        "storeMatching": "matching5"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "matching5",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected6",
+                                        "prompt": "Sacrifice a creature with the greatest power among creatures you control",
+                                        "selectedLabel": "Sacrifice",
+                                        "useTargetingUI": true
+                                    }
+                                ]
+                            },
+                            "collectCollections": {
+                                "selected6": "collected7"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "collected7",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Sacrifice"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Each opponent who lost life this turn sacrifices a creature with the greatest power among creatures they control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "rarity": "RARE",
+        "artist": "Immanuela Crovius",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b876b1e-fcf4-4e5c-81b0-1080ac8099ed.jpg?1783906343",
+        "rulings": [
+            {
+                "date": "2025-06-06",
+                "text": "While resolving Papalymo Totolymo's second ability, the next opponent in turn order who lost life this turn chooses a creature with the greatest power among creatures they control, then each other opponent who lost life this turn in turn order does the same. Then each of the chosen creatures are sacrificed simultaneously."
+            },
+            {
+                "date": "2025-06-06",
+                "text": "Papalymo Totolymo's first ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered or otherwise leaves the stack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Tataru Taru
 {
     "name": "Tataru Taru",
@@ -240,5 +786,266 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Transpose
+{
+    "name": "Transpose",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Draw a card, then discard a card. You lose 1 life. If this spell was cast from your hand, create a 0/1 black Wizard creature token with \"Whenever you cast a noncreature spell, this token deals 1 damage to each opponent.\"\nRebound (If you cast this spell from your hand, exile it as it resolves. At the beginning of your next upkeep, you may cast this card from exile without paying its mana cost.)",
+    "keywords": [
+        "REBOUND"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Controller"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "WasCastFromHand"
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "power": 0,
+                        "toughness": 1,
+                        "colors": [
+                            "BLACK"
+                        ],
+                        "creatureTypes": [
+                            "Wizard"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/1/8/187fe54c-7d0c-4225-9d46-3affbead897d.jpg?1783906133",
+                        "triggeredAbilities": [
+                            {
+                                "id": "Transpose:1",
+                                "trigger": {
+                                    "type": "SpellCastEvent",
+                                    "spellFilter": {
+                                        "cardPredicates": [
+                                            "IsNoncreature"
+                                        ]
+                                    }
+                                },
+                                "binding": "ANY",
+                                "effect": {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "target": {
+                                        "type": "PlayerRef",
+                                        "player": "EachOpponent"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "rarity": "RARE",
+        "artist": "Toni Infante",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66392b0e-8691-42a4-bc84-03b017174a73.jpg?1783906356",
+        "rulings": [
+            {
+                "date": "2025-06-06",
+                "text": "The Wizard token's ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered or otherwise leaves the stack."
+            },
+            {
+                "date": "2025-06-06",
+                "text": "Casting the card again due to rebound's delayed triggered ability is optional. If you choose not to cast the card, or if you can't because an effect prohibits it, the card will stay exiled. You won't get another chance to cast it on a future turn. If you do cast the card, it's put into its owner's graveyard as normal once it resolves."
+            },
+            {
+                "date": "2025-06-06",
+                "text": "If a spell with rebound that you cast from your hand doesn't resolve for any reason, including being countered, that spell won't resolve and none of its effects will happen, including rebound. The spell will be put into its owner's graveyard and you won't get to cast it again on your next turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Y'shtola, Night's Blessed
+{
+    "name": "Y'shtola, Night's Blessed",
+    "manaCost": "{1}{W}{U}{B}",
+    "typeLine": "Legendary Creature — Cat Warlock",
+    "oracleText": "Vigilance\nAt the beginning of each end step, if a player lost 4 or more life this turn, you draw a card.\nWhenever you cast a noncreature spell with mana value 3 or greater, Y'shtola deals 2 damage to each opponent and you gain 2 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Y'shtola, Night's Blessed:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "CountPlayersWith",
+                        "scope": "Each",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "TurnTracking",
+                                "player": "You",
+                                "tracker": "LIFE_LOST_AMOUNT"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "At the beginning of each end step, if a player lost 4 or more life this turn, you draw a card."
+            },
+            {
+                "id": "Y'shtola, Night's Blessed:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature",
+                            {
+                                "type": "ManaValueAtLeast",
+                                "min": 3
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you cast a noncreature spell with mana value 3 or greater, Y'shtola deals 2 damage to each opponent and you gain 2 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "MYTHIC",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c7f2c2d5-e052-49e8-b5de-712858c2ea78.jpg?1783906373",
+        "rulings": [
+            {
+                "date": "2025-06-06",
+                "text": "For spells on the stack with {X} in their mana costs, use the value chosen for X to determine the spell's mana value."
+            },
+            {
+                "date": "2025-06-06",
+                "text": "Y'shtola's last ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered or otherwise leaves the stack."
+            },
+            {
+                "date": "2025-06-06",
+                "text": "Y'shtola's second ability checks at the moment it would trigger to see if a player lost 4 or more life this turn. If none did, the ability won't trigger at all. Once an end step begins, it's too late to cause a player to lose life in order to cause this ability to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK"
     ]
 }

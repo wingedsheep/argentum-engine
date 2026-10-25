@@ -1,1 +1,329 @@
+// Dihada, Binder of Wills
+{
+    "name": "Dihada, Binder of Wills",
+    "manaCost": "{1}{R}{W}{B}",
+    "typeLine": "Legendary Planeswalker — Dihada",
+    "oracleText": "+2: Up to one target legendary creature gains vigilance, lifelink, and indestructible until your next turn.\n−3: Reveal the top four cards of your library. Put any number of legendary cards from among them into your hand and the rest into your graveyard. Create a Treasure token for each card put into your graveyard this way.\n−11: Gain control of all nonland permanents until end of turn. Untap them. They gain haste until end of turn.\nDihada, Binder of Wills can be your commander.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dihada, Binder of Wills:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "VIGILANCE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "LIFELINK",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "INDESTRUCTIBLE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsLegendary"
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Up to one target legendary creature gains vigilance, lifelink, and indestructible until your next turn."
+            },
+            {
+                "id": "Dihada, Binder of Wills:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsLegendary"
+                                ]
+                            },
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "Put any number of legendary cards into your hand",
+                            "selectedLabel": "Put into your hand",
+                            "remainderLabel": "Put into your graveyard",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "storeMovedAs": "moved3"
+                        },
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Treasure",
+                            "dynamicCount": {
+                                "type": "VariableReference",
+                                "variableName": "moved3_count"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Reveal the top four cards of your library. Put any number of legendary cards from among them into your hand and the rest into your graveyard. Create a Treasure token for each card put into your graveyard this way."
+            },
+            {
+                "id": "Dihada, Binder of Wills:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -11
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "nonland permanent"
+                                }
+                            },
+                            "body": {
+                                "type": "GainControl",
+                                "target": "IterationEntity",
+                                "duration": "EndOfTurn"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "nonland permanent"
+                                }
+                            },
+                            "body": {
+                                "type": "TapUntap",
+                                "target": "IterationEntity",
+                                "tap": false
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "nonland permanent"
+                                }
+                            },
+                            "body": {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Gain control of all nonland permanents until end of turn. Untap them. They gain haste until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "MYTHIC",
+        "artist": "Néstor Ossandón Leal",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/ddeb54d6-a600-42b9-98df-20f8d58caed8.jpg?1783921477"
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE",
+        "BLACK"
+    ]
+}
 
+// Shanid, Sleepers' Scourge
+{
+    "name": "Shanid, Sleepers' Scourge",
+    "manaCost": "{1}{R}{W}{B}",
+    "typeLine": "Legendary Creature — Human Knight",
+    "oracleText": "Menace\nOther legendary creatures you control have menace.\nWhenever you play a legendary land or cast a legendary spell, you draw a card and you lose 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shanid, Sleepers' Scourge:1",
+                "trigger": "LandPlayedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                },
+                "triggerRestriction": {
+                    "type": "EntityMatches",
+                    "entity": "TriggeringEntity",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsLegendary"
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever you play a legendary land, you draw a card and you lose 1 life."
+            },
+            {
+                "id": "Shanid, Sleepers' Scourge:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsLegendary"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you cast a legendary spell, you draw a card and you lose 1 life."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "MENACE",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsLegendary"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "MYTHIC",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1b0fb859-055d-4aa1-814c-0894cd2ccd4a.jpg?1783921477",
+        "rulings": [
+            {
+                "date": "2022-09-09",
+                "text": "If casting a legendary spell causes Shanid's last ability to trigger, that ability goes on the stack above the spell that caused it to trigger and resolves first. It resolves even if that spell is countered or otherwise left the stack."
+            },
+            {
+                "date": "2022-09-09",
+                "text": "A legendary land entering the battlefield without being played does not cause Shanid's last ability to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE",
+        "BLACK"
+    ]
+}

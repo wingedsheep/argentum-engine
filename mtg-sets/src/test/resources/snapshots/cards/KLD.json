@@ -3423,6 +3423,80 @@
     }
 }
 
+// Kambal, Consul of Allocation
+{
+    "name": "Kambal, Consul of Allocation",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Legendary Creature — Human Advisor",
+    "oracleText": "Whenever an opponent casts a noncreature spell, that player loses 2 life and you gain 2 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kambal, Consul of Allocation:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    },
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "TriggeringPlayer"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever an opponent casts a noncreature spell, that player loses 2 life and you gain 2 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "183",
+        "rarity": "RARE",
+        "artist": "Vincent Proce",
+        "flavorText": "He has \"friends\" in places both high and low, and all seem to owe him favors.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/49d61ddb-2662-427c-a97d-21e41b86130d.jpg?1783937169",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "Kambal's ability resolves before the spell that caused it to trigger."
+            },
+            {
+                "date": "2016-09-20",
+                "text": "A noncreature spell is a spell that isn't a creature at all. An artifact creature spell isn't a noncreature spell. Lands are never spells."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Kujar Seedsculptor
 {
     "name": "Kujar Seedsculptor",

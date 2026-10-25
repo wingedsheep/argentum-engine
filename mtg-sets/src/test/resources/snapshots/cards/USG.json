@@ -4162,6 +4162,81 @@
     ]
 }
 
+// Rewind
+{
+    "name": "Rewind",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell. Untap up to four lands.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                "Counter",
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "land"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "storeSelected": "selected1"
+                        },
+                        {
+                            "type": "TapUntapCollection",
+                            "collectionName": "selected1",
+                            "tap": false
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "artist": "Dermot Power",
+        "flavorText": "\"Time flows like a river. In Tolaria we practice the art of building dams.\"\n—Barrin, master wizard",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e51c4fb-fb29-4b1c-b78e-1fadf94fc9a5.jpg?1783946357",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Rewind targets only a spell. It doesn't target any lands. The lands are chosen as Rewind resolves."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "You can choose up to four lands, no matter who controls any of them. Those lands untap once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sanctum Custodian
 {
     "name": "Sanctum Custodian",

@@ -702,6 +702,81 @@
     ]
 }
 
+// Cleansing Nova
+{
+    "name": "Cleansing Nova",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Destroy all creatures.\n• Destroy all artifacts and enchantments.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": "creature"
+                                },
+                                "storeAs": "destroyAll_gathered"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "destroyAll_gathered",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Destroy"
+                            }
+                        ]
+                    },
+                    "description": "Destroy all creatures"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": "artifact|enchantment"
+                                },
+                                "storeAs": "destroyAll_gathered"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "destroyAll_gathered",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Destroy"
+                            }
+                        ]
+                    },
+                    "description": "Destroy all artifacts and enchantments"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "rarity": "RARE",
+        "artist": "Noah Bradley",
+        "flavorText": "In their final moments, the demons gazed upon grace in its purest form.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5be8eed7-c033-42cc-bd21-4512db7af66c.jpg?1783934610"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Colossal Majesty
 {
     "name": "Colossal Majesty",
