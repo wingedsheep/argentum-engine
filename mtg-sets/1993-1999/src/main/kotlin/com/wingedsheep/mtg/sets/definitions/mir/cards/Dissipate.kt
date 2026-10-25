@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.mid.cards
+package com.wingedsheep.mtg.sets.definitions.mir.cards
 
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
@@ -25,9 +25,9 @@ val Dissipate = card("Dissipate") {
 
     metadata {
         rarity = Rarity.UNCOMMON
-        collectorNumber = "49"
-        artist = "David Palumbo"
-        flavorText = "\"Morning light, morning light,\nChase away the fears of night.\"\n—Gavony children's rhyme"
-        imageUri = "https://cards.scryfall.io/normal/front/4/6/4689b3f2-e4b7-448e-b3d4-ab33194aafb2.jpg?1634348774"
+        collectorNumber = "61"
+        artist = "Richard Kane Ferguson"
+        flavorText = "\"If you weren't born with it, you don't need it.\"\n—Grahilah, former trader of Amiqat"
+        imageUri = "https://cards.scryfall.io/normal/front/3/6/36d9271d-6dbf-4640-9222-721a7a3ccc08.jpg?1783947110"
     }
 }

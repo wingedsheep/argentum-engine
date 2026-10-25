@@ -1348,6 +1348,40 @@
     ]
 }
 
+// Dissipate
+{
+    "name": "Dissipate",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell. If that spell is countered this way, exile it instead of putting it into its owner's graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "counterDestination": "CounterDestination.Exile"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "UNCOMMON",
+        "artist": "Richard Kane Ferguson",
+        "flavorText": "\"If you weren't born with it, you don't need it.\"\n—Grahilah, former trader of Amiqat",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/36d9271d-6dbf-4640-9222-721a7a3ccc08.jpg?1783947110"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Divine Retribution
 {
     "name": "Divine Retribution",

@@ -5610,40 +5610,6 @@
     ]
 }
 
-// Dissipate
-{
-    "name": "Dissipate",
-    "manaCost": "{1}{U}{U}",
-    "typeLine": "Instant",
-    "oracleText": "Counter target spell. If that spell is countered this way, exile it instead of putting it into its owner's graveyard.",
-    "script": {
-        "spellEffect": {
-            "type": "Counter",
-            "counterDestination": "CounterDestination.Exile"
-        },
-        "targetRequirements": [
-            {
-                "type": "TargetObject",
-                "filter": {
-                    "baseFilter": {},
-                    "zone": "Stack"
-                },
-                "id": "t0"
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "49",
-        "rarity": "UNCOMMON",
-        "artist": "David Palumbo",
-        "flavorText": "\"Morning light, morning light,\nChase away the fears of night.\"\n—Gavony children's rhyme",
-        "imageUri": "https://cards.scryfall.io/normal/front/4/6/4689b3f2-e4b7-448e-b3d4-ab33194aafb2.jpg?1634348774"
-    },
-    "colorIdentityOverride": [
-        "BLUE"
-    ]
-}
-
 // Dreadhound
 {
     "name": "Dreadhound",
