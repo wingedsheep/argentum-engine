@@ -313,6 +313,47 @@
     ]
 }
 
+// Blink Dog
+{
+    "name": "Blink Dog",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Dog",
+    "oracleText": "Double strike\nTeleport — {3}{W}: This creature phases out. (Treat it and anything attached to it as though they don't exist until your next turn.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "DOUBLE_STRIKE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Blink Dog:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{W}"
+                    }
+                },
+                "effect": "PhaseOut",
+                "descriptionOverride": "Teleport — {3}{W}: This creature phases out."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "UNCOMMON",
+        "artist": "Oriana Menendez",
+        "flavorText": "Blink dogs protect the wild places of the world, driving away evil influences.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc040492-7fb7-4fdb-aafe-8179e5f2b28c.jpg?1783926539"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Boots of Speed
 {
     "name": "Boots of Speed",
@@ -567,6 +608,170 @@
                 "text": "If you gain an amount of life \"for each\" of something or \"equal to the number\" of something, that life is gained as one event and Celestial Unicorn's ability triggers only once."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Cloister Gargoyle
+{
+    "name": "Cloister Gargoyle",
+    "manaCost": "{2}{W}",
+    "typeLine": "Artifact Creature — Gargoyle",
+    "oracleText": "When this creature enters, venture into the dungeon. (Enter the first room or advance to the next room.)\nAs long as you've completed a dungeon, this creature gets +3/+0 and has flying.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cloister Gargoyle:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": "VentureIntoTheDungeon"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 3,
+                    "toughnessBonus": 0,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": "DungeonsCompleted",
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": "DungeonsCompleted",
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Zug",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/297bf274-d13d-4b75-b251-2d004b16b431.jpg?1783926537"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Dawnbringer Cleric
+{
+    "name": "Dawnbringer Cleric",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "When this creature enters, choose one —\n• Cure Wounds — You gain 2 life.\n• Dispel Magic — Destroy target enchantment.\n• Gentle Repose — Exile target card from a graveyard.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dawnbringer Cleric:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "description": "Cure Wounds — You gain 2 life."
+                        },
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "enchantment"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Dispel Magic — Destroy target enchantment."
+                        },
+                        {
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "destination": "Exile"
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": {},
+                                        "zone": "Graveyard"
+                                    },
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Gentle Repose — Exile target card from a graveyard."
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c00856f7-fef5-4ba5-9079-59a81d452c82.jpg?1783926536"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -848,6 +1053,133 @@
     }
 }
 
+// Delver's Torch
+{
+    "name": "Delver's Torch",
+    "manaCost": "{1}{W}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+1.\nWhenever equipped creature attacks, venture into the dungeon. (Enter the first room or advance to the next room.)\nEquip {3} ({3}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Delver's Torch:1",
+                "trigger": "AttackEvent",
+                "binding": "ATTACHED",
+                "effect": "VentureIntoTheDungeon"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Delver's Torch:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "10",
+        "artist": "Bram Sels",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/53df7b80-71bf-4013-ad44-f76eae8ac81b.jpg?1783926535"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Devoted Paladin
+{
+    "name": "Devoted Paladin",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Orc Knight",
+    "oracleText": "Beacon of Hope — When this creature enters, creatures you control get +1/+1 and gain vigilance until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Devoted Paladin:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "VIGILANCE",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "artist": "Chris Rallis",
+        "flavorText": "\"I swore a sacred oath to protect the weak and punish those who threaten them. As long as I draw breath, I will protect you.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/3620ed96-1d15-4942-b9e5-9f9a64b0cab4.jpg?1783926534"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Dire Wolf Prowler
 {
     "name": "Dire Wolf Prowler",
@@ -905,6 +1237,64 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Divine Smite
+{
+    "name": "Divine Smite",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature or planeswalker an opponent controls phases out. If that permanent is black, exile it instead. (If it phases out, treat it and anything attached to it as though they don't exist until its controller's next turn.)",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "filter": "black"
+                }
+            },
+            "then": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "destination": "Exile"
+            },
+            "otherwise": {
+                "type": "PhaseOut",
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker ctrl:opponent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "UNCOMMON",
+        "artist": "Bryan Sola",
+        "flavorText": "\"When darkness closes in around us, my blade will light our path.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6b8d0852-4df3-4b29-830d-c6975265ef53.jpg?1783926534"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -1266,6 +1656,52 @@
             }
         ]
     }
+}
+
+// Dwarfhold Champion
+{
+    "name": "Dwarfhold Champion",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Dwarf Warrior",
+    "oracleText": "As long as this creature is equipped, it gets +0/+2.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 0,
+                    "toughnessBonus": 2,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "IsEquipped"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "artist": "Miguel Mercado",
+        "flavorText": "Courage is neither a shield nor an axe, but the will to wield both in defense of the innocent.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/2404a028-05f5-469b-80e0-e820721ff266.jpg?1783926533"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Ebondeath, Dracolich
@@ -2031,6 +2467,66 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Half-Elf Monk
+{
+    "name": "Half-Elf Monk",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Elf Monk",
+    "oracleText": "Vigilance\nStunning Strike — {1}{W}, {T}: Tap target creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Half-Elf Monk:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"This fight was over the moment you picked up that clumsy cleaver of a sword.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f10f1687-fb20-4ad2-bad7-52e4470b35e4.jpg?1783926531"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -2848,6 +3344,125 @@
     ]
 }
 
+// Monk of the Open Hand
+{
+    "name": "Monk of the Open Hand",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Elf Monk",
+    "oracleText": "Flurry of Blows — Whenever you cast your second spell each turn, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Monk of the Open Hand:1",
+                "trigger": {
+                    "type": "NthSpellCastEvent",
+                    "nthSpell": 2,
+                    "player": "You"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "rarity": "UNCOMMON",
+        "artist": "Bryan Sola",
+        "flavorText": "His mind is a tranquil meadow, his fists a raging storm.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d934765f-f490-4e8d-843d-b2b559ee0418.jpg?1783926528"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Moon-Blessed Cleric
+{
+    "name": "Moon-Blessed Cleric",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Elf Cleric",
+    "oracleText": "Divine Intervention — When this creature enters, you may search your library for an enchantment card, reveal it, then shuffle and put that card on top.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Moon-Blessed Cleric:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "enchantment"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for an enchantment card to put on top of your library",
+                                "selectedLabel": "Put on top of your library"
+                            },
+                            "ShuffleLibrary",
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Top"
+                                },
+                                "revealed": true
+                            },
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "UNCOMMON",
+        "artist": "Marta Nael",
+        "flavorText": "Selûne guides her devotees with majestic wisdom and grace.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2b7fea79-9600-41d2-84d2-34a61a08a0d4.jpg?1783926528"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Nadaar, Selfless Paladin
 {
     "name": "Nadaar, Selfless Paladin",
@@ -3288,6 +3903,38 @@
     ]
 }
 
+// Planar Ally
+{
+    "name": "Planar Ally",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nWhenever this creature attacks, venture into the dungeon. (Enter the first room or advance to the next room.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Planar Ally:1",
+                "trigger": "AttackEvent",
+                "effect": "VentureIntoTheDungeon"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "artist": "Marta Nael",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a9e7457a-8ab4-4f3c-a2d8-2da4d81b7470.jpg?1783926525"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Portable Hole
 {
     "name": "Portable Hole",
@@ -3569,6 +4216,151 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Rally Maneuver
+{
+    "name": "Rally Maneuver",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +2/+0 and gains first strike until end of turn. Up to one other target creature gets +0/+2 and gains lifelink until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetOther",
+                "baseRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "UNCOMMON",
+        "artist": "Vincent Proce",
+        "flavorText": "\"Don't give up! You are steel and fire, and victory is yours to seize.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/926ce53e-8e30-4018-a9e7-7266791b5d27.jpg?1783926524"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Ranger's Hawk
+{
+    "name": "Ranger's Hawk",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying\n{3}, {T}, Tap another untapped creature you control: Venture into the dungeon. Activate only as a sorcery. (Enter the first room or advance to the next room.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ranger's Hawk:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomTapPermanents",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": "VentureIntoTheDungeon",
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "artist": "Robin Olausson",
+        "flavorText": "Swift eyes to scout the way ahead.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d7a7744-e49d-4b4e-b6ae-7fc6d2892cef.jpg?1783926525"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -4875,6 +5667,102 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Veteran Dungeoneer
+{
+    "name": "Veteran Dungeoneer",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "When this creature enters, venture into the dungeon. (Enter the first room or advance to the next room.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Veteran Dungeoneer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": "VentureIntoTheDungeon"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "artist": "Sebastian Giacobino",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d8fe33b3-afaf-4a98-ae64-7d7e0eabe993.jpg?1783926524"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// White Dragon
+{
+    "name": "White Dragon",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nCold Breath — When this creature enters, tap target creature an opponent controls. That creature doesn't untap during its controller's next untap step.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "White Dragon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "UNCOMMON",
+        "artist": "Billy Christian",
+        "flavorText": "White dragons are unparalleled hunters, keenly focused on slaughtering their enemies.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21e290c4-6c94-472a-9dec-6994aade29c2.jpg?1783926522"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
