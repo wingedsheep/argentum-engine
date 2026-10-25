@@ -6380,6 +6380,353 @@
     ]
 }
 
+// Forsworn Paladin
+{
+    "name": "Forsworn Paladin",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Menace\n{1}{B}, {T}, Pay 1 life: Create a Treasure token.\n{2}{B}: Target creature gets +2/+0 until end of turn. If mana from a Treasure was spent to activate this ability, that creature also gains deathtouch until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Forsworn Paladin:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            },
+            {
+                "id": "Forsworn Paladin:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "ManaSpentFromSubtype",
+                                        "subtype": "Treasure",
+                                        "payment": "ACTIVATION"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "GrantKeyword",
+                                "keyword": "DEATHTOUCH",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "rarity": "RARE",
+        "artist": "Lorenzo Mastroianni",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4acaf396-f950-42da-85ab-149ffb31fee6.jpg?1783926494"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Froghemoth
+{
+    "name": "Froghemoth",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Frog Horror",
+    "oracleText": "Trample, haste\nWhenever this creature deals combat damage to a player, exile up to that many target cards from their graveyard. Put a +1/+1 counter on this creature for each creature card exiled this way. You gain 1 life for each noncreature card exiled this way.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Froghemoth:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "storeMovedAs": "moved1"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "moved1",
+                            "filter": "creature",
+                            "storeMatching": "matching2"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "moved1",
+                            "filter": "noncreature",
+                            "storeMatching": "matching3"
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "AddDynamicCounters",
+                                    "counterType": "PLUS_ONE_PLUS_ONE",
+                                    "amount": {
+                                        "type": "VariableReference",
+                                        "variableName": "matching2_count"
+                                    },
+                                    "target": "Self"
+                                },
+                                {
+                                    "type": "GainLife",
+                                    "amount": {
+                                        "type": "VariableReference",
+                                        "variableName": "matching3_count"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "own:triggering-player",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0",
+                    "dynamicMaxCount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "184",
+        "rarity": "RARE",
+        "artist": "Brent Hollowell",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/728e9567-2585-4c03-99a5-3e84fd8044d2.jpg?1783926463"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Gelatinous Cube
+{
+    "name": "Gelatinous Cube",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Ooze",
+    "oracleText": "Engulf — When this creature enters, exile target non-Ooze creature an opponent controls until this creature leaves the battlefield.\nDissolve — {X}{B}: Put target creature card with mana value X exiled with this creature into its owner's graveyard.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gelatinous Cube:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveUntilSourceLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Ooze"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByOpponent"
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Gelatinous Cube:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{X}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Graveyard",
+                    "fromZone": "Exile"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "CompareNumericProperty",
+                                        "property": "MANA_VALUE",
+                                        "operator": "EQ",
+                                        "amount": "XValue"
+                                    }
+                                ],
+                                "statePredicates": [
+                                    "ExiledWithSource"
+                                ]
+                            },
+                            "zone": "Exile"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "rarity": "RARE",
+        "artist": "Olivier Bernard",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1c472e70-300c-4881-86e7-c5ca690ab9b6.jpg?1783926493",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "If Gelatinous Cube leaves the battlefield before its Engulf ability resolves, the target non-Ooze creature won't be exiled."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Auras attached to the exiled creature will be put into their owners' graveyards. Any Equipment will become unattached and remain on the battlefield. Any counters on the exiled creature will cease to exist. When the card returns to the battlefield, it will be a new object with no connection to the card that was exiled."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If a token is exiled this way, it will cease to exist and won't return to the battlefield."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If the engulfed creature card leaves exile, perhaps because of the Dissolve ability, it won't return to the battlefield after Gelatinous Cube leaves the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Gloom Stalker
 {
     "name": "Gloom Stalker",
@@ -12213,6 +12560,79 @@
     ]
 }
 
+// Ray of Enfeeblement
+{
+    "name": "Ray of Enfeeblement",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets -4/-1 until end of turn. If that creature is white, it gets -4/-4 until end of turn instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "filter": "white"
+                }
+            },
+            "then": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": -4
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": -4
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            },
+            "otherwise": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": -4
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": -1
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "rarity": "UNCOMMON",
+        "artist": "Campbell White",
+        "flavorText": "Erigan cried out in pain as a hideous weakness settled into his bones.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff5d948b-fd89-4b90-9b63-ad7da13b5f0e.jpg?1783926490"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Ray of Frost
 {
     "name": "Ray of Frost",
@@ -13083,6 +13503,180 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Skeletal Swarming
+{
+    "name": "Skeletal Swarming",
+    "manaCost": "{3}{B}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Each Skeleton you control has trample, attacks each combat if able, and gets +X/+0, where X is the number of other Skeletons you control.\nAt the beginning of your end step, create a tapped 1/1 black Skeleton creature token. If a creature died this turn, create two of those tokens instead.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skeletal Swarming:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Conditional",
+                        "condition": "CreatureDiedThisTurn",
+                        "ifTrue": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "ifFalse": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Skeleton"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/f/a/fa6fdb57-82f3-4695-b1fa-1f301ea4ef83.jpg?1783926346",
+                    "tapped": true
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE",
+                "filter": {
+                    "baseFilter": "creature Skeleton ctrl:you"
+                }
+            },
+            {
+                "type": "MustAttack",
+                "filter": {
+                    "baseFilter": "creature Skeleton ctrl:you"
+                }
+            },
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "creature Skeleton ctrl:you"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "creature Skeleton",
+                    "excludeSelf": true
+                },
+                "toughnessBonus": {
+                    "type": "Fixed",
+                    "amount": 0
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "232",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/3768ac68-0d87-4f99-aa77-2d009df0a567.jpg?1783926443"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Skullport Merchant
+{
+    "name": "Skullport Merchant",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Dwarf Citizen",
+    "oracleText": "When this creature enters, create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")\n{1}{B}, Sacrifice another creature or a Treasure: Draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skullport Merchant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Skullport Merchant:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                "IsCreature",
+                                                {
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsArtifact",
+                                                        {
+                                                            "type": "HasSubtype",
+                                                            "subtype": "Treasure"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "rarity": "UNCOMMON",
+        "artist": "Aaron Miller",
+        "flavorText": "\"Buy something or get out.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2bbb8865-dc37-4d56-9a2d-a92f7462c338.jpg?1783926487"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -15455,6 +16049,54 @@
     ]
 }
 
+// Triumphant Adventurer
+{
+    "name": "Triumphant Adventurer",
+    "manaCost": "{W}{B}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Deathtouch\nDuring your turn, this creature has first strike.\nWhenever this creature attacks, venture into the dungeon. (Enter the first room or advance to the next room.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Triumphant Adventurer:1",
+                "trigger": "AttackEvent",
+                "effect": "VentureIntoTheDungeon"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "rarity": "RARE",
+        "artist": "Alexander Mokhov",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/214d3167-4eea-42a1-a464-ddff59843142.jpg?1783926443"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // True Polymorph
 {
     "name": "True Polymorph",
@@ -16010,6 +16652,80 @@
     ]
 }
 
+// Werewolf Pack Leader
+{
+    "name": "Werewolf Pack Leader",
+    "manaCost": "{G}{G}",
+    "typeLine": "Creature — Human Werewolf",
+    "oracleText": "Pack tactics — Whenever this creature attacks, if you attacked with creatures with total power 6 or greater this combat, draw a card.\n{3}{G}: Until end of turn, this creature has base power and toughness 5/3, gains trample, and isn't a Human.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Werewolf Pack Leader:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        {
+                            "type": "AttackersTotalPowerAtLeast",
+                            "n": 6
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Werewolf Pack Leader:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "keywords": [
+                        "TRAMPLE"
+                    ],
+                    "removeSubtypes": [
+                        "Human"
+                    ]
+                },
+                "descriptionOverride": "{3}{G}: Until end of turn, this creature has base power and toughness 5/3, gains trample, and isn't a Human."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "211",
+        "rarity": "RARE",
+        "artist": "Miranda Meeks",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e88e6b39-bb4d-4d69-8007-d42f31bcbc29.jpg?1783926452"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // White Dragon
 {
     "name": "White Dragon",
@@ -16071,6 +16787,253 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Wight
+{
+    "name": "Wight",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Zombie Soldier",
+    "oracleText": "This creature enters tapped.\nLife Drain — Whenever a creature dealt damage by this creature this turn dies, create a tapped 2/2 black Zombie creature token and exile that card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wight:1",
+                "trigger": "CreatureDealtDamageBySourceDiesEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "BLACK"
+                            ],
+                            "creatureTypes": [
+                                "Zombie"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b08d210-01cb-46c5-9150-4dfb47f50ae7.jpg?1783926346",
+                            "tapped": true
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": "TriggeringEntity",
+                            "destination": "Exile",
+                            "fromZone": "Graveyard"
+                        }
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "flavorText": "Wights want the world to resound with echoes of their own cruel hatred.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f62abe9c-7599-433b-a964-10d6641f3586.jpg?1783926485"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Wild Shape
+{
+    "name": "Wild Shape",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one. Until end of turn, target creature you control has that base power and toughness, becomes that creature type, and gains that ability.\n• 1/3 Turtle with hexproof.\n• 1/5 Spider with reach.\n• 3/3 Elephant with trample.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SetCreatureSubtypes",
+                                "subtypes": [
+                                    "Turtle"
+                                ],
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "duration": "EndOfTurn"
+                            },
+                            {
+                                "type": "SetBaseStats",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "power": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughness": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "duration": "EndOfTurn"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HEXPROOF",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Target creature you control becomes a 1/3 Turtle with hexproof until end of turn"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SetCreatureSubtypes",
+                                "subtypes": [
+                                    "Spider"
+                                ],
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "duration": "EndOfTurn"
+                            },
+                            {
+                                "type": "SetBaseStats",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                },
+                                "power": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughness": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                },
+                                "duration": "EndOfTurn"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "REACH",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Target creature you control becomes a 1/5 Spider with reach until end of turn"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SetCreatureSubtypes",
+                                "subtypes": [
+                                    "Elephant"
+                                ],
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t2"
+                                },
+                                "duration": "EndOfTurn"
+                            },
+                            {
+                                "type": "SetBaseStats",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t2"
+                                },
+                                "power": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "toughness": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "duration": "EndOfTurn"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t2"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "t2"
+                        }
+                    ],
+                    "description": "Target creature you control becomes a 3/3 Elephant with trample until end of turn"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "UNCOMMON",
+        "artist": "Sam Guay",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ec9738f1-b2e7-45a5-b235-290256aabed0.jpg?1783926453",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "Both the target creature and the mode are chosen on announcement. You can't choose a different form if something changes in response to the spell."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "The creature loses all other creature types, but it retains its abilities. Wild Shape will overwrite any previous effects that set the creature's power and toughness to specific numbers. Effects that otherwise modify the target creature's power and toughness will still apply no matter when they took effect. The same is true for +1/+1 counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -17092,6 +18055,172 @@
     ]
 }
 
+// You Hear Something on Watch
+{
+    "name": "You Hear Something on Watch",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Rouse the Party — Creatures you control get +1/+1 until end of turn.\n• Set Off Traps — This spell deals 5 damage to target attacking creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "description": "Rouse the Party — Creatures you control get +1/+1 until end of turn."
+                },
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 5
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature attacking"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Set Off Traps — This spell deals 5 damage to target attacking creature."
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "artist": "Zezhou Chen",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/76e939ab-9d0c-4685-805c-c8bc4e6af163.jpg?1783926521"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// You Meet in a Tavern
+{
+    "name": "You Meet in a Tavern",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Form a Party — Look at the top five cards of your library. You may reveal any number of creature cards from among them and put them into your hand. Put the rest on the bottom of your library in a random order.\n• Start a Brawl — Creatures you control get +2/+2 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 5
+                                    }
+                                },
+                                "storeAs": "looked"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "looked",
+                                "selection": "ChooseAnyNumber",
+                                "filter": "creature",
+                                "storeSelected": "kept",
+                                "storeRemainder": "rest",
+                                "prompt": "You may reveal any number of creature cards and put them into your hand",
+                                "showAllCards": true
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "kept",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "rest",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Bottom"
+                                },
+                                "order": "Random"
+                            }
+                        ]
+                    },
+                    "description": "Form a Party — Look at the top five cards of your library. You may reveal any number of creature cards from among them and put them into your hand. Put the rest on the bottom of your library in a random order."
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "description": "Start a Brawl — Creatures you control get +2/+2 until end of turn."
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "215",
+        "rarity": "UNCOMMON",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/593aa59a-4025-4df8-9f27-188fc7712fde.jpg?1783926450"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // You See a Guard Approach
 {
     "name": "You See a Guard Approach",
@@ -17220,6 +18349,117 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// You're Ambushed on the Road
+{
+    "name": "You're Ambushed on the Road",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Make a Retreat — Return target creature you control to its owner's hand.\n• Stand and Fight — Target creature gets +1/+3 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Make a Retreat — Return target creature you control to its owner's hand."
+                },
+                {
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Stand and Fight — Target creature gets +1/+3 until end of turn."
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "artist": "Eric Deschamps",
+        "flavorText": "\"Hand over your loot and no one gets hurt!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/726da84a-fdd4-46df-8ba4-f94d582bcce4.jpg?1783926521"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Yuan-Ti Fang-Blade
+{
+    "name": "Yuan-Ti Fang-Blade",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Snake Rogue",
+    "oracleText": "Deathtouch\nWhenever this creature deals combat damage to a player, venture into the dungeon. (Enter the first room or advance to the next room.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Yuan-Ti Fang-Blade:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": "VentureIntoTheDungeon"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "artist": "Simon Dominic",
+        "flavorText": "\"The air is sweet with the taste of your fear.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a7e0e09c-ed43-4a37-85f2-c60bdfdb2624.jpg?1783926485"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -17481,5 +18721,50 @@
     "startingLoyalty": 4,
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Zombie Ogre
+{
+    "name": "Zombie Ogre",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Zombie Ogre",
+    "oracleText": "At the beginning of your end step, if a creature died this turn, venture into the dungeon. (Enter the first room or advance to the next room.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Zombie Ogre:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": "VentureIntoTheDungeon",
+                "interveningIf": "CreatureDiedThisTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "artist": "Nicholas Gregory",
+        "flavorText": "\"On the plus side, Throg no longer thinks he's clever.\"\n—Xanathar",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d4dbed36-190c-4748-b282-409a2fb5d134.jpg?1783926485",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "Zombie Ogre doesn't need to have been on the battlefield at the time the creature died for its ability to function."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "Zombie Ogre's ability will trigger only once during your end step, no matter how many creatures died this turn. However, if no creatures have died so far this turn as the end step begins, the ability won't trigger at all. It's not possible to cause a creature to die during the end step in time to have the ability trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
