@@ -2011,6 +2011,7 @@ class CostCalculator(
             CardPredicate.IsActivatedOrTriggeredAbility -> false
             CardPredicate.IsTriggeredAbility -> false
             CardPredicate.IsActivatedAbility -> false
+            CardPredicate.IsLoyaltyAbility -> false
             is CardPredicate.TargetsMatching -> false
             is CardPredicate.TargetsPlayer -> false
             is CardPredicate.WouldDestroy -> false

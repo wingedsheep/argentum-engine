@@ -324,6 +324,12 @@ data class TargetFilter(
             zone = Zone.STACK
         )
 
+        /** Target loyalty ability on the stack (CR 606.2 — an activated ability with a loyalty cost) */
+        val LoyaltyAbilityOnStack = TargetFilter(
+            GameObjectFilter(cardPredicates = listOf(CardPredicate.IsLoyaltyAbility)),
+            zone = Zone.STACK
+        )
+
         /**
          * Target any spell or ability on the stack (spells and activated/triggered abilities).
          *

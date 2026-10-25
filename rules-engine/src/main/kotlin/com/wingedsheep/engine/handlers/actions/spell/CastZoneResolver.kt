@@ -1230,7 +1230,8 @@ class CastZoneResolver(
                 is CardPredicate.AbilitySourceMatches,
                 is CardPredicate.IsActivatedOrTriggeredAbility,
                 is CardPredicate.IsTriggeredAbility,
-                is CardPredicate.IsActivatedAbility -> false
+                is CardPredicate.IsActivatedAbility,
+                is CardPredicate.IsLoyaltyAbility -> false
             }
         }
     }

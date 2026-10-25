@@ -4562,6 +4562,136 @@
     ]
 }
 
+// Verdant Command
+{
+    "name": "Verdant Command",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Choose two —\n• Target player creates two tapped 1/1 green Squirrel creature tokens.\n• Counter target loyalty ability of a planeswalker.\n• Exile target card from a graveyard.\n• Target player gains 3 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "GREEN"
+                        ],
+                        "creatureTypes": [
+                            "Squirrel"
+                        ],
+                        "controller": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "tapped": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Target player creates two tapped 1/1 green Squirrel creature tokens"
+                },
+                {
+                    "effect": {
+                        "type": "Counter",
+                        "target": "CounterTarget.Ability"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsLoyaltyAbility",
+                                        {
+                                            "type": "AbilitySourceMatches",
+                                            "subfilter": {
+                                                "cardPredicates": [
+                                                    "IsPlaneswalker"
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                },
+                                "zone": "Stack"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Counter target loyalty ability of a planeswalker"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t2"
+                        },
+                        "destination": "Exile"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {},
+                                "zone": "Graveyard"
+                            },
+                            "id": "t2"
+                        }
+                    ],
+                    "description": "Exile target card from a graveyard"
+                },
+                {
+                    "effect": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t3"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t3"
+                        }
+                    ],
+                    "description": "Target player gains 3 life"
+                }
+            ],
+            "chooseCount": 2
+        }
+    },
+    "metadata": {
+        "collectorNumber": "182",
+        "rarity": "RARE",
+        "artist": "Mark Poole",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/3/83031ea8-a6c9-4318-af16-bba701dd76bb.jpg?1783926823",
+        "rulings": [
+            {
+                "date": "2021-06-18",
+                "text": "If the target for one mode has become illegal as Verdant Command tries to resolve, but it still has at least one legal target, it will resolve and do as much as it can to the legal targets."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Vermin Gorger
 {
     "name": "Vermin Gorger",

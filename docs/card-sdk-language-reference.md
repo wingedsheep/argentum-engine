@@ -5849,6 +5849,7 @@ non-object shapes are the `Targets.*` presets.
 - `target(TargetFilter.InstantOrSorcerySpellOnStack.youControl())` — an instant or sorcery spell on the stack you control (copy-your-spell modes).
 - `target(TargetFilter.CreatureSpellOnStack.youControl())` — a creature spell on the stack you control (Choreographed Sparks' "Copy target creature spell you control").
 - `target(TargetFilter.ActivatedOrTriggeredAbilityOnStack)` / `target(TargetFilter.ActivatedAbilityOnStack)` — an ability on the stack (Stifle).
+- `target(TargetFilter.LoyaltyAbilityOnStack)` — a loyalty ability on the stack (`CardPredicate.IsLoyaltyAbility`; Verdant Command).
 - `target(TargetFilter.ActivatedOrTriggeredAbilityOnStack.youControl())` — an activated or triggered ability **you control** on the stack (`TargetFilter.ActivatedOrTriggeredAbilityOnStack.youControl()`). Mana abilities never use the stack, so they're excluded automatically. Pair with `Effects.CopyTargetSpellOrAbility` — **Gogo, Master of Mimicry**.
 - `target(TargetFilter.ActivatedOrTriggeredAbilityOnStack.youControl().abilitySourceMatches(sourceFilter))` — the same, narrowed to abilities whose **source** matches `sourceFilter` (`CardPredicate.AbilitySourceMatches`): "copy target activated or triggered ability you control **from a creature source**" (**Echo, Perceptive Prodigy**, `GameObjectFilter.Creature`) / "**from an artifact source**" (**Scientist Supreme of A.I.M.**, `GameObjectFilter.Artifact`). The restriction is on the ability's source per CR 113.7, matched with last known information when the source has already left the battlefield (CR 113.7a), so a dead creature's dies trigger still qualifies.
 - `target(TargetFilter.SpellOrAbilityOnStack)` — a spell or ability whose single target is changed (Willbender; pair with `Effects.ChangeTarget()`).
@@ -7219,6 +7220,11 @@ work for abilities-on-stack (which carry no `CardComponent`).
 - `CardPredicate.IsActivatedAbility` — activated abilities only (excludes triggered abilities and
   spells). Mana abilities never use the stack, so they're never matched. Exposed as the
   `TargetObject(filter = TargetFilter.ActivatedAbilityOnStack)` target requirement (Bind: "Counter target activated ability").
+- `CardPredicate.IsLoyaltyAbility` — loyalty abilities only: activated abilities on the stack with a
+  loyalty symbol in their cost (CR 606.2), read off the captured `ActivatedAbilityOnStackComponent.activatedAbility`
+  (`isPlaneswalkerAbility`), so a copy of a loyalty ability matches too. Exposed as
+  `TargetFilter.LoyaltyAbilityOnStack`; Verdant Command narrows it with
+  `.abilitySourceMatches(GameObjectFilter.Planeswalker)` for "Counter target loyalty ability of a planeswalker".
 - `CardPredicate.TargetsMatching(subfilter)` — true when the stack object's `TargetsComponent`
   includes at least one chosen target matching `subfilter`. Player targets are skipped. The
   subfilter inherits the outer `PredicateContext`, so `Land.youControl()` inside the subfilter

@@ -217,6 +217,7 @@ Families:
 - `CardPredicate.IsKindred` — Kindred (formerly Tribal, CR 308) — the card type that lets a non-creature card carry creature types.
 - `CardPredicate.IsLand`
 - `CardPredicate.IsLegendary`
+- `CardPredicate.IsLoyaltyAbility` — Matches only **loyalty abilities** on the stack — activated abilities with a loyalty symbol in their cost (CR 606.2).
 - `CardPredicate.IsMonocolored`
 - `CardPredicate.IsMulticolored`
 - `CardPredicate.IsNonartifact`

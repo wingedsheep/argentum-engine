@@ -35,6 +35,7 @@ object StackObjectTargeting {
             CardPredicate.IsActivatedOrTriggeredAbility,
             CardPredicate.IsTriggeredAbility,
             CardPredicate.IsActivatedAbility,
+            CardPredicate.IsLoyaltyAbility,
             is CardPredicate.AbilitySourceMatches -> true
             is CardPredicate.Or -> p.predicates.any(::predicateNamesAbility)
             is CardPredicate.And -> p.predicates.any(::predicateNamesAbility)

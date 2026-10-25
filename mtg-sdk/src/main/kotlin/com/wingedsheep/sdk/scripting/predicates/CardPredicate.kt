@@ -1322,6 +1322,17 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     }
 
     /**
+     * Matches only **loyalty abilities** on the stack — activated abilities with a loyalty symbol
+     * in their cost (CR 606.2). A copy of a loyalty ability is one too: it copies the ability,
+     * cost included. Used by Verdant Command: "Counter target loyalty ability of a planeswalker."
+     */
+    @SerialName("IsLoyaltyAbility")
+    @Serializable
+    data object IsLoyaltyAbility : CardPredicate {
+        override val description: String = "loyalty ability"
+    }
+
+    /**
      * Matches a permanent that has at least one intrinsic activated ability that isn't a
      * mana ability (and isn't a loyalty ability). Backed by the precomputed
      * `CardComponent.hasNonManaActivatedAbility` flag, so abilities granted by other

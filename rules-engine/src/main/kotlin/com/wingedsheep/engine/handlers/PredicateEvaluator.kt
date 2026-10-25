@@ -457,6 +457,7 @@ class PredicateEvaluator(
             is CardPredicate.HasSubtypeInStoredList,
             CardPredicate.HasXInManaCost,
             CardPredicate.IsActivatedAbility,
+            CardPredicate.IsLoyaltyAbility,
             CardPredicate.IsActivatedOrTriggeredAbility,
             CardPredicate.IsBasicLand,
             CardPredicate.IsColored,
@@ -743,6 +744,9 @@ class PredicateEvaluator(
         }
         if (predicate is CardPredicate.IsActivatedAbility) {
             return container.has<ActivatedAbilityOnStackComponent>()
+        }
+        if (predicate is CardPredicate.IsLoyaltyAbility) {
+            return container.get<ActivatedAbilityOnStackComponent>()?.activatedAbility?.isPlaneswalkerAbility == true
         }
         // Composite predicates must recurse per-branch *before* the CardComponent null-check below,
         // so a heterogeneous Or/And/Not whose branches mix spell predicates (need a CardComponent)
@@ -1502,6 +1506,7 @@ class PredicateEvaluator(
             CardPredicate.IsActivatedOrTriggeredAbility -> false
             CardPredicate.IsTriggeredAbility -> false
             CardPredicate.IsActivatedAbility -> false
+            CardPredicate.IsLoyaltyAbility -> false
             is CardPredicate.TargetsMatching -> false
             is CardPredicate.TargetsPlayer -> false
             is CardPredicate.WouldDestroy -> false
@@ -2823,6 +2828,7 @@ class PredicateEvaluator(
             CardPredicate.IsActivatedOrTriggeredAbility -> false
             CardPredicate.IsTriggeredAbility -> false
             CardPredicate.IsActivatedAbility -> false
+            CardPredicate.IsLoyaltyAbility -> false
 
             // A cast-spell record has no battlefield permanent to inspect for activated abilities.
             CardPredicate.HasNonManaActivatedAbility -> false
