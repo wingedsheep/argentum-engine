@@ -242,10 +242,29 @@ data class ModalEffect(
      * `SpellCastPredicate.IsModal` and `ContextPropertyKey.MODES_CHOSEN_ON_TRIGGERING_SPELL`
      * see only true modal spells.
      */
-    val countsAsModalSpell: Boolean = true
+    val countsAsModalSpell: Boolean = true,
+    /**
+     * "You **may** choose two" (Shadrix Silverquill): the controller may pick no modes at all,
+     * but once they pick one they are held to the printed `[minChooseCount, chooseCount]`. So
+     * `chooseCount = 2` with this set allows exactly zero or two modes — never one, which
+     * `minChooseCount = 0` alone would allow (Shadrix's ruling). Choosing none removes the
+     * ability from the stack (CR 603.3c). Read where a modal *triggered* ability announces its
+     * modes (`TriggerProcessor`); every printed card with this wording is a triggered ability.
+     */
+    val mayChooseNone: Boolean = false,
+    /**
+     * "Each mode must target a different player" (Shadrix Silverquill, Vindictive Lich, Balor, the
+     * TMNT duos): no object or player may be a target of more than one chosen mode. The engine
+     * only offers a mode when the modes picked so far plus it can still be given distinct targets
+     * (and enough of them to reach the minimum), and narrows each later mode's legal targets to
+     * the ones the earlier modes didn't take — so with one opponent, Vindictive Lich can choose
+     * only one of its opponent modes. Read on the triggered-ability announcement path, like
+     * [mayChooseNone].
+     */
+    val eachModeTargetsDifferent: Boolean = false
 ) : Effect {
     override val description: String = buildString {
-        append("Choose ")
+        append(if (mayChooseNone) "You may choose " else "Choose ")
         when {
             excludeModesChosenThisTurn -> append("one that hasn't been chosen this turn")
             excludePreviouslyChosenModes -> append("one that hasn't been chosen")
@@ -261,6 +280,15 @@ data class ModalEffect(
                 3 -> append("three")
                 else -> append(chooseCount)
             }
+        }
+        if (eachModeTargetsDifferent) {
+            val allPlayers = modes.all { mode ->
+                mode.targetRequirements.all {
+                    it is com.wingedsheep.sdk.scripting.targets.TargetPlayer ||
+                        it is com.wingedsheep.sdk.scripting.targets.TargetOpponent
+                }
+            }
+            append(if (allPlayers) ". Each mode must target a different player" else ". Each mode must have a different target")
         }
         append(" —\n")
         modes.forEachIndexed { index, mode ->

@@ -35,6 +35,7 @@ import com.wingedsheep.sdk.scripting.effects.isConsentGate
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeEffect
 import com.wingedsheep.engine.handlers.effects.composite.ModalEffectExecutor
+import com.wingedsheep.engine.mechanics.modal.DistinctModeTargets
 import com.wingedsheep.engine.handlers.effects.composite.asOptionalManaPayment
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
@@ -709,8 +710,22 @@ class TriggerProcessor(
         val remembered = ChosenModeMemory.excludedFor(state, ability.sourceId, modal)
         val candidateIndices = (availableIndices ?: modal.modes.indices.toList())
             .filter { it !in remembered }
-        val offerIndices = candidateIndices.filter { index ->
+        val legalIndices = candidateIndices.filter { index ->
             modeHasLegalTargets(state, ability, modal.modes[index])
+        }
+        // "Each mode must target a different player": offer a mode only if it, the modes already
+        // picked, and enough further legal modes to reach the minimum can all get distinct targets.
+        val offerIndices = if (!modal.eachModeTargetsDifferent) legalIndices else {
+            val pools = mutableMapOf<Int, Set<EntityId>?>()
+            val poolOf = { index: Int -> pools.getOrPut(index) { modeTargetPool(state, ability, modal.modes[index]) } }
+            legalIndices.filter { index ->
+                DistinctModeTargets.completable(
+                    selected = selectedModeIndices + index,
+                    candidates = legalIndices,
+                    needed = maxOf(minChooseCount, selectedModeIndices.size + 1),
+                    poolOf = poolOf
+                )
+            }
         }
 
         if (offerIndices.isEmpty() || selectedModeIndices.size >= chooseCount) {
@@ -725,12 +740,16 @@ class TriggerProcessor(
                 state, ability, outerTargets, outerTargetRequirements,
                 modal.modes, selectedModeIndices, emptyList(), currentOrdinal = 0, triggerCause,
                 recordChosenModesOnSource = modal.excludePreviouslyChosenModes,
-                recordChosenModesThisTurn = modal.excludeModesChosenThisTurn
+                recordChosenModesThisTurn = modal.excludeModesChosenThisTurn,
+                eachModeTargetsDifferent = modal.eachModeTargetsDifferent
             )
         }
 
-        val doneOffered = selectedModeIndices.size >= minChooseCount &&
-            selectedModeIndices.size < chooseCount
+        // "You may choose two" — before the first pick, choosing no mode at all is also on the
+        // menu; once a mode is picked the printed minimum holds (CR 603.3c removes a modeless one).
+        val doneOffered = (selectedModeIndices.size >= minChooseCount &&
+            selectedModeIndices.size < chooseCount) ||
+            (modal.mayChooseNone && selectedModeIndices.isEmpty())
         // Same decline label the resolution-time modal path uses, so clients (and tests) can
         // recognise "choose up to one"'s opt-out wherever the mode question is raised.
         val optionLabels = offerIndices.map { modal.modes[it].description } +
@@ -774,7 +793,8 @@ class TriggerProcessor(
             doneOptionOffered = doneOffered,
             triggerCause = triggerCause,
             recordChosenModesOnSource = modal.excludePreviouslyChosenModes,
-            recordChosenModesThisTurn = modal.excludeModesChosenThisTurn
+            recordChosenModesThisTurn = modal.excludeModesChosenThisTurn,
+            eachModeTargetsDifferent = modal.eachModeTargetsDifferent
         )
 
         return state.suspendForDecision(question, continuation)
@@ -799,6 +819,7 @@ class TriggerProcessor(
         recordChosenModesOnSource: Boolean,
         recordChosenModesThisTurn: Boolean,
         resolvedModeTargetGroupCounts: List<List<Int>> = emptyList(),
+        eachModeTargetsDifferent: Boolean = false,
     ): ExecutionResult {
         var ordinal = currentOrdinal
         var targetsAccum = resolvedModeTargets
@@ -816,10 +837,18 @@ class TriggerProcessor(
                 continue
             }
 
+            // "Each mode must target a different player": drop what earlier modes took, and any
+            // target whose use here would leave a later mode without a distinct one of its own.
+            val distinctFrom: ((EntityId) -> Boolean)? = if (!eachModeTargetsDifferent) null else {
+                val taken = targetsAccum.flatten().map { it.entityId() }.toSet()
+                val laterPools = chosenModeIndices.drop(ordinal + 1).map { modeTargetPool(state, ability, modes[it]) }
+                ({ id: EntityId -> id !in taken && DistinctModeTargets.assignable(laterPools, taken + id) })
+            }
             val legalTargetsMap = mutableMapOf<Int, List<EntityId>>()
             val requirementInfos = mode.targetRequirements.mapIndexed { index, req ->
+                val found = findModeLegalTargets(state, ability, req)
                 legalTargetsMap[index] = com.wingedsheep.engine.mechanics.targeting.NumericTargetEquality.eligible(
-                    state, findModeLegalTargets(state, ability, req), req)
+                    state, distinctFrom?.let { keep -> found.filter(keep) } ?: found, req)
                 TargetRequirementInfo(
                     index = index,
                     description = req.description,
@@ -876,7 +905,8 @@ class TriggerProcessor(
                 currentOrdinal = ordinal,
                 triggerCause = triggerCause,
                 recordChosenModesOnSource = recordChosenModesOnSource,
-                recordChosenModesThisTurn = recordChosenModesThisTurn
+                recordChosenModesThisTurn = recordChosenModesThisTurn,
+                eachModeTargetsDifferent = eachModeTargetsDifferent
             )
 
             return state.suspendForDecision(question, continuation)
@@ -1000,6 +1030,17 @@ class TriggerProcessor(
     )
 
     /** True when every mandatory target requirement of [mode] has at least one legal target. */
+    /**
+     * Every legal target of [mode]'s requirements — the pool [DistinctModeTargets] matches modes
+     * against — or `null` for a mode that targets nothing and so claims no target.
+     */
+    private fun modeTargetPool(
+        state: GameState,
+        ability: TriggeredAbilityOnStackComponent,
+        mode: com.wingedsheep.sdk.scripting.effects.Mode
+    ): Set<EntityId>? = mode.targetRequirements.takeIf { it.isNotEmpty() }
+        ?.flatMapTo(mutableSetOf()) { findModeLegalTargets(state, ability, it) }
+
     private fun modeHasLegalTargets(
         state: GameState,
         ability: TriggeredAbilityOnStackComponent,

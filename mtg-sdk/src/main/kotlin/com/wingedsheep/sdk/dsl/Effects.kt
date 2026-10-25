@@ -4787,11 +4787,14 @@ object Effects {
         dynamicMinChooseCount: DynamicAmount? = null,
         excludePreviouslyChosenModes: Boolean = false,
         excludeModesChosenThisTurn: Boolean = false,
-        countsAsModalSpell: Boolean = true
+        countsAsModalSpell: Boolean = true,
+        mayChooseNone: Boolean = false,
+        eachModeTargetsDifferent: Boolean = false
     ): Effect = ModalEffect(
         modes, chooseCount, minChooseCount, allowRepeat, additionalManaCostPerExtraMode,
         additionalCostPerExtraMode, chooseAllIfBlightPaid, dynamicChooseCount, dynamicMinChooseCount,
-        excludePreviouslyChosenModes, excludeModesChosenThisTurn, countsAsModalSpell
+        excludePreviouslyChosenModes, excludeModesChosenThisTurn, countsAsModalSpell,
+        mayChooseNone, eachModeTargetsDifferent
     )
 
     /**

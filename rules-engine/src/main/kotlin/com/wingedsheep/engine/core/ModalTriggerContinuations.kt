@@ -44,7 +44,9 @@ data class TriggerModalModeSelectionContinuation(
     /** See [TriggerModalTargetSelectionContinuation.recordChosenModesOnSource]. */
     val recordChosenModesOnSource: Boolean = false,
     /** See [TriggerModalTargetSelectionContinuation.recordChosenModesThisTurn]. */
-    val recordChosenModesThisTurn: Boolean = false
+    val recordChosenModesThisTurn: Boolean = false,
+    /** See [TriggerModalTargetSelectionContinuation.eachModeTargetsDifferent]. */
+    val eachModeTargetsDifferent: Boolean = false
 ) : AnswerContinuation
 
 /**
@@ -80,5 +82,10 @@ data class TriggerModalTargetSelectionContinuation(
      * [recordChosenModesOnSource], written to
      * [com.wingedsheep.engine.state.components.battlefield.ChosenModesThisTurnComponent].
      */
-    val recordChosenModesThisTurn: Boolean = false
+    val recordChosenModesThisTurn: Boolean = false,
+    /**
+     * [com.wingedsheep.sdk.scripting.effects.ModalEffect.eachModeTargetsDifferent]: each later
+     * mode's legal targets exclude what the earlier modes took.
+     */
+    val eachModeTargetsDifferent: Boolean = false
 ) : AnswerContinuation

@@ -74,7 +74,8 @@ class ModalTriggerContinuationResumer(
                     minChooseCount = continuation.minChooseCount,
                     allowRepeat = continuation.allowRepeat,
                     excludePreviouslyChosenModes = continuation.recordChosenModesOnSource,
-                    excludeModesChosenThisTurn = continuation.recordChosenModesThisTurn
+                    excludeModesChosenThisTurn = continuation.recordChosenModesThisTurn,
+                    eachModeTargetsDifferent = continuation.eachModeTargetsDifferent
                 ),
                 selectedModeIndices = newSelected,
                 availableIndices = nextAvailable,
@@ -93,7 +94,8 @@ class ModalTriggerContinuationResumer(
             currentOrdinal = 0,
             triggerCause = continuation.triggerCause,
             recordChosenModesOnSource = continuation.recordChosenModesOnSource,
-            recordChosenModesThisTurn = continuation.recordChosenModesThisTurn
+            recordChosenModesThisTurn = continuation.recordChosenModesThisTurn,
+            eachModeTargetsDifferent = continuation.eachModeTargetsDifferent
         ).thenCheckForMore(checkForMore)
     }
 
@@ -133,7 +135,8 @@ class ModalTriggerContinuationResumer(
             currentOrdinal = continuation.currentOrdinal + 1,
             triggerCause = continuation.triggerCause,
             recordChosenModesOnSource = continuation.recordChosenModesOnSource,
-            recordChosenModesThisTurn = continuation.recordChosenModesThisTurn
+            recordChosenModesThisTurn = continuation.recordChosenModesThisTurn,
+            eachModeTargetsDifferent = continuation.eachModeTargetsDifferent
         ).thenCheckForMore(checkForMore)
     }
 

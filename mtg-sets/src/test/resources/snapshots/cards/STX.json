@@ -18694,6 +18694,161 @@
     ]
 }
 
+// Shadrix Silverquill
+{
+    "name": "Shadrix Silverquill",
+    "manaCost": "{3}{W}{B}",
+    "typeLine": "Legendary Creature — Elder Dragon",
+    "oracleText": "Flying, double strike\nAt the beginning of combat on your turn, you may choose two. Each mode must target a different player.\n• Target player creates a 2/1 white and black Inkling creature token with flying.\n• Target player draws a card and loses 1 life.\n• Target player puts a +1/+1 counter on each creature they control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "DOUBLE_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shadrix Silverquill:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "CreateToken",
+                                "power": 2,
+                                "toughness": 1,
+                                "colors": [
+                                    "WHITE",
+                                    "BLACK"
+                                ],
+                                "creatureTypes": [
+                                    "Inkling"
+                                ],
+                                "keywords": [
+                                    "FLYING"
+                                ],
+                                "controller": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetPlayer",
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Target player creates a 2/1 white and black Inkling creature token with flying"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t1"
+                                        }
+                                    },
+                                    {
+                                        "type": "LoseLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "t1"
+                                        }
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetPlayer",
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Target player draws a card and loses 1 life"
+                        },
+                        {
+                            "effect": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": {
+                                            "cardPredicates": [
+                                                "IsCreature"
+                                            ],
+                                            "controllerPredicate": {
+                                                "type": "ControlledByReferencedPlayer",
+                                                "target": {
+                                                    "type": "BoundVariable",
+                                                    "name": "t2"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "body": {
+                                    "type": "AddCounters",
+                                    "counterType": "PLUS_ONE_PLUS_ONE",
+                                    "count": 1,
+                                    "target": "IterationEntity"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetPlayer",
+                                    "id": "t2"
+                                }
+                            ],
+                            "description": "Target player puts a +1/+1 counter on each creature they control"
+                        }
+                    ],
+                    "chooseCount": 2,
+                    "mayChooseNone": true,
+                    "eachModeTargetsDifferent": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "MYTHIC",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/ab701909-83d6-4d39-9a84-e6a9b2cb38d6.jpg?1783927294",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "You may choose exactly zero modes or two modes. You can't choose only one mode. If you choose two modes, you choose which two and the target players as you put the triggered ability on the stack."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "You can target a player with the third mode even if they control no creatures."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Shineshadow Snarl
 {
     "name": "Shineshadow Snarl",
