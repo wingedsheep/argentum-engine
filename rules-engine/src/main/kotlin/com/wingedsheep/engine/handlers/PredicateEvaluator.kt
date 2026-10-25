@@ -2880,6 +2880,14 @@ data class PredicateContext(
      */
     val triggeringPlayerId: EntityId? = null,
     /**
+     * The event context of the trigger whose targets are being chosen, so a target filter's dynamic
+     * cap can read the event's own numbers at targeting time — Venerable Warsinger's "target creature
+     * card with mana value X or less, where X is the amount of damage it dealt to that player"
+     * (`manaValueAtMostDynamic(triggerDamageAmount())`). Resolution contexts carry it on
+     * [resolution] instead; null outside trigger targeting.
+     */
+    val triggerContext: com.wingedsheep.engine.event.TriggerContext? = null,
+    /**
      * The entity a continuous effect is being applied to during projection (e.g. the creature an
      * Aura is enchanting). Lets filters resolve [EffectTarget.AffectedEntity] — needed by
      * `AggregateBattlefield(filter = ...sharingCreatureTypeWith(AffectedEntity))` for Alpha Status.
@@ -3020,6 +3028,7 @@ data class PredicateContext(
             lastKnownSourceSnapshot = lastKnownSourceSnapshot,
             triggeringEntityId = triggeringEntityId,
             triggeringPlayerId = triggeringPlayerId,
+            triggerContext = triggerContext ?: base.triggerContext,
             chosenColor = chosenColor,
             affectedEntityId = affectedEntityId,
             pipeline = base.pipeline.copy(

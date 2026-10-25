@@ -75,6 +75,7 @@ class EffectAndTriggerContinuationResumer(
                     sourceId = continuation.sourceId,
                     triggeringEntityId = continuation.triggerContext?.triggeringEntityId,
                     triggeringPlayerId = continuation.triggerContext?.triggeringPlayerId,
+                    triggerContext = continuation.triggerContext,
                     xValue = continuation.triggerContext?.xValue,
                     storedCollections = pipeline?.storedCollections ?: emptyMap(),
                     chosenValues = pipeline?.chosenValues ?: emptyMap(),

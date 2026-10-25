@@ -273,6 +273,7 @@ class TriggerProcessor(
                 controllerId = trigger.controllerId,
                 triggeringEntityId = trigger.triggerContext.triggeringEntityId,
                 triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
+                triggerContext = trigger.triggerContext,
                 // The X carried by the triggering event (an {X} cycling cost, a megamorph turn-up)
                 // so an X-relative target filter — `manaValueEqualsX()` on Webstrike Elite's
                 // "artifact or enchantment with mana value X" — finds targets at legality time.
@@ -352,6 +353,9 @@ class TriggerProcessor(
             sourceId = trigger.sourceId,
             triggeringEntityId = trigger.triggerContext.triggeringEntityId,
             triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
+            // The trigger's event numbers, for a dynamic target cap like "mana value X or less,
+            // where X is the damage dealt" (triggerDamageAmount()).
+            triggerContext = trigger.triggerContext,
             xValue = trigger.triggerContext.xValue,
             storedCollections = triggerStoredCollections(trigger.triggerContext, trigger.carriedPipeline),
             chosenValues = trigger.carriedPipeline?.chosenValues ?: emptyMap(),
@@ -1018,6 +1022,7 @@ class TriggerProcessor(
             controllerId = ability.controllerId,
             triggeringEntityId = ability.triggerContext?.triggeringEntityId,
             triggeringPlayerId = ability.triggerContext?.triggeringPlayerId,
+            triggerContext = ability.triggerContext,
             // Same reason as the pending-trigger call sites: an X-relative target filter must see
             // the X the ability went on the stack with, or it re-checks as having no legal targets.
             xValue = ability.xValue,

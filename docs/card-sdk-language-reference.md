@@ -1954,6 +1954,13 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   so a dynamic cap like `CreatureInYourGraveyard.manaValueAtMostDynamic(<count>)` is read again then —
   Unforgiving One's "mana value X or less, where X is the number of modified creatures you control"
   doesn't resolve once X has dropped below the card's mana value.
+  A triggered ability's target filter can also read its own event's numbers: trigger targeting carries
+  the trigger context, so `DynamicAmounts.triggerDamageAmount()` (and the other trigger-context
+  properties) is the event's value when the target is chosen, not 0 — **Venerable Warsinger**:
+  `Triggers.self.dealsCombatDamage(Recipient.AnyPlayer)` + `target(TargetFilter(Creature.ownedByYou()
+  .manaValueAtMostDynamic(DynamicAmounts.triggerDamageAmount()), zone = GRAVEYARD))` →
+  `PutOntoBattlefieldFromGraveyard`, `optional = true` ("mana value X or less, where X is the amount of
+  damage this creature dealt to that player").
 - `ReturnToHandFromGraveyard(target)` — the *guarded* bounce, `PutOntoBattlefieldFromGraveyard`'s
   sibling one destination over: `MoveToZone(…, Zone.HAND, fromZone = GRAVEYARD)`, so the move is
   skipped if the card has left the graveyard by resolution. Use this for the **self**-return, and only
