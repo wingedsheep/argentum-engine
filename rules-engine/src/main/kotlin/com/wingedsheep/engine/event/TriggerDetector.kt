@@ -309,10 +309,16 @@ class TriggerDetector(
                         // fixed, so removing the permanent in response must not untick it.
                         if (!selfZoneEvent || (event as ZoneChangeEvent).toZone != Zone.BATTLEFIELD) return@let ctx
                         val source = state.getEntity(pending.sourceId) ?: return@let ctx
-                        val definitionId = source.get<CardComponent>()?.cardDefinitionId ?: return@let ctx
+                        // Same for the mana spent to cast it ("earthbend X, where X is the amount of
+                        // mana spent to cast her"): a blink in response returns a new object with
+                        // no cast record, and this trigger belongs to the cast one.
+                        val paid = ctx.copy(
+                            selfCastManaSpent = com.wingedsheep.engine.handlers.ManaSpentReader.snapshot(state, pending.sourceId)
+                        )
+                        val definitionId = source.get<CardComponent>()?.cardDefinitionId ?: return@let paid
                         val chosen = source.get<CastChoicesComponent>()?.chosen.orEmpty()
                         val choices = optionalCostChoices(definitionId) { it in chosen }
-                        if (choices.isEmpty()) ctx else ctx.copy(
+                        if (choices.isEmpty()) paid else paid.copy(
                             selfCastCostChoices = choices,
                             selfCastAdditionalCostChoices = chosen.filterKeys { it in choices }.mapNotNull { (slot, value) ->
                                 (value as? com.wingedsheep.engine.state.components.battlefield.ChoiceValue.NumberChoice)

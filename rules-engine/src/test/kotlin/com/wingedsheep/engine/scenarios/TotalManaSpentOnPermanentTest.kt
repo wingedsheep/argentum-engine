@@ -47,15 +47,17 @@ class TotalManaSpentOnPermanentTest : ScenarioTestBase() {
             }
         })
 
-        fun cast() = scenario().withPlayers("Player1", "Player2")
+        fun setUp() = scenario().withPlayers("Player1", "Player2")
             .withCardInHand(1, echo).withCardInHand(1, "Lightning Bolt").withCardInHand(1, raise)
+            .withCardInHand(1, "Cloudshift")
             .withLandsOnBattlefield(1, "Forest", 1)
             .withLandsOnBattlefield(1, "Snow-Covered Wastes", 2)
             .withActivePlayer(1).inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN).build()
-            .also { game ->
-                game.castSpell(1, echo).error shouldBe null
-                game.resolveStack()
-            }
+
+        fun cast() = setUp().also { game ->
+            game.castSpell(1, echo).error shouldBe null
+            game.resolveStack()
+        }
 
         test("enters trigger reads the whole payment, generic paid with colorless included") {
             cast().getLifeTotal(1) shouldBe 23
@@ -81,6 +83,21 @@ class TotalManaSpentOnPermanentTest : ScenarioTestBase() {
             game.resolveStack()
 
             game.findPermanent(echo) shouldBe card
+            game.getLifeTotal(1) shouldBe 23
+        }
+
+        test("a blink in response leaves the original trigger its payment; the new object's reads 0") {
+            val game = setUp()
+            game.castSpell(1, echo).error shouldBe null
+            game.passPriority()
+            game.passPriority() // the bear resolves; its enters trigger waits on the stack
+            game.state.stack.size shouldBe 1
+
+            game.state = game.state.withEntity(game.player1Id,
+                game.state.getEntity(game.player1Id)!!.with(ManaPoolComponent(white = 1)))
+            game.castSpell(1, "Cloudshift", targetId = game.findPermanent(echo)!!).error shouldBe null
+            game.resolveStack()
+
             game.getLifeTotal(1) shouldBe 23
         }
     }
