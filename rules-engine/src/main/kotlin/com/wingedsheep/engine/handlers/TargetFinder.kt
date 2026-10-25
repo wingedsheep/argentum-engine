@@ -706,8 +706,7 @@ class TargetFinder(
     }
 
     private fun sourceColorNames(state: GameState, projected: ProjectedState, sourceId: EntityId): Set<String> =
-        if (sourceId in state.getBattlefield()) projected.getColors(sourceId)
-        else state.getEntity(sourceId)?.get<CardComponent>()?.colors?.map { it.name }?.toSet().orEmpty()
+        projected.colorsOf(sourceId)
 
     /**
      * Find card targets in non-battlefield, non-stack zones (hand, library, exile, command).

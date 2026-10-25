@@ -463,7 +463,7 @@ class ActivateAbilityHandler(
         val source = state.getEntity(action.sourceId)?.get<CardComponent>()
         val binding = targetValidator.bindTargetGroups(
             state, action.targets, requirements, action.playerId,
-            sourceColors = source?.colors.orEmpty(),
+            sourceColors = if (source == null) emptySet() else state.projectedState.colorSetOf(action.sourceId),
             sourceSubtypes = source?.typeLine?.subtypes?.mapTo(mutableSetOf()) { it.value }.orEmpty(),
             sourceId = action.sourceId,
             xValue = activation.effectiveXValue,

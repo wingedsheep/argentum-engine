@@ -48,7 +48,7 @@ internal class SpellResolver(
         val targetsComponent = container.get<TargetsComponent>()
 
         // Validate targets if spell has any (including protection check - Rule 702.16)
-        val sourceColors = cardComponent?.colors ?: emptySet()
+        val sourceColors = if (cardComponent == null) emptySet() else state.projectedState.colorSetOf(spellId)
         val sourceSubtypes = cardComponent?.typeLine?.subtypes?.map { it.value }?.toSet() ?: emptySet()
         // `resolvedTargets` is the compacted (drop-illegal) list used as `context.targets`
         // — same shape every executor has always seen. `alignedResolvedTargets` is a parallel

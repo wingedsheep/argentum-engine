@@ -636,8 +636,44 @@ class StateProjector {
             state,
             finalValues,
             crossZoneGrants,
-            collectCrossZoneCardTypes(state, sortedEffects, projectedValues, finalValues)
+            collectCrossZoneCardTypes(state, sortedEffects, projectedValues, finalValues),
+            collectOffBattlefieldColors(state, sortedEffects, projectedValues, finalValues)
         )
+    }
+
+    /**
+     * The off-battlefield half of color-setting statics (Mycosynth Lattice: "All cards that aren't
+     * on the battlefield, spells, and permanents are colorless"). Layer 5 above only touched
+     * permanents; here each [Modification.ChangeColor] carrying an [Modification.OffBattlefieldReach]
+     * becomes a rule [ProjectedState.offBattlefieldColors] applies per object on demand, in layer
+     * order, so a later one overrides an earlier one as CR 613.7's timestamps would. Rules are read
+     * lazily rather than resolved into a map because a spell is briefly off the stack list while it
+     * resolves and must still be reached. Allocates nothing without such an effect.
+     */
+    private fun collectOffBattlefieldColors(
+        state: GameState,
+        sortedEffects: List<ContinuousEffect>,
+        projectedValues: Map<EntityId, MutableProjectedValues>,
+        finalValues: Map<EntityId, ProjectedValues>
+    ): List<OffBattlefieldColorRule> {
+        val grants = sortedEffects.filter { (it.modification as? Modification.ChangeColor)?.offBattlefield != null }
+        if (grants.isEmpty()) return emptyList()
+        val eligibilityProjection by lazy { ProjectedState(state, finalValues) }
+        return grants.mapNotNull { effect ->
+            val mod = effect.modification as Modification.ChangeColor
+            val reach = mod.offBattlefield ?: return@mapNotNull null
+            val controllerId = projectedValues[effect.sourceId]?.controllerId ?: return@mapNotNull null
+            val players = when (reach.players) {
+                com.wingedsheep.sdk.scripting.references.Player.Each -> state.turnOrder.toSet()
+                com.wingedsheep.sdk.scripting.references.Player.EachOpponent -> state.turnOrder.filterTo(mutableSetOf()) { it != controllerId }
+                else -> setOf(controllerId)
+            }
+            val context = com.wingedsheep.engine.handlers.PredicateContext(controllerId = controllerId, sourceId = effect.sourceId)
+            val unrestricted = reach.eligibility.cardPredicates.isEmpty()
+            OffBattlefieldColorRule(players, mod.colors) { id ->
+                unrestricted || predicateEvaluator.matches(state, eligibilityProjection, id, reach.eligibility, context)
+            }
+        }
     }
 
     /**

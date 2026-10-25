@@ -69,18 +69,14 @@ object PlayerProtectionRules {
         // off-battlefield characteristics rather than an absent battlefield projection.
         val card = state.getEntity(sourceId)?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
         val onBattlefield = sourceId in state.getBattlefield()
+        // Projected on the battlefield, the card's own (or an off-battlefield SetColors') elsewhere.
+        fun colors(): Set<String> = if (card == null && !onBattlefield) emptySet() else projected.colorsOf(sourceId)
         return when (scope) {
-            is ProtectionScope.Color -> if (onBattlefield) scope.color.name in projected.getColors(sourceId)
-                else scope.color in card?.colors.orEmpty()
-            is ProtectionScope.Colors -> scope.colors.any { color ->
-                if (onBattlefield) color.name in projected.getColors(sourceId) else color in card?.colors.orEmpty()
-            }
-            is ProtectionScope.NonColor -> if (onBattlefield) scope.color.name !in projected.getColors(sourceId)
-                else scope.color !in card?.colors.orEmpty()
-            ProtectionScope.Multicolored -> if (onBattlefield) projected.getColors(sourceId).size >= 2
-                else card?.colors.orEmpty().size >= 2
-            ProtectionScope.Monocolored -> if (onBattlefield) projected.getColors(sourceId).size == 1
-                else card?.colors.orEmpty().size == 1
+            is ProtectionScope.Color -> scope.color.name in colors()
+            is ProtectionScope.Colors -> scope.colors.any { it.name in colors() }
+            is ProtectionScope.NonColor -> scope.color.name !in colors()
+            ProtectionScope.Multicolored -> colors().size >= 2
+            ProtectionScope.Monocolored -> colors().size == 1
             is ProtectionScope.Subtype -> if (onBattlefield)
                 projected.getSubtypes(sourceId).any { it.equals(scope.subtype, ignoreCase = true) }
                 else card?.typeLine?.subtypes?.any { it.value.equals(scope.subtype, ignoreCase = true) } == true

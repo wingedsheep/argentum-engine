@@ -313,7 +313,9 @@ internal class CardProjector(
             hexproofFromMulticolored = projectedValues?.keywords?.contains("HEXPROOF_FROM_MULTICOLORED") ?: false,
             colors = projectedValues?.colors?.mapNotNull {
                 try { Color.valueOf(it) } catch (_: Exception) { null }
-            }?.toSet() ?: cardComponent.colors,
+            }?.toSet() ?: frame.projectedState.offBattlefieldColors(frame.entityId)?.mapNotNullTo(linkedSetOf()) { name ->
+                Color.entries.firstOrNull { it.name == name }
+            } ?: cardComponent.colors,
             isTapped = container.has<TappedComponent>(),
             isExerted = container.has<ExertedComponent>(),
             isPhasedOut = container.has<PhasedOutComponent>(),

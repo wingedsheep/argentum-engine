@@ -64,6 +64,5 @@ object OnePerCategoryTargets {
      * counts (and a permanent made colourless has none), the card's own colours elsewhere.
      */
     private fun colorsOf(state: GameState, id: EntityId): Set<String> =
-        if (id in state.getBattlefield()) state.projectedState.getColors(id)
-        else state.getEntity(id)?.get<CardComponent>()?.colors?.mapTo(mutableSetOf()) { it.name }.orEmpty()
+        state.projectedState.colorsOf(id)
 }

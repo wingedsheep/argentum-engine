@@ -1960,6 +1960,7 @@ Families:
 - `SetBasePowerToughnessDynamicStatic(power: DynamicAmount, toughness: DynamicAmount, filter: GroupFilter)` — Sets the base power and toughness of a group of creatures to dynamic amounts — a characteristic-defining ability (CDA) that recomputes continuously rather than snapshotting the value once at creati…
 - `SetBasePowerToughnessStatic(power: Int, toughness: Int, filter: GroupFilter)` — Sets the base power and toughness of the target permanent.
 - `SetBaseToughnessForCreatureGroup(toughness: Int, filter: GroupFilter)` — Sets the base toughness of a group of creatures.
+- `SetColors(colors: Set<Color>, filter: GroupFilter, offBattlefield: Player?)` — "filter are colors" — a Layer 5 color-*setting* effect (CR 613.1e): the affected objects' colors become exactly colors, replacing whatever they were; an empty set is "are colorless".
 - `SetEnchantedLandType(landType: String)` — Enchanted land becomes a specific basic land type.
 - `SetEnchantedLandTypeFromChosen` — Enchanted land becomes the basic land type chosen as the source entered (resolved from the source's `CastChoicesComponent`).
 - `SetLandTypesForGroup(filter: GroupFilter, landTypes: Set<String>)` — Sets the basic land type(s) of a *group* of lands, replacing all of their existing land subtypes and stripping the abilities those subtypes / their rules text granted (CR 305.7).
@@ -1968,7 +1969,7 @@ Families:
 - `SkipStepOrPhase(part: TurnPart, player: Player)` — player skips every part for as long as this static applies — "Skip your draw step." (Colfenor's Plans, Necrodominance; player = Player.You) and "Players skip their untap steps." (Stasis; Player.Each).
 - `SpendAnyManaTypeForActivatedAbilities(filter: GroupFilter, substituteColor: Color?, asThoughAnyColor: Boolean)` — The mana requirements in the activated-ability costs of permanents matching filter are relaxed (CR 118.14 / 609.4b).
 - `SpendAnyManaTypeForSpells(filter: GameObjectFilter)` — You can spend mana of any type to cast spells matching filter (CR 118.14 / 609.4b — the colored, hybrid, Phyrexian and colorless requirements of the spell's mana cost may each be paid with mana of…
-- `SpendManaAsColor(fromColor: Color, toColor: Color)` — A controller may spend fromColor mana as though it were toColor, for any mana payment.
+- `SpendManaAsColor(fromColor: Color?, toColor: Color?, players: Player)` — players may spend fromColor mana as though it were toColor mana, for any mana payment (CR 609.4b).
 - `StationUsingToughness` — Creatures this permanent's controller controls that are tapped to activate a Station ability contribute their toughness (rather than their power), as long as toughness is greater than power.
 - `SuppressEntersTriggers(filter: GameObjectFilter, abilitiesOf: GameObjectFilter?)` — Permanents matching filter entering the battlefield don't cause abilities to trigger (CR 603.6 enters-the-battlefield triggers are suppressed).
 - `SuppressHexproofForGroup(filter: GroupFilter)` — Creatures matching filter can be the targets of spells and abilities as though they didn't have hexproof.

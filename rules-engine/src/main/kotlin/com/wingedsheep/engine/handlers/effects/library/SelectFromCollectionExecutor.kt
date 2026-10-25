@@ -162,7 +162,7 @@ class SelectFromCollectionExecutor(
             } else null
         if (controllerPermanentColors != null) {
             eligibleCards = eligibleCards.filter { cardId ->
-                val cardColors = state.getEntity(cardId)?.get<CardComponent>()?.colors ?: emptySet()
+                val cardColors = state.projectedState.colorSetOf(cardId)
                 cardColors.any { it in controllerPermanentColors }
             }
         }
@@ -297,9 +297,8 @@ class SelectFromCollectionExecutor(
     ): Set<com.wingedsheep.sdk.core.Color> {
         val colors = mutableSetOf<com.wingedsheep.sdk.core.Color>()
         for (entityId in state.getBattlefield()) {
-            val controller = state.getEntity(entityId)?.get<ControllerComponent>()?.playerId
-            if (controller != playerId) continue
-            colors += state.getEntity(entityId)?.get<CardComponent>()?.colors ?: emptySet()
+            if (state.projectedState.getController(entityId) != playerId) continue
+            colors += state.projectedState.colorSetOf(entityId)
         }
         return colors
     }
@@ -359,7 +358,7 @@ class SelectFromCollectionExecutor(
                     val distinctColors = mutableSetOf<com.wingedsheep.sdk.core.Color>()
                     var colourlessCount = 0
                     for (cardId in eligibleCards) {
-                        val cardColors = state.getEntity(cardId)?.get<CardComponent>()?.colors ?: emptySet()
+                        val cardColors = state.projectedState.colorSetOf(cardId)
                         if (cardColors.isEmpty()) colourlessCount++ else distinctColors += cardColors
                     }
                     if (restriction.matchControllerPermanentColors && controllerPermanentColors != null) {

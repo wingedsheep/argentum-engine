@@ -901,7 +901,10 @@ internal class CastValidator(
             addAll(SpliceCasts.targetRequirementsFor(state, action.splicedCardIds, cardRegistry))
         }.map { req -> castText?.let { req.applyTextReplacement(it) } ?: req }
         if (targetRequirements.isEmpty()) return null
-        val sourceColors = (transformedFace ?: cardDef).colors
+        // An off-battlefield SetColors (Mycosynth Lattice) recolors the spell being cast.
+        val sourceColors = state.projectedState.offBattlefieldColors(action.cardId)
+            ?.mapNotNullTo(linkedSetOf()) { name -> com.wingedsheep.sdk.core.Color.entries.firstOrNull { it.name == name } }
+            ?: (transformedFace ?: cardDef).colors
         val sourceSubtypes = (transformedFace ?: cardDef).typeLine.subtypes.map { it.value }.toSet()
         // A choose-N modal cast that sends its targets per mode already says which mode each target
         // belongs to, and those slices are what the stack records. Bind each slice against its own

@@ -166,7 +166,10 @@ internal class CastRecords(
             manaValue = (modalBackFace?.manaCost?.cmc ?: cardComponent.manaValue) +
                 if (transformedFace != null && modalBackFace == null) 0
                 else (action.xValue ?: 0) * (modalBackFace?.manaCost ?: cardComponent.manaCost).xCount,
-            colors = transformedFace?.colors ?: cardComponent.colors,
+            // An off-battlefield SetColors (Mycosynth Lattice) reaches the card where it's cast from.
+            colors = state.projectedState.offBattlefieldColors(action.cardId)
+                ?.mapNotNullTo(linkedSetOf()) { name -> com.wingedsheep.sdk.core.Color.entries.firstOrNull { it.name == name } }
+                ?: transformedFace?.colors ?: cardComponent.colors,
             isFaceDown = action.castFaceDown,
             spentManaSubtypes = payment.spentManaProvenance.spentSubtypes,
             // The cast card moves to the stack keeping its entity id, so this matches the resolving

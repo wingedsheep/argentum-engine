@@ -60,8 +60,7 @@ class LegalActionEnricher(
                     isFromHand = action.sourceZone == null || action.sourceZone == "HAND"
                 )
             } else state.getEntity(gameAction.cardId)?.get<CardComponent>()?.let { card ->
-                spellPaymentContextFor(
-                    card,
+                spellPaymentContextFor(card, colors = state.projectedState.colorSetOf(gameAction.cardId),
                     isKicked = gameAction.declaredCostSlot == ChoiceSlot.KICKED,
                     isFromExile = action.sourceZone == "EXILE",
                     // Null sourceZone means the standard hand cast.

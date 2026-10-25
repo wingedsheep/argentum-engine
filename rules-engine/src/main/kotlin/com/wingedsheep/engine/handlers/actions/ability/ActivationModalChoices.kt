@@ -51,9 +51,7 @@ internal class ActivationModalChoices(
             pipelineContext = PredicateContext(controllerId = action.playerId, sourceId = action.sourceId, xValue = action.xValue))
 
     fun sourceColors(state: GameState, action: ActivateAbility): Set<com.wingedsheep.sdk.core.Color> =
-        if (action.sourceId in state.getBattlefield()) state.projectedState.getColors(action.sourceId)
-            .map { com.wingedsheep.sdk.core.Color.valueOf(it) }.toSet()
-        else state.getEntity(action.sourceId)?.get<CardComponent>()?.colors.orEmpty()
+        state.projectedState.colorSetOf(action.sourceId)
 
     fun sourceSubtypes(state: GameState, action: ActivateAbility): Set<String> =
         if (action.sourceId in state.getBattlefield()) state.projectedState.getSubtypes(action.sourceId)

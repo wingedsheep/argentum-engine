@@ -330,8 +330,11 @@ data class ManaPool(
     /** Exact source snapshots, grouped with each unrestricted unit’s actual color. */
     val manaUnits: List<com.wingedsheep.engine.mechanics.mana.ManaUnit> = emptyList(),
     val snowColorless: Int = 0,
-    /** Ephemeral payment configuration, never stored in the player's mana component. */
-    val spendingColors: Map<Color, Set<Color>> = emptyMap(),
+    /**
+     * Ephemeral payment configuration, never stored in the player's mana component: required
+     * color -> the actual mana that may pay it (`null` = colorless), from [ManaSpendingRules].
+     */
+    val spendingColors: Map<Color, Set<Color?>> = emptyMap(),
     /** Payment-local selection memory, never stored in the player component. */
     val dischargedObligations: Set<String> = emptySet()
 ) {
@@ -934,14 +937,18 @@ data class ManaPool(
     ): PartialPaymentResult {
         val symbols = cost.symbols.filter { it !is ManaSymbol.Generic && it !is ManaSymbol.X && it !is ManaSymbol.Snow }
         fun options(symbol: ManaSymbol): List<Color?> {
-            fun colors(color: Color): List<Color> = listOf(color) + spendingColors[color].orEmpty().filter { it != color }
-            // Colorless spent as though it were any color comes last: native colors first.
-            val colorless: List<Color?> = if (context?.colorlessAsAnyColor == true) listOf(null) else emptyList()
+            // Colorless spent as though it were a color comes last: native colors first.
+            val anyColorless = context?.colorlessAsAnyColor == true
+            fun colors(vararg required: Color): List<Color?> {
+                val colored = required.flatMap { color -> listOf(color) + spendingColors[color].orEmpty().filter { it != color && it != null } }
+                val colorless = anyColorless || required.any { null in spendingColors[it].orEmpty() }
+                return colored.distinct() + if (colorless) listOf(null) else emptyList()
+            }
             return when (symbol) {
-                is ManaSymbol.Colored -> colors(symbol.color) + colorless
-                is ManaSymbol.Phyrexian -> colors(symbol.color) + colorless
-                is ManaSymbol.Hybrid, is ManaSymbol.HybridPhyrexian -> (colors(symbol.color1) + colors(symbol.color2)).distinct() + colorless
-                is ManaSymbol.MonocolorHybrid -> colors(symbol.color) + colorless
+                is ManaSymbol.Colored -> colors(symbol.color)
+                is ManaSymbol.Phyrexian -> colors(symbol.color)
+                is ManaSymbol.Hybrid, is ManaSymbol.HybridPhyrexian -> colors(symbol.color1, symbol.color2)
+                is ManaSymbol.MonocolorHybrid -> colors(symbol.color)
                 is ManaSymbol.Colorless -> listOf(null)
                 else -> emptyList()
             }

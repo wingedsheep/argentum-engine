@@ -144,10 +144,8 @@ object ManaColorSetResolver {
 
     private fun colorsOf(state: GameState, projected: ProjectedState, entityId: EntityId?): Set<Color> {
         if (entityId == null) return emptySet()
-        if (entityId in state.getBattlefield()) {
-            return projected.getColors(entityId).mapNotNullTo(mutableSetOf()) { name -> Color.entries.find { it.name == name } }
-        }
-        return state.getEntity(entityId)?.get<CardComponent>()?.colors.orEmpty()
+        if (state.getEntity(entityId)?.get<CardComponent>() == null) return emptySet()
+        return projected.colorSetOf(entityId)
     }
 
     private fun sourceChosenColor(state: GameState, sourceId: EntityId?): Set<Color> {
@@ -176,7 +174,7 @@ object ManaColorSetResolver {
             val card = state.getEntity(id)?.get<CardComponent>() ?: continue
             val ownerId = card.ownerId ?: continue
             if (id !in state.getExile(ownerId)) continue
-            colors.addAll(card.colors)
+            colors.addAll(state.projectedState.colorSetOf(id))
         }
         return colors
     }

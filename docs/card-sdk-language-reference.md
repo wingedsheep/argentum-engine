@@ -10158,6 +10158,19 @@ staticAbility {
   projected statics (`UntargetableByRules.zoneLocks`) at the same three sites — legal-target enumeration,
   cast/activation validation, and the resolution re-check (a lock arriving after targeting makes that
   target illegal, CR 608.2b) — and lifts when the holder loses all its abilities.
+- `SetColors(colors, filter, offBattlefield = null)` — Layer 5 color-*setting* static (CR 613.1e): the objects
+  `filter` matches have exactly `colors`, replacing their own; an empty set is "are colorless". The add-a-color
+  siblings are `GrantColor` / `GrantChosenColor`. `offBattlefield` (a `Player`, read relative to the static's
+  controller) extends it past the battlefield to the spells that player controls and the cards they own in every other
+  zone — `Player.You` for "the same is true for spells you control and cards you own that aren't on the battlefield",
+  `Player.Each` for every player's. Only the card predicates of `filter` qualify an off-battlefield object, so a
+  `GameObjectFilter.Any` filter reaches instants and sorceries too. Off the battlefield it is an overlay
+  `StateProjector` resolves eagerly (never loops without such a static); every engine read of "what color is this"
+  for an object that may be a spell or a card off the battlefield goes through `ProjectedState.colorsOf` /
+  `colorSetOf` (color predicates, cast triggers and cast history, protection and hexproof against a spell, damage
+  source colors, "colorless spells only" mana, the client's card view), so the overlay reaches all of them.
+  **Mycosynth Lattice** — "All cards that aren't on the battlefield, spells, and permanents are colorless" →
+  `SetColors(emptySet(), GroupFilter(GameObjectFilter.Any), offBattlefield = Player.Each)`.
 - `GrantCardType(cardType, filter)` / `RemoveCardType(cardType, filter)` — Layer 4 type-changing statics that add or
   remove a card type (e.g. `"CREATURE"`). `RemoveCardType` backs Impending's "isn't a creature while it has a time
   counter" (wrapped in a `ConditionalStaticAbility`); reuse it for any "it's no longer a [type]" effect — the Theros
@@ -11375,8 +11388,15 @@ staticAbility {
   activated abilities of lands your opponents control except mana abilities"; Scheming Fence —
   `sourceFilter = GameObjectFilter.ChosenBySource`, `includeManaAbilities = true`,
   `includeLoyaltyAbilities = false`, `spendAsThoughAnyColor = true`.)
-- `SpendManaAsColor(fromColor, toColor)` — the controller may spend mana of one color as though it were
-  another for **any** mana payment (Sunglasses of Urza: `WHITE` → `RED`). This is directional:
+- `SpendManaAsColor(fromColor, toColor, players = Player.You)` — the controller may spend mana of one color as though it were
+  another for **any** mana payment (Sunglasses of Urza: `WHITE` → `RED`). `fromColor = null` is "mana" of every
+  type — each color **and colorless** — and `toColor = null` is "mana of any color", so
+  `SpendManaAsColor(null, null, players = Player.Each)` is Mycosynth Lattice's "Players may spend mana as though it
+  were mana of any color" (its ruling: "even colorless mana", restrictions still apply). `players` is who holds the
+  permission, relative to the static's controller: `Player.You` (default), `Player.Each` or `Player.EachOpponent`;
+  the permission is read from every battlefield permanent, not only the payer's. The payment pool carries the result
+  as required color → actual mana (`null` = colorless), so the floating-pool matcher and the auto-tap solver both let
+  a colorless source stand in for a colored pip. This is directional:
   white remains usable for white or generic costs, while red gains no permission to pay white.
   Colored, hybrid, monocolored hybrid, and Phyrexian mana halves accept the substitution; `{C}`
   and actual-color spending restrictions (including color-restricted X) remain unchanged.

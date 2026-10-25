@@ -67,7 +67,7 @@ internal fun applyImproviseMetadata(
         val payableWithManaAlone = la.manaCostString?.let { costString ->
             context.manaSolver.canPay(
                 state, cs.playerId, ManaCost.parse(costString),
-                spellContext = spellPaymentContextFor(cardComponent),
+                spellContext = spellPaymentContextFor(cardComponent, colors = state.projectedState.colorSetOf(cs.cardId)),
                 precomputedSources = context.availableManaSources
             )
         } ?: false
@@ -76,7 +76,7 @@ internal fun applyImproviseMetadata(
                 context.costUtils.canAffordWithTapForGeneric(
                     state, cs.playerId, ManaCost.parse(costString), artifacts,
                     precomputedSources = context.availableManaSources,
-                    spellContext = spellPaymentContextFor(cardComponent)
+                    spellContext = spellPaymentContextFor(cardComponent, colors = state.projectedState.colorSetOf(cs.cardId))
                 )
             } ?: false)
         la.copy(

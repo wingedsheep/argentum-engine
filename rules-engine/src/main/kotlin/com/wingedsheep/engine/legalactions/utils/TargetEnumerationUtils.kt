@@ -215,9 +215,7 @@ class TargetEnumerationUtils(
     }
 
     private fun sourceColorNames(state: GameState, sourceId: EntityId): Set<String> =
-        state.projectedState.getColors(sourceId).ifEmpty {
-            state.getEntity(sourceId)?.get<CardComponent>()?.colors?.map { it.name }?.toSet().orEmpty()
-        }
+        state.projectedState.colorsOf(sourceId)
 
     private fun hasHexproofFromSource(state: GameState, targetId: EntityId, sourceId: EntityId): Boolean {
         val projected = state.projectedState

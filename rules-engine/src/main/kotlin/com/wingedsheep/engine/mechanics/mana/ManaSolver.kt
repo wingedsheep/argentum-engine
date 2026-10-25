@@ -679,13 +679,17 @@ class ManaSolver private constructor(
         val colorlessAsAnyColor = spellContext?.colorlessAsAnyColor == true
         val substitutes = spendingColors.isNotEmpty() || colorlessAsAnyColor
         fun payableColors(colors: List<Color>): List<Color> = colors.flatMap { color ->
-            listOf(color) + spendingColors[color].orEmpty().filter { it != color }
+            listOf(color) + spendingColors[color].orEmpty().filterNotNull().filter { it != color }
         }.distinct()
+        // Colorless may stand in for a colored pip under the spell's own rider or a player-wide
+        // "spend mana as though it were mana of any color" permission (Mycosynth Lattice).
+        fun colorlessPays(required: List<Color>): Boolean = required.isNotEmpty() &&
+            (colorlessAsAnyColor || required.any { null in spendingColors[it].orEmpty() })
         fun payWithAllowedColors(required: List<Color>): Boolean {
             val colors = payableColors(required)
             if (colors.any { spendBonusMana(it) }) return true
             // Already-floating colorless costs no tap, so it beats tapping a new colored source.
-            if (colorlessAsAnyColor && spendColorlessBonusMana()) return true
+            if (colorlessPays(required) && spendColorlessBonusMana()) return true
             val best = colors.mapNotNull { color ->
                 findBestSourceForColor(remainingSources, color, handRequirements, availableSourcesByColor, spellContext)
                     ?.let { it to color }
@@ -701,7 +705,7 @@ class ManaSolver private constructor(
                 useSource(source, color)
                 return true
             }
-            if (colorlessAsAnyColor) {
+            if (colorlessPays(required)) {
                 val colorlessSource = remainingSources.filter { it.producesColorless }.minByOrNull {
                     calculateTapPriority(it, handRequirements, availableSourcesByColor) + painPenalty(it, it.colorlessPainCost)
                 }
@@ -737,7 +741,7 @@ class ManaSolver private constructor(
             }
         }.toSet()
         val needsColorless = paymentSymbols.any { it is ManaSymbol.Colorless } ||
-            (colorlessAsAnyColor && strictColors.isNotEmpty())
+            (strictColors.isNotEmpty() && (colorlessAsAnyColor || spendingColors.values.any { null in it }))
         val matchingSources = if (!substitutes) emptyList() else availableSources.filter { source ->
             val relevant = source.availableColorsFor(spellContext).any { it in strictColors } ||
                 (needsColorless && source.producesColorless)
@@ -762,7 +766,7 @@ class ManaSolver private constructor(
                         if (source.producesColorless) listOf(PlannedPip(source, null)) else emptyList()
                     } else source.availableColorsFor(spellContext).filter { it in allowed }
                         .map { PlannedPip(source, it) } +
-                        if (colorlessAsAnyColor && required.isNotEmpty() && source.producesColorless)
+                        if (colorlessPays(required) && source.producesColorless)
                             listOf(PlannedPip(source, null)) else emptyList()
                 }.sortedWith(compareBy<PlannedPip>(
                     // Native color first, then a substitute color, then colorless standing in.

@@ -162,7 +162,8 @@ class CastPermissionUtils(
         }
         if (!restrictionActive) return false
 
-        val spellColors = state.getEntity(spellCardId)?.get<CardComponent>()?.colors ?: return false
+        if (state.getEntity(spellCardId)?.get<CardComponent>() == null) return false
+        val spellColors = state.projectedState.colorSetOf(spellCardId)
         return spellColors.any { it in lastColors }
     }
 

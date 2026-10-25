@@ -1674,7 +1674,8 @@ class TriggerMatcher(
         // Projected colors (layer 5) while the entity has a projection entry, as PredicateEvaluator
         // reads them; printed colors for a card off the battlefield.
         fun colors(): Set<String> =
-            projected.getProjectedValues(entityId)?.colors ?: cardComponent.colors.map { it.name }.toSet()
+            projected.getProjectedValues(entityId)?.colors ?: projected.offBattlefieldColors(entityId)
+                ?: cardComponent.colors.map { it.name }.toSet()
         // Off the battlefield (a spell on the stack, a card that just moved) a printed P/T is read
         // directly and a `*` is its characteristic-defining ability evaluated in place (CR 604.3).
         fun unprojectedStat(isPower: Boolean): Int? =

@@ -109,8 +109,8 @@ class AnnouncedCharacteristicsCastEnumerator(private val kind: CharacteristicsAn
                 val paymentContext = com.wingedsheep.engine.mechanics.mana.SpellPaymentContext(
                     isCreature = card.typeLine.isCreature, isLegendary = card.typeLine.isLegendary,
                     manaValue = card.manaCost.cmc, hasXInCost = card.manaCost.hasX,
-                    isColorless = card.colors.isEmpty(),
-                    colorCount = card.colors.size,
+                    isColorless = state.projectedState.colorSetOf(id).isEmpty(),
+                    colorCount = state.projectedState.colorSetOf(id).size,
                     subtypes = card.typeLine.subtypes.mapTo(mutableSetOf()) { it.value }, cardTypes = card.typeLine.cardTypes,
                     isFromHand = inHand,
                     isFromExile = state.turnOrder.any { id in state.getZone(ZoneKey(it, Zone.EXILE)) },

@@ -858,7 +858,8 @@ class PredicateEvaluator(
             card.typeLine.cardTypes.map { it.name } + card.typeLine.supertypes.map { it.name } +
                 projected.crossZoneGrantedCardTypes(entityId)
         ).toSet()
-        val colors = projectedValues?.colors ?: card.colors.map { it.name }.toSet()
+        val colors = projectedValues?.colors ?: projected.offBattlefieldColors(entityId)
+            ?: card.colors.map { it.name }.toSet()
         val keywords = projectedValues?.keywords ?: (card.baseKeywords.map { it.name } + card.baseFlags.map { it.name }).toSet()
 
         return when (predicate) {
@@ -1352,9 +1353,7 @@ class PredicateEvaluator(
 
             is CardPredicate.SharesColorWith -> {
                 val referenceId = resolveEntity(state, predicate.entity, context, projected) ?: return false
-                val referenceColors = projected.getProjectedValues(referenceId)?.colors
-                    ?: state.getEntity(referenceId)?.get<CardComponent>()?.colors?.map { it.name }?.toSet()
-                    ?: emptySet()
+                val referenceColors = projected.colorsOf(referenceId)
                 if (referenceColors.isEmpty()) return false
                 colors.any { it in referenceColors }
             }
@@ -1421,10 +1420,7 @@ class PredicateEvaluator(
             CardPredicate.SharesColorWithRecipient -> {
                 val recipientId = context?.recipientId ?: return false
                 if (recipientId == entityId) return false
-                val recipientColors = projected.getColors(recipientId).ifEmpty {
-                    state.getEntity(recipientId)?.get<CardComponent>()?.colors?.map { it.name }?.toSet()
-                        ?: emptySet()
-                }
+                val recipientColors = projected.colorsOf(recipientId)
                 if (recipientColors.isEmpty() || colors.isEmpty()) return false
                 colors.any { it in recipientColors }
             }

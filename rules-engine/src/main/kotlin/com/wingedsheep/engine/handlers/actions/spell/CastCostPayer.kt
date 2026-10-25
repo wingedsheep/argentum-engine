@@ -477,8 +477,7 @@ internal class CastCostPayer(
         if (action.castFaceDown) {
             SpellPaymentContext.faceDownCast(isFromHand = isCastFrom(state, action.cardId, Zone.HAND))
         } else if (cardComponent != null) {
-            spellPaymentContextFor(
-                cardComponent,
+            spellPaymentContextFor(cardComponent, colors = state.projectedState.colorSetOf(action.cardId),
                 isKicked = action.declaredCostSlot == ChoiceSlot.KICKED,
                 isFromExile = isCastFrom(state, action.cardId, Zone.EXILE),
                 isFromHand = isCastFrom(state, action.cardId, Zone.HAND),

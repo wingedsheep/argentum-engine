@@ -294,9 +294,7 @@ object DamageUtils {
             // A permanent's colors are projected; a spell's are its card's unless an effect
             // recolored it on the stack. A source with no card can't be judged colorless.
             val sourceCard = state.getEntity(sourceId)?.get<CardComponent>()
-            val sourceColors = projected.getColors(sourceId).ifEmpty {
-                if (sourceId in state.getBattlefield()) emptySet() else sourceCard?.colors?.map { it.name }?.toSet().orEmpty()
-            }
+            val sourceColors = projected.colorsOf(sourceId)
             if ((sourceCard != null || sourceColors.isNotEmpty()) &&
                 ColorProtection.isProtected(projected, targetId, sourceColors)
             ) {
@@ -705,10 +703,9 @@ object DamageUtils {
         // (Temple of Power's transform gate — TurnTracker.RED_NONCOMBAT_DAMAGE_DEALT). A red
         // spell/ability carries no ControllerComponent, so fall back to its caster.
         if (sourceId != null && !isCombatDamage && effectiveAmount > 0) {
-            // Combine projected colors (battlefield permanents, so a granted-red source counts) with
-            // base card colors (spells on the stack, which have no projection).
-            val sourceColors = projected.getColors(sourceId) +
-                (state.getEntity(sourceId)?.get<CardComponent>()?.colors?.map { it.name } ?: emptyList())
+            // Projected colors on the battlefield (a granted-red source counts), the card's own (or an
+            // off-battlefield SetColors') for a spell on the stack.
+            val sourceColors = projected.colorsOf(sourceId)
             val sourceIsRed = Color.RED.name in sourceColors
             if (sourceIsRed) {
                 val sourceControllerId = projected.getController(sourceId)
@@ -2142,9 +2139,8 @@ object DamageUtils {
             return EffectResult.success(state)
         }
 
-        // Combine projected colors (battlefield permanents) with base card colors (spells on the stack).
-        val sourceColors = state.projectedState.getColors(sourceId) +
-            (state.getEntity(sourceId)?.get<CardComponent>()?.colors?.map { it.name } ?: emptyList())
+        // Projected colors for a permanent source, the spell's own colors on the stack.
+        val sourceColors = state.projectedState.colorsOf(sourceId)
         if (sourceColors.none { it in mod.gainLifeFromColors }) {
             return EffectResult.success(state)
         }

@@ -397,11 +397,8 @@ class ForEachExecutor(
      * empty set); off battlefield, printed colors as last-known information.
      */
     private fun readSourceColors(state: GameState, entityId: EntityId): Set<String> {
-        if (state.getBattlefield().contains(entityId)) {
-            return state.projectedState.getColors(entityId)
-        }
-        val card = state.getEntity(entityId)?.get<CardComponent>() ?: return emptySet()
-        return card.colors.map { it.name }.toSet()
+        if (state.getEntity(entityId)?.get<CardComponent>() == null) return emptySet()
+        return state.projectedState.colorsOf(entityId)
     }
 
     private fun addCantBeRegenerated(

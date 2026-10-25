@@ -2366,7 +2366,7 @@ class ConditionEvaluator(
             typeLine = card.typeLine,
             // On the stack an {X} counts as its chosen X (CR 202.3e), matching the SpellCastEvent.
             manaValue = ManaValues.of(state, triggeringId, card),
-            colors = card.colors,
+            colors = state.projectedState.colorSetOf(triggeringId),
             isFaceDown = entity.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>(),
             name = card.name
         )

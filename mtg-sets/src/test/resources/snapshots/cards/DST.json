@@ -1122,6 +1122,46 @@
     "colorIdentityOverride": []
 }
 
+// Mycosynth Lattice
+{
+    "name": "Mycosynth Lattice",
+    "manaCost": "{6}",
+    "typeLine": "Artifact",
+    "oracleText": "All permanents are artifacts in addition to their other types.\nAll cards that aren't on the battlefield, spells, and permanents are colorless.\nPlayers may spend mana as though it were mana of any color.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantCardType",
+                "cardType": "ARTIFACT",
+                "filter": {
+                    "baseFilter": "permanent"
+                }
+            },
+            {
+                "type": "SetColors",
+                "colors": [],
+                "filter": {
+                    "baseFilter": {}
+                },
+                "offBattlefield": "Each"
+            },
+            {
+                "type": "SpendManaAsColor",
+                "fromColor": null,
+                "toColor": null,
+                "players": "Each"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "rarity": "RARE",
+        "artist": "Anthony S. Waters & Cara Mitten",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e7e7f15a-074a-4137-88ca-e5d376d146fd.jpg?1783944422"
+    },
+    "colorIdentityOverride": []
+}
+
 // Myr Moonvessel
 {
     "name": "Myr Moonvessel",

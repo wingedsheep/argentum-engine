@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.mechanics.layers
 
 import com.wingedsheep.sdk.scripting.SpendManaAsColor
+import com.wingedsheep.sdk.scripting.SetColors
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.engine.state.components.battlefield.ManaSpendingGrant
 import com.wingedsheep.engine.registry.CardRegistry
@@ -1056,6 +1057,23 @@ class StaticAbilityHandler(
             is GrantColor -> {
                 ContinuousEffectData(
                     modification = Modification.AddColor(setOf(ability.color.name)),
+                    affectsFilter = convertGroupFilter(ability.filter)
+                )
+            }
+            is SetColors -> {
+                ContinuousEffectData(
+                    modification = Modification.ChangeColor(
+                        ability.colors.mapTo(linkedSetOf()) { it.name },
+                        ability.offBattlefield?.let { players ->
+                            Modification.OffBattlefieldReach(
+                                players = players,
+                                // Off the battlefield only the card predicates qualify an object.
+                                eligibility = com.wingedsheep.sdk.scripting.GameObjectFilter(
+                                    cardPredicates = ability.filter.baseFilter.cardPredicates
+                                )
+                            )
+                        }
+                    ),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }

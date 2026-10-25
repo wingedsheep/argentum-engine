@@ -74,7 +74,7 @@ internal class AbilityResolver(
 
         // CR 608.2b — validate targets (including protection check, CR 702.16)
         val sourceCard = state.getEntity(abilityComponent.sourceId)?.get<CardComponent>()
-        val sourceColors = sourceCard?.colors ?: emptySet()
+        val sourceColors = if (sourceCard == null) emptySet() else state.projectedState.colorSetOf(abilityComponent.sourceId)
         val sourceSubtypes = sourceCard?.typeLine?.subtypes?.map { it.value }?.toSet() ?: emptySet()
         if (targetsComponent != null && targetsComponent.targets.isNotEmpty()) {
             val validTargets = targetValidator.validateTargets(
@@ -132,7 +132,7 @@ internal class AbilityResolver(
 
         // Validate targets (including protection check - Rule 702.16)
         val sourceCard = state.getEntity(abilityComponent.sourceId)?.get<CardComponent>()
-        val sourceColors = sourceCard?.colors ?: emptySet()
+        val sourceColors = if (sourceCard == null) emptySet() else state.projectedState.colorSetOf(abilityComponent.sourceId)
         val sourceSubtypes = sourceCard?.typeLine?.subtypes?.map { it.value }?.toSet() ?: emptySet()
         val activatedReqs = targetsComponent?.targetRequirements ?: emptyList()
         // Resolution-time legality (CR 608.2b): drop individually-illegal targets, not just the

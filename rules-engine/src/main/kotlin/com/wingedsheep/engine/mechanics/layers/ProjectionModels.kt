@@ -511,10 +511,27 @@ sealed interface Modification {
 
     // --- Layer 5: Color-changing ---
 
+    /**
+     * Set the affected objects' colors to exactly [colors] (empty = colorless). [offBattlefield]
+     * carries a `SetColors` static's reach past the battlefield; like [CrossZoneReach] it isn't
+     * read by [EffectApplicator] — [StateProjector] resolves it into the off-battlefield color
+     * overlay that [ProjectedState.colorsOf] consults.
+     */
     @Serializable
-    data class ChangeColor(val colors: Set<String>) : Modification {
+    data class ChangeColor(val colors: Set<String>, val offBattlefield: OffBattlefieldReach? = null) : Modification {
         override val layer get() = Layer.COLOR
     }
+
+    /**
+     * Whose spells (controlled) and cards outside the battlefield (owned) an effect reaches,
+     * [players] read relative to its source's controller; [eligibility] carries the card
+     * predicates an off-battlefield object must match (its printed characteristics).
+     */
+    @Serializable
+    data class OffBattlefieldReach(
+        val players: com.wingedsheep.sdk.scripting.references.Player,
+        val eligibility: GameObjectFilter
+    )
     @Serializable
     data class AddColor(val colors: Set<String>) : Modification {
         override val layer get() = Layer.COLOR

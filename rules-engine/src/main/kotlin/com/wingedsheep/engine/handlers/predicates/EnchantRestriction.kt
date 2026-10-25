@@ -165,8 +165,7 @@ object EnchantRestriction {
                 ?: state.getEntity(attachmentId)?.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()?.playerId
             if (hostController != null && attachmentController in state.getOpponents(hostController)) return true
         }
-        val colors: Set<String> = if (attachmentId in state.getBattlefield()) projected.getColors(attachmentId)
-        else attachmentCard.colors.map { it.name }.toSet()
+        val colors: Set<String> = projected.colorsOf(attachmentId)
         // A colorless attachment meets protection from colorless (CR 105.2c, 702.16c/d).
         if (colors.isEmpty()) return projected.hasKeyword(hostId, ColorProtection.PROTECTION_FROM_COLORLESS)
         // A multicolored attachment meets protection from multicolored (CR 105.2b).

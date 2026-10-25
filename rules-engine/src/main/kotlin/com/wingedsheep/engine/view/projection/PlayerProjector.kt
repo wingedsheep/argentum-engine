@@ -76,7 +76,9 @@ internal class PlayerProjector(
             // Mana pool is public information in MTG - show for all players
             manaPool = container?.get<ManaPoolComponent>()?.let(::manaPool),
             manaPaymentColors = com.wingedsheep.engine.mechanics.mana.ManaSpendingRules.colors(state, playerId)
-                .mapKeys { it.key.symbol.toString() }.mapValues { (_, colors) -> colors.map { it.symbol.toString() } },
+                .mapKeys { it.key.symbol.toString() }
+                // Colorless mana that may stand in for a color (Mycosynth Lattice) travels as "C".
+                .mapValues { (_, colors) -> colors.map { it?.symbol?.toString() ?: "C" } },
             activeEffects = activeEffects.project(state, playerId, container, viewingPlayerId, isSpectator),
             commanderDamage = commanderDamage(state, playerId),
             // CR 702.179 — public information, and 0 for the overwhelming majority of games.

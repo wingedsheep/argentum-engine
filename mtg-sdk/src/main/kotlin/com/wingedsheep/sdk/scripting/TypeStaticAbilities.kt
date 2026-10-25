@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.text.TextReplacer
+import com.wingedsheep.sdk.scripting.references.Player
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -264,6 +265,41 @@ data class GrantColor(
     val filter: GroupFilter = GroupFilter.attachedCreature()
 ) : StaticAbility {
     override val description: String = "is ${color.name.lowercase()} in addition to its other colors"
+}
+
+/**
+ * "[filter] are [colors]" — a Layer 5 color-*setting* effect (CR 613.1e): the affected objects'
+ * colors become exactly [colors], replacing whatever they were; an empty set is "are colorless".
+ * Its siblings [GrantColor] / [GrantChosenColor] *add* a color ("in addition to its other
+ * colors") and can't express replacing or removing them.
+ *
+ * [filter] is the battlefield half. [offBattlefield] extends the effect past the battlefield to
+ * the spells [offBattlefield] controls and the cards they own in every other zone (hand, library,
+ * graveyard, exile, command), read relative to this permanent's controller — `null` (the default)
+ * is battlefield-only, [Player.You] is "the same is true for spells you control and cards you own
+ * that aren't on the battlefield", [Player.Each] is every player's (Mycosynth Lattice: "All cards
+ * that aren't on the battlefield, spells, and permanents are colorless"). The card predicates of
+ * [filter] (e.g. nonland) also qualify which off-battlefield objects are reached, matched against
+ * their printed characteristics. Off the battlefield the effect is an overlay the color read-sites
+ * consult (`ProjectedState.colorsOf`), since layer projection iterates only permanents.
+ */
+@SerialName("SetColors")
+@Serializable
+data class SetColors(
+    val colors: Set<Color>,
+    val filter: GroupFilter,
+    val offBattlefield: Player? = null
+) : StaticAbility {
+    override val description: String = buildString {
+        append(filter.description)
+        append(if (colors.isEmpty()) " are colorless" else " are ${colors.joinToString(" and ") { it.name.lowercase() }}")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        val newColors = colors.mapTo(linkedSetOf()) { replacer.replaceColor(it) }
+        return if (newFilter === filter && newColors == colors) this else copy(colors = newColors, filter = newFilter)
+    }
 }
 
 /**

@@ -1097,7 +1097,7 @@ class DynamicAmountEvaluator(
                     state.getEntity(sourceId)
                         ?.get<com.wingedsheep.engine.state.components.battlefield.CraftedFromExiledComponent>()
                         ?.exiledIds
-                        ?.flatMap { exiledId -> state.getEntity(exiledId)?.get<CardComponent>()?.colors ?: emptySet() }
+                        ?.flatMap { exiledId -> state.projectedState.colorSetOf(exiledId) }
                         ?.toSet()?.size
                         ?: 0
                 }
@@ -1513,17 +1513,13 @@ class DynamicAmountEvaluator(
                 }.size
             }
             Aggregation.DISTINCT_COLORS -> {
-                matchingEntities.flatMapTo(mutableSetOf()) { entityId ->
-                    state.getEntity(entityId)?.get<CardComponent>()?.colors?.map { it.name }?.toSet()
-                        ?: emptySet()
-                }.size
+                matchingEntities.flatMapTo(mutableSetOf()) { entityId -> state.projectedState.colorsOf(entityId) }.size
             }
             // Zone counterpart of the battlefield branch: cards outside the battlefield have no
-            // projection entry, so their printed colours are the only ones there are.
+            // projection entry, so their printed colours (or an off-battlefield SetColors') count.
             Aggregation.DISTINCT_COLOR_PAIRS -> {
                 matchingEntities.mapNotNullTo(mutableSetOf()) { entityId ->
-                    val colors = state.getEntity(entityId)?.get<CardComponent>()?.colors?.map { it.name }?.toSet()
-                        ?: emptySet()
+                    val colors = state.projectedState.colorsOf(entityId)
                     if (colors.size == 2) colors.sorted().joinToString("/") else null
                 }.size
             }
@@ -1889,11 +1885,14 @@ class DynamicAmountEvaluator(
     ): Int {
         // For battlefield permanents the projected color set is authoritative even when empty —
         // a creature turned colorless by a layer-5 effect must count 0, not fall back to its
-        // printed colors. Off the battlefield (or when projection isn't requested) use base colors.
+        // printed colors. Off the battlefield read the card's colors through the projection, which
+        // honours an off-battlefield SetColors (Mycosynth Lattice).
         if (useProjected && entityId in state.getBattlefield()) {
             return resolveProjection(state, explicitProjected).getColors(entityId).size
         }
-        return state.getEntity(entityId)?.get<CardComponent>()?.colors?.size ?: 0
+        if (state.getEntity(entityId)?.get<CardComponent>() == null) return 0
+        return state.projectedState.offBattlefieldColors(entityId)?.size
+            ?: state.getEntity(entityId)?.get<CardComponent>()?.colors?.size ?: 0
     }
 
     /**
@@ -1995,6 +1994,7 @@ class DynamicAmountEvaluator(
      */
     private fun projectedOrPrintedColors(state: GameState, projection: ProjectedState, entityId: EntityId): Set<String> =
         projection.getProjectedValues(entityId)?.colors
+            ?: projection.offBattlefieldColors(entityId)
             ?: state.getEntity(entityId)?.get<CardComponent>()?.colors?.mapTo(mutableSetOf()) { it.name }
             ?: emptySet()
 

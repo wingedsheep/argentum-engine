@@ -347,7 +347,7 @@ class CastSpellEnumerator(
             // Build spell context for conditional mana restriction awareness. Every affordability
             // check below takes it, so eligible restricted floating mana (Ashling, Rimebound's
             // MV4+ mana) counts — including on the convoke/delve/waterbend tap-to-help paths.
-            val spellContext = spellPaymentContextFor(cardComponent)
+            val spellContext = spellPaymentContextFor(cardComponent, colors = state.projectedState.colorSetOf(cardId))
 
             // Improvise (CR 702.126) — printed, or granted at runtime by a battlefield permanent
             // (Ironheart, Clever Champion: "Noncreature spells you cast have improvise"). Unlike
@@ -1754,7 +1754,7 @@ class CastSpellEnumerator(
                     precomputedSources = context.availableManaSources,
                     // Eligible conditional floating mana counts toward the paid variant too.
                     spellContext = state.getEntity(cs.cardId)?.get<CardComponent>()
-                        ?.let { spellPaymentContextFor(it) }
+                        ?.let { spellPaymentContextFor(it, colors = state.projectedState.colorSetOf(cs.cardId)) }
                 )
                 if (!affordablePaid) continue
                 out.add(la.copy(
@@ -1833,7 +1833,7 @@ class CastSpellEnumerator(
             )
             val baseCost = pricing.min
             val costByTargetCount = pricing.byCountStrings()
-            val spellContext = spellPaymentContextFor(cardComponent)
+            val spellContext = spellPaymentContextFor(cardComponent, colors = state.projectedState.colorSetOf(cardId))
             val canAfford = context.manaSolver.canPay(state, playerId, baseCost, spellContext = spellContext, precomputedSources = context.availableManaSources)
             val autoTapPreview = if (context.skipAutoTapPreview) null else {
                 context.manaSolver.solve(state, playerId, baseCost, spellContext = spellContext, precomputedSources = context.availableManaSources)
@@ -1941,7 +1941,7 @@ class CastSpellEnumerator(
             )
             val baseCost = pricing.min
             val costByTargetCount = pricing.byCountStrings()
-            val spellContext = spellPaymentContextFor(cardComponent)
+            val spellContext = spellPaymentContextFor(cardComponent, colors = state.projectedState.colorSetOf(cardId))
             val canAfford = context.manaSolver.canPay(state, playerId, baseCost, spellContext = spellContext, precomputedSources = context.availableManaSources)
             val autoTapPreview = if (context.skipAutoTapPreview) null else {
                 context.manaSolver.solve(state, playerId, baseCost, spellContext = spellContext, precomputedSources = context.availableManaSources)
@@ -2066,7 +2066,7 @@ class CastSpellEnumerator(
             )
             if (candidates.isEmpty()) continue
 
-            val spellContext = spellPaymentContextFor(cardComponent)
+            val spellContext = spellPaymentContextFor(cardComponent, colors = state.projectedState.colorSetOf(cardId))
 
             for (candidate in candidates) {
                 // The main spell's own requirements first, then the spliced text's (CR 702.47d) — the
@@ -2213,7 +2213,7 @@ class CastSpellEnumerator(
                     val targetReqs = kickedPricing.targetRequirements
                     val kickedCost = kickedPricing.cost
                     val kickedCostByTargetCount = kickedPricing.costByTargetCount
-                    val kickedSpellContext = spellPaymentContextFor(cardComponent, isKicked = declaredSlot == ChoiceSlot.KICKED)
+                    val kickedSpellContext = spellPaymentContextFor(cardComponent, colors = state.projectedState.colorSetOf(cardId), isKicked = declaredSlot == ChoiceSlot.KICKED)
                     val canAffordKickedMana = context.manaSolver.canPay(state, playerId, kickedCost, spellContext = kickedSpellContext, precomputedSources = context.availableManaSources)
                     val kickedCostString = kickedCost.toString()
                     val kickedAutoTapPreview = if (context.skipAutoTapPreview) null else {
@@ -2588,7 +2588,7 @@ class CastSpellEnumerator(
             // unchanged, so the resolving effect's `DynamicAmount.XValue` reads the chosen X.
             val variantHasX = altCost.hasX
             val variantMaxAffordableX: Int? = if (variantHasX) {
-                val spellContext = spellPaymentContextFor(cardComponent).copy(hasXInCost = altCost.hasX)
+                val spellContext = spellPaymentContextFor(cardComponent, colors = state.projectedState.colorSetOf(cardId)).copy(hasXInCost = altCost.hasX)
                 val availableSources = context.manaSolver.getAvailableManaCount(
                     state, playerId, precomputedSources = context.availableManaSources, spellContext = spellContext
                 )
@@ -3252,7 +3252,7 @@ class CastSpellEnumerator(
         // Same payment context `CastSpellHandler.validatePayment` builds for this cast, so
         // conditional mana ("spend only to cast …") is judged identically on both sides and the
         // X ceiling below can never offer more than validation will accept.
-        val spellContext = spellPaymentContextFor(cardComponent)
+        val spellContext = spellPaymentContextFor(cardComponent, colors = state.projectedState.colorSetOf(cardId))
         val canAfford = costsPayable && context.manaSolver
             .canPay(state, playerId, effectiveCost, precomputedSources = cachedSources, spellContext = spellContext)
         if (!canAfford) {

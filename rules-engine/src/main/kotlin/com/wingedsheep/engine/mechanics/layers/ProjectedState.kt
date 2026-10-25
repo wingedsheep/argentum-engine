@@ -103,6 +103,17 @@ data class ProjectedValues(
 )
 
 /**
+ * One off-battlefield color-setting reach (a `SetColors` static's `offBattlefield`): objects whose
+ * controller (a spell) or owner (a card outside the battlefield) is in [players] and that
+ * [eligible] accepts have exactly [colors].
+ */
+class OffBattlefieldColorRule(
+    val players: Set<EntityId>,
+    val colors: Set<String>,
+    val eligible: (EntityId) -> Boolean
+)
+
+/**
  * The full projected game state.
  */
 class ProjectedState(
@@ -120,8 +131,57 @@ class ProjectedState(
      * you own that aren't on the battlefield". Resolved eagerly by `StateProjector`; empty for
      * virtually every game state. Battlefield permanents get the type through Layer 4 instead.
      */
-    private val crossZoneCardTypes: Map<EntityId, Set<String>> = emptyMap()
+    private val crossZoneCardTypes: Map<EntityId, Set<String>> = emptyMap(),
+    /**
+     * Colors set on **non-battlefield** objects by a `SetColors` static's off-battlefield reach —
+     * Mycosynth Lattice's "All cards that aren't on the battlefield, spells, and permanents are
+     * colorless". In layer order; empty for virtually every game state. Read lazily per object, so
+     * a spell mid-resolution (popped off the stack list, still a spell) is reached too.
+     */
+    private val offBattlefieldColorRules: List<OffBattlefieldColorRule> = emptyList()
 ) {
+    /**
+     * The colors of any object, in any zone: its projected colors on the battlefield, else the
+     * colors an off-battlefield `SetColors` gives it, else its printed colors. The one read for
+     * "what color is this" wherever the object may be a spell or a card off the battlefield —
+     * reading `CardComponent.colors` directly misses Mycosynth Lattice.
+     */
+    fun colorsOf(entityId: EntityId): Set<String> {
+        projectedValues[entityId]?.let { return it.colors }
+        offBattlefieldColors(entityId)?.let { return it }
+        return baseState.getEntity(entityId)
+            ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
+            ?.colors?.mapTo(linkedSetOf()) { it.name } ?: emptySet()
+    }
+
+    /** [colorsOf] as [Color]s. */
+    fun colorSetOf(entityId: EntityId): Set<Color> = colorsOf(entityId).mapNotNullTo(linkedSetOf()) { name ->
+        Color.entries.firstOrNull { it.name == name }
+    }
+
+    /**
+     * The off-battlefield color override for [entityId], or null when none applies: the last rule,
+     * in layer order, that reaches it — a spell its controller's rule reaches, a card outside the
+     * battlefield its owner's rule reaches.
+     */
+    fun offBattlefieldColors(entityId: EntityId): Set<String>? {
+        if (offBattlefieldColorRules.isEmpty() || projectedValues.containsKey(entityId)) return null
+        val container = baseState.getEntity(entityId) ?: return null
+        val card = container.get<com.wingedsheep.engine.state.components.identity.CardComponent>() ?: return null
+        val spell = container.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>()
+        val player = if (spell != null) {
+            container.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()?.playerId ?: spell.casterId
+        } else {
+            if (entityId in baseState.getBattlefield()) return null
+            card.ownerId
+        }
+        var result: Set<String>? = null
+        for (rule in offBattlefieldColorRules) {
+            if (player in rule.players && rule.eligible(entityId)) result = rule.colors
+        }
+        return result
+    }
+
     /**
      * The card types a cross-zone `GrantCardType` adds to a non-battlefield object (see
      * [crossZoneCardTypes]). Read by `PredicateEvaluator`'s type predicates for objects with no
