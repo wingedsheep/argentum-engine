@@ -13,9 +13,11 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.CantReceiveCounters
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.RepeatKeywordAction
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -29,7 +31,8 @@ import io.kotest.matchers.shouldBe
  *
  * The rules pinned here (proliferate is CR 701.34a):
  * - only the permanents the proliferate actually gave a counter are stored — a permanent with a
- *   counter the controller didn't choose is not, and neither is a chosen player;
+ *   counter the controller didn't choose is not, a chosen one that can't have counters put on it
+ *   is not, and neither is a chosen player;
  * - the follow-up's own filter ("you control") narrows them, so an opponent's proliferated
  *   permanent is never offered;
  * - choosing none in the follow-up does nothing;
@@ -79,6 +82,17 @@ class ProliferateStoreAsTest : ScenarioTestBase() {
         replacementEffect(RepeatKeywordAction(times = 2, appliesTo = EventPattern.ProliferatedEvent()))
     }
 
+    private val warded = card("Test Warded Idol") {
+        manaCost = "{2}"
+        typeLine = "Artifact Creature — Construct"
+        power = 1
+        toughness = 1
+        oracleText = "Test Warded Idol can't have counters put on it."
+        staticAbility {
+            ability = CantReceiveCounters(GroupFilter.source())
+        }
+    }
+
     private fun seed(game: TestGame, id: EntityId, type: CounterType, amount: Int = 1) {
         game.state = game.state.updateEntity(id) { c ->
             c.with((c.get<CountersComponent>() ?: CountersComponent()).withAdded(type, amount))
@@ -101,7 +115,7 @@ class ProliferateStoreAsTest : ScenarioTestBase() {
         .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
 
     init {
-        listOf(ripples, brokerRipples, doubler).forEach(cardRegistry::register)
+        listOf(ripples, brokerRipples, doubler, warded).forEach(cardRegistry::register)
 
         test("only permanents you control that proliferate gave a counter are offered, and the chosen ones phase out") {
             val game = baseScenario()
@@ -138,6 +152,26 @@ class ProliferateStoreAsTest : ScenarioTestBase() {
             phasedOut(game, giant) shouldBe false
             phasedOut(game, elves) shouldBe false
             phasedOut(game, lions) shouldBe false
+        }
+
+        test("a chosen permanent that can't have counters put on it got none this way and is not offered") {
+            val game = baseScenario()
+                .withCardOnBattlefield(1, "Grizzly Bears")
+                .withCardOnBattlefield(1, "Test Warded Idol")
+                .withCardInHand(1, "Test Ripples")
+                .build()
+            val bears = game.findPermanent("Grizzly Bears")!!
+            val idol = game.findPermanent("Test Warded Idol")!!
+            seed(game, bears, CounterType.PLUS_ONE_PLUS_ONE)
+            // Seeded directly: the prohibition stops placement, not a counter already there.
+            seed(game, idol, CounterType.CHARGE)
+
+            game.castSpell(1, "Test Ripples").error shouldBe null
+            game.resolveStack()
+            game.selectCards(listOf(bears, idol)).error shouldBe null
+            counters(game, idol, CounterType.CHARGE) shouldBe 1
+
+            pendingOptions(game) shouldContainExactlyInAnyOrder listOf(bears)
         }
 
         test("choosing none in the follow-up phases nothing out") {

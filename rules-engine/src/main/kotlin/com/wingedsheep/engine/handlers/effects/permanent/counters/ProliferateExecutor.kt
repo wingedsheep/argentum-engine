@@ -75,11 +75,11 @@ class ProliferateExecutor(
                 context.resolvePlayerTarget(target, state)
             } else {
                 context.resolveTarget(target, state)
-            } ?: return EffectResult.success(state, emptyList())
+            } ?: return EffectResult(state, updatedCollections = stored(effect.storeAs, emptyList()))
 
             // Only a permanent still on the battlefield, or a player, can receive them.
             if (recipientId !in state.getBattlefield() && recipientId !in state.turnOrder) {
-                return EffectResult.success(state, emptyList())
+                return EffectResult(state, updatedCollections = stored(effect.storeAs, emptyList()))
             }
 
             val (newState, events) = addOneOfEachKind(state, listOf(recipientId), context.controllerId, predicateEvaluator = predicateEvaluator)
