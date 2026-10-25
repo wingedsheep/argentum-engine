@@ -338,6 +338,33 @@ object PredefinedTokens {
     }
 
     /**
+     * Icingdeath, Frost Tongue — a legendary white Equipment artifact token with
+     * "Equipped creature gets +2/+0," "Whenever equipped creature attacks, tap target creature
+     * defending player controls," and equip {2}. Created by Icingdeath, Frost Tyrant.
+     * White from its color indicator (CR 204), like [Frog].
+     */
+    val IcingdeathFrostTongue = card("Icingdeath, Frost Tongue") {
+        typeLine = "Legendary Artifact — Equipment"
+        colorIdentity = "W"
+
+        staticAbility {
+            ability = ModifyStats(+2, +0, Filters.EquippedCreature)
+        }
+
+        triggeredAbility {
+            trigger = Triggers.attached.attacks()
+            val creature = target(TargetFilter.Creature.defendingPlayerControls())
+            effect = Effects.Tap(creature)
+        }
+
+        equipAbility("{2}")
+
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/a/9/a9c981c9-3376-4f6e-b30d-859e5fc7347e.jpg?1783926347"
+        }
+    }
+
+    /**
      * Mutavault — a Land token with:
      * "{T}: Add {C}."
      * "{1}: This token becomes a 2/2 creature with all creature types until end of turn.
@@ -1308,6 +1335,7 @@ object PredefinedTokens {
         Map,
         Sword,
         Cragflame,
+        IcingdeathFrostTongue,
         Mutavault,
         SorcererRole,
         MonsterRole,

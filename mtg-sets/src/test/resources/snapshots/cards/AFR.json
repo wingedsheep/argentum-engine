@@ -207,6 +207,117 @@
     }
 }
 
+// Acererak the Archlich
+{
+    "name": "Acererak the Archlich",
+    "manaCost": "{2}{B}",
+    "typeLine": "Legendary Creature — Zombie Wizard",
+    "oracleText": "When Acererak enters, if you haven't completed Tomb of Annihilation, return Acererak to its owner's hand and venture into the dungeon.\nWhenever Acererak attacks, for each opponent, you create a 2/2 black Zombie creature token unless that player sacrifices a creature of their choice.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Acererak the Archlich:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Hand"
+                        },
+                        "VentureIntoTheDungeon"
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "DungeonsCompleted",
+                            "dungeon": "Tomb of Annihilation"
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "descriptionOverride": "When Acererak enters, if you haven't completed Tomb of Annihilation, return Acererak to its owner's hand and venture into the dungeon."
+            },
+            {
+                "id": "Acererak the Archlich:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "PayOrSuffer",
+                        "cost": {
+                            "type": "PayAtom",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature"
+                            }
+                        },
+                        "suffer": {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "BLACK"
+                            ],
+                            "creatureTypes": [
+                                "Zombie"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b08d210-01cb-46c5-9150-4dfb47f50ae7.jpg?1783926346",
+                            "controller": {
+                                "type": "PlayerRef",
+                                "player": "ControllerOfSource"
+                            }
+                        }
+                    }
+                },
+                "descriptionOverride": "Whenever Acererak attacks, for each opponent, you create a 2/2 black Zombie creature token unless that player sacrifices a creature of their choice."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "MYTHIC",
+        "artist": "Andrey Kuzinskiy",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd52d0bd-3abd-401c-9f56-ee911613da3b.jpg?1783926501",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "Acererak the Archlich has an intervening if clause in its first triggered ability. If you have completed Tomb of Annihilation, the ability won't trigger at all. If it does trigger, but you somehow complete Tomb of Annihilation while the ability is on the stack, then the ability won't do anything. You won't return Acererak to its owner's hand and you won't venture into the dungeon."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If Acererak is no longer on the battlefield as its first ability resolves and you haven't completed Tomb of Annihilation, you will still venture into the dungeon."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "In a multiplayer game, each opponent decides in turn order whether or not they will sacrifice a creature and which one they will sacrifice. Each opponent knows the choices made before they make their own choice. Then, once all opponents have chosen, creatures are sacrificed and tokens are created simultaneously."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Adult Gold Dragon
 {
     "name": "Adult Gold Dragon",
@@ -539,6 +650,132 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Asmodeus the Archfiend
+{
+    "name": "Asmodeus the Archfiend",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Legendary Creature — Devil God",
+    "oracleText": "Binding Contract — If you would draw a card, exile the top card of your library face down instead.\n{B}{B}{B}: Draw seven cards.\n{B}: Return all cards exiled with Asmodeus to their owner's hand and you lose that much life.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Asmodeus the Archfiend:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}{B}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                },
+                "descriptionOverride": "{B}{B}{B}: Draw seven cards."
+            },
+            {
+                "id": "Asmodeus the Archfiend:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "storeMovedAs": "moved1"
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "VariableReference",
+                                "variableName": "moved1_count"
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{B}: Return all cards exiled with Asmodeus to their owner's hand and you lose that much life."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "ReplaceDrawWith",
+                "replacementEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true,
+                            "faceDown": "HIDDEN"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "RARE",
+        "artist": "Aleksi Briclot",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a5e6b864-58e7-43b9-9d79-1d0361340960.jpg?1783926501",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "If a card is exiled face-down and no player has been given permission to look at it, no player is allowed to look at it as long as it remains exiled face-down."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If your library is empty, no cards will be exiled but you won't lose the game due to drawing from an empty library."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If Asmodeus the Archfiend leaves the battlefield before you activate its last ability, any cards exiled by its replacement effect remain exiled face down for the rest of the game. If you somehow return the same Asmodeus the Archfiend card to the battlefield, it will be a different object with no connection to those face-down cards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -7418,6 +7655,227 @@
     ]
 }
 
+// Grand Master of Flowers
+{
+    "name": "Grand Master of Flowers",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Legendary Planeswalker — Bahamut",
+    "oracleText": "As long as Grand Master of Flowers has seven or more loyalty counters on him, he's a 7/7 Dragon God creature with flying and indestructible.\n+1: Target creature without first strike, double strike, or vigilance can't attack or block until your next turn.\n+1: Search your library and/or graveyard for a card named Monk of the Open Hand, reveal it, and put it into your hand. If you search your library this way, shuffle.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Grand Master of Flowers:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CantAttack",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "CantBlockTargetCreatures",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotKeyword",
+                                        "keyword": "FIRST_STRIKE"
+                                    },
+                                    {
+                                        "type": "NotKeyword",
+                                        "keyword": "DOUBLE_STRIKE"
+                                    },
+                                    {
+                                        "type": "NotKeyword",
+                                        "keyword": "VIGILANCE"
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Grand Master of Flowers:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromMultipleZones",
+                                "zones": [
+                                    "Library",
+                                    "Graveyard"
+                                ],
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "NameEquals",
+                                            "name": "Monk of the Open Hand"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library and/or graveyard for a card named Monk of the Open Hand to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "CompositeStaticAbility",
+                    "abilities": [
+                        {
+                            "type": "GrantCardType",
+                            "cardType": "CREATURE"
+                        },
+                        {
+                            "type": "RemoveCardType",
+                            "cardType": "PLANESWALKER"
+                        },
+                        {
+                            "type": "GrantSubtype",
+                            "subtype": "Dragon"
+                        },
+                        {
+                            "type": "GrantSubtype",
+                            "subtype": "God"
+                        },
+                        {
+                            "type": "SetBasePowerToughnessStatic",
+                            "power": 7,
+                            "toughness": 7,
+                            "filter": {
+                                "baseFilter": "permanent",
+                                "scope": "Self"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FLYING",
+                            "filter": {
+                                "baseFilter": "permanent",
+                                "scope": "Self"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "INDESTRUCTIBLE",
+                            "filter": {
+                                "baseFilter": "permanent",
+                                "scope": "Self"
+                            }
+                        }
+                    ]
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "LOYALTY"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "MYTHIC",
+        "artist": "Ekaterina Burmak",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8ca4ffff-404e-4e8e-8fd6-4e64d4828fc7.jpg?1783926531",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "While Grand Master of Flowers is a creature, he is not a planeswalker. He cannot be attacked and damage dealt to him while he is a creature will not reduce the number of loyalty counters he has. However, you may still activate his loyalty abilities as normal."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "You can activate the last ability of Grand Master of Flowers even if there isn't a card named Monk of the Open Hand in your library or graveyard."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "The first ability of Grand Master of Flowers doesn't use the stack and can't be responded to. Similarly, players can't respond to paying the cost of adding loyalty counters for an ability. Therefore, if Grand Master of Flowers has six loyalty and you activate one of his abilities, he will be a 7/7 Dragon God with flying and indestructible before players can respond to the loyalty ability."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "If Grand Master of Flowers somehow gains enough loyalty to become a creature while it is being attacked, it is removed from combat. If blockers haven't been declared yet, it may then block. It may even block creatures that were previously attacking it. Creatures that were previously attacking it that go unblocked won't deal combat damage."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Grazilaxx, Illithid Scholar
 {
     "name": "Grazilaxx, Illithid Scholar",
@@ -9136,6 +9594,47 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Icingdeath, Frost Tyrant
+{
+    "name": "Icingdeath, Frost Tyrant",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Legendary Creature — Dragon",
+    "oracleText": "Flying, vigilance\nWhen Icingdeath, Frost Tyrant dies, create Icingdeath, Frost Tongue, a legendary white Equipment artifact token with \"Equipped creature gets +2/+0,\" \"Whenever equipped creature attacks, tap target creature defending player controls,\" and equip {2}.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Icingdeath, Frost Tyrant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Icingdeath, Frost Tongue"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "rarity": "MYTHIC",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/6/26b0e68a-9d4e-42ea-8dac-c47cbed0c6ad.jpg?1783926531"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -11546,6 +12045,193 @@
     ]
 }
 
+// Mordenkainen
+{
+    "name": "Mordenkainen",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Legendary Planeswalker — Mordenkainen",
+    "oracleText": "+2: Draw two cards, then put a card from your hand on the bottom of your library.\n−2: Create a blue Dog Illusion creature token with \"This token's power and toughness are each equal to twice the number of cards in your hand.\"\n−10: Exchange your hand and library, then shuffle. You get an emblem with \"You have no maximum hand size.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mordenkainen:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected1",
+                                    "prompt": "Put a card from your hand on the bottom of your library"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "selected1",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Library",
+                                        "placement": "Bottom"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Mordenkainen:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Dog",
+                        "Illusion"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce3c0bd9-8a37-4164-9937-f35d1c210fe8.jpg?1783926346",
+                    "staticAbilities": [
+                        {
+                            "type": "SetBasePowerToughnessDynamicStatic",
+                            "power": {
+                                "type": "Multiply",
+                                "amount": {
+                                    "type": "Count",
+                                    "player": "You",
+                                    "zone": "Hand"
+                                },
+                                "multiplier": 2
+                            },
+                            "toughness": {
+                                "type": "Multiply",
+                                "amount": {
+                                    "type": "Count",
+                                    "player": "You",
+                                    "zone": "Hand"
+                                },
+                                "multiplier": 2
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Mordenkainen:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -10
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        {
+                            "type": "CreatePermanentEmblem",
+                            "emblemDescription": "You have no maximum hand size."
+                        },
+                        "RemoveMaximumHandSize"
+                    ],
+                    "descriptionOverride": "Exchange your hand and library, then shuffle. You get an emblem with \"You have no maximum hand size.\""
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "MYTHIC",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2fa5e4c7-12fa-4ec4-bd4b-752e367306c7.jpg?1783926511",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "The power and toughness of the Dog Illusion token will change as the number of cards in your hand changes."
+            },
+            {
+                "date": "2021-07-23",
+                "text": "The cards put into your hand due to Mordenkainen's last ability aren't \"drawn.\" Anything that cares about you drawing cards won't notice your hand suddenly becoming very, very well-stocked."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Mordenkainen's Polymorph
 {
     "name": "Mordenkainen's Polymorph",
@@ -12159,6 +12845,115 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Oswald Fiddlebender
+{
+    "name": "Oswald Fiddlebender",
+    "manaCost": "{1}{W}",
+    "typeLine": "Legendary Creature — Gnome Artificer",
+    "oracleText": "Magical Tinkering — {W}, {T}, Sacrifice an artifact: Search your library for an artifact card with mana value equal to 1 plus the sacrificed artifact's mana value, put it onto the battlefield, then shuffle. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Oswald Fiddlebender:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsArtifact",
+                                        {
+                                            "type": "ManaValueEqualsDynamic",
+                                            "amount": {
+                                                "type": "Add",
+                                                "left": {
+                                                    "type": "EntityProperty",
+                                                    "entity": "SacrificedAsCost",
+                                                    "numericProperty": "ManaValue"
+                                                },
+                                                "right": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for an artifact card with mana value equal to (the sacrificed creature's mana value + 1) to put onto the battlefield",
+                            "selectedLabel": "Put onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Magical Tinkering — {W}, {T}, Sacrifice an artifact: Search your library for an artifact card with mana value equal to 1 plus the sacrificed artifact's mana value, put it onto the battlefield, then shuffle."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "RARE",
+        "artist": "Steven Belledin",
+        "flavorText": "\"Can't see this airship crashing in the near future. Sturdy as a rock.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bba1650f-eddf-49a9-820e-489cb8d5b6fa.jpg?1783926527"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -16143,6 +16938,72 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Temple of the Dragon Queen
+{
+    "name": "Temple of the Dragon Queen",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "As this land enters, you may reveal a Dragon card from your hand. This land enters tapped unless you revealed a Dragon card this way or you control a Dragon.\nAs this land enters, choose a color.\n{T}: Add one mana of the chosen color.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Temple of the Dragon Queen:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "colorSet": "ManaColorSet.SourceChosenColor"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "OnEnterRunEffect",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Not",
+                                    "condition": {
+                                        "type": "Exists",
+                                        "player": "You",
+                                        "zone": "Battlefield",
+                                        "filter": "permanent Dragon"
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "MayRevealCardFromHand",
+                                "filter": "Dragon",
+                                "otherwise": "EnterTapped"
+                            }
+                        },
+                        "ChooseColorForTarget"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "260",
+        "rarity": "UNCOMMON",
+        "artist": "Cliff Childs",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0c79b3c6-ccbe-48ae-a1f7-ddfd37ecdbf5.jpg?1783926433",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "A Dragon card is a card with the creature type Dragon in its type line. Similarly, a creature on the battlefield is a Dragon if it has the Dragon creature type. A card that has \"Dragon\" in the name (such as Temple of the Dragon Queen) isn't a Dragon card unless it also has the Dragon creature type."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // The Blackstaff of Waterdeep
