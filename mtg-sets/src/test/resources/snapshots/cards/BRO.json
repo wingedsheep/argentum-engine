@@ -12804,7 +12804,11 @@
                     "target": "Self",
                     "destination": "Battlefield",
                     "fromZone": "Graveyard",
-                    "addCounterType": "PLUS_ONE_PLUS_ONE"
+                    "entryCounters": [
+                        {
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    ]
                 },
                 "activateFromZone": "Graveyard",
                 "descriptionOverride": "{4}{B}{B}: Return this card from your graveyard to the battlefield with a +1/+1 counter on it. This ability costs {4} less to activate if an opponent controls four or more nonbasic lands.",
@@ -12868,12 +12872,16 @@
             },
             "destination": "Battlefield",
             "fromZone": "Graveyard",
-            "addCounterType": "PLUS_ONE_PLUS_ONE",
-            "addCounterIf": {
-                "cardPredicates": [
-                    "IsCreature"
-                ]
-            }
+            "entryCounters": [
+                {
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "onlyIf": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                }
+            ]
         },
         "targetRequirements": [
             {

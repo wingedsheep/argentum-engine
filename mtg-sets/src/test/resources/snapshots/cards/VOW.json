@@ -8861,7 +8861,11 @@
                     "target": "TriggeringEntity",
                     "destination": "Exile",
                     "fromZone": "Graveyard",
-                    "addCounterType": "CROAK"
+                    "entryCounters": [
+                        {
+                            "counterType": "CROAK"
+                        }
+                    ]
                 }
             }
         ],

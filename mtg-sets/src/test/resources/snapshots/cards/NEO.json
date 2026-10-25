@@ -16146,7 +16146,11 @@
                         "name": "t0"
                     },
                     "destination": "Battlefield",
-                    "addCounterType": "PLUS_ONE_PLUS_ONE"
+                    "entryCounters": [
+                        {
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    ]
                 }
             ]
         },

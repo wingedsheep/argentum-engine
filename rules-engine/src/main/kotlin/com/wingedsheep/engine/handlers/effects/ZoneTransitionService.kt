@@ -93,13 +93,15 @@ data class ZoneEntryOptions(
      * the printed riot replacement/static abilities that would read a recorded `MODE` choice.
      */
     val grantedRiotModes: List<String> = emptyList(),
-    /** Effect-supplied counters are part of entry, including counter replacements and prevention. */
-    val entryCounterType: com.wingedsheep.sdk.core.CounterType? = null,
+    /**
+     * Effect-supplied counters are part of entry, including counter replacements and prevention.
+     * Each one's `onlyIf` is read off the entrant's prospective characteristics.
+     */
+    val entryCounters: List<com.wingedsheep.sdk.scripting.effects.EntryCounter> = emptyList(),
     /** Original board for one simultaneous entry event; excludes other entrants' global replacements. */
     val entryCounterReplacementState: GameState? = null,
     /** Opaque game-local token shared only by cards entering in this instruction. */
     val simultaneousEntryGroup: String? = null,
-    val entryCounterFilter: com.wingedsheep.sdk.scripting.GameObjectFilter? = null,
     val entryCounterSourceId: EntityId? = null,
     val entryCounterEffectControllerId: EntityId? = null,
     val controllerId: EntityId? = null,
@@ -937,7 +939,7 @@ class ZoneTransitionService(
                             .bake(recorded, modeId, cardRegistry)
                     }
                 }
-                val entryCounterTotals = options.entryCounterType?.let {
+                val entryCounterTotals = options.entryCounters.takeIf { it.isNotEmpty() }?.let {
                     mutableMapOf<com.wingedsheep.sdk.core.CounterType, Int>()
                 }
                 if (!options.faceDown) {
@@ -984,16 +986,20 @@ class ZoneTransitionService(
                 // Counter placement replaces the complete entry event once per counter kind.
                 // Collect supplied and intrinsic/printed counters before applying modifiers, using
                 // replacement sources from before this event and prospective entrant characteristics.
-                options.entryCounterType?.let { kind ->
-                    val matches = options.entryCounterFilter?.let { filter ->
-                        val prospective = EntersWithReplacements.prospectiveEntryView(
+                if (options.entryCounters.isNotEmpty()) {
+                    val prospective by lazy {
+                        EntersWithReplacements.prospectiveEntryView(
                             newState, entityId, options.entryCounterReplacementState ?: state)
-                        predicateEvaluator.matches(prospective, prospective.projectedState, entityId, filter,
-                            com.wingedsheep.engine.handlers.PredicateContext(
-                                sourceId = options.entryCounterSourceId,
-                                controllerId = options.entryCounterEffectControllerId ?: destControllerId))
-                    } ?: true
-                    if (matches) entryCounterTotals!![kind] = (entryCounterTotals[kind] ?: 0) + 1
+                    }
+                    for (entry in options.entryCounters) {
+                        val matches = entry.onlyIf?.let { filter ->
+                            predicateEvaluator.matches(prospective, prospective.projectedState, entityId, filter,
+                                com.wingedsheep.engine.handlers.PredicateContext(
+                                    sourceId = options.entryCounterSourceId,
+                                    controllerId = options.entryCounterEffectControllerId ?: destControllerId))
+                        } ?: true
+                        if (matches) entryCounterTotals!![entry.counterType] = (entryCounterTotals[entry.counterType] ?: 0) + 1
+                    }
                 }
                 val entryCopy = options.entryCopy?.takeIf { it.copiedCard != null && !options.faceDown }
                 entryCopy?.replacement?.entersWithCounters?.let { rider ->

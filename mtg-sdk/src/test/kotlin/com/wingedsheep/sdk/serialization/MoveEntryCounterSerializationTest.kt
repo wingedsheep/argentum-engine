@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.EntryCounter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -16,6 +17,9 @@ class MoveEntryCounterSerializationTest : FunSpec({
         val effects = listOf(
             Effects.Move(EffectTarget.Self, Zone.BATTLEFIELD,
                 addCounterType = CounterType.FINALITY, addCounterIf = GameObjectFilter.Creature),
+            Effects.Move(EffectTarget.Self, Zone.BATTLEFIELD, entryCounters = listOf(
+                EntryCounter(CounterType.PLUS_ONE_PLUS_ONE, GameObjectFilter.Creature),
+                EntryCounter(CounterType.LOYALTY, GameObjectFilter.Planeswalker))),
             Effects.Pipeline {
                 val cards = gather(com.wingedsheep.sdk.scripting.effects.CardSource.Entity(com.wingedsheep.sdk.scripting.targets.EffectTarget.Self))
                 move(cards, com.wingedsheep.sdk.scripting.effects.CardDestination.ToZone(Zone.BATTLEFIELD), addCounterType = CounterType.PLUS_ONE_PLUS_ONE)

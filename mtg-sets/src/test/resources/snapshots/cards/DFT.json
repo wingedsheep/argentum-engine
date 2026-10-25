@@ -3436,7 +3436,11 @@
                             },
                             "destination": "Battlefield",
                             "controllerOverride": "Controller",
-                            "addCounterType": "FINALITY"
+                            "entryCounters": [
+                                {
+                                    "counterType": "FINALITY"
+                                }
+                            ]
                         },
                         {
                             "type": "GrantKeyword",

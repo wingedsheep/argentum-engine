@@ -8566,7 +8566,11 @@
                     "target": "TriggeringEntity",
                     "destination": "Exile",
                     "fromZone": "Graveyard",
-                    "addCounterType": "STASH"
+                    "entryCounters": [
+                        {
+                            "counterType": "STASH"
+                        }
+                    ]
                 }
             }
         ],

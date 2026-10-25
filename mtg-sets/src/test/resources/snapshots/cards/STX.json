@@ -18458,6 +18458,83 @@
     ]
 }
 
+// Semester's End
+{
+    "name": "Semester's End",
+    "manaCost": "{3}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Exile any number of target creatures and/or planeswalkers you control. At the beginning of the next end step, return each of them to the battlefield under its owner's control. Each of them enters with an additional +1/+1 counter on it if it's a creature and an additional loyalty counter on it if it's a planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Exile"
+                    },
+                    {
+                        "type": "CreateDelayedTrigger",
+                        "step": "END",
+                        "effect": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "destination": "Battlefield",
+                            "entryCounters": [
+                                {
+                                    "counterType": "PLUS_ONE_PLUS_ONE",
+                                    "onlyIf": {
+                                        "cardPredicates": [
+                                            "IsCreature"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "counterType": "LOYALTY",
+                                    "onlyIf": {
+                                        "cardPredicates": [
+                                            "IsPlaneswalker"
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature|planeswalker ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "RARE",
+        "artist": "Alayna Danner",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/ef4743f7-28db-4d72-bfce-09cfbe413514.jpg?1783927387"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Serpentine Curve
 {
     "name": "Serpentine Curve",

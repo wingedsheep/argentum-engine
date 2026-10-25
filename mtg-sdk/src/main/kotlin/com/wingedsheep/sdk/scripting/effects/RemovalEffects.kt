@@ -352,6 +352,20 @@ data class DestroyAllEquipmentOnTargetEffect(
     override val description: String = "Destroy all Equipment attached to ${target.description}"
 }
 
+/**
+ * One counter a [MoveToZoneEffect] puts on the card as it arrives ("enters with a [counterType]
+ * counter on it"). [onlyIf], when set, places it only if the card landed where it was sent and
+ * matches the filter there, read off *projected* state as it arrives — so a noncreature artifact
+ * that another effect makes a creature on the battlefield (March of the Machines) counts as a
+ * creature, as Recommission's ruling requires, and a permanent that was only a creature through a
+ * type-changing effect doesn't (Semester's End's ruling). Null places it unconditionally.
+ */
+@Serializable
+data class EntryCounter(
+    val counterType: CounterType,
+    val onlyIf: GameObjectFilter? = null
+)
+
 @SerialName("MoveToZone")
 @Serializable
 data class MoveToZoneEffect(
@@ -377,21 +391,16 @@ data class MoveToZoneEffect(
      */
     val positionFromTop: Int? = null,
     /**
-     * When non-null, the card enters the battlefield with one counter of this type, honoring
-     * counter-placement replacements and prevention. In other destinations this annotates the
+     * Counters the card enters the battlefield with, one per [EntryCounter], honoring
+     * counter-placement replacements and prevention. In other destinations they annotate the
      * arriving card — "exile it with a stash counter on it" (Tinybones, Bauble Burglar), "with a dream
-     * counter on it" (Goliath Daydreamer). The single-target counterpart of
-     * [MoveCollectionEffect.addCounterType]; skipped along with the move when [fromZone] gates it out.
+     * counter on it" (Goliath Daydreamer). Each entry's [EntryCounter.onlyIf] gates it on the card
+     * as it arrives — "if a creature enters this way, it enters with an additional +1/+1 counter"
+     * (Recommission), or Semester's End's "+1/+1 counter if it's a creature and loyalty counter if
+     * it's a planeswalker", where a creature planeswalker gets both. The single-target counterpart
+     * of [MoveCollectionEffect.addCounterType]; skipped along with the move when [fromZone] gates it out.
      */
-    val addCounterType: CounterType? = null,
-    /**
-     * When non-null, [addCounterType] is placed only if the card landed in [destination] and matches
-     * this filter there, read off *projected* state as it arrives — "if a creature enters this way, it
-     * enters with an additional +1/+1 counter on it" (Recommission). Projected, so a noncreature
-     * artifact that another effect makes a creature on the battlefield (March of the Machines) still
-     * gets the counter, as Recommission's ruling requires. Null places the counter unconditionally.
-     */
-    val addCounterIf: GameObjectFilter? = null,
+    val entryCounters: List<EntryCounter> = emptyList(),
     /**
      * What a card put onto the battlefield [ZonePlacement.TappedAndAttacking] attacks. The default,
      * [EnteringAttackDefender.JOIN_SOURCE], is a defending player already in this combat (else the

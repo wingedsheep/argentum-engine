@@ -2279,7 +2279,11 @@
                     "target": "TriggeringEntity",
                     "destination": "Battlefield",
                     "fromZone": "Graveyard",
-                    "addCounterType": "FLYING"
+                    "entryCounters": [
+                        {
+                            "counterType": "FLYING"
+                        }
+                    ]
                 }
             }
         ]

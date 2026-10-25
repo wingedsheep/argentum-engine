@@ -836,7 +836,8 @@ class MoveCollectionExecutor(
     ): Pair<GameState, List<GameEvent>> {
         val transition = zones.moveToZone(state, auraId, Zone.BATTLEFIELD,
             com.wingedsheep.engine.handlers.effects.ZoneEntryOptions(
-                controllerId = destPlayerId, auraHostId = targetId, entryCounterType = entryCounterType,
+                controllerId = destPlayerId, auraHostId = targetId,
+                entryCounters = listOfNotNull(entryCounterType?.let { com.wingedsheep.sdk.scripting.effects.EntryCounter(it) }),
                 entryCounterReplacementState = replacementSourceState,
                 entryChoices = context?.entryChoices?.get(auraId)?.values.orEmpty(),
                 grantedRiotModes = context?.entryChoices?.get(auraId)?.riotModes.orEmpty(),
@@ -1018,7 +1019,8 @@ class MoveCollectionExecutor(
                 controllerId = actualDestPlayerId,
                 exiledBy = context.controllerId,
                 simultaneousEntryGroup = entryGroup,
-                entryCounterType = entryCounterType.takeIf { destZone == Zone.BATTLEFIELD },
+                entryCounters = listOfNotNull(entryCounterType?.takeIf { destZone == Zone.BATTLEFIELD }
+                    ?.let { com.wingedsheep.sdk.scripting.effects.EntryCounter(it) }),
                 entryCounterReplacementState = replacementSourceState ?: state,
                 entryCopy = context.entryCopies[cardId],
                 entryChoices = context.entryChoices[cardId]?.values.orEmpty(),

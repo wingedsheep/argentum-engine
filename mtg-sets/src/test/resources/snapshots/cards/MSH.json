@@ -6611,7 +6611,11 @@
                         },
                         "destination": "Battlefield",
                         "placement": "TappedAndAttacking",
-                        "addCounterType": "FINALITY"
+                        "entryCounters": [
+                            {
+                                "counterType": "FINALITY"
+                            }
+                        ]
                     },
                     "reflexiveTargetRequirements": [
                         {
@@ -7658,7 +7662,11 @@
                             "type": "MoveToZone",
                             "target": "Self",
                             "destination": "Battlefield",
-                            "addCounterType": "PLUS_ONE_PLUS_ONE"
+                            "entryCounters": [
+                                {
+                                    "counterType": "PLUS_ONE_PLUS_ONE"
+                                }
+                            ]
                         },
                         {
                             "type": "RemoveAllAbilities",
@@ -18983,7 +18991,11 @@
                             "type": "MoveToZone",
                             "target": "TriggeringEntity",
                             "destination": "Battlefield",
-                            "addCounterType": "FINALITY"
+                            "entryCounters": [
+                                {
+                                    "counterType": "FINALITY"
+                                }
+                            ]
                         },
                         {
                             "type": "AddCreatureType",

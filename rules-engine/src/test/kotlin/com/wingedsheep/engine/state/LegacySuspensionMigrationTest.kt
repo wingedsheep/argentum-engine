@@ -381,7 +381,11 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
             } else if (value["type"] == JsonPrimitive("MoveToZone")) {
                 // The entering-attack defender choice (ninjutsu, CR 702.49c) postdates the capture.
                 value.getValue("attackDefender") shouldBe JsonPrimitive("JOIN_SOURCE")
-                value - "attackDefender"
+                // The captured single entry counter (`addCounterType`/`addCounterIf`, both null
+                // here) is now the `entryCounters` list; RetiredSdkTypeLift rewrote it on load.
+                value.getValue("entryCounters") shouldBe JsonArray(emptyList())
+                JsonObject(value - "attackDefender" - "entryCounters" +
+                    ("addCounterType" to JsonNull) + ("addCounterIf" to JsonNull))
             } else value
             JsonObject(fields.mapValues { withoutPostCaptureCardDefaults(it.value) })
         }

@@ -170,8 +170,7 @@ class MoveToZoneEffectExecutor(
             .copy(lookBackGrants = context.lookBackGrants[targetId], entryCopy = context.entryCopies[targetId], auraHostId = context.entryAuraHosts[targetId],
                 entryChoices = context.entryChoices[targetId]?.values.orEmpty(),
                 grantedRiotModes = context.entryChoices[targetId]?.riotModes.orEmpty(),
-                entryCounterType = effect.addCounterType.takeIf { effect.destination == Zone.BATTLEFIELD },
-                entryCounterFilter = effect.addCounterIf,
+                entryCounters = effect.entryCounters.takeIf { effect.destination == Zone.BATTLEFIELD }.orEmpty(),
                 entryCounterSourceId = context.sourceId,
                 entryCounterEffectControllerId = context.controllerId,
                 exiledBy = context.controllerId)
@@ -189,7 +188,7 @@ class MoveToZoneEffectExecutor(
         // everything else. Skip face-down entries: morph creatures enter as 2/2 nameless
         // creatures with no replacement effects from their face-up identity.
         val actualDestZone = transitionResult.actualDestination
-        if (actualDestZone == Zone.BATTLEFIELD && effect.faceDown == null && effect.addCounterType == null) {
+        if (actualDestZone == Zone.BATTLEFIELD && effect.faceDown == null && effect.entryCounters.isEmpty()) {
             val (counterState, counterEvents) = EntersWithReplacements.applyOnEntry(
                 resultState, targetId, controllerId, cardRegistry,
                 predicateEvaluator = zones.predicateEvaluator, preEntryZone = currentZone
@@ -202,22 +201,23 @@ class MoveToZoneEffectExecutor(
             resultState = settleEnteringAttack(resultState, targetId, controllerId, effect, context)
         }
 
-        // "Exile it with a stash counter on it" — one counter of the named type on the card once it
+        // "Exile it with a stash counter on it" — one counter of each named type on the card once it
         // has landed. Mirrors MoveCollectionEffect.addCounterType; no CountersAddedEvent is emitted
         // because the card isn't a permanent in its new zone, so nothing can trigger off it.
-        // `addCounterIf` narrows that to "if a creature enters this way" (Recommission): the card must
-        // have landed where it was sent and match the filter in *projected* state there, so an
-        // effect that makes it a creature on arrival (March of the Machines) counts.
-        val counterAllowed = effect.addCounterIf?.let { filter ->
-            actualDestZone == effect.destination && zones.predicateEvaluator.matches(
-                resultState, resultState.projectedState, targetId, filter,
-                com.wingedsheep.engine.handlers.PredicateContext(controllerId = controllerId, sourceId = context.sourceId)
-            )
-        } ?: true
-        if (counterAllowed && actualDestZone == effect.destination && actualDestZone != Zone.BATTLEFIELD) effect.addCounterType?.let { counterType ->
-            resultState = resultState.updateEntity(targetId) { container ->
-                val existing = container.get<CountersComponent>() ?: CountersComponent()
-                container.with(existing.withAdded(counterType, 1))
+        // An entry's `onlyIf` must match the card in *projected* state where it landed. (Battlefield
+        // entries are placed by the zone transition itself, as part of the entry event.)
+        if (actualDestZone == effect.destination && actualDestZone != Zone.BATTLEFIELD) {
+            for (entry in effect.entryCounters) {
+                val allowed = entry.onlyIf?.let { filter ->
+                    zones.predicateEvaluator.matches(
+                        resultState, resultState.projectedState, targetId, filter,
+                        com.wingedsheep.engine.handlers.PredicateContext(controllerId = controllerId, sourceId = context.sourceId)
+                    )
+                } ?: true
+                if (allowed) resultState = resultState.updateEntity(targetId) { container ->
+                    val existing = container.get<CountersComponent>() ?: CountersComponent()
+                    container.with(existing.withAdded(entry.counterType, 1))
+                }
             }
         }
 

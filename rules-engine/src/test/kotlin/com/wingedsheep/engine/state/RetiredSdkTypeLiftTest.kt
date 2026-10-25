@@ -14,7 +14,11 @@ import com.wingedsheep.sdk.scripting.conditions.TriggeringEntityWas
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.permissions.MayPlayPermission
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.EntryCounter
+import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.SkipDuration
 import com.wingedsheep.sdk.scripting.effects.SkipStepOrPhaseEffect
@@ -31,6 +35,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
@@ -148,6 +153,18 @@ class RetiredSdkTypeLiftTest : FunSpec({
         val encoded = json.encodeToJsonElement(SpellOnStackComponent.serializer(), spell).jsonObject
         val legacy = JsonObject(encoded - "castTimeValues" + ("castTimeFlags" to JsonArray(listOf(JsonPrimitive("controlledMount")))))
         lifted(SpellOnStackComponent.serializer(), legacy) shouldBe spell
+    }
+
+    test("a move's retired single entry counter becomes a one-entry entryCounters list") {
+        val move = MoveToZoneEffect(EffectTarget.Self, Zone.BATTLEFIELD,
+            entryCounters = listOf(EntryCounter(CounterType.PLUS_ONE_PLUS_ONE, GameObjectFilter.Creature)))
+        val encoded = json.encodeToJsonElement(Effect.serializer(), move).jsonObject
+        val counter = json.encodeToJsonElement(CounterType.serializer(), CounterType.PLUS_ONE_PLUS_ONE)
+        val filter = json.encodeToJsonElement(GameObjectFilter.serializer(), GameObjectFilter.Creature)
+        lifted(Effect.serializer(), JsonObject(encoded - "entryCounters" +
+            ("addCounterType" to counter) + ("addCounterIf" to filter))) shouldBe move
+        lifted(Effect.serializer(), JsonObject(encoded - "entryCounters" +
+            ("addCounterType" to JsonNull) + ("addCounterIf" to JsonNull))) shouldBe move.copy(entryCounters = emptyList())
     }
 
     test("a document with no retired type passes through as the same instance") {

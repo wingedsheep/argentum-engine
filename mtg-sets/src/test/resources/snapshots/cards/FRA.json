@@ -5865,7 +5865,11 @@
                     "destination": "Battlefield",
                     "placement": "Tapped",
                     "fromZone": "Graveyard",
-                    "addCounterType": "PLUS_ONE_PLUS_ONE"
+                    "entryCounters": [
+                        {
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    ]
                 },
                 "activateFromZone": "Graveyard"
             }
@@ -6447,7 +6451,11 @@
             },
             "destination": "Battlefield",
             "fromZone": "Graveyard",
-            "addCounterType": "PLUS_ONE_PLUS_ONE"
+            "entryCounters": [
+                {
+                    "counterType": "PLUS_ONE_PLUS_ONE"
+                }
+            ]
         },
         "targetRequirements": [
             {
@@ -12453,7 +12461,11 @@
                     "target": "Self",
                     "destination": "Battlefield",
                     "fromZone": "Graveyard",
-                    "addCounterType": "FINALITY"
+                    "entryCounters": [
+                        {
+                            "counterType": "FINALITY"
+                        }
+                    ]
                 },
                 "restrictions": [
                     {

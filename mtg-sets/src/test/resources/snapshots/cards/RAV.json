@@ -17262,7 +17262,11 @@
                 },
                 "destination": "Battlefield",
                 "fromZone": "Graveyard",
-                "addCounterType": "PLUS_ONE_PLUS_ONE"
+                "entryCounters": [
+                    {
+                        "counterType": "PLUS_ONE_PLUS_ONE"
+                    }
+                ]
             },
             "otherwise": {
                 "type": "MoveToZone",

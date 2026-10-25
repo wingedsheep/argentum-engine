@@ -1049,7 +1049,11 @@
                     },
                     "destination": "Battlefield",
                     "fromZone": "Graveyard",
-                    "addCounterType": "FINALITY"
+                    "entryCounters": [
+                        {
+                            "counterType": "FINALITY"
+                        }
+                    ]
                 },
                 "targetRequirement": {
                     "type": "TargetObject",
@@ -9688,7 +9692,11 @@
                     },
                     "destination": "Exile",
                     "fromZone": "Graveyard",
-                    "addCounterType": "BRAIN"
+                    "entryCounters": [
+                        {
+                            "counterType": "BRAIN"
+                        }
+                    ]
                 },
                 "targetRequirements": [
                     {

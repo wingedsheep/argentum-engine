@@ -68,11 +68,15 @@ class EffectSuppliedEntryCountersTest : FunSpec({
         replacementEffect(RedirectZoneChange(newDestination = Zone.EXILE,
             appliesTo = EventPattern.ZoneChangeEvent(to = Zone.BATTLEFIELD, filter = GameObjectFilter.Enchantment)))
     }
+    val walker = card("Entry Counter Walker") {
+        typeLine = "Legendary Planeswalker — Test"
+        startingLoyalty = 3
+    }
     val entrant = card("Entry Counter Recipient") {
         typeLine = "Creature"; power = 0; toughness = 0
     }
     fun driver() = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(doubler, blocker, selfBlocker, redirect, entrant, entryLock, chooser, aura, auraLock, auraRedirect))
+        registerCards(TestCards.all + listOf(doubler, blocker, selfBlocker, redirect, entrant, entryLock, chooser, aura, auraLock, auraRedirect, walker))
         initMirrorMatch(Deck.of("Island" to 40), skipMulligans = true)
     }
     // The same contract must hold for a single move and a pipeline batch, including face-down entry.
@@ -317,5 +321,52 @@ class EffectSuppliedEntryCountersTest : FunSpec({
             EffectContext(sourceId = null, controllerId = d.player1))
         (result.state.getEntity(id)?.get<CountersComponent>()?.getCount(kind) ?: 0) shouldBe 0
         result.events.filterIsInstance<CountersAddedEvent>() shouldBe emptyList()
+    }
+    // Semester's End: "an additional +1/+1 counter on it if it's a creature and an additional
+    // loyalty counter on it if it's a planeswalker" — each counter gated on its own filter.
+    val typedCounters = listOf(
+        EntryCounter(CounterType.PLUS_ONE_PLUS_ONE, GameObjectFilter.Creature),
+        EntryCounter(CounterType.LOYALTY, GameObjectFilter.Planeswalker))
+    test("several conditional entry counters: a creature gets only the counter its filter allows") {
+        val d = driver()
+        val id = d.putCardInGraveyard(d.player1, "Grizzly Bears")
+        val result = d.services.effectExecutorRegistry.execute(d.state,
+            Effects.Move(EffectTarget.SpecificEntity(id), Zone.BATTLEFIELD, entryCounters = typedCounters),
+            EffectContext(sourceId = null, controllerId = d.player1))
+        val counters = result.state.getEntity(id)!!.get<CountersComponent>()!!
+        counters.getCount(kind) shouldBe 1
+        counters.getCount(CounterType.LOYALTY) shouldBe 0
+    }
+    test("several conditional entry counters: a planeswalker's extra loyalty joins its printed loyalty") {
+        val d = driver()
+        val id = d.putCardInGraveyard(d.player1, walker.name)
+        val result = d.services.effectExecutorRegistry.execute(d.state,
+            Effects.Move(EffectTarget.SpecificEntity(id), Zone.BATTLEFIELD, entryCounters = typedCounters),
+            EffectContext(sourceId = null, controllerId = d.player1))
+        (id in result.state.getBattlefield()) shouldBe true
+        val counters = result.state.getEntity(id)!!.get<CountersComponent>()!!
+        counters.getCount(CounterType.LOYALTY) shouldBe 4
+        counters.getCount(kind) shouldBe 0
+    }
+    test("several conditional entry counters are one entry event for counter replacements") {
+        val d = driver()
+        d.putPermanentOnBattlefield(d.player1, doubler.name)
+        val id = d.putCardInGraveyard(d.player1, walker.name)
+        val result = d.services.effectExecutorRegistry.execute(d.state,
+            Effects.Move(EffectTarget.SpecificEntity(id), Zone.BATTLEFIELD, entryCounters = typedCounters),
+            EffectContext(sourceId = null, controllerId = d.player1))
+        // Printed 3 + the additional 1 enter together, then the doubler doubles that placement.
+        result.state.getEntity(id)!!.get<CountersComponent>()!!.getCount(CounterType.LOYALTY) shouldBe 8
+    }
+    test("several entry counters annotate a card moved to a non-battlefield zone, each gated on its filter") {
+        val d = driver()
+        val id = d.putCardInGraveyard(d.player1, "Grizzly Bears")
+        val result = d.services.effectExecutorRegistry.execute(d.state,
+            Effects.Move(EffectTarget.SpecificEntity(id), Zone.EXILE, entryCounters = listOf(
+                EntryCounter(CounterType.STASH), EntryCounter(CounterType.FINALITY, GameObjectFilter.Artifact))),
+            EffectContext(sourceId = null, controllerId = d.player1))
+        val counters = result.state.getEntity(id)!!.get<CountersComponent>()!!
+        counters.getCount(CounterType.STASH) shouldBe 1
+        counters.getCount(CounterType.FINALITY) shouldBe 0
     }
 })

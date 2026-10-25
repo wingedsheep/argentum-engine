@@ -9651,7 +9651,11 @@
                         "target": "Self",
                         "destination": "Battlefield",
                         "placement": "TappedAndAttacking",
-                        "addCounterType": "PLUS_ONE_PLUS_ONE"
+                        "entryCounters": [
+                            {
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ]
                     }
                 },
                 "activeZones": [

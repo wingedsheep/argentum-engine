@@ -1900,14 +1900,20 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   card is still in that zone ("exile it **from their graveyard**" does nothing once the card has moved
   on — by then it's a new object, CR 400.7); `addCounterType` puts one counter of that type on the card
   once it lands ("exile it **with a stash counter on it**" — Tinybones, Bauble Burglar), and is skipped
-  along with the move when the `fromZone` gate closes. Both are pass-throughs to `MoveToZoneEffect`
-  (also reachable via `Effects.Move`), where `addCounterType` is the single-target counterpart of
-  `MoveCollectionEffect.addCounterType`. `Effects.Move` also takes `addCounterIf: GameObjectFilter?`, which places
-  that counter only when the card landed in the destination and matches the filter in *projected*
-  state there — "if a creature enters this way, it enters with an additional +1/+1 counter on it"
-  (**Recommission**: `Move(t, BATTLEFIELD, fromZone = GRAVEYARD, addCounterType = PLUS_ONE_PLUS_ONE,
-  addCounterIf = GameObjectFilter.Creature)`; a noncreature artifact made a creature on arrival by
-  March of the Machines still gets it).
+  along with the move when the `fromZone` gate closes. Both build `MoveToZoneEffect.entryCounters:
+  List<EntryCounter(counterType, onlyIf: GameObjectFilter?)>` (also reachable via `Effects.Move`),
+  the single-target counterpart of `MoveCollectionEffect.addCounterType`. `Effects.Move` also takes
+  `addCounterIf: GameObjectFilter?` (the one counter's `onlyIf`), which places that counter only when
+  the card landed in the destination and matches the filter in *projected* state there — "if a
+  creature enters this way, it enters with an additional +1/+1 counter on it" (**Recommission**:
+  `Move(t, BATTLEFIELD, fromZone = GRAVEYARD, addCounterType = PLUS_ONE_PLUS_ONE, addCounterIf =
+  GameObjectFilter.Creature)`; a noncreature artifact made a creature on arrival by March of the
+  Machines still gets it). For several counters, each with its own condition, pass `entryCounters`
+  directly — "an additional +1/+1 counter on it if it's a creature and an additional loyalty counter
+  on it if it's a planeswalker" (**Semester's End**: `entryCounters = listOf(EntryCounter(PLUS_ONE_PLUS_ONE,
+  Creature), EntryCounter(LOYALTY, Planeswalker))`; a creature planeswalker gets both). On the
+  battlefield all of them, plus a planeswalker's printed loyalty, enter as one entry event, so counter
+  replacements (Doubling Season) apply once per counter kind.
 - `ExileAndGrantOwnerPlayPermission(target, until?)` — exile + owner may play it (Garth-style).
 - `ExileOpponentsGraveyards()` — exile every card in each opponent's graveyard.
 - `MoveUntilSourceLeaves(target, destination)` — move an object to a non-battlefield, non-stack zone and return it to its previous zone immediately when the source's battlefield visit ends. The return does not use the stack and survives loss of the source's abilities. An exile also populates the ordinary linked-exile pile for client display and linked abilities. Returning permanents enter under their owner's control; tokens and objects that have since left the destination do not return. If the source has already left (including leaving and returning), the initial move does nothing. Ossification uses `Effects.MoveUntilSourceLeaves(victim, Zone.EXILE)` with no leaves trigger.

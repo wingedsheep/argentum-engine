@@ -18,6 +18,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.int
@@ -134,7 +135,24 @@ internal object RetiredSdkTypeLift {
      * a stored grant. A true flag is a cap of one; a false one is the uncapped default.
      */
     private fun withoutRetiredFields(element: JsonObject, type: String?): JsonObject =
-        withoutCastTimeFlags(withoutSingleUse(element, type))
+        withoutSingleEntryCounter(withoutCastTimeFlags(withoutSingleUse(element, type)), type)
+
+    /**
+     * `MoveToZoneEffect` carried one entry counter as `addCounterType` + `addCounterIf`; it now
+     * carries a list of them (`entryCounters`), each with its own `onlyIf`.
+     */
+    private fun withoutSingleEntryCounter(element: JsonObject, type: String?): JsonObject {
+        if (type != "MoveToZone" || ("addCounterType" !in element && "addCounterIf" !in element)) return element
+        val counterType = element["addCounterType"]?.takeIf { it !is JsonNull }
+        val rest = element - "addCounterType" - "addCounterIf"
+        val entries = if (counterType == null) JsonArray(emptyList()) else JsonArray(listOf(JsonObject(
+            buildMap {
+                put("counterType", counterType)
+                element["addCounterIf"]?.takeIf { it !is JsonNull }?.let { put("onlyIf", it) }
+            }
+        )))
+        return JsonObject(rest + ("entryCounters" to entries))
+    }
 
     /**
      * A spell on the stack recorded its "as you cast this spell" captures as the names whose
