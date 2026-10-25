@@ -64,6 +64,10 @@ val SphereOfAnnihilation = card("Sphere of Annihilation") {
             exile(permanents)
             exile(graveyardCards)
         }
+        description = "At the beginning of your upkeep, exile this artifact, all creatures and planeswalkers " +
+            "with mana value less than or equal to the number of void counters on it, and all creature and " +
+            "planeswalker cards in graveyards with mana value less than or equal to the number of void " +
+            "counters on it."
     }
 
     metadata {
