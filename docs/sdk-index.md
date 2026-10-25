@@ -883,7 +883,7 @@ Families:
 - `GainLifeEffect(amount: DynamicAmount, target: EffectTarget)` — Gain life effect.
 - `GameIsDrawEffect` — "The game is a draw." (CR 104.4c) — the game ends at once with no winner and no loser (Divine Intervention).
 - `GatedEffect(gate: Gate, then: Effect, otherwise: Effect?, decisionMaker: EffectTarget?, descriptionOverride: String?, hint: String?)` — One resolution frame for the optional / gated-effect cluster.
-- `GatherCardsEffect(source: CardSource, storeAs: String, revealed: Boolean, lookAudience: LookAudience, search: Boolean)` — Gather cards from a source and store them in a named collection.
+- `GatherCardsEffect(source: CardSource, storeAs: String, revealed: Boolean, lookAudience: LookAudience, search: Boolean, searcher: Player)` — Gather cards from a source and store them in a named collection.
 - `GatherSubtypesEffect(from: String, storeAs: String)` — Extract the subtypes of each entity in a stored collection and save the result as a list of subtype sets in `storedSubtypeGroupsstoreAs`.
 - `GatherUntilMatchEffect(player: Player, filter: GameObjectFilter, storeMatch: String, storeRevealed: String, count: DynamicAmount)` — Walk a player's library top-down until count cards matching filter have been revealed (or the library runs out).
 - `GiftGivenEffect` — Signals that a gift was given (Bloomburrow gift mechanic).

@@ -3765,7 +3765,9 @@
                                         "player": "TargetPlayer",
                                         "filter": "basicland"
                                     },
-                                    "storeAs": "gathered3"
+                                    "storeAs": "gathered3",
+                                    "search": true,
+                                    "searcher": "TargetPlayer"
                                 },
                                 {
                                     "type": "SelectFromCollection",
@@ -3799,7 +3801,8 @@
                                         "type": "PlayerRef",
                                         "player": "TargetPlayer"
                                     }
-                                }
+                                },
+                                "EmitLibrarySearchedEvent"
                             ]
                         },
                         "decisionMaker": {

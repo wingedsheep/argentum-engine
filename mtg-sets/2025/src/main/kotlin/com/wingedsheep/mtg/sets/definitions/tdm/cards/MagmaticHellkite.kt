@@ -17,6 +17,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 
 /**
  * Magmatic Hellkite — Tarkir: Dragonstorm #111
@@ -73,7 +74,8 @@ val MagmaticHellkite = card("Magmatic Hellkite") {
             Effects.Pipeline {
                 val rampLands = gather(
                     CardSource.FromZone(Zone.LIBRARY, landController, GameObjectFilter.BasicLand),
-                    search = true
+                    search = true,
+                    searcher = landController
                 )
                 val rampChosen = chooseUpTo(1, from = rampLands, chooser = Chooser.ControllerOfTarget)
                 move(
@@ -86,6 +88,7 @@ val MagmaticHellkite = card("Magmatic Hellkite") {
                     addCounterType = CounterType.STUN
                 )
                 run(Effects.ShuffleLibrary(target = EffectTarget.TargetController))
+                run(EmitLibrarySearchedEventEffect)
             }
         description = "destroy target nonbasic land an opponent controls. Its controller searches " +
             "their library for a basic land card, puts it onto the battlefield tapped with a stun " +

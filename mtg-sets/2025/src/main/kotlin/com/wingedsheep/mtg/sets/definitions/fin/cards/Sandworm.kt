@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 
 /**
  * Sandworm
@@ -56,7 +57,8 @@ val Sandworm = card("Sandworm") {
                         player = Player.ControllerOf("target"),
                         filter = GameObjectFilter.BasicLand,
                     ),
-                    search = true
+                    search = true,
+                    searcher = Player.ControllerOf("target"),
                 )
                 val found = chooseUpTo(1, from = searchable, chooser = Chooser.ControllerOfTarget)
                 move(
@@ -68,6 +70,7 @@ val Sandworm = card("Sandworm") {
                     )
                 )
                 run(Effects.ShuffleLibrary(target = EffectTarget.TargetController))
+                run(EmitLibrarySearchedEventEffect)
             },
             decisionMaker = EffectTarget.TargetController,
         )

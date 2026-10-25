@@ -174,8 +174,12 @@ class GatedEffectExecutor(
             // shuffle (the card's first ruling). Only a may whose action *leads* with the search is
             // skipped; a search nested behind another optional action ("you may sacrifice …. If you
             // do, search …") keeps its prompt, and the blocked search inside simply finds nothing.
-            if (leadsWithSearch(effect.then) &&
-                state.getEntity(context.controllerId)
+            val leadingSearch = leadingSearch(effect.then)
+            val searcher = leadingSearch?.let {
+                TargetResolutionUtils.resolvePlayerRef(it.searcher, context, state) ?: context.controllerId
+            }
+            if (searcher != null &&
+                state.getEntity(searcher)
                     ?.has<com.wingedsheep.engine.state.components.player.CantSearchLibrariesComponent>() == true
             ) {
                 return effect.otherwise
@@ -1120,10 +1124,11 @@ class GatedEffectExecutor(
     }
 
     /** True when [effect]'s first step is a library search (a `GatherCardsEffect(search = true)`). */
-    private fun leadsWithSearch(effect: Effect): Boolean = when (effect) {
-        is com.wingedsheep.sdk.scripting.effects.GatherCardsEffect -> effect.search
+    /** The search gather [effect] leads with, if it leads with one (its searcher is who is asked). */
+    private fun leadingSearch(effect: Effect): com.wingedsheep.sdk.scripting.effects.GatherCardsEffect? = when (effect) {
+        is com.wingedsheep.sdk.scripting.effects.GatherCardsEffect -> effect.takeIf { it.search }
         is com.wingedsheep.sdk.scripting.effects.CompositeEffect ->
-            effect.effects.firstOrNull()?.let { leadsWithSearch(it) } == true
-        else -> false
+            effect.effects.firstOrNull()?.let { leadingSearch(it) }
+        else -> null
     }
 }

@@ -12715,7 +12715,8 @@
                                         "player": "TriggeringPlayer"
                                     },
                                     "storeAs": "gathered0",
-                                    "search": true
+                                    "search": true,
+                                    "searcher": "TriggeringPlayer"
                                 },
                                 {
                                     "type": "SelectFromCollection",
@@ -12747,7 +12748,8 @@
                                         "type": "PlayerRef",
                                         "player": "TriggeringPlayer"
                                     }
-                                }
+                                },
+                                "EmitLibrarySearchedEvent"
                             ]
                         }
                     ]

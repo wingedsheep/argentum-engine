@@ -9518,7 +9518,11 @@
                                         "filter": "basicland"
                                     },
                                     "storeAs": "gathered0",
-                                    "search": true
+                                    "search": true,
+                                    "searcher": {
+                                        "type": "ControllerOf",
+                                        "targetDescription": "nonbasic land an opponent controls"
+                                    }
                                 },
                                 {
                                     "type": "SelectFromCollection",
@@ -9550,7 +9554,8 @@
                                 {
                                     "type": "ShuffleLibrary",
                                     "target": "TargetController"
-                                }
+                                },
+                                "EmitLibrarySearchedEvent"
                             ]
                         }
                     ]

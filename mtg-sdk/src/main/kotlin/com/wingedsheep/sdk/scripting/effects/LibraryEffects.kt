@@ -144,9 +144,11 @@ data class EmitManifestedDreadEventEffect(
  * `Triggers.anOpponent.searchesLibrary()`) fire exactly once per
  * search (CR 701.23), after the found cards have moved and the library has shuffled.
  *
- * The searching player is the effect's controller at resolution time — for a per-player
- * `ForEachPlayer` search (each player searches their own library) that controller is rebound to
- * each iterated player, so the event carries the correct searcher. Searching is the act of looking
+ * The searching player is the [GatherCardsEffect.searcher] of the pipeline's search gather — the
+ * effect's controller by default, or the player an "its controller may search their library"
+ * (Sandworm) gather names. For a per-player `ForEachPlayer` search (each player searches their own
+ * library) the controller is rebound to each iterated player, so the event carries the correct
+ * searcher. With no search gather before it, it falls back to the controller. Searching is the act of looking
  * through the zone (CR 701.23a) and finding a card is not required (CR 701.23b), so the event still
  * fires when no card was found.
  *

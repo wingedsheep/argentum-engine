@@ -3538,8 +3538,8 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
 - `CantSearchLibrariesEffect(target, duration = EndOfTurn)` — target player(s) can't search libraries. Facade:
   `Effects.CantSearchLibraries(target, duration)`; `EffectTarget.PlayerRef(Player.Each)` for "Players can't search
   libraries this turn" (Shadow of Doubt). Stamps `CantSearchLibrariesComponent` (cleared at end-of-turn cleanup). Enforced
-  at the search itself: a `GatherCardsEffect(search = true)` whose effect controller (the searcher) carries it finds no
-  library cards, and the `EmitLibrarySearchedEventEffect` tail emits nothing. The rest of the instruction still runs, so a
+  at the search itself: a `GatherCardsEffect(search = true)` whose `searcher` (the effect controller by default) carries it
+  finds no library cards, and the `EmitLibrarySearchedEventEffect` tail emits nothing. The rest of the instruction still runs, so a
   "search …, then shuffle" still shuffles; looking at / revealing the top of a library is not a search and is untouched.
   An optional search ("you may search … then shuffle" — a `Effects.May` whose action leads with a search gather) can't be
   chosen at all, so it is skipped without a prompt and without the shuffle.
@@ -4694,6 +4694,17 @@ one-off pipeline belongs inline in the card file via `Effects.Pipeline { }` (§5
   gather → pick → move → shuffle) as one sentence — "Search your library for a basic Island, Swamp, or
   Mountain card, put it onto the battlefield tapped, then shuffle" — and a bare `gather(search = true)`
   reads "Search your library for …", never "Look at …".
+- `gather(source, search = true, searcher = Player.X)` — who performs the search (`GatherCardsEffect.searcher`,
+  default `Player.You`, the effect's controller). Leave it at `You` for "search your library" and for "search target
+  player's library" (Cranial Extraction, Supreme Inquisitor — *you* search theirs; no searched event). When **another
+  player searches their own library** — "Its controller may search their library" (Erode, Sandworm:
+  `Player.ControllerOf("target")`), "target player … searches their library" (Restorative Technique, Settle the
+  Wreckage: `Player.TargetPlayer`), "that player … searches their library" (Mornsong Aria: `Player.TriggeringPlayer`) —
+  name that player as the searcher, the same ref as the source's player, and end the pipeline with
+  `run(EmitLibrarySearchedEventEffect)`. The can't-search check (Shadow of Doubt) and an `Effects.May` that leads with
+  the search read the searcher, and the emit tail reports the search as the searcher's, so "whenever an opponent
+  searches their library" (Wan Shi Tong, Librarian) sees the right player. `LibrarySearchFlagTest` flags a
+  "… search(es) their library" card whose other-player search gather leaves the searcher at `You`.
 - `searchMultipleZones(zones, filter, count?, destination?, tapped?, reveal?)` — search several zones (e.g. library and/or graveyard) in one effect; shuffles automatically if `LIBRARY` is among the zones. Pass `reveal = true` for "reveal it" tutors (Delivery Moogle).
 
 **Sideboard / wish (`Patterns.Sideboard.*`)**

@@ -69,21 +69,38 @@ class LibrarySearchFlagTest : FunSpec({
         }
     }
 
-    // "Search your library" (the default Player.You, omitted from the JSON) vs. searching another
-    // player's library (Cranial Extraction). Only the former is "a player searches their library",
+    // Player.You is the default for both the source's player and the gather's searcher, and a
+    // default is omitted from the JSON.
+    fun JsonElement?.isYou(): Boolean = when (this) {
+        null -> true
+        is JsonPrimitive -> contentOrNull == "You"
+        is JsonObject -> type() == "You"
+        else -> false
+    }
+
+    // The searcher searches their own library: "search your library" (both default to Player.You),
+    // or another player searching theirs ("its controller may search their library" — Sandworm,
+    // whose gather names the library's player as its searcher). Searching *another* player's
+    // library (Cranial Extraction: you search theirs) is not "a player searches their library",
     // the event EmitLibrarySearchedEventEffect reports.
     fun JsonObject.readsOwnLibrary(): Boolean {
-        val player = (this["source"] as? JsonObject)?.get("player") ?: return true
-        return when (player) {
-            is JsonPrimitive -> player.contentOrNull == "You"
-            is JsonObject -> player.type() == "You"
-            else -> false
-        }
+        val player = (this["source"] as? JsonObject)?.get("player")
+        val searcher = this["searcher"]
+        return if (player.isYou()) searcher.isYou() else player == searcher
     }
+
+    // A search of another player's library that the controller performs.
+    fun JsonObject.controllerSearchesOthersLibrary(): Boolean =
+        !(this["source"] as? JsonObject)?.get("player").isYou() && this["searcher"].isYou()
+
+    // "Its controller may search their library", "that player … searches their library": someone
+    // other than the controller searches their own library.
+    val othersOwnSearch = Regex("""\bsearch(?:es)?\s+their\s+library""", RegexOption.IGNORE_CASE)
 
     data class Script(
         val searchGathers: Int,
         val ownSearchGathers: Int,
+        val controllerSearchesOthers: Int,
         val plainLibraryGathers: Int,
         val emitsSearched: Boolean,
         // The card's own text plus every face's (an Omen or Adventure half carries its own).
@@ -98,6 +115,7 @@ class LibrarySearchFlagTest : FunSpec({
         return Script(
             searchGathers = searching.size,
             ownSearchGathers = searching.count { it.readsOwnLibrary() },
+            controllerSearchesOthers = searching.count { it.controllerSearchesOthersLibrary() },
             plainLibraryGathers = libraryGathers.size - searching.size,
             emitsSearched = all.any { it.type() == "EmitLibrarySearchedEvent" },
             oracleTexts = (listOf(card.oracleText.orEmpty()) +
@@ -108,12 +126,6 @@ class LibrarySearchFlagTest : FunSpec({
     // Cards exempted from the gate, each with the reason. Keep it short; a new entry needs a real
     // one, and an entry that would pass without it fails the stale check below.
     val allowlist = mapOf(
-        // "That player may search their library": the searcher is the target player, not the
-        // spell's controller, and the pipeline needs the exiled-attacker count, which a per-player
-        // rebinding (`Effects.ForEachPlayer`, as Path to Exile does it) wipes. The search flag and
-        // the searched event both key on the controller, so flagging it would check and report the
-        // wrong player.
-        "Settle the Wreckage" to "searcher is the target player; needs a searcher-aware search",
         // "Search its controller's graveyard, hand, and library": *you* search *another* player's
         // library. The search runs inside a per-player loop where `Player.You` is that other player,
         // so it is flagged (Shadow of Doubt applies) but deliberately emits no searched event — that
@@ -136,6 +148,10 @@ class LibrarySearchFlagTest : FunSpec({
                     "(${s.plainLibraryGathers} plain library gather(s)) — \"${printed.first()}\""
             s.ownSearchGathers > 0 && !s.emitsSearched ->
                 "[$code] ${card.name}: searches your library but never emits EmitLibrarySearchedEventEffect"
+            s.ownSearchGathers == 0 && s.controllerSearchesOthers > 0 &&
+                printed.any { othersOwnSearch.containsMatchIn(it) } ->
+                "[$code] ${card.name}: another player searches their own library, but the gather's " +
+                    "searcher is the controller (set GatherCardsEffect.searcher to that player)"
             else -> null
         }
     }

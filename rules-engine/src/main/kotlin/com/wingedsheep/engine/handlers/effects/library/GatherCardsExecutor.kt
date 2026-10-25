@@ -395,18 +395,26 @@ class GatherCardsExecutor(
         // A search the searcher is forbidden to make finds nothing in any library (Shadow of
         // Doubt). Only the library half is dropped: "search your graveyard and/or library" still
         // finds graveyard cards. The rest of the instruction (move nothing, shuffle) still runs.
-        val cards = if (effect.search &&
-            state.getEntity(context.controllerId)?.has<CantSearchLibrariesComponent>() == true
+        // The searcher is who the gather names — the controller unless another player searches
+        // their own library (Sandworm's "its controller may search their library").
+        val searcher = if (effect.search) resolvePlayer(effect.searcher, context, state) else null
+        val cards = if (searcher != null &&
+            state.getEntity(searcher)?.has<CantSearchLibrariesComponent>() == true
         ) {
             val libraries = state.turnOrder.flatMap { state.getZone(ZoneKey(it, Zone.LIBRARY)) }.toSet()
             gathered.filter { it !in libraries }
         } else {
             gathered
         }
+        // Published for the pipeline's EmitLibrarySearchedEventEffect tail, so the searched
+        // event names this searcher.
+        val searcherCollection = searcher
+            ?.let { mapOf(com.wingedsheep.engine.handlers.PipelineState.SEARCHER_KEY to listOf(it)) }
+            .orEmpty()
 
         if (cards.isEmpty()) {
             return EffectResult.success(state).copy(
-                updatedCollections = mapOf(effect.storeAs to emptyList())
+                updatedCollections = mapOf(effect.storeAs to emptyList<EntityId>()) + searcherCollection
             )
         }
 
@@ -489,7 +497,7 @@ class GatherCardsExecutor(
         } else {
             collections + com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.clearUnknown(context, effect.storeAs)
         }
-        return EffectResult.success(newState, events).copy(updatedCollections = updatedCollections)
+        return EffectResult.success(newState, events).copy(updatedCollections = updatedCollections + searcherCollection)
     }
 
 

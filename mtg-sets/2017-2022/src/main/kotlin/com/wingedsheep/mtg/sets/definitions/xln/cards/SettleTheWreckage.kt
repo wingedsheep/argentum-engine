@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 
 /**
  * Settle the Wreckage
@@ -36,9 +37,10 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * [Effects.ForEachPlayer] rebinding, because **`ForEach` over players deliberately wipes
  * `storedCollections`** for each iteration — the `attackers` count would read 0 inside the loop and
  * the fetch would silently find nothing. Everything therefore stays in one pipeline scope, and the
- * target player is named explicitly instead: [Player.TargetPlayer] scopes the library gather, the
- * battlefield destination, and the shuffle, while [Chooser.TargetPlayer] makes *them* pick the
- * cards. The `may` is a [Effects.May] whose `decisionMaker` is the target player (only the prompt is
+ * target player is named explicitly instead: [Player.TargetPlayer] scopes the library gather (and is
+ * its `searcher`, so Shadow of Doubt and "whenever a player searches their library" triggers see
+ * the target player's search), the battlefield destination, and the shuffle, while
+ * [Chooser.TargetPlayer] makes *them* pick the cards. The `may` is a [Effects.May] whose `decisionMaker` is the target player (only the prompt is
  * delegated — the effect still resolves under the caster, which is why every step names its player).
  *
  * Deviation, deliberate: with zero attackers exiled the search is skipped instead of prompting.
@@ -67,7 +69,9 @@ val SettleTheWreckage = card("Settle the Wreckage") {
                                     Zone.LIBRARY,
                                     Player.TargetPlayer,
                                     GameObjectFilter.BasicLand
-                                )
+                                ),
+                                search = true,
+                                searcher = Player.TargetPlayer
                             )
                             val found = chooseUpTo(
                                 DynamicAmounts.distinctEntitiesIn(attackers),
@@ -84,6 +88,7 @@ val SettleTheWreckage = card("Settle the Wreckage") {
                                 )
                             )
                             run(Effects.ShuffleLibrary(EffectTarget.PlayerRef(Player.TargetPlayer)))
+                            run(EmitLibrarySearchedEventEffect)
                         },
                         decisionMaker = EffectTarget.PlayerRef(Player.TargetPlayer),
                         descriptionOverride = "That player may search their library for that many " +

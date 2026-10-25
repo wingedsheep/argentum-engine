@@ -46,7 +46,8 @@ val RestorativeTechnique = card("Restorative Technique") {
             Effects.Pipeline {
                 val basics = gather(
                     CardSource.FromZone(Zone.LIBRARY, Player.TargetPlayer, GameObjectFilter.BasicLand),
-                    search = true
+                    search = true,
+                    searcher = Player.TargetPlayer
                 )
                 val found = chooseUpTo(
                     1,

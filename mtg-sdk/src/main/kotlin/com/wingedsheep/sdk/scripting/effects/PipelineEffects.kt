@@ -1012,8 +1012,15 @@ enum class CardOrder {
  * @property search This gather *is* a search of a library (CR 701.23) — the "search your library
  *   for …" step, not a bulk move of a whole library (Jace, the Mind Sculptor's −12) or a look at
  *   its top. A gather is the only place a search can be told apart from those, so the flag rides
- *   here: when the searching player (the effect's controller) can't search libraries
- *   ([CantSearchLibrariesEffect]), library cards are left out of the gathered collection.
+ *   here: when the [searcher] can't search libraries ([CantSearchLibrariesEffect]), library
+ *   cards are left out of the gathered collection.
+ * @property searcher Who performs the search when [search] is set. Defaults to [Player.You], the
+ *   effect's controller ("search your library", and "search target player's library" — Cranial
+ *   Extraction, where *you* search). A different player searches their own library in
+ *   "its controller may search their library" (Sandworm) or "target player … searches their
+ *   library" (Restorative Technique): name that player here, matching the source's player. The
+ *   can't-search check reads it, and the pipeline's [EmitLibrarySearchedEventEffect] tail reports
+ *   the search as this player's. Ignored when [search] is `false`.
  */
 @SerialName("GatherCards")
 @Serializable
@@ -1023,6 +1030,7 @@ data class GatherCardsEffect(
     val revealed: Boolean = false,
     val lookAudience: LookAudience = LookAudience.Controller,
     val search: Boolean = false,
+    val searcher: Player = Player.You,
 ) : Effect {
     override val description: String = buildString {
         val zones = when (source) {

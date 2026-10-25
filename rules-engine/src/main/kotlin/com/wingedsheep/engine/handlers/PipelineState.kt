@@ -65,6 +65,15 @@ data class PipelineState(
         fun milledKey(collection: String): String = "__milled:$collection"
 
         /**
+         * Reserved metadata collection published by a library-searching gather
+         * (`GatherCardsEffect.search`): a single entry, the player who searched
+         * (`GatherCardsEffect.searcher`, resolved). The pipeline's `EmitLibrarySearchedEventEffect`
+         * tail reads it so the searched event names the player who actually searched — the
+         * destroyed land's controller for Sandworm, not Sandworm's controller.
+         */
+        const val SEARCHER_KEY = "__searcher"
+
+        /**
          * Pipeline collection name under which a batch trigger seeds the entities it captured
          * (the matching permanents in a `PermanentsEnteredEvent` batch). Aliases the SDK-side
          * contract [com.wingedsheep.sdk.scripting.effects.IterationSpace.TRIGGER_CAPTURED_COLLECTION]

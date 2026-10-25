@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 
 /**
  * Erode
@@ -45,7 +46,8 @@ val Erode = card("Erode") {
                         player = Player.ControllerOf("target"),
                         filter = GameObjectFilter.BasicLand,
                     ),
-                    search = true
+                    search = true,
+                    searcher = Player.ControllerOf("target"),
                 )
                 // "Its controller may search their library" — the destroyed permanent's
                 // controller picks the land, not Erode's controller. Without this the
@@ -60,6 +62,7 @@ val Erode = card("Erode") {
                     )
                 )
                 run(Effects.ShuffleLibrary(target = EffectTarget.TargetController))
+                run(EmitLibrarySearchedEventEffect)
             },
             decisionMaker = EffectTarget.TargetController,
         )

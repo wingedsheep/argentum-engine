@@ -261,7 +261,8 @@ class PipelineBuilder private constructor(private val shared: Shared) {
         revealed: Boolean = false,
         name: String? = null,
         search: Boolean = false,
-        lookAudience: LookAudience = LookAudience.Controller
+        lookAudience: LookAudience = LookAudience.Controller,
+        searcher: Player = Player.You
     ): CollectionSlot {
         val slot = CollectionSlot(slotKey("gathered", nextIndex(), name))
         steps += GatherCardsEffect(
@@ -269,7 +270,8 @@ class PipelineBuilder private constructor(private val shared: Shared) {
             storeAs = slot.key,
             revealed = revealed,
             lookAudience = lookAudience,
-            search = search
+            search = search,
+            searcher = searcher
         )
         return slot
     }

@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.dsl.Triggers
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 
 /**
  * Mornsong Aria
@@ -40,7 +41,8 @@ val MornsongAria = card("Mornsong Aria") {
             Effects.Pipeline {
                 val searchable = gather(
                     CardSource.FromZone(Zone.LIBRARY, Player.TriggeringPlayer, GameObjectFilter.Any),
-                    search = true
+                    search = true,
+                    searcher = Player.TriggeringPlayer
                 )
                 val found = chooseExactly(
                     1,
@@ -51,6 +53,7 @@ val MornsongAria = card("Mornsong Aria") {
                 )
                 toHand(found, Player.TriggeringPlayer)
                 run(Effects.ShuffleLibrary(target = EffectTarget.PlayerRef(Player.TriggeringPlayer)))
+                run(EmitLibrarySearchedEventEffect)
             }
     }
 
