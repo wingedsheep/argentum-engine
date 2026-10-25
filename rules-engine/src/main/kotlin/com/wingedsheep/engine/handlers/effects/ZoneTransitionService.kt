@@ -1639,6 +1639,13 @@ class ZoneTransitionService(
             // new one that nothing has crewed yet.
             updated = updated.without<CrewSaddleContributorsComponent>()
 
+            // A permanent entering any way other than resolving as a spell (blink, reanimation,
+            // "put onto the battlefield") wasn't cast, so no mana was spent to cast it. The cast
+            // record deliberately survives leaving the battlefield (mana-spent triggers may still
+            // be on the stack), so drop it on this entry instead; spell resolution stamps a fresh
+            // one through PermanentEntry, which doesn't come through here.
+            updated = updated.without<com.wingedsheep.engine.state.components.battlefield.CastRecordComponent>()
+
             // Track that this permanent entered the battlefield this turn
             updated = updated.with(EnteredThisTurnComponent)
 

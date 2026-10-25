@@ -81,12 +81,13 @@ object ManaSpentReader {
             return it.manaSpentWhite + it.manaSpentBlue + it.manaSpentBlack +
                 it.manaSpentRed + it.manaSpentGreen + it.manaSpentColorless
         }
-        container.get<CastRecordComponent>()?.let {
-            return it.whiteSpent + it.blueSpent + it.blackSpent +
-                it.redSpent + it.greenSpent + it.colorlessSpent
-        }
-        return 0
+        return container.get<CastRecordComponent>()?.let(::totalSpent) ?: 0
     }
+
+    /** [totalSpent] read off a frozen [snapshot] (a cast trigger's own payment record). */
+    fun totalSpent(snapshot: CastRecordComponent): Int =
+        snapshot.whiteSpent + snapshot.blueSpent + snapshot.blackSpent +
+            snapshot.redSpent + snapshot.greenSpent + snapshot.colorlessSpent
 
     /**
      * The number of distinct *colors* of mana spent to cast [entityId] (0–5). Colorless is not

@@ -15756,6 +15756,10 @@ forbids `DynamicAmount.X` in card definitions.
   `ContextProperty(ADDITIONAL_COST_BLIGHT_AMOUNT)`.)
 - `TotalManaSpent` — total mana paid from the pool to cast the current spell (sum of every per-color
   bucket; for X spells the X portion is included). E.g. Memory Deluge "where X is the mana spent."
+  Also readable from the permanent's own abilities after it resolves — e.g. Toph, Greatest Earthbender's
+  "When Toph enters, earthbend X, where X is the amount of mana spent to cast her" — via the cast
+  record stamped on the permanent (generic/colorless included). `0` for a permanent that entered
+  without being cast (blink, reanimation, put onto the battlefield) or was cast without paying mana.
 - `ManaSpentOnX(color)` — the amount of `{color}` mana spent on the `{X}` portion specifically, broken
   down by color. Used by payoffs that scale with how much of a color went into X — Soul Burn ("you gain
   life equal to the amount of black mana spent on X"). Pair with `xManaRestriction` (see below) so the X

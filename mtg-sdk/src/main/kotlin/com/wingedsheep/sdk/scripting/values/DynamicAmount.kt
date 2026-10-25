@@ -1007,6 +1007,9 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
      *  - `TotalManaSpent` is the full mana paid (e.g. 4 for `{X}{R}` Blaze with X=3).
      *
      * Used for effects like Memory Deluge: "where X is the amount of mana spent to cast this spell."
+     * A permanent's own abilities read it too, off the payment recorded when it resolved — Toph,
+     * Greatest Earthbender's "When Toph enters, earthbend X, where X is the amount of mana spent to
+     * cast her". `0` for a permanent that entered without being cast.
      */
     @SerialName("TotalManaSpent")
     @Serializable

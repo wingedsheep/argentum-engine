@@ -566,7 +566,8 @@ internal class PermanentEntry(
         container: ComponentContainer,
         spellComponent: SpellOnStackComponent
     ): ComponentContainer {
-        var updated = container
+        // A record from an earlier cast of this card must not outlive it (a free recast stamps none).
+        var updated = container.without<com.wingedsheep.engine.state.components.battlefield.CastRecordComponent>()
         // Record mana colors and provenance spent to cast (for mana-spent-gated triggers and
         // enters-the-battlefield "for each mana from a [subtype] spent to cast it" payoffs).
         if (spellComponent.manaSpentWhite > 0 || spellComponent.manaSpentBlue > 0 ||

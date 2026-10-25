@@ -328,7 +328,15 @@ class DynamicAmountEvaluator(
                 }
             }
 
-            is DynamicAmount.TotalManaSpent -> context.totalManaSpent
+            // A resolving spell carries its own total; any other reader (the permanent's own
+            // enters trigger, a cast trigger) falls back to the source's recorded payment, the
+            // same snapshot-then-entity read as ManaOfColorSpent below. Covers generic/colorless.
+            is DynamicAmount.TotalManaSpent -> context.totalManaSpent.takeIf { it > 0 }
+                ?: context.sourceId?.let { sourceId ->
+                    context.triggerContext?.takeIf { it.triggeringEntityId == sourceId }?.selfCastManaSpent
+                        ?.let { ManaSpentReader.totalSpent(it) }
+                        ?: ManaSpentReader.totalSpent(state, sourceId)
+                } ?: 0
 
             // Distinct colors of mana spent to cast the source (Converge / Sunburst). Read off
             // the source entity's recorded payment via the shared reader so it resolves at ETB
