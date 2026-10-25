@@ -882,23 +882,29 @@ class StateProjector {
             val continuousEffectComponent = container.get<ContinuousEffectSourceComponent>()
             if (continuousEffectComponent != null) {
                 val textReplacement = TextChanges.merge(globalText, container.get<TextReplacementComponent>())
-                effects.addAll(continuousEffectComponent.effects.map { effect ->
+                val sourceTimestamp = container.get<com.wingedsheep.engine.state.components.battlefield.TimestampComponent>()?.timestamp
+                    ?: state.timestamp
+                for (effect in continuousEffectComponent.effects) {
                     val effectiveFilter = if (textReplacement != null && effect.affectsFilter != null) {
                         effect.affectsFilter.applyTextReplacement(textReplacement)
                     } else {
                         effect.affectsFilter
                     }
-                    ContinuousEffect(
+                    val collected = ContinuousEffect(
                         sourceId = entityId,
-                        timestamp = container.get<com.wingedsheep.engine.state.components.battlefield.TimestampComponent>()?.timestamp
-                            ?: state.timestamp,
+                        timestamp = sourceTimestamp,
                         modification = effect.modification,
                         affectedEntities = filterResolver.resolveAffectedEntities(state, entityId, effectiveFilter, projectedValues),
                         sourceCondition = effect.sourceCondition,
                         affectsFilter = effectiveFilter,
                         groupId = effect.groupId
                     )
-                })
+                    effects.add(collected)
+                    val mod = effect.modification
+                    if (mod is Modification.GrantStaticAbility && mod.holderEffects.isNotEmpty()) {
+                        addGrantedHolderEffects(state, projectedValues, collected, mod.holderEffects, effects)
+                    }
+                }
             }
         }
 
@@ -1191,6 +1197,46 @@ class StateProjector {
         }
 
         return effects
+    }
+
+    /**
+     * A static grant of an ability that generates a continuous effect of its own — a Rune's
+     * Equipment has "Equipped creature gets +1/+1 and has trample". Each holder generates that
+     * effect as if the ability were printed on it: sourced from the holder (so the holder losing
+     * its abilities stops it), filters resolved relative to the holder, and timestamped at the later
+     * of the holder's and the granter's (CR 613.7a). [ContinuousEffect.grantedBy] stops it when the
+     * granter loses its abilities or the grant's own condition fails.
+     */
+    private fun addGrantedHolderEffects(
+        state: GameState,
+        projectedValues: Map<EntityId, MutableProjectedValues>,
+        grant: ContinuousEffect,
+        holderEffects: List<ContinuousEffectData>,
+        out: MutableList<ContinuousEffect>
+    ) {
+        for (holderId in grant.affectedEntities) {
+            if (!state.getBattlefield().contains(holderId)) continue
+            val holderTimestamp = state.getEntity(holderId)
+                ?.get<com.wingedsheep.engine.state.components.battlefield.TimestampComponent>()?.timestamp
+                ?: grant.timestamp
+            for (data in holderEffects) {
+                out.add(
+                    ContinuousEffect(
+                        sourceId = holderId,
+                        timestamp = maxOf(holderTimestamp, grant.timestamp),
+                        modification = data.modification,
+                        affectedEntities = filterResolver.resolveAffectedEntities(state, holderId, data.affectsFilter, projectedValues),
+                        sourceCondition = data.sourceCondition,
+                        affectsFilter = data.affectsFilter,
+                        // Namespaced by granter so it can't share a CR 613.6 lock with the holder's own groups.
+                        groupId = data.groupId?.let { "granted-${grant.sourceId.value}-$it" },
+                        abilityGainedAt = grant.timestamp,
+                        grantedBy = grant.sourceId,
+                        grantCondition = grant.sourceCondition
+                    )
+                )
+            }
+        }
     }
 
     /**

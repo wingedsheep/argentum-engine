@@ -272,7 +272,17 @@ data class ContinuousEffect(
      * Aura enchantment with enchant creature and 'Enchanted creature has flying,' and it loses all
      * other abilities". Null for printed statics, which any ability loss removes.
      */
-    val abilityGainedAt: Long? = null
+    val abilityGainedAt: Long? = null,
+    /**
+     * For an effect a permanent generates from a static ability another permanent's static grants
+     * it (a Rune's Equipment generating "Equipped creature gets +1/+1"), the granting permanent.
+     * The effect stops when the granter loses all abilities or [grantCondition] fails, because the
+     * holder then no longer has the ability (CR 611.3b). The holder's own ability loss is covered by
+     * [sourceId] being the holder. Null for every other effect.
+     */
+    val grantedBy: EntityId? = null,
+    /** The granting static's own condition ("as long as enchanted permanent is an Equipment"), read with [grantedBy] as source. */
+    val grantCondition: Condition? = null
 ) {
     val layer: Layer get() = modification.layer
     val sublayer: Sublayer? get() = modification.sublayer
@@ -553,9 +563,19 @@ sealed interface Modification {
     data class GrantKeyword(val keyword: String) : Modification {
         override val layer get() = Layer.ABILITY
     }
-    /** Carries point-of-use static abilities through ability gains and losses, preserving instances. */
+    /**
+     * Carries point-of-use static abilities through ability gains and losses, preserving instances.
+     *
+     * [holderEffects] is [ability] lowered, for a granted ability that is not read at a point of use
+     * but generates a continuous effect of its own (a Rune's "Equipped creature gets +1/+1"): the
+     * projector has each holder generate those effects ([StateProjector] step 1), gated on the
+     * granter through [ContinuousEffect.grantedBy]. Empty for a point-of-use ability.
+     */
     @Serializable
-    data class GrantStaticAbility(val ability: com.wingedsheep.sdk.scripting.StaticAbility) : Modification {
+    data class GrantStaticAbility(
+        val ability: com.wingedsheep.sdk.scripting.StaticAbility,
+        val holderEffects: List<ContinuousEffectData> = emptyList()
+    ) : Modification {
         override val layer get() = Layer.ABILITY
     }
     @Serializable

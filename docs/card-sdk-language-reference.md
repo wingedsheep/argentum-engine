@@ -10046,7 +10046,18 @@ staticAbility {
   read consults the holder's projected statics (`ProjectedState.getStaticAbilities`): today `NoMaximumHandSize`,
   `Enlist`, `GrantCantLoseGame` and `GrantOpponentsCantWinGame` (Cloudsteel Kirin: "Equipped creature has 'You
   can't lose the game and your opponents can't win the game'" is one `GrantStaticAbility` per clause over
-  `Filters.EquippedCreature`). To grant another kind this way, route its read through projection and mark it.
+  `Filters.EquippedCreature`). To grant another point-of-use kind this way, route its read through projection and
+  mark it. **A granted ability that lowers to a continuous effect** (`ModifyStats`, `GrantKeyword`, a
+  `CompositeStaticAbility` of them, …) is generated *by the holder* exactly as if printed on it — sourced from the
+  holder, its filters resolved relative to the holder, timestamped at the later of holder and granter (CR 613.7a),
+  and stopped when the holder loses its abilities, the granter loses its abilities, or the grant's own condition
+  fails. That is the Kaldheim Runes' second static: "As long as enchanted permanent is an Equipment, it has
+  'Equipped creature gets +1/+1 and has trample'" (Rune of Might) =
+  `ConditionalStaticAbility(GrantStaticAbility(CompositeStaticAbility(listOf(ModifyStats(1, 1), GrantKeyword(TRAMPLE)))),
+  Conditions.EnchantedPermanentMatches(GameObjectFilter.Artifact.withSubtype(Subtype.EQUIPMENT)))` — the default
+  attached scope makes the Equipment the holder, and the inner statics' default attached scope is then read from
+  the Equipment, reaching whichever creature it equips. Granting a kind that neither projects nor lowers fails
+  loudly when the granter's statics are lowered.
 - `GrantTriggeredAbility(ability, filter)` — "[filter] have '<triggered ability>'". On a battlefield-scoped
   `GroupFilter` it is the lord shape — Unctus, Grand Metatect's "Other blue creatures you control have 'Whenever
   this creature becomes tapped, draw a card, then discard a card'" is `GrantTriggeredAbility(<becomesTapped → loot>,

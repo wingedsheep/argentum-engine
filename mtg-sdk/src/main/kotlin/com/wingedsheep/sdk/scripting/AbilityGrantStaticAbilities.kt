@@ -47,9 +47,18 @@ data class GrantTriggeredAbility(
  * player-facing ability such as "You have no maximum hand size" then applies to the holder's
  * controller — the "you" of an ability belongs to whoever controls the object that has it.
  *
- * [ability] is typed [ProjectedStaticAbility]: only a kind whose engine read consults the
- * holder's projected static abilities can be granted this way, so a grant can't compile and then
- * silently do nothing.
+ * Two kinds of [ability] take effect, and the engine fails loudly on any other:
+ * - a [ProjectedStaticAbility], whose point-of-use read consults the holder's projected static
+ *   abilities ("You have no maximum hand size");
+ * - an ability that lowers to a continuous effect (`ModifyStats`, `GrantKeyword`, a
+ *   [CompositeStaticAbility] of them, ...). The holder then *generates* that effect exactly as if
+ *   it were printed on it: sourced from the holder, its filters resolved relative to the holder,
+ *   stopped when the holder loses its abilities, and also stopped when the granter does or the
+ *   grant's condition fails. A Rune's "As long as enchanted permanent is an Equipment, it has
+ *   'Equipped creature gets +1/+1 and has trample'" is
+ *   `ConditionalStaticAbility(GrantStaticAbility(CompositeStaticAbility(ModifyStats(1, 1),
+ *   GrantKeyword(TRAMPLE)), Filters.EnchantedPermanent), Conditions.EnchantedPermanentMatches(Equipment))`
+ *   — the inner statics' default attached-creature scope is read from the Equipment.
  *
  * @property ability The static ability to grant.
  * @property filter The permanents that gain the ability, relative to the granting permanent.
@@ -57,13 +66,13 @@ data class GrantTriggeredAbility(
 @SerialName("GrantStaticAbility")
 @Serializable
 data class GrantStaticAbility(
-    val ability: ProjectedStaticAbility,
+    val ability: StaticAbility,
     val filter: GroupFilter = GroupFilter.attachedCreature()
 ) : StaticAbility {
     override val description: String = "${filter.description} have \"${ability.description}\""
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
-        val newAbility = ability.applyTextReplacement(replacer) as ProjectedStaticAbility
+        val newAbility = ability.applyTextReplacement(replacer)
         return if (newFilter !== filter || newAbility !== ability) copy(filter = newFilter, ability = newAbility) else this
     }
 }

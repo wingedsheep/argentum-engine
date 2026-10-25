@@ -4702,6 +4702,166 @@
     ]
 }
 
+// Rune of Flight
+{
+    "name": "Rune of Flight",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant permanent\nWhen this Aura enters, draw a card.\nAs long as enchanted permanent is a creature, it has flying.\nAs long as enchanted permanent is an Equipment, it has \"Equipped creature has flying.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rune of Flight:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING"
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "creature"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantStaticAbility",
+                    "ability": {
+                        "type": "GrantKeyword",
+                        "keyword": "FLYING"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "artifact Equipment"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "permanent"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d5c1a271-2107-462a-9d4a-9c7fbcfa8d77.jpg?1783928257"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Rune of Might
+{
+    "name": "Rune of Might",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant permanent\nWhen this Aura enters, draw a card.\nAs long as enchanted permanent is a creature, it gets +1/+1 and has trample.\nAs long as enchanted permanent is an Equipment, it has \"Equipped creature gets +1/+1 and has trample.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rune of Might:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "CompositeStaticAbility",
+                    "abilities": [
+                        {
+                            "type": "ModifyStats",
+                            "powerBonus": 1,
+                            "toughnessBonus": 1
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "TRAMPLE"
+                        }
+                    ]
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "creature"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantStaticAbility",
+                    "ability": {
+                        "type": "CompositeStaticAbility",
+                        "abilities": [
+                            {
+                                "type": "ModifyStats",
+                                "powerBonus": 1,
+                                "toughnessBonus": 1
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE"
+                            }
+                        ]
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "artifact Equipment"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "permanent"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c0d507b-fc08-46cb-b092-484fa4adeef6.jpg?1783928205"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Sarulf's Packmate
 {
     "name": "Sarulf's Packmate",

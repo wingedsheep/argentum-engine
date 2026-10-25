@@ -78,6 +78,14 @@ internal class EffectApplicator(
             )
             if (!conditionEvaluator.evaluate(state, sourceCondition, ctx)) return
         }
+        val grantedBy = effect.grantedBy
+        if (grantedBy != null) {
+            val granterValues = projectedValues[grantedBy]
+            if (granterValues?.lostAllAbilities == true) return
+            val grantCondition = effect.grantCondition
+            if (grantCondition != null && !conditionEvaluator.evaluate(state, grantCondition,
+                    ConditionEvaluationContext.Projection(grantedBy, granterValues, projectedValues))) return
+        }
 
         for (entityId in effect.affectedEntities) {
             val values = projectedValues.getOrPut(entityId) { MutableProjectedValues() }

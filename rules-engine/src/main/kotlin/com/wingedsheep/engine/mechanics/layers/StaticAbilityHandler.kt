@@ -745,8 +745,22 @@ class StaticAbilityHandler(
                 modification = Modification.GrantStaticAbility(ability),
                 affectsFilter = AffectsFilter.Self,
             )
+            // A point-of-use ability is read off the holder's projected statics; any other kind
+            // must lower, and the holder generates its effects (StateProjector step 1).
             is com.wingedsheep.sdk.scripting.GrantStaticAbility -> ContinuousEffectData(
-                modification = Modification.GrantStaticAbility(ability.ability),
+                modification = Modification.GrantStaticAbility(
+                    ability.ability,
+                    holderEffects = if (ability.ability is com.wingedsheep.sdk.scripting.ProjectedStaticAbility) {
+                        emptyList()
+                    } else {
+                        lowerToContinuousEffectData(listOf(ability.ability)).also {
+                            check(it.isNotEmpty()) {
+                                "GrantStaticAbility grants '${ability.ability.description}', which is neither a " +
+                                    "ProjectedStaticAbility nor lowers to a continuous effect, so it would do nothing"
+                            }
+                        }
+                    }
+                ),
                 affectsFilter = convertGroupFilter(ability.filter),
             )
             is com.wingedsheep.sdk.scripting.CanAttackAsThoughHasty -> {

@@ -1885,7 +1885,7 @@ Families:
 - `GrantProtectionFromToGroup(scope: ProtectionScope, filter: GroupFilter)` — Grants each affected permanent "protection from scope" (CR 702.16) — the protection twin of GrantHexproofFromToGroup, for lords whose quality isn't a single color or card type.
 - `GrantProtectionToController(scope: ProtectionScope)` — You have protection from scope (CR 702.16).
 - `GrantShroudToController` — You have shroud.
-- `GrantStaticAbility(ability: ProjectedStaticAbility, filter: GroupFilter)` — Grants a static ability to a filtered set of permanents — "Enchanted creature has 'You have no maximum hand size'" (Nerd Rage).
+- `GrantStaticAbility(ability: StaticAbility, filter: GroupFilter)` — Grants a static ability to a filtered set of permanents — "Enchanted creature has 'You have no maximum hand size'" (Nerd Rage).
 - `GrantSubtype(subtype: String, filter: GroupFilter)` — Grants a creature subtype to a group of permanents.
 - `GrantSupertype(supertype: String, filter: GroupFilter)` — Grants a supertype (e.g., Legendary) to the target permanent.
 - `GrantTriggeredAbility(ability: TriggeredAbility, filter: GroupFilter)` — Grants a triggered ability to a filtered set of permanents.
