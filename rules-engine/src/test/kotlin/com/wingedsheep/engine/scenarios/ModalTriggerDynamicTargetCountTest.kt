@@ -107,7 +107,7 @@ class ModalTriggerDynamicTargetCountTest : ScenarioTestBase() {
             game.selectTargets(game.bears()).error shouldNotBe null
         }
 
-        test("X caps at the legal targets' count when it exceeds them") {
+        test("an X above the legal-target count still allows every legal target") {
             val game = castWithLands(5)
             val decision = game.getPendingDecision().shouldBeInstanceOf<ChooseTargetsDecision>()
             decision.targetRequirements.single().maxTargets shouldBe 5
