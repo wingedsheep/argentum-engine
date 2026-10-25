@@ -764,6 +764,13 @@ value class CounterType(val name: String) {
         val VOID = CounterType("VOID")
 
         /**
+         * Harmony counter (AFR — Instrument of the Bards). A passive tally with no inherent rule:
+         * its upkeep trigger may add one, and its search ability finds a creature card whose mana
+         * value equals their number.
+         */
+        val HARMONY = CounterType("HARMONY")
+
+        /**
          * Phyresis counter (DMU — Weatherlight Compleated). A passive tally with no inherent rule:
          * the card reads it as "four or more" (it's a Phyrexian creature) and "seven or more"
          * (draw instead of scry).
@@ -985,6 +992,7 @@ value class CounterType(val name: String) {
             BRICK,
             VITALITY,
             VOID,
+            HARMONY,
             PHYRESIS,
             MUSTER,
             BRAIN,

@@ -866,6 +866,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.VITALITY,
   // Sphere of Annihilation's void tally caps the mana value it exiles each upkeep.
   CounterType.VOID,
+  // Instrument of the Bards' harmony tally sets the mana value its search finds.
+  CounterType.HARMONY,
   // Weatherlight Compleated's phyresis tally: a Phyrexian creature at four, card draw at seven.
   CounterType.PHYRESIS,
   // Assemble the Legion's muster tally sets how many Soldiers it makes each upkeep.
