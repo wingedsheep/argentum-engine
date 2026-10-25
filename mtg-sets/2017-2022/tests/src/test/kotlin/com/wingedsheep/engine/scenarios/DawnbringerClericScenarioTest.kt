@@ -52,9 +52,8 @@ class DawnbringerClericScenarioTest : ScenarioTestBase() {
             val game = castCleric()
             val anthem = game.findPermanent("Glorious Anthem")!!
             game.chooseMode("Dispel Magic")
-            if (game.getPendingDecision() is ChooseTargetsDecision) {
-                game.selectTargets(listOf(anthem)).error shouldBe null
-            }
+            game.getPendingDecision().shouldBeInstanceOf<ChooseTargetsDecision>()
+            game.selectTargets(listOf(anthem)).error shouldBe null
             game.resolveStack()
 
             game.isInGraveyard(2, "Glorious Anthem") shouldBe true
@@ -64,9 +63,8 @@ class DawnbringerClericScenarioTest : ScenarioTestBase() {
             val game = castCleric()
             val bears = game.findCardsInGraveyard(2, "Grizzly Bears").single()
             game.chooseMode("Gentle Repose")
-            if (game.getPendingDecision() is ChooseTargetsDecision) {
-                game.selectTargets(listOf(bears)).error shouldBe null
-            }
+            game.getPendingDecision().shouldBeInstanceOf<ChooseTargetsDecision>()
+            game.selectTargets(listOf(bears)).error shouldBe null
             game.resolveStack()
 
             game.isInExile(2, "Grizzly Bears") shouldBe true
