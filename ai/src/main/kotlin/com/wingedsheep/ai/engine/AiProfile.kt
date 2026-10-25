@@ -1246,10 +1246,11 @@ data class AiProfile(
      * crack-back pricing — right in 1v1, where the game ends, wrong while another opponent lives.
      *
      * With this on and more than one opponent left, the lethal seed is shrunk to a minimal subset
-     * aimed at the dying seat ([CombatSeed.minimalLethal]): attackers are dropped greedily while
-     * [CombatMath.isLethalAttack] still holds, the best blockers for next turn first (able to block,
-     * no vigilance, not evasive against the dying seat, high toughness); mandatory attackers stay.
-     * 1v1 is untouched. Pinned by `MinimalLethalInPodsTest`.
+     * aimed at the dying seat ([CombatSeed.minimalLethal]): only attackers that would be home to
+     * block next turn (able to block, no vigilance) are dropped, non-evasive and high-toughness
+     * first, and only while the rest is still lethal with any one attacker answered — a removal
+     * spell or flash blocker must not save the dying seat (plain lethal when the full attack lacks
+     * that margin). Mandatory, vigilant and can't-block attackers stay. 1v1 is untouched. Pinned by `MinimalLethalInPodsTest`.
      */
     val minimalLethalInPods: Boolean = false,
     /** Non-null profiles may only be selected automatically for this set. Arena selection stays explicit. */

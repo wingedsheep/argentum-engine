@@ -239,11 +239,16 @@ object CombatSeed {
     /**
      * The fewest attackers out of [lethal] that still kill the dying seat through optimal blocking
      * ([CombatMath.isLethalAttack]), for a pod, where whatever attacks is not home for the next
-     * opponent's swing. [mandatory] attackers always stay in; the rest are dropped greedily while
-     * the attack stays lethal, the best blockers for next turn first: a creature that can block and
-     * would be tapped by attacking (no vigilance), not one of the evasive attackers that make the
-     * kill reliable, then by toughness and power. Non-mandatory attackers that cannot reach the
-     * dying seat are left out — they are not part of the kill.
+     * opponent's swing.
+     *
+     * Only an attacker that would actually be home to block is worth holding back: one that can
+     * block and would be tapped by attacking (no vigilance). Those are the drop candidates, the
+     * non-evasive ones first, then by toughness and power; every other attacker, and [mandatory]
+     * ones, stay in. A drop is kept only while the attack survives one piece of interaction — it
+     * is still lethal with any single attacker removed (a removal spell, a flash blocker) — so the
+     * trim never cuts the kill down to exact lethal. When the full attack does not even have that
+     * margin, the trim falls back to plain lethal, as before. Non-mandatory attackers that cannot
+     * reach the dying seat are left out — they are not part of the kill.
      */
     internal fun minimalLethal(
         state: GameState,
@@ -253,21 +258,28 @@ object CombatSeed {
         life: Int,
         mandatory: Set<EntityId>,
     ): List<EntityId> {
+        fun isLethal(attack: List<EntityId>) = CombatMath.isLethalAttack(state, projected, attack, blockers, life)
+        fun survivesOneAnswer(attack: List<EntityId>) =
+            attack.isNotEmpty() && attack.all { answered -> isLethal(attack - answered) }
+        val stillKills: (List<EntityId>) -> Boolean =
+            if (survivesOneAnswer(lethal)) ::survivesOneAnswer else ::isLethal
+
         val keep = lethal.toMutableList()
         val dropOrder = lethal
-            .filter { it !in mandatory }
+            .filter {
+                it !in mandatory && !projected.cantBlock(it) &&
+                    Keyword.VIGILANCE.name !in projected.getKeywords(it)
+            }
             .sortedWith(
-                compareBy<EntityId> { projected.cantBlock(it) }
-                    .thenBy { Keyword.VIGILANCE.name in projected.getKeywords(it) }
-                    .thenBy { CombatMath.isEvasive(state, projected, it, blockers) }
+                compareBy<EntityId> { CombatMath.isEvasive(state, projected, it, blockers) }
                     .thenByDescending { projected.getToughness(it) ?: 0 }
                     .thenByDescending { projected.getPower(it) ?: 0 }
             )
         for (attacker in dropOrder) {
             keep.remove(attacker)
-            if (!CombatMath.isLethalAttack(state, projected, keep, blockers, life)) keep.add(attacker)
+            if (!stillKills(keep)) keep.add(attacker)
         }
-        return (keep + mandatory.filter { it !in keep })
+        return keep + mandatory.filter { it !in keep }
     }
 
     /**

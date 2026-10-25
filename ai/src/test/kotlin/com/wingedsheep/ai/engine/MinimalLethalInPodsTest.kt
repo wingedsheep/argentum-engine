@@ -8,9 +8,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
-import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 
 /**
@@ -35,14 +33,21 @@ class MinimalLethalInPodsTest : FunSpec({
     fun GameTestDriver.readyAttacker(player: EntityId, name: String): EntityId =
         putCreatureOnBattlefield(player, name).also { removeSummoningSickness(it) }
 
-    class Board(val driver: GameTestDriver, val me: EntityId, val fliers: List<EntityId>, val ground: List<EntityId>)
+    class Board(
+        val driver: GameTestDriver,
+        val me: EntityId,
+        val fliers: List<EntityId>,
+        val ground: List<EntityId>,
+        val vigilant: List<EntityId>,
+    )
 
     /**
      * We have two Wind Drakes and four Hill Giants. The seat at 2 life has two Grizzly Bears (no
      * flying, no reach); in a pod, a third seat has four untapped Hill Giants — 12 power against
-     * our 8 life, lethal if we tap out and survivable with the Giants home.
+     * our 8 life, lethal if we tap out and survivable with the Giants home. [vigilantAttackers]
+     * Ardent Militias (2/5 vigilance) join our side.
      */
-    fun board(players: Int): Board {
+    fun board(players: Int, vigilantAttackers: Int = 0): Board {
         val driver = GameTestDriver()
         driver.registerCards(cards)
         val seats = driver.initMultiplayer(decks = List(players) { Deck.of("Plains" to 40) })
@@ -50,13 +55,14 @@ class MinimalLethalInPodsTest : FunSpec({
         val dying = seats[1]
         val fliers = List(2) { driver.readyAttacker(me, "Wind Drake") }
         val ground = List(4) { driver.readyAttacker(me, "Hill Giant") }
+        val vigilant = List(vigilantAttackers) { driver.readyAttacker(me, "Ardent Militia") }
         repeat(2) { driver.readyAttacker(dying, "Grizzly Bears") }
         driver.replaceState(driver.state.withLifeTotal(dying, 2).withLifeTotal(me, 8))
         if (players > 2) {
             repeat(4) { driver.readyAttacker(seats[2], "Hill Giant") }
         }
         driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
-        return Board(driver, me, fliers, ground)
+        return Board(driver, me, fliers, ground, vigilant)
     }
 
     fun Board.declare(advisor: CombatAdvisor): DeclareAttackers {
@@ -64,13 +70,21 @@ class MinimalLethalInPodsTest : FunSpec({
         return advisor.chooseAttackers(driver.state, action, me) as DeclareAttackers
     }
 
-    test("in a pod, a lethal attack sends one Drake and keeps the Giants home for the crack-back") {
+    test("in a pod, a lethal attack sends both Drakes (lethal with one to spare) and keeps the Giants home") {
         val board = board(players = 3)
         val plan = board.declare(advisor(minimalLethalInPods = true))
 
-        plan.attackers.size shouldBe 1
-        plan.attackers.keys.single() shouldBeIn board.fliers
-        board.ground.forEach { plan.attackers.keys shouldNotContain it }
+        // One Drake is exact lethal, which a single removal spell or flash blocker stops; the
+        // second is the margin. The Giants are the crack-back defence and stay home.
+        plan.attackers.keys shouldContainExactlyInAnyOrder board.fliers
+        board.driver.submitSuccess(plan)
+    }
+
+    test("in a pod, a vigilant attacker is never trimmed: attacking costs it nothing on defence") {
+        val board = board(players = 3, vigilantAttackers = 1)
+        val plan = board.declare(advisor(minimalLethalInPods = true))
+
+        plan.attackers.keys shouldContainExactlyInAnyOrder board.fliers + board.vigilant
         board.driver.submitSuccess(plan)
     }
 
