@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.SpellCostTarget
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 
 /**
  * Hunter's Mark — Adventures in the Forgotten Realms #188 (canonical printing)
@@ -22,7 +23,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * power to target creature or planeswalker you don't control.
  *
  * The discount is the Torch Breath shape: [SpellCostTarget.SelfCast] over
- * [CostReductionSource.FixedIfAnyTargetMatches] keyed on a blue permanent an opponent controls,
+ * [CostReductionSource.FixedIfAnyTargetMatches] keyed on a blue permanent you don't control,
  * so only the generic {3} comes off (the {G} stands) and mana value stays 4. The spell is the
  * Rabid Gnaw bite: the pump resolves first, so the damage reads the boosted power.
  */
@@ -39,7 +40,7 @@ val HuntersMark = card("Hunter's Mark") {
 
     spell {
         val myCreature = target(TargetFilter.CreatureYouControl)
-        val victim = target(TargetFilter(GameObjectFilter.CreatureOrPlaneswalker.opponentControls()))
+        val victim = target(TargetFilter(GameObjectFilter.CreatureOrPlaneswalker.withControllerPredicate(ControllerPredicate.Not(ControllerPredicate.ControlledByYou))))
         effect = Effects.ModifyStats(1, 1, myCreature) then
             Effects.DealDamage(
                 amount = DynamicAmounts.powerOf(myCreature),
@@ -54,7 +55,8 @@ val HuntersMark = card("Hunter's Mark") {
             modification = CostModification.ReduceGenericBy(
                 CostReductionSource.FixedIfAnyTargetMatches(
                     amount = 3,
-                    filter = GameObjectFilter.Permanent.withColor(Color.BLUE).opponentControls(),
+                    filter = GameObjectFilter.Permanent.withColor(Color.BLUE)
+                        .withControllerPredicate(ControllerPredicate.Not(ControllerPredicate.ControlledByYou)),
                 ),
             ),
         )

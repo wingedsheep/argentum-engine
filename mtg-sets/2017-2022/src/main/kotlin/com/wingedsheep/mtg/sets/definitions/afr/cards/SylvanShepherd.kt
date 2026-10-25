@@ -21,6 +21,7 @@ import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
  */
 val SylvanShepherd = card("Sylvan Shepherd") {
     manaCost = "{2}{G}"
+    colorIdentity = "G"
     typeLine = "Creature — Human Druid"
     power = 2
     toughness = 3

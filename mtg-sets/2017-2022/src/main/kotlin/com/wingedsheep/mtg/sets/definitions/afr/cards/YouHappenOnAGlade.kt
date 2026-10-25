@@ -32,7 +32,7 @@ val YouHappenOnAGlade = card("You Happen On a Glade") {
 
     spell {
         modal(chooseCount = 1) {
-            mode("Journey On — Search your library for up to two basic land cards and put them into your hand.") {
+            mode("Journey On — Search your library for up to two basic land cards, reveal them, put them into your hand, then shuffle.") {
                 effect = Patterns.Library.searchLibrary(
                     filter = GameObjectFilter.BasicLand,
                     count = 2,
