@@ -1800,6 +1800,12 @@ class DynamicAmountEvaluator(
                 ?.get<com.wingedsheep.engine.state.components.battlefield.AbilityResolutionCountThisTurnComponent>()
                 ?.count ?: 0
 
+            // Stamped once per attacker declaration and scoped to this turn and this object, so a
+            // permanent that changed zones is a new object that hasn't attacked (CR 400.7).
+            is EntityNumericProperty.TimesAttackedThisTurn -> state.getEntity(entityId)
+                ?.get<com.wingedsheep.engine.state.components.combat.TimesAttackedThisTurnComponent>()
+                ?.countFor(state.turnNumber, state.objectRef(entityId)) ?: 0
+
             is EntityNumericProperty.DamageDealtThisTurn -> state.getEntity(entityId)
                 ?.get<com.wingedsheep.engine.state.components.battlefield.DamageDealtThisTurnComponent>()
                 ?.takeIf { it.turnNumber == state.turnNumber && it.sourceObject == state.objectRef(entityId) }

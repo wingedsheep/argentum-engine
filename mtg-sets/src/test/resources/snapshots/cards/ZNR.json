@@ -1443,6 +1443,104 @@
     ]
 }
 
+// Moraug, Fury of Akoum
+{
+    "name": "Moraug, Fury of Akoum",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Legendary Creature — Minotaur Warrior",
+    "oracleText": "Each creature you control gets +1/+0 for each time it has attacked this turn.\nLandfall — Whenever a land you control enters, if it's your main phase, there's an additional combat phase after this phase. At the beginning of that combat, untap all creatures you control.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Moraug, Fury of Akoum:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCombatPhase",
+                    "atBeginningOfThatCombat": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "TapUntap",
+                            "target": "IterationEntity",
+                            "tap": false
+                        }
+                    }
+                },
+                "interveningIf": {
+                    "type": "IsInPhase",
+                    "phases": [
+                        "PRECOMBAT_MAIN",
+                        "POSTCOMBAT_MAIN"
+                    ]
+                },
+                "descriptionOverride": "Landfall — Whenever a land you control enters, if it's your main phase, there's an additional combat phase after this phase. At the beginning of that combat, untap all creatures you control."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "powerBonus": {
+                    "type": "EntityProperty",
+                    "entity": "AffectedEntity",
+                    "numericProperty": "TimesAttackedThisTurn"
+                },
+                "toughnessBonus": {
+                    "type": "Fixed",
+                    "amount": 0
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "rarity": "MYTHIC",
+        "artist": "Rudy Siswanto",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc5eacd7-aaa7-4720-9794-52e7b098c82c.jpg?1783929359",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Moraug's first ability checks each turn how many times each creature has attacked. It counts times that creature attacked before Moraug was on the battlefield, and it stops applying if Moraug leaves the battlefield."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Moraug's first ability counts how many times a creature has attacked, not how many times it has dealt damage. The first time a creature attacks in a turn, the +1/+0 bonus will apply to the combat damage it deals during that combat."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "A creature that enters the battlefield attacking hasn't attacked that combat. Moraug's ability won't count that combat. Unless that creature has haste, it won't be able to attack in additional combats this turn."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "There won't be an additional main phase after the additional combat phase. For example, if the landfall ability resolves twice during your postcombat main phase, you'll get two consecutive additional combat phases after your main phase (untapping your creatures at the beginning of each), followed by your ending phase."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If the landfall ability resolves during your precombat main phase, the additional combat phase will happen before your regular combat phase. You'll untap creatures you control at the beginning of the additional combat but not at the beginning of your regular combat."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Murasa Brute
 {
     "name": "Murasa Brute",

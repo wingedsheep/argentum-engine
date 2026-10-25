@@ -208,22 +208,40 @@ data class PlayAdditionalLandsEffect(
  * `GameObjectFilter.Creature and GameObjectFilter.Land`). The restriction is scoped to the added
  * phase alone — the natural combat phase and any other added phase are unaffected. `null` (the
  * default, and every prior caller) means the ordinary "any creature can attack" phase.
+ *
+ * [atBeginningOfThatCombat] is the "At the beginning of that combat, [effect]" rider (Moraug, Fury
+ * of Akoum: "…there's an additional combat phase after this phase. At the beginning of that combat,
+ * untap all creatures you control"). It is a delayed triggered ability (CR 603.7) created by this
+ * effect and linked to *this* inserted combat phase alone: it triggers as that phase's beginning of
+ * combat step begins — never at the natural combat phase or at another added one — so two
+ * resolutions queue two combats that each untap at their own start. If the added phase never
+ * happens (skipped, the turn ended) the rider never triggers. Its effect is baked like any delayed
+ * trigger's (context targets resolved at creation; "you" is this effect's controller). The nearest
+ * neighbour, `CreateDelayedTriggerEffect(step = BEGIN_COMBAT)`, fires at the *next* beginning of
+ * combat of any kind and cannot name one particular phase. `null` (the default) adds no rider.
  */
 @SerialName("AddCombatPhase")
 @Serializable
 data class AddCombatPhaseEffect(
-    val attackerRestriction: GameObjectFilter? = null
+    val attackerRestriction: GameObjectFilter? = null,
+    val atBeginningOfThatCombat: Effect? = null
 ) : Effect {
     override val description: String = buildString {
         append("After this phase, there is an additional combat phase")
         if (attackerRestriction != null) {
             append(". Only ${attackerRestriction.description} can attack during that combat phase")
         }
+        if (atBeginningOfThatCombat != null) {
+            append(". At the beginning of that combat, ${atBeginningOfThatCombat.description.replaceFirstChar { it.lowercase() }}")
+        }
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val replaced = attackerRestriction?.applyTextReplacement(replacer)
-        return if (replaced !== attackerRestriction) copy(attackerRestriction = replaced) else this
+        val replacedRider = atBeginningOfThatCombat?.applyTextReplacement(replacer)
+        return if (replaced !== attackerRestriction || replacedRider !== atBeginningOfThatCombat) {
+            copy(attackerRestriction = replaced, atBeginningOfThatCombat = replacedRider)
+        } else this
     }
 }
 

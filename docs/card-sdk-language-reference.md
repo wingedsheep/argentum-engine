@@ -4100,7 +4100,20 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   matched against projected state so animated lands read as the land *creatures* they are. Reused by
   Aang, Destined Savior and Bumi, King of Three Trials' sibling. (A Kotlin property and function can't
   share a name, so the unrestricted atom stays the `Effects.AddCombatPhase` value and the restricted
-  variant is this factory; both build the one `AddCombatPhaseEffect(attackerRestriction: GameObjectFilter?)`.)
+  variant is this factory; both build the one `AddCombatPhaseEffect(attackerRestriction, atBeginningOfThatCombat)`.)
+- `Effects.AddCombatPhaseWithBeginningTrigger(atBeginningOfThatCombat: Effect)` — the atomic extra
+  combat phase (combat only, no trailing main phase) plus an **"At the beginning of that combat,
+  [effect]"** rider — Moraug, Fury of Akoum: "there's an additional combat phase after this phase. At
+  the beginning of that combat, untap all creatures you control" ⇒
+  `AddCombatPhaseWithBeginningTrigger(Effects.ForEachInGroup(GroupFilter(Creature.youControl()), Effects.Untap(EffectTarget.IterationEntity)))`.
+  The rider is a delayed triggered ability (CR 603.7) linked to *that* added phase alone: it is baked
+  when the effect resolves (by the same path as `CreateDelayedTrigger`, so context targets freeze and
+  "you" is the effect's controller) and stored on the `QueuedPhase` (`beginningTrigger`) rather than in
+  `GameState.delayedTriggers`; `TurnManager` installs it as that phase begins, and that phase's
+  beginning of combat step fires and consumes it. So cast precombat the untap happens at the added
+  combat but not the natural one after it; two resolutions give two added combats that each untap at
+  their own start; a skipped added phase drops its rider unfired. `CreateDelayedTrigger(step =
+  BEGIN_COMBAT)` is the wrong tool here — it fires at the *next* beginning of combat of any kind.
 - `Effects.AddAdditionalUpkeepSteps(amount)` (`amount: DynamicAmount` or `Int`) — give the
   controller `amount` additional upkeep steps after the current phase (Obeka, Splitter of Seconds:
   "you get that many additional upkeep steps after this phase"). Per CR 500.10, each added upkeep
@@ -16238,6 +16251,16 @@ read is available to other snapshot-backed entity references once their captured
   zero. Turn changes make the value read zero and zone changes clear it. For “damage dealt this way”,
   store the value before the damage and subtract it afterward (Brightflame). The stored baseline and
   damage history survive resolution decisions, including optional damage redirection.
+- `EntityProperty(entity, EntityNumericProperty.TimesAttackedThisTurn)` — how many combat phases this
+  turn the creature was declared as an attacker in (CR 508.1): "for each time it has attacked this
+  turn". An attack in the natural combat and another in an added one count 2; removal from combat
+  doesn't undo one, and a creature put onto the battlefield attacking was never declared and counts
+  nothing. Backed by the per-creature `TimesAttackedThisTurnComponent`, stamped at declaration (before
+  attack triggers and the damage step, so a static fed it already pumps that combat's damage) and
+  scoped to the turn and the object's identity — a creature that changed zones is a new object at 0
+  (CR 400.7). Per affected creature in a lord — **Moraug, Fury of Akoum**:
+  `GrantDynamicStats(GroupFilter(Creature.youControl()), DynamicAmounts.propertyOf(EffectTarget.AffectedEntity, TimesAttackedThisTurn), DynamicAmounts.fixed(0))`.
+  The count-valued sibling of the `attackedThisTurn()` filter.
 - `EntityProperty(entity, EntityNumericProperty.KeywordValue(keyword))` — the total N across the entity's
   instances of a numeric keyword ("for each point of bushido it has"); instances add, so bushido 1 plus
   bushido 2 is 3. Reads the *printed* N, stamped on the entity at creation (`NumericKeywordValuesComponent`)

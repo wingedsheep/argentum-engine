@@ -1110,6 +1110,9 @@ class CleanupPhaseManager(
             if (container.has<AbilityResolutionCountThisTurnComponent>()) {
                 needsUpdate = true
             }
+            if (container.has<com.wingedsheep.engine.state.components.combat.TimesAttackedThisTurnComponent>()) {
+                needsUpdate = true
+            }
             if (container.has<TokenReplacementOfferedThisTurnComponent>()) {
                 needsUpdate = true
             }
@@ -1163,6 +1166,7 @@ class CleanupPhaseManager(
                         .without<TriggeredAbilityEffectAppliedThisTurnComponent>()
                         .without<com.wingedsheep.engine.state.components.battlefield.ChosenModesThisTurnComponent>()
                         .without<AbilityResolutionCountThisTurnComponent>()
+                        .without<com.wingedsheep.engine.state.components.combat.TimesAttackedThisTurnComponent>()
                         .without<TokenReplacementOfferedThisTurnComponent>()
                         .without<WasDealtDamageThisTurnComponent>()
                         .without<DamageUnpreventableThisTurnComponent>()

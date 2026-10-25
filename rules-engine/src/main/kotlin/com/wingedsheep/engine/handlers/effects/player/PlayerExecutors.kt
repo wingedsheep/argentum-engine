@@ -41,7 +41,9 @@ class PlayerExecutors(
         CollectEvidenceChosenAmountExecutor(predicateEvaluator = zones.predicateEvaluator),
         AddAdditionalUpkeepStepsExecutor(amountEvaluator = zones.predicateEvaluator.amounts),
         AddAdditionalEndStepsExecutor(amountEvaluator = zones.predicateEvaluator.amounts),
-        AddCombatPhaseExecutor(),
+        AddCombatPhaseExecutor(
+            com.wingedsheep.engine.handlers.effects.composite.CreateDelayedTriggerExecutor(zones.predicateEvaluator.amounts)
+        ),
         AddMainPhaseExecutor(),
         AddBeginningPhaseExecutor(),
         AnyPlayerMayPayExecutor(executeEffect = effectExecutor, predicateEvaluator = zones.predicateEvaluator),

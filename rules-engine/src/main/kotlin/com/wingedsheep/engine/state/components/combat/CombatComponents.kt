@@ -101,6 +101,30 @@ data class CombatPartnersThisTurnComponent(
 data object AttackedThisCombatComponent : Component
 
 /**
+ * How many combat phases this turn this creature has been declared as an attacker in (CR 508.1) —
+ * incremented once per declaration, so a creature that attacks in the natural combat and again in
+ * an added one reads 2. Unlike [AttackedThisCombatComponent] it survives the end of combat, and
+ * unlike the player-level `PlayerAttackersThisTurnComponent` set it is a count kept on the object
+ * itself, scoped like `DamageDealtThisTurnComponent` to a [turnNumber] and an object incarnation
+ * ([attackerObject]): a creature that changed zones is a new object that hasn't attacked
+ * (CR 400.7), and a stale tally from an earlier turn reads 0. It is also stripped when the creature
+ * leaves the battlefield and cleared at end-of-turn cleanup. A creature put onto the battlefield
+ * attacking was never declared and is never stamped. Backs
+ * [com.wingedsheep.sdk.scripting.values.EntityNumericProperty.TimesAttackedThisTurn]
+ * (Moraug, Fury of Akoum).
+ */
+@Serializable
+data class TimesAttackedThisTurnComponent(
+    val turnNumber: Int,
+    val count: Int,
+    val attackerObject: com.wingedsheep.engine.state.ObjectRef?
+) : Component {
+    /** This tally's count if it still describes [current] on [turn], else 0. */
+    fun countFor(turn: Int, current: com.wingedsheep.engine.state.ObjectRef?): Int =
+        if (turnNumber == turn && attackerObject == current) count else 0
+}
+
+/**
  * Marks a creature that was declared as a blocker at least once during the current combat
  * (CR 509.1). Stamped at blocker-declaration time and cleared when the combat phase ends. Survives
  * the blocked attacker dying (which clears the live `BlockingComponent`), so an end-of-combat

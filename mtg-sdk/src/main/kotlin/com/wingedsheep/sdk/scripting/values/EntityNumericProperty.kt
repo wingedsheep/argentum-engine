@@ -42,6 +42,23 @@ sealed interface EntityNumericProperty {
     }
 
     /**
+     * How many times this creature has been declared as an attacker this turn (CR 508.1) — "gets
+     * +1/+0 for each time it has attacked this turn" (Moraug, Fury of Akoum). Each combat phase it
+     * is declared in counts once, so a creature that attacks in the natural combat and in an added
+     * one has attacked twice; being removed from combat afterwards doesn't undo it, and a creature
+     * put onto the battlefield attacking was never declared and doesn't count. Turn-scoped and kept
+     * per permanent object: a zone change starts a new object at zero (CR 400.7). The count-valued
+     * sibling of the `StatePredicate.AttackedThisTurn` filter; the attack is stamped as it is
+     * declared, before any trigger or the damage step of that combat, so a layer-7 static fed this
+     * amount already counts the combat in progress.
+     */
+    @SerialName("TimesAttackedThisTurn")
+    @Serializable
+    data object TimesAttackedThisTurn : EntityNumericProperty {
+        override val description: String = "the number of times it has attacked this turn"
+    }
+
+    /**
      * Paid enlist instances for this rules object during the current combat. Unlike
      * [DamageDealtThisTurn], this is combat-scoped and records optional attack costs rather than
      * damage; [PermanentsSacrificedToCast] records spell costs, not a permanent's attack costs.

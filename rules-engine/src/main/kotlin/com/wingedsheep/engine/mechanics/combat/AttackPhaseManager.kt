@@ -381,6 +381,16 @@ internal class AttackPhaseManager(
             newState = newState.updateEntity(attackerId) { container ->
                 container.with(AttackingComponent(defenderId, bandIdByAttacker[attackerId], defendingPlayerId = CombatDefenders.defendingPlayerOf(newState, defenderId)))
                     .with(AttackedThisCombatComponent)
+                    .with(
+                        newState.objectRef(attackerId).let { current ->
+                            com.wingedsheep.engine.state.components.combat.TimesAttackedThisTurnComponent(
+                                turnNumber = newState.turnNumber,
+                                count = (container.get<com.wingedsheep.engine.state.components.combat.TimesAttackedThisTurnComponent>()
+                                    ?.countFor(newState.turnNumber, current) ?: 0) + 1,
+                                attackerObject = current
+                            )
+                        }
+                    )
             }
             newState = AttackedPermanents.markAttacked(newState, defenderId)
         }

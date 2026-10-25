@@ -3,6 +3,10 @@ package com.wingedsheep.engine.handlers.effects.player
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.event.DelayedTriggeredAbility
+import com.wingedsheep.engine.handlers.effects.composite.CreateDelayedTriggerExecutor
+import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.AdditionalPhasesComponent
 import com.wingedsheep.engine.state.components.player.ExtraPhaseKind
@@ -27,10 +31,14 @@ internal fun GameState.queueAdditionalPhase(
     player: EntityId,
     kind: ExtraPhaseKind,
     context: EffectContext,
-    attackerRestriction: GameObjectFilter? = null
+    attackerRestriction: GameObjectFilter? = null,
+    beginningTrigger: DelayedTriggeredAbility? = null
 ): GameState {
     val existing = getEntity(player)?.get<AdditionalPhasesComponent>()?.phases.orEmpty()
-    val entry = QueuedPhase(kind, attackerRestriction, createdBy = context.sourceId, createdAt = timestamp)
+    val entry = QueuedPhase(
+        kind, attackerRestriction, createdBy = context.sourceId, createdAt = timestamp,
+        beginningTrigger = beginningTrigger
+    )
     val insertAt = existing.indexOfFirst { !it.sameCreationAs(entry) }.let { if (it < 0) existing.size else it }
     val newPhases = existing.take(insertAt) + entry + existing.drop(insertAt)
     return updateEntity(player) { it.with(AdditionalPhasesComponent(newPhases)) }
@@ -41,8 +49,15 @@ internal fun GameState.queueAdditionalPhase(
  *
  * Queues a single COMBAT phase on the active player; it is inserted directly after the current phase
  * and is NOT followed by an extra main phase (that requires composing with [AddMainPhaseEffect]).
+ *
+ * An [AddCombatPhaseEffect.atBeginningOfThatCombat] rider is built as a delayed trigger
+ * (CR 603.7) by [CreateDelayedTriggerExecutor] — so its effect is baked exactly like any other
+ * delayed trigger's — but stored on the queued phase instead of the global delayed-trigger list.
+ * The TurnManager installs it as that phase begins, which links it to that combat alone.
  */
-class AddCombatPhaseExecutor : EffectExecutor<AddCombatPhaseEffect> {
+class AddCombatPhaseExecutor(
+    private val delayedTriggers: CreateDelayedTriggerExecutor
+) : EffectExecutor<AddCombatPhaseEffect> {
 
     override val effectType: KClass<AddCombatPhaseEffect> = AddCombatPhaseEffect::class
 
@@ -53,6 +68,21 @@ class AddCombatPhaseExecutor : EffectExecutor<AddCombatPhaseEffect> {
     ): EffectResult {
         val activePlayer = state.activePlayerId
             ?: return EffectResult.error(state, "No active player for AddCombatPhaseEffect")
+        val rider = effect.atBeginningOfThatCombat
+            ?: return EffectResult.success(
+                state.queueAdditionalPhase(activePlayer, ExtraPhaseKind.COMBAT, context, effect.attackerRestriction)
+            )
+        var queued = false
+        val result = delayedTriggers.schedule(
+            state,
+            CreateDelayedTriggerEffect(step = Step.BEGIN_COMBAT, effect = rider),
+            context
+        ) { s, trigger ->
+            queued = true
+            s.queueAdditionalPhase(activePlayer, ExtraPhaseKind.COMBAT, context, effect.attackerRestriction, trigger)
+        }
+        if (queued || result.error != null) return result
+        // The rider scheduled nothing (it watched an object that wasn't there): the phase is still added.
         return EffectResult.success(
             state.queueAdditionalPhase(activePlayer, ExtraPhaseKind.COMBAT, context, effect.attackerRestriction)
         )

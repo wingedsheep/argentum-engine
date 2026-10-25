@@ -6566,6 +6566,16 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.AddCombatPhaseEffect(attackerRestriction)
 
     /**
+     * Insert a single additional combat phase (combat only, no trailing main phase) carrying an
+     * "At the beginning of that combat, [atBeginningOfThatCombat]" rider — a delayed trigger linked
+     * to exactly this added phase (Moraug, Fury of Akoum: "there's an additional combat phase after
+     * this phase. At the beginning of that combat, untap all creatures you control"). The rider
+     * never fires at the natural combat phase or another added one. CR 500.8 / 603.7.
+     */
+    fun AddCombatPhaseWithBeginningTrigger(atBeginningOfThatCombat: Effect): Effect =
+        com.wingedsheep.sdk.scripting.effects.AddCombatPhaseEffect(atBeginningOfThatCombat = atBeginningOfThatCombat)
+
+    /**
      * Insert a single additional (postcombat) main phase. The atomic counterpart to [AddCombatPhase];
      * `AddCombatPhase then AddMainPhase` reproduces "an additional combat phase
      * followed by an additional main phase" (Aggravated Assault, All-Out Assault). CR 500.8 / 505.1a.

@@ -702,7 +702,7 @@ Families:
 - `AddCardTypeEffect(cardType: String, target: EffectTarget, duration: Duration)` — Add a card type to a target permanent.
 - `AddColorEffect(colors: Set<String>, target: EffectTarget, duration: Duration)` — Add one or more colors to a single target, in addition to its existing colors.
 - `AddColorlessManaEffect(amount: DynamicAmount, restriction: ManaRestriction?, riders: Set<ManaSpellRider>, expiry: ManaExpiry)` — Add colorless mana effect.
-- `AddCombatPhaseEffect(attackerRestriction: GameObjectFilter?)` — Insert a single additional combat phase into the current turn — and *only* a combat phase, with no trailing main phase (Aurelia, the Warleader / Combat Celebrant / Fear of Missing Out: "After this…
+- `AddCombatPhaseEffect(attackerRestriction: GameObjectFilter?, atBeginningOfThatCombat: Effect?)` — Insert a single additional combat phase into the current turn — and *only* a combat phase, with no trailing main phase (Aurelia, the Warleader / Combat Celebrant / Fear of Missing Out: "After this…
 - `AddCountersEffect(counterType: CounterType, count: Int, target: EffectTarget)` — Add counters effect.
 - `AddCountersOfChosenKindEffect(target: EffectTarget, count: Int, kindFrom: CounterKindSource)` — "Choose a kind of counter on target.
 - `AddCountersToCollectionEffect(collectionName: String, counterType: CounterType, count: Int, amount: DynamicAmount?)` — Add counters to all entities in a named collection.
@@ -1152,6 +1152,7 @@ Families:
 - `EntityNumericProperty.PermanentsSacrificedToCast` — The number of permanents sacrificed to pay the costs of casting a spell on the stack — the snapshots recorded on its `SpellOnStackComponent` as the cost was paid.
 - `EntityNumericProperty.Power`
 - `EntityNumericProperty.SubtypeCount` — The number of distinct subtypes this entity has, read from projected state when available (so layer-4 type-changing effects, including Changeling, are honored).
+- `EntityNumericProperty.TimesAttackedThisTurn` — How many times this creature has been declared as an attacker this turn (CR 508.1) — "gets +1/+0 for each time it has attacked this turn" (Moraug, Fury of Akoum).
 - `EntityNumericProperty.Toughness`
 - `EntityNumericProperty.ValueChosenAsEntered` — The number the entity's controller chose as it entered the battlefield — Nameless Race's "the life paid as it entered", read back by its characteristic-defining power and toughness.
 

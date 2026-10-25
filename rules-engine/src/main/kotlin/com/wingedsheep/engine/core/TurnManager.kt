@@ -402,6 +402,10 @@ class TurnManager(
             }
 
             if (next.kind == ExtraPhaseKind.COMBAT) {
+                // "At the beginning of that combat, …" (Moraug): the rider joins the delayed
+                // triggers only now, so the beginning-of-combat step this redirect starts is the
+                // one that fires and consumes it — never the natural combat or another added one.
+                next.beginningTrigger?.let { redirectedState = redirectedState.addDelayedTrigger(it) }
                 redirectedState = engageScheduledCombatHijacks(redirectedState, activePlayer, events)
             }
             if (next.kind == ExtraPhaseKind.BEGINNING) {

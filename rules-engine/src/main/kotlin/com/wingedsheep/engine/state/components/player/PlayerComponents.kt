@@ -556,13 +556,19 @@ enum class ExtraPhaseKind {
  *   timestamp it resolved at. Together they identify one *creation*: CR 500.8 runs the most recently
  *   created phase first, while phases one effect creates together ("an additional combat phase
  *   followed by an additional main phase") keep the order that effect gave them.
+ * @param beginningTrigger For a COMBAT entry, the "At the beginning of that combat, …" delayed
+ *   trigger (Moraug, Fury of Akoum), already baked by its creating effect. It rides on the entry
+ *   rather than in [com.wingedsheep.engine.state.GameState.delayedTriggers] so it can only ever fire
+ *   at *this* phase: the TurnManager installs it as the phase begins, and the beginning-of-combat
+ *   step that follows fires and consumes it. A skipped phase drops it with the entry.
  */
 @Serializable
 data class QueuedPhase(
     val kind: ExtraPhaseKind,
     val attackerRestriction: GameObjectFilter? = null,
     val createdBy: EntityId? = null,
-    val createdAt: Long = 0
+    val createdAt: Long = 0,
+    val beginningTrigger: com.wingedsheep.engine.event.DelayedTriggeredAbility? = null
 ) {
     fun sameCreationAs(other: QueuedPhase): Boolean =
         createdBy == other.createdBy && createdAt == other.createdAt

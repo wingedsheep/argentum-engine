@@ -67,6 +67,19 @@ class CreateDelayedTriggerExecutor(
         state: GameState,
         effect: CreateDelayedTriggerEffect,
         context: EffectContext
+    ): EffectResult = schedule(state, effect, context) { s, trigger -> s.addDelayedTrigger(trigger) }
+
+    /**
+     * Build the delayed trigger [effect] describes — every context reference baked — and hand it to
+     * [install] instead of always adding it to [GameState.delayedTriggers]. The default [execute]
+     * installs it there; an effect that must hold the trigger back until a particular moment (an
+     * added combat phase's "at the beginning of that combat" rider) stores it elsewhere.
+     */
+    fun schedule(
+        state: GameState,
+        effect: CreateDelayedTriggerEffect,
+        context: EffectContext,
+        install: (GameState, DelayedTriggeredAbility) -> GameState
     ): EffectResult {
         val sourceId = context.sourceId
             ?: return EffectResult.error(state, "CreateDelayedTrigger requires a source ID")
@@ -230,7 +243,7 @@ class CreateDelayedTriggerExecutor(
             }
         )
 
-        return EffectResult.success(stateWithRoutingId.addDelayedTrigger(delayedTrigger))
+        return EffectResult.success(install(stateWithRoutingId, delayedTrigger))
     }
 
     /**
