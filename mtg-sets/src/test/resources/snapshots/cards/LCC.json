@@ -1,0 +1,38 @@
+// Chimil, the Inner Sun
+{
+    "name": "Chimil, the Inner Sun",
+    "manaCost": "{6}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "Spells you control can't be countered.\nAt the beginning of your end step, discover 5.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Chimil, the Inner Sun:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Discover",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantCantBeCountered",
+                "filter": "ctrl:you"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "MYTHIC",
+        "artist": "Gaboleps",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/f/cfb49910-30fe-483e-b3b8-6268417f013c.jpg"
+    }
+}

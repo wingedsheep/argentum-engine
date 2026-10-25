@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.lci.cards
+package com.wingedsheep.mtg.sets.definitions.lcc.cards
 
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
@@ -31,8 +31,8 @@ val ChimilTheInnerSun = card("Chimil, the Inner Sun") {
 
     metadata {
         rarity = Rarity.MYTHIC
-        collectorNumber = "249"
-        artist = "Adam Paquette"
-        imageUri = "https://cards.scryfall.io/normal/front/2/7/27a1bfb5-ddfc-49cf-baa3-5d1958d2067a.jpg?1782694413"
+        collectorNumber = "106"
+        artist = "Gaboleps"
+        imageUri = "https://cards.scryfall.io/normal/front/c/f/cfb49910-30fe-483e-b3b8-6268417f013c.jpg"
     }
 }

@@ -3444,45 +3444,6 @@
     ]
 }
 
-// Chimil, the Inner Sun
-{
-    "name": "Chimil, the Inner Sun",
-    "manaCost": "{6}",
-    "typeLine": "Legendary Artifact",
-    "oracleText": "Spells you control can't be countered.\nAt the beginning of your end step, discover 5.",
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Chimil, the Inner Sun:1",
-                "trigger": {
-                    "type": "StepEvent",
-                    "step": "END"
-                },
-                "binding": "ANY",
-                "effect": {
-                    "type": "Discover",
-                    "amount": {
-                        "type": "Fixed",
-                        "amount": 5
-                    }
-                }
-            }
-        ],
-        "staticAbilities": [
-            {
-                "type": "GrantCantBeCountered",
-                "filter": "ctrl:you"
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "249",
-        "rarity": "MYTHIC",
-        "artist": "Adam Paquette",
-        "imageUri": "https://cards.scryfall.io/normal/front/2/7/27a1bfb5-ddfc-49cf-baa3-5d1958d2067a.jpg?1782694413"
-    }
-}
-
 // Chupacabra Echo
 {
     "name": "Chupacabra Echo",
