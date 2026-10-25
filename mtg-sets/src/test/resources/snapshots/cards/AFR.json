@@ -6590,7 +6590,21 @@
             {
                 "type": "TargetObject",
                 "filter": {
-                    "baseFilter": "creature|planeswalker ctrl:opponent"
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsCreature",
+                                    "IsPlaneswalker"
+                                ]
+                            }
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
                 },
                 "id": "t1"
             }
@@ -6604,7 +6618,19 @@
                     "source": {
                         "type": "FixedIfAnyTargetMatches",
                         "amount": 3,
-                        "filter": "permanent blue ctrl:opponent"
+                        "filter": {
+                            "cardPredicates": [
+                                "IsPermanent",
+                                {
+                                    "type": "HasColor",
+                                    "color": "BLUE"
+                                }
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControllerNot",
+                                "predicate": "ControlledByYou"
+                            }
+                        }
                     }
                 }
             }
@@ -10206,7 +10232,10 @@
         "collectorNumber": "206",
         "artist": "Darrell Riche",
         "imageUri": "https://cards.scryfall.io/normal/front/c/7/c7d608fb-35b0-498e-988a-f53986b59dd2.jpg?1783926455"
-    }
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // The Book of Vile Darkness
@@ -11495,7 +11524,7 @@
                             "EmitLibrarySearchedEvent"
                         ]
                     },
-                    "description": "Journey On — Search your library for up to two basic land cards and put them into your hand."
+                    "description": "Journey On — Search your library for up to two basic land cards, reveal them, put them into your hand, then shuffle."
                 },
                 {
                     "effect": {
