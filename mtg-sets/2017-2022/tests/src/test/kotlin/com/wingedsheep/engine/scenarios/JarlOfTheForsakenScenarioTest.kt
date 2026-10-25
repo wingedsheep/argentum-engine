@@ -53,6 +53,10 @@ class JarlOfTheForsakenScenarioTest : ScenarioTestBase() {
             game.castSpell(1, "Jarl of the Forsaken").error shouldBe null
             game.resolveStack()
 
+            withClue("no target prompt: the undamaged Giant is not offered") {
+                game.hasPendingDecision() shouldBe false
+            }
+            game.state.stack.isEmpty() shouldBe true
             game.isOnBattlefield("Hill Giant") shouldBe true
             game.isOnBattlefield("Jarl of the Forsaken") shouldBe true
         }
