@@ -14,14 +14,20 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 import com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender
+import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.assertions.throwables.shouldThrow
@@ -113,6 +119,22 @@ class EnteringAttackDefenderChoiceTest : FunSpec({
         }
     }
 
+    // "Put up to two creature cards from your hand onto the battlefield tapped and attacking" —
+    // the card-moving counterpart (Minion of the Mighty's shape).
+    val summoningCaptain = card("Test Summoning Captain") {
+        manaCost = "{2}{R}"
+        typeLine = "Creature — Human Soldier"
+        power = 2
+        toughness = 2
+        triggeredAbility {
+            trigger = Triggers.self.attacks()
+            effect = Patterns.Hand.putFromHand(
+                filter = GameObjectFilter.Creature, count = 2, entersAttacking = true,
+                attackDefender = EnteringAttackDefender.CONTROLLER_CHOOSES,
+            )
+        }
+    }
+
     val walker = card("Test Defending Walker") {
         manaCost = "{3}"
         typeLine = "Legendary Planeswalker — Test"
@@ -129,7 +151,7 @@ class EnteringAttackDefenderChoiceTest : FunSpec({
 
     fun newDriver(): GameTestDriver {
         val d = GameTestDriver()
-        d.registerCards(TestCards.all + listOf(captain, legacyCaptain, copyingCaptain, rallyingCathar, walker, bulwark))
+        d.registerCards(TestCards.all + listOf(captain, legacyCaptain, copyingCaptain, rallyingCathar, summoningCaptain, walker, bulwark))
         d.initMirrorMatch(deck = Deck.of("Forest" to 40), skipMulligans = true, startingPlayer = 0)
         d.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return d
@@ -446,5 +468,59 @@ class EnteringAttackDefenderChoiceTest : FunSpec({
         val tokens = d.soldierTokens()
         tokens shouldHaveSize 2
         tokens.forEach { d.attackedBy(it) shouldBe null }
+    }
+
+    // ---- Cards put onto the battlefield attacking (MoveCollectionEffect) ----
+
+    fun GameTestDriver.summonFromHand(vararg names: String): List<EntityId> {
+        val cards = names.map { putCardInHand(player1, it) }
+        attackWith(ready("Test Summoning Captain"))
+        submitCardSelection(player1, cards).error shouldBe null
+        return cards
+    }
+
+    test("cards from hand: one choice per card before any card moves, each attacking its own defender") {
+        val d = newDriver()
+        val theirWalker = d.walkerFor(d.player2)
+        val (bears, courser) = d.summonFromHand("Grizzly Bears", "Centaur Courser")
+
+        val first = d.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+        first.legalTargets[0]!! shouldContainExactly listOf(d.player2, theirWalker)
+        withClue("chosen as it enters: both cards are still in hand") {
+            d.state.getHand(d.player1).containsAll(listOf(bears, courser)) shouldBe true
+        }
+        d.submitTargetSelection(d.player1, listOf(theirWalker)).error shouldBe null
+        d.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+        d.submitTargetSelection(d.player1, listOf(d.player2)).error shouldBe null
+
+        d.pendingDecision shouldBe null
+        d.attackedBy(bears) shouldBe theirWalker
+        d.attackedBy(courser) shouldBe d.player2
+        d.state.getEntity(bears)!!.get<AttackingComponent>()!!.defendingPlayerId shouldBe d.player2
+        d.state.getEntity(bears)!!.has<TappedComponent>() shouldBe true
+        d.state.getEntity(theirWalker)!!.has<BeingAttackedComponent>() shouldBe true
+    }
+
+    test("cards from hand with only the defending player legal: no question") {
+        val d = newDriver()
+        val (bears) = d.summonFromHand("Grizzly Bears")
+
+        d.pendingDecision shouldBe null
+        d.attackedBy(bears) shouldBe d.player2
+    }
+
+    test("a card move takes no returned attacker, and a defender choice needs tapped and attacking") {
+        shouldThrow<IllegalArgumentException> {
+            MoveCollectionEffect(
+                from = "x", destination = CardDestination.ToZone(Zone.BATTLEFIELD, placement = ZonePlacement.TappedAndAttacking),
+                attackDefender = EnteringAttackDefender.RETURNED_ATTACKER,
+            )
+        }
+        shouldThrow<IllegalArgumentException> {
+            MoveCollectionEffect(
+                from = "x", destination = CardDestination.ToZone(Zone.BATTLEFIELD),
+                attackDefender = EnteringAttackDefender.CONTROLLER_CHOOSES,
+            )
+        }
     }
 })

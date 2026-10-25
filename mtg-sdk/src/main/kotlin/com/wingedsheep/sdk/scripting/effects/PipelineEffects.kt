@@ -1471,8 +1471,26 @@ data class MoveCollectionEffect(
      * behind instead (Mantle of the Ancients). Other cards move normally. Null (the default) leaves
      * each Aura's host to the player's choice.
      */
-    val attachTo: EffectTarget? = null
+    val attachTo: EffectTarget? = null,
+    /**
+     * What each card put onto the battlefield [ZonePlacement.TappedAndAttacking] attacks. The
+     * default, [EnteringAttackDefender.JOIN_SOURCE], joins a defending player already in this
+     * combat; [EnteringAttackDefender.CONTROLLER_CHOOSES] is a bare "tapped and attacking" as
+     * printed (CR 508.4) — the controller picks a defending player, a planeswalker one controls or
+     * a battle one protects for each card, before any of them moves (Minion of the Mighty).
+     */
+    val attackDefender: EnteringAttackDefender = EnteringAttackDefender.JOIN_SOURCE
 ) : Effect {
+    init {
+        require(attackDefender != EnteringAttackDefender.RETURNED_ATTACKER) {
+            "MoveCollectionEffect has no returned attacker; use JOIN_SOURCE or CONTROLLER_CHOOSES"
+        }
+        require(
+            attackDefender == EnteringAttackDefender.JOIN_SOURCE ||
+                (destination as? CardDestination.ToZone)?.placement == ZonePlacement.TappedAndAttacking
+        ) { "attackDefender needs a ToZone destination with placement = TappedAndAttacking" }
+    }
+
     override val description: String = buildString {
         val discardingPlayer = (destination as? CardDestination.ToZone)
             ?.takeIf { moveType == MoveType.Discard && it.zone == Zone.GRAVEYARD && !revealed }?.player

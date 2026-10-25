@@ -9,12 +9,16 @@ import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.handlers.effects.permanent.attachments.AttachmentMover
+import com.wingedsheep.engine.handlers.effects.token.EnteringAttackDefenderChooser
+import com.wingedsheep.engine.mechanics.combat.AttackedPermanents
+import com.wingedsheep.engine.mechanics.combat.CombatDefenders
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -26,6 +30,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
+import com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender
 import com.wingedsheep.sdk.scripting.effects.FaceDownMode
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.engine.state.components.stack.captureEntitySnapshots
@@ -137,6 +142,21 @@ class MoveCollectionExecutor(
             )?.let { return it }
         }
 
+        // CR 508.4: a bare "tapped and attacking" lets the controller choose each card's defender.
+        // Every answer is collected before anything moves, like attacking tokens.
+        var chosenDefenders: List<EntityId?>? = null
+        if (effect.attackDefender == EnteringAttackDefender.CONTROLLER_CHOOSES &&
+            destination is CardDestination.ToZone && destination.zone == Zone.BATTLEFIELD
+        ) {
+            val attackController = resolvePlayer(destination.player, context, state) ?: context.controllerId
+            chosenDefenders = EnteringAttackDefenderChooser.defenders(state, context, attackController, cards.size)
+                ?: return EnteringAttackDefenderChooser.pause(
+                    state, effect, context, attackController, count = 1,
+                    tokenName = state.getEntity(cards[context.entryAttackDefenders.size])
+                        ?.get<CardComponent>()?.name ?: "that card",
+                )
+        }
+
         val attachTo = effect.attachTo
         if (attachTo != null && destination is CardDestination.ToZone && destination.zone == Zone.BATTLEFIELD) {
             return withDepartedPermanents(state, moveAttachmentsAttachedTo(state, context, cards, destination, attachTo, effect), cards)
@@ -155,6 +175,9 @@ class MoveCollectionExecutor(
             val (trackedState, milledEvent) = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
                 .trackMill(result.state, result.events, milledCandidates)
             if (milledEvent != null) result = result.copy(state = trackedState, events = result.events + milledEvent)
+        }
+        if (chosenDefenders != null && result.outcome is Outcome.Done) {
+            result = result.copy(state = settleChosenDefenders(result.state, cards, chosenDefenders))
         }
         val arrivedCards = (cards + result.events.filterIsInstance<ZoneChangeEvent>()
             .filter { it.meldedPermanent?.entityId in cards }.map { it.entityId }).distinct()
@@ -200,6 +223,30 @@ class MoveCollectionExecutor(
             result = markEnteredViaSourceAbility(result, context, cards)
         }
         return withDepartedPermanents(state, result, cards)
+    }
+
+    /**
+     * Point each card that entered attacking at the defender its controller chose for it (CR 508.4).
+     * A card with no legal defender, or that isn't a creature on the battlefield, isn't attacking
+     * (CR 506.3b–c).
+     */
+    private fun settleChosenDefenders(state: GameState, cards: List<EntityId>, defenders: List<EntityId?>): GameState {
+        var newState = state
+        for ((index, cardId) in cards.withIndex()) {
+            if (cardId !in newState.getBattlefield()) continue
+            val defender = defenders.getOrNull(index)
+            newState = if (defender == null || !newState.projectedState.isCreature(cardId)) {
+                newState.updateEntity(cardId) { it.without<AttackingComponent>() }
+            } else {
+                AttackedPermanents.markAttacked(
+                    newState.updateEntity(cardId) {
+                        it.with(AttackingComponent(defender, defendingPlayerId = CombatDefenders.defendingPlayerOf(newState, defender)))
+                    },
+                    defender,
+                )
+            }
+        }
+        return newState
     }
 
     /**

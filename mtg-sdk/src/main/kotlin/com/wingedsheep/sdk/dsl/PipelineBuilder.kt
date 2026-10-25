@@ -30,6 +30,7 @@ import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
 import com.wingedsheep.sdk.scripting.effects.FaceDownMode
 import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.LookAudience
+import com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
 import com.wingedsheep.sdk.scripting.effects.NoteCreatureTypeEffect
@@ -970,6 +971,7 @@ class PipelineBuilder private constructor(private val shared: Shared) {
      * @param filter only the cards in [from] matching this move; the rest stay where they are.
      * @param lookableInExile the controller may keep looking at face-down exiled cards.
      * @param attachTo the permanent an Aura/Equipment entering the battlefield attaches to.
+     * @param attackDefender what each card put onto the battlefield tapped and attacking attacks.
      */
     fun move(
         from: CollectionSlot,
@@ -987,7 +989,8 @@ class PipelineBuilder private constructor(private val shared: Shared) {
         addCounterType: CounterType? = null,
         markEnteredViaSourceAbility: Boolean = false,
         filter: GameObjectFilter? = null,
-        attachTo: EffectTarget? = null
+        attachTo: EffectTarget? = null,
+        attackDefender: EnteringAttackDefender = EnteringAttackDefender.JOIN_SOURCE
     ) {
         nextIndex()
         steps += MoveCollectionEffect(
@@ -1006,7 +1009,8 @@ class PipelineBuilder private constructor(private val shared: Shared) {
             addCounterType = addCounterType,
             markEnteredViaSourceAbility = markEnteredViaSourceAbility,
             filter = filter,
-            attachTo = attachTo
+            attachTo = attachTo,
+            attackDefender = attackDefender
         )
     }
 

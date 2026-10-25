@@ -17,6 +17,7 @@ import com.wingedsheep.sdk.scripting.effects.ConniveEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.DrawUpToEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.EnteringAttackDefender
 import com.wingedsheep.sdk.scripting.effects.EffectChoice
 import com.wingedsheep.sdk.scripting.effects.FeasibilityCheck
 import com.wingedsheep.sdk.scripting.effects.ForEachEffect
@@ -400,6 +401,10 @@ object HandPatterns {
      * [anyNumber] swaps the selection for [SelectionMode.ChooseAnyNumber], i.e. the unbounded
      * "put **any number** of … cards from your hand onto the battlefield" wording (Redshift,
      * Rocketeer Chief's exhaust ability) — [count] is then ignored.
+     *
+     * With [entersAttacking], [attackDefender] says what each card attacks:
+     * [EnteringAttackDefender.CONTROLLER_CHOOSES] for a bare "tapped and attacking" (CR 508.4,
+     * Minion of the Mighty), the default for "attacking that player" (Kaalia of the Vast).
      */
     fun putFromHand(
         filter: GameObjectFilter = GameObjectFilter.Any,
@@ -407,7 +412,8 @@ object HandPatterns {
         entersTapped: Boolean = false,
         entersAttacking: Boolean = false,
         anyNumber: Boolean = false,
-        prompt: String? = null
+        prompt: String? = null,
+        attackDefender: EnteringAttackDefender = EnteringAttackDefender.JOIN_SOURCE
     ): CompositeEffect = CompositeEffect(
         listOf(
             GatherCardsEffect(
@@ -434,7 +440,8 @@ object HandPatterns {
                         entersTapped -> ZonePlacement.Tapped
                         else -> ZonePlacement.Default
                     }
-                )
+                ),
+                attackDefender = attackDefender
             )
         )
     )

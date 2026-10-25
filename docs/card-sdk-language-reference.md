@@ -3762,6 +3762,14 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
 - `FilterCollection(from, GameObjectFilter.Any.currentlyIn(zone), storeMatching)` — keep only the cards in pipeline collection `from` that are **currently** in `zone`. Pipeline collections track entity refs, not live location, so a card can leave its zone mid-resolution (e.g. an exiled card cast for free moves to the stack). Use this to act on "the ones still there." Models the "you may cast it … if you don't, put that card into your hand" fallback of the **Tarkir: Dragonstorm "…storm" enchantments** (Breaching Dragonstorm): `GatherUntilMatch(Nonland) → MoveCollection(→ exile) → FilterCollection(Any.manaValueAtMostDynamic(Fixed(8)), "castable") → ConditionalOnCollection("castable", ifNotEmpty = Effects.May(CastFromCollectionWithoutPayingCost("castable"))) → FilterCollection("nonland", Any.currentlyIn(EXILE), "uncast") → MoveCollection("uncast" → hand)` — only the nonland still in exile (not the one just cast) goes to hand; the lands stay exiled. The `ConditionalOnCollection` wrapper suppresses the empty "you may cast" prompt when the nonland's mana value is > 8.
 - `FilterCollection(from, collectionFilter = CollectionFilter.GreatestManaValue, storeMatching)` — keep the cards tied for the greatest mana value (ties all kept, so a downstream "exactly one" step can see them). A face-down permanent in the collection counts as mana value 0 (CR 708.2a, 202.3a). Over a gathered battlefield collection it spells "sacrifices a creature with the greatest mana value among creatures they control": Gather → `GreatestManaValue` → `SelectFromCollection(ChooseExactly(1), chooser = TargetPlayer)` → `MoveCollection(moveType = Sacrifice)` (Break Under Pressure). Reveal-and-compare cards use it the same way (Psychic Battle).
 - `MoveCollectionEffect(from, destination, filter = null, …)` *(SDK-internal step; cards use `Effects.Pipeline { move/moveTracked and the destroy/sacrifice/discard/exile/toHand/… shortcuts }` — §5.5.)* — move a pipeline collection to a zone.
+  `attackDefender: EnteringAttackDefender` (pipeline `move`, `Patterns.Hand.putFromHand`) says what each card put
+  onto the battlefield `ZonePlacement.TappedAndAttacking` attacks. `JOIN_SOURCE` (default) joins a defending player
+  already in this combat — right for "attacking that player" (Kaalia of the Vast). `CONTROLLER_CHOOSES` is CR 508.4
+  as printed for a bare "tapped and attacking" (Minion of the Mighty): before any card moves, the controller picks
+  a defending player, a planeswalker one controls or a battle one protects for each card in collection order — the
+  same chooser as `CreateTokenEffect.attackDefender`; one legal choice is taken silently, and a card with none (or
+  that isn't a creature as it lands) enters unattacking. `RETURNED_ATTACKER` is single-card `MoveToZoneEffect` only;
+  any non-default value needs a `ToZone(…, placement = TappedAndAttacking)` destination.
   `addCounterType` on `Effects.Move` and pipeline `move` gives each battlefield entrant one counter as part of entry, before its zone-change event, honoring counter-placement replacements and “can't receive counters”; the entrant's controller is the placer, `addCounterIf` uses projected arrival characteristics, and redirected or prevented entries receive no counter. Nonbattlefield destinations retain counter annotations on the arriving card. Supplied, printed, and intrinsic entry counters of the same kind form one placement; its modifiers use sources present before the entry event, while prevention reads the entrant's prospective characteristics and excludes other simultaneous entrants' statics.
   **A collection spanning several players is one simultaneous move by each of them.** A graveyard
   destination always routes each card to its owner's graveyard (CR 400.3); a `MoveType.Discard`
@@ -5033,11 +5041,12 @@ one-off pipeline belongs inline in the card file via `Effects.Pipeline { }` (§5
   facade. Lake-town Lookout, Patient Instructor, Long Lake Nuisance, Esgaroth Garrison, Great Gilded Boat.
 - `readTheRunes()` — "draw X cards; for each, discard a card unless you sacrifice a permanent." Composes `RepeatDynamicTimesEffect(XValue, ChooseActionEffect(...))` with feasibility guards. Exposed as `Effects.ReadTheRunes()`.
 - `eachOpponentMayPutFromHand(filter?)` — each opponent may dump a matching card.
-- `putFromHand(filter?, count?, entersTapped?, entersAttacking?, anyNumber?, prompt?)` — you may put N
+- `putFromHand(filter?, count?, entersTapped?, entersAttacking?, anyNumber?, prompt?, attackDefender?)` — you may put N
   from hand onto battlefield. `entersAttacking = true` puts them in **tapped and attacking**
   (`ZonePlacement.TappedAndAttacking`; the engine adds an `AttackingComponent` against the defending
   player), e.g. Shadowfax, Lord of Horses ("put a creature card with lesser power from your hand onto
-  the battlefield tapped and attacking"). `anyNumber = true` swaps the default `ChooseUpTo(count)`
+  the battlefield tapped and attacking"); `attackDefender = EnteringAttackDefender.CONTROLLER_CHOOSES` lets the
+  controller pick each card's defender per CR 508.4 (Minion of the Mighty — see `MoveCollectionEffect`). `anyNumber = true` swaps the default `ChooseUpTo(count)`
   selection for `SelectionMode.ChooseAnyNumber`, i.e. the unbounded *"put **any number** of … cards
   from your hand onto the battlefield"* wording (`count` is then ignored); zero is a legal choice, so
   declining and an empty hand are both no-ops rather than stuck decisions. Redshift, Rocketeer Chief's
