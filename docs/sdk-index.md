@@ -276,7 +276,7 @@ Families:
 - `CardPredicate.SharesManaValueWith(entity: EffectTarget.SingleEntity)` — Matches objects whose mana value **equals** the referenced entity's mana value — "that shares a mana value with the exiled card" (Thought Prison).
 - `CardPredicate.SharesNameWith(entity: EffectTarget.SingleEntity)` — Matches objects whose name **equals** the referenced entity's name — "a land with the same name as the exiled card" (Extraplanar Lens).
 - `CardPredicate.SharesNameWithLinkedExile` — Matches objects whose **name** equals that of **any** card exiled with the asking ability's source — "spells with the same name as a card exiled with Circu" (Circu, Dimir Lobotomist).
-- `CardPredicate.SharesNameWithPermanentYouControl(filter: GameObjectFilter, excludeSelf: Boolean)` — Matches objects whose name equals that of at least one permanent the evaluating player controls matching filter.
+- `CardPredicate.SharesNameWithYourCard(filter: GameObjectFilter, excludeSelf: Boolean, zone: Zone)` — Matches objects whose name equals that of at least one of the evaluating player's cards in zone matching filter — on the battlefield (the default) a permanent they **control**, anywhere else a card…
 - `CardPredicate.TargetsMatching(subfilter: GameObjectFilter)` — Matches a spell or ability on the stack at least one of whose chosen targets matches subfilter.
 - `CardPredicate.TargetsPlayer(player: Player)` — Matches a spell or ability on the stack at least one of whose chosen targets is a player that player names, read relative to the filter's chooser — the player half of TargetsMatching, which skips p…
 - `CardPredicate.TotalPowerAndToughnessAtMost(max: Int)` — Total power and toughness (sum) is at most the given value

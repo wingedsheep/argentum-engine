@@ -1155,7 +1155,7 @@ internal class AffectsFilterResolver(
         is CardPredicate.SharesManaValueWith,
         is CardPredicate.SharesNameWith,
         is CardPredicate.SharesColorWithPermanentYouControl,
-        is CardPredicate.SharesNameWithPermanentYouControl,
+        is CardPredicate.SharesNameWithYourCard,
         is CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl,
         is CardPredicate.DoesNotShareLandTypeWithPermanentYouControl,
         is CardPredicate.HasSubtypeFromVariable,

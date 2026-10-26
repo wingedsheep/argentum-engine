@@ -2025,7 +2025,7 @@ class CostCalculator(
             is CardPredicate.SharesManaValueWith -> true
             is CardPredicate.SharesNameWith -> true
             is CardPredicate.SharesColorWithPermanentYouControl -> true
-            is CardPredicate.SharesNameWithPermanentYouControl -> true
+            is CardPredicate.SharesNameWithYourCard -> true
             is CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl -> true
             is CardPredicate.DoesNotShareLandTypeWithPermanentYouControl -> true
             CardPredicate.SharesColorWithRecipient -> false

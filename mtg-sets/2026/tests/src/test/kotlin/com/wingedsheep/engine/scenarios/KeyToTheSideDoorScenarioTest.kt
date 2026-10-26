@@ -21,7 +21,7 @@ import io.kotest.matchers.shouldNotBe
  *   {1}, {T}, Discard a legendary card with the same name as a legendary permanent you control:
  *     Draw two cards.
  *
- * The second ability carries the new `SharesNameWithPermanentYouControl` cost filter, so these
+ * The second ability carries the new `SharesNameWithYourCard` cost filter, so these
  * tests pin down what the discard cost will and won't accept: a hand card whose name matches a
  * legendary permanent you control pays it; a legendary card with a *different* name doesn't; and
  * neither does a name match against a permanent an opponent controls.

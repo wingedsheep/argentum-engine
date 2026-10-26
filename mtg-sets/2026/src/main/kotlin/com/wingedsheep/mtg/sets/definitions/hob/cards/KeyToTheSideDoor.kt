@@ -22,7 +22,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  *    outlive the turn.
  *  - The second ability's discard cost is the interesting half: the discarded card must be legendary
  *    *and* name-match a legendary permanent already on your battlefield. That cross-zone comparison
- *    is [CardPredicate.SharesNameWithPermanentYouControl], the name sibling of the existing
+ *    is [CardPredicate.SharesNameWithYourCard], the name sibling of the existing
  *    `SharesColorWithPermanentYouControl` — the cost enumerators hand it a `PredicateContext` with
  *    the activating player as `controllerId`, so the battlefield side is correctly scoped to "you
  *    control". Without a matching pair in hand and play the ability simply isn't offered.

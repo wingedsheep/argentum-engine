@@ -12390,7 +12390,7 @@
                                             {
                                                 "type": "Not",
                                                 "predicate": {
-                                                    "type": "SharesNameWithPermanentYouControl",
+                                                    "type": "SharesNameWithYourCard",
                                                     "filter": "enchantment Aura"
                                                 }
                                             }

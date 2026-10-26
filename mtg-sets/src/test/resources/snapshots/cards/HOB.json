@@ -7048,7 +7048,7 @@
                                     "cardPredicates": [
                                         "IsLegendary",
                                         {
-                                            "type": "SharesNameWithPermanentYouControl",
+                                            "type": "SharesNameWithYourCard",
                                             "filter": {
                                                 "cardPredicates": [
                                                     "IsPermanent",

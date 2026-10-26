@@ -507,17 +507,26 @@ interface ObjectFilterBuilder<out Self> {
      * you control").
      */
     fun sharingNameWithPermanentYouControl(filter: GameObjectFilter) =
-        withCardPredicate(CardPredicate.SharesNameWithPermanentYouControl(filter))
+        withCardPredicate(CardPredicate.SharesNameWithYourCard(filter))
+
+    /**
+     * Must have the same name as at least one card matching [filter] in the evaluating player's own
+     * [zone] — "an instant or sorcery card with the same name as a card in your graveyard"
+     * (Frostpyre Arcanist, `zone = Zone.GRAVEYARD`). The battlefield form is
+     * [sharingNameWithPermanentYouControl].
+     */
+    fun sharingNameWithCardInYour(zone: Zone, filter: GameObjectFilter = GameObjectFilter.Any) =
+        withCardPredicate(CardPredicate.SharesNameWithYourCard(filter, zone = zone))
 
     /**
      * Must **not** have the same name as any permanent the evaluating player controls matching
      * [filter] — "that doesn't have the same name as a token you control" (The Apprentice's Folly,
      * `filter = GameObjectFilter.Token`). With [another] the candidate is left out of the compared
      * set, for "… as **another** permanent you control" (Yenna, Redtooth Regent,
-     * `filter = GameObjectFilter.Permanent`). `Not` over [CardPredicate.SharesNameWithPermanentYouControl].
+     * `filter = GameObjectFilter.Permanent`). `Not` over [CardPredicate.SharesNameWithYourCard].
      */
     fun nameNotSharedWithPermanentYouControl(filter: GameObjectFilter, another: Boolean = false) =
-        withCardPredicate(CardPredicate.Not(CardPredicate.SharesNameWithPermanentYouControl(filter, excludeSelf = another)))
+        withCardPredicate(CardPredicate.Not(CardPredicate.SharesNameWithYourCard(filter, excludeSelf = another)))
 
     /**
      * Must share **no** creature type with any permanent the evaluating player controls matching

@@ -67,7 +67,7 @@ internal object RetiredSdkTypeLift {
     )
 
     private fun nameNotShared(filter: GameObjectFilter, excludeSelf: Boolean) = predicate(
-        CardPredicate.Not(CardPredicate.SharesNameWithPermanentYouControl(filter, excludeSelf))
+        CardPredicate.Not(CardPredicate.SharesNameWithYourCard(filter, excludeSelf))
     )
 
     private val cardTypeFilters = mapOf(
@@ -92,6 +92,10 @@ internal object RetiredSdkTypeLift {
         "NameNotSharedWithControlledToken" to { _ -> nameNotShared(GameObjectFilter.Token, excludeSelf = false) },
         "NameNotSharedWithAnotherControlledPermanent" to { _ ->
             nameNotShared(GameObjectFilter.Permanent, excludeSelf = true)
+        },
+        // Renamed when it gained its zone axis; the battlefield is the old meaning and the default.
+        "SharesNameWithPermanentYouControl" to { old ->
+            JsonObject(old + ("type" to JsonPrimitive("SharesNameWithYourCard")))
         },
         // Condition — the life comparisons and the last-known type checks
         "AnOpponentLifeAtMost" to { old -> condition(Conditions.AnOpponentLifeAtMost(old.int("threshold"))) },

@@ -73,11 +73,17 @@ class RetiredSdkTypeLiftTest : FunSpec({
         }
     }
 
-    test("the name-not-shared predicates become a negated SharesNameWithPermanentYouControl") {
+    test("the name-not-shared predicates become a negated SharesNameWithYourCard") {
         lifted(CardPredicate.serializer(), old("NameNotSharedWithControlledToken")) shouldBe
-            CardPredicate.Not(CardPredicate.SharesNameWithPermanentYouControl(GameObjectFilter.Token, excludeSelf = false))
+            CardPredicate.Not(CardPredicate.SharesNameWithYourCard(GameObjectFilter.Token, excludeSelf = false))
         lifted(CardPredicate.serializer(), old("NameNotSharedWithAnotherControlledPermanent")) shouldBe
-            CardPredicate.Not(CardPredicate.SharesNameWithPermanentYouControl(GameObjectFilter.Permanent, excludeSelf = true))
+            CardPredicate.Not(CardPredicate.SharesNameWithYourCard(GameObjectFilter.Permanent, excludeSelf = true))
+    }
+
+    test("SharesNameWithPermanentYouControl becomes a battlefield SharesNameWithYourCard") {
+        val filter = json.encodeToJsonElement(GameObjectFilter.serializer(), GameObjectFilter.Token)
+        lifted(CardPredicate.serializer(), old("SharesNameWithPermanentYouControl", "filter" to filter, "excludeSelf" to JsonPrimitive(true))) shouldBe
+            CardPredicate.SharesNameWithYourCard(GameObjectFilter.Token, excludeSelf = true, zone = Zone.BATTLEFIELD)
     }
 
     test("the life conditions keep their threshold") {

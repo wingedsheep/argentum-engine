@@ -66,6 +66,7 @@ import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
@@ -518,7 +519,7 @@ class PredicateEvaluator(
             is CardPredicate.SharesManaValueWith,
             is CardPredicate.SharesNameWith,
             CardPredicate.SharesNameWithLinkedExile,
-            is CardPredicate.SharesNameWithPermanentYouControl,
+            is CardPredicate.SharesNameWithYourCard,
             is CardPredicate.TargetsMatching,
             is CardPredicate.TargetsPlayer,
             is CardPredicate.WouldDestroy,
@@ -1332,20 +1333,27 @@ class PredicateEvaluator(
                 entityName.isNotBlank() && entityName == referenceName
             }
 
-            // "With the same name as a <filter> you control" (Key to the Side-Door); under Not, the
+            // "With the same name as a <filter> you control / in your <zone>" (Key to the Side-Door,
+            // Frostpyre Arcanist); under Not, the
             // "doesn't have the same name as a token / another permanent you control" restrictions
             // (The Apprentice's Folly, Yenna). Names on both sides come from the projection, so a
-            // Layer 3 rename is honored. A face-down permanent has no name (CR 708.2a), and a
+            // Layer 3 rename is honored. A face-down permanent or exiled card has no name (CR 708.2a), and a
             // nameless object shares no name with anything (CR 201.2a) — on either side.
-            is CardPredicate.SharesNameWithPermanentYouControl -> {
+            is CardPredicate.SharesNameWithYourCard -> {
                 if (projectedValues?.isFaceDown == true) return false
                 val name = projectedValues?.name ?: card.name
                 if (name.isBlank()) return false
                 val controllerId = context?.controllerId ?: return false
-                state.getBattlefield().any { otherId ->
+                // On the battlefield "yours" is control; every other zone is keyed by owner.
+                val compared = if (predicate.zone == Zone.BATTLEFIELD) {
+                    state.getBattlefield().asSequence().filter { projected.getController(it) == controllerId }
+                } else {
+                    state.getZone(controllerId, predicate.zone).asSequence()
+                }
+                compared.any { otherId ->
                     (!predicate.excludeSelf || otherId != entityId) &&
-                        projected.getController(otherId) == controllerId &&
                         !projected.isFaceDown(otherId) &&
+                        state.getEntity(otherId)?.has<FaceDownComponent>() != true &&
                         (projected.getName(otherId) ?: state.getEntity(otherId)?.get<CardComponent>()?.name) == name &&
                         matches(state, projected, otherId, predicate.filter, context)
                 }
@@ -2826,7 +2834,7 @@ class PredicateEvaluator(
             is CardPredicate.SharesManaValueWith,
             is CardPredicate.SharesNameWith,
             is CardPredicate.SharesColorWithPermanentYouControl,
-            is CardPredicate.SharesNameWithPermanentYouControl,
+            is CardPredicate.SharesNameWithYourCard,
             is CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl,
             is CardPredicate.DoesNotShareLandTypeWithPermanentYouControl -> false
             is CardPredicate.HasSubtypeFromVariable, is CardPredicate.HasSubtypeInStoredList,

@@ -17749,7 +17749,7 @@
                                 {
                                     "type": "Not",
                                     "predicate": {
-                                        "type": "SharesNameWithPermanentYouControl",
+                                        "type": "SharesNameWithYourCard",
                                         "filter": "token"
                                     }
                                 }
@@ -17788,7 +17788,7 @@
                                 {
                                     "type": "Not",
                                     "predicate": {
-                                        "type": "SharesNameWithPermanentYouControl",
+                                        "type": "SharesNameWithYourCard",
                                         "filter": "token"
                                     }
                                 }
@@ -21614,7 +21614,7 @@
                                     {
                                         "type": "Not",
                                         "predicate": {
-                                            "type": "SharesNameWithPermanentYouControl",
+                                            "type": "SharesNameWithYourCard",
                                             "filter": "permanent",
                                             "excludeSelf": true
                                         }

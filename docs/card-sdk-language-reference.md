@@ -6712,7 +6712,7 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   creature you control") with `filter = GameObjectFilter.Creature.legendary()`. Colorless candidates
   never match. Evaluated for real in targeting/search/count contexts; inert (false) in
   static-projection / trigger-gating, permissive (true) in cost-calculation.
-- `.sharingNameWithPermanentYouControl(filter)` — `CardPredicate.SharesNameWithPermanentYouControl(filter,
+- `.sharingNameWithPermanentYouControl(filter)` — `CardPredicate.SharesNameWithYourCard(filter,
   excludeSelf = false)`: has the **same name** as at least one permanent the evaluating player controls
   matching `filter`. The name sibling of `.sharingColorWithPermanentYouControl`; names compare exactly and are
   read through the projection on both sides (Layer 3 renames such as Witness Protection count), and a
@@ -6723,6 +6723,13 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   the activating player, so the battlefield side is scoped to "you control". Evaluated for real in
   targeting/search/cost contexts; inert (false) in static-projection / trigger-gating, permissive (true)
   in cost-calculation.
+- `.sharingNameWithCardInYour(zone, filter = GameObjectFilter.Any)` — `CardPredicate.SharesNameWithYourCard(filter,
+  zone = zone)`: the same predicate pointed at one of the evaluating player's **own** zones instead of
+  the battlefield — "has the same name as a card in your graveyard". Off the battlefield the compared set
+  is keyed by owner (the zone's cards), on it by control; face-down cards (foretold, face-down exile)
+  have no name and never match. Frostpyre Arcanist: `Patterns.Library.searchLibrary(filter =
+  GameObjectFilter.InstantOrSorcery.sharingNameWithCardInYour(Zone.GRAVEYARD), destination = HAND, reveal = true)`. Same
+  evaluation contexts as the battlefield form.
 - `.notSharingCreatureTypeWithPermanentYouControl(filter)` —
   `CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl`: shares **no** (projected) creature
   type with any permanent the evaluating player controls matching `filter`. Negative analogue of
@@ -6773,7 +6780,7 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   site. Used by Central Elevator ("search your library for a Room card that doesn't have the same name as a
   Room you control").
 - `.nameNotSharedWithPermanentYouControl(filter, another = false)` —
-  `Not(SharesNameWithPermanentYouControl(filter, excludeSelf = another))`: a permanent whose name isn't
+  `Not(SharesNameWithYourCard(filter, excludeSelf = another))`: a permanent whose name isn't
   shared with any permanent the evaluating player controls matching `filter`; matches with no controller
   in scope. The Apprentice's Folly ("… that doesn't have the same name as a token you control"):
   `Creature.youControl().nontoken().nameNotSharedWithPermanentYouControl(GameObjectFilter.Token)`. Yenna,
