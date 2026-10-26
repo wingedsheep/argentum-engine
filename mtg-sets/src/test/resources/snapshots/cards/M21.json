@@ -2342,6 +2342,79 @@
     ]
 }
 
+// Watcher of the Spheres
+{
+    "name": "Watcher of the Spheres",
+    "manaCost": "{W}{U}",
+    "typeLine": "Creature — Bird Wizard",
+    "oracleText": "Flying\nCreature spells with flying you cast cost {1} less to cast.\nWhenever another creature you control with flying enters, this creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Watcher of the Spheres:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature kw:flying ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "creature kw:flying"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "227",
+        "rarity": "UNCOMMON",
+        "artist": "G-host Lee",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/354b9ea4-3d55-48cc-b426-c46b1d1bb397.jpg?1783930659",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "The cost reduction applies only to generic mana in the cost of creature spells with flying you cast. For example, if you cast a second Watcher of the Spheres, its cost won't be reduced below {W}{U}."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "A creature spell that doesn't have flying won't cost less even if an effect will cause the creature to have flying once on the battlefield. This is also true if the creature spell itself has an ability that gives it flying once on the battlefield under certain conditions, even if those conditions are true."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Wildwood Scourge
 {
     "name": "Wildwood Scourge",

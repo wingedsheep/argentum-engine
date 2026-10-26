@@ -349,6 +349,61 @@
     ]
 }
 
+// Esior, Wardwing Familiar
+{
+    "name": "Esior, Wardwing Familiar",
+    "manaCost": "{1}{U}",
+    "typeLine": "Legendary Creature — Bird",
+    "oracleText": "Flying\nSpells your opponents cast that target one or more commanders you control cost {3} more to cast.\nPartner (You can have two commanders if both have partner.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        "Partner"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "OpponentsCastTargeting",
+                    "targetFilter": {
+                        "baseFilter": {
+                            "statePredicates": [
+                                "IsCommander"
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "modification": {
+                    "type": "IncreaseGeneric",
+                    "amount": 3
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Ejsing",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/86958821-76eb-43a5-974b-7c945e826a66.jpg?1783928863",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "Spells that target more than one commander you control cost only {3} more to cast."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ghen, Arcanum Weaver
 {
     "name": "Ghen, Arcanum Weaver",

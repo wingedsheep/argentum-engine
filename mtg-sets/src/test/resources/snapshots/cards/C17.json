@@ -528,6 +528,82 @@
     "colorIdentityOverride": []
 }
 
+// Kindred Discovery
+{
+    "name": "Kindred Discovery",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "As this enchantment enters, choose a creature type.\nWhenever a creature you control of the chosen type enters or attacks, draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kindred Discovery:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "ZoneChangeEvent",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "HasChosenSubtype"
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            },
+                            "to": "Battlefield"
+                        },
+                        {
+                            "type": "AttackEvent",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "HasChosenSubtype"
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever a creature you control of the chosen type enters or attacks, draw a card."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CREATURE_TYPE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "rarity": "RARE",
+        "artist": "Lake Hurwitz",
+        "flavorText": "Few things are truly \"lost\" at sea.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/ed07b7be-bd3d-4dbc-bc92-b5478d3604c6.jpg?1783935949",
+        "rulings": [
+            {
+                "date": "2022-06-10",
+                "text": "The choice of creature type is made as Kindred Discovery enters the battlefield. Players can't take any actions between the time the choice is made and the time it enters the battlefield. Notably, this means that if it is entering the battlefield at the same time as any creatures of the chosen type, its last ability will trigger."
+            },
+            {
+                "date": "2017-08-25",
+                "text": "If you somehow control a Kindred Discovery with no chosen creature type, its last ability can't trigger, even if a creature with no creature types enters the battlefield or attacks."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ramos, Dragon Engine
 {
     "name": "Ramos, Dragon Engine",

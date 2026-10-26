@@ -2181,6 +2181,51 @@
     ]
 }
 
+// Flux Channeler
+{
+    "name": "Flux Channeler",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Whenever you cast a noncreature spell, proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Flux Channeler:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": "Proliferate"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "rarity": "UNCOMMON",
+        "artist": "Heonhwa",
+        "flavorText": "\"Inform our allies in the Tenth and throw the circuit. It's about to get weird.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c6202e82-e159-482f-9224-292cb533171c.jpg?1783933466",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Flux Channeler's ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Gideon's Company
 {
     "name": "Gideon's Company",
@@ -2795,6 +2840,58 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Karn's Bastion
+{
+    "name": "Karn's Bastion",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{4}, {T}: Proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Karn's Bastion:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {C}."
+            },
+            {
+                "id": "Karn's Bastion:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": "Proliferate",
+                "descriptionOverride": "{4}, {T}: Proliferate."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "248",
+        "rarity": "RARE",
+        "artist": "Adam Paquette",
+        "flavorText": "\"I can't protect everyone here. But those I can, I will.\"\n—Karn",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b9d895af-7e8c-419f-bc5d-5596083fbfb6.jpg?1783933368"
+    },
+    "colorIdentityOverride": []
 }
 
 // Karn, the Great Creator

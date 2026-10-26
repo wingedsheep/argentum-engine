@@ -1135,6 +1135,48 @@
     ]
 }
 
+// Tezzeret's Gambit
+{
+    "name": "Tezzeret's Gambit",
+    "manaCost": "{3}{U/P}",
+    "typeLine": "Sorcery",
+    "oracleText": "({U/P} can be paid with either {U} or 2 life.)\nDraw two cards, then proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "Proliferate"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "UNCOMMON",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/fff5a09e-9276-44b8-b374-4b84aebd47cc.jpg?1783941318",
+        "rulings": [
+            {
+                "date": "2011-06-01",
+                "text": "To calculate the mana value of a card with Phyrexian mana symbols in its cost, count each Phyrexian mana symbol as 1."
+            },
+            {
+                "date": "2011-06-01",
+                "text": "If you're at 1 life or less, you can't pay 2 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Torpor Orb
 {
     "name": "Torpor Orb",

@@ -970,6 +970,98 @@
     "colorIdentityOverride": []
 }
 
+// Contagion Engine
+{
+    "name": "Contagion Engine",
+    "manaCost": "{6}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, put a -1/-1 counter on each creature target player controls.\n{4}, {T}: Proliferate twice. (Choose any number of permanents and/or players, then give each another counter of each kind already there. Then do it again.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Contagion Engine:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "controllerPredicate": {
+                                    "type": "ControlledByReferencedPlayer",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "MINUS_ONE_MINUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Contagion Engine:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        "Proliferate",
+                        "Proliferate"
+                    ]
+                },
+                "descriptionOverride": "{4}, {T}: Proliferate twice."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dce72636-08e4-484e-ad81-4d1597a31ffb.jpg?1783941712",
+        "rulings": [
+            {
+                "date": "2011-01-01",
+                "text": "Players can't respond between the first and the second proliferate actions."
+            },
+            {
+                "date": "2011-01-01",
+                "text": "As Contagion Engine's activated ability resolves, you'll complete an entire proliferate action, then you'll complete a second proliferate action. You may choose different players and/or permanents, or different counters on those permanents, when you proliferate the second time."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Copperline Gorge
 {
     "name": "Copperline Gorge",

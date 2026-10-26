@@ -3433,6 +3433,97 @@
     ]
 }
 
+// Scion of Draco
+{
+    "name": "Scion of Draco",
+    "manaCost": "{12}",
+    "typeLine": "Artifact Creature — Dragon",
+    "oracleText": "Domain — This spell costs {2} less to cast for each basic land type among lands you control.\nFlying\nEach creature you control has vigilance if it's white, hexproof if it's blue, lifelink if it's black, first strike if it's red, and trample if it's green.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": {
+                            "type": "Multiply",
+                            "amount": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "land",
+                                "aggregation": "DISTINCT_BASIC_LAND_SUBTYPES"
+                            },
+                            "multiplier": 2
+                        }
+                    }
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE",
+                "filter": {
+                    "baseFilter": "creature white ctrl:you"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HEXPROOF",
+                "filter": {
+                    "baseFilter": "creature blue ctrl:you"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "LIFELINK",
+                "filter": {
+                    "baseFilter": "creature black ctrl:you"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FIRST_STRIKE",
+                "filter": {
+                    "baseFilter": "creature red ctrl:you"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE",
+                "filter": {
+                    "baseFilter": "creature green ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "234",
+        "rarity": "MYTHIC",
+        "artist": "Greg Staples",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3e7da55c-7f05-46b2-aa3c-17f8d5df46bb.jpg?1783926802",
+        "rulings": [
+            {
+                "date": "2021-06-18",
+                "text": "Domain abilities count the number of basic land types among lands you control, not how many lands you control or how many of any type."
+            },
+            {
+                "date": "2021-06-18",
+                "text": "The basic land types are Plains, Island, Swamp, Mountain, and Forest. Land types other than basic land types (such as Desert) don't contribute to domain abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Scurry Oak
 {
     "name": "Scurry Oak",

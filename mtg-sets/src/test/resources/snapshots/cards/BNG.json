@@ -1,3 +1,53 @@
+// Astral Cornucopia
+{
+    "name": "Astral Cornucopia",
+    "manaCost": "{X}{X}{X}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact enters with X charge counters on it.\n{T}: Choose a color. Add one mana of that color for each charge counter on this artifact.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Astral Cornucopia:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "CHARGE"
+                        }
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Choose a color. Add one mana of that color for each charge counter on this artifact."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "counterType": "CHARGE",
+                "count": "CastX"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "rarity": "RARE",
+        "artist": "Aleksi Briclot",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a72b8011-c712-418f-869e-42fda3dc0830.jpg?1783939522",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "If you choose 1 for the value of X, Astral Cornucopia will cost {3} to cast and enter the battlefield with one charge counter. If you choose 2 for the value of X, it will cost {6} to cast and enter the battlefield with two charge counters, and so on."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Courser of Kruphix
 {
     "name": "Courser of Kruphix",

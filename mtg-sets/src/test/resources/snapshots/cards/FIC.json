@@ -805,6 +805,86 @@
     ]
 }
 
+// Hermes, Overseer of Elpis
+{
+    "name": "Hermes, Overseer of Elpis",
+    "manaCost": "{3}{U}",
+    "typeLine": "Legendary Creature — Elder Wizard",
+    "oracleText": "Whenever you cast a noncreature spell, create a 1/1 blue Bird creature token with flying and vigilance.\nWhenever you attack with one or more Birds, scry 2.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hermes, Overseer of Elpis:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Bird"
+                    ],
+                    "keywords": [
+                        "FLYING",
+                        "VIGILANCE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/0/2/023cebe4-ebe4-4398-9fd7-d3507660040a.jpg?1783906141"
+                }
+            },
+            {
+                "id": "Hermes, Overseer of Elpis:2",
+                "trigger": {
+                    "type": "YouAttackEvent",
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Bird"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Scry",
+                    "count": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "RARE",
+        "artist": "Darius Zablockis",
+        "flavorText": "\"For us, there may be no higher purpose than to live for our world, but what of the other living beings out there?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e04a05e5-7bff-46a4-aae1-6713977e6e30.jpg?1783906363",
+        "rulings": [
+            {
+                "date": "2025-06-06",
+                "text": "Hermes's first ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered or otherwise leaves the stack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Kefka, Dancing Mad
 {
     "name": "Kefka, Dancing Mad",

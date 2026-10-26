@@ -2201,6 +2201,56 @@
     "colorIdentityOverride": []
 }
 
+// Warden of Evos Isle
+{
+    "name": "Warden of Evos Isle",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Bird Wizard",
+    "oracleText": "Flying\nCreature spells with flying you cast cost {1} less to cast.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "creature kw:flying"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "rarity": "UNCOMMON",
+        "artist": "Nils Hamm",
+        "flavorText": "On Evos Isle, the swift and formidable aven enforce the will of the ruling sphinxes.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/2316d281-21a4-460d-9062-f0737249484e.jpg?1783939929",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "A creature spell that doesn't have flying won't cost less even if an effect will cause the creature to have flying once on the battlefield. This is also true if the creature spell itself has an ability that gives it flying once on the battlefield under certain conditions, even if those conditions are true."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "The last ability of Warden of Evos Isle can't reduce the colored mana requirement of a creature spell with flying."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Woodborn Behemoth
 {
     "name": "Woodborn Behemoth",
