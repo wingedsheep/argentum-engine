@@ -2,7 +2,8 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
-import com.wingedsheep.engine.mechanics.mana.PlotCostReducer
+import com.wingedsheep.engine.mechanics.mana.SpecialActionCostReducer
+import com.wingedsheep.sdk.scripting.SpecialActionKind
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -20,8 +21,8 @@ import io.kotest.matchers.shouldBe
  *
  * - "Spells you cast from your graveyard or from exile cost {2} less to cast." →
  *   [com.wingedsheep.sdk.scripting.SpellCostTarget.YouCastFromZones] checked by [CostCalculator].
- * - "Plotting cards from your hand costs {2} less." → [com.wingedsheep.sdk.scripting.ModifyPlotCost]
- *   checked by [PlotCostReducer].
+ * - "Plotting cards from your hand costs {2} less." → [com.wingedsheep.sdk.scripting.ModifySpecialActionCost]
+ *   checked by [SpecialActionCostReducer].
  */
 class DocAurlockGrizzledGeniusScenarioTest : FunSpec({
 
@@ -117,30 +118,30 @@ class DocAurlockGrizzledGeniusScenarioTest : FunSpec({
 
     test("plotting a card from hand costs {2} less") {
         val reg = registry()
-        val reducer = PlotCostReducer(reg)
+        val reducer = SpecialActionCostReducer(reg)
         val (d, active) = setup()
         // base plot cost {5}{G} → −{2} generic → {3}{G}
-        val effective = reducer.effectivePlotCostFromHand(d.state, active, ManaCost.parse("{5}{G}"))
+        val effective = reducer.effectiveCost(d.state, active, SpecialActionKind.PLOT, ManaCost.parse("{5}{G}"))
         effective.genericAmount shouldBe 3
         effective.cmc shouldBe 4
     }
 
     test("plot reduction floors generic at 0 and never reduces colored pips") {
         val reg = registry()
-        val reducer = PlotCostReducer(reg)
+        val reducer = SpecialActionCostReducer(reg)
         val (d, active) = setup()
         // {1}{G} → −{2} generic → {G} (generic floored at 0, colored kept)
-        val effective = reducer.effectivePlotCostFromHand(d.state, active, ManaCost.parse("{1}{G}"))
+        val effective = reducer.effectiveCost(d.state, active, SpecialActionKind.PLOT, ManaCost.parse("{1}{G}"))
         effective.genericAmount shouldBe 0
         effective.cmc shouldBe 1
     }
 
     test("plot reduction does not apply to an opponent without Doc Aurlock") {
         val reg = registry()
-        val reducer = PlotCostReducer(reg)
+        val reducer = SpecialActionCostReducer(reg)
         val (d, active) = setup()
         val opponent = d.state.turnOrder.first { it != active }
-        val effective = reducer.effectivePlotCostFromHand(d.state, opponent, ManaCost.parse("{5}{G}"))
+        val effective = reducer.effectiveCost(d.state, opponent, SpecialActionKind.PLOT, ManaCost.parse("{5}{G}"))
         effective.genericAmount shouldBe 5
     }
 })

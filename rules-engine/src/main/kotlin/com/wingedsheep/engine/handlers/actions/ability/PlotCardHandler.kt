@@ -55,8 +55,8 @@ class PlotCardHandler(
 ) : ActionHandler<PlotCard> {
     override val actionType: KClass<PlotCard> = PlotCard::class
 
-    private val plotCostReducer =
-        com.wingedsheep.engine.mechanics.mana.PlotCostReducer(cardRegistry)
+    private val specialActionCostReducer =
+        com.wingedsheep.engine.mechanics.mana.SpecialActionCostReducer(cardRegistry)
 
     /**
      * Where the card being plotted lives and what its plot cost is. Plot normally exiles a
@@ -75,7 +75,9 @@ class PlotCardHandler(
         if (action.cardId in state.getZone(ZoneKey(action.playerId, Zone.HAND))) {
             val plotAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Plot>().firstOrNull()
                 ?: return null
-            val reduced = plotCostReducer.effectivePlotCostFromHand(state, action.playerId, plotAbility.cost)
+            val reduced = specialActionCostReducer.effectiveCost(
+                state, action.playerId, com.wingedsheep.sdk.scripting.SpecialActionKind.PLOT, plotAbility.cost
+            )
             return PlotSource(Zone.HAND, reduced)
         }
 

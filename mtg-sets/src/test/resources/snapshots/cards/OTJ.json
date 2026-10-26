@@ -4888,8 +4888,8 @@
                 }
             },
             {
-                "type": "ModifyPlotCost",
-                "target": "YouPlotFromHand",
+                "type": "ModifySpecialActionCost",
+                "action": "PLOT",
                 "modification": {
                     "type": "ReduceGeneric",
                     "amount": 2

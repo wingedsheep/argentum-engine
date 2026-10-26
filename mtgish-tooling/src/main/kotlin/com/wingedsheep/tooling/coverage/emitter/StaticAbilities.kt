@@ -740,7 +740,7 @@ internal fun EmitCtx.playerEffectBlock(rule: JsonObject): List<Stmt>? {
             // reduction over a spell filter / zone set we can name exactly; a colored/dynamic
             // reduction or a filter we can't express declines -> SCAFFOLD.
             "DecreaseSpellCost" -> decreaseSpellCostAbility(e) ?: run { reasons.add("PlayerEffect"); return null }
-            // "Plotting cards from your hand costs {N} less" (Doc Aurlock) -> ModifyPlotCost.
+            // "Plotting cards from your hand costs {N} less" (Doc Aurlock) -> ModifySpecialActionCost.
             "DecreasePlotFromHandCost" ->
                 decreasePlotFromHandCostAbility(e) ?: run { reasons.add("PlayerEffect"); return null }
             // "You can't cast more than N spell(s) each turn" (Yawgmoth's Agenda) — controller-scoped.
@@ -863,7 +863,7 @@ private fun castFromZonesSet(spells: JsonObject?): String? {
 
 /**
  * A `DecreasePlotFromHandCost([<reduction symbols>])` player-static ->
- * `ModifyPlotCost(target = PlotCostTarget.YouPlotFromHand, modification = CostModification.ReduceGeneric(N))`.
+ * `ModifySpecialActionCost(action = SpecialActionKind.PLOT, modification = CostModification.ReduceGeneric(N))`.
  * Only a single bare generic reduction renders (Doc Aurlock: "Plotting cards from your hand costs
  * {2} less"); a colored/multi-symbol reduction declines -> SCAFFOLD.
  */
@@ -872,8 +872,8 @@ private fun EmitCtx.decreasePlotFromHandCostAbility(effect: JsonObject): Dsl? {
     if (symbols.size != 1 || symbols[0].strField("_CostReductionSymbol") != "CostReduceGeneric") return null
     val amount = symbols[0]["args"].asInt() ?: return null
     return call(
-        "ModifyPlotCost",
-        arg("target", "PlotCostTarget.YouPlotFromHand"),
+        "ModifySpecialActionCost",
+        arg("action", "SpecialActionKind.PLOT"),
         arg("modification", call("CostModification.ReduceGeneric", arg("$amount"))),
     )
 }

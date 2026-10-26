@@ -9114,8 +9114,8 @@
                 }
             },
             {
-                "type": "ModifyUnlockCost",
-                "target": "YouUnlock",
+                "type": "ModifySpecialActionCost",
+                "action": "UNLOCK_DOOR",
                 "modification": {
                     "type": "ReduceGeneric",
                     "amount": 1

@@ -1874,6 +1874,10 @@ is PermanentsSacrificedEvent -> {
             // Cultivator); the three exiles or the Food's sacrifice are already surfaced by their
             // own zone-change / sacrifice events, so no separate client event.
             is ForagedEvent,
+            // Internal signal that fires "whenever you foretell a card" watcher triggers (Dream
+            // Devourer); the face-down exile is already surfaced by its own zone-change event, and
+            // the card's identity is hidden from opponents.
+            is ForetoldEvent,
             // Internal signal that fires "whenever you investigate" watcher triggers (Erdwal
             // Illuminator); the Clue itself is already surfaced by its own zone-change event.
             is InvestigatedEvent,

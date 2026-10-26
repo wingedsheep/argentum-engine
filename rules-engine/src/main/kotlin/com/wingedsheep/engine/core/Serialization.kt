@@ -183,6 +183,7 @@ val engineSerializersModule = SerializersModule {
         subclass(DiscoveredEvent::class)
         subclass(EvidenceCollectedEvent::class)
         subclass(ForagedEvent::class)
+        subclass(ForetoldEvent::class)
         subclass(InvestigatedEvent::class)
         subclass(PermanentExploredEvent::class)
         subclass(PermanentConnivedEvent::class)

@@ -626,6 +626,24 @@ data class ForagedEvent(
 ) : GameEvent
 
 /**
+ * A player just foretold a card — took the foretell special action, paying the setup cost and
+ * exiling the card from their hand face down (CR 702.143a). Emitted only by `ForetellCardHandler`,
+ * once per card foretold; casting a foretold card later doesn't emit it. Drives "Whenever you
+ * foretell a card" triggers (Dream Devourer); see
+ * [com.wingedsheep.sdk.scripting.EventPattern.ForetoldEvent].
+ *
+ * @property playerId The player who foretold.
+ * @property cardId The foretold card, now face down in exile — hidden from opponents, so this is
+ *   an internal signal with no client event (the exile itself is surfaced by its zone change).
+ */
+@Serializable
+@SerialName("ForetoldEvent")
+data class ForetoldEvent(
+    val playerId: EntityId,
+    val cardId: EntityId,
+) : GameEvent
+
+/**
  * A player investigated once (CR 701.16a) — fires
  * [com.wingedsheep.sdk.scripting.EventPattern.InvestigatedEvent]. Emitted only by the
  * `InvestigateExecutor`, one per investigate, so "investigate twice" is two of these and a plain

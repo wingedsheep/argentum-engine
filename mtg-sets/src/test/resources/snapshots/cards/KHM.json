@@ -996,6 +996,51 @@
     ]
 }
 
+// Cosmos Charger
+{
+    "name": "Cosmos Charger",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Horse Spirit",
+    "oracleText": "Flash\nFlying\nForetelling cards from your hand costs {1} less and can be done on any player's turn.\nForetell {2}{U} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING",
+        "FORETELL"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Foretell",
+            "cost": "{2}{U}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpecialActionCost",
+                "action": "FORETELL",
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            },
+            "MayForetellOnAnyTurn"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "rarity": "RARE",
+        "artist": "Nils Hamm",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4ec318c6-b718-436f-b9e8-e0c6154e5010.jpg?1783928268"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Darkbore Pathway
 {
     "name": "Darkbore Pathway",
@@ -1508,6 +1553,55 @@
         "artist": "Irina Nordsol",
         "flavorText": "\"What kind of monstrous grave robber leaves the treasures, but takes the bodies?\"\n—Fjall, Beskir elder",
         "imageUri": "https://cards.scryfall.io/normal/front/2/0/205eb029-68a0-4895-b142-2eb09987b5cb.jpg?1783928250"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Dream Devourer
+{
+    "name": "Dream Devourer",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Demon Cleric",
+    "oracleText": "Each nonland card in your hand without foretell has foretell. Its foretell cost is equal to its mana cost reduced by {2}. (During your turn, you may pay {2} and exile it from your hand face down. Cast it on a later turn for its foretell cost.)\nWhenever you foretell a card, this creature gets +2/+0 until end of turn.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dream Devourer:1",
+                "trigger": "ForetoldEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "HandCardsHaveForetell",
+                "filter": "nonland",
+                "costReduction": 2
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "rarity": "RARE",
+        "artist": "David Rapoza",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff1d88a6-a74d-44b5-b7a8-866e866807f1.jpg?1783928250"
     },
     "colorIdentityOverride": [
         "BLACK"

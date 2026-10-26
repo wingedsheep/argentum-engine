@@ -4034,7 +4034,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `Effects.Untap(ContextTarget(0))`, with the count owned by the spell's target requirement.
 - `UnlockDoorEffect(target = ContextTarget(0))` — facade `Effects.UnlockDoor(target)`. The resolution-time
   **"unlock a door"** instruction (CR 709.5f): gives a locked half of the targeted Room the "unlocked"
-  designation. Distinct from the *unlock cost* special action (CR 709.5e, `ModifyUnlockCost` below) — the
+  designation. Distinct from the *unlock cost* special action (CR 709.5e, `ModifySpecialActionCost` below) — the
   resolving controller pays nothing. Routes through the same shared `RoomDoorUnlocker` the special action uses,
   so it emits the identical `DoorUnlockedEvent`/`RoomFullyUnlockedEvent` and a face's "When you unlock this
   door" trigger (`Triggers.self.doorUnlocked()`, CR 709.5h) fires either way. Pair with an **up-to-one** target
@@ -7841,7 +7841,7 @@ put on the player by anyone: "whenever you get one or more {E}", `CountersPlaced
 `losesLife(batch?, exactly?)`, `losesGame()`, `sacrifices(filter, batch?)`,
 `sacrificesAnother(filter)`, `taps(filter, batch?)`, `tapsLandForMana(land?)`, `createsToken(token?)`,
 `exploits(nontoken?)`, `commitsCrime()`, `givesAGift()`, `scries()`, `surveils()`, `scriesOrSurveils()`, `proliferates()`,
-`discovers()`, `collectsEvidence()`, `forages()`, `investigates(firstTimeEachTurn?)`, `solvesACase()`, `clashes(andWins?)`,
+`discovers()`, `collectsEvidence()`, `forages()`, `foretells()`, `investigates(firstTimeEachTurn?)`, `solvesACase()`, `clashes(andWins?)`,
 `isTemptedByTheRing(bearerChosen?)`, `bends(types)`, `manifestsDread()`, `expends(n)`,
 `venturesIntoTheDungeon()`, `completesADungeon()`, `takesTheInitiative()`, `becomesTheMonarch()`,
 `fullyUnlocksARoom()`, `sagaChapterResolves(finalOnly?)`.
@@ -9107,6 +9107,9 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   cast-time additional cost — because every path emits `EventPattern.ForagedEvent` (see § Forage).
   Never fires for a declined forage or one no mode was feasible for. The forager is whoever paid,
   so a forage an opponent pays resolves "you" as that opponent. Corpseberry Cultivator.
+- `Triggers.you.foretells()` — "whenever you foretell a card" (CR 702.143a): the foretell special action,
+  once per card (`EventPattern.ForetoldEvent`), never casting a foretold card later and never a card
+  that *becomes* foretold by an effect. Dream Devourer.
 - `Triggers.you.investigates(firstTimeEachTurn?)` — investigate (CR 701.16a,
   `EventPattern.InvestigatedEvent`). Fires once per investigate performed by `Effects.Investigate`,
   so "investigate twice" fires it twice; never for a plain `Effects.CreateClue` ("create a Clue
@@ -11284,54 +11287,29 @@ staticAbility {
     `ReduceGeneric(1)` gated by `OnlyIf(IsYourTurn)`; Lashwhip Predator / Arwen's Gift gate on a
     `Compare(...)`).
 
-**Plot cost statics — `ModifyPlotCost`**
+**Special-action cost statics — `ModifySpecialActionCost`**
 
-Plot (CR 718) is a *special action*, not a spell, so `ModifySpellCost` never touches it.
-`ModifyPlotCost(target, modification)` is its dedicated cost modifier, evaluated by the engine's
-`PlotCostReducer` (consulted by both the plot legal-action enumerator and the plot handler so
-affordability and payment stay in lockstep).
+Plotting (CR 702.170), unlocking a Room door (CR 709.5e) and foretelling (CR 702.143a) are *special
+actions* (CR 116.2), not spells, so `ModifySpellCost` never touches them.
+`ModifySpecialActionCost(action, modification)` is their shared cost modifier, evaluated by the
+engine's `SpecialActionCostReducer` (consulted by each action's legal-action enumerator and handler,
+so affordability and payment stay in lockstep). It applies to the special actions the source's
+controller takes; several stack additively.
 
 ```kotlin
 staticAbility {
-    ability = ModifyPlotCost(
-        target = PlotCostTarget.YouPlotFromHand,
-        modification = CostModification.ReduceGeneric(2),
-    )
+    ability = ModifySpecialActionCost(SpecialActionKind.PLOT, CostModification.ReduceGeneric(2))
 }
 ```
 
-- `target: PlotCostTarget` — currently `YouPlotFromHand` (cards the source's controller plots from
-  hand; a future "plot from top of library" / Fblthp variant slots in as a new `PlotCostTarget`
-  without changing call sites).
+- `action: SpecialActionKind` — `PLOT` ("Plotting cards from your hand costs {N} less", Doc Aurlock,
+  Grizzled Genius), `UNLOCK_DOOR` ("Unlock costs you pay cost {N} less", Inquisitive Glimmer — its
+  "Enchantment spells you cast cost {1} less" half is a plain `ModifySpellCost`), `FORETELL`
+  ("Foretelling cards from your hand costs {N} less" — the {2} paid to exile the card, not the
+  foretell cost paid to cast it later; Cosmos Charger).
 - `modification: CostModification` — reuses the spell-cost vocabulary, but only the flat generic
-  shapes (`ReduceGeneric` / `IncreaseGeneric`) are meaningful since a printed plot cost is a flat
-  mana cost; generic is floored at {0} and colored pips are never reduced. Doc Aurlock, Grizzled
-  Genius: "Plotting cards from your hand costs {2} less" = `ReduceGeneric(2)`.
-
-**Door-unlock cost statics — `ModifyUnlockCost`**
-
-Unlocking a Room door (CR 709.5e) is a *special action*, so neither `ModifySpellCost` nor
-`ModifyPlotCost` touches it. `ModifyUnlockCost(target, modification)` is its dedicated cost modifier,
-evaluated by the engine's `UnlockCostReducer` (consulted by both the unlock legal-action enumerator
-and `UnlockRoomDoorHandler` so affordability and payment stay in lockstep — the same lockstep pattern
-as `ModifyPlotCost`).
-
-```kotlin
-staticAbility {
-    ability = ModifyUnlockCost(
-        target = UnlockCostTarget.YouUnlock,
-        modification = CostModification.ReduceGeneric(1),
-    )
-}
-```
-
-- `target: UnlockCostTarget` — currently `YouUnlock` (unlock actions performed by the source's
-  controller; a future "opponents' unlock costs" tax slots in as a new variant without changing call
-  sites).
-- `modification: CostModification` — like plot, only the flat generic shapes are meaningful (printed
-  unlock cost is a flat mana cost); generic is floored at {0}, colored pips untouched. Inquisitive
-  Glimmer: "Unlock costs you pay cost {1} less" = `ReduceGeneric(1)` (its "Enchantment spells you cast
-  cost {1} less" half is a plain `ModifySpellCost(YouCast(GameObjectFilter.Enchantment), ...)`).
+  shapes (`ReduceGeneric` / `IncreaseGeneric`) are meaningful since every printed special-action cost
+  is a flat mana cost; generic is floored at {0} and coloured pips are never reduced.
 
 **Global denial statics** (no `filter`/`duration` block — they're singleton-style)
 
@@ -12139,6 +12117,16 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   payment. Granted escape uses the ordinary destination on resolution and marks an escaped
   permanent (`Conditions.Escaped`); the player chooses among available costs. Underworld Breach: `GraveyardCardsHaveEscape(GameObjectFilter.Nonland,
   additionalCost = Costs.additional.ExileOtherCards(3))`.
+- `HandCardsHaveForetell(filter, costReduction = 0)` — "Each `filter` card in your hand without
+  foretell has foretell. Its foretell cost is equal to its mana cost reduced by {`costReduction`}"
+  (Dream Devourer: `HandCardsHaveForetell(GameObjectFilter.Nonland, costReduction = 2)`). Read with
+  printed foretell through `ForetellGrants.effectiveForetellCost` by the foretell enumerator and
+  handler; a printed foretell wins. The reduction comes off the **generic** part only ({1}{G}{G} →
+  {G}{G}), and the cost is fixed on the card as it is foretold, so the foretold card can still be cast
+  for it after the grant is gone (CR 702.143d).
+- `MayForetellOnAnyTurn` — "Foretelling cards from your hand … can be done on any player's turn"
+  (Cosmos Charger): while you control it, you may foretell any time you have priority, not only during
+  your turn (CR 116.2h). The "costs {1} less" half is `ModifySpecialActionCost(FORETELL, …)`.
 - `GrantMayCastFromLinkedExile(filter = Nonland, duringYourTurnOnly = false, additionalCost = null, ownedByYou = false, withoutPayingManaCost = false, oncePerTurn = false, maxManaValue = null, exiledThisTurnOnly = false, entersWithCounter = null, withAnyManaType = false)`
   — "you may cast cards exiled with this permanent" — reads the source's `LinkedExileComponent` (Rona,
   Disciple of Gix; Maralen, Fae Ascendant; Dawnhand Dissident). Casting spells from linked exile is
@@ -14093,7 +14081,7 @@ composite abilities).
 - `BasicLandcycling(cost)` — cycling that fetches a basic land type.
 - `Typecycling(type, cost)` — cycling that fetches a card type.
 - `Plot(cost)` — `KeywordAbility.plot(cost)`. Special action available during your main phase while the stack is empty: pay [cost] and exile the card from your hand. It becomes plotted (stamped with a `PlottedComponent`). On a later turn you may cast it from exile without paying its mana cost, as a sorcery (CR 718). Cast permission is granted via the engine's standard `MayPlayPermission` + `PlayWithoutPayingCostComponent`, gated by `Conditions.SourcePlottedOnPriorTurn`. No card-side wiring needed — declare the keyword ability on the card and the engine handles the rest.
-- `Foretell(cost)` — `KeywordAbility.foretell(cost)` (Kaldheim, CR 702.143). A sorcery-speed **special action** available while you have priority during your own turn: pay the fixed **{2}** setup cost and exile the card from your hand **face down** (`ForetoldComponent` + `FaceDownComponent` — hidden from opponents in exile, visible to its owner). On a **later** turn (not the turn it was foretold) you may cast it from exile by paying its **foretell cost** `[cost]` rather than its mana cost. Cast permission is a standard permanent `MayPlayPermission` gated by `Conditions.SourceForetoldOnPriorTurn`, plus a `PlayWithFixedAlternativeManaCostComponent` carrying `[cost]` — the same fixed-alternative-cast machinery **Airbend** uses, honored by `CastFromZoneEnumerator` + `CastSpellHandler` and stripped on leaving exile by `StackResolver` (which also strips the `FaceDownComponent` as the card is cast face up). Structurally Plot's paid cousin (`ForetellCardHandler` / `ForetellEnumerator` mirror `PlotCardHandler` / `PlotEnumerator`): plot is free to set up and free to cast later, foretell costs {2} to exile and has a distinct foretell cost to cast. No card-side wiring needed — declare the keyword ability and the engine handles the rest. A rider on whether the spell **was foretold** ("If this spell was foretold, …") reads `Conditions.WasForetold` — true when the spell was a foretold card in exile before it was cast, whatever cost then paid for it (CR 702.143c); the engine stamps `ChoiceSlot.FORETOLD` as the spell is cast, so it answers from the resolving spell and from the permanent a permanent spell becomes (Poison the Cup, Starnheim Unleashed). The foretell cost may carry an `{X}` (`foretell("{X}{X}{W}")`, Starnheim Unleashed): it is announced and paid like a printed `{X}`, and the resolving spell reads it as `DynamicAmounts.xValue()`.
+- `Foretell(cost)` — `KeywordAbility.foretell(cost)` (Kaldheim, CR 702.143). A **special action** available any time you have priority during your own turn (CR 116.2h — not only at sorcery speed; on any turn with `MayForetellOnAnyTurn`): pay the **{2}** setup cost (modified by `ModifySpecialActionCost(FORETELL, …)`) and exile the card from your hand **face down** (`ForetoldComponent` + `FaceDownComponent` — hidden from opponents in exile, visible to its owner). On a **later** turn (not the turn it was foretold) you may cast it from exile by paying its **foretell cost** `[cost]` rather than its mana cost. Cast permission is a standard permanent `MayPlayPermission` gated by `Conditions.SourceForetoldOnPriorTurn`, plus a `PlayWithFixedAlternativeManaCostComponent` carrying `[cost]` — the same fixed-alternative-cast machinery **Airbend** uses, honored by `CastFromZoneEnumerator` + `CastSpellHandler` and stripped on leaving exile by `StackResolver` (which also strips the `FaceDownComponent` as the card is cast face up). Structurally Plot's paid cousin (`ForetellCardHandler` / `ForetellEnumerator` mirror `PlotCardHandler` / `PlotEnumerator`): plot is free to set up and free to cast later, foretell costs {2} to exile and has a distinct foretell cost to cast. No card-side wiring needed — declare the keyword ability and the engine handles the rest. A rider on whether the spell **was foretold** ("If this spell was foretold, …") reads `Conditions.WasForetold` — true when the spell was a foretold card in exile before it was cast, whatever cost then paid for it (CR 702.143c); the engine stamps `ChoiceSlot.FORETOLD` as the spell is cast, so it answers from the resolving spell and from the permanent a permanent spell becomes (Poison the Cup, Starnheim Unleashed). The foretell cost may carry an `{X}` (`foretell("{X}{X}{W}")`, Starnheim Unleashed): it is announced and paid like a printed `{X}`, and the resolving spell reads it as `DynamicAmounts.xValue()`.
 - `Suspend(cost, timeCounters)` — `KeywordAbility.suspend(cost, n)` (Time Spiral, CR 702.62). Unlike every other
   entry in this list, exiling this way is **not a cast** — CR 702.62a: "this action doesn't use the stack" — so it's
   wired as its own special action (`SuspendCardFromHand` / `SuspendCardFromHandHandler` / `SuspendEnumerator`),

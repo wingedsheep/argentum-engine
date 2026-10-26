@@ -5,9 +5,9 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CostModification
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.ModifyPlotCost
+import com.wingedsheep.sdk.scripting.ModifySpecialActionCost
 import com.wingedsheep.sdk.scripting.ModifySpellCost
-import com.wingedsheep.sdk.scripting.PlotCostTarget
+import com.wingedsheep.sdk.scripting.SpecialActionKind
 import com.wingedsheep.sdk.scripting.SpellCostTarget
 
 /**
@@ -22,8 +22,8 @@ import com.wingedsheep.sdk.scripting.SpellCostTarget
  * The first half is a [ModifySpellCost] with the new [SpellCostTarget.YouCastFromZones]
  * (graveyard + exile), matched by the cost calculator only when the casting player controls Doc
  * Aurlock and the spell is being cast from one of those zones. The second half is a
- * [ModifyPlotCost] — Plot (CR 718) is a special action, not a spell, so it has its own dedicated
- * cost-reduction path (`PlotCostReducer`). Both reductions only touch generic mana and floor at
+ * [ModifySpecialActionCost] — Plot (CR 702.170) is a special action, not a spell, so it has its own dedicated
+ * cost-reduction path (`SpecialActionCostReducer`). Both reductions only touch generic mana and floor at
  * {0}.
  */
 val DocAurlockGrizzledGenius = card("Doc Aurlock, Grizzled Genius") {
@@ -46,8 +46,8 @@ val DocAurlockGrizzledGenius = card("Doc Aurlock, Grizzled Genius") {
     }
 
     staticAbility {
-        ability = ModifyPlotCost(
-            target = PlotCostTarget.YouPlotFromHand,
+        ability = ModifySpecialActionCost(
+            action = SpecialActionKind.PLOT,
             modification = CostModification.ReduceGeneric(2),
         )
     }

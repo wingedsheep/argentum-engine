@@ -734,6 +734,10 @@ class TriggerMatcher(
                 event is com.wingedsheep.engine.core.ForagedEvent &&
                     matchesPlayer(state, trigger.player, event.playerId, controllerId, sourceId)
             }
+            is EventPattern.ForetoldEvent -> {
+                event is com.wingedsheep.engine.core.ForetoldEvent &&
+                    matchesPlayer(state, trigger.player, event.playerId, controllerId, sourceId)
+            }
             is EventPattern.InvestigatedEvent -> {
                 event is com.wingedsheep.engine.core.InvestigatedEvent &&
                     matchesPlayer(state, trigger.player, event.playerId, controllerId, sourceId) &&

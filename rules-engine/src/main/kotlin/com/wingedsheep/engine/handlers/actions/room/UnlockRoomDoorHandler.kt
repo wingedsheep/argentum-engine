@@ -16,7 +16,8 @@ import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
-import com.wingedsheep.engine.mechanics.mana.UnlockCostReducer
+import com.wingedsheep.engine.mechanics.mana.SpecialActionCostReducer
+import com.wingedsheep.sdk.scripting.SpecialActionKind
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -47,7 +48,7 @@ class UnlockRoomDoorHandler(
 
     // Inquisitive-Glimmer-style "Unlock costs you pay cost {N} less" reductions. The enumerator
     // applies the same reducer so affordability and payment agree (CR 709.5e).
-    private val unlockCostReducer = UnlockCostReducer(cardRegistry)
+    private val specialActionCostReducer = SpecialActionCostReducer(cardRegistry)
 
     // Lets restricted mana tagged "spend only to ... unlock a door" (Creeping Peeper) be
     // recognized when paying an unlock cost.
@@ -92,7 +93,7 @@ class UnlockRoomDoorHandler(
             return "This door is already unlocked"
         }
 
-        val cost = unlockCostReducer.effectiveUnlockCost(state, action.playerId, face.manaCost)
+        val cost = specialActionCostReducer.effectiveCost(state, action.playerId, SpecialActionKind.UNLOCK_DOOR, face.manaCost)
         when (action.paymentStrategy) {
             is PaymentStrategy.AutoPay -> {
                 if (!manaSolver.canPay(state, action.playerId, cost, 0, spellContext = unlockContext)) {
@@ -153,7 +154,7 @@ class UnlockRoomDoorHandler(
 
         // Pay the face's mana cost (the unlock cost, per CR 709.5e), after any
         // "Unlock costs you pay cost {N} less" reductions (Inquisitive Glimmer).
-        val cost = unlockCostReducer.effectiveUnlockCost(currentState, action.playerId, face.manaCost)
+        val cost = specialActionCostReducer.effectiveCost(currentState, action.playerId, SpecialActionKind.UNLOCK_DOOR, face.manaCost)
         when (action.paymentStrategy) {
             is PaymentStrategy.FromPool -> {
                 val poolComponent = currentState.getEntity(action.playerId)?.get<ManaPoolComponent>()

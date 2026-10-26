@@ -498,6 +498,11 @@ data class TriggerContext(
                 is com.wingedsheep.engine.core.ForagedEvent -> TriggerContext(
                     triggeringPlayerId = event.playerId
                 )
+                // Foretell (CR 702.143a): the foretelling player is the triggering player; the
+                // foretold card stays hidden, so it isn't the triggering entity.
+                is com.wingedsheep.engine.core.ForetoldEvent -> TriggerContext(
+                    triggeringPlayerId = event.playerId
+                )
                 // Investigate (CR 701.16a): the investigating player is the triggering player.
                 is com.wingedsheep.engine.core.InvestigatedEvent -> TriggerContext(
                     triggeringPlayerId = event.playerId

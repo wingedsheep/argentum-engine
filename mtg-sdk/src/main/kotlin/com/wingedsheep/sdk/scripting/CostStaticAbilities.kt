@@ -1026,36 +1026,40 @@ sealed interface CostReductionSource {
 }
 
 /**
- * Static ability that modifies the cost of the **Plot** special action (CR 718).
+ * Static ability that modifies the cost of a **special action** (CR 116.2) — plotting a card,
+ * unlocking a door, foretelling a card. None of these is a spell, so [ModifySpellCost] doesn't touch
+ * them; the engine's `SpecialActionCostReducer` sums every matching static the acting player
+ * controls and applies it to the action's printed cost, consulted by both the action's legal-action
+ * enumerator (affordability) and its handler (validate + pay) so the two stay in lockstep.
  *
- * Plot is not a spell, so [ModifySpellCost] does not touch it; this is its dedicated cost
- * modifier. The engine's `PlotCostReducer` scans the battlefield for these and reduces the
- * plot cost paid by [PlotEnumerator]/`PlotCardHandler`.
+ *  - Doc Aurlock, Grizzled Genius ("Plotting cards from your hand costs {2} less") →
+ *    `ModifySpecialActionCost(SpecialActionKind.PLOT, CostModification.ReduceGeneric(2))`.
+ *  - Inquisitive Glimmer ("Unlock costs you pay cost {1} less") →
+ *    `ModifySpecialActionCost(SpecialActionKind.UNLOCK_DOOR, CostModification.ReduceGeneric(1))`.
+ *  - Cosmos Charger ("Foretelling cards from your hand costs {1} less") →
+ *    `ModifySpecialActionCost(SpecialActionKind.FORETELL, CostModification.ReduceGeneric(1))`.
  *
- * Used for Doc Aurlock, Grizzled Genius ("Plotting cards from your hand costs {2} less") via
- * `ModifyPlotCost(PlotCostTarget.YouPlotFromHand, CostModification.ReduceGeneric(2))`.
+ * Applies to the special actions the source's **controller** takes. Only generic [CostModification]
+ * reductions/increases are meaningful — each action's printed cost is a flat mana cost, and a
+ * reduction never takes coloured pips off it (CR 118.7). Several statics stack additively.
  *
- * @property target Which plots the modifier applies to.
- * @property modification How the cost is changed (reuses the spell-cost [CostModification]
- *           vocabulary; only generic reductions are currently meaningful for plot).
+ * @property action Which special action's cost is modified.
+ * @property modification How the cost is changed (the spell-cost [CostModification] vocabulary).
  */
-@SerialName("ModifyPlotCost")
+@SerialName("ModifySpecialActionCost")
 @Serializable
-data class ModifyPlotCost(
-    val target: PlotCostTarget,
+data class ModifySpecialActionCost(
+    val action: SpecialActionKind,
     val modification: CostModification,
 ) : StaticAbility {
     override val description: String = buildString {
-        append(
-            when (target) {
-                PlotCostTarget.YouPlotFromHand -> "Plotting cards from your hand"
-            }
-        )
+        append(action.costPhrase)
+        val verb = if (action == SpecialActionKind.UNLOCK_DOOR) "cost" else "costs"
         append(
             when (val m = modification) {
-                is CostModification.ReduceGeneric -> " costs {${m.amount}} less"
-                is CostModification.IncreaseGeneric -> " costs {${m.amount}} more"
-                else -> " has a modified cost"
+                is CostModification.ReduceGeneric -> " $verb {${m.amount}} less"
+                is CostModification.IncreaseGeneric -> " $verb {${m.amount}} more"
+                else -> " ${if (verb == "cost") "have" else "has"} a modified cost"
             }
         )
     }
@@ -1067,81 +1071,27 @@ data class ModifyPlotCost(
 }
 
 /**
- * What a [ModifyPlotCost] applies to. Modeled as a sealed interface so future "plot from the top
- * of your library" reductions (Fblthp-shaped) slot in as a new variant without changing the
- * static-ability shape.
+ * A special action (CR 116.2) whose cost [ModifySpecialActionCost] can modify.
+ *
+ * @property costPhrase How the action's cost is named in rules text, as the subject of "costs".
  */
 @Serializable
-sealed interface PlotCostTarget {
-    /** Cards the source's controller plots from their hand (the printed Plot keyword cost). */
-    @SerialName("YouPlotFromHand")
-    @Serializable
-    data object YouPlotFromHand : PlotCostTarget
-}
+enum class SpecialActionKind(val costPhrase: String) {
+    /** Plotting a card from your hand (CR 702.170, CR 116.2k). */
+    PLOT("Plotting cards from your hand"),
 
-/**
- * Static ability that modifies the cost of the **door-unlock** special action (CR 709.5e).
- *
- * Unlocking a door is not a spell or the Plot action, so neither [ModifySpellCost] nor
- * [ModifyPlotCost] touches it; this is its dedicated cost modifier. The engine's
- * `UnlockCostReducer` scans the battlefield for these and reduces the unlock cost paid by
- * `UnlockRoomDoorEnumerator` (affordability) and `UnlockRoomDoorHandler` (validate + pay),
- * keeping the two in lockstep — mirroring the [ModifyPlotCost]/`PlotCostReducer` pair.
- *
- * Used for Inquisitive Glimmer ("Unlock costs you pay cost {1} less") via
- * `ModifyUnlockCost(UnlockCostTarget.YouUnlock, CostModification.ReduceGeneric(1))`. Only
- * generic [CostModification] reductions/increases are meaningful — the printed unlock cost is
- * a flat mana cost.
- *
- * @property target Whose unlock actions the modifier applies to.
- * @property modification How the cost is changed (reuses the spell-cost [CostModification]
- *           vocabulary; only generic adjustments apply to unlocking).
- */
-@SerialName("ModifyUnlockCost")
-@Serializable
-data class ModifyUnlockCost(
-    val target: UnlockCostTarget,
-    val modification: CostModification,
-) : StaticAbility {
-    override val description: String = buildString {
-        append(
-            when (target) {
-                UnlockCostTarget.YouUnlock -> "Unlock costs you pay"
-            }
-        )
-        append(
-            when (val m = modification) {
-                is CostModification.ReduceGeneric -> " cost {${m.amount}} less"
-                is CostModification.IncreaseGeneric -> " cost {${m.amount}} more"
-                else -> " have a modified cost"
-            }
-        )
-    }
+    /** Unlocking a door of a Room (CR 709.5e). */
+    UNLOCK_DOOR("Unlock costs you pay"),
 
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
-        val newModification = modification.applyTextReplacement(replacer)
-        return if (newModification !== modification) copy(modification = newModification) else this
-    }
-}
-
-/**
- * Whose door-unlock actions a [ModifyUnlockCost] applies to. Modeled as a sealed interface so a
- * future "opponents' unlock costs" tax slots in as a new variant without changing the
- * static-ability shape.
- */
-@Serializable
-sealed interface UnlockCostTarget {
-    /** Door-unlock special actions performed by the source's controller ("unlock costs you pay"). */
-    @SerialName("YouUnlock")
-    @Serializable
-    data object YouUnlock : UnlockCostTarget
+    /** Foretelling a card from your hand — the {2} paid as you exile it face down (CR 702.143a). */
+    FORETELL("Foretelling cards from your hand"),
 }
 
 /**
  * The activated abilities of permanents matching [filter] cost [amount] generic mana less to
  * activate, with the mana in each cost floored at [manaFloor] total mana (generic + colored).
  *
- * The activated-ability sibling of [ModifySpellCost] / [ModifyPlotCost] / [ReduceEquipCost],
+ * The activated-ability sibling of [ModifySpellCost] / [ModifySpecialActionCost] / [ReduceEquipCost],
  * generalized so one type covers the family:
  *  - **Power Artifact** ("Enchanted artifact's activated abilities cost {2} less to activate. This
  *    effect can't reduce the mana in that cost to less than one mana.") →

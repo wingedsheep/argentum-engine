@@ -814,6 +814,21 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
+     * Whenever [player] foretells a card — takes the foretell special action, paying {2} and
+     * exiling a card from their hand face down (CR 702.143a, 702.143c). Fires once per card
+     * foretold, never for casting a foretold card from exile later (Dream Devourer ruling) and never
+     * for an effect that makes a card in exile *become* foretold (CR 702.143d) — that isn't the
+     * special action.
+     */
+    @SerialName("ForetoldEvent")
+    @Serializable
+    data class ForetoldEvent(
+        val player: Player = Player.You
+    ) : EventPattern {
+        override val description: String = "${player.description} foretells a card"
+    }
+
+    /**
      * Whenever [player] investigates — CR 701.16a, "create a Clue token". Fires once per
      * investigate performed by `InvestigateEffect`, so "investigate twice" is two events; a card
      * that only says "create a Clue token" never fires it. The investigate counts even when a

@@ -1187,7 +1187,6 @@ Player.TriggeringPlayer — Player
 Player.You — Player
 PlayerRankMetric.CreaturesOfSubtype — PlayerRankMetric
 PlayerRankMetric.LifeTotal — PlayerRankMetric
-PlotCostTarget.YouPlotFromHand — PlotCostTarget
 PreventionSourceFilter.AnySource — PreventionSourceFilter
 PreventionSourceFilter.Chosen — PreventionSourceFilter
 PreventionSourceFilter.Matching — PreventionSourceFilter
@@ -1530,10 +1529,8 @@ MayCastWithoutPayingManaCost — StaticAbility
 MayPlayCardsFromExile — StaticAbility
 MayPlayLandsFromGraveyard — StaticAbility
 MayPlayPermanentsFromGraveyard — StaticAbility
-ModifyPlotCost — StaticAbility
 ModifySpellCost — StaticAbility
 ModifyStats — StaticAbility
-ModifyUnlockCost — StaticAbility
 MultiplyManaOnSourceTap — StaticAbility
 MustAttack — StaticAbility
 MustBeBlocked — StaticAbility
@@ -1611,7 +1608,6 @@ TargetSpellOrPermanent — TargetRequirement
 TimingRule.InstantSpeed — TimingRule
 TimingRule.ManaAbility — TimingRule
 TimingRule.SorcerySpeed — TimingRule
-UnlockCostTarget.YouUnlock — UnlockCostTarget
 WardCost.Choice — WardCost
 WardCost.CollectEvidence — WardCost
 WardCost.Composite — WardCost
@@ -1679,6 +1675,7 @@ EventPattern.DieRolledEvent — EventPattern — Mr. House, President and CEO (p
 EventPattern.DungeonCompletedEvent — EventPattern — Dungeon Crawler — EventPattern.SagaChapterResolvedEvent, EventPattern.CaseSolvedEvent — completing a dungeon is a player event as the dungeon card leaves the game (CR 309.7), not a permanent's chapter resolving or a Case being solved; neither carries the completing player
 EventPattern.EnlistedEvent — EventPattern — Guardian of New Benalia — ExertedAsItAttacksEvent, TapEvent — identifies the enlisting attacker and another creature's payment; a tap alone cannot identify the paid ability
 EventPattern.EvolvedEvent — EventPattern — Watchful Radstag — EventPattern.TrainedEvent, EventPattern.CountersPlacedEvent — CountersPlacedEvent fires for +1/+1 counters from any source (CR 702.100b counts only the evolve ability's own), and TrainedEvent is the training keyword action, which a "whenever this creature trains" payoff must not see on an evolve
+EventPattern.ForetoldEvent — EventPattern — Dream Devourer — EventPattern.ForagedEvent, EventPattern.CardsPutIntoExileEvent — "whenever you foretell a card" is the foretell special action, a keyword action of its own like forage; a hand-to-exile zone-change filter can't tell foretelling from any other exile from hand, and it must not fire for a card that merely becomes foretold (CR 702.143d)
 EventPattern.LearnEvent — EventPattern — Retriever Phoenix — EventPattern.ScryEvent, EventPattern.ProliferatedEvent — ScryEvent is a KeywordActionCountEvent (learn has no count to resize), ProliferatedEvent is a trigger pattern for an action that happened; this is the replacement-only "would learn" pattern ReplaceKeywordAction matches
 EventPattern.ManaAbilityResolved — EventPattern — Tyvar the Bellicose — EventPattern.LandTappedForMana, EventPattern.AbilityActivatedEvent — LandTappedForMana is "tapped for mana" (only a mana ability with {T} in its cost, CR 106.12) and lands only, and its event is emitted only for lands; AbilityActivatedEvent fires at activation, not resolution, and carries no amount of mana produced, which this payoff reads
 EventPattern.MutateEvent — EventPattern — Gemrazer — EventPattern.TurnFaceUpEvent, EventPattern.EvolvedEvent — a mutating spell merging with a permanent (CR 702.140d) is not a zone change (the permanent doesn't enter, CR 730.2b), a face-up turn, or a counter placement; no axis on those patterns can say "merged with"
@@ -1696,6 +1693,7 @@ GrantOffspringToOwnSpells — StaticAbility — Zinnia, Valley's Voice — Grant
 GrantProtectionFromToGroup — StaticAbility — Lord of the Nazgûl — GrantHexproofFromToGroup, GrantProtectionFromCardType — GrantProtectionFromCardType and GrantProtection(color) are fixed to one quality axis each (and a scope field on either would duplicate this); GrantHexproofFromToGroup is the scope-keyed twin but grants hexproof (opponent-only targeting, CR 702.11d) with a different supported-scope set, where protection is the full DEBT reading (CR 702.16b-f) — a hexproof/protection switch would fork its isSupported and description on every value
 GrantStaticAbility — StaticAbility — Nerd Rage — GrantTriggeredAbility, GrantActivatedAbility — both carry a field typed to their own ability family (TriggeredAbility / ActivatedAbility), so neither can hold a StaticAbility without forking its meaning; the one-shot GrantStaticAbilityEffect is a resolved duration grant, not a characteristic held while the granter is in play
 GraveyardCardsHaveEscape — StaticAbility — Underworld Breach — GraveyardCardsHaveFlashback, GraveyardCardsHaveMayhem — the whole-graveyard grant of a third cast-from-graveyard keyword; escape carries a non-mana half (exile N other cards) and neither exiles on resolution (flashback does) nor needs a discard this turn (mayhem does), so a keyword axis on either would fork every engine read
+HandCardsHaveForetell — StaticAbility — Dream Devourer — GraveyardCardsHaveEscape, GraveyardCardsHaveFlashback — the whole-hand grant of foretell; those grants are cast-from-graveyard permissions read at cast time, while foretell is a special action from hand whose cost is fixed as the card is foretold and outlives the grant, so a zone axis on either would fork every engine read
 IterationSpace.CounterKindsAmong — IterationSpace — Exotic Pets — IterationSpace.Group, IterationSpace.ColorsOf — Group iterates the permanents themselves and ColorsOf iterates an entity's colors; neither enumerates the distinct counter kinds across a group, and widening either would change what its body context binds (an entity / a colour vs a counter kind)
 IterationSpace.CounterKindsOn — IterationSpace — Dramatist's Puppet — IterationSpace.CounterKindsAmong, IterationSpace.ColorsOf — CounterKindsAmong unions the kinds across a battlefield GroupFilter, which can't name one chosen target; ColorsOf reads one referenced entity but binds a colour, not a counter kind — this is the single-entity reading CounterKindsAmong has no field for, with the same body binding
 IterationSpace.TargetsOf — IterationSpace — Spinning Wheel Kick — IterationSpace.Targets, IterationSpace.Collection — Targets visits every declaration's targets and rebinds the whole target list positionally, so it can't skip the other declarations (the damage source would be hit); Collection iterates a pipeline collection no step fills with one declaration's targets, and gathering them would lose the 608.2b-aligned named binding
@@ -1712,8 +1710,10 @@ ManaRestriction.ForetellOnly — ManaRestriction — Karfell Harbinger — ManaR
 ManaRestriction.SpellsWithKeywordOnly — ManaRestriction — Niko Defies Destiny — ManaRestriction.KickedSpellsOnly, ManaRestriction.SubtypeSpellsOnly — KickedSpellsOnly asks whether the kicker cost was paid, not whether the card has a keyword; SubtypeSpellsOnly reads type-line subtypes, and a keyword is not a subtype
 MarkMustAttackEffect — Effect — Sizzling Soloist — MarkMustAttackThisTurnEffect (renamed into this), MarkMustBlockThisTurnEffect — renames MarkMustAttackThisTurnEffect and gives it a window axis (this turn / its controller's next combat phase), no net new type; the blocking mirror is a floating effect with its own blocker-side semantics and no cross-turn window
 MaxCounters — StaticAbility — Rasputin Dreamweaver — CantReceiveCounters, CapCounterPlacementThisTurn — CantReceiveCounters is an all-kinds group prohibition projected as a flag that cost legality reads, with no kind or number to carry a limit; CapCounterPlacementThisTurn is a replacement that caps one placement then locks the recipient for the turn, blind to the counters already on it
+MayForetellOnAnyTurn — StaticAbility — Cosmos Charger — ModifySpecialActionCost, GrantFlashToSpellType — lifts the foretell special action's own-turn timing (CR 116.2h); a cost modifier doesn't carry timing, and flash grants change when spells are cast, not when a special action is taken
 MeldEffect — Effect — Titania, Voice of Gaea — ExileAndReturnTransformedEffect, ReturnSelfFromZoneTransformedEffect — both move one double-faced object and return it on a face of its own card; meld exiles two separate cards and returns them as one object whose characteristics come from a third definition (the meld result), with a pair check (CR 701.42b/c) neither has an axis for
 ModifyKeywordActionAmount — ReplacementEffect — Enhanced Surveillance — ModifyKeywordAction, ModifyDrawAmount — replaces and deletes ModifyMillAmount + ModifyScryAmount, one type whose appliesTo names the action (mill/scry/surveil) instead of one per action; ModifyKeywordAction inserts a prefix effect rather than resizing a count, and a draw is not a keyword action and has its own "N or more" announcement site
+ModifySpecialActionCost — StaticAbility — Cosmos Charger — ModifySpellCost, ReduceActivatedAbilityCost — merges ModifyPlotCost and ModifyUnlockCost (both deleted, with PlotCostTarget and UnlockCostTarget) into one cost modifier keyed by SpecialActionKind, adding foretell; net -3 types. Special actions aren't spells or abilities, so neither neighbour applies
 ModifySpellCostsEffect — Effect — Academy Loremaster — ReduceSpellCostsEffect (renamed into this), ModifySpellCost — renames and widens ReduceSpellCostsEffect with increase and player axes (no net new type); ModifySpellCost is a static that lasts only while its source is on the battlefield, where a resolved "spells they cast this turn cost {2} more" must outlive Academy Loremaster
 MoveAllCountersEffect — Effect — The Ozolith — MoveAllLastKnownCountersEffect, MoveCountersEffect — MoveAllLastKnownCounters reads a last-known counter map off a trigger or cost snapshot (the source already left), not a live permanent it empties; MoveCounters carries one kind and a counted amount, and "all of every kind" is neither (a nullable kind plus a sentinel amount would give it two meanings)
 NoteNumberForSourceEffect — Effect — Sigarda's Splendor — ChooseNumberForSourceEffect, StoreNumberEffect — ChooseNumberForSource writes the same durable slot but only from a player's bounded choice; StoreNumber evaluates a DynamicAmount but only into the resolving pipeline, gone once the ability ends

@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
+import com.wingedsheep.sdk.scripting.SpecialActionKind
 import com.wingedsheep.engine.core.UnlockRoomDoor
 import com.wingedsheep.engine.legalactions.ActionEnumerator
 import com.wingedsheep.engine.legalactions.EnumerationContext
@@ -31,7 +32,7 @@ class UnlockRoomDoorEnumerator : ActionEnumerator {
             val room = container.get<RoomComponent>() ?: continue
 
             for (face in room.lockedFaces) {
-                val cost = context.unlockCostReducer.effectiveUnlockCost(state, playerId, face.manaCost)
+                val cost = context.specialActionCostReducer.effectiveCost(state, playerId, SpecialActionKind.UNLOCK_DOOR, face.manaCost)
                 if (!context.manaSolver.canPay(state, playerId, cost, spellContext = unlockContext, precomputedSources = context.availableManaSources)) {
                     continue
                 }

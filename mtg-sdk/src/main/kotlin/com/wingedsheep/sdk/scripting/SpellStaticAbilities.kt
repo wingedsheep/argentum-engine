@@ -910,6 +910,54 @@ data class GraveyardCardsHaveEscape(
 }
 
 /**
+ * "Each [filter] card in your hand without foretell has foretell. Its foretell cost is equal to its
+ * mana cost reduced by {[costReduction]}." The hand analogue of [GraveyardCardsHaveEscape] — a
+ * whole-hand group grant of [KeywordAbility.Foretell] (CR 702.143) to every card in the
+ * controller's hand matching [filter], read through `ForetellGrants.effectiveForetellCost` by the
+ * foretell enumerator and handler. Dream Devourer:
+ * `HandCardsHaveForetell(GameObjectFilter.Nonland, costReduction = 2)`.
+ *
+ * A card with a printed foretell keeps its own ("without foretell"). The granted cost is the card's
+ * mana cost with [costReduction] taken off its **generic** part only — {1}{G}{G} becomes {G}{G}
+ * (Dream Devourer ruling) — fixed at the moment the card is foretold: the foretold card no longer
+ * has the ability once it leaves the hand, but can still be cast later for that cost even if the
+ * granting permanent is gone (CR 702.143d).
+ *
+ * @property filter Which hand cards gain foretell (matched against the card's characteristics).
+ * @property costReduction Generic mana taken off the card's mana cost to form its foretell cost.
+ */
+@SerialName("HandCardsHaveForetell")
+@Serializable
+data class HandCardsHaveForetell(
+    val filter: GameObjectFilter,
+    val costReduction: Int = 0,
+) : StaticAbility {
+    override val description: String = buildString {
+        append("Each ${filter.description} card in your hand without foretell has foretell. ")
+        append("Its foretell cost is equal to its mana cost")
+        if (costReduction > 0) append(" reduced by {$costReduction}")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
+ * "Foretelling cards from your hand … can be done on any player's turn." (Cosmos Charger.) Lifts
+ * the "during their turn" clause of the foretell special action (CR 116.2h, 702.143a) for the
+ * source's controller: while they control this, they may foretell any time they have priority.
+ * Only the timing — the cost half of Cosmos Charger's sentence is a
+ * [ModifySpecialActionCost] on [SpecialActionKind.FORETELL].
+ */
+@SerialName("MayForetellOnAnyTurn")
+@Serializable
+data object MayForetellOnAnyTurn : StaticAbility {
+    override val description: String = "Foretelling cards from your hand can be done on any player's turn"
+}
+
+/**
  * "Creature cards in your graveyard have sneak [cost]. You may cast creature spells from your
  * graveyard using their sneak abilities." (Ninja Teen level 3.)
  *

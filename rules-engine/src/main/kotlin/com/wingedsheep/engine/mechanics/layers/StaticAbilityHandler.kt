@@ -152,9 +152,7 @@ import com.wingedsheep.sdk.scripting.MayCastSelfFromZones
 import com.wingedsheep.sdk.scripting.MayCastWithoutPayingManaCost
 import com.wingedsheep.sdk.scripting.MayPlayLandsFromGraveyard
 import com.wingedsheep.sdk.scripting.MayPlayPermanentsFromGraveyard
-import com.wingedsheep.sdk.scripting.ModifyPlotCost
 import com.wingedsheep.sdk.scripting.ModifySpellCost
-import com.wingedsheep.sdk.scripting.ModifyUnlockCost
 import com.wingedsheep.sdk.scripting.NoMaximumHandSize
 import com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost
 import com.wingedsheep.sdk.scripting.SetMaximumHandSize
@@ -1283,12 +1281,14 @@ class StaticAbilityHandler(
             // Spell costs (CostCalculator):
             is GrantAlternativeCastingCost,
 
-            // Plot special-action cost (PlotCostReducer / PlotEnumerator / PlotCardHandler):
-            is ModifyPlotCost,
+            // Special-action costs — plot, unlock, foretell (SpecialActionCostReducer, read by
+            // each action's enumerator + handler):
+            is com.wingedsheep.sdk.scripting.ModifySpecialActionCost,
 
-            // Door-unlock special-action cost (UnlockCostReducer / UnlockRoomDoorEnumerator /
-            // UnlockRoomDoorHandler):
-            is ModifyUnlockCost,
+            // Foretell grants and timing (ForetellGrants, read by ForetellEnumerator /
+            // ForetellCardHandler):
+            is com.wingedsheep.sdk.scripting.HandCardsHaveForetell,
+            is com.wingedsheep.sdk.scripting.MayForetellOnAnyTurn,
 
             // Spells on the stack (StackResolver / GrantedKeywordResolver):
             is GrantCantBeCountered,

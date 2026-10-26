@@ -5,9 +5,9 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CostModification
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ModifySpellCost
-import com.wingedsheep.sdk.scripting.ModifyUnlockCost
+import com.wingedsheep.sdk.scripting.ModifySpecialActionCost
 import com.wingedsheep.sdk.scripting.SpellCostTarget
-import com.wingedsheep.sdk.scripting.UnlockCostTarget
+import com.wingedsheep.sdk.scripting.SpecialActionKind
 
 /**
  * Inquisitive Glimmer
@@ -19,7 +19,7 @@ import com.wingedsheep.sdk.scripting.UnlockCostTarget
  * Unlock costs you pay cost {1} less.
  *
  * The enchantment-spell discount is a standard [ModifySpellCost]; the unlock discount is the
- * dedicated [ModifyUnlockCost] (CR 709.5e), routed through the same `UnlockCostReducer` the
+ * dedicated [ModifySpecialActionCost] (CR 709.5e), routed through the same `SpecialActionCostReducer` the
  * unlock special action pays through.
  */
 val InquisitiveGlimmer = card("Inquisitive Glimmer") {
@@ -39,8 +39,8 @@ val InquisitiveGlimmer = card("Inquisitive Glimmer") {
     }
 
     staticAbility {
-        ability = ModifyUnlockCost(
-            target = UnlockCostTarget.YouUnlock,
+        ability = ModifySpecialActionCost(
+            action = SpecialActionKind.UNLOCK_DOOR,
             modification = CostModification.ReduceGeneric(1),
         )
     }

@@ -69,12 +69,9 @@ class EnumerationContext(
     val castPermissionUtils by lazy { CastPermissionUtils(cardRegistry, predicateEvaluator, conditionEvaluator) }
     // The one legality kernel the handlers' `validate` also asks, so what is offered is what is accepted.
     val legality by lazy { LegalityKernel(cardRegistry, conditionEvaluator) }
-    // Plot (CR 718) cost reduction — Doc Aurlock-style "plotting cards costs {N} less".
-    val plotCostReducer by lazy { com.wingedsheep.engine.mechanics.mana.PlotCostReducer(cardRegistry) }
-
-    // Door-unlock (CR 709.5e) cost reduction — Inquisitive-Glimmer-style "Unlock costs you pay
-    // cost {N} less". Kept in lockstep with UnlockRoomDoorHandler's own reducer.
-    val unlockCostReducer by lazy { com.wingedsheep.engine.mechanics.mana.UnlockCostReducer(cardRegistry) }
+    // Special-action (CR 116.2) cost modification — plot, unlock, foretell ("plotting cards costs
+    // {N} less"). Kept in lockstep with each action handler's own reducer.
+    val specialActionCostReducer by lazy { com.wingedsheep.engine.mechanics.mana.SpecialActionCostReducer(cardRegistry) }
 
     // Projected state
     val projected: ProjectedState by lazy { state.projectedState }

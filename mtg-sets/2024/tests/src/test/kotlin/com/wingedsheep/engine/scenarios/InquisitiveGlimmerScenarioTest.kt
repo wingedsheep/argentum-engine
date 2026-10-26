@@ -17,8 +17,8 @@ import io.kotest.matchers.shouldBe
 
 /**
  * Inquisitive Glimmer (DSK 217): "Enchantment spells you cast cost {1} less to cast. Unlock costs
- * you pay cost {1} less." Proves the new [com.wingedsheep.sdk.scripting.ModifyUnlockCost] reduces
- * the door-unlock special action through `UnlockCostReducer`, and confirms the enchantment-spell
+ * you pay cost {1} less." Proves the new [com.wingedsheep.sdk.scripting.ModifySpecialActionCost] reduces
+ * the door-unlock special action through `SpecialActionCostReducer`, and confirms the enchantment-spell
  * half rides the existing `ModifySpellCost` machinery.
  */
 class InquisitiveGlimmerScenarioTest : FunSpec({

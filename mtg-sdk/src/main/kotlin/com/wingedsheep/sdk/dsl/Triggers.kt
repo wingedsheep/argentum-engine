@@ -1214,6 +1214,9 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
     /** "forages" (CR 701.59a) — never for a declined forage. */
     fun forages(): TriggerSpec = spec(ForagedEvent(player))
 
+    /** "foretells a card" (CR 702.143a) — the special action, not casting a foretold card. */
+    fun foretells(): TriggerSpec = spec(ForetoldEvent(player))
+
     /**
      * "investigates [for the first time each turn]" (CR 701.16a) — once per investigate, never for
      * a plain "create a Clue token".

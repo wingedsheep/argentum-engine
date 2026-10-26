@@ -466,9 +466,9 @@ internal fun BridgeBuilder.triggersCostsAndContinuous() {
     // shape above; the spell-zone selectors are shared.
     effect("DecreaseSpellCost", "ModifySpellCost")
     // "Plotting cards from your hand costs {N} less" (Doc Aurlock) — a controller-scoped player
-    // static over the Plot special action (CR 718). Renders to `ModifyPlotCost(target =
-    // PlotCostTarget.YouPlotFromHand, modification = ReduceGeneric(N))`.
-    effect("DecreasePlotFromHandCost", "ModifyPlotCost")
+    // static over the Plot special action (CR 702.170). Renders to `ModifySpecialActionCost(action =
+    // SpecialActionKind.PLOT, modification = ReduceGeneric(N))`.
+    effect("DecreasePlotFromHandCost", "ModifySpecialActionCost")
 
     // Fblthp, Lost on the Range (CR 718) — top-of-library plot + look. Nested _PlayerEffect /
     // _Rule capabilities of the controller-scoped statics.

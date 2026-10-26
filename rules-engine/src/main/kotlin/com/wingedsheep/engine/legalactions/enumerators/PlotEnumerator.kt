@@ -32,7 +32,9 @@ class PlotEnumerator : ActionEnumerator {
                 ?: continue
 
             // Apply Doc Aurlock-style "plotting cards from your hand costs {N} less" reductions.
-            val plotCost = context.plotCostReducer.effectivePlotCostFromHand(state, playerId, plotAbility.cost)
+            val plotCost = context.specialActionCostReducer.effectiveCost(
+                state, playerId, com.wingedsheep.sdk.scripting.SpecialActionKind.PLOT, plotAbility.cost
+            )
 
             val canAfford = context.manaSolver.canPay(
                 state, playerId, plotCost, precomputedSources = context.availableManaSources

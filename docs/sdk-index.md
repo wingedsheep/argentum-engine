@@ -57,7 +57,6 @@ Families:
 - [PayCost](#paycost)
 - [Player](#player)
 - [PlayerRankMetric](#playerrankmetric)
-- [PlotCostTarget](#plotcosttarget)
 - [PreventionSourceFilter](#preventionsourcefilter)
 - [ProtectionScope](#protectionscope)
 - [Recipient](#recipient)
@@ -75,7 +74,6 @@ Families:
 - [SuccessCriterion](#successcriterion)
 - [TargetRequirement](#targetrequirement)
 - [TimingRule](#timingrule)
-- [UnlockCostTarget](#unlockcosttarget)
 - [UntargetableBy](#untargetableby)
 - [WardCost](#wardcost)
 
@@ -1222,6 +1220,7 @@ Families:
 - `EventPattern.ExploredEvent(filter: GameObjectFilter?, revealedType: ExploreReveal)` — Whenever a permanent matching filter explores (CR 701.44), optionally gated by whether the revealed card was a land (revealedType).
 - `EventPattern.ExtraTurnEvent(player: Player)` — When a player would take an extra turn.
 - `EventPattern.ForagedEvent(player: Player)` — Whenever player forages — CR 701.59a, "Exile three cards from your graveyard or sacrifice a Food." The sibling of EvidenceCollectedEvent in every respect that matters, and modelled on it deliberately.
+- `EventPattern.ForetoldEvent(player: Player)` — Whenever player foretells a card — takes the foretell special action, paying {2} and exiling a card from their hand face down (CR 702.143a, 702.143c).
 - `EventPattern.GiftGivenEvent(player: Player)` — When a player gives a gift (Bloomburrow gift mechanic).
 - `EventPattern.InvestigatedEvent(player: Player, firstTimeEachTurn: Boolean)` — Whenever player investigates — CR 701.16a, "create a Clue token".
 - `EventPattern.LandPlayedEvent(fromZoneOtherThan: Zone?, player: Player, fromZone: Zone?)` — Whenever player plays a land (CR 305.1 — the special land-play action).
@@ -1491,10 +1490,6 @@ Families:
 
 - `PlayerRankMetric.CreaturesOfSubtype(subtype: Subtype)` — How many creatures of subtype each player controls.
 - `PlayerRankMetric.LifeTotal` — Each player's life total.
-
-## PlotCostTarget
-
-- `PlotCostTarget.YouPlotFromHand` — Cards the source's controller plots from their hand (the printed Plot keyword cost).
 
 ## PreventionSourceFilter
 
@@ -1900,6 +1895,7 @@ Families:
 - `GraveyardCardsHaveFlashback(filter: GameObjectFilter, cost: ManaCost?, duringYourTurnOnly: Boolean)` — A continuous grant of flashback (CR 702.34) to *every* card in the controller's graveyard that matches filter — a whole-graveyard group grant, not a single-card grant like com.wingedsheep.sdk.scrip…
 - `GraveyardCardsHaveMayhem(filter: GameObjectFilter, cost: ManaCost?, duringYourTurnOnly: Boolean)` — "Each filter card in your graveyard has mayhem cost." The Mayhem analogue of GraveyardCardsHaveFlashback — a whole-graveyard group grant of the Mayhem keyword ability (CR 702.187), read through `Ma…
 - `GraveyardCreaturesHaveSneak(cost: ManaCost)` — "Creature cards in your graveyard have sneak cost.
+- `HandCardsHaveForetell(filter: GameObjectFilter, costReduction: Int)` — "Each filter card in your hand without foretell has foretell.
 - `HasAbilitiesOfChosenLinkedExiledCard(grantActivated: Boolean, grantTriggered: Boolean)` — Grants the source permanent the **activated and/or triggered abilities of the single card it most recently *chose*** from its linked-exile pile — the "last chosen card" of a choose-from-your-exile…
 - `HasAllActivatedAbilitiesOfCards(donors: DonorCards, cardFilter: GameObjectFilter, receivedBy: GroupFilter, oncePerTurnEach: Boolean)` — Grants the permanents matching receivedBy **all activated abilities of the cards in the donors pool that match cardFilter** — the single primitive behind "exiled with this" (linked-exile) grants, "…
 - `HasCreatureTypesOf(source: EffectTarget.SingleEntity, retainedTypes: Set<String>, filter: GroupFilter)` — The permanents matching filter **have the creature types of the object source names**, replacing their own (CR 205.1b) while keeping every non-creature subtype.
@@ -1915,13 +1911,13 @@ Families:
 - `MayCastFromGraveyard(filter: GameObjectFilter, lifeCost: Int, duringYourTurnOnly: Boolean, entersWithCounter: CounterType?, addedSubtypeOnEntry: String?, oncePerTurn: Boolean, exileCastThisWay: CastThisWayExile, fromAnyGraveyard: Boolean, additionalCost: AdditionalCost?, playsLands: Boolean, grantedAbilityOnEntry: TriggeredAbility?)` — You may cast spells matching filter from your graveyard, optionally by paying lifeCost life in addition to their other costs.
 - `MayCastSelfFromZones(zones: List<Zone>, condition: Condition?, additionalCost: AdditionalCost?, castUsing: Keyword?, alternativeManaCost: ManaCost?)` — You may cast this card from specified zones (e.g., graveyard, exile).
 - `MayCastWithoutPayingManaCost(controllerOnly: Boolean, firstSpellOfTurnOnly: Boolean, spellFilter: GameObjectFilter, oncePerTurn: Boolean, fromZones: Set<Zone>?)` — Generic "may cast a spell without paying its mana cost" battlefield permission.
+- `MayForetellOnAnyTurn` — "Foretelling cards from your hand … can be done on any player's turn." (Cosmos Charger.) Lifts the "during their turn" clause of the foretell special action (CR 116.2h, 702.143a) for the source's c…
 - `MayPlayCardsFromExile(filter: GameObjectFilter, condition: Condition?, withAnyManaType: Boolean, withAnyManaColor: Boolean, oncePerTurn: Boolean)` — You may play cards in exile matching filter — "play", so lands and spells alike (CR 601.3: a permission from an effect is what lets a player cast a card from a zone other than their hand).
 - `MayPlayLandsFromGraveyard` — You may play lands from your graveyard.
 - `MayPlayPermanentsFromGraveyard` — During each of your turns, you may play a land and cast a permanent spell of each permanent type from your graveyard.
-- `ModifyPlotCost(target: PlotCostTarget, modification: CostModification)` — Static ability that modifies the cost of the **Plot** special action (CR 718).
+- `ModifySpecialActionCost(action: SpecialActionKind, modification: CostModification)` — Static ability that modifies the cost of a **special action** (CR 116.2) — plotting a card, unlocking a door, foretelling a card.
 - `ModifySpellCost(target: SpellCostTarget, modification: CostModification, gating: CostGating, optionalLifePayment: Int?)` — Unified static ability that modifies spell or morph-activation costs.
 - `ModifyStats(powerBonus: Int, toughnessBonus: Int, filter: GroupFilter)` — Modifies power/toughness on a filtered set of permanents.
-- `ModifyUnlockCost(target: UnlockCostTarget, modification: CostModification)` — Static ability that modifies the cost of the **door-unlock** special action (CR 709.5e).
 - `MultiplyManaOnSourceTap(sourceFilter: GameObjectFilter, multiplier: Int)` — Multiplies the mana a permanent matching sourceFilter produces when it is **tapped** for mana: "it produces multiplier times as much of that mana instead".
 - `MustAttack(filter: GroupFilter, defender: MustAttackDefender)` — Forces the affected permanents to attack each combat if able.
 - `MustBeBlocked(allCreatures: Boolean, filter: GroupFilter?, blockers: GameObjectFilter?)` — Static counterpart of com.wingedsheep.sdk.scripting.effects.MustBeBlockedEffect: the source creature must be blocked while this ability is active.
@@ -2018,10 +2014,6 @@ Families:
 - `TimingRule.InstantSpeed` — Instant speed: Can be used whenever you have priority.
 - `TimingRule.ManaAbility` — Mana ability: Special timing that does NOT use the stack.
 - `TimingRule.SorcerySpeed` — Sorcery speed: Can only be used during your main phase, when the stack is empty, and you have priority.
-
-## UnlockCostTarget
-
-- `UnlockCostTarget.YouUnlock` — Door-unlock special actions performed by the source's controller ("unlock costs you pay").
 
 ## UntargetableBy
 
