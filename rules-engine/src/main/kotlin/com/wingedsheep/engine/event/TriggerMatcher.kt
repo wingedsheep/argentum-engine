@@ -2627,6 +2627,10 @@ class TriggerMatcher(
                 triggeringEntityId = trigger.triggerContext.triggeringEntityId,
                 triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
                 triggerContext = trigger.triggerContext,
+                // The ability itself, so an off-battlefield ability's intervening "if" reads its
+                // source where it functions — "if Darigaaz is exiled with an egg counter on it"
+                // counts the counters it has in exile, not its battlefield-exit snapshot.
+                resolvingTriggeredAbility = trigger.rulesText,
                 // Per-kind last-known counters, so an intervening "if" can name the counter it
                 // cares about ("if it had a revival counter on it" — Nine-Lives Familiar) instead
                 // of settling for the +1/+1-only or sum-of-all-kinds scalars above.

@@ -83,6 +83,7 @@ class CosimaGodOfTheVoyageScenarioTest : ScenarioTestBase() {
             .withPlayers("Player", "Opponent")
             .withCardOnBattlefield(1, "Cosima, God of the Voyage")
             .apply { repeat(3) { withCardInHand(1, "Island") } }
+            .withCardInHand(1, "Cosima Test Banish")
             .apply { repeat(10) { withCardInLibrary(1, "Island"); withCardInLibrary(2, "Island") } }
             .withActivePlayer(1)
             .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
@@ -165,6 +166,27 @@ class CosimaGodOfTheVoyageScenarioTest : ScenarioTestBase() {
 
             game.execute(PlayLand(game.player1Id, game.findCardsInHand(1, "Island").first())).error shouldBe null
             game.resolveStack()
+            game.hasPendingDecision() shouldBe false
+            game.state.stack.isEmpty() shouldBe true
+        }
+
+        test("Cosima exiled in response to her upkeep trigger doesn't gain the ability — there was no \"if you do\"") {
+            val game = cosimaBoard()
+            do {
+                game.passUntilPhase(Phase.ENDING, Step.END)
+                game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
+            } while (game.state.activePlayerId != game.player1Id)
+            game.state.stack.size shouldBe 1
+            val cosima = game.findPermanent("Cosima, God of the Voyage")!!
+            game.castSpell(1, "Cosima Test Banish", cosima).error shouldBe null
+            game.resolveStack()
+            game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>()
+            game.answerYesNo(true)
+            game.resolveStack()
+            game.cosimaInExile() shouldNotBe null
+            game.state.grantedTriggeredAbilities.none { it.entityId == cosima } shouldBe true
+
+            game.playIslandFromHand()
             game.hasPendingDecision() shouldBe false
             game.state.stack.isEmpty() shouldBe true
         }

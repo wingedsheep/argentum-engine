@@ -73,11 +73,10 @@ private val CosimaGodOfTheVoyageFront = card("Cosima, God of the Voyage") {
     triggeredAbility {
         trigger = Triggers.you.beginningOf(Step.UPKEEP)
         effect = Effects.May(
-            Effects.Exile(EffectTarget.Self, fromZone = Zone.BATTLEFIELD) then
-                Effects.If(
-                    Conditions.SourceInZone(Zone.EXILE),
-                    Effects.GrantTriggeredAbility(voyage, EffectTarget.Self, Duration.Permanent),
-                ),
+            Effects.IfYouDo(
+                Effects.Exile(EffectTarget.Self, fromZone = Zone.BATTLEFIELD),
+                Effects.GrantTriggeredAbility(voyage, EffectTarget.Self, Duration.Permanent),
+            ),
             prompt = "Exile Cosima?",
         )
     }

@@ -210,7 +210,7 @@ class MoveToZoneEffectExecutor(
             resultState = settleEnteringAttack(resultState, targetId, controllerId, effect, context)
         }
 
-        // "Exile it with a stash counter on it" — one counter of each named type on the card once it
+        // "Exile it with a stash counter on it" — each entry's count of its type on the card once it
         // has landed. Mirrors MoveCollectionEffect.addCounterType; no CountersAddedEvent is emitted
         // because the card isn't a permanent in its new zone, so nothing can trigger off it.
         // An entry's `onlyIf` must match the card in *projected* state where it landed. (Battlefield

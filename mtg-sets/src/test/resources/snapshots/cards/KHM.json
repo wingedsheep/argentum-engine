@@ -1068,103 +1068,92 @@
                         "prompt": "Exile Cosima?"
                     },
                     "then": {
-                        "type": "Composite",
-                        "effects": [
-                            {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
                                 "type": "MoveToZone",
                                 "target": "Self",
                                 "destination": "Exile",
                                 "fromZone": "Battlefield"
-                            },
-                            {
-                                "type": "Gated",
-                                "gate": {
-                                    "type": "Gate.WhenCondition",
-                                    "condition": {
-                                        "type": "SourceInZone",
-                                        "zones": [
-                                            "Exile"
-                                        ]
-                                    }
+                            }
+                        },
+                        "then": {
+                            "type": "GrantTriggeredAbility",
+                            "ability": {
+                                "id": "Cosima, God of the Voyage:1",
+                                "trigger": {
+                                    "type": "ZoneChangeEvent",
+                                    "filter": "land ctrl:you",
+                                    "to": "Battlefield"
                                 },
-                                "then": {
-                                    "type": "GrantTriggeredAbility",
-                                    "ability": {
-                                        "id": "Cosima, God of the Voyage:1",
-                                        "trigger": {
-                                            "type": "ZoneChangeEvent",
-                                            "filter": "land ctrl:you",
-                                            "to": "Battlefield"
-                                        },
-                                        "binding": "ANY",
-                                        "effect": {
-                                            "type": "Gated",
-                                            "gate": {
-                                                "type": "Gate.MayDecide",
-                                                "prompt": "Put a voyage counter on Cosima? If you don't, she returns to the battlefield."
+                                "binding": "ANY",
+                                "effect": {
+                                    "type": "Gated",
+                                    "gate": {
+                                        "type": "Gate.MayDecide",
+                                        "prompt": "Put a voyage counter on Cosima? If you don't, she returns to the battlefield."
+                                    },
+                                    "then": {
+                                        "type": "AddCounters",
+                                        "counterType": "VOYAGE",
+                                        "count": 1,
+                                        "target": "Self"
+                                    },
+                                    "otherwise": {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "StoreNumber",
+                                                "name": "number0",
+                                                "amount": {
+                                                    "type": "EntityProperty",
+                                                    "entity": "Self",
+                                                    "numericProperty": {
+                                                        "type": "CounterCount",
+                                                        "counterType": "VOYAGE"
+                                                    }
+                                                }
                                             },
-                                            "then": {
-                                                "type": "AddCounters",
-                                                "counterType": "VOYAGE",
-                                                "count": 1,
-                                                "target": "Self"
-                                            },
-                                            "otherwise": {
-                                                "type": "Composite",
-                                                "effects": [
+                                            {
+                                                "type": "MoveToZone",
+                                                "target": "Self",
+                                                "destination": "Battlefield",
+                                                "fromZone": "Exile",
+                                                "entryCounters": [
                                                     {
-                                                        "type": "StoreNumber",
-                                                        "name": "number0",
-                                                        "amount": {
-                                                            "type": "EntityProperty",
-                                                            "entity": "Self",
-                                                            "numericProperty": {
-                                                                "type": "CounterCount",
-                                                                "counterType": "VOYAGE"
-                                                            }
-                                                        }
-                                                    },
-                                                    {
-                                                        "type": "MoveToZone",
-                                                        "target": "Self",
-                                                        "destination": "Battlefield",
-                                                        "fromZone": "Exile",
-                                                        "entryCounters": [
-                                                            {
-                                                                "counterType": "PLUS_ONE_PLUS_ONE",
-                                                                "count": {
-                                                                    "type": "VariableReference",
-                                                                    "variableName": "number0"
-                                                                }
-                                                            }
-                                                        ]
-                                                    },
-                                                    {
-                                                        "type": "DrawCards",
+                                                        "counterType": "PLUS_ONE_PLUS_ONE",
                                                         "count": {
                                                             "type": "VariableReference",
                                                             "variableName": "number0"
                                                         }
                                                     }
                                                 ]
+                                            },
+                                            {
+                                                "type": "DrawCards",
+                                                "count": {
+                                                    "type": "VariableReference",
+                                                    "variableName": "number0"
+                                                }
                                             }
-                                        },
-                                        "activeZones": [
-                                            "Exile"
-                                        ],
-                                        "interveningIf": {
-                                            "type": "SourceInZone",
-                                            "zones": [
-                                                "Exile"
-                                            ]
-                                        },
-                                        "descriptionOverride": "Whenever a land you control enters, if Cosima is exiled, you may put a voyage counter on it. If you don't, return Cosima to the battlefield with X +1/+1 counters on it and draw X cards, where X is the number of voyage counters on it."
-                                    },
-                                    "target": "Self",
-                                    "duration": "Permanent"
-                                }
-                            }
-                        ]
+                                        ]
+                                    }
+                                },
+                                "activeZones": [
+                                    "Exile"
+                                ],
+                                "interveningIf": {
+                                    "type": "SourceInZone",
+                                    "zones": [
+                                        "Exile"
+                                    ]
+                                },
+                                "descriptionOverride": "Whenever a land you control enters, if Cosima is exiled, you may put a voyage counter on it. If you don't, return Cosima to the battlefield with X +1/+1 counters on it and draw X cards, where X is the number of voyage counters on it."
+                            },
+                            "target": "Self",
+                            "duration": "Permanent"
+                        }
                     }
                 }
             }
