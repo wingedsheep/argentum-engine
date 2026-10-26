@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -1182,6 +1183,60 @@ class LayerSystemTest : FunSpec({
             val projected = projector.project(driver.state)
             projected.getPower(bears) shouldBe 5
             projected.getToughness(bears) shouldBe 1
+        }
+
+        test("L7b one half: a power-only setter leaves toughness, and a later setter overwrites only its own half") {
+            // Withercrown "base power 0" sets power alone; Maha "base toughness 1" sets toughness alone.
+            // Freeze Aura (0/4) first, then a power-only 3 and a toughness-only 2 by timestamp:
+            // CORRECT: 3/2 — each later half overwrites only the characteristic it names.
+            // WRONG:   3/0 or 0/2 — a half-setter that also wrote (or zeroed) the other half.
+            val PowerThree = CardDefinition.enchantment(
+                name = "Power Three Aura",
+                manaCost = ManaCost.parse("{B}"),
+                script = CardScript(
+                    staticAbilities = listOf(
+                        SetBasePowerToughnessStatic(power = 3, toughness = null, filter = GroupFilter.attachedCreature())
+                    )
+                )
+            )
+            val ToughnessTwo = CardDefinition.enchantment(
+                name = "Toughness Two Aura",
+                manaCost = ManaCost.parse("{B}"),
+                script = CardScript(
+                    staticAbilities = listOf(
+                        SetBasePowerToughnessStatic(power = null, toughness = 2, filter = GroupFilter.attachedCreature())
+                    )
+                )
+            )
+            val driver = createDriver(FreezeAura, PowerThree, ToughnessTwo)
+            driver.init()
+            val p = driver.activePlayer!!
+
+            val bears = driver.putCreatureOnBattlefield(p, "Grizzly Bears")
+            val powerOnly = driver.putPermanentOnBattlefield(p, "Power Three Aura")
+            driver.attachAura(powerOnly, bears)
+            projector.project(driver.state).let {
+                it.getPower(bears) shouldBe 3
+                it.getToughness(bears) shouldBe 2
+            }
+
+            val freeze = driver.putPermanentOnBattlefield(p, "Freeze Aura")
+            driver.attachAura(freeze, bears)
+            projector.project(driver.state).let {
+                it.getPower(bears) shouldBe 0
+                it.getToughness(bears) shouldBe 4
+            }
+
+            val toughnessOnly = driver.putPermanentOnBattlefield(p, "Toughness Two Aura")
+            driver.attachAura(toughnessOnly, bears)
+            projector.project(driver.state).let {
+                it.getPower(bears) shouldBe 0
+                it.getToughness(bears) shouldBe 2
+            }
+        }
+
+        test("SetBasePowerToughnessStatic must set at least one half") {
+            shouldThrow<IllegalArgumentException> { SetBasePowerToughnessStatic(power = null, toughness = null) }
         }
 
         // -----------------------------------------------------------------

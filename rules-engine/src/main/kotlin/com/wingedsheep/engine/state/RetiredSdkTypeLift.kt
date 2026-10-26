@@ -127,6 +127,10 @@ internal object RetiredSdkTypeLift {
         "SkipDrawStep" to { _ -> static(SkipStepOrPhase(TurnPart.DRAW_STEP)) },
         "GrantHexproofFromMonocoloredToGroup" to { old -> hexproofGrant(ProtectionScope.Monocolored, old) },
         "GrantHexproofFromMulticoloredToGroup" to { old -> hexproofGrant(ProtectionScope.Multicolored, old) },
+        // StaticAbility — the toughness-only base setter, now the null-power half of the fixed one
+        "SetBaseToughnessForCreatureGroup" to { old ->
+            JsonObject(old + ("type" to JsonPrimitive("SetBasePowerToughnessStatic")) + ("power" to JsonNull))
+        },
     )
 
     /**

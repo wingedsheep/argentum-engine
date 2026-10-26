@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantHexproofFromToGroup
 import com.wingedsheep.sdk.scripting.ProtectionScope
+import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
 import com.wingedsheep.sdk.scripting.SkipStepOrPhase
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
@@ -113,6 +114,11 @@ class RetiredSdkTypeLiftTest : FunSpec({
         val source = json.encodeToJsonElement(GroupFilter.serializer(), GroupFilter.source())
         lifted(StaticAbility.serializer(), old("GrantHexproofFromMulticoloredToGroup", "filter" to source)) shouldBe
             GrantHexproofFromToGroup(ProtectionScope.Multicolored, GroupFilter.source())
+        val opponents = json.encodeToJsonElement(GroupFilter.serializer(), GroupFilter.AllCreaturesOpponentsControl)
+        lifted(
+            StaticAbility.serializer(),
+            old("SetBaseToughnessForCreatureGroup", "toughness" to JsonPrimitive(1), "filter" to opponents)
+        ) shouldBe SetBasePowerToughnessStatic(power = null, toughness = 1, filter = GroupFilter.AllCreaturesOpponentsControl)
     }
 
     test("a retired object nested deep in a document is rewritten in place") {

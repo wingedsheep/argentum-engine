@@ -1564,7 +1564,6 @@ RevealFirstDrawEachTurn — StaticAbility
 RevealTopOfLibrary — StaticAbility
 SetBasePowerToughnessDynamicStatic — StaticAbility
 SetBasePowerToughnessStatic — StaticAbility
-SetBaseToughnessForCreatureGroup — StaticAbility
 SetEnchantedLandType — StaticAbility
 SetEnchantedLandTypeFromChosen — StaticAbility
 SetLandTypesForGroup — StaticAbility

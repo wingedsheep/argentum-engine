@@ -7849,6 +7849,74 @@
     ]
 }
 
+// Withercrown
+{
+    "name": "Withercrown",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature has base power 0 and has \"At the beginning of your upkeep, you lose 1 life unless you sacrifice this creature.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "SetBasePowerToughnessStatic",
+                "power": 0,
+                "toughness": null
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Withercrown:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "PayOrSuffer",
+                        "cost": {
+                            "type": "PayAtom",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        "IsSource"
+                                    ]
+                                }
+                            }
+                        },
+                        "suffer": {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "artist": "Miranda Meeks",
+        "flavorText": "\"We'll see each other again soon.\"\n—Egon, god of death",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/597fe119-64a7-4499-8b69-738af5a71a20.jpg?1783928238"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Woodland Chasm
 {
     "name": "Woodland Chasm",

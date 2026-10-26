@@ -92,45 +92,38 @@ data class SetBasePowerToughnessDynamicStatic(
 }
 
 /**
- * Sets the base toughness of a group of creatures.
- * Used for Maha, Its Feathers Night: "Creatures your opponents control have base toughness 1."
- *
- * This is a Layer 7b (POWER_TOUGHNESS, SET_VALUES) continuous effect that only sets toughness,
- * leaving power unchanged.
- *
- * @property toughness The base toughness to set
- * @property filter Which creatures are affected
- */
-@SerialName("SetBaseToughnessForCreatureGroup")
-@Serializable
-data class SetBaseToughnessForCreatureGroup(
-    val toughness: Int,
-    val filter: GroupFilter
-) : StaticAbility {
-    override val description: String = "${filter.description} have base toughness $toughness"
-    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
-        val newFilter = filter.applyTextReplacement(replacer)
-        return if (newFilter !== filter) copy(filter = newFilter) else this
-    }
-}
-
-/**
- * Sets the base power and toughness of the target permanent.
+ * Sets the base power and/or toughness of a group of creatures to fixed values.
  * Used for Deep Freeze: "Enchanted creature has base power and toughness 0/4."
- * Also used for Turn to Frog, Darksteel Mutation, and similar effects.
+ * Also used for Turn to Frog, Darksteel Mutation, and similar effects. Either half may be left
+ * `null` to leave that characteristic alone: Withercrown ("Enchanted creature has base power 0")
+ * sets only power, Maha, Its Feathers Night ("Creatures your opponents control have base
+ * toughness 1") only toughness.
  *
- * This is a Layer 7b (POWER_TOUGHNESS, SET_VALUES) continuous effect.
+ * This is a Layer 7b (POWER_TOUGHNESS, SET_VALUES) continuous effect (CR 613.4b).
  *
- * @property power The base power to set
- * @property toughness The base toughness to set
+ * @property power The base power to set, or `null` to leave power unchanged
+ * @property toughness The base toughness to set, or `null` to leave toughness unchanged
  * @property filter What this ability applies to (typically AttachedCreature for auras)
  */
 @SerialName("SetBasePowerToughnessStatic")
 @Serializable
 data class SetBasePowerToughnessStatic(
-    val power: Int,
-    val toughness: Int,
+    val power: Int?,
+    val toughness: Int?,
     val filter: GroupFilter = GroupFilter.attachedCreature()
 ) : StaticAbility {
-    override val description: String = "has base power and toughness $power/$toughness"
+    init {
+        require(power != null || toughness != null) { "SetBasePowerToughnessStatic sets power, toughness or both" }
+    }
+
+    override val description: String = when {
+        power == null -> "has base toughness $toughness"
+        toughness == null -> "has base power $power"
+        else -> "has base power and toughness $power/$toughness"
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
 }

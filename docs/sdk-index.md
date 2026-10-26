@@ -1960,8 +1960,7 @@ Families:
 - `RevealTopOfLibrary` — Play with the top card of your library revealed (to all players), without granting any permission to play it from there.
 - `RollAdditionalDice(extraDice: Int)` — The die-roll replacement (CR 614.1a — an "instead" effect is a replacement effect): when the controller would roll one or more dice, they roll that many plus extraDice instead and ignore the extraD…
 - `SetBasePowerToughnessDynamicStatic(power: DynamicAmount, toughness: DynamicAmount, filter: GroupFilter)` — Sets the base power and toughness of a group of creatures to dynamic amounts — a characteristic-defining ability (CDA) that recomputes continuously rather than snapshotting the value once at creati…
-- `SetBasePowerToughnessStatic(power: Int, toughness: Int, filter: GroupFilter)` — Sets the base power and toughness of the target permanent.
-- `SetBaseToughnessForCreatureGroup(toughness: Int, filter: GroupFilter)` — Sets the base toughness of a group of creatures.
+- `SetBasePowerToughnessStatic(power: Int?, toughness: Int?, filter: GroupFilter)` — Sets the base power and/or toughness of a group of creatures to fixed values.
 - `SetColors(colors: Set<Color>, filter: GroupFilter, offBattlefield: Player?)` — "filter are colors" — a Layer 5 color-*setting* effect (CR 613.1e): the affected objects' colors become exactly colors, replacing whatever they were; an empty set is "are colorless".
 - `SetEnchantedLandType(landType: String)` — Enchanted land becomes a specific basic land type.
 - `SetEnchantedLandTypeFromChosen` — Enchanted land becomes the basic land type chosen as the source entered (resolved from the source's `CastChoicesComponent`).

@@ -10019,6 +10019,13 @@ staticAbility {
 **Composite static abilities**
 
 - `ModifyStatsForCreatureGroup` — lord-style P/T booster targeting a group.
+- `SetBasePowerToughnessStatic(power: Int?, toughness: Int?, filter = GroupFilter.attachedCreature())` —
+  *sets* base power and/or toughness of a group to fixed values (Layer 7b SET_VALUES, CR 613.4b).
+  Leave a half `null` to leave that characteristic alone (at least one must be set): Deep Freeze
+  "enchanted creature has base power and toughness 0/4" sets both; Withercrown "enchanted creature has
+  base power 0" is `power = 0, toughness = null`; Maha, Its Feathers Night "creatures your opponents
+  control have base toughness 1" is `power = null, toughness = 1`. A later layer-7b setter overwrites
+  only the half it sets; counters and 7c modifiers apply on top either way.
 - `SetBasePowerToughnessDynamicStatic(power, toughness, filter = GroupFilter.source())` —
   characteristic-defining ability (CDA): *sets* base power and toughness each to a `DynamicAmount`,
   recomputed continuously at projection (Layer 7b SET_VALUES). Distinct from

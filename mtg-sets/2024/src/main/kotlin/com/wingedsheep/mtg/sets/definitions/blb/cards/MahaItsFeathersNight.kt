@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.SetBaseToughnessForCreatureGroup
+import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.effects.WardCost
 
@@ -32,7 +32,8 @@ val MahaItsFeathersNight = card("Maha, Its Feathers Night") {
     keywordAbility(KeywordAbility.Ward(WardCost.Discard()))
 
     staticAbility {
-        ability = SetBaseToughnessForCreatureGroup(
+        ability = SetBasePowerToughnessStatic(
+            power = null,
             toughness = 1,
             filter = GroupFilter.AllCreaturesOpponentsControl
         )

@@ -816,7 +816,9 @@ object Statics {
                 val grant = part as? GrantKeyword ?: return null
                 keywords += Keyword.entries.firstOrNull { it.name == grant.keyword } ?: return null
             }
-            val body = Bodied(stats.power to stats.toughness, keywords, Subtype(subtype.subtype))
+            val power = stats.power ?: return null
+            val toughness = stats.toughness ?: return null
+            val body = Bodied(power to toughness, keywords, Subtype(subtype.subtype))
             return body to stats.filter
         }
 

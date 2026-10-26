@@ -79,7 +79,6 @@ import com.wingedsheep.sdk.scripting.SetName
 import com.wingedsheep.sdk.scripting.TransformPermanent
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessDynamicStatic
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
-import com.wingedsheep.sdk.scripting.SetBaseToughnessForCreatureGroup
 import com.wingedsheep.engine.handlers.SourceTypeTargeting
 import com.wingedsheep.sdk.scripting.CantBeTargetedBy
 import com.wingedsheep.sdk.scripting.CantBeTargetedBySourceTypeAbilities
@@ -1107,8 +1106,14 @@ class StaticAbilityHandler(
                 )
             }
             is SetBasePowerToughnessStatic -> {
+                val power = ability.power
+                val toughness = ability.toughness
                 ContinuousEffectData(
-                    modification = Modification.SetPowerToughness(ability.power, ability.toughness),
+                    modification = when {
+                        power == null -> Modification.SetToughness(checkNotNull(toughness))
+                        toughness == null -> Modification.SetPower(power)
+                        else -> Modification.SetPowerToughness(power, toughness)
+                    },
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
@@ -1124,12 +1129,6 @@ class StaticAbilityHandler(
                 // types track it live (Duplicant).
                 ContinuousEffectData(
                     modification = Modification.SetCreatureSubtypesFrom(ability.source, ability.retainedTypes),
-                    affectsFilter = convertGroupFilter(ability.filter)
-                )
-            }
-            is SetBaseToughnessForCreatureGroup -> {
-                ContinuousEffectData(
-                    modification = Modification.SetToughness(ability.toughness),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }

@@ -498,7 +498,7 @@ object TargetPolarityAnalyzer {
         // larger base is a gift or a curse depending on the creature, so it stays unread.
         is SetBasePowerToughnessStatic -> when {
             static.filter.scope != Scope.AttachedTo -> null
-            static.power <= 1 && static.toughness <= 1 -> TargetPolarity.HARMFUL
+            (static.power ?: 0) <= 1 && (static.toughness ?: 0) <= 1 -> TargetPolarity.HARMFUL
             else -> null
         }
         else -> null
