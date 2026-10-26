@@ -7161,6 +7161,19 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   `HasNonManaActivatedAbility` flags, it sees granted and removed abilities.
 - `.faceDown()` — face-down state.
 - `.commander()` — `StatePredicate.IsCommander`: the object **is a commander**, any player's (CR 903.3). The designation is an attribute of the card, not a characteristic: it follows the card across zones and stays on a face-down commander, and a copy (token or Clone) is never one. Compose with a zone: "you control a commander" is a battlefield permanent (CR 903.3d) — `Conditions.YouControlACommander`.
+  **The command zone as an effect source and destination** composes from this predicate, no dedicated
+  effect: "put a commander you own from the command zone onto the battlefield" is
+  `gather(CardSource.FromZone(Zone.COMMAND, Player.You, GameObjectFilter.Any.commander().ownedByYou()))` →
+  `chooseUpTo(1, …)` (the "may"; partners offer both) → `moveTracked(…, ToZone(BATTLEFIELD))`, and "return it
+  to the command zone" is `Effects.Move(target, Zone.COMMAND)` — a real zone change into the **owner's**
+  command zone (whoever resolves it), never intercepted by the commander replacement (CR 903.9 only
+  diverts moves to graveyard/exile/hand/library). Each player's command zone is keyed by owner, so the gather
+  never sees an opponent's commander, and `.commander()` keeps emblems, Vanguard avatars and dungeons out;
+  a game without commanders gathers nothing. Leaving the command zone this way isn't a cast, so commander
+  tax doesn't grow. For "at the beginning of the next end step", wrap the haste grant and the
+  `CreateDelayedTrigger(Step.END, Move(IterationEntity, Zone.COMMAND))` in `ForEachInCollection` over the
+  moved slot: the trigger captures that object's identity (CR 603.7c), so a commander that left — or left
+  and came back as a new object — stays where it is. Hellkite Courser.
 - `.transformed()` — a **transformed permanent** (CR 701.27g): back face up on the battlefield. "Each transformed permanent you control" (Mutagen Connoisseur), "other transformed permanents you control have …" (Gargantuan Slabhorn). Not `Filters.DoubleFaced` — that is the *card*, true in every zone and of a front-face werewolf too.
 - `.withMorph()` — has a morph *procedure*: the printed keyword (`HasMorphAbilityComponent`, any
   zone) **or** a turn-up procedure whose mechanic is morph. "Creature with a morph ability"
