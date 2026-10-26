@@ -5298,6 +5298,145 @@
     ]
 }
 
+// Reidane, God of the Worthy
+{
+    "name": "Reidane, God of the Worthy",
+    "manaCost": "{2}{W}",
+    "typeLine": "Legendary Creature — God",
+    "oracleText": "Flying, vigilance\nSnow lands your opponents control enter tapped.\nNoncreature spells your opponents cast with mana value 4 or greater cost {2} more to cast.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "OpponentsCast",
+                    "filter": "noncreature mv>=4"
+                },
+                "modification": {
+                    "type": "IncreaseGeneric",
+                    "amount": 2
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PermanentsEnterTapped",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsLand",
+                            "IsSnow"
+                        ],
+                        "controllerPredicate": "ControlledByOpponent"
+                    },
+                    "to": "Battlefield"
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Valkmira, Protector's Shield",
+        "manaCost": "{3}{W}",
+        "typeLine": "Legendary Artifact",
+        "oracleText": "If a source an opponent controls would deal damage to you or a permanent you control, prevent 1 of that damage.\nWhenever you or another permanent you control becomes the target of a spell or ability an opponent controls, counter that spell or ability unless its controller pays {1}.",
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Valkmira, Protector's Shield:1",
+                    "trigger": {
+                        "type": "BecomesTargetEvent",
+                        "targetFilter": "permanent ctrl:you",
+                        "byOpponent": true,
+                        "playerTargets": "You"
+                    },
+                    "binding": "OTHER",
+                    "effect": {
+                        "type": "WardCounter",
+                        "cost": {
+                            "type": "WardCost.Mana",
+                            "manaCost": "{1}"
+                        }
+                    },
+                    "descriptionOverride": "Whenever you or another permanent you control becomes the target of a spell or ability an opponent controls, counter that spell or ability unless its controller pays {1}."
+                }
+            ],
+            "replacementEffects": [
+                {
+                    "type": "PreventDamage",
+                    "amount": 1,
+                    "appliesTo": {
+                        "type": "DamageEvent",
+                        "recipient": {
+                            "type": "RecipientAnyOf",
+                            "options": [
+                                {
+                                    "type": "RecipientPlayer",
+                                    "player": "You"
+                                },
+                                {
+                                    "type": "RecipientObject",
+                                    "filter": "permanent ctrl:you"
+                                }
+                            ]
+                        },
+                        "source": {
+                            "controllerPredicate": "ControlledByOpponent"
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "21",
+            "rarity": "RARE",
+            "artist": "Jason Rainville",
+            "imageUri": "https://cards.scryfall.io/normal/back/3/6/3606519e-5677-4c21-a34e-be195b6669fa.jpg?1783928288",
+            "rulings": [
+                {
+                    "date": "2021-02-05",
+                    "text": "Valkmira's first ability prevents 1 damage from each source an opponent controls each time that source would deal damage to you. It prevents 1 of any kind of damage, not just combat damage."
+                },
+                {
+                    "date": "2021-02-05",
+                    "text": "Valkmira's last ability affects each spell (including Aura spells), activated ability, and triggered ability controlled by an opponent that targets you or another permanent you control."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "RARE",
+        "artist": "Jason Rainville",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/3606519e-5677-4c21-a34e-be195b6669fa.jpg?1783928288",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases (such as that of Reidane, God of the Worthy), then apply any cost reductions. The mana value of the spell is determined only by its mana cost, no matter what the total cost to cast the spell was."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a spell has {X} in its mana cost, use the value of X to determine whether its mana value is 4 or greater. If it is, Reidane's last ability will apply. If not, it won't."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ],
+    "layout": "MODAL_DFC"
+}
+
 // Righteous Valkyrie
 {
     "name": "Righteous Valkyrie",

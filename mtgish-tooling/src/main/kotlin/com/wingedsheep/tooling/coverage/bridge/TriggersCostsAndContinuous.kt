@@ -115,7 +115,7 @@ internal fun BridgeBuilder.triggersCostsAndContinuous() {
     supported("WhenAPermanentIsTurnedFaceUp", "trigger: this or another permanent you control is turned face up (Triggers.<player>.permanentTurnedFaceUp(filter) — Cryptid Inspector)")
     // OTJ Plot (CR 718) — "When this card becomes plotted, …" (Triggers.self.becomesPlotted(), Aloe Alchemist).
     supported("WhenACardBecomesPlotted", "trigger: this card becomes plotted (Triggers.self.becomesPlotted())")
-    supported("WhenAPermanentBecomesTheTargetOfASpellOrAbility", "trigger: becomes target (Triggers.self.becomesTarget(byOpponent = true) / BecomesTarget / CreatureYouControlBecomesTargetByOpponent / BecomesTargetOfAbility — the last narrows to abilities and, with includePlayerTargets, also covers a targeted player)")
+    supported("WhenAPermanentBecomesTheTargetOfASpellOrAbility", "trigger: becomes target (Triggers.self.becomesTarget(byOpponent = true) / BecomesTarget / CreatureYouControlBecomesTargetByOpponent / BecomesTargetOfAbility — the last narrows to abilities and, with players = Player.Any, also covers a targeted player)")
     // OTJ Saddle (CR 702.171b) — "Whenever this creature becomes saddled for the first time each turn, …"
     // (Triggers.self.becomesSaddled(true), Stubborn Burrowfiend).
     supported("WhenAPermanentBecomesSaddledForTheFirstTimeInATurn", "trigger: this permanent becomes saddled for the first time each turn (Triggers.self.becomesSaddled(true))")

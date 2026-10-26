@@ -2045,10 +2045,14 @@ class TriggerMatcher(
         // Spiritualist) must not react to a creature spell on the stack being targeted.
         if (event.targetIsSpell && !trigger.includeSpellTargets) return false
 
-        // Same opt-in for player targets ("a player or permanent becomes the target" — Loki, God of
-        // Mischief): every other becomes-target wording in the pool is about objects, so a targeted
-        // player must not wake them.
-        if (event.targetIsPlayer && !trigger.includePlayerTargets) return false
+        // Same opt-in for player targets, narrowed to the players the trigger names: "a player or
+        // permanent" (Loki, God of Mischief — `Player.Any`), "you or another permanent you control"
+        // (Valkmira, Protector's Shield — `Player.You`). Every other becomes-target wording in the
+        // pool is about objects (null), so a targeted player must not wake them.
+        if (event.targetIsPlayer) {
+            val players = trigger.playerTargets ?: return false
+            if (!matchesPlayer(state, players, event.targetEntityId, controllerId, sourceId)) return false
+        }
 
         // "Becomes the target of a spell" (King of the Oathbreakers) ignores abilities;
         // "becomes the target of an ability" (Loki, God of Mischief) ignores spells. Both read the
@@ -2113,10 +2117,10 @@ class TriggerMatcher(
         // entity has a battlefield projection — an animated land IS "a creature you control"
         // while the effect lasts — and fall back to base card data for stack objects; the
         // controller predicate likewise falls back to the spell's caster (Surrak, Elusive
-        // Hunter). Targeted abilities on the stack carry no card data and never match; players
-        // can't reach here at all, because `includePlayerTargets` requires filter `Any`
-        // (EventPattern.BecomesTargetEvent's init).
-        if (trigger.targetFilter != GameObjectFilter.Any) {
+        // Hunter). Targeted abilities on the stack carry no card data and never match. A targeted
+        // player was already matched against `playerTargets` above — the object filter narrows
+        // only the object half.
+        if (!event.targetIsPlayer && trigger.targetFilter != GameObjectFilter.Any) {
             val targetContainer = state.getEntity(event.targetEntityId) ?: return false
             if (!targetContainer.has<CardComponent>()) return false
             val predicateContext = PredicateContext(controllerId = controllerId, sourceId = sourceId)

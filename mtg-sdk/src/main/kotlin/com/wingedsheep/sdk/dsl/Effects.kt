@@ -5545,6 +5545,17 @@ object Effects {
         CounterEffect(target = CounterTarget.Ability, targetSource = CounterTargetSource.TriggeringEntity)
 
     /**
+     * Counter the spell or ability that made this trigger fire unless its controller pays [cost] —
+     * "counter that spell or ability unless its controller pays {1}" on a becomes-the-target trigger
+     * (Valkmira, Protector's Shield: `Triggers.another(Permanent.youControl())
+     * .becomesTarget(byOpponent = true, players = Player.You)`). The printed form of the ward
+     * keyword's own trigger (CR 702.21a), so it charges any [WardCost] shape the same way; a spell or
+     * ability that already left the stack is left alone.
+     */
+    fun CounterTargetingSourceUnlessPays(cost: com.wingedsheep.sdk.scripting.effects.WardCost): Effect =
+        com.wingedsheep.sdk.scripting.effects.WardCounterEffect(cost)
+
+    /**
      * Open life-bidding auction between you and another participant.
      * "You and [participant] bid life. You start the bidding with a bid of 1. In turn order,
      * each player may top the high bid. The bidding ends if the high bid stands. The high

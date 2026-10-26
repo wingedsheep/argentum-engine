@@ -2456,7 +2456,7 @@ data class OwnershipChangedEvent(
  * [targetIsPlayer] is its player counterpart — true when the chosen target is a player
  * (Loki, God of Mischief: "a player or permanent becomes the target"). Like spell targets,
  * player targets are opt-in on the trigger side (`EventPattern.BecomesTargetEvent
- * .includePlayerTargets`), so the permanent-only wordings already in the card pool don't
+ * .playerTargets`), so the permanent-only wordings already in the card pool don't
  * start firing on them.
  */
 @Serializable

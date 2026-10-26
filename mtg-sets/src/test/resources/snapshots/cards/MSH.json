@@ -10323,7 +10323,7 @@
                 "trigger": {
                     "type": "BecomesTargetEvent",
                     "byYou": true,
-                    "includePlayerTargets": true,
+                    "playerTargets": "Any",
                     "abilitiesOnly": true
                 },
                 "binding": "ANY",

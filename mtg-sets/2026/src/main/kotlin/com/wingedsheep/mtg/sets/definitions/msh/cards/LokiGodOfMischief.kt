@@ -2,6 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.msh.cards
 
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 
@@ -19,7 +20,7 @@ import com.wingedsheep.sdk.model.Rarity
  *    the Oathbreakers already used. Both activated and triggered abilities count — the engine stamps
  *    `sourceIsSpell` on the event from whichever `StackResolver` entry point put the object on the
  *    stack, and only the cast/spell-copy paths set it.
- *  - **"a player or permanent"** is `includePlayerTargets`. Player targets are opt-in on the trigger
+ *  - **"a player or permanent"** is `players = Player.Any`. Player targets are opt-in on the trigger
  *    side because every other becomes-target wording in the pool is about objects; without the flag
  *    a targeted player matches nothing (see `TriggerMatcher.matchesBecomesTargetTrigger`).
  *  - **"you control"** is `byYou`, compared against the ability's controller, so an opponent
@@ -45,7 +46,7 @@ val LokiGodOfMischief = card("Loki, God of Mischief") {
         "draw a card. This ability triggers only once each turn."
 
     triggeredAbility {
-        trigger = Triggers.a().becomesTarget(byYou = true, abilitiesOnly = true, includePlayerTargets = true)
+        trigger = Triggers.a().becomesTarget(byYou = true, abilitiesOnly = true, players = Player.Any)
         oncePerTurn = true
         effect = Effects.DrawCards(1)
         description = "Whenever a player or permanent becomes the target of an ability you " +

@@ -7813,7 +7813,7 @@ moves), `attacks(requires)`, `blocks(attackerFilter?, minBlockedAttackers?)`, `b
 requireExcess, batch, requires)`, `dealsCombatDamage(to, …)`, `isDealtDamage(by)`,
 `damagedCreatureDies(dying?)`, `becomesTapped(reason?, firstTimeEachTurn?)`, `becomesUntapped()`, `tappedForMana()` (SELF / ATTACHED), `manaAbilityResolves()` (SELF only),
 `turnedFaceUp()`, `mutates()` (SELF only), `transforms(intoBackFace?)`, `phasesIn()`, `becomesTarget(of?, byYou, byOpponent,
-spellsOnly, abilitiesOnly, firstTimeEachTurn, includeSpellTargets, includePlayerTargets, ofBackupAbility,
+spellsOnly, abilitiesOnly, firstTimeEachTurn, includeSpellTargets, players, ofBackupAbility,
 targetsOnlyIt)`,
 `getsCounters(type?, by?, firstTimeEachTurn?, batch?, orPlayer?)`, `losesCounters(type?, lastRemoved?,
 byDamagePrevention?, by?)`, `trains()`, `evolves()`, `champions()`, `crews()`, `saddles()`, `becomesCrewed()`, `becomesSaddled()`,
@@ -8745,6 +8745,10 @@ The shapes in this family, with their engine notes.
   under the default mana-ability gate. On both the global and the ATTACHED path the triggering entity is the
   activated ability on the stack (the permanent itself for a mana ability, which never uses the stack), so
   `Effects.CounterTriggeringAbility()` is "counter that ability".
+  `Effects.CounterTargetingSourceUnlessPays(WardCost.Mana("{1}"))` is "counter **that spell or ability**
+  unless its controller pays {1}" on a becomes-the-target trigger (Valkmira, Protector's Shield): the
+  ward keyword's own counter (`WardCounterEffect`), aimed at the object that did the targeting, so any
+  `WardCost` shape works. Its payment prompt is labelled with the source card's name rather than "Ward".
 - `Triggers.you.attackTriggersAbility()` — **a creature you control attacking causes a triggered ability of that
   creature to trigger** (Firebender Ascension). Backed by `EventPattern.AbilityTriggeredEvent(player, cause,
   sourceFilter?)`, which matches the engine's `AbilityTriggeredEvent` when a triggered ability is put on the stack.
@@ -8996,11 +9000,12 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   creature spell you control" wording (Surrak, Elusive Hunter); the `filter` is then also matched
   against the spell's card data, so a `Creature` filter matches a creature spell on the stack. Ward
   never sees spell targets because it is generated only from battlefield permanents.
-  Set `includePlayerTargets = true` for the "a **player** or permanent becomes the target" wording
-  (Loki, God of Mischief). A player carries no card data for a `filter` to read, so the opt-in
-  **requires** `filter` to stay `GameObjectFilter.Any` and throws at load time otherwise, rather than
-  silently firing on permanents only; the only printed wording today pairs the two anyway. A future
-  "a player or *creature*" needs the object half and the player half kept apart. The
+  Pass `players` (`EventPattern.BecomesTargetEvent.playerTargets`, a `Player` reference) to let
+  targeted **players** fire it too: `players = Player.Any` is "a **player** or permanent becomes the
+  target" (Loki, God of Mischief), `players = Player.You` is "**you** or another permanent you control"
+  (Valkmira, Protector's Shield — `Triggers.another(Permanent.youControl()).becomesTarget(byOpponent =
+  true, players = Player.You)`). Null (the default) matches no player. The two halves are independent:
+  the subject's `filter` and binding narrow only targeted objects, `players` only targeted players. The
   **retarget/reselect** effects (`Effects.ChangeTarget`, `Effects.ChangeSpellTarget`,
   `Effects.ReselectTargetRandomly`, "change the triggering object's targets") rewrite a stack
   object's targets without emitting a fresh `BecomesTargetEvent` — for any target kind — so no
@@ -9020,7 +9025,7 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
 - `Triggers.self.becomesTarget(byYou = true, spellsOnly = true)` — the source becomes the target of a **spell you control** (Stormchaser
   Drake: "Whenever this creature becomes the target of a spell you control, draw a card"). Self-bound
   `BecomesTargetEvent(byYou = true, spellsOnly = true)` — the same two axes `Triggers.a(filter).becomesTarget(spellsOnly = true)` and
-  `Triggers.a(filter).becomesTarget(abilitiesOnly = true, byYou, includePlayerTargets)` read, crossed. It is `Triggers.self.becomesTarget(byYou = true, firstTimeEachTurn = true)` without the once-a-turn limit and without
+  `Triggers.a(filter).becomesTarget(abilitiesOnly = true, byYou, players = Player.Any)` read, crossed. It is `Triggers.self.becomesTarget(byYou = true, firstTimeEachTurn = true)` without the once-a-turn limit and without
   abilities.
 - `Triggers.self.becomesTarget(abilitiesOnly = true, targetsOnlyIt = true)` — the source becomes the target of an
   **ability that targets only it** (Agrus Kos, Eternal Soldier). `targetsOnlyIt` sets
@@ -9050,13 +9055,13 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   permanent is already enchanted by — only for a new one being cast at it. `sourceFilter` is
   general: any `EventPattern.BecomesTargetEvent` may carry one, and its `description` prints the
   filter's subtype alone when it has one ("an Aura spell", not "an Aura enchantment spell").
-- `Triggers.a(filter).becomesTarget(abilitiesOnly = true, byYou, includePlayerTargets)` — the exact mirror of
+- `Triggers.a(filter).becomesTarget(abilitiesOnly = true, byYou, players = Player.Any)` — the exact mirror of
   `Triggers.a(filter).becomesTarget(spellsOnly = true)`: something becomes the target of an **ability** (activated *or* triggered),
   never a spell. Sets `BecomesTargetEvent(abilitiesOnly = true)`, reading the same `sourceIsSpell`
   axis from the other side; the two are mutually exclusive and asking for both throws. `byYou` is
-  the "an ability **you control**" half and `includePlayerTargets` the "a **player** or permanent"
+  the "an ability **you control**" half and `players = Player.Any` the "a **player** or permanent"
   half (which keeps `filter` at `Any` — see `Triggers.a(filter).becomesTarget()` above) —
-  Loki, God of Mischief is `Triggers.a(filter).becomesTarget(abilitiesOnly = true, byYou, includePlayerTargets)` plus
+  Loki, God of Mischief is `Triggers.a(filter).becomesTarget(abilitiesOnly = true, byYou, players = Player.Any)` plus
   `oncePerTurn = true` on the ability for "This ability triggers only once each turn". ANY-bound.
   The trigger fires at target announcement (CR 601.2c for spells, CR 602.2b / 603.3d for activated
   and triggered abilities), so it still fires when the ability is later countered or fizzles.

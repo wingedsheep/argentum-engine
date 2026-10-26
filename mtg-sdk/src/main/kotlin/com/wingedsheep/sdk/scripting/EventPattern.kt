@@ -2189,13 +2189,14 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * the spell's card data, so a creature spell matches a `Creature` filter (Surrak, Elusive Hunter:
      * "a creature you control or a creature spell you control becomes the target").
      *
-     * Players are the third target kind and are likewise opt-in, via [includePlayerTargets] — "a
-     * player or permanent becomes the target" (Loki, God of Mischief). Without it a targeted player
-     * never matches, so the many permanent-only triggers already in the pool stay unaffected by the
-     * engine emitting target events for players. [includePlayerTargets] requires [targetFilter] to
-     * be `Any` and throws otherwise: a player carries no card data for a filter to read, so the pair
-     * would fire on permanents only while [description] still promised the player half. A future "a
-     * player or *creature*" wording needs the object half and the player half kept apart.
+     * Players are the third target kind and are likewise opt-in, via [playerTargets] — *which*
+     * targeted players count, as a [Player] reference read relative to the trigger's controller:
+     * `Player.Any` is "a player or permanent becomes the target" (Loki, God of Mischief), `Player.You`
+     * is "**you** or another permanent you control becomes the target" (Valkmira, Protector's
+     * Shield). Null (the default) means no player matches, so the many permanent-only triggers in
+     * the pool stay unaffected by the engine emitting target events for players. The player half and
+     * the object half are independent: [targetFilter] (and the binding) narrow only targeted
+     * objects, [playerTargets] only targeted players — a player has no card data for a filter to read.
      *
      * [byYou] restricts to spells or abilities controlled by the trigger's controller.
      * [firstTimeEachTurn] restricts to the first time each turn. Its window follows the controller
@@ -2229,7 +2230,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * [com.wingedsheep.sdk.scripting.events.SpellCastPredicate.TargetsOnlySource].
      *
      * Note that [spellsOnly] / [abilitiesOnly] / [sourceFilter] narrow *what did the targeting*,
-     * while [includeSpellTargets] / [includePlayerTargets] widen *what got targeted*; the two axes
+     * while [includeSpellTargets] / [playerTargets] widen *what got targeted*; the two axes
      * are independent.
      */
     @SerialName("BecomesTargetEvent")
@@ -2241,7 +2242,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         val firstTimeEachTurn: Boolean = false,
         val includeSpellTargets: Boolean = false,
         val spellsOnly: Boolean = false,
-        val includePlayerTargets: Boolean = false,
+        val playerTargets: Player? = null,
         val abilitiesOnly: Boolean = false,
         val sourceFilter: GameObjectFilter? = null,
         val backupAbilitiesOnly: Boolean = false,
@@ -2254,23 +2255,19 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
             require(!(byYou && byOpponent)) {
                 "BecomesTargetEvent cannot be both byYou and byOpponent — nothing would match"
             }
-            require(!includePlayerTargets || targetFilter == GameObjectFilter.Any) {
-                "BecomesTargetEvent.includePlayerTargets only fires for players when targetFilter is Any — " +
-                    "a player has no card data for a filter to read; split the object and player halves first"
-            }
         }
 
         override val description: String = buildString {
-            if (includePlayerTargets) {
-                // The player half is only reachable with filter `Any` (see the require above), and
-                // the one printed wording that uses it says "a player or permanent" — deliberately
-                // narrower than the generic `describeObjectForEvent(Any)` phrasing ("a card or
-                // permanent"), which is what the object-only branch below still renders.
-                append("a player or ")
-                if (targetFilter == GameObjectFilter.Any) append("permanent")
-                else append(describeObjectForEvent(targetFilter))
-            } else {
-                append(describeObjectForEvent(targetFilter))
+            when (playerTargets) {
+                null -> append(describeObjectForEvent(targetFilter))
+                // "a player or permanent" (Loki) — deliberately not the generic
+                // `describeObjectForEvent(Any)` phrasing ("a card or permanent").
+                else -> {
+                    append(playerTargets.description)
+                    append(" or ")
+                    if (targetFilter == GameObjectFilter.Any) append(if (playerTargets == Player.Any) "permanent" else "a permanent")
+                    else append(describeObjectForEvent(targetFilter))
+                }
             }
             // `sourceFilter` names the targeting object, so it supplies the noun the "of …"
             // phrase would otherwise fill with the bare word "spell"/"ability": "becomes the

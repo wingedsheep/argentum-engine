@@ -33,6 +33,8 @@ import com.wingedsheep.engine.legalactions.TapForGenericPermanentData
 import com.wingedsheep.engine.mechanics.mana.TapForGeneric
 import com.wingedsheep.engine.legalactions.utils.CostEnumerationUtils
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.engine.mechanics.stack.SpellCounterer
 import com.wingedsheep.engine.registry.CardRegistry
@@ -146,6 +148,17 @@ class WardCounterEffectExecutor(
     }
 
     companion object {
+        /**
+         * The label on the payment prompt. The ward keyword's own trigger reads "Ward"; the same
+         * counter-unless-pays printed as an ability ("counter that spell or ability unless its
+         * controller pays {1}" — Valkmira, Protector's Shield) is labelled by its source card, so
+         * the payer isn't told about a ward the permanent doesn't have.
+         */
+        private fun promptSourceName(state: GameState, wardSourceId: EntityId?): String {
+            if (wardSourceId == null || state.projectedState.hasKeyword(wardSourceId, Keyword.WARD)) return "Ward"
+            return state.getEntity(wardSourceId)?.get<CardComponent>()?.name ?: "Ward"
+        }
+
         /**
          * Charge a single ward [cost] against [payingPlayerId], carrying [remainingParts] (the
          * not-yet-paid components of an enclosing [WardCost.Composite]) so the continuation
@@ -286,7 +299,7 @@ class WardCounterEffectExecutor(
                 prompt = "$label or your spell will be countered",
                 context = DecisionContext(
                     sourceId = wardSourceId,
-                    sourceName = "Ward",
+                    sourceName = promptSourceName(state, wardSourceId),
                     phase = DecisionPhase.RESOLUTION
                 ),
                 yesText = label,
@@ -348,7 +361,7 @@ class WardCounterEffectExecutor(
                 prompt = "Choose one to pay for ward, or your spell will be countered",
                 context = DecisionContext(
                     sourceId = wardSourceId,
-                    sourceName = "Ward",
+                    sourceName = promptSourceName(state, wardSourceId),
                     phase = DecisionPhase.RESOLUTION
                 ),
                 options = labels
@@ -484,7 +497,7 @@ class WardCounterEffectExecutor(
                 state = state,
                 playerId = payingPlayerId,
                 sourceId = wardSourceId,
-                sourceName = "Ward",
+                sourceName = promptSourceName(state, wardSourceId),
                 prompt = prompt,
                 options = validPermanents,
                 minSelections = 0,
@@ -550,7 +563,7 @@ class WardCounterEffectExecutor(
                 state = state,
                 playerId = payingPlayerId,
                 sourceId = wardSourceId,
-                sourceName = "Ward",
+                sourceName = promptSourceName(state, wardSourceId),
                 prompt = "Collect evidence $amount (exile cards with total mana value $amount or " +
                     "greater from your graveyard) or your spell will be countered",
                 options = candidates.cards,
@@ -603,7 +616,7 @@ class WardCounterEffectExecutor(
                 prompt = "Discard $cardsLabel$randomSuffix or your spell will be countered",
                 context = DecisionContext(
                     sourceId = wardSourceId,
-                    sourceName = "Ward",
+                    sourceName = promptSourceName(state, wardSourceId),
                     phase = DecisionPhase.RESOLUTION
                 ),
                 yesText = "Discard $cardsLabel$randomSuffix",
@@ -692,7 +705,7 @@ class WardCounterEffectExecutor(
                 prompt = payPrompt,
                 context = DecisionContext(
                     sourceId = wardSourceId,
-                    sourceName = "Ward",
+                    sourceName = promptSourceName(state, wardSourceId),
                     phase = DecisionPhase.RESOLUTION
                 ),
                 availableSources = sourceOptions,
@@ -744,7 +757,7 @@ class WardCounterEffectExecutor(
                 prompt = "Pay $lifeCost life or your spell will be countered",
                 context = DecisionContext(
                     sourceId = wardSourceId,
-                    sourceName = "Ward",
+                    sourceName = promptSourceName(state, wardSourceId),
                     phase = DecisionPhase.RESOLUTION
                 ),
                 yesText = "Pay $lifeCost life",
