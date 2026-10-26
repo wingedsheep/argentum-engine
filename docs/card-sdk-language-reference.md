@@ -16764,8 +16764,9 @@ restriction matches the spell context.
   which the foretell handler and enumerator pass (`SpecialActionManaPayment`'s `spendContext`).
   Casting the foretold card later is a spell cast, not this. Karfell Harbinger:
   `AnyOf(ForetellOnly, InstantOrSorceryOnly)`.
-- `ManaRestriction.SpellsWithKeywordOnly(keyword)` — only spells whose card has `keyword` (its base
-  keywords, which include those derived from parameterized keyword abilities like foretell).
+- `ManaRestriction.SpellsWithKeywordOnly(keyword)` — only spells whose card has `keyword` in its
+  definition (base keywords, which include those derived from parameterized keyword abilities like
+  foretell); a keyword granted to the spell by another effect isn't read yet.
   Satisfied by `SpellPaymentContext.keywords`, filled by `spellPaymentContextFor`. Niko Defies
   Destiny's "foretell cards or cast spells that have foretell":
   `AnyOf(ForetellOnly, SpellsWithKeywordOnly(Keyword.FORETELL))`.

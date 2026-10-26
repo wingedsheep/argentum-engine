@@ -256,8 +256,8 @@ sealed interface ManaRestriction {
 
     /**
      * "Spend this mana only to cast spells that have [keyword]" — a spell whose card has the
-     * keyword (printed, or derived from a parameterized keyword ability such as foretell or
-     * flashback). Niko Defies Destiny's "cast spells that have foretell" is
+     * keyword in its definition (printed, or derived from a parameterized keyword ability such as
+     * foretell or flashback). A keyword granted to the spell by another effect isn't read yet. Niko Defies Destiny's "cast spells that have foretell" is
      * `SpellsWithKeywordOnly(Keyword.FORETELL)`. Rejects ability activations and non-cast spends.
      */
     @SerialName("SpellsWithKeywordOnly")

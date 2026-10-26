@@ -100,7 +100,7 @@ data class SpellPaymentContext(
      */
     val isForetellAction: Boolean = false,
     /**
-     * Keywords of the card being cast (its base keywords, including those derived from
+     * Keywords of the card being cast (its definition's keywords, including those derived from
      * parameterized keyword abilities such as foretell). Empty for non-spell contexts and for a
      * face-down cast (CR 708.2). Read by [ManaRestriction.SpellsWithKeywordOnly].
      */
@@ -227,7 +227,10 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
     is ManaRestriction.CardTypeSpellsOrAbilitiesOnly ->
         if (context.isAbilityActivation) allowAbilities && (!permanentSourcesOnly || context.isAbilitySourceOnBattlefield) &&
             (cardType in context.abilitySourceCardTypes) != negated
-        else allowSpells && (cardType in context.cardTypes) != negated
+        // Only a spell cast satisfies the spell side: a special action (foretell, turning a
+        // permanent face up, unlocking a door) has no card types, which a negated type would
+        // otherwise read as "not a creature spell".
+        else allowSpells && context.isSpellCast && (cardType in context.cardTypes) != negated
     // Negative restriction: only a spell cast can ever violate it, so every other kind of
     // payment passes untouched.
     is ManaRestriction.CannotCastSpellsOtherThan ->

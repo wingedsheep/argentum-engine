@@ -1,10 +1,12 @@
 package com.wingedsheep.engine.mechanics
 
 import com.wingedsheep.engine.core.ForetellCard
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Step
@@ -121,6 +123,15 @@ class ForetoldCardVocabularyTest : FunSpec({
         d.getLifeTotal(p) shouldBe 20
     }
 
+    test("a card exiled face down by another road is not foretold") {
+        val d = driver()
+        val p = d.activePlayer!!
+        val c = d.putCardInExile(p, "Test Foretell Instant")
+        d.replaceState(d.state.updateEntity(c) { it.with(FaceDownComponent) })
+        d.castCount(p)
+        d.getLifeTotal(p) shouldBe 20
+    }
+
     test("a foretold card that leaves exile is no longer counted") {
         val d = driver()
         val p = d.activePlayer!!
@@ -144,6 +155,19 @@ class ForetoldCardVocabularyTest : FunSpec({
         d.submitSuccess(ForetellCard(p, c))
         d.getExile(p).contains(c) shouldBe true
         d.restrictedLeft(p) shouldBe 0
+    }
+
+    // CR 702.143b: foretelling is a special action, not a spell — "noncreature spells only" mana
+    // (a negated card-type restriction) must not read the action's missing card types as a match.
+    test("noncreature-spell mana can't pay the foretell action") {
+        val d = driver()
+        val p = d.activePlayer!!
+        val c = d.putCardInHand(p, "Test Foretell Instant")
+        d.giveRestrictedMana(
+            p, Color.BLUE, 2,
+            ManaRestriction.CardTypeSpellsOrAbilitiesOnly(cardType = CardType.CREATURE, negated = true)
+        )
+        d.legalActions(p).single { it.action == ForetellCard(p, c) }.affordable shouldBe false
     }
 
     test("foretell-only mana can't pay for a spell, even one with foretell") {
