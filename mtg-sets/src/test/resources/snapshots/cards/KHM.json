@@ -4551,6 +4551,106 @@
     ]
 }
 
+// Open the Omenpaths
+{
+    "name": "Open the Omenpaths",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Add two mana of any one color and two mana of any other color. Spend this mana only to cast creature or enchantment spells.\n• Creatures you control get +1/+0 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ChooseColorThen",
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "AddManaOfChoice",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    },
+                                    "restriction": {
+                                        "type": "AnyOf",
+                                        "restrictions": [
+                                            {
+                                                "type": "CardTypeSpellsOrAbilitiesOnly",
+                                                "cardType": "CREATURE"
+                                            },
+                                            {
+                                                "type": "CardTypeSpellsOrAbilitiesOnly",
+                                                "cardType": "ENCHANTMENT"
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "type": "AddManaOfChoice",
+                                    "colorSet": "ManaColorSet.ExceptChosenColor",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    },
+                                    "restriction": {
+                                        "type": "AnyOf",
+                                        "restrictions": [
+                                            {
+                                                "type": "CardTypeSpellsOrAbilitiesOnly",
+                                                "cardType": "CREATURE"
+                                            },
+                                            {
+                                                "type": "CardTypeSpellsOrAbilitiesOnly",
+                                                "cardType": "ENCHANTMENT"
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        "prompt": "Choose a color (two mana of it, then two of another color)"
+                    },
+                    "description": "Add two mana of any one color and two mana of any other color"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "description": "Creatures you control get +1/+0 until end of turn"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4e4023c8-8e7f-42b9-99e5-87e80fc3d6c8.jpg?1783928227"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Pilfering Hawk
 {
     "name": "Pilfering Hawk",

@@ -164,6 +164,8 @@ object LandManaColorInspector {
                 sourceContainer.chosenColor()?.let { out.add(it) }
             }
             is ManaColorSet.Union -> colorSet.members.forEach { collectChoiceColors(it, sourceContainer, out) }
+            // No resolution-time choice exists outside an effect, so nothing is removed.
+            is ManaColorSet.ExceptChosenColor -> collectChoiceColors(colorSet.base, sourceContainer, out)
             is ManaColorSet.CommanderIdentity,
             is ManaColorSet.AmongPermanents,
             is ManaColorSet.AmongCardsInGraveyard,

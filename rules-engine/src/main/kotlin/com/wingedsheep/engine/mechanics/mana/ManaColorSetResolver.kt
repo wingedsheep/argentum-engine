@@ -37,6 +37,8 @@ object ManaColorSetResolver {
      *   [ManaColorSet.LandsCouldProduce] (scope resolution).
      * @param resolveEntity Resolves the object a [ManaColorSet.ColorsOf] names. Effect executors
      *   pass their `EffectContext`'s resolver; the default only knows `Self` (the source).
+     * @param chosenColor The color chosen earlier in this resolution (`EffectContext.chosenColor`),
+     *   which [ManaColorSet.ExceptChosenColor] removes. Null outside a resolution — nothing removed.
      */
     fun resolve(
         colorSet: ManaColorSet,
@@ -46,7 +48,8 @@ object ManaColorSetResolver {
         controllerId: EntityId,
         cardRegistry: CardRegistry,
         predicateEvaluator: PredicateEvaluator,
-        resolveEntity: (EffectTarget) -> EntityId? = { if (it == EffectTarget.Self) sourceId else null }
+        resolveEntity: (EffectTarget) -> EntityId? = { if (it == EffectTarget.Self) sourceId else null },
+        chosenColor: Color? = null,
     ): Set<Color> = when (colorSet) {
         is ManaColorSet.AnyColor -> Color.entries.toSet()
         is ManaColorSet.Specific -> colorSet.colors
@@ -58,8 +61,11 @@ object ManaColorSetResolver {
         is ManaColorSet.AmongLinkedExiledCards -> amongLinkedExiledCards(state, sourceId)
         is ManaColorSet.ColorsOf -> colorsOf(state, projected, resolveEntity(colorSet.entity))
         is ManaColorSet.Union -> colorSet.members.flatMapTo(mutableSetOf()) { member ->
-            resolve(member, state, projected, sourceId, controllerId, cardRegistry, predicateEvaluator, resolveEntity)
+            resolve(member, state, projected, sourceId, controllerId, cardRegistry, predicateEvaluator, resolveEntity, chosenColor)
         }
+        is ManaColorSet.ExceptChosenColor ->
+            resolve(colorSet.base, state, projected, sourceId, controllerId, cardRegistry, predicateEvaluator, resolveEntity, chosenColor) -
+                setOfNotNull(chosenColor)
     }
 
     /**

@@ -147,6 +147,24 @@ sealed interface ManaColorSet {
 
         override val description: String = members.joinToString(" or ") { it.description }
     }
+
+    /**
+     * [base] minus the color chosen earlier in this resolution (`ChooseColorThenEffect`'s
+     * chosen-color context) — "any **other** color". "Add two mana of any one color and two mana
+     * of any other color" (Open the Omenpaths) is
+     * `ChooseColorThen(Composite(AddManaOfChoice(AnyColor, 2), AddManaOfChoice(ExceptChosenColor(), 2)))`:
+     * the first add takes the chosen color, the second offers the four others.
+     *
+     * Unlike [SourceChosenColor] (a color stored on the source permanent) this reads the
+     * resolution's own choice, so it only narrows inside a `ChooseColorThen`; with no color
+     * chosen it is [base] unchanged. [Union] adds pools; this is its subtraction.
+     */
+    @SerialName("ManaColorSet.ExceptChosenColor")
+    @Serializable
+    data class ExceptChosenColor(val base: ManaColorSet = AnyColor) : ManaColorSet {
+        override val description: String =
+            if (base == AnyColor) "any other color" else "${base.description} other than the chosen color"
+    }
 }
 
 /**
