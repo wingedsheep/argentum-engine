@@ -237,6 +237,10 @@ data class PlayWithCostReductionComponent(
  *   {1}"): the stamp is honoured only while that [com.wingedsheep.engine.state.permissions.MayPlayPermission]
  *   exists, so a cast cancelled mid-announcement can't leave the card discounted for a later cast.
  *   Null for stamps that live as long as the card's zone (airbend, foretell, madness).
+ * @param faceCosts The fixed cost of casting one of the card's alternative faces, by face name,
+ *   where it differs from [fixedCost] — a foretell cost granted as "its mana cost reduced by {2}"
+ *   (Dream Devourer) is each face's own cost reduced (a modal DFC's back, an Adventure). A face
+ *   absent from the map is cast for [fixedCost]. Read through [costFor].
  */
 @Serializable
 data class PlayWithFixedAlternativeManaCostComponent(
@@ -245,7 +249,13 @@ data class PlayWithFixedAlternativeManaCostComponent(
     val waterbend: Boolean = false,
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val grantedPermissionId: EntityId? = null,
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val faceCosts: Map<String, com.wingedsheep.sdk.core.ManaCost> = emptyMap(),
 ) : Component {
+    /** The fixed cost of casting the face named [castFaceName] (null: the primary face). */
+    fun costFor(castFaceName: String?): com.wingedsheep.sdk.core.ManaCost =
+        castFaceName?.let { faceCosts[it] } ?: fixedCost
+
     /** True when this stamp prices [playerId]'s cast in [state] — see [grantedPermissionId]. */
     fun appliesTo(state: com.wingedsheep.engine.state.GameState, playerId: EntityId): Boolean =
         controllerId == playerId &&

@@ -1,13 +1,19 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.AlternativeCostType
+import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.ForetellCard
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithFixedAlternativeManaCostComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 
 /**
@@ -44,5 +50,30 @@ class DreamDevourerScenarioTest : FunSpec({
         d.submitSuccess(ForetellCard(p, cup))
         d.state.getEntity(cup)!!.get<PlayWithFixedAlternativeManaCostComponent>()!!.fixedCost shouldBe
             ManaCost.parse("{1}{B}")
+    }
+
+    test("a foretold modal DFC is cast from exile as either face, for that face's mana cost minus {2}") {
+        // Ruling: "you can cast Kolvori by paying {G}{G} or The Ringhart Crest by paying {G}."
+        val d = driver()
+        val p = d.activePlayer!!
+        d.putCreatureOnBattlefield(p, "Dream Devourer")
+        val kolvori = d.putCardInHand(p, "Kolvori, God of Kinship") // {2}{G}{G} // {1}{G}
+        d.giveColorlessMana(p, 2)
+        d.submitSuccess(ForetellCard(p, kolvori))
+
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN, d.getOpponent(p))
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN, p)
+        val casts = d.legalActions(p).filter { (it.action as? CastSpell)?.cardId == kolvori }
+        casts.map { it.description to it.manaCostString } shouldContainExactlyInAnyOrder listOf(
+            "Cast Kolvori, God of Kinship" to "{G}{G}",
+            "Cast The Ringhart Crest" to "{G}",
+        )
+
+        d.giveMana(p, Color.GREEN, 1)
+        d.submitSuccess(CastSpell(p, kolvori, useAlternativeCost = true, alternativeCostType = AlternativeCostType.MODAL_BACK_FACE))
+        withClue("the back face is on the stack, paid with the single {G}") {
+            d.state.getEntity(kolvori)!!.get<CardComponent>()!!.name shouldBe "The Ringhart Crest"
+            d.state.stack shouldBe listOf(kolvori)
+        }
     }
 })

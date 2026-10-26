@@ -590,6 +590,7 @@ internal class NonPermanentSpellResolver(
                     cardIds = setOf(spellId),
                     controllerId = spellComponent.casterId,
                     permanent = true,
+                    primaryFaceOnly = true,
                     timestamp = state.timestamp,
                 )
             )

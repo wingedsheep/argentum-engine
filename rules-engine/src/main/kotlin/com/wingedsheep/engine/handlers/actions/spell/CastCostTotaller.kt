@@ -288,12 +288,25 @@ internal class CastCostTotaller(
     // The base
     // ---------------------------------------------------------------------------------------------
 
-    /** The fixed alternative mana cost stamped on the card for this caster, or null. */
-    private fun fixedAlternativeManaCost(state: GameState, action: CastSpell): ManaCost? =
+    /**
+     * The fixed alternative mana cost stamped on the card for this caster, or null — the cast
+     * face's own one when the stamp prices faces apart ([PlayWithFixedAlternativeManaCostComponent.faceCosts]).
+     */
+    private fun fixedAlternativeManaCost(state: GameState, action: CastSpell, cardDef: CardDefinition?): ManaCost? =
         state.getEntity(action.cardId)
             ?.get<PlayWithFixedAlternativeManaCostComponent>()
             ?.takeIf { it.appliesTo(state, action.playerId) }
-            ?.fixedCost
+            ?.costFor(castFaceName(state, action, cardDef))
+
+    /** The name of the alternative face [action] casts — a `cardFaces` entry or a modal DFC's back — or null for the primary. */
+    private fun castFaceName(state: GameState, action: CastSpell, cardDef: CardDefinition?): String? =
+        action.faceIndex?.let { cardDef?.cardFaces?.getOrNull(it)?.name }
+            ?: modalBackFace(state, action)?.name
+
+    private fun modalBackFace(state: GameState, action: CastSpell): CardDefinition? =
+        if (action.useAlternativeCost && action.altAllows(AlternativeCostType.MODAL_BACK_FACE)) {
+            zoneResolver.modalBackCastFace(state, action.playerId, action.cardId)
+        } else null
 
     private fun baseCost(
         state: GameState,
@@ -307,12 +320,17 @@ internal class CastCostTotaller(
         // chosen face is evaluated (CR 709.3a / 715.3a / 712.11c / 722.3c), so it is priced as a
         // normal cast of that face: its own mana cost, with every modifier judged against it.
         val castFace = action.faceIndex?.let { idx -> cardDef?.cardFaces?.getOrNull(idx) }
+        // The characteristics a free or fixed-cost cast is judged by: the cast face, a modal DFC's
+        // permanent back (CR 712.11c), or the card.
+        val castSpell = cardDef?.let { def ->
+            castFace?.let { costCalculator.faceCharacteristics(def, it) } ?: modalBackFace(state, action) ?: def
+        }
         return when {
             // "Without paying its mana cost" is a {0} alternative cost (CR 118.9): increases still
             // land on it, and reductions then take them back off (CR 601.2f).
-            playForFree && cardDef != null -> costCalculator.calculateFreeCastCost(
+            playForFree && castSpell != null -> costCalculator.calculateFreeCastCost(
                 state,
-                castFace?.let { costCalculator.faceCharacteristics(cardDef, it) } ?: cardDef,
+                castSpell,
                 action.playerId,
                 action.targets.map { it.toEntityId() },
                 fromZone = if (castingFromCommandZone) Zone.COMMAND else castSourceZone(state, action.cardId),
@@ -326,16 +344,16 @@ internal class CastCostTotaller(
             // and reductions are applied to it (CR 601.2f) and additional costs such as kicker still
             // land on top. Ahead of the face branch: a face chosen for such a cast (a modal DFC's
             // back) is priced at the fixed cost too.
-            fixedAlternativeManaCost(state, action) != null && cardDef != null -> costCalculator.calculateEffectiveCost(
+            fixedAlternativeManaCost(state, action, cardDef) != null && castSpell != null -> costCalculator.calculateEffectiveCost(
                 state,
-                castFace?.let { costCalculator.faceCharacteristics(cardDef, it) } ?: cardDef,
+                castSpell,
                 action.playerId,
                 action.targets.map { it.toEntityId() },
                 fromZone = if (castingFromCommandZone) Zone.COMMAND else castSourceZone(state, action.cardId),
                 declaredCostSlot = action.declaredCostSlot,
                 // An {X} in the fixed cost (Starnheim Unleashed's foretell {X}{X}{W}) takes the
                 // announced X, as a printed {X} does.
-                baseCost = withAnnouncedX(checkNotNull(fixedAlternativeManaCost(state, action)), action, cardDef),
+                baseCost = withAnnouncedX(checkNotNull(fixedAlternativeManaCost(state, action, cardDef)), action, cardDef),
                 card = cardDef,
                 spellId = action.cardId,
                 announcedX = action.xValue,

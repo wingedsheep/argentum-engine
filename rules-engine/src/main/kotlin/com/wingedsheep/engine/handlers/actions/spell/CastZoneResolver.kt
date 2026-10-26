@@ -29,6 +29,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.CommanderComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
+import com.wingedsheep.engine.state.permissions.activeMayPlayFor
 import com.wingedsheep.engine.state.permissions.hasMayPlayFor
 import com.wingedsheep.engine.state.permissions.mayPlayEntersTappedRiders
 import com.wingedsheep.engine.state.components.player.MayCastCreaturesFromGraveyardWithForageComponent
@@ -236,15 +237,18 @@ class CastZoneResolver(
         if (cardId in state.getHand(playerId)) return emptyList()
         if (castGoesThroughOwnRoute(state, action, cardComponent)) return emptyList()
         val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
+        val modalBack = action.useAlternativeCost && action.altAllows(AlternativeCostType.MODAL_BACK_FACE)
         val castColors = state.projectedState.spellColors(
             playerId,
-            action.faceIndex?.let { cardDef?.cardFaces?.getOrNull(it)?.manaCost?.colors }
+            (if (modalBack) cardDef?.backFace?.colors else null)
+                ?: action.faceIndex?.let { cardDef?.cardFaces?.getOrNull(it)?.manaCost?.colors }
                 ?: cardDef?.colors
                 ?: cardComponent.manaCost.colors,
             cardId,
         )
         return state.mayPlayEntersTappedRiders(cardId, playerId, conditionEvaluator, cardRegistry) {
-            it.castFaceIndex == action.faceIndex && it.authorizesSpellColors(castColors)
+            (if (modalBack) it.authorizesModalBack else it.authorizesFace(action.faceIndex)) &&
+                it.authorizesSpellColors(castColors)
         } ?: emptyList()
     }
 
@@ -593,23 +597,28 @@ class CastZoneResolver(
     }
 
     /**
-     * The back face a card in [playerId]'s **hand** would be cast as through the modal-DFC face
-     * choice (CR 712.11b), or null when it isn't there or isn't a modal DFC with a permanent back
-     * face.
+     * The back face a card would be cast as through the modal-DFC face choice (CR 712.11b), or null
+     * when it isn't a modal DFC with a permanent back face or [playerId] can't cast it from where it
+     * is: their **hand**, or anywhere a may-play permission covering the back face reaches
+     * ([com.wingedsheep.engine.state.permissions.MayPlayPermission.authorizesModalBack] — "you may
+     * cast that card" lets either face be cast).
      *
      * Mirrors [disturbCastFace] — same "hand back the face, not a boolean" contract, because every
-     * caller needs the face's characteristics (timing, targets, name) right away — and differs only
-     * in the zone it looks in.
+     * caller needs the face's characteristics (timing, targets, name) right away.
      */
     fun modalBackCastFace(
         state: GameState,
         playerId: EntityId,
         cardId: EntityId
     ): CardDefinition? {
-        val handZone = ZoneKey(playerId, Zone.HAND)
-        if (cardId !in state.getZone(handZone)) return null
+        val inHand = cardId in state.getZone(ZoneKey(playerId, Zone.HAND))
+        if (!inHand && !isInExileWithPlayPermission(state, playerId, cardId)) return null
         val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return null
-        return ModalDfcCasts.castFace(cardRegistry.getCard(cardComponent.cardDefinitionId))
+        val back = ModalDfcCasts.castFace(cardRegistry.getCard(cardComponent.cardDefinitionId)) ?: return null
+        if (!inHand && state.activeMayPlayFor(cardId, playerId, conditionEvaluator, cardRegistry).none { it.authorizesModalBack }) {
+            return null
+        }
+        return back
     }
 
     /**

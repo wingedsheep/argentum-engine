@@ -81,6 +81,14 @@ class ForetellCardHandler(
         )
     }
 
+    private fun foretellFaceCosts(state: GameState, action: ForetellCard): Map<String, ManaCost> {
+        val cardComponent = state.getEntity(action.cardId)?.get<CardComponent>() ?: return emptyMap()
+        val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: return emptyMap()
+        return ForetellGrants.grantedFaceForetellCosts(
+            state, action.cardId, cardDef, action.playerId, cardRegistry, predicateEvaluator
+        )
+    }
+
     override fun validate(state: GameState, action: ForetellCard): String? {
         if (!state.hasPriority(action.playerId)) {
             return "You don't have priority"
@@ -150,7 +158,8 @@ class ForetellCardHandler(
                 .with(
                     PlayWithFixedAlternativeManaCostComponent(
                         controllerId = action.playerId,
-                        fixedCost = foretellCost
+                        fixedCost = foretellCost,
+                        faceCosts = foretellFaceCosts(state, action),
                     )
                 )
         }

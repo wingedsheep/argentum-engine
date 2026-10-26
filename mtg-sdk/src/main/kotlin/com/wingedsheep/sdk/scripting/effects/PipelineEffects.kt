@@ -1897,7 +1897,9 @@ data class GrantMayPlayFromExileEffect(
      * any card-specific wiring.
      *
      * Read by the from-exile/graveyard cast enumerator and enforced by the authoritative cast
-     * handler, which rejects a hand-constructed `faceIndex` no permission authorizes.
+     * handler, which rejects a hand-constructed `faceIndex` no permission authorizes. Left null,
+     * the grant covers every face the card can be cast as — an Adventure (CR 715.3), either face of
+     * a modal DFC (CR 712.11b).
      */
     val castFaceIndex: Int? = null,
     /**

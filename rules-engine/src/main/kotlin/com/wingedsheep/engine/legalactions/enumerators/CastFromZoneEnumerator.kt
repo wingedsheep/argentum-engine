@@ -12,6 +12,11 @@ import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.AlternativeCostType
+import com.wingedsheep.engine.state.ComponentContainer
+import com.wingedsheep.sdk.model.CardLayout
+import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.engine.state.permissions.MayPlayPermission
+import com.wingedsheep.engine.mechanics.ModalDfcCasts
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.GraveyardCastRiderSelection
 import com.wingedsheep.engine.core.PlayLand
@@ -587,234 +592,281 @@ class CastFromZoneEnumerator(
                     )
                 } else {
                     val cardDef = context.cardRegistry.getCard(cardComponent.name)
-                    // Prepare-spell copy (Secrets of Strixhaven): this exiled copy is cast as the
-                    // card's prepare spell — face index 0. Read the face's script for timing,
-                    // restrictions, cost, and targets, and thread faceIndex onto the CastSpell so
-                    // the handler/resolver use the prepare spell's characteristics.
-                    //
-                    // The same face-swap covers any permission that authorizes an alternative
-                    // face rather than the card's primary characteristics — "you may cast it
-                    // from your graveyard as an Adventure" (Mosswood Dreadknight, CR 715.3)
-                    // grants `castFaceIndex = 0`, so only the Adventure half is offered and the
-                    // creature half stays uncastable from the graveyard.
-                    val prepareCopyFaceIndex: Int? =
-                        if (container.has<com.wingedsheep.engine.state.components.battlefield.PreparedSpellCopyComponent>() &&
-                            cardDef?.layout == com.wingedsheep.sdk.model.CardLayout.PREPARE
-                        ) 0
-                        else permissions.firstNotNullOfOrNull { it.castFaceIndex }
-                            ?.takeIf { cardDef?.cardFaces?.getOrNull(it) != null }
-                    val prepareFace = prepareCopyFaceIndex?.let { cardDef?.cardFaces?.getOrNull(it) }
-                    // "You may cast red spells from among them" (Chandra, Dressed to Kill −7): the
-                    // colour is checked against the face actually being cast, not the exiled card,
-                    // so a red MDFC's blue back face stays uncastable through this permission. A
-                    // permission with no restriction authorizes any colour, and only *one* of the
-                    // applicable permissions needs to authorize the cast.
-                    val castColors = state.projectedState.spellColors(
-                        playerId,
-                        prepareFace?.manaCost?.colors ?: cardDef?.colors ?: cardComponent.manaCost.colors,
-                        cardId,
-                    )
-                    if (permissions.none { it.authorizesSpellColors(castColors) }) {
-                        continue
-                    }
-                    val castName = prepareFace?.name ?: cardComponent.name
-                    val effectiveScript = prepareFace?.script ?: cardDef?.script
-                    val effectiveTypeLine = prepareFace?.typeLine ?: cardComponent.typeLine
-                    val isInstant = effectiveTypeLine.isInstant
-                    // A may-play permission with an "as though it had flash" rider (Azula, Cunning
-                    // Usurper) unlocks instant-speed casting of even a sorcery/creature exiled with it.
-                    val grantsFlashTiming = permissions.any { it.asThoughFlash }
-                    val hasCorrectTiming = isInstant || grantsFlashTiming || context.canPlaySorcerySpeed
-                    val castRestrictions = effectiveScript?.castRestrictions ?: emptyList()
-                    val meetsRestrictions = context.legality.castRestrictionsMet(state, playerId, castRestrictions)
-                    val castZone = when (sourceZoneLabel) {
-                        "EXILE" -> Zone.EXILE
-                        "SIDEBOARD" -> Zone.SIDEBOARD
-                        else -> Zone.GRAVEYARD
-                    }
-                    // The paid cast, priced by its target count (a prepare-spell copy is its face).
-                    // A fixed alternative cost (below) replaces this price, so it carries no table.
-                    val runtimeFixedAltCost = container.get<PlayWithFixedAlternativeManaCostComponent>()
-                        ?.takeIf { it.appliesTo(state, playerId) }
-                    val paidPricing = if (playForFree || cardDef == null) null else
-                        context.costCalculator.priceByTargets(
-                            state,
-                            if (prepareFace != null) context.costCalculator.faceCharacteristics(cardDef, prepareFace) else cardDef,
-                            playerId, cardId,
-                            withTable = !context.skipAutoTapPreview && runtimeFixedAltCost == null,
-                            fromZone = castZone, card = cardDef,
-                        )
-                    // A free cast still owes the cost increases (CR 601.2f).
-                    val baseEffectiveCost = if (playForFree) {
-                        context.freeCastCost(
-                            if (cardDef != null && prepareFace != null) context.costCalculator.faceCharacteristics(cardDef, prepareFace) else cardDef,
-                            castZone,
+                    for (option in exileCastFaceOptions(container, cardDef, permissions)) {
+                        // The face this offer casts. A prepare-spell copy (Secrets of Strixhaven) is
+                        // cast as the card's prepare spell, face 0; a permission pinning a face ("cast
+                        // it from your graveyard as an Adventure" — Mosswood Dreadknight) offers only
+                        // that face; any other permission offers every face the card can be cast as —
+                        // its Adventure (CR 715.3) or either face of a modal DFC (CR 712.11b) — each
+                        // read for its own timing, restrictions, cost, and targets.
+                        val prepareCopyFaceIndex: Int? = option.faceIndex
+                        val prepareFace = prepareCopyFaceIndex?.let { cardDef?.cardFaces?.getOrNull(it) }
+                        // The characteristics this cast is judged by: the face, the modal back, or the card.
+                        val castDef: CardDefinition? = when {
+                            cardDef != null && prepareFace != null -> context.costCalculator.faceCharacteristics(cardDef, prepareFace)
+                            option.modalBack != null -> option.modalBack
+                            else -> cardDef
+                        }
+                        // "You may cast red spells from among them" (Chandra, Dressed to Kill −7): the
+                        // colour is checked against the face actually being cast, not the exiled card,
+                        // so a red MDFC's blue back face stays uncastable through this permission. A
+                        // permission with no restriction authorizes any colour, and only *one* of the
+                        // applicable permissions needs to authorize the cast.
+                        val castColors = state.projectedState.spellColors(
+                            playerId,
+                            prepareFace?.manaCost?.colors ?: castDef?.colors ?: cardComponent.manaCost.colors,
                             cardId,
                         )
-                    } else if (paidPricing != null) {
-                        paidPricing.min
-                    } else {
-                        cardComponent.manaCost
-                    }
-                    // Airbend / foretell / madness: a fixed alternative cost ({2}) is paid *instead
-                    // of* the printed cost (CR 118.9) — it replaces the base, and cost increases and
-                    // reductions apply to it (CR 601.2f), exactly as CastCostTotaller prices the cast.
-                    val baseCost = if (!playForFree && runtimeFixedAltCost != null && cardDef != null) {
-                        context.costCalculator.calculateEffectiveCost(
-                            state,
-                            if (prepareFace != null) context.costCalculator.faceCharacteristics(cardDef, prepareFace) else cardDef,
-                            playerId,
-                            fromZone = castZone,
-                            baseCost = runtimeFixedAltCost.fixedCost,
-                            card = cardDef,
-                            spellId = cardId,
-                        )
-                    } else if (!playForFree && runtimeFixedAltCost != null) {
-                        runtimeFixedAltCost.fixedCost
-                    } else {
-                        baseEffectiveCost
-                    }
-                    // Mana of any type: either the may-play permission itself carries the rider
-                    // (Taster of Wares, Tinybones) or a blanket static covers this spell wherever
-                    // it is cast from (Vizier of the Menagerie).
-                    val anyManaType = permissions.any { it.withAnyManaType } ||
-                        context.castPermissionUtils.canSpendAnyManaTypeForSpell(state, playerId, cardId)
-                    // "Unless it targets a creature you control" (Mavinda): targets aren't chosen
-                    // yet, so price the cheapest cast — waived when one of the spell's legal targets
-                    // (any mode's, for a modal spell) matches; CastCostTotaller charges it against
-                    // the targets actually chosen.
-                    val offeredCostIncrease = runtimeCostIncrease?.takeUnless { tax ->
-                        val waiver = tax.unlessAnyTargetMatches ?: return@takeUnless false
-                        val scriptDef = if (cardDef != null && prepareFace != null) {
-                            context.costCalculator.faceCharacteristics(cardDef, prepareFace)
-                        } else cardDef
-                        scriptDef != null &&
-                            context.costCalculator.anyLegalTargetMatches(state, scriptDef, playerId, cardId, waiver)
-                    }
-                    // "As though it were mana of any color" (Stolen Strategy) relaxes only the
-                    // colored pips — a {C} pip still needs colorless (CR 609.4b).
-                    fun permitted(cost: ManaCost): ManaCost {
-                        val relaxed = when {
-                            anyManaType -> cost.relaxColors()
-                            permissions.any { it.withAnyManaColor } -> cost.relaxColoredRequirements()
-                            else -> cost
+                        if (permissions.none { it.authorizesSpellColors(castColors) }) {
+                            continue
                         }
-                        return if (offeredCostIncrease != null) relaxed + offeredCostIncrease.cost else relaxed
-                    }
-                    val effectiveCost = permitted(baseCost)
-                    val costString = if (playForFree) freeCostString(effectiveCost) else effectiveCost.toString()
-                    val costByTargetCount = paidPricing?.byCount?.mapValues { permitted(it.value).toString() }
-                    // Hama, the Bloodbender: the fixed alternative cost is a *waterbend* cost, so its
-                    // whole generic can be paid by tapping artifacts/creatures. Fold the tap help into
-                    // affordability (CR 701.67); the tap metadata is attached to the emitted actions
-                    // by the post-pass at the end of this method.
-                    val fixedAltWaterbend = runtimeFixedAltCost?.takeIf { !playForFree && it.waterbend }
-                    val spellContext = spellPaymentContextFor(cardComponent, colors = state.projectedState.colorSetOf(cardId),
-                        isFromExile = sourceZoneLabel == "EXILE",
-                        isFromHand = false,
-                        isFromGraveyard = cardId in state.getGraveyard(playerId),
-                    ).copy(spendAsAnyColor = permissions.firstNotNullOfOrNull { it.spendAsAnyColor })
-                    // Convoke (CR 702.51) — printed, or granted by a zone-scoped grant keyed to the
-                    // zone this card is cast from. A free cast has nothing for convoke to pay.
-                    val convokeCreatures = if (!playForFree && cardDef != null &&
-                        context.grantedKeywordResolver.hasKeyword(state, playerId, cardDef, Keyword.CONVOKE, cardId)
-                    ) {
-                        context.costUtils.findConvokeCreatures(state, playerId).also { convokeByCard[cardId] = it }
-                    } else emptyList()
-                    val canAfford = if (playForFree) context.canPayMana(effectiveCost, spellContext) else
-                        context.manaSolver.canPay(
-                            state, playerId, effectiveCost,
-                            precomputedSources = context.availableManaSources, spellContext = spellContext
-                        ) ||
-                        (convokeCreatures.isNotEmpty() && context.costUtils.canAffordWithConvoke(
-                            state, playerId, effectiveCost, convokeCreatures,
-                            precomputedSources = context.availableManaSources, spellContext = spellContext
-                        )) ||
-                        (fixedAltWaterbend != null && context.costUtils.canAffordWithTapForGeneric(
-                            state, playerId, effectiveCost,
-                            context.costUtils.findTapForGenericPermanents(state, playerId, TapForGeneric.WATERBEND)
-                                .take(fixedAltWaterbend.fixedCost.genericAmount),
-                            precomputedSources = context.availableManaSources,
-                            spellContext = spellContext
-                        ))
-
-                    // Calculate X cost info if the spell has X in its cost (cost still paid even with may-play)
-                    val hasXCost = !playForFree && effectiveCost.hasX
-                    val maxAffordableX: Int? = if (hasXCost) {
-                        val availableSources = context.manaSolver.getAvailableManaCount(state, playerId, precomputedSources = context.availableManaSources)
-                        val payable = availableSources - effectiveCost.cmc  // X contributes 0 to CMC
-                        if (cardDef == null || runtimeFixedAltCost != null) {
-                            (payable / effectiveCost.xCount.coerceAtLeast(1)).coerceAtLeast(0)
-                        } else context.costCalculator.maxAffordableX(
-                            state,
-                            if (prepareFace != null) context.costCalculator.faceCharacteristics(cardDef, prepareFace) else cardDef,
-                            playerId, cardId, payable = payable, xCount = effectiveCost.xCount, fromZone = castZone,
-                        )
-                    } else null
-
-                    // Build additional cost info from runtime component
-                    val exileAdditionalCostInfo = runtimeAdditionalCost?.let { comp ->
-                        buildRuntimeAdditionalCostInfo(state, playerId, cardId, comp)
-                    }
-                    val canPayAdditionalCost = exileAdditionalCostInfo == null ||
-                        checkRuntimeAdditionalCostAffordability(state, playerId, cardId, runtimeAdditionalCost, context.reservedLife)
-
-                    // Honour the card's printed BlightOrPay additional cost when casting from exile
-                    // (e.g. Cinder Strike granted via Sanar's "you may cast" permission). If the
-                    // card has a payable blight path, emit a second legal action with
-                    // costType = "Blight" so the client surfaces both the pay and blight options.
-                    val printedBlightOrPay = effectiveScript?.additionalCosts
-                        ?.flatMap { if (it is AdditionalCost.Composite) it.steps else listOf(it) }
-                        ?.filterIsInstance<AdditionalCost.BlightOrPay>()
-                        ?.firstOrNull()
-                    val blightCreatures = if (printedBlightOrPay != null) {
-                        val projected = state.projectedState
-                        projected.getBattlefieldControlledBy(playerId)
-                            .filter { projected.isCreature(it) && projected.canReceiveCounters(it) }
-                    } else emptyList()
-                    val canAffordBlightPath = printedBlightOrPay != null &&
-                        blightCreatures.isNotEmpty() &&
-                        !playForFree
-
-                    // A battlefield `MayCastWithoutPayingManaCost(fromZones = setOf(EXILE))` source
-                    // (Warped Space) lets this exile spell be cast for {0}. Offered as its own
-                    // variant (CR 118.9a) alongside the pay path; X is treated as 0 (CR 107.3b).
-                    // Excludes prepare-spell copies and cards already granted a free play.
-                    val freeFromExileCost by lazy { context.freeCastCost(cardDef, Zone.EXILE, cardId) }
-                    val freeCastFromExile = !playForFree &&
-                        prepareCopyFaceIndex == null &&
-                        hasCorrectTiming && meetsRestrictions && canPayAdditionalCost &&
-                        context.freeCastPermissionFor(cardId, Zone.EXILE) && context.canPayMana(freeFromExileCost, spellContext)
-
-                    if (hasCorrectTiming && meetsRestrictions && canAfford && canPayAdditionalCost) {
-                        val targetReqs = buildList {
-                            addAll(effectiveScript?.targetRequirements ?: emptyList())
-                            effectiveScript?.castAuraTarget?.let { add(it) }
+                        val castName = if (castDef != null && castDef !== cardDef) castDef.name else cardComponent.name
+                        val effectiveScript = castDef?.script
+                        val effectiveTypeLine = if (castDef != null && castDef !== cardDef) castDef.typeLine else cardComponent.typeLine
+                        // The CastSpell this offer submits: the face index, or the modal-back selector.
+                        fun castAction(free: Boolean = false): CastSpell =
+                            if (option.modalBack != null) CastSpell(
+                                playerId, cardId, useAlternativeCost = true,
+                                alternativeCostType = AlternativeCostType.MODAL_BACK_FACE,
+                                useWithoutPayingManaCost = free,
+                            ) else CastSpell(playerId, cardId, faceIndex = prepareCopyFaceIndex, useWithoutPayingManaCost = free)
+                        val isInstant = effectiveTypeLine.isInstant
+                        // A may-play permission with an "as though it had flash" rider (Azula, Cunning
+                        // Usurper) unlocks instant-speed casting of even a sorcery/creature exiled with it.
+                        val grantsFlashTiming = permissions.any { it.asThoughFlash }
+                        val hasCorrectTiming = isInstant || grantsFlashTiming || context.canPlaySorcerySpeed
+                        val castRestrictions = effectiveScript?.castRestrictions ?: emptyList()
+                        val meetsRestrictions = context.legality.castRestrictionsMet(state, playerId, castRestrictions)
+                        val castZone = when (sourceZoneLabel) {
+                            "EXILE" -> Zone.EXILE
+                            "SIDEBOARD" -> Zone.SIDEBOARD
+                            else -> Zone.GRAVEYARD
                         }
+                        // The paid cast, priced by its target count (a prepare-spell copy is its face).
+                        // A fixed alternative cost (below) replaces this price, so it carries no table.
+                        val runtimeFixedAltCost = container.get<PlayWithFixedAlternativeManaCostComponent>()
+                            ?.takeIf { it.appliesTo(state, playerId) }
+                        val paidPricing = if (playForFree || cardDef == null || castDef == null) null else
+                            context.costCalculator.priceByTargets(
+                                state,
+                                castDef,
+                                playerId, cardId,
+                                withTable = !context.skipAutoTapPreview && runtimeFixedAltCost == null,
+                                fromZone = castZone, card = cardDef,
+                            )
+                        // A free cast still owes the cost increases (CR 601.2f).
+                        val baseEffectiveCost = if (playForFree) {
+                            context.freeCastCost(
+                                castDef,
+                                castZone,
+                                cardId,
+                            )
+                        } else if (paidPricing != null) {
+                            paidPricing.min
+                        } else {
+                            cardComponent.manaCost
+                        }
+                        // Airbend / foretell / madness: a fixed alternative cost ({2}) is paid *instead
+                        // of* the printed cost (CR 118.9) — it replaces the base, and cost increases and
+                        // reductions apply to it (CR 601.2f), exactly as CastCostTotaller prices the cast.
+                        // A stamp that prices faces apart (Dream Devourer's granted foretell) charges this face's.
+                        val fixedAltCost = runtimeFixedAltCost?.costFor(castName.takeIf { castDef !== cardDef })
+                        val baseCost = if (!playForFree && fixedAltCost != null && castDef != null && cardDef != null) {
+                            context.costCalculator.calculateEffectiveCost(
+                                state,
+                                castDef,
+                                playerId,
+                                fromZone = castZone,
+                                baseCost = fixedAltCost,
+                                card = cardDef,
+                                spellId = cardId,
+                            )
+                        } else if (!playForFree && fixedAltCost != null) {
+                            fixedAltCost
+                        } else {
+                            baseEffectiveCost
+                        }
+                        // Mana of any type: either the may-play permission itself carries the rider
+                        // (Taster of Wares, Tinybones) or a blanket static covers this spell wherever
+                        // it is cast from (Vizier of the Menagerie).
+                        val anyManaType = permissions.any { it.withAnyManaType } ||
+                            context.castPermissionUtils.canSpendAnyManaTypeForSpell(state, playerId, cardId)
+                        // "Unless it targets a creature you control" (Mavinda): targets aren't chosen
+                        // yet, so price the cheapest cast — waived when one of the spell's legal targets
+                        // (any mode's, for a modal spell) matches; CastCostTotaller charges it against
+                        // the targets actually chosen.
+                        val offeredCostIncrease = runtimeCostIncrease?.takeUnless { tax ->
+                            val waiver = tax.unlessAnyTargetMatches ?: return@takeUnless false
+                            castDef != null &&
+                                context.costCalculator.anyLegalTargetMatches(state, castDef, playerId, cardId, waiver)
+                        }
+                        // "As though it were mana of any color" (Stolen Strategy) relaxes only the
+                        // colored pips — a {C} pip still needs colorless (CR 609.4b).
+                        fun permitted(cost: ManaCost): ManaCost {
+                            val relaxed = when {
+                                anyManaType -> cost.relaxColors()
+                                permissions.any { it.withAnyManaColor } -> cost.relaxColoredRequirements()
+                                else -> cost
+                            }
+                            return if (offeredCostIncrease != null) relaxed + offeredCostIncrease.cost else relaxed
+                        }
+                        val effectiveCost = permitted(baseCost)
+                        val costString = if (playForFree) freeCostString(effectiveCost) else effectiveCost.toString()
+                        val costByTargetCount = paidPricing?.byCount?.mapValues { permitted(it.value).toString() }
+                        // Hama, the Bloodbender: the fixed alternative cost is a *waterbend* cost, so its
+                        // whole generic can be paid by tapping artifacts/creatures. Fold the tap help into
+                        // affordability (CR 701.67); the tap metadata is attached to the emitted actions
+                        // by the post-pass at the end of this method.
+                        val fixedAltWaterbend = runtimeFixedAltCost?.takeIf { !playForFree && it.waterbend }
+                        val spellContext = spellPaymentContextFor(cardComponent, colors = state.projectedState.colorSetOf(cardId),
+                            isFromExile = sourceZoneLabel == "EXILE",
+                            isFromHand = false,
+                            isFromGraveyard = cardId in state.getGraveyard(playerId),
+                        ).copy(spendAsAnyColor = permissions.firstNotNullOfOrNull { it.spendAsAnyColor })
+                        // Convoke (CR 702.51) — printed, or granted by a zone-scoped grant keyed to the
+                        // zone this card is cast from. A free cast has nothing for convoke to pay.
+                        val convokeCreatures = if (!playForFree && cardDef != null &&
+                            context.grantedKeywordResolver.hasKeyword(state, playerId, cardDef, Keyword.CONVOKE, cardId)
+                        ) {
+                            context.costUtils.findConvokeCreatures(state, playerId).also { convokeByCard[cardId] = it }
+                        } else emptyList()
+                        val canAfford = if (playForFree) context.canPayMana(effectiveCost, spellContext) else
+                            context.manaSolver.canPay(
+                                state, playerId, effectiveCost,
+                                precomputedSources = context.availableManaSources, spellContext = spellContext
+                            ) ||
+                            (convokeCreatures.isNotEmpty() && context.costUtils.canAffordWithConvoke(
+                                state, playerId, effectiveCost, convokeCreatures,
+                                precomputedSources = context.availableManaSources, spellContext = spellContext
+                            )) ||
+                            (fixedAltWaterbend != null && context.costUtils.canAffordWithTapForGeneric(
+                                state, playerId, effectiveCost,
+                                context.costUtils.findTapForGenericPermanents(state, playerId, TapForGeneric.WATERBEND)
+                                    .take(fixedAltWaterbend.fixedCost.genericAmount),
+                                precomputedSources = context.availableManaSources,
+                                spellContext = spellContext
+                            ))
 
-                        if (targetReqs.isNotEmpty()) {
-                            val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, targetingSourceType = TargetingSourceType.SPELL)
-                            val allSatisfied = context.targetUtils.allRequirementsSatisfied(targetInfos)
-                            if (allSatisfied) {
-                                val firstReq = targetReqs.first()
-                                val firstInfo = targetInfos.first()
-                                // Emit the pay path first.
+                        // Calculate X cost info if the spell has X in its cost (cost still paid even with may-play)
+                        val hasXCost = !playForFree && effectiveCost.hasX
+                        val maxAffordableX: Int? = if (hasXCost) {
+                            val availableSources = context.manaSolver.getAvailableManaCount(state, playerId, precomputedSources = context.availableManaSources)
+                            val payable = availableSources - effectiveCost.cmc  // X contributes 0 to CMC
+                            if (castDef == null || runtimeFixedAltCost != null) {
+                                (payable / effectiveCost.xCount.coerceAtLeast(1)).coerceAtLeast(0)
+                            } else context.costCalculator.maxAffordableX(
+                                state,
+                                castDef,
+                                playerId, cardId, payable = payable, xCount = effectiveCost.xCount, fromZone = castZone,
+                            )
+                        } else null
+
+                        // Build additional cost info from runtime component
+                        val exileAdditionalCostInfo = runtimeAdditionalCost?.let { comp ->
+                            buildRuntimeAdditionalCostInfo(state, playerId, cardId, comp)
+                        }
+                        val canPayAdditionalCost = exileAdditionalCostInfo == null ||
+                            checkRuntimeAdditionalCostAffordability(state, playerId, cardId, runtimeAdditionalCost, context.reservedLife)
+
+                        // Honour the card's printed BlightOrPay additional cost when casting from exile
+                        // (e.g. Cinder Strike granted via Sanar's "you may cast" permission). If the
+                        // card has a payable blight path, emit a second legal action with
+                        // costType = "Blight" so the client surfaces both the pay and blight options.
+                        val printedBlightOrPay = effectiveScript?.additionalCosts
+                            ?.flatMap { if (it is AdditionalCost.Composite) it.steps else listOf(it) }
+                            ?.filterIsInstance<AdditionalCost.BlightOrPay>()
+                            ?.firstOrNull()
+                        val blightCreatures = if (printedBlightOrPay != null) {
+                            val projected = state.projectedState
+                            projected.getBattlefieldControlledBy(playerId)
+                                .filter { projected.isCreature(it) && projected.canReceiveCounters(it) }
+                        } else emptyList()
+                        val canAffordBlightPath = printedBlightOrPay != null &&
+                            blightCreatures.isNotEmpty() &&
+                            !playForFree
+
+                        // A battlefield `MayCastWithoutPayingManaCost(fromZones = setOf(EXILE))` source
+                        // (Warped Space) lets this exile spell be cast for {0}. Offered as its own
+                        // variant (CR 118.9a) alongside the pay path; X is treated as 0 (CR 107.3b).
+                        // Excludes prepare-spell copies and cards already granted a free play.
+                        val freeFromExileCost by lazy { context.freeCastCost(cardDef, Zone.EXILE, cardId) }
+                        val freeCastFromExile = !playForFree &&
+                            prepareCopyFaceIndex == null && option.modalBack == null &&
+                            hasCorrectTiming && meetsRestrictions && canPayAdditionalCost &&
+                            context.freeCastPermissionFor(cardId, Zone.EXILE) && context.canPayMana(freeFromExileCost, spellContext)
+
+                        if (hasCorrectTiming && meetsRestrictions && canAfford && canPayAdditionalCost) {
+                            val targetReqs = buildList {
+                                addAll(effectiveScript?.targetRequirements ?: emptyList())
+                                effectiveScript?.castAuraTarget?.let { add(it) }
+                            }
+
+                            if (targetReqs.isNotEmpty()) {
+                                val targetInfos = context.targetUtils.buildTargetInfos(state, playerId, targetReqs, targetingSourceType = TargetingSourceType.SPELL)
+                                val allSatisfied = context.targetUtils.allRequirementsSatisfied(targetInfos)
+                                if (allSatisfied) {
+                                    val firstReq = targetReqs.first()
+                                    val firstInfo = targetInfos.first()
+                                    // Emit the pay path first.
+                                    result.add(
+                                        LegalAction(
+                                            actionType = "CastSpell",
+                                            description = "Cast ${castName}",
+                                            action = castAction(),
+                                            validTargets = firstInfo.validTargets,
+                                            requiresTargets = true,
+                                            targetCount = firstInfo.maxTargets,
+                                            minTargets = firstReq.effectiveMinCount,
+                                            targetDescription = firstReq.description,
+                                            targetRequirements = targetInfos.surfacedRequirements(),
+                                            xConstrainsTargetManaValue = firstInfo.xConstrainsManaValue,
+                                            xConstrainsTargetManaValueExactly = firstInfo.xConstrainsManaValueExactly,
+                                            xConstrainsTargetPower = firstInfo.xConstrainsPower,
+                                            xConstrainsTargetCount = firstInfo.xConstrainsCount,
+                                            xConstrainsTargetCountExactly = firstInfo.xConstrainsCountExactly,
+                                            manaCostString = costString,
+                                            manaCostByTargetCount = costByTargetCount,
+                                            hasXCost = hasXCost,
+                                            maxAffordableX = maxAffordableX,
+                                            sourceZone = sourceZoneLabel,
+                                            additionalCostInfo = exileAdditionalCostInfo
+                                        )
+                                    )
+                                    // Emit the blight path as a second action when the card has
+                                    // a printed BlightOrPay and the player controls a creature.
+                                    if (canAffordBlightPath) {
+                                        result.add(
+                                            LegalAction(
+                                                actionType = "CastSpell",
+                                                description = "Cast ${castName} (Blight ${printedBlightOrPay.blightAmount})",
+                                                action = castAction(),
+                                                validTargets = firstInfo.validTargets,
+                                                requiresTargets = true,
+                                                targetCount = firstInfo.maxTargets,
+                                                minTargets = firstReq.effectiveMinCount,
+                                                targetDescription = firstReq.description,
+                                                targetRequirements = targetInfos.surfacedRequirements(),
+                                                manaCostString = costString,
+                                                manaCostByTargetCount = costByTargetCount,
+                                                hasXCost = hasXCost,
+                                                maxAffordableX = maxAffordableX,
+                                                sourceZone = sourceZoneLabel,
+                                                additionalCostInfo = AdditionalCostData(
+                                                    description = "creature to blight",
+                                                    costType = "Blight",
+                                                    validBlightTargets = blightCreatures,
+                                                    blightAmount = printedBlightOrPay.blightAmount
+                                                )
+                                            )
+                                        )
+                                    }
+                                }
+                            } else {
                                 result.add(
                                     LegalAction(
                                         actionType = "CastSpell",
                                         description = "Cast ${castName}",
-                                        action = CastSpell(playerId, cardId, faceIndex = prepareCopyFaceIndex),
-                                        validTargets = firstInfo.validTargets,
-                                        requiresTargets = true,
-                                        targetCount = firstInfo.maxTargets,
-                                        minTargets = firstReq.effectiveMinCount,
-                                        targetDescription = firstReq.description,
-                                        targetRequirements = targetInfos.surfacedRequirements(),
-                                        xConstrainsTargetManaValue = firstInfo.xConstrainsManaValue,
-                                        xConstrainsTargetManaValueExactly = firstInfo.xConstrainsManaValueExactly,
-                                        xConstrainsTargetPower = firstInfo.xConstrainsPower,
-                                        xConstrainsTargetCount = firstInfo.xConstrainsCount,
-                                        xConstrainsTargetCountExactly = firstInfo.xConstrainsCountExactly,
+                                        action = castAction(),
                                         manaCostString = costString,
                                         manaCostByTargetCount = costByTargetCount,
                                         hasXCost = hasXCost,
@@ -823,20 +875,12 @@ class CastFromZoneEnumerator(
                                         additionalCostInfo = exileAdditionalCostInfo
                                     )
                                 )
-                                // Emit the blight path as a second action when the card has
-                                // a printed BlightOrPay and the player controls a creature.
                                 if (canAffordBlightPath) {
                                     result.add(
                                         LegalAction(
                                             actionType = "CastSpell",
                                             description = "Cast ${castName} (Blight ${printedBlightOrPay.blightAmount})",
-                                            action = CastSpell(playerId, cardId, faceIndex = prepareCopyFaceIndex),
-                                            validTargets = firstInfo.validTargets,
-                                            requiresTargets = true,
-                                            targetCount = firstInfo.maxTargets,
-                                            minTargets = firstReq.effectiveMinCount,
-                                            targetDescription = firstReq.description,
-                                            targetRequirements = targetInfos.surfacedRequirements(),
+                                            action = castAction(),
                                             manaCostString = costString,
                                             manaCostByTargetCount = costByTargetCount,
                                             hasXCost = hasXCost,
@@ -852,100 +896,66 @@ class CastFromZoneEnumerator(
                                     )
                                 }
                             }
-                        } else {
+                        } else if (!freeCastFromExile) {
+                            // Can't cast right now — show as unaffordable (unless a free-from-exile
+                            // cast is available below, which is the affordable path the player wants).
                             result.add(
                                 LegalAction(
                                     actionType = "CastSpell",
                                     description = "Cast ${castName}",
-                                    action = CastSpell(playerId, cardId, faceIndex = prepareCopyFaceIndex),
+                                    action = castAction(),
+                                    affordable = false,
                                     manaCostString = costString,
                                     manaCostByTargetCount = costByTargetCount,
                                     hasXCost = hasXCost,
                                     maxAffordableX = maxAffordableX,
                                     sourceZone = sourceZoneLabel,
-                                    additionalCostInfo = exileAdditionalCostInfo
+                                    additionalCostInfo = exileAdditionalCostInfo,
                                 )
                             )
-                            if (canAffordBlightPath) {
-                                result.add(
-                                    LegalAction(
-                                        actionType = "CastSpell",
-                                        description = "Cast ${castName} (Blight ${printedBlightOrPay.blightAmount})",
-                                        action = CastSpell(playerId, cardId, faceIndex = prepareCopyFaceIndex),
-                                        manaCostString = costString,
-                                        manaCostByTargetCount = costByTargetCount,
-                                        hasXCost = hasXCost,
-                                        maxAffordableX = maxAffordableX,
-                                        sourceZone = sourceZoneLabel,
-                                        additionalCostInfo = AdditionalCostData(
-                                            description = "creature to blight",
-                                            costType = "Blight",
-                                            validBlightTargets = blightCreatures,
-                                            blightAmount = printedBlightOrPay.blightAmount
+                        }
+
+                        // Warped Space: emit the {0} free-from-exile variant (its own action so the
+                        // player chooses it over the pay path — CR 118.9a).
+                        if (freeCastFromExile) {
+                            val freeTargetReqs = buildList {
+                                addAll(effectiveScript?.targetRequirements ?: emptyList())
+                                effectiveScript?.castAuraTarget?.let { add(it) }
+                            }
+                            if (freeTargetReqs.isNotEmpty()) {
+                                val freeTargetInfos = context.targetUtils.buildTargetInfos(state, playerId, freeTargetReqs, targetingSourceType = TargetingSourceType.SPELL)
+                                if (context.targetUtils.allRequirementsSatisfied(freeTargetInfos)) {
+                                    val firstReq = freeTargetReqs.first()
+                                    val firstInfo = freeTargetInfos.first()
+                                    result.add(
+                                        LegalAction(
+                                            actionType = "CastSpell",
+                                            description = "Cast ${castName} (Free)",
+                                            action = castAction(free = true),
+                                            validTargets = firstInfo.validTargets,
+                                            requiresTargets = true,
+                                            targetCount = firstInfo.maxTargets,
+                                            minTargets = firstReq.effectiveMinCount,
+                                            targetDescription = firstReq.description,
+                                            targetRequirements = freeTargetInfos.surfacedRequirements(),
+                                            manaCostString = freeCostString(freeFromExileCost),
+                                            autoTapPreview = freeCostPreview(context, freeFromExileCost, spellContext),
+                                            sourceZone = sourceZoneLabel
                                         )
                                     )
-                                )
-                            }
-                        }
-                    } else if (!freeCastFromExile) {
-                        // Can't cast right now — show as unaffordable (unless a free-from-exile
-                        // cast is available below, which is the affordable path the player wants).
-                        result.add(
-                            LegalAction(
-                                actionType = "CastSpell",
-                                description = "Cast ${castName}",
-                                action = CastSpell(playerId, cardId, faceIndex = prepareCopyFaceIndex),
-                                affordable = false,
-                                manaCostString = costString,
-                                manaCostByTargetCount = costByTargetCount,
-                                hasXCost = hasXCost,
-                                maxAffordableX = maxAffordableX,
-                                sourceZone = sourceZoneLabel,
-                                additionalCostInfo = exileAdditionalCostInfo,
-                            )
-                        )
-                    }
-
-                    // Warped Space: emit the {0} free-from-exile variant (its own action so the
-                    // player chooses it over the pay path — CR 118.9a).
-                    if (freeCastFromExile) {
-                        val freeTargetReqs = buildList {
-                            addAll(effectiveScript?.targetRequirements ?: emptyList())
-                            effectiveScript?.castAuraTarget?.let { add(it) }
-                        }
-                        if (freeTargetReqs.isNotEmpty()) {
-                            val freeTargetInfos = context.targetUtils.buildTargetInfos(state, playerId, freeTargetReqs, targetingSourceType = TargetingSourceType.SPELL)
-                            if (context.targetUtils.allRequirementsSatisfied(freeTargetInfos)) {
-                                val firstReq = freeTargetReqs.first()
-                                val firstInfo = freeTargetInfos.first()
+                                }
+                            } else {
                                 result.add(
                                     LegalAction(
                                         actionType = "CastSpell",
                                         description = "Cast ${castName} (Free)",
-                                        action = CastSpell(playerId, cardId, faceIndex = prepareCopyFaceIndex, useWithoutPayingManaCost = true),
-                                        validTargets = firstInfo.validTargets,
-                                        requiresTargets = true,
-                                        targetCount = firstInfo.maxTargets,
-                                        minTargets = firstReq.effectiveMinCount,
-                                        targetDescription = firstReq.description,
-                                        targetRequirements = freeTargetInfos.surfacedRequirements(),
+                                        action = castAction(free = true),
                                         manaCostString = freeCostString(freeFromExileCost),
                                         autoTapPreview = freeCostPreview(context, freeFromExileCost, spellContext),
                                         sourceZone = sourceZoneLabel
                                     )
                                 )
                             }
-                        } else {
-                            result.add(
-                                LegalAction(
-                                    actionType = "CastSpell",
-                                    description = "Cast ${castName} (Free)",
-                                    action = CastSpell(playerId, cardId, faceIndex = prepareCopyFaceIndex, useWithoutPayingManaCost = true),
-                                    manaCostString = freeCostString(freeFromExileCost),
-                                    autoTapPreview = freeCostPreview(context, freeFromExileCost, spellContext),
-                                    sourceZone = sourceZoneLabel
-                                )
-                            )
                         }
                     }
                 }
@@ -982,6 +992,42 @@ class CastFromZoneEnumerator(
 
         return linkedExileCardIds
     }
+
+    /**
+     * One way an exile/graveyard may-play cast can be offered: as `cardFaces[faceIndex]` (null: the
+     * card's primary characteristics), or as a modal DFC's permanent back face ([modalBack]).
+     */
+    private data class ExileCastFace(val faceIndex: Int?, val modalBack: CardDefinition? = null)
+
+    /**
+     * The faces [permissions] let this card be cast as. A prepare-spell copy is its prepare spell
+     * (face 0). Otherwise every face the card has — the primary, an Adventure / Omen / modal spell
+     * face (CR 715.3 / 712.11b), a modal DFC's permanent back — kept when some permission authorizes
+     * it ([MayPlayPermission.authorizesFace] / [MayPlayPermission.authorizesModalBack]); a face a
+     * permission pins is a candidate whatever the layout.
+     */
+    private fun exileCastFaceOptions(
+        container: ComponentContainer,
+        cardDef: CardDefinition?,
+        permissions: List<MayPlayPermission>,
+    ): List<ExileCastFace> {
+        if (container.has<com.wingedsheep.engine.state.components.battlefield.PreparedSpellCopyComponent>() &&
+            cardDef?.layout == CardLayout.PREPARE
+        ) return listOf(ExileCastFace(0))
+        val faceIndices = buildSet {
+            if (cardDef?.layout in FACE_CAST_LAYOUTS) cardDef?.cardFaces?.indices?.let { addAll(it) }
+            permissions.mapNotNullTo(this) { p -> p.castFaceIndex?.takeIf { cardDef?.cardFaces?.getOrNull(it) != null } }
+        }
+        return buildList {
+            if (permissions.any { it.authorizesFace(null) }) add(ExileCastFace(null))
+            faceIndices.sorted().filter { i -> permissions.any { it.authorizesFace(i) } }.forEach { add(ExileCastFace(it)) }
+            ModalDfcCasts.castFace(cardDef)
+                ?.takeIf { permissions.any { it.authorizesModalBack } }
+                ?.let { add(ExileCastFace(null, it)) }
+        }
+    }
+
+    private val FACE_CAST_LAYOUTS = setOf(CardLayout.ADVENTURE, CardLayout.OMEN, CardLayout.MODAL_DFC)
 
     // =========================================================================
     // Linked exile (GrantMayCastFromLinkedExile)
