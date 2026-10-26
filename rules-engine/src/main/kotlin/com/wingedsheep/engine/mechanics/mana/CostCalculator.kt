@@ -1684,7 +1684,7 @@ class CostCalculator(
     /**
      * Remove colored mana symbols from a cost. Each reduction removes at most one pip it can pay
      * for: an exact pip, or a hybrid or Phyrexian pip with that color as an option (Morophon's
-     * ruling: "{2}{W/U}{W/U}" may be reduced as "{2}{W}{U}"; CR 118.7f for Phyrexian). Unmatched
+     * ruling: "{2}{W/U}{W/U}" may be reduced as "{2}{W}{U}"; CR 601.2b, 107.4e-f). Unmatched
      * reductions are dropped — they never touch generic mana.
      */
     private fun reduceColoredCost(cost: ManaCost, symbolsToRemove: List<ManaSymbol>): ManaCost =
@@ -1703,8 +1703,10 @@ class CostCalculator(
 
     /**
      * Assign each colored reduction to a distinct pip of [cost] it can pay for — an exact pip first,
-     * else a hybrid or Phyrexian pip offering its color (the payer picks that half, CR 118.7e-f
-     * and 601.2f) — maximising how many reductions land. Pips in [lifePips] are reserved: the
+     * else a hybrid or Phyrexian pip offering its color (the payer announces paying that half,
+     * CR 601.2b, 107.4e-f) — maximising how many reductions land. Among non-exact pips the first
+     * in cost order wins, and the overflow path takes such a pip before spilling into generic:
+     * a fixed tie-break where CR 601.2b would let the payer choose. Pips in [lifePips] are reserved: the
      * caster pays those Phyrexian symbols with life. Returns the reduced cost and how many
      * reductions found no pip.
      */

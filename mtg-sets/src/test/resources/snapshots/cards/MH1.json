@@ -2298,7 +2298,13 @@
             }
         ]
     },
-    "colorIdentityOverride": []
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
 }
 
 // Mox Tantalite

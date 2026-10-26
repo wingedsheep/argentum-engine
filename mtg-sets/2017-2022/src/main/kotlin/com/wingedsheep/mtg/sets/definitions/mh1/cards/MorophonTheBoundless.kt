@@ -29,7 +29,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
  */
 val MorophonTheBoundless = card("Morophon, the Boundless") {
     manaCost = "{7}"
-    colorIdentity = ""
+    colorIdentity = "WUBRG"
     typeLine = "Legendary Creature — Shapeshifter"
     power = 6
     toughness = 6

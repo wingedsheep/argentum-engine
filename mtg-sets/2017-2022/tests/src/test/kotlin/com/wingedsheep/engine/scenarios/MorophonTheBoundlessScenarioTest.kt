@@ -25,7 +25,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * of the chosen type get +1/+1."
  *
  * Pins the reduction against plain, hybrid ({W/U}: the payer picks the reduced half, per the
- * Scryfall ruling), monocolor-hybrid and Phyrexian pips (CR 118.7f), that it never touches
+ * Scryfall ruling; CR 601.2b), monocolor-hybrid and Phyrexian pips (CR 107.4e-f), that it never touches
  * generic mana, that it is the caster's own spells only, and the lord.
  */
 class MorophonTheBoundlessScenarioTest : FunSpec({
