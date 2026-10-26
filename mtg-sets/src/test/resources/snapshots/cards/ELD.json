@@ -96,6 +96,129 @@
     "colorIdentityOverride": []
 }
 
+// Ayara, First of Locthwain
+{
+    "name": "Ayara, First of Locthwain",
+    "manaCost": "{B}{B}{B}",
+    "typeLine": "Legendary Creature — Elf Noble",
+    "oracleText": "Whenever Ayara or another black creature you control enters, each opponent loses 1 life and you gain 1 life.\n{T}, Sacrifice another black creature: Draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ayara, First of Locthwain:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Ayara or another black creature you control enters, each opponent loses 1 life and you gain 1 life."
+            },
+            {
+                "id": "Ayara, First of Locthwain:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature black ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Ayara or another black creature you control enters, each opponent loses 1 life and you gain 1 life."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Ayara, First of Locthwain:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature black",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "{T}, Sacrifice another black creature: Draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "flavorText": "Mourning shifts seamlessly to celebration as she chooses her next suitor.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/ed0ace28-9a33-4f0d-b8c8-f5517f20ccf1.jpg?1783932644",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "In a Two-Headed Giant game, Ayara's first ability causes the opposing team to lose 1 life twice, and you gain 1 life once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Bake into a Pie
 {
     "name": "Bake into a Pie",

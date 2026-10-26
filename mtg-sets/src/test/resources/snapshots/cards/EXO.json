@@ -103,6 +103,52 @@
     ]
 }
 
+// Culling the Weak
+{
+    "name": "Culling the Weak",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, sacrifice a creature.\nAdd {B}{B}{B}{B}.",
+    "script": {
+        "spellEffect": {
+            "type": "AddMana",
+            "color": "BLACK",
+            "amount": {
+                "type": "Fixed",
+                "amount": 4
+            }
+        },
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomSacrifice",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "artist": "Scott M. Fischer",
+        "flavorText": "\"The blood of the weak shall be the ink with which we scribe great Yawgmoth's glorious name.\"\n—Stronghold architect, journal",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50c33f18-0a5c-4e46-ab0d-6e450915594f.jpg?1783946521",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "You must sacrifice exactly one creature to cast this spell; you cannot cast it without sacrificing a creature, and you cannot sacrifice additional creatures."
+            },
+            {
+                "date": "2013-04-15",
+                "text": "Players can only respond once this spell has been cast and all its costs have been paid. No one can try to destroy the creature you sacrificed to prevent you from casting this spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Curiosity
 {
     "name": "Curiosity",

@@ -5317,3 +5317,126 @@
         "BLUE"
     ]
 }
+
+// Yawgmoth, Thran Physician
+{
+    "name": "Yawgmoth, Thran Physician",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Legendary Creature — Human Cleric",
+    "oracleText": "Protection from Humans\nPay 1 life, Sacrifice another creature: Put a -1/-1 counter on up to one target creature and draw a card.\n{B}{B}, Discard a card: Proliferate. (Choose any number of permanents and/or players, then give each another counter of each kind already there.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Subtype",
+                "subtype": "Human"
+            }
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Yawgmoth, Thran Physician:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "MINUS_ONE_MINUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Pay 1 life, Sacrifice another creature: Put a -1/-1 counter on up to one target creature and draw a card."
+            },
+            {
+                "id": "Yawgmoth, Thran Physician:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomDiscard"
+                        }
+                    ]
+                },
+                "effect": "Proliferate",
+                "descriptionOverride": "{B}{B}, Discard a card: Proliferate."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "rarity": "MYTHIC",
+        "artist": "Mark Winters",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/8690cbcc-f8fd-41f7-9e28-e61c12b04014.jpg?1783933118",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "Protection from Humans refers only to the creature type Human. As far as Yawgmoth is concerned, you, your opponents, and planeswalkers aren't Humans."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "You may activate Yawgmoth's first activated ability without choosing a target creature. You'll just draw a card. However, if you choose a target and it becomes illegal before the ability tries to resolve, the ability won't resolve and you won't draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}

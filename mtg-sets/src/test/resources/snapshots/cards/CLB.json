@@ -37,6 +37,192 @@
     ]
 }
 
+// Ancient Copper Dragon
+{
+    "name": "Ancient Copper Dragon",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Creature — Elder Dragon",
+    "oracleText": "Flying\nWhenever this creature deals combat damage to a player, roll a d20. You create a number of Treasure tokens equal to the result.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ancient Copper Dragon:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RollDice",
+                            "sides": 20,
+                            "storeTotalAs": "diceResult0"
+                        },
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Treasure",
+                            "dynamicCount": {
+                                "type": "VariableReference",
+                                "variableName": "diceResult0"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, roll a d20. You create a number of Treasure tokens equal to the result."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "rarity": "MYTHIC",
+        "artist": "Antonio José Manzanedo",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/3836dddd-a7e4-499f-ad49-ce298aa65720.jpg?1783922745"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Ancient Gold Dragon
+{
+    "name": "Ancient Gold Dragon",
+    "manaCost": "{5}{W}{W}",
+    "typeLine": "Creature — Elder Dragon",
+    "oracleText": "Flying\nWhenever this creature deals combat damage to a player, roll a d20. You create a number of 1/1 blue Faerie Dragon creature tokens with flying equal to the result.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 10
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ancient Gold Dragon:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RollDice",
+                            "sides": 20,
+                            "storeTotalAs": "diceResult0"
+                        },
+                        {
+                            "type": "CreateToken",
+                            "count": {
+                                "type": "VariableReference",
+                                "variableName": "diceResult0"
+                            },
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "BLUE"
+                            ],
+                            "creatureTypes": [
+                                "Faerie",
+                                "Dragon"
+                            ],
+                            "keywords": [
+                                "FLYING"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/6/f/6f1eb498-8496-4234-8e87-78dc3f647534.jpg?1783922323"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, roll a d20. You create a number of 1/1 blue Faerie Dragon creature tokens with flying equal to the result."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "MYTHIC",
+        "artist": "Simon Dominic",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/421395b1-2694-42fd-bb90-0007e78adefc.jpg?1783922822"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Ancient Silver Dragon
+{
+    "name": "Ancient Silver Dragon",
+    "manaCost": "{6}{U}{U}",
+    "typeLine": "Creature — Elder Dragon",
+    "oracleText": "Flying\nWhenever this creature deals combat damage to a player, roll a d20. Draw cards equal to the result. You have no maximum hand size for the rest of the game.",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 8
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ancient Silver Dragon:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RollDice",
+                            "sides": 20,
+                            "storeTotalAs": "diceResult0"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "VariableReference",
+                                "variableName": "diceResult0"
+                            }
+                        },
+                        "RemoveMaximumHandSize"
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, roll a d20. Draw cards equal to the result. You have no maximum hand size for the rest of the game."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "MYTHIC",
+        "artist": "Raoul Vitale",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ced18935-4ce9-466e-a88d-2b14ff8f989f.jpg?1783922795"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Astral Dragon
 {
     "name": "Astral Dragon",

@@ -66,6 +66,64 @@
     ]
 }
 
+// Dictate of Erebos
+{
+    "name": "Dictate of Erebos",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Flash\nWhenever a creature you control dies, each opponent sacrifices a creature of their choice.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dictate of Erebos:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "creature",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "descriptionOverride": "Whenever a creature you control dies, each opponent sacrifices a creature of their choice."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "rarity": "RARE",
+        "artist": "Michael C. Hayes",
+        "flavorText": "\"I take no pleasure in your suffering, but it is necessary. Once you accept your fate you'll find eternity more tolerable.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f06db70-95f9-41eb-8e5f-8bc56fd34c09.jpg?1783939437",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "When the triggered ability resolves, first the player whose turn it is (if that player is an opponent) chooses which creature they will sacrifice, then each other opponent in turn order does the same, then all chosen creatures are sacrificed at the same time."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "None of the opponents are targeted. An opponent with hexproof would still sacrifice a creature."
+            },
+            {
+                "date": "2014-04-26",
+                "text": "If multiple creatures you control die at the same time, Dictate of Erebos's triggered ability will trigger that many times."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Dictate of Kruphix
 {
     "name": "Dictate of Kruphix",
