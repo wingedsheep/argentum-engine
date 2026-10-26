@@ -22,7 +22,6 @@ import com.wingedsheep.engine.state.permissions.activeMayPlayFor
 import com.wingedsheep.engine.state.permissions.spendCappedMayPlayFor
 import com.wingedsheep.engine.state.permissions.oncePerTurnGranterToSpend
 import com.wingedsheep.engine.state.permissions.hasMayPlayFor
-import com.wingedsheep.engine.state.permissions.removeMayPlayPermissionsForCard
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.PlayerCantPlayFromHandComponent
@@ -388,10 +387,8 @@ class PlayLandHandler(
                 }
             } else null
 
-        // Clean up may-play permissions now that the card has left exile. Lands don't go
-        // through the stack, so StackResolver's removeMayPlayPermissionsForCard never runs
-        // for them; without this, a permanent permission would silently re-authorize the
-        // card if it later returned to exile.
+        // The land's may-play grants went as it entered the battlefield (a new object, CR 400.7);
+        // what's left is the once-per-turn bookkeeping and the linked-exile pile.
         if (fromZone == Zone.EXILE) {
             // Record once-per-turn linked-exile permission usage (Hauken's Insight — "Once during
             // each of your turns, you may play a land or cast a spell"). Resolved against the
@@ -419,22 +416,12 @@ class PlayLandHandler(
                         )
                     }
                 }
-            newState = newState.removeMayPlayPermissionsForCard(action.cardId)
             // Drop the card from any linked-exile granter (Valgavoth) now that it has left exile,
             // so the granter no longer lists it. (Lands bypass ZoneTransitionService, which would
             // otherwise unlink on the way out.)
             newState = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
                 .unlinkFromAllLinkedExiles(newState, action.cardId)
         }
-        // A generic per-card may-play permission (Tablet of Discovery's "you may play that card
-        // this turn") can also leave the card in the graveyard, and a resolving "you may play that
-        // card" (Djinn of Wishes) in the library. Lands bypass the stack, so clean up the permission
-        // here too — otherwise it would silently re-authorize the card if it returned to that zone
-        // later this turn. No-op when no per-card permission exists.
-        if (fromZone == Zone.GRAVEYARD || fromZone == Zone.LIBRARY || fromZone == Zone.SIDEBOARD) {
-            newState = newState.removeMayPlayPermissionsForCard(action.cardId)
-        }
-
         // CR 712.8f — a modal double-faced permanent has only the characteristics of the face
         // that's up. Everything below (the entry event's name, enters-tapped, the as-enters
         // replacements) has to read the face actually played, not the printed front.
@@ -785,7 +772,7 @@ class PlayLandHandler(
      * True when some active may-play permission authorizing [playerId] to play [cardId]
      * also forces the played land tapped (Lightstall Inquisitor's "each land played this
      * way enters tapped" clause). Read from [state] *before* the card left exile, since
-     * `removeMayPlayPermissionsForCard` runs as the card moves to the battlefield.
+     * its grants are dropped as the card moves to the battlefield.
      *
      * A `nonLandOnly` permission never authorizes a land play in the first place (mirrors
      * [isInExileWithPlayPermission]'s filter) — its `landEntersTapped` rider is therefore only

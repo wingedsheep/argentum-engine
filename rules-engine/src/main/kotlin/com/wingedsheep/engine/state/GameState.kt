@@ -864,7 +864,6 @@ data class GameState(
         return unlinked.copy(zones = unlinked.zones + (key to current - entityId))
     }
 
-    /** A card leaving exile loses every old link, even if the same entity later returns to exile. */
     /**
      * A card that arrives in a new zone is a new object (CR 400.7), so no "you may play this card"
      * permission granted to its previous object follows it — "If you play a legendary card and it
@@ -879,6 +878,7 @@ data class GameState(
         if (mayPlayPermissions.none { cardId in it.cardIds }) this
         else removeMayPlayPermissionsForCard(cardId)
 
+    /** A card leaving exile loses every old link, even if the same entity later returns to exile. */
     private fun forgetExileLinks(cardId: EntityId): GameState {
         val state = this
         var result = state
