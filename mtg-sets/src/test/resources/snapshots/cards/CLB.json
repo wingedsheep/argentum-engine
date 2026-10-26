@@ -1186,6 +1186,56 @@
     ]
 }
 
+// Irenicus's Vile Duplication
+{
+    "name": "Irenicus's Vile Duplication",
+    "manaCost": "{3}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a token that's a copy of target creature you control, except the token has flying and it isn't legendary.",
+    "script": {
+        "spellEffect": {
+            "type": "CreateTokenCopyOfTarget",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "exceptions": {
+                "addedKeywords": [
+                    "FLYING"
+                ],
+                "removedSupertypes": [
+                    "LEGENDARY"
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "UNCOMMON",
+        "artist": "Oleksandr Kozachenko",
+        "flavorText": "\"You will serve me better in this form.\"\n—Jon Irenicus",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/40a791df-2483-406d-90b0-a8d402d615d6.jpg?1783922787",
+        "rulings": [
+            {
+                "date": "2022-06-10",
+                "text": "Irenicus's Vile Duplication has received an update to its Oracle text to clarify that the token still has flying even if the creature it's copying isn't legendary."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Jaheira, Friend of the Forest
 {
     "name": "Jaheira, Friend of the Forest",

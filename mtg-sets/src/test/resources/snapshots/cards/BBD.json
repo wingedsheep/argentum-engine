@@ -474,6 +474,144 @@
     ]
 }
 
+// Najeela, the Blade-Blossom
+{
+    "name": "Najeela, the Blade-Blossom",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "Whenever a Warrior attacks, you may have its controller create a 1/1 white Warrior creature token that's tapped and attacking.\n{W}{U}{B}{R}{G}: Untap all attacking creatures. They gain trample, lifelink, and haste until end of turn. After this phase, there is an additional combat phase. Activate only during combat.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Najeela, the Blade-Blossom:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature Warrior"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "WHITE"
+                        ],
+                        "creatureTypes": [
+                            "Warrior"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/d/3/d36e3c0e-a759-4adc-aa2f-61b13c0f786d.jpg?1783934653",
+                        "controller": {
+                            "type": "PlayerRef",
+                            "player": "ControllerOfTriggeringEntity"
+                        },
+                        "tapped": true,
+                        "attacking": true,
+                        "attackDefender": "CONTROLLER_CHOOSES"
+                    }
+                },
+                "descriptionOverride": "Whenever a Warrior attacks, you may have its controller create a 1/1 white Warrior creature token that's tapped and attacking."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Najeela, the Blade-Blossom:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{W}{U}{B}{R}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature attacking"
+                                }
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "TapUntap",
+                                        "target": "IterationEntity",
+                                        "tap": false
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "TRAMPLE",
+                                        "target": "IterationEntity"
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "LIFELINK",
+                                        "target": "IterationEntity"
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "HASTE",
+                                        "target": "IterationEntity"
+                                    }
+                                ]
+                            }
+                        },
+                        "AddCombatPhase"
+                    ]
+                },
+                "restrictions": [
+                    {
+                        "type": "DuringPhase",
+                        "phase": "COMBAT"
+                    }
+                ],
+                "descriptionOverride": "{W}{U}{B}{R}{G}: Untap all attacking creatures. They gain trample, lifelink, and haste until end of turn. After this phase, there is an additional combat phase. Activate only during combat."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "MYTHIC",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2cb1d1da-6077-46b5-8c63-39882b8016f2.jpg?1783934856",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "Although the tokens created by Najeela's first ability are attacking, they were never declared as attacking creatures (for the purposes of abilities that trigger whenever a creature attacks, for example)."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "Untapping an attacking creature doesn't remove it from combat."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "There is no main phase before the additional combat phase. This means that, for example, you can't activate an equip ability between combats."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "The controller of each Warrior token created by Najeela chooses which player or planeswalker it's attacking. The tokens don't have to be attacking the same player or planeswalker as the creature that caused the ability to trigger. They can even be attacking players or planeswalkers that weren't being attacked."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Saltwater Stalwart
 {
     "name": "Saltwater Stalwart",

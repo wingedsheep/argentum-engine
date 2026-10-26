@@ -187,6 +187,136 @@
     ]
 }
 
+// Mizzix's Mastery
+{
+    "name": "Mizzix's Mastery",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile target card that's an instant or sorcery from your graveyard. For each card exiled this way, copy it, and you may cast the copy without paying its mana cost. Exile Mizzix's Mastery.\nOverload {5}{R}{R}{R} (You may cast this spell for its overload cost. If you do, change \"target\" in its text to \"each.\")",
+    "keywords": [
+        "OVERLOAD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Overload",
+            "cost": "{5}{R}{R}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    },
+                    "storeMovedAs": "moved1"
+                },
+                {
+                    "type": "CopyCollectionIntoCollection",
+                    "from": "moved1",
+                    "storeAs": "copies2"
+                },
+                {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "CastFromCollectionWithoutPayingCost",
+                        "from": "copies2"
+                    },
+                    "descriptionOverride": "You may cast the copy without paying its mana cost."
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "instant|sorcery own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ],
+        "overloadSpellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "filter": "instant|sorcery"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    },
+                    "storeMovedAs": "moved1"
+                },
+                {
+                    "type": "CopyCollectionIntoCollection",
+                    "from": "moved1",
+                    "storeAs": "copies2"
+                },
+                {
+                    "type": "CastAnyNumberFromCollectionWithoutPayingCost",
+                    "from": "copies2"
+                }
+            ]
+        },
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6b5e28e8-1e6d-4e7f-bc85-427bb39ae14b.jpg?1783938111",
+        "rulings": [
+            {
+                "date": "2015-11-04",
+                "text": "The copies are created and cast during the resolution of Mizzix's Mastery. You can't wait to cast them later in the turn. Timing restrictions based on the copy's type are ignored. Other restrictions (such as \"Cast [this spell] only during combat\") are not."
+            },
+            {
+                "date": "2015-11-04",
+                "text": "If the copy has {X} in its mana cost, you must choose 0 as the value of X."
+            },
+            {
+                "date": "2015-11-04",
+                "text": "The cards remain exiled no matter what happens to the copies."
+            },
+            {
+                "date": "2015-11-04",
+                "text": "If Mizzix's Mastery exiled multiple cards, you may cast the copies in any order. The last copy you cast will be the first one to resolve."
+            },
+            {
+                "date": "2015-11-04",
+                "text": "If you don't cast one of the copies (perhaps because there are no legal targets available or you don't want to), the copy will cease to exist."
+            },
+            {
+                "date": "2015-11-04",
+                "text": "Mizzix's Mastery is still on the stack as it resolves. If you pay the overload cost, Mizzix's Mastery won't copy itself."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Oreskos Explorer
 {
     "name": "Oreskos Explorer",

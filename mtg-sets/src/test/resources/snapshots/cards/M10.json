@@ -1869,6 +1869,58 @@
     ]
 }
 
+// Sign in Blood
+{
+    "name": "Sign in Blood",
+    "manaCost": "{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player draws two cards and loses 2 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "artist": "Howard Lyon",
+        "flavorText": "\"You know I accept only one currency here, and yet you have sought me out. Why now do you hesitate?\"\n—Xathrid demon",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/1975ed97-acb8-4bb6-804a-e5da725d876e.jpg?1783942379"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Silvercoat Lion
 {
     "name": "Silvercoat Lion",

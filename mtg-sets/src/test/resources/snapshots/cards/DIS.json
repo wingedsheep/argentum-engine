@@ -552,6 +552,59 @@
     ]
 }
 
+// Rakdos Signet
+{
+    "name": "Rakdos Signet",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{1}, {T}: Add {B}{R}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Rakdos Signet:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "BLACK"
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "RED"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "artist": "Greg Hildebrandt",
+        "flavorText": "Made of bone and boiled in blood, a Rakdos signet is not considered finished until it has been used as a murder weapon.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/17a3f95c-5a05-46ea-8dc6-b77b59324035.jpg?1783943381"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Simic Growth Chamber
 {
     "name": "Simic Growth Chamber",
