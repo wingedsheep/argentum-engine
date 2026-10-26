@@ -2489,3 +2489,77 @@
         "WHITE"
     ]
 }
+
+// Wrathful Red Dragon
+{
+    "name": "Wrathful Red Dragon",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhenever a Dragon you control is dealt damage, it deals that much damage to any target that isn't a Dragon.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wrathful Red Dragon:1",
+                "trigger": {
+                    "type": "DamageReceivedEvent",
+                    "recipient": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Dragon"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "damageSource": "TriggeringEntity"
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0",
+                    "descriptionOverride": "any target that isn't a Dragon",
+                    "filter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Not",
+                                "predicate": {
+                                    "type": "HasSubtype",
+                                    "subtype": "Dragon"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever a Dragon you control is dealt damage, it deals that much damage to any target that isn't a Dragon."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"We'll put it all back! The gems, the gold, the chalice that would've looked great on my mantle; we'll put everythi—\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/acd207de-eec3-4d82-b8b9-b1e60a7bad12.jpg?1783922724"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}

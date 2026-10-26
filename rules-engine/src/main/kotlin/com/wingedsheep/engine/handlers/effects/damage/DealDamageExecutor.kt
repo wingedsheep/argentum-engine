@@ -8,8 +8,10 @@ import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.DamageUtils.dealDamageToTarget
+import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.ObjectRef
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlin.reflect.KClass
@@ -60,14 +62,25 @@ class DealDamageExecutor(
             // and was dropped by 608.2b validation), the whole damage instruction is skipped
             // per CR 608.2b — we don't fall back to the ability's source permanent. This is a
             // legal no-op fizzle, not an error: the surrounding effect (e.g. Composite) resolves.
+            //
+            // A named object reference that has merely left the battlefield is different: "it
+            // deals that much damage" (Wrathful Red Dragon, Warstorm Surge) still has that object
+            // deal the damage, using its last-known information (CR 608.2h), exactly as an
+            // ability whose own source died still deals its damage.
             context.resolveTarget(damageSourceTarget, state)
+                ?: departedObjectSource(damageSourceTarget, state, context)?.first
                 ?: return EffectResult.success(state)
         } else {
             context.sourceId
         }
 
-        val damageSourceRef = if (damageSourceTarget == null) context.objectReferences.origin
-            ?: sourceId?.let(state::objectRef) else sourceId?.let(state::objectRef)
+        // The identity "a source of your choice" shields compare against: the object as it was
+        // when it was chosen — for a departed source, its battlefield incarnation.
+        val damageSourceRef = when (damageSourceTarget) {
+            null -> context.objectReferences.origin ?: sourceId?.let(state::objectRef)
+            else -> departedObjectSource(damageSourceTarget, state, context)?.second
+                ?: sourceId?.let(state::objectRef)
+        }
 
         // "Each opponent and planeswalker it has dealt damage to this game" (The Fallen): a set
         // that mixes players and permanents, read off the damage source's accumulated memory.
@@ -141,6 +154,30 @@ class DealDamageExecutor(
             .filter { it.targetId == targetId }
             .sumOf { it.excessAmount }
         return result.copy(updatedStoredNumbers = result.updatedStoredNumbers + (excessVariable to excess))
+    }
+
+    /**
+     * The object a non-targeted [reference] ("it", "that creature", this permanent) named before it
+     * left the battlefield, so it can still be the source of the damage by last-known information.
+     * Null for anything else — a dropped target stays a no-op (CR 608.2b).
+     */
+    private fun departedObjectSource(
+        reference: EffectTarget,
+        state: GameState,
+        context: EffectContext
+    ): Pair<com.wingedsheep.sdk.model.EntityId, ObjectRef?>? {
+        if (reference !is EffectTarget.SingleEntity) return null
+        if (!TargetResolutionUtils.isLostObject(reference, context, state)) return null
+        val entityId = TargetResolutionUtils.resolveEntity(reference, context, state) ?: return null
+        val references = context.objectReferences
+        val capturedRef = when (reference) {
+            EffectTarget.Self -> references.source
+            EffectTarget.TriggeringEntity -> references.triggering
+            EffectTarget.IterationEntity -> references.iteration?.objectRef
+            is EffectTarget.SpecificEntity -> references.bound.firstOrNull { it.entityId == entityId }?.objectRef
+            else -> null
+        }
+        return entityId to capturedRef
     }
 
     /**

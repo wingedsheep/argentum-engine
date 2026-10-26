@@ -536,7 +536,7 @@ object DamageUtils {
 
             // It's a creature - mark damage (or place -1/-1 counters if source has wither)
             val hasWither = sourceId != null && (
-                projected.hasKeyword(sourceId, Keyword.WITHER) ||
+                sourceHasKeyword(state, projected, sourceId, Keyword.WITHER) ||
                 state.getEntity(sourceId)?.get<SpellGrantedKeywordsComponent>()?.keywords?.contains(Keyword.WITHER.name) == true
             )
             if (hasWither) {
@@ -725,13 +725,15 @@ object DamageUtils {
         // (Alhammarret's Archive, Leyline of Hope) replaces the actual amount gained.
         if (sourceId != null) {
             val projected = newState.projectedState
-            if (projected.hasKeyword(sourceId, Keyword.LIFELINK.name) ||
+            if (sourceHasKeyword(newState, projected, sourceId, Keyword.LIFELINK) ||
                 sourceHasGrantedDamageKeyword(zones.cardRegistry, newState, sourceId, Keyword.LIFELINK)
             ) {
                 val controllerId = projected.getController(sourceId)
                     ?: newState.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
                     // A spell source carries no ControllerComponent; its controller is the caster.
                     ?: newState.getEntity(sourceId)?.get<SpellOnStackComponent>()?.casterId
+                    // A permanent that left the battlefield: its controller as it last existed there.
+                    ?: newState.getEntity(sourceId)?.get<LastKnownPermanentComponent>()?.snapshot?.controllerId
                 if (controllerId != null) {
                     val (gainedState, gainEvent) = gainLife(newState, controllerId, effectiveAmount, predicateEvaluator = zones.predicateEvaluator)
                     newState = gainedState
@@ -952,8 +954,27 @@ object DamageUtils {
         projected: ProjectedState,
         sourceId: EntityId
     ): Boolean =
-        projected.hasKeyword(sourceId, Keyword.DEATHTOUCH) ||
+        sourceHasKeyword(state, projected, sourceId, Keyword.DEATHTOUCH) ||
             sourceHasGrantedDamageKeyword(cardRegistry, state, sourceId, Keyword.DEATHTOUCH)
+
+    /**
+     * Does the permanent source [sourceId] have [keyword]? Its projected keywords while it is on
+     * the battlefield; once it has left (a creature that died before its "it deals damage" trigger
+     * resolved — Wrathful Red Dragon, Warstorm Surge), its keywords as it last existed there
+     * (CR 608.2h), so its lifelink, deathtouch and wither still apply to the damage it deals.
+     * Read off the battlefield-exit snapshot the card carries; a token already deleted as a
+     * state-based action has none, so its keywords are not seen.
+     */
+    private fun sourceHasKeyword(
+        state: GameState,
+        projected: ProjectedState,
+        sourceId: EntityId,
+        keyword: Keyword
+    ): Boolean {
+        if (projected.hasKeyword(sourceId, keyword)) return true
+        val lastKnown = state.getEntity(sourceId)?.get<LastKnownPermanentComponent>() ?: return false
+        return keyword.name in lastKnown.snapshot.keywords && sourceId !in state.getBattlefield()
+    }
 
     private fun sourceHasGrantedDamageKeyword(
         cardRegistry: CardRegistry,
