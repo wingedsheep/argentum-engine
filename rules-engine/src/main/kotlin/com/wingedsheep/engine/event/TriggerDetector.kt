@@ -1485,37 +1485,18 @@ class TriggerDetector(
                     if (trigger is EventPattern.AttackEvent &&
                         (ability.binding == TriggerBinding.ANY || ability.binding == TriggerBinding.OTHER) &&
                         event is AttackersDeclaredEvent) {
-                        val attackFilter = (trigger as EventPattern.AttackEvent).filter
-                        for (attackerId in event.attackers) {
-                            if (ability.binding == TriggerBinding.OTHER && attackerId == entityId) continue
-                            if (attackFilter != null) {
-                                // Filtered trigger: match creature against filter (includes controller predicate)
-                                if (predicateEvaluator.matches(
-                                        state, projected, attackerId, attackFilter,
-                                        PredicateContext(controllerId = controllerId, sourceId = entityId)
-                                    )) {
-                                    triggers.add(
-                                        PendingTrigger(
-                                            ability = ability,
-                                            sourceId = entityId,
-                                            sourceName = cardComponent.name,
-                                            controllerId = controllerId,
-                                            triggerContext = TriggerContext(triggeringEntityId = attackerId)
-                                        )
-                                    )
-                                }
-                            } else {
-                                // Unfiltered trigger: any creature attacking
-                                triggers.add(
-                                    PendingTrigger(
-                                        ability = ability,
-                                        sourceId = entityId,
-                                        sourceName = cardComponent.name,
-                                        controllerId = controllerId,
-                                        triggerContext = TriggerContext(triggeringEntityId = attackerId)
-                                    )
+                        for (attackerId in matcher.matchingAttackers(
+                            trigger as EventPattern.AttackEvent, ability.binding, event, entityId, controllerId, state
+                        )) {
+                            triggers.add(
+                                PendingTrigger(
+                                    ability = ability,
+                                    sourceId = entityId,
+                                    sourceName = cardComponent.name,
+                                    controllerId = controllerId,
+                                    triggerContext = TriggerContext(triggeringEntityId = attackerId)
                                 )
-                            }
+                            )
                         }
                     }
                     // For "whenever a creature you control becomes blocked" (BecomesBlockedEvent with ANY binding),
@@ -2049,6 +2030,19 @@ class TriggerDetector(
                             continue
                         }
                         if (matcher.matchesTrigger(ability.trigger, ability.binding, event, entityId, ownerId, state)) {
+                            // "Whenever your commander attacks" from the graveyard fans out per
+                            // matching attacker exactly as the battlefield scan does (CR 603.2c);
+                            // the bare matcher only checks that someone attacked.
+                            val atom = matcher.matchedAtom(ability.trigger, ability.binding, event, entityId, ownerId, state)
+                            if (atom is EventPattern.AttackEvent && event is AttackersDeclaredEvent &&
+                                (ability.binding == TriggerBinding.ANY || ability.binding == TriggerBinding.OTHER)
+                            ) {
+                                for (attackerId in matcher.matchingAttackers(atom, ability.binding, event, entityId, ownerId, state)) {
+                                    triggers.add(PendingTrigger(ability = ability, sourceId = entityId, sourceName = cardComponent.name,
+                                        controllerId = ownerId, triggerContext = TriggerContext(triggeringEntityId = attackerId)))
+                                }
+                                continue
+                            }
                             // Same trigger-time capture as the battlefield scan above, so a
                             // "…targets one or more X, those X …" ability active from the
                             // graveyard or command zone reads the same snapshot.

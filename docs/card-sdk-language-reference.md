@@ -7925,6 +7925,15 @@ spell you control deals damage to an opponent or battle, you may pay {R}. If you
 from your graveyard to the battlefield" — is `Triggers.a(InstantOrSorcery.youControl()).dealsDamage(
 Recipient.OpponentOrBattle)` + `triggerZone = Zone.GRAVEYARD` + `Effects.MayPay(…, then = Move(Self, BATTLEFIELD))`.
 
+Filtered attack triggers (`Triggers.a(filter).attacks()`, `binding = ANY`/`OTHER`, bare or inside a
+`Triggers.or`) behave from `GRAVEYARD` and `COMMAND` exactly as on the battlefield: the filter is read
+relative to the card's owner and the trigger fires once per matching attacker, each bound as the
+triggering entity (CR 603.2c) — both passes share `TriggerMatcher.matchingAttackers`. Vivi's
+Persistence — "whenever your commander enters or attacks, you may pay {2}. If you do, return this card
+from your graveyard to your hand" — is `Triggers.or(Triggers.a(Any.commander().ownedByYou()).enters(),
+Triggers.a(Any.commander().ownedByYou()).attacks())` + `triggerZone = Zone.GRAVEYARD` +
+`Effects.MayPay({2}, then = ReturnToHandFromGraveyard(Self))`.
+
 Exile has no general per-event pass on purpose: suspend, madness and paradigm each already have a
 dedicated detector, and a general pass would fire them twice.
 

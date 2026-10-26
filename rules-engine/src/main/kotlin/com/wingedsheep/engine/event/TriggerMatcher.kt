@@ -1253,6 +1253,32 @@ class TriggerMatcher(
     }
 
     /**
+     * The attackers one [AttackersDeclaredEvent] gives an ANY / OTHER-bound
+     * [EventPattern.AttackEvent] ("whenever a creature attacks", "whenever another Goblin you control
+     * attacks", "whenever your commander attacks"): every declared attacker matching the trigger's
+     * filter, minus the source for OTHER. One declaration with several attackers is several
+     * occurrences of the trigger event (CR 603.2c), so the caller fires once per attacker, binding it
+     * as the triggering entity. Shared by the battlefield pass and the graveyard / command-zone pass,
+     * so a graveyard-active attack trigger (Vivi's Persistence) filters and fans out exactly like a
+     * battlefield one.
+     */
+    fun matchingAttackers(
+        trigger: EventPattern.AttackEvent,
+        binding: TriggerBinding,
+        event: AttackersDeclaredEvent,
+        sourceId: EntityId,
+        controllerId: EntityId,
+        state: GameState
+    ): List<EntityId> {
+        val filter = trigger.filter
+        val context = PredicateContext(controllerId = controllerId, sourceId = sourceId)
+        return event.attackers.filter { attackerId ->
+            (binding != TriggerBinding.OTHER || attackerId != sourceId) &&
+                (filter == null || predicateEvaluator.matches(state, state.projectedState, attackerId, filter, context))
+        }
+    }
+
+    /**
      * The trigger contexts one [com.wingedsheep.engine.core.CardsMilledEvent] gives a mill trigger:
      * one per matching card, bound as the triggering entity with its owner as the triggering
      * player ("whenever a player mills a nonland card", CR 603.2c — one event, several

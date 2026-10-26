@@ -1471,6 +1471,117 @@
     ]
 }
 
+// Vivi's Persistence
+{
+    "name": "Vivi's Persistence",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Create a 0/1 black Wizard creature token with \"Whenever you cast a noncreature spell, this token deals 1 damage to each opponent.\"\nWhenever your commander enters or attacks, you may pay {2}. If you do, return this card from your graveyard to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "power": 0,
+            "toughness": 1,
+            "colors": [
+                "BLACK"
+            ],
+            "creatureTypes": [
+                "Wizard"
+            ],
+            "imageUri": "https://cards.scryfall.io/normal/front/1/8/187fe54c-7d0c-4225-9d46-3affbead897d.jpg?1782725378",
+            "triggeredAbilities": [
+                {
+                    "id": "Vivi's Persistence:1",
+                    "trigger": {
+                        "type": "SpellCastEvent",
+                        "spellFilter": {
+                            "cardPredicates": [
+                                "IsNoncreature"
+                            ]
+                        }
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "EachOpponent"
+                        }
+                    }
+                }
+            ]
+        },
+        "triggeredAbilities": [
+            {
+                "id": "Vivi's Persistence:2",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "ZoneChangeEvent",
+                            "filter": {
+                                "statePredicates": [
+                                    "IsCommander"
+                                ],
+                                "controllerPredicate": "OwnedByYou"
+                            },
+                            "to": "Battlefield"
+                        },
+                        {
+                            "type": "AttackEvent",
+                            "filter": {
+                                "statePredicates": [
+                                    "IsCommander"
+                                ],
+                                "controllerPredicate": "OwnedByYou"
+                            }
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{2}"
+                        }
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Hand",
+                        "fromZone": "Graveyard"
+                    }
+                },
+                "activeZones": [
+                    "Graveyard"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "458",
+        "rarity": "RARE",
+        "artist": "Erion Makuo",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/be6ba2e4-e657-4a2d-8f5f-255376d861b3.jpg?1783904652",
+        "rulings": [
+            {
+                "date": "2025-10-02",
+                "text": "The Wizard token's ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered or otherwise leaves the stack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Y'shtola, Night's Blessed
 {
     "name": "Y'shtola, Night's Blessed",
