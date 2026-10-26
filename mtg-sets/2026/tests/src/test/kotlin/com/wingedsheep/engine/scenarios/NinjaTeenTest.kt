@@ -130,4 +130,48 @@ class NinjaTeenTest : FunSpec({
         )
         cast.outcome shouldNotBe Outcome.Done
     }
+
+    test("Ninja Teen levelled to 3 in play offers a graveyard sneak cast in legal actions") {
+        val d = createDriver()
+        d.initMirrorMatch(deck = Deck.of("Swamp" to 40), startingLife = 20)
+        val me = d.activePlayer!!
+        val opp = d.getOpponent(me)
+
+        val teen = d.putPermanentOnBattlefield(me, "Ninja Teen", classLevel = 1)
+        repeat(6) { d.putLandOnBattlefield(me, "Swamp") }
+        val goonId = d.putCardInGraveyard(me, "Graveyard Goon")
+        val brawlerId = d.putCreatureOnBattlefield(me, "Plain Brawler")
+        d.removeSummoningSickness(brawlerId)
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        for (level in 2..3) {
+            val r = d.submit(com.wingedsheep.engine.core.ActivateAbility(me, teen,
+                com.wingedsheep.sdk.scripting.AbilityId.classLevelUp(level)))
+            withClue("level $level: ${r.error}") { r.error shouldBe null }
+            while (d.state.stack.isNotEmpty()) d.bothPass()
+        }
+        d.state.getEntity(teen)?.get<com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent>()
+            ?.currentLevel shouldBe 3
+        // Untap lands for the sneak payment.
+        d.state.getBattlefield().forEach { id ->
+            if (d.state.getEntity(id)?.has<TappedComponent>() == true) d.untapPermanent(id)
+        }
+
+        d.openSneakWindow(me, opp, brawlerId)
+        val offers = d.legalActions(me).filter { (it.action as? CastSpell)?.cardId == goonId }
+        withClue("offers=${offers.map { it.description }}") { offers.size shouldBe 1 }
+        // The client only shows graveyard cards whose offer names the graveyard as its source.
+        offers.single().sourceZone shouldBe "GRAVEYARD"
+
+        val offered = offers.single().action as CastSpell
+        val cast = d.submit(offered.copy(
+            additionalCostPayment = AdditionalCostPayment(bouncedPermanents = listOf(brawlerId)),
+            paymentStrategy = PaymentStrategy.AutoPay
+        ))
+        withClue("error=${cast.error} pendingDecision=${cast.pendingDecision}") { cast.outcome shouldBe Outcome.Done }
+        while (d.state.stack.isNotEmpty()) d.bothPass()
+        val goonPerm = d.findPermanent(me, "Graveyard Goon")
+        goonPerm.shouldNotBeNull()
+        d.state.getEntity(goonPerm)?.has<com.wingedsheep.engine.state.components.combat.AttackingComponent>() shouldBe true
+    }
 })

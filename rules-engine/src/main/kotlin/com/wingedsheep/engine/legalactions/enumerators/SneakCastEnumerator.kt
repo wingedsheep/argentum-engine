@@ -188,7 +188,9 @@ class SneakCastEnumerator : ActionEnumerator {
                         manaCostString = sneakMana.toString(),
                         manaCostByTargetCount = sneakManaByTargetCount,
                         additionalCostInfo = bounceCostInfo,
-                        autoTapPreview = autoTapPreview
+                        autoTapPreview = autoTapPreview,
+                        // Without it the client never surfaces the graveyard card as castable.
+                        sourceZone = com.wingedsheep.sdk.core.Zone.GRAVEYARD.name
                     )
                 )
             }
