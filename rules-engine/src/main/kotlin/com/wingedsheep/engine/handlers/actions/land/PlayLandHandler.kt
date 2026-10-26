@@ -22,7 +22,8 @@ import com.wingedsheep.engine.state.permissions.activeMayPlayFor
 import com.wingedsheep.engine.state.permissions.spendCappedMayPlayFor
 import com.wingedsheep.engine.state.permissions.oncePerTurnGranterToSpend
 import com.wingedsheep.engine.state.permissions.hasMayPlayFor
-import com.wingedsheep.engine.state.permissions.mayPlayEntersTapped
+import com.wingedsheep.engine.state.permissions.matchesEntersTappedRiders
+import com.wingedsheep.engine.state.permissions.mayPlayEntersTappedRiders
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.PlayerCantPlayFromHandComponent
@@ -366,7 +367,10 @@ class PlayLandHandler(
         // A may-play permission's entersTapped rider forces the played land tapped regardless of
         // the card's own ETB script — Lightstall Inquisitor's "each land played this way enters
         // tapped" (exile), Kaldring, the Rimestaff's "if you do, it enters tapped" (graveyard).
-        val permissionForcesTapped = permissionForcesLandTapped(state, action.playerId, action.cardId, fromZone)
+        // The riders come from the pre-play `state` (the grants went as the card left its zone);
+        // they are matched against the land as it entered, so an MDFC is judged by its played face.
+        val permissionForcesTapped = permissionLandRiders(state, action.playerId, action.cardId, fromZone)
+            ?.let { newState.matchesEntersTappedRiders(action.cardId, action.playerId, it, predicateEvaluator) } == true
         if (permissionForcesTapped && !landEntersUntapped) {
             newState = newState.updateEntity(action.cardId) { c -> c.with(TappedComponent) }
         }
@@ -772,26 +776,28 @@ class PlayLandHandler(
     }
 
     /**
-     * True when the land is played through a may-play permission whose `entersTapped` rider
-     * covers it (see [mayPlayEntersTapped]) and no rider-free permission could play it instead: a
+     * The `entersTapped` riders of the may-play permissions the land is played through (see
+     * [mayPlayEntersTappedRiders]), or null when a rider-free route could play it instead: a
      * linked-exile grant for an exiled land, Crucible / Muldrotha / Mayhem / a shared graveyard
      * grant for one in the graveyard. Read from [state] *before* the card left its zone, since its
      * grants are dropped as it moves to the battlefield.
      */
-    private fun permissionForcesLandTapped(
+    private fun permissionLandRiders(
         state: GameState,
         playerId: EntityId,
         cardId: EntityId,
         fromZone: Zone,
-    ): Boolean {
-        if (!state.mayPlayEntersTapped(cardId, playerId, conditionEvaluator, cardRegistry, landPlay = true)) return false
-        return when (fromZone) {
-            Zone.EXILE -> !com.wingedsheep.engine.handlers.effects.linkedexile.LinkedExilePlayUtils
+    ): List<com.wingedsheep.sdk.scripting.GameObjectFilter>? {
+        val riders = state.mayPlayEntersTappedRiders(cardId, playerId, conditionEvaluator, cardRegistry) { !it.nonLandOnly }
+            ?: return null
+        val riderFreeRoute = when (fromZone) {
+            Zone.EXILE -> com.wingedsheep.engine.handlers.effects.linkedexile.LinkedExilePlayUtils
                 .canPlayLand(state, playerId, cardId, legality)
-            Zone.GRAVEYARD -> !hasNonPermissionGraveyardLandPlay(state, playerId, cardId) &&
-                zoneResolver.graveyardLandPlayGrant(state, playerId, cardId) == null
-            else -> false
+            Zone.GRAVEYARD -> hasNonPermissionGraveyardLandPlay(state, playerId, cardId) ||
+                zoneResolver.graveyardLandPlayGrant(state, playerId, cardId) != null
+            else -> true
         }
+        return riders.takeUnless { riderFreeRoute }
     }
 
     private fun hasPlayFromTopOfLibrary(state: GameState, playerId: EntityId, cardId: EntityId): Boolean {

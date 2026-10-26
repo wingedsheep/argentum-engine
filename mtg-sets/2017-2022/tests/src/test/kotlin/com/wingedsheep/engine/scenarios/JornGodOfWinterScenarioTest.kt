@@ -63,6 +63,7 @@ class JornGodOfWinterScenarioTest : ScenarioTestBase() {
         .withCardInGraveyard(1, snowBear.name)
         .withCardInGraveyard(1, bear.name)
         .withCardInGraveyard(1, snowLand.name)
+        .withCardInHand(1, "Forest")
         .withActivePlayer(1)
         .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
         .build()
@@ -91,6 +92,9 @@ class JornGodOfWinterScenarioTest : ScenarioTestBase() {
 
                 game.execute(PlayLand(game.player1Id, landId)).error shouldBe null
                 game.isTapped(snowLand.name) shouldBe true
+                withClue("the graveyard play spent the turn's land drop") {
+                    game.execute(PlayLand(game.player1Id, game.state.getHand(game.player1Id).single())).error shouldNotBe null
+                }
             }
 
             test("a non-snow permanent card can't be targeted") {

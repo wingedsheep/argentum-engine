@@ -15,6 +15,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CastFromHandComponent
+import com.wingedsheep.engine.state.permissions.matchesEntersTappedRiders
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.CrewSaddleContributorsComponent
@@ -886,8 +887,10 @@ internal class PermanentEntry(
     ): GameState {
         var newState = state
         // A permission's "if you do, it enters tapped" rider (Kaldring, the Rimestaff), frozen on
-        // the spell at cast. An applicable "enters untapped" replacement still wins (CR 614).
-        if (castRider?.entersTapped == true && !spellComponent.wasSneaked &&
+        // the spell at cast and matched against the permanent as it enters, face up. An applicable
+        // "enters untapped" replacement still wins (CR 614).
+        if (castRider != null && !spellComponent.wasSneaked &&
+            newState.matchesEntersTappedRiders(spellId, controllerId, castRider.entersTapped, conditionEvaluator.predicates) &&
             newState.getEntity(spellId)?.has<TappedComponent>() != true &&
             !com.wingedsheep.engine.handlers.effects.EnterUntappedReplacements
                 .entersUntapped(newState, spellId, controllerId, predicateEvaluator = conditionEvaluator.predicates)

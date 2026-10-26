@@ -1972,7 +1972,7 @@ data class GrantMayPlayFromExileEffect(
         if (withAnyManaColor) append(", and you may spend mana as though it were mana of any color to cast them")
         spendAsAnyColor?.let { append(", and you may spend ${it.description} as though it were mana of any color to cast them") }
         entersTapped?.let {
-            append(if (it == GameObjectFilter.Land) ". Each land played this way enters tapped" else ". If you do, it enters tapped")
+            append(if (it == GameObjectFilter.Any) ". If you do, it enters tapped" else ". Each ${it.description} played this way enters tapped")
         }
         insteadOfGraveyard?.let { append(it.riderText) }
     }

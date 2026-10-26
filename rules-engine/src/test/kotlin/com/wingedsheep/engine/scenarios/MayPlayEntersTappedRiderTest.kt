@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.PlayLand
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -9,9 +10,14 @@ import com.wingedsheep.engine.state.permissions.addMayPlayPermission
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.MayPlayLandsFromGraveyard
 import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
@@ -32,6 +38,21 @@ class MayPlayEntersTappedRiderTest : ScenarioTestBase() {
         power = 2
         toughness = 2
     }
+    private val escaper = card("Rider Test Escaper") {
+        manaCost = "{1}"
+        typeLine = "Creature — Bear"
+        power = 2
+        toughness = 2
+        keywordAbility(KeywordAbility.escape("{1}", Costs.additional.ExileOtherCards(1)))
+    }
+    private val smash = CardDefinition.modalDoubleFacedLand(
+        frontFace = card("Rider Test Smash") {
+            manaCost = "{1}{R}"
+            typeLine = "Sorcery"
+            spell { effect = Effects.GainLife(1) }
+        },
+        backFace = card("Rider Test Pass") { typeLine = "Land" },
+    )
     private val crucible = card("Rider Test Crucible") {
         manaCost = "{3}"
         typeLine = "Artifact"
@@ -86,7 +107,7 @@ class MayPlayEntersTappedRiderTest : ScenarioTestBase() {
     }
 
     init {
-        cardRegistry.register(listOf(bear, crucible))
+        cardRegistry.register(listOf(bear, escaper, smash, crucible))
 
         context("a permanent spell cast through the permission") {
             test("enters tapped when the rider's filter matches it") {
@@ -114,6 +135,24 @@ class MayPlayEntersTappedRiderTest : ScenarioTestBase() {
                 }
             }
 
+            test("enters untapped when the player casts it by its own graveyard route instead") {
+                val game = board(graveyard = listOf(escaper.name, bear.name))
+                val escaperId = game.graveyardCard(escaper.name)
+                game.grant(escaperId, GameObjectFilter.Any)
+                game.execute(
+                    CastSpell(
+                        game.player1Id, escaperId,
+                        useAlternativeCost = true,
+                        alternativeCostType = AlternativeCostType.ESCAPE,
+                        additionalCostPayment = AdditionalCostPayment(exiledCards = listOf(game.graveyardCard(bear.name))),
+                    )
+                ).error shouldBe null
+                game.resolveStack()
+                withClue("an escape cast never used the grant, so its rider doesn't bind") {
+                    game.isTapped(escaper.name) shouldBe false
+                }
+            }
+
             test("cast from hand never goes through a grant on the card") {
                 val game = board(hand = listOf(bear.name))
                 game.grant(game.handCard(bear.name), GameObjectFilter.Any)
@@ -137,6 +176,16 @@ class MayPlayEntersTappedRiderTest : ScenarioTestBase() {
                 game.grant(islandId, GameObjectFilter.Land)
                 game.execute(PlayLand(game.player1Id, islandId)).error shouldBe null
                 game.isTapped("Island") shouldBe true
+            }
+
+            test("a modal DFC played as its land back face is judged by that face") {
+                val game = board(exile = listOf(smash.name))
+                val smashId = game.exiledCard(smash.name)
+                game.grant(smashId, GameObjectFilter.Land)
+                game.execute(PlayLand(game.player1Id, smashId, asBackFace = true)).error shouldBe null
+                withClue("the sorcery front isn't a land, but the land face played is") {
+                    game.isTapped("Rider Test Pass") shouldBe true
+                }
             }
 
             test("enters untapped when Crucible-style permission could play it instead") {

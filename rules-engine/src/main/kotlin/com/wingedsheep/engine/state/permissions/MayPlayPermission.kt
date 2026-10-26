@@ -35,7 +35,7 @@ import kotlinx.serialization.Serializable
  *   land played or a permanent spell cast through it, when the card matches (Lightstall
  *   Inquisitor's "each land played this way enters tapped", Kaldring, the Rimestaff's "if you do,
  *   it enters tapped"). Enforced on top of the played card's own entry, independent of its script;
- *   read through [mayPlayEntersTapped].
+ *   read through [mayPlayEntersTappedRiders] and matched against the permanent as it enters.
  * @param permanent If true, the permission is not auto-removed at end of turn cleanup. Permanent
  *   permissions are removed explicitly (e.g., when their card resolves). Non-permanent grants
  *   expire via [expiresAfterTurn].

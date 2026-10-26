@@ -30,7 +30,7 @@ import com.wingedsheep.engine.state.components.identity.CommanderComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.engine.state.permissions.hasMayPlayFor
-import com.wingedsheep.engine.state.permissions.mayPlayEntersTapped
+import com.wingedsheep.engine.state.permissions.mayPlayEntersTappedRiders
 import com.wingedsheep.engine.state.components.player.MayCastCreaturesFromGraveyardWithForageComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
@@ -219,21 +219,59 @@ class CastZoneResolver(
     }
 
     /**
-     * True when casting [cardId] goes through a may-play permission whose `entersTapped` rider
-     * covers it (see [mayPlayEntersTapped]) — Kaldring, the Rimestaff's "if you do, it enters
-     * tapped". A card in hand is cast from hand, never through a grant on it, and a permanent
-     * spell Muldrotha could cast from the graveyard instead owes no rider. Read before the cast
-     * moves the card.
+     * The `entersTapped` riders of the may-play permissions this cast goes through (see
+     * [mayPlayEntersTappedRiders]) — Kaldring, the Rimestaff's "if you do, it enters tapped" — or
+     * empty when it owes none. Only grants that authorize this face and its colours count. A card in
+     * hand is cast from hand, never through a grant on it, and a card the player casts by a
+     * graveyard route of its own (flashback, escape, Muldrotha, …) never uses the grant either.
+     * Read before the cast moves the card.
      */
-    fun castEntersTappedByMayPlay(
+    fun castEntersTappedRiders(
         state: GameState,
-        playerId: EntityId,
-        cardId: EntityId,
+        action: CastSpell,
         cardComponent: CardComponent
-    ): Boolean {
-        if (cardId in state.getHand(playerId)) return false
-        if (!state.mayPlayEntersTapped(cardId, playerId, conditionEvaluator, cardRegistry, landPlay = false)) return false
-        return !hasMayPlayPermanentFromGraveyardPermission(state, playerId, cardId, cardComponent)
+    ): List<GameObjectFilter> {
+        val playerId = action.playerId
+        val cardId = action.cardId
+        if (cardId in state.getHand(playerId)) return emptyList()
+        if (castGoesThroughOwnRoute(state, action, cardComponent)) return emptyList()
+        val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
+        val castColors = state.projectedState.spellColors(
+            playerId,
+            action.faceIndex?.let { cardDef?.cardFaces?.getOrNull(it)?.manaCost?.colors }
+                ?: cardDef?.colors
+                ?: cardComponent.manaCost.colors,
+            cardId,
+        )
+        return state.mayPlayEntersTappedRiders(cardId, playerId, conditionEvaluator, cardRegistry) {
+            it.castFaceIndex == action.faceIndex && it.authorizesSpellColors(castColors)
+        } ?: emptyList()
+    }
+
+    /**
+     * True when a cast of a card in a graveyard or exile goes through a route of the card's own
+     * rather than a granted permission: an announced alternative cost that is a graveyard route
+     * of its own (and that this card really has — a bare `useAlternativeCost` doesn't count), the
+     * card's own `MayCastSelfFromZones`, Muldrotha, flashback or harmonize. Any other alternative
+     * cost (evoke, dash, …) is still cast through the grant: retrace is not an alternative cost
+     * (CR 702.81a), so the two combine. Kept in step with `CastValidator.castSource`'s route order.
+     */
+    private fun castGoesThroughOwnRoute(state: GameState, action: CastSpell, cardComponent: CardComponent): Boolean {
+        val playerId = action.playerId
+        val cardId = action.cardId
+        if (action.useAlternativeCost) {
+            fun announced(type: AlternativeCostType) = action.altAllows(type)
+            if (announced(AlternativeCostType.MAYHEM) && hasMayhemPermission(state, playerId, cardId)) return true
+            if (announced(AlternativeCostType.ESCAPE) && hasEscapePermission(state, playerId, cardId)) return true
+            if (announced(AlternativeCostType.WARP) && hasWarpPermission(state, playerId, cardId)) return true
+            if (announced(AlternativeCostType.DISTURB) && disturbCastFace(state, playerId, cardId) != null) return true
+            if (announced(AlternativeCostType.SNEAK) && cardComponent.typeLine.isCreature &&
+                SneakWindow.graveyardSneakGrantCost(state, playerId, cardRegistry) != null
+            ) return true
+        }
+        if (hasMayCastSelfFromZonePermission(state, playerId, cardId, action)) return true
+        if (hasMayPlayPermanentFromGraveyardPermission(state, playerId, cardId, cardComponent)) return true
+        return hasFlashbackPermission(state, playerId, cardId) || hasHarmonizePermission(state, playerId, cardId)
     }
 
     /**
@@ -461,23 +499,7 @@ class CastZoneResolver(
         val cardId = action.cardId
         if (state.turnOrder.none { cardId in state.getZone(ZoneKey(it, Zone.GRAVEYARD)) }) return null
         val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return null
-        // An announced alternative cost that is a graveyard route of its own — and that this card
-        // really has, so a bare `useAlternativeCost` can't waive the grant's cost. Any other
-        // alternative cost (evoke, dash, …) is still cast through the grant: retrace is not an
-        // alternative cost (CR 702.81a), so the two combine.
-        if (action.useAlternativeCost) {
-            fun announced(type: AlternativeCostType) = action.altAllows(type)
-            if (announced(AlternativeCostType.MAYHEM) && hasMayhemPermission(state, playerId, cardId)) return null
-            if (announced(AlternativeCostType.ESCAPE) && hasEscapePermission(state, playerId, cardId)) return null
-            if (announced(AlternativeCostType.WARP) && hasWarpPermission(state, playerId, cardId)) return null
-            if (announced(AlternativeCostType.DISTURB) && disturbCastFace(state, playerId, cardId) != null) return null
-            if (announced(AlternativeCostType.SNEAK) && cardComponent.typeLine.isCreature &&
-                SneakWindow.graveyardSneakGrantCost(state, playerId, cardRegistry) != null
-            ) return null
-        }
-        if (hasMayCastSelfFromZonePermission(state, playerId, cardId, action)) return null
-        if (hasMayPlayPermanentFromGraveyardPermission(state, playerId, cardId, cardComponent)) return null
-        if (hasFlashbackPermission(state, playerId, cardId) || hasHarmonizePermission(state, playerId, cardId)) return null
+        if (castGoesThroughOwnRoute(state, action, cardComponent)) return null
         return findMayCastFromGraveyardGrant(state, playerId, cardId, cardComponent, action.graveyardCastRider)
             ?.additionalCost
     }

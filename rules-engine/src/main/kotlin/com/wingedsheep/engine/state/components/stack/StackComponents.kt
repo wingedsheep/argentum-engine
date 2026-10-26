@@ -767,5 +767,6 @@ data class CastThisWayEntryRiderComponent(
     val entersWithCounter: com.wingedsheep.sdk.core.CounterType? = null,
     val addedSubtype: String? = null,
     val grantedAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null,
-    val entersTapped: Boolean = false,
+    /** The grant's filters; the permanent enters tapped when it matches every one as it enters. */
+    val entersTapped: List<com.wingedsheep.sdk.scripting.GameObjectFilter> = emptyList(),
 ) : Component

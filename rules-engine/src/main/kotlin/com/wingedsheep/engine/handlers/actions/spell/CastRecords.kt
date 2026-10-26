@@ -43,8 +43,8 @@ internal class CastAuthorization(
     val oncePerTurnExileGranter: EntityId?,
     /** Glimpse the Cosmos: the exile rider of the card's own `MayCastSelfFromZones` permission this cast went through. */
     val selfZoneExileRider: CastThisWayExile = CastThisWayExile.NONE,
-    /** Kaldring, the Rimestaff: the may-play permission this cast goes through makes the permanent enter tapped. */
-    val mayPlayEntersTapped: Boolean = false,
+    /** Kaldring, the Rimestaff: the `entersTapped` riders of the may-play permission this cast goes through. */
+    val mayPlayEntersTapped: List<com.wingedsheep.sdk.scripting.GameObjectFilter> = emptyList(),
 )
 
 /**
@@ -89,7 +89,7 @@ internal class CastRecords(
         oncePerTurnExileGranter = zoneResolver.findOncePerTurnExileGranter(state, action.playerId, action.cardId),
         selfZoneExileRider = zoneResolver.findMayCastSelfFromZoneAbility(state, action.playerId, action.cardId, action)
             ?.exileCastThisWay ?: CastThisWayExile.NONE,
-        mayPlayEntersTapped = zoneResolver.castEntersTappedByMayPlay(state, action.playerId, action.cardId, cardComponent),
+        mayPlayEntersTapped = zoneResolver.castEntersTappedRiders(state, action, cardComponent),
     )
 
     /**
@@ -246,9 +246,10 @@ internal class CastRecords(
         val riderAbility = grant?.grantedAbilityOnEntry
         // Kaldring, the Rimestaff's "if you do, it enters tapped": a may-play permission's rider,
         // when the cast had to go through it rather than a rider-free graveyard or exile grant.
-        val riderTapped = authorization.mayPlayEntersTapped &&
+        val riderTapped = authorization.mayPlayEntersTapped.takeIf {
             grant == null && authorization.linkedExileGranter == null && !isForageCast
-        if (riderCounter != null || riderSubtype != null || riderAbility != null || riderTapped) {
+        } ?: emptyList()
+        if (riderCounter != null || riderSubtype != null || riderAbility != null || riderTapped.isNotEmpty()) {
             newState = newState.updateEntity(action.cardId) { c ->
                 c.with(CastThisWayEntryRiderComponent(
                     entersWithCounter = riderCounter, addedSubtype = riderSubtype, grantedAbility = riderAbility,
