@@ -1444,7 +1444,7 @@ data class TheRingTemptsYouEffect(
 
 /**
  * "Choose a number, then [effect]." The controller is prompted for an integer in
- * [[minValue], [maxValue]]; the chosen number is stamped onto the effect context (as the
+ * [[minValue], [maxValue]] (or, with [random], the engine picks one); the chosen number is stamped onto the effect context (as the
  * X value) and [then] is executed once. Atomic effects and filters read the chosen number
  * via `manaValueEqualsX()` so the same
  * combinator works for any "choose a number, act on objects with that mana value" card (Void).

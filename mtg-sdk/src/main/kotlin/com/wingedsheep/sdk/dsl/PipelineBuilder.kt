@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.dsl
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.conditions.CollectionContainsMatch
 import com.wingedsheep.sdk.scripting.conditions.Condition
@@ -142,11 +143,7 @@ fun GameObjectFilter.namedFromVariable(slot: ChosenSlot): GameObjectFilter = nam
  * name than that spell" (Tibalt's Trickery). Nothing captured matches every card.
  */
 fun GameObjectFilter.notNamedFromVariable(slot: ChosenSlot): GameObjectFilter =
-    withCardPredicate(
-        com.wingedsheep.sdk.scripting.predicates.CardPredicate.Not(
-            com.wingedsheep.sdk.scripting.predicates.CardPredicate.NameEqualsChosen(slot.key)
-        )
-    )
+    withCardPredicate(CardPredicate.Not(CardPredicate.NameEqualsChosen(slot.key)))
 
 /** All creatures of the creature type chosen into [slot] ([GroupFilter.ChosenSubtypeCreatures]). */
 fun GroupFilter.Companion.ChosenSubtypeCreatures(slot: ChosenSlot, excludeSelf: Boolean = false): GroupFilter =

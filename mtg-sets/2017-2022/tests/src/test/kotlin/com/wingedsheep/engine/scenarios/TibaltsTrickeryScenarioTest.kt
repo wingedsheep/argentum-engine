@@ -30,8 +30,16 @@ class TibaltsTrickeryScenarioTest : ScenarioTestBase() {
         toughness = 6
     }
 
+    private val wurm = card("Trickery Test Wurm") {
+        manaCost = "{1}{G}"
+        typeLine = "Creature — Wurm"
+        power = 3
+        toughness = 3
+        cantBeCountered = true
+    }
+
     init {
-        listOf(bear, giant).forEach { cardRegistry.register(it) }
+        listOf(bear, giant, wurm).forEach { cardRegistry.register(it) }
 
         // The opponent (player 2) casts the bear on their turn; player 1 answers with Trickery.
         // Opponent's library, top → bottom: three Forests (the mill), a same-named bear (skipped),
@@ -129,6 +137,38 @@ class TibaltsTrickeryScenarioTest : ScenarioTestBase() {
                 List(3 - milled) { "Forest" } + listOf("Trickery Test Bear", "Island", "Trickery Test Giant")
             withClue("Tibalt's Trickery's caster's library is untouched") {
                 game.libraryNames(1) shouldBe listOf("Mountain")
+            }
+        }
+
+        test("an uncounterable spell resolves, but its controller still mills, exiles and may cast") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withRngSeed(5L)
+                .withCardInHand(1, "Tibalt's Trickery")
+                .withLandsOnBattlefield(1, "Mountain", 2)
+                .withCardInHand(2, "Trickery Test Wurm")
+                .withLandsOnBattlefield(2, "Forest", 2)
+                .withCardInLibrary(2, "Forest")
+                .withCardInLibrary(2, "Forest")
+                .withCardInLibrary(2, "Forest")
+                .withCardInLibrary(2, "Trickery Test Giant")
+                .withCardInLibrary(2, "Plains")
+                .withActivePlayer(2)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            game.castSpell(2, "Trickery Test Wurm").error shouldBe null
+            game.passPriority()
+            game.castSpellTargetingStackSpell(1, "Tibalt's Trickery", "Trickery Test Wurm").error shouldBe null
+            game.resolveStack()
+            game.answerYesNo(true)
+            game.resolveStack()
+
+            withClue("the wurm can't be countered and resolves") {
+                game.isOnBattlefield("Trickery Test Wurm") shouldBe true
+            }
+            withClue("the rest of the effect still happened") {
+                game.milled() shouldBeInRange 1..3
+                game.isOnBattlefield("Trickery Test Giant") shouldBe true
             }
         }
     }
