@@ -458,6 +458,89 @@
     ]
 }
 
+// Protean Hulk
+{
+    "name": "Protean Hulk",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "When this creature dies, search your library for any number of creature cards with total mana value 6 or less, put them onto the battlefield, then shuffle.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Protean Hulk:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "creature"
+                            },
+                            "storeAs": "gathered0",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "Search your library for any number of creature cards with total mana value 6 or less",
+                            "selectedLabel": "Put onto the battlefield",
+                            "restrictions": [
+                                {
+                                    "type": "TotalManaValueAtMost",
+                                    "max": 6
+                                }
+                            ]
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "rarity": "RARE",
+        "artist": "Matt Cavotta",
+        "flavorText": "\"Meat *and* eggs. We eat!\"\n—Borborygmos",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d978332-95bf-4f86-9e67-06f10983c267.jpg?1783943412",
+        "rulings": [
+            {
+                "date": "2018-03-16",
+                "text": "If a card in your library has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2018-03-16",
+                "text": "You can find any number of creature cards, so long as their total mana value is 6 or less. For example, you could find eight creature cards with mana value 0 and three with mana value 2, but you couldn't find two with mana value 4."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Rakdos Carnarium
 {
     "name": "Rakdos Carnarium",

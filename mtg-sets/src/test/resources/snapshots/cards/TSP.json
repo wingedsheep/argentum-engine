@@ -1342,6 +1342,97 @@
     ]
 }
 
+// Endrek Sahr, Master Breeder
+{
+    "name": "Endrek Sahr, Master Breeder",
+    "manaCost": "{4}{B}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "Whenever you cast a creature spell, create X 1/1 black Thrull creature tokens, where X is that spell's mana value.\nWhen you control seven or more Thrulls, sacrifice Endrek Sahr.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Endrek Sahr, Master Breeder:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGERING_SPELL_MANA_VALUE"
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Thrull"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/c/dc5604c5-4fff-4bb6-bf6d-69027e4eeb21.jpg?1783915255"
+                },
+                "descriptionOverride": "Whenever you cast a creature spell, create X 1/1 black Thrull creature tokens, where X is that spell's mana value."
+            }
+        ],
+        "stateTriggeredAbilities": [
+            {
+                "id": "Endrek Sahr, Master Breeder:2",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent Thrull"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                },
+                "effect": {
+                    "type": "SacrificeTarget",
+                    "target": "Self"
+                },
+                "descriptionOverride": "When you control seven or more Thrulls, sacrifice Endrek Sahr."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "RARE",
+        "artist": "Mark Tedin",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/dac6faba-59f2-436f-addb-c53db2b0cc17.jpg?1783943233",
+        "rulings": [
+            {
+                "date": "2006-09-25",
+                "text": "The second ability is a state trigger. Once it triggers, it won't trigger again as long as the ability is on the stack. If the ability is countered and the trigger condition is still true, it will immediately trigger again."
+            },
+            {
+                "date": "2006-09-25",
+                "text": "When the second ability resolves, Endrek Sahr will be sacrificed regardless of how many Thrulls you control at that time, even if it's less than seven."
+            },
+            {
+                "date": "2006-09-25",
+                "text": "Face-down spells are creature spells, but they have mana value 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Errant Ephemeron
 {
     "name": "Errant Ephemeron",
@@ -2866,6 +2957,75 @@
     },
     "colorIdentityOverride": [
         "BLUE",
+        "BLACK"
+    ]
+}
+
+// Nether Traitor
+{
+    "name": "Nether Traitor",
+    "manaCost": "{B}{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Haste\nShadow (This creature can block or be blocked by only creatures with shadow.)\nWhenever another creature is put into your graveyard from the battlefield, you may pay {B}. If you do, return this card from your graveyard to the battlefield.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE",
+        "SHADOW"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nether Traitor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature own:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{B}"
+                        }
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Battlefield",
+                        "fromZone": "Graveyard"
+                    }
+                },
+                "activeZones": [
+                    "Graveyard"
+                ],
+                "descriptionOverride": "Whenever another creature is put into your graveyard from the battlefield, you may pay {B}. If you do, return Nether Traitor from your graveyard to the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "rarity": "RARE",
+        "artist": "Vance Kovacs",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/911d2271-8998-4193-9d1a-1768c5dfaaad.jpg?1783943230",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "If multiple creatures are put into your graveyard at the same time, Nether Traitor's ability triggers for each of them. Once you return it to the battlefield, you may pay {B} for the other abilities as they resolve, but they'll have no effect if you do. Even if Nether Traitor returns to your graveyard, it's considered a new object and won't be returned."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "If Nether Traitor and another creature are put into your graveyard at the same time, Nether Traitor's ability won't trigger. This is because it must be in your graveyard before the creature dies in order for its ability that returns it to the battlefield to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
         "BLACK"
     ]
 }

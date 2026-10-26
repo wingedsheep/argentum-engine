@@ -241,6 +241,59 @@
     ]
 }
 
+// Butcher of Malakir
+{
+    "name": "Butcher of Malakir",
+    "manaCost": "{5}{B}{B}",
+    "typeLine": "Creature — Vampire Warrior",
+    "oracleText": "Flying\nWhenever this creature or another creature you control dies, each opponent sacrifices a creature of their choice.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Butcher of Malakir:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "creature",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "rarity": "RARE",
+        "artist": "Jason Chan",
+        "flavorText": "His verdict is always guilty. His sentence is always death.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/73131341-0fde-4eca-aefa-ce69c933af07.jpg?1783942056",
+        "rulings": [
+            {
+                "date": "2010-03-01",
+                "text": "If multiple creatures you control (possibly including Butcher of Malakir itself) are put into their owners' graveyards at the same time, Butcher of Malakir's triggered ability will trigger that many times."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Dispel
 {
     "name": "Dispel",

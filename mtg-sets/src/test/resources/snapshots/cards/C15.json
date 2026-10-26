@@ -187,6 +187,118 @@
     ]
 }
 
+// Meren of Clan Nel Toth
+{
+    "name": "Meren of Clan Nel Toth",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Legendary Creature — Human Shaman",
+    "oracleText": "Whenever another creature you control dies, you get an experience counter.\nAt the beginning of your end step, choose target creature card in your graveyard. If that card's mana value is less than or equal to the number of experience counters you have, return it to the battlefield. Otherwise, put it into your hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Meren of Clan Nel Toth:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "EXPERIENCE",
+                    "count": 1,
+                    "target": "Controller"
+                }
+            },
+            {
+                "id": "Meren of Clan Nel Toth:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "numericProperty": "ManaValue"
+                            },
+                            "operator": "LTE",
+                            "right": {
+                                "type": "PlayerCounterCount",
+                                "counterType": "EXPERIENCE"
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Battlefield",
+                        "fromZone": "Graveyard"
+                    },
+                    "otherwise": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand",
+                        "fromZone": "Graveyard"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "MYTHIC",
+        "artist": "Mark Winters",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f43bf91d-bc08-417f-a549-64919c24052a.jpg?1783938107",
+        "rulings": [
+            {
+                "date": "2015-11-04",
+                "text": "If Meren of Clan Nel Toth leaves the battlefield at the same time as other creatures you control die, its first ability will trigger for each of those creatures."
+            },
+            {
+                "date": "2015-11-04",
+                "text": "You can't choose to put the creature card into your hand if its mana value is less than or equal to the number of experience counters you have as the ability resolves."
+            },
+            {
+                "date": "2015-11-04",
+                "text": "If a creature card in your graveyard has {X} in its mana cost, X is 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Mizzix's Mastery
 {
     "name": "Mizzix's Mastery",

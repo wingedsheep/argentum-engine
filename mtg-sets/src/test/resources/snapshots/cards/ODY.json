@@ -2771,6 +2771,64 @@
     ]
 }
 
+// Entomb
+{
+    "name": "Entomb",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Search your library for a card, put that card into your graveyard, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library"
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for a card to put into your graveyard",
+                    "selectedLabel": "Put into your graveyard"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "RARE",
+        "artist": "Ron Spears",
+        "flavorText": "A grave is the safest place to store ill-gotten treasures.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f60a2091-fb97-4f04-911b-fce9b6351044.jpg?1783945246"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Escape Artist
 {
     "name": "Escape Artist",

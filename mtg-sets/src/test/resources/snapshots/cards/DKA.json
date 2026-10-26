@@ -1555,6 +1555,107 @@
     ]
 }
 
+// Mikaeus, the Unhallowed
+{
+    "name": "Mikaeus, the Unhallowed",
+    "manaCost": "{3}{B}{B}{B}",
+    "typeLine": "Legendary Creature — Zombie Cleric",
+    "oracleText": "Intimidate (This creature can't be blocked except by artifact creatures and/or creatures that share a color with it.)\nWhenever a Human deals damage to you, destroy it.\nOther non-Human creatures you control get +1/+1 and have undying. (When a creature with undying dies, if it had no +1/+1 counters on it, return it to the battlefield under its owner's control with a +1/+1 counter on it.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "INTIMIDATE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mikaeus, the Unhallowed:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "You"
+                    },
+                    "sourceFilter": "Human"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "TriggeringEntity",
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Human"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "UNDYING",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Human"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/801b124d-3546-4882-a6e1-c9c353628a18.jpg?1783940827",
+        "rulings": [
+            {
+                "date": "2018-12-07",
+                "text": "Any damage dealt to you by a Human will cause Mikaeus's ability to trigger, including noncombat damage dealt to you by a Human and damage dealt to you by a Human you control."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "If a Human deals damage to you at the same time that Mikaeus is dealt lethal damage, Mikaeus's triggered ability triggers. That Human will be destroyed even though Mikaeus has left the battlefield."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "If a non-Human creature you control without a +1/+1 counter dies at the same time as Mikaeus, that creature's undying ability granted by Mikaeus triggers and will return it to the battlefield."
+            },
+            {
+                "date": "2018-12-07",
+                "text": "The +1/+1 bonus that Mikaeus gives to other non-Human creatures you control isn't a counter. It won't prevent undying from triggering."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Mystic Retrieval
 {
     "name": "Mystic Retrieval",

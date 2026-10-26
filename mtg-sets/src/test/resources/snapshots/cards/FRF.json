@@ -671,6 +671,53 @@
     ]
 }
 
+// Merciless Executioner
+{
+    "name": "Merciless Executioner",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Orc Warrior",
+    "oracleText": "When this creature enters, each player sacrifices a creature of their choice.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Merciless Executioner:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "creature",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "Each"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "rarity": "UNCOMMON",
+        "artist": "David Palumbo",
+        "flavorText": "He enjoys his work, for he sees only the worst Abzan criminals: those who betray their own kin.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c588d7a-e352-40a0-9fc7-55c7b4bfd013.jpg?1783938694",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "If you control no other creatures as Merciless Executioner's ability resolves, you'll have to sacrifice Merciless Executioner."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Monastery Mentor
 {
     "name": "Monastery Mentor",

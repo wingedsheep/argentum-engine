@@ -343,6 +343,87 @@
     ]
 }
 
+// Satyr Wayfinder
+{
+    "name": "Satyr Wayfinder",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Satyr",
+    "oracleText": "When this creature enters, reveal the top four cards of your library. You may put a land card from among them into your hand. Put the rest into your graveyard.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Satyr Wayfinder:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "storeAs": "looked",
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "land",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may put a land card from among them into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "artist": "Steve Prescott",
+        "flavorText": "The first satyr to wake after a revel must search for the site of the next one.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/13c5a1ce-932a-4b3d-8b86-ed920e646afc.jpg?1783939529"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Stratus Walk
 {
     "name": "Stratus Walk",
