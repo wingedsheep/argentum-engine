@@ -108,8 +108,8 @@ data class SetBasePowerToughnessDynamicStatic(
 @SerialName("SetBasePowerToughnessStatic")
 @Serializable
 data class SetBasePowerToughnessStatic(
-    val power: Int?,
-    val toughness: Int?,
+    val power: Int? = null,
+    val toughness: Int? = null,
     val filter: GroupFilter = GroupFilter.attachedCreature()
 ) : StaticAbility {
     init {

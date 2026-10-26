@@ -7859,8 +7859,7 @@
         "staticAbilities": [
             {
                 "type": "SetBasePowerToughnessStatic",
-                "power": 0,
-                "toughness": null
+                "power": 0
             },
             {
                 "type": "GrantTriggeredAbility",

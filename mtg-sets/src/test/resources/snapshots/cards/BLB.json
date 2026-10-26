@@ -11492,7 +11492,6 @@
         "staticAbilities": [
             {
                 "type": "SetBasePowerToughnessStatic",
-                "power": null,
                 "toughness": 1,
                 "filter": {
                     "baseFilter": "creature ctrl:opponent"

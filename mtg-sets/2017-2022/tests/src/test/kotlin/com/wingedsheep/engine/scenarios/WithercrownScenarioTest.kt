@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.model.EntityId
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldStartWith
 
 /**
  * Scenario tests for Withercrown.
@@ -97,6 +98,15 @@ class WithercrownScenarioTest : FunSpec({
         withClue("declining keeps the creature") {
             driver.getGraveyard(victim) shouldBe emptyList()
         }
+
+        driver.passPriorityUntil(Step.END)
+        driver.passPriorityUntil(Step.UPKEEP)
+        driver.activePlayer shouldBe me
+        settle(driver, me, pay = false)
+        withClue("nothing fires on the Aura controller's own upkeep") {
+            driver.getLifeTotal(victim) shouldBe 19
+            driver.getLifeTotal(me) shouldBe 20
+        }
     }
 
     test("the trigger offers sacrificing only the enchanted creature, and paying saves the life") {
@@ -123,6 +133,7 @@ class WithercrownScenarioTest : FunSpec({
         withClue("the trigger asks, and only the enchanted creature is a candidate") {
             (decision is SelectCardsDecision) shouldBe true
             (decision as SelectCardsDecision).options shouldBe listOf(courser)
+            decision.prompt shouldStartWith "Sacrifice this creature or "
         }
 
         settle(driver, victim, pay = true)

@@ -1295,12 +1295,22 @@ class PayOrSufferExecutor(
     }
 
     /**
+     * One object of [desc]: "a land", "an artifact" — or the bare phrase when it already names a
+     * determined object ("this creature", from a `sourceItself()` filter), which takes no article.
+     */
+    private fun singular(desc: String): String = when {
+        desc.startsWith("this ") || desc.startsWith("that ") -> desc
+        desc.first().lowercaseChar() in "aeiou" -> "an $desc"
+        else -> "a $desc"
+    }
+
+    /**
      * Build prompt for sacrifice cost.
      */
     private fun buildSacrificePrompt(cost: CostAtom.Sacrifice, sourceName: String, effect: PayOrSufferEffect): String {
         val desc = cost.filter.description
         val typeText = if (cost.count == 1) {
-            "${if (desc.first().lowercaseChar() in "aeiou") "an" else "a"} $desc"
+            singular(desc)
         } else {
             "${cost.count} ${desc}s"
         }
@@ -1324,7 +1334,7 @@ class PayOrSufferExecutor(
     private fun buildExilePrompt(cost: CostAtom.ExileFrom, sourceName: String, effect: PayOrSufferEffect): String {
         val desc = cost.filter.description
         val typeText = if (cost.count == 1) {
-            "${if (desc.first().lowercaseChar() in "aeiou") "an" else "a"} $desc"
+            singular(desc)
         } else {
             "${cost.count} ${desc}s"
         }
