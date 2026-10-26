@@ -623,7 +623,8 @@ class BeginningPhaseManager(
         is StatePredicate.And -> predicate.predicates.all { matchesStatePredicateForUntap(state, projected, entityId, it, container) }
         is StatePredicate.Not -> !matchesStatePredicateForUntap(state, projected, entityId, predicate.predicate, container)
         StatePredicate.StartedTurnUntapped -> ControlHistory.startedTurnUntapped(state, entityId)
-        StatePredicate.ControlledSinceTurnBegan -> ControlHistory.matches(state, projected, entityId)
+        is StatePredicate.ControlledContinuouslySince ->
+            ControlHistory.controlledSince(state, projected, entityId, predicate.since)
         // Least-mana-value comparison remains unsupported by this narrow untap evaluator.
         is StatePredicate.HasLeastManaValueAmong -> false
         is StatePredicate.IsAttackingDefenderOf -> false

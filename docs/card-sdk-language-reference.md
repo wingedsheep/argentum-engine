@@ -14090,6 +14090,15 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
   generic cost (`{1}`, `{2}`) or repeated copies of one colored symbol (`{G}`, `{R}{R}`); a mixed mana cost or a
   non-mana cost ("pay 1 life", "sacrifice a creature") throws at authoring time instead of being approximated.
   Mystic Remora. Engine test: `CumulativeUpkeepTest`.
+- `Echo` — "Echo [cost] (At the beginning of your upkeep, if this came under your control since the beginning of
+  your last upkeep, sacrifice it unless you pay its echo cost.)" (CR 702.30). Display-only keyword; wire it with the
+  `card { echo(ManaCost.parse("{1}{R}")) }` builder helper, which composes `Triggers.you.beginningOf(UPKEEP)` with
+  the intervening if `All(SourceInZone(BATTLEFIELD), Not(SourceMatches(Any.controlledSinceYourLastUpkeep())))` →
+  `MayPay(PayMana(cost), then = Nothing, otherwise = SacrificeTarget(Self))`. It is owed on the first upkeep after
+  the permanent entered or came under your control, never again while you keep it, and anew after a blink or a
+  control change (see "Continuous control" under state predicates). An unaffordable cost skips straight to the
+  sacrifice. **Scope:** mana echo costs; Time Spiral's non-mana ones ("Echo—Discard a card") aren't covered.
+  Mogg War Marshal. Engine test: `EchoTest`.
 - `Riot` — "Riot (This creature enters with your choice of a +1/+1 counter or haste.)" (CR 702.136). Display-only
   keyword; wire it with the `card { riot() }` builder helper, which composes the Khans-Siege
   `EntersWithChoice(ChoiceType.MODE, [counter, haste])` + a mode-gated `EntersWithCounters(count = 1, selfOnly = true,
@@ -19850,16 +19859,21 @@ then stolen still matches; one an opponent cast that you then gained control of 
 only — the narrowed form has no last-known answer. It needs a recorded entry, so on an imported board
 (or a game saved before entries carried a timestamp) nothing matches it until something enters.
 
-### Continuous control during the current turn
+### Continuous control since the turn began, or since your last upkeep
 
-`StatePredicate.ControlledSinceTurnBegan` and the fluent `.controlledSinceTurnBegan()` filter
-match a battlefield object whose current controller has controlled it without interruption since
-the current turn began. Haste does not change this fact. Compose with
+`StatePredicate.ControlledContinuouslySince(since: ControlMark)` matches a battlefield object whose
+current controller has controlled it without interruption since `since`. `ControlMark.TURN_BEGAN`
+(fluent `.controlledSinceTurnBegan()`) is "since the current turn began"; `ControlMark.YOUR_LAST_UPKEEP`
+(fluent `.controlledSinceYourLastUpkeep()`) is "since the beginning of its controller's last upkeep" —
+during that player's own upkeep, the upkeep before this one — and its negation is echo's "came under
+your control since the beginning of your last upkeep". Haste does not change either fact. Compose with
 `.controlledByActivePlayer()` for Nettling Imp's target, or with a player-scoped filter for a
 delayed destruction sweep. It applies to any permanent, even one that only later becomes a creature.
 
 The engine captures projected control and object identity at turn start, independently of the untap
-step. Entry, blink, and any control interruption invalidate continuity; regaining control does not
+step, and per player at the beginning of each of their upkeeps (additional upkeep steps included),
+keeping the previous upkeep's snapshot for reads during the current one. A player who has had no
+upkeep yet — a fresh imported board — has controlled nothing since one. Entry, blink, and any control interruption invalidate continuity; regaining control does not
 restore it. Each effect instruction and the settle boundary record projected changes, including
 control effects that expire or lose their source. Phasing preserves the battlefield visit.
 `AttackedThisTurn` reads declarations by every player, so a subsequent control change does not erase

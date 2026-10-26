@@ -1688,7 +1688,7 @@ Families:
 - `StatePredicate.BlockedOrWasBlockedByLegendaryThisTurn` — This creature blocked, or was blocked by, a legendary creature at some point during the current turn.
 - `StatePredicate.BlockedThisCombat` — Was declared as a blocker at least once during the current combat (CR 509.1).
 - `StatePredicate.BlockedThisTurn` — Was declared as a blocker at least once **this turn** (CR 509.1).
-- `StatePredicate.ControlledSinceTurnBegan` — Controlled by its current controller without interruption since this turn began, regardless of haste.
+- `StatePredicate.ControlledContinuouslySince(since: ControlMark)` — Controlled by its current controller without interruption since since — as this same object, so entering, blinking or any control interruption breaks it and regaining control doesn't restore it; ha…
 - `StatePredicate.ControllerControls(filter: GameObjectFilter)` — The candidate's *controller* controls at least one permanent matching filter — "target creature whose controller controls an Island" (Seasinger).
 - `StatePredicate.ControllerDealtCombatDamageBySourceThisTurn` — Controlled by a player the effect's *source* dealt combat damage to this turn — the mirror of DealtCombatDamageToSourceControllerThisTurn.
 - `StatePredicate.CouldNotHaveAttackedThisTurn` — The creature **couldn't have been declared as an attacker** this turn — the "except for creatures that couldn't attack" clause of Season of the Witch, which spares a creature that had no choice in…

@@ -676,8 +676,10 @@ internal class AffectsFilterResolver(
         StatePredicate.HasDealtCombatDamageToPlayer -> container.has<HasDealtCombatDamageToPlayerComponent>()
         StatePredicate.StartedTurnUntapped ->
             com.wingedsheep.engine.core.ControlHistory.startedTurnUntapped(state, entityId)
-        StatePredicate.ControlledSinceTurnBegan ->
-            com.wingedsheep.engine.core.ControlHistory.matches(state, entityId, projectedController(state, entityId, projectedValues))
+        is StatePredicate.ControlledContinuouslySince ->
+            com.wingedsheep.engine.core.ControlHistory.controlledSince(
+                state, entityId, projectedController(state, entityId, projectedValues), predicate.since,
+            )
         StatePredicate.AttackedThisTurn -> state.turnOrder.any { playerId ->
             state.getEntity(playerId)?.get<PlayerAttackersThisTurnComponent>()
                 ?.attackerIds?.contains(entityId) == true

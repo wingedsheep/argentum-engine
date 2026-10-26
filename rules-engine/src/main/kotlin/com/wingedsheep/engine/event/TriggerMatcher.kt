@@ -2921,8 +2921,8 @@ class TriggerMatcher(
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.StartedTurnUntapped ->
             com.wingedsheep.engine.core.ControlHistory.startedTurnUntapped(state, entityId)
 
-        com.wingedsheep.sdk.scripting.predicates.StatePredicate.ControlledSinceTurnBegan ->
-            com.wingedsheep.engine.core.ControlHistory.matches(state, state.projectedState, entityId)
+        is com.wingedsheep.sdk.scripting.predicates.StatePredicate.ControlledContinuouslySince ->
+            com.wingedsheep.engine.core.ControlHistory.controlledSince(state, state.projectedState, entityId, predicate.since)
 
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsFaceDown -> {
             val entity = state.getEntity(entityId) ?: return false

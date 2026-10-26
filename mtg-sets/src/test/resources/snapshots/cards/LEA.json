@@ -8663,7 +8663,10 @@
                                     }
                                 ],
                                 "statePredicates": [
-                                    "ControlledSinceTurnBegan"
+                                    {
+                                        "type": "ControlledContinuouslySince",
+                                        "since": "TURN_BEGAN"
+                                    }
                                 ],
                                 "controllerPredicate": "ControlledByActivePlayer"
                             }
@@ -11264,7 +11267,10 @@
                                                 "type": "StateNot",
                                                 "predicate": "AttackedThisTurn"
                                             },
-                                            "ControlledSinceTurnBegan"
+                                            {
+                                                "type": "ControlledContinuouslySince",
+                                                "since": "TURN_BEGAN"
+                                            }
                                         ],
                                         "controllerPredicate": "ControlledByActivePlayer"
                                     }

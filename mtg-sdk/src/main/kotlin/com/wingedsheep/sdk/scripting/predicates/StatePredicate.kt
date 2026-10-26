@@ -741,7 +741,7 @@ sealed interface StatePredicate {
      * doesn't change the answer. A phased-out permanent is treated as though it doesn't exist
      * then, so it didn't start the turn untapped. Control changes don't matter.
      *
-     * Closest types: [ControlledSinceTurnBegan] reads the same turn-start identity snapshot but asks
+     * Closest types: [ControlledContinuouslySince] reads the same turn-start identity snapshot but asks
      * about control continuity, which a control change breaks and tapping doesn't; [IsTapped] is the
      * live state, which the untap step has already rewritten by the upkeep.
      */
@@ -751,11 +751,24 @@ sealed interface StatePredicate {
         override val description: String = "started the turn untapped"
     }
 
-    /** Controlled by its current controller without interruption since this turn began, regardless of haste. */
-    @SerialName("ControlledSinceTurnBegan")
+    /**
+     * Controlled by its current controller without interruption since [since] — as this same object,
+     * so entering, blinking or any control interruption breaks it and regaining control doesn't
+     * restore it; haste doesn't matter. [ControlMark.TURN_BEGAN] is Nettling Imp's "continuously
+     * controlled since the beginning of the turn"; [ControlMark.YOUR_LAST_UPKEEP] is the negation of
+     * echo's "came under your control since the beginning of your last upkeep" (CR 702.30a), where
+     * during its controller's upkeep "last" means the upkeep before this one.
+     *
+     * Closest types: [EnteredThisTurn] asks about entering, which a control change doesn't touch;
+     * [StartedTurnUntapped] reads the turn-start snapshot for tap state, not control.
+     */
+    @SerialName("ControlledContinuouslySince")
     @Serializable
-    data object ControlledSinceTurnBegan : History {
-        override val description: String = "controlled continuously since the beginning of the turn"
+    data class ControlledContinuouslySince(val since: ControlMark) : History {
+        override val description: String = when (since) {
+            ControlMark.TURN_BEGAN -> "controlled continuously since the beginning of the turn"
+            ControlMark.YOUR_LAST_UPKEEP -> "controlled continuously since the beginning of its controller's last upkeep"
+        }
     }
 
     /**
@@ -1733,4 +1746,17 @@ enum class BlockDirection {
 
     /** Either way round — the candidate blocked, or was blocked by, the referenced creature. */
     EITHER
+}
+
+/** The moment [StatePredicate.ControlledContinuouslySince] measures uninterrupted control from. */
+@Serializable
+enum class ControlMark {
+    /** The beginning of the current turn (Nettling Imp). */
+    TURN_BEGAN,
+
+    /**
+     * The beginning of its controller's last upkeep — during that player's upkeep, the one before
+     * it (echo, CR 702.30a).
+     */
+    YOUR_LAST_UPKEEP
 }

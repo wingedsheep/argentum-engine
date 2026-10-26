@@ -317,7 +317,7 @@ class AffectsFilterResolverStatePredicateTest : FunSpec({
         val state = com.wingedsheep.engine.core.ControlHistory.beginTurn(battlefield(
             listOf(permanent to container(playerA, creature(playerA)))
         ))
-        val filter = filterWith(StatePredicate.ControlledSinceTurnBegan)
+        val filter = filterWith(StatePredicate.ControlledContinuouslySince(com.wingedsheep.sdk.scripting.predicates.ControlMark.TURN_BEGAN))
         resolver.resolveAffectedEntities(state, permanent, filter) shouldContain permanent
         val intermediate = mapOf(permanent to MutableProjectedValues(controllerId = playerB))
         resolver.resolveAffectedEntities(state, permanent, filter, intermediate) shouldNotContain permanent

@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.predicates.BlockDirection
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.sdk.scripting.predicates.ControlMark
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.sdk.scripting.references.Player
@@ -629,7 +630,16 @@ interface ObjectFilterBuilder<out Self> {
     fun enteredThisTurnUnderYourControl() = withStatePredicate(StatePredicate.EnteredThisTurn(underYourControl = true))
 
     /** Current controller has controlled this battlefield object continuously since this turn began. */
-    fun controlledSinceTurnBegan() = withStatePredicate(StatePredicate.ControlledSinceTurnBegan)
+    fun controlledSinceTurnBegan() =
+        withStatePredicate(StatePredicate.ControlledContinuouslySince(ControlMark.TURN_BEGAN))
+
+    /**
+     * Current controller has controlled this battlefield object continuously since the beginning of
+     * their last upkeep — negate it for echo's "came under your control since the beginning of your
+     * last upkeep".
+     */
+    fun controlledSinceYourLastUpkeep() =
+        withStatePredicate(StatePredicate.ControlledContinuouslySince(ControlMark.YOUR_LAST_UPKEEP))
 
     /**
      * Must have been declared as an attacker at least once during the current turn.

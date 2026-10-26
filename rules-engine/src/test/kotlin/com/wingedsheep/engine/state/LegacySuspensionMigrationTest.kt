@@ -95,7 +95,7 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
             val action = json.decodeFromString<List<GameAction>>(fixtureText(fixture, "actions.json")).single()
             val result = actionProcessor.process(state, action).result
             result.error shouldBe null
-            result.state.copy(controlAtTurnStart = null, untappedAtTurnStart = null) shouldBe
+            result.state.copy(controlAtTurnStart = null, untappedAtTurnStart = null, controlAtUpkeepStart = emptyMap()) shouldBe
                 json.decodeFromString<GameState>(fixtureText(fixture, "after-1.json"))
             result.events shouldBe json.decodeFromString<List<GameEvent>>(fixtureText(fixture, "events-1.json"))
             result.state.pendingDecision shouldBe null
@@ -281,7 +281,7 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
      * independently verifies their capture, retention after departure and serialization.
      */
     private fun normalizeRouting(value: JsonElement, root: Boolean = false): JsonElement = when (value) {
-        is JsonObject -> JsonObject(((if (root) value - "controlAtTurnStart" - "untappedAtTurnStart" else value) - "targetObjectRefs" - "referencedObjects" - "manaUnits" -
+        is JsonObject -> JsonObject(((if (root) value - "controlAtTurnStart" - "untappedAtTurnStart" - "controlAtUpkeepStart" else value) - "targetObjectRefs" - "referencedObjects" - "manaUnits" -
             // The graveyard turn history (Crawling Sensation) postdates the capture, as does the
             // per-card stamp on a resolved spell; CardsPutIntoGraveyardThisTurnTrackerTest pins both.
             "com.wingedsheep.engine.state.components.player.CardsPutIntoGraveyardThisTurnComponent" -
@@ -437,7 +437,7 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
         private val POST_CAPTURE_FIELDS = setOf(
             "playerActionPermissions",
             "objectIdentities", "nextObjectGeneration", "zoneReturns", "pendingTriggers", "triggersBeingPlaced",
-            "controlAtTurnStart", "untappedAtTurnStart",
+            "controlAtTurnStart", "untappedAtTurnStart", "controlAtUpkeepStart",
             "playersDealtNoncombatDamageThisTurn", "playersDealtNoncombatDamageLastTurn", "playersWhoLostLifeLastTurn",
             "playersWithPermanentDealtExcessDamageThisTurn",
             "pendingReplacementRiders", "playersDealtCombatDamageSinceTheirLastTurn", "roundNumber", "monarch",

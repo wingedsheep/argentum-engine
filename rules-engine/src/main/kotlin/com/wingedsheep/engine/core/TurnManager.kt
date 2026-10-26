@@ -668,7 +668,8 @@ class TurnManager(
                     StepChangedEvent(Step.UPKEEP)
                 )
 
-                redirectedState = redirectedState.withPriority(activePlayer)
+                redirectedState = ControlHistory.beginUpkeep(redirectedState, redirectedState.sharedTurnTeam(activePlayer))
+                    .withPriority(activePlayer)
                 return ExecutionResult.success(redirectedState, events)
             }
         }
@@ -793,6 +794,7 @@ class TurnManager(
                 // beginning of their upkeep (before upkeep triggers resolve, so a re-applying
                 // upkeep trigger like Erhnam Djinn's re-grants afterward). Xenic Poltergeist's
                 // dynamic animate reverts here.
+                newState = ControlHistory.beginUpkeep(newState, newState.sharedTurnTeam(activePlayer))
                 newState = cleanupPhaseManager.expireUntilYourNextUpkeepEffects(newState, activePlayer)
                 newState = newState.withPriority(activePlayer)
             }

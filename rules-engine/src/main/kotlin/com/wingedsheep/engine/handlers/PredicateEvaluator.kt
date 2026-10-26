@@ -2210,8 +2210,8 @@ class PredicateEvaluator(
             StatePredicate.StartedTurnUntapped ->
                 com.wingedsheep.engine.core.ControlHistory.startedTurnUntapped(state, entityId)
 
-            StatePredicate.ControlledSinceTurnBegan ->
-                com.wingedsheep.engine.core.ControlHistory.matches(state, projected, entityId)
+            is StatePredicate.ControlledContinuouslySince ->
+                com.wingedsheep.engine.core.ControlHistory.controlledSince(state, projected, entityId, predicate.since)
 
             StatePredicate.AttackedThisTurn -> state.turnOrder.any { playerId ->
                 state.getEntity(playerId)?.get<PlayerAttackersThisTurnComponent>()

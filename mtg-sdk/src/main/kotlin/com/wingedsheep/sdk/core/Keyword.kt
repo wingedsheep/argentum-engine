@@ -830,6 +830,12 @@ enum class Keyword(val displayName: String) {
     CUMULATIVE_UPKEEP("Cumulative upkeep"),
 
     /**
+     * Echo [cost] (CR 702.30). Display-only; the `echo(cost)` DSL helper composes the upkeep trigger
+     * (if it came under your control since your last upkeep, sacrifice it unless you pay the cost).
+     */
+    ECHO("Echo"),
+
+    /**
      * Soulshift N (CR 702.46). Display-only; the `soulshift(n)` DSL helper composes the optional
      * dies trigger that returns a Spirit card with mana value N or less to hand.
      */

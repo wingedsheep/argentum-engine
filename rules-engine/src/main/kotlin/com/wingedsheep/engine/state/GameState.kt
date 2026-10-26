@@ -113,6 +113,14 @@ data class GameState(
      */
     val untappedAtTurnStart: Set<ObjectRef>? = null,
 
+    /**
+     * Per player, the permanents they have controlled without interruption since the beginning of
+     * their upkeeps — `StatePredicate.ControlledSinceYourLastUpkeep`, which echo's "came under your
+     * control since the beginning of your last upkeep" (CR 702.30a) negates. Maintained by
+     * [com.wingedsheep.engine.core.ControlHistory]; a player with no upkeep yet has no entry.
+     */
+    val controlAtUpkeepStart: Map<EntityId, UpkeepControl> = emptyMap(),
+
     /** Current phase */
     val phase: Phase = Phase.BEGINNING,
 
