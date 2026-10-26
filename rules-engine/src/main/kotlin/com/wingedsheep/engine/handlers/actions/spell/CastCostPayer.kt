@@ -484,20 +484,22 @@ internal class CastCostPayer(
                 // "your graveyard" — the caster's own, not an opponent's (CastFromGraveyardOnly).
                 isFromGraveyard = action.cardId in state.getZone(ZoneKey(action.playerId, Zone.GRAVEYARD)),
                 isDisturbCast = action.useAlternativeCost && action.altAllows(AlternativeCostType.DISTURB),
-            ).copy(colorlessAsAnyColor = isCastWithColorlessAsAnyColor(state, action))
+            ).copy(spendAsAnyColor = castSpendAsAnyColor(state, action))
         } else null
 
     /**
-     * True if colorless mana may be spent as though it were mana of any color on this spell
-     * (CR 609.4b) — the cast permission that authorises it carries the rider ("you may spend
-     * colorless mana as though it were mana of any color to cast that spell", Abstruse
-     * Appropriation). Per-card like [isCastWithAnyManaType]'s permission half, so the card must
-     * be in a zone a may-play permission grants casting from.
+     * Which mana may be spent as though it were mana of any color on this spell (CR 609.4b), when
+     * the cast permission that authorises it carries the narrow rider — colorless mana ("you may
+     * spend colorless mana as though it were mana of any color to cast that spell", Abstruse
+     * Appropriation) or mana from snow sources (Draugr Necromancer). Per-card like
+     * [isCastWithAnyManaType]'s permission half, so the card must be in a zone a may-play
+     * permission grants casting from.
      */
-    fun isCastWithColorlessAsAnyColor(state: GameState, action: CastSpell): Boolean {
+    fun castSpendAsAnyColor(state: GameState, action: CastSpell): com.wingedsheep.sdk.scripting.effects.ManaSpentAsAnyColor? {
         val inGrantableZone = isCastFrom(state, action.cardId, Zone.EXILE) || isCastFrom(state, action.cardId, Zone.GRAVEYARD)
-        return inGrantableZone && state.activeMayPlayFor(action.cardId, action.playerId, conditionEvaluator, cardRegistry)
-            .any { it.colorlessAsAnyColor }
+        if (!inGrantableZone) return null
+        return state.activeMayPlayFor(action.cardId, action.playerId, conditionEvaluator, cardRegistry)
+            .firstNotNullOfOrNull { it.spendAsAnyColor }
     }
 
     /**

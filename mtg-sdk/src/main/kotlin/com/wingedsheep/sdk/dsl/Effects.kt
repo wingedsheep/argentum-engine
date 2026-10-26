@@ -1654,8 +1654,9 @@ object Effects {
      * "you may cast it from your graveyard as an Adventure" (Mosswood Dreadknight), which
      * authorizes only the card's alternative face at that index.
      *
-     * Set [colorlessAsAnyColor] for "you may spend colorless mana as though it were mana of any
-     * color to cast that spell" (Abstruse Appropriation) — narrower than [withAnyManaType].
+     * Set [spendAsAnyColor] for "you may spend colorless mana as though it were mana of any
+     * color to cast that spell" (Abstruse Appropriation, [com.wingedsheep.sdk.scripting.effects.ManaSpentAsAnyColor.COLORLESS])
+     * — narrower than [withAnyManaColor].
      * Set [withAnyManaColor] for "you may spend mana as though it were mana of any color to cast
      * those spells" (Stolen Strategy) — every colored pip relaxed, but `{C}` still needs colorless.
      */
@@ -1674,14 +1675,14 @@ object Effects {
         castColorRestriction: Color? = null,
         castColorCount: Int? = null,
         maxPlays: Int? = null,
-        colorlessAsAnyColor: Boolean = false,
+        spendAsAnyColor: com.wingedsheep.sdk.scripting.effects.ManaSpentAsAnyColor? = null,
         withAnyManaColor: Boolean = false
     ): Effect = GrantMayPlayFromExileEffect(
         from = from,
         expiry = expiry,
         withAnyManaType = withAnyManaType,
         withAnyManaColor = withAnyManaColor,
-        colorlessAsAnyColor = colorlessAsAnyColor,
+        spendAsAnyColor = spendAsAnyColor,
         condition = condition,
         landEntersTapped = landEntersTapped,
         onPlayRider = onPlayRider,
@@ -4932,14 +4933,14 @@ object Effects {
         recipient: EffectTarget = EffectTarget.Controller,
         asThoughFlash: Boolean = false,
         maxPlays: Int? = null,
-        colorlessAsAnyColor: Boolean = false,
+        spendAsAnyColor: com.wingedsheep.sdk.scripting.effects.ManaSpentAsAnyColor? = null,
         withAnyManaColor: Boolean = false
     ): Effect = GrantMayPlayFromExileEffect(
         from = from.key,
         expiry = expiry,
         withAnyManaType = withAnyManaType,
         withAnyManaColor = withAnyManaColor,
-        colorlessAsAnyColor = colorlessAsAnyColor,
+        spendAsAnyColor = spendAsAnyColor,
         condition = condition,
         landEntersTapped = landEntersTapped,
         onPlayRider = onPlayRider,

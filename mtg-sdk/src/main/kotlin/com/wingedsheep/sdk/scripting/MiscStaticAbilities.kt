@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.ManaSpentAsAnyColor
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -973,6 +974,10 @@ data object MayPlayLandsFromGraveyard : StaticAbility {
  * @property withAnyManaColor The narrower CR 609.4b rider — "you may spend mana as though it were
  *   mana of any color to cast it" (Evelyn, the Covetous): only the colored pips are relaxed, a `{C}`
  *   pip still needs colorless mana. The same pair of flags `GrantMayPlayFromExileEffect` carries.
+ * @property spendAsAnyColor The rider when only some mana may stand in for a color —
+ *   [ManaSpentAsAnyColor.SNOW] for "you may spend mana from snow sources as though it were mana of
+ *   any color to cast those spells" (Draugr Necromancer). The cost isn't rewritten; each colored
+ *   pip also accepts that mana. Same field as `GrantMayPlayFromExileEffect.spendAsAnyColor`.
  * @property oncePerTurn "Once each turn, you may play …" (Evelyn, the Covetous): the permission
  *   authorizes one play per turn — a land or a spell, the player's choice. The allowance belongs to
  *   the *granting permanent*, exactly as [GrantMayCastFromLinkedExile.oncePerTurn]'s does: two
@@ -986,7 +991,8 @@ data class MayPlayCardsFromExile(
     val condition: Condition? = null,
     val withAnyManaType: Boolean = false,
     val withAnyManaColor: Boolean = false,
-    val oncePerTurn: Boolean = false
+    val oncePerTurn: Boolean = false,
+    val spendAsAnyColor: ManaSpentAsAnyColor? = null,
 ) : StaticAbility {
     override val description: String = buildString {
         if (oncePerTurn) append("Once each turn, you may play ${filter.description} from exile")
@@ -994,6 +1000,7 @@ data class MayPlayCardsFromExile(
         if (condition != null) append(" ${condition.description}")
         if (withAnyManaType) append(", and mana of any type can be spent to cast those spells")
         else if (withAnyManaColor) append(", and you may spend mana as though it were mana of any color to cast it")
+        else spendAsAnyColor?.let { append(", and you may spend ${it.description} as though it were mana of any color to cast those spells") }
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {

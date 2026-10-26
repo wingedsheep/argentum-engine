@@ -79,6 +79,7 @@ internal object StaticMayPlayGrants {
                 condition = ability.condition,
                 withAnyManaType = ability.withAnyManaType,
                 withAnyManaColor = ability.withAnyManaColor,
+                spendAsAnyColor = ability.spendAsAnyColor,
                 oncePerTurn = ability.oncePerTurn,
                 // Derived permissions are never stored, so end-of-turn cleanup never sees them;
                 // `permanent` keeps any code that inspects the flag from treating them as expiring.

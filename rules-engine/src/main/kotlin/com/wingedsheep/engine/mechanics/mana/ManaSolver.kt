@@ -674,10 +674,23 @@ class ManaSolver private constructor(
         }
 
         val spendingColors = ManaSpendingRules.colors(state, playerId)
-        // "Spend colorless mana as though it were mana of any color" for this spell (CR 609.4b):
-        // every colored pip may fall back to a colorless source once its own colors run out.
-        val colorlessAsAnyColor = spellContext?.colorlessAsAnyColor == true
-        val substitutes = spendingColors.isNotEmpty() || colorlessAsAnyColor
+        // "Spend colorless mana / mana from snow sources as though it were mana of any color" for
+        // this spell (CR 609.4b): every colored pip may fall back to a colorless (or any snow)
+        // source once its own colors run out.
+        val colorlessAsAnyColor = spellContext?.spendAsAnyColor == com.wingedsheep.sdk.scripting.effects.ManaSpentAsAnyColor.COLORLESS
+        val snowAsAnyColor = spellContext?.spendAsAnyColor == com.wingedsheep.sdk.scripting.effects.ManaSpentAsAnyColor.SNOW
+        val substitutes = spendingColors.isNotEmpty() || colorlessAsAnyColor || snowAsAnyColor
+        // The mana a snow source taps for when it stands in for a colored pip: its first color,
+        // or colorless. Null when the rider is off or the source isn't snow.
+        fun snowStandIn(source: ManaSource): PlannedSnowMana? {
+            if (!snowAsAnyColor || !source.isSnow) return null
+            val color = source.availableColorsFor(spellContext).firstOrNull()
+            return when {
+                color != null -> PlannedSnowMana(color)
+                source.producesColorless -> PlannedSnowMana(null)
+                else -> null
+            }
+        }
         fun payableColors(colors: List<Color>): List<Color> = colors.flatMap { color ->
             listOf(color) + spendingColors[color].orEmpty().filterNotNull().filter { it != color }
         }.distinct()
@@ -715,6 +728,17 @@ class ManaSolver private constructor(
                     return true
                 }
             }
+            if (required.isNotEmpty()) {
+                val snowSource = remainingSources.mapNotNull { source -> snowStandIn(source)?.let { source to it } }
+                    .minByOrNull { (source, _) -> calculateTapPriority(source, handRequirements, availableSourcesByColor) }
+                if (snowSource != null) {
+                    val (source, mana) = snowSource
+                    manaProduced[source.entityId] = if (mana.color == null) ManaProduction(colorless = source.amountFor(null))
+                        else ManaProduction(color = mana.color, amount = source.amountFor(mana.color))
+                    useSource(source, mana.color)
+                    return true
+                }
+            }
             return colors.any { payColoredPipFromAuraBonus(it) }
         }
         // Preserve scarce, un-substitutable colors for their strict pips.
@@ -745,7 +769,7 @@ class ManaSolver private constructor(
         val matchingSources = if (!substitutes) emptyList() else availableSources.filter { source ->
             val relevant = source.availableColorsFor(spellContext).any { it in strictColors } ||
                 (needsColorless && source.producesColorless)
-            relevant && source.bonusManaPerTap == 0 && source.bonusManaColorlessPerTap == 0 &&
+            (relevant || (strictColors.isNotEmpty() && snowStandIn(source) != null)) && source.bonusManaPerTap == 0 && source.bonusManaColorlessPerTap == 0 &&
                 source.compositeBonusMana.isEmpty() &&
                 source.colorActivationManaCost.values.all { it == 0 } &&
                 source.producesColors.all { source.amountFor(it) == 1 } &&
@@ -766,9 +790,11 @@ class ManaSolver private constructor(
                         if (source.producesColorless) listOf(PlannedPip(source, null)) else emptyList()
                     } else source.availableColorsFor(spellContext).filter { it in allowed }
                         .map { PlannedPip(source, it) } +
-                        if (colorlessPays(required) && source.producesColorless)
-                            listOf(PlannedPip(source, null)) else emptyList()
-                }.sortedWith(compareBy<PlannedPip>(
+                        (if (colorlessPays(required) && source.producesColorless)
+                            listOf(PlannedPip(source, null)) else emptyList()) +
+                        (snowStandIn(source)?.takeIf { required.isNotEmpty() && it.color !in allowed }
+                            ?.let { listOf(PlannedPip(source, it.color)) } ?: emptyList())
+                }.distinct().sortedWith(compareBy<PlannedPip>(
                     // Native color first, then a substitute color, then colorless standing in.
                     { when { it.color in required -> 0; it.color != null || required.isEmpty() -> 1; else -> 2 } },
                     { calculateTapPriority(it.source, handRequirements, availableSourcesByColor) +
@@ -3600,3 +3626,6 @@ class ManaSolver private constructor(
         return result
     }
 }
+
+/** The mana a snow source taps for when it pays a colored pip "as though it were mana of any color". */
+private data class PlannedSnowMana(val color: Color?)

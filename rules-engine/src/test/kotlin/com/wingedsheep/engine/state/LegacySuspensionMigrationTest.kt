@@ -312,7 +312,7 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
 
     /**
      * Added copiable rules data postdates the capture; old identities must default those lists empty.
-     * Likewise a may-play permission's later `colorlessAsAnyColor` / `withAnyManaColor` / `castColorCount` riders and the card's later
+     * Likewise a may-play permission's later `spendAsAnyColor` / `withAnyManaColor` / `castColorCount` riders and the card's later
      * `hasCycling` flag must default false.
      */
     private fun withoutPostCaptureCardDefaults(value: JsonElement): JsonElement = when (value) {
@@ -344,18 +344,18 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
                 // The direct lands-played count postdates the capture.
                 value.getValue("playedThisTurn") shouldBe JsonPrimitive(0)
                 value - "playedThisTurn"
-            } else if ("colorlessAsAnyColor" in value && "playsRemaining" in value) {
+            } else if ("spendAsAnyColor" in value && "playsRemaining" in value) {
                 // MayPlayPermission's any-color, colorless-as-any-color, face-down, once-per-turn,
                 // color-count, play-cap and step-keyed expiry riders postdate the capture.
                 value.getValue("playsRemaining") shouldBe JsonNull
                 value.getValue("expiresAtStep") shouldBe JsonNull
                 value.getValue("withAnyManaColor") shouldBe JsonPrimitive(false)
-                value.getValue("colorlessAsAnyColor") shouldBe JsonPrimitive(false)
+                value.getValue("spendAsAnyColor") shouldBe JsonNull
                 value.getValue("castFaceDown") shouldBe JsonPrimitive(false)
                 value.getValue("turnsFaceUpInstead") shouldBe JsonPrimitive(false)
                 value.getValue("oncePerTurn") shouldBe JsonPrimitive(false)
                 value.getValue("castColorCount") shouldBe JsonNull
-                value - "withAnyManaColor" - "colorlessAsAnyColor" - "castFaceDown" - "turnsFaceUpInstead" - "oncePerTurn" -
+                value - "withAnyManaColor" - "spendAsAnyColor" - "castFaceDown" - "turnsFaceUpInstead" - "oncePerTurn" -
                     "castColorCount" - "playsRemaining" - "expiresAtStep"
             } else if (value["type"] == JsonPrimitive(
                     "com.wingedsheep.engine.state.components.stack.SpellOnStackComponent"

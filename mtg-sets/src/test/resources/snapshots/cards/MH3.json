@@ -28,7 +28,7 @@
                     "type": "GrantMayPlayFromExile",
                     "from": "gathered0",
                     "expiry": "Permanent",
-                    "colorlessAsAnyColor": true,
+                    "spendAsAnyColor": "COLORLESS",
                     "nonLandOnly": true
                 }
             ]

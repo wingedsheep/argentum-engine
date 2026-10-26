@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.ManaSpentAsAnyColor
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 
@@ -36,7 +37,7 @@ val AbstruseAppropriation = card("Abstruse Appropriation") {
                 expiry = MayPlayExpiry.Permanent,
                 // "cast", not "play" — a land card exiled this way can't be played.
                 nonLandOnly = true,
-                colorlessAsAnyColor = true
+                spendAsAnyColor = ManaSpentAsAnyColor.COLORLESS
             ))
         }
     }

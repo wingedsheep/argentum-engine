@@ -1640,6 +1640,80 @@
     ]
 }
 
+// Draugr Necromancer
+{
+    "name": "Draugr Necromancer",
+    "manaCost": "{3}{B}",
+    "typeLine": "Snow Creature — Zombie Cleric",
+    "oracleText": "If a nontoken creature an opponent controls would die, exile that card with an ice counter on it instead.\nYou may cast spells from among cards in exile your opponents own with ice counters on them, and you may spend mana from snow sources as though it were mana of any color to cast those spells.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MayPlayCardsFromExile",
+                "filter": {
+                    "cardPredicates": [
+                        "IsNonland"
+                    ],
+                    "statePredicates": [
+                        {
+                            "type": "HasCounter",
+                            "counterType": "ICE"
+                        }
+                    ],
+                    "controllerPredicate": "OwnedByOpponent"
+                },
+                "spendAsAnyColor": "SNOW"
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChangeWithEffect",
+                "newDestination": "Exile",
+                "additionalEffect": {
+                    "type": "AddCounters",
+                    "counterType": "ICE",
+                    "count": 1,
+                    "target": "TriggeringEntity"
+                },
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:opponent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "rarity": "RARE",
+        "artist": "David Rapoza",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/76d8e0ff-e720-41ca-af69-35585a2d7ae2.jpg?1783928251",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "If an opponent controls a nontoken creature that you own and that creature would die, it will be exiled with an ice counter on it. However, you won't be able to cast that card from exile."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Similarly, if a nontoken land an opponent controls that's become a creature dies, that card will be exiled with an ice counter, but Draugr Necromancer doesn't allow you to play lands from exile."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Casting a spell from exile this way follows the normal rules for casting that spell. You must pay its costs, and you must follow all applicable timing rules."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Draugr Necromancer allows you to cast spells from among any cards in exile your opponents own with ice counters on them, including cards that were exiled by previous Draugr Necromancers."
+            }
+        ]
+    }
+}
+
 // Dread Rider
 {
     "name": "Dread Rider",

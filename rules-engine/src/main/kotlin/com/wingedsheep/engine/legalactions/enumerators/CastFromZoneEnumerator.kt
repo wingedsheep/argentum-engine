@@ -711,7 +711,7 @@ class CastFromZoneEnumerator(
                         isFromExile = sourceZoneLabel == "EXILE",
                         isFromHand = false,
                         isFromGraveyard = cardId in state.getGraveyard(playerId),
-                    ).copy(colorlessAsAnyColor = permissions.any { it.colorlessAsAnyColor })
+                    ).copy(spendAsAnyColor = permissions.firstNotNullOfOrNull { it.spendAsAnyColor })
                     // Convoke (CR 702.51) — printed, or granted by a zone-scoped grant keyed to the
                     // zone this card is cast from. A free cast has nothing for convoke to pay.
                     val convokeCreatures = if (!playForFree && cardDef != null &&
@@ -3037,8 +3037,8 @@ class CastFromZoneEnumerator(
                         isFromHand = false,
                         isFromGraveyard = cardId in state.getGraveyard(playerId),
                     ).copy(
-                        colorlessAsAnyColor = state.activeMayPlayFor(cardId, playerId, context.conditionEvaluator, context.cardRegistry)
-                            .any { it.colorlessAsAnyColor }
+                        spendAsAnyColor = state.activeMayPlayFor(cardId, playerId, context.conditionEvaluator, context.cardRegistry)
+                            .firstNotNullOfOrNull { it.spendAsAnyColor }
                     )
                     val canAffordKickedMana = context.manaSolver.canPay(
                         state, playerId, kickedCost,

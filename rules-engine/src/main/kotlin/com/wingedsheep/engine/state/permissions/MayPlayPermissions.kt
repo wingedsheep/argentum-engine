@@ -102,7 +102,7 @@ fun GameState.oncePerTurnGranterToSpend(
 ): EntityId? {
     val active = activeMayPlayFor(cardId, playerId, conditionEvaluator, cardRegistry)
     val limited = active.firstOrNull { it.oncePerTurn } ?: return null
-    fun relaxesMana(p: MayPlayPermission) = p.withAnyManaType || p.withAnyManaColor || p.colorlessAsAnyColor
+    fun relaxesMana(p: MayPlayPermission) = p.withAnyManaType || p.withAnyManaColor || p.spendAsAnyColor != null
     val shielded = active.any { !it.oncePerTurn && (!relaxesMana(limited) || relaxesMana(it)) }
     return if (shielded) null else limited.sourceId
 }

@@ -24,7 +24,7 @@ import io.kotest.matchers.shouldNotBe
 
 /**
  * "You may spend colorless mana as though it were mana of any color to cast that spell" —
- * [SpellPaymentContext.colorlessAsAnyColor], carried by a may-play grant's `colorlessAsAnyColor`
+ * [SpellPaymentContext.spendAsAnyColor] = COLORLESS, carried by a may-play grant's `spendAsAnyColor`
  * rider (Abstruse Appropriation).
  *
  * CR 609.4b: spending mana "as though it were mana of any color" affects only how the cost may be
@@ -33,7 +33,7 @@ import io.kotest.matchers.shouldNotBe
  */
 class ColorlessAsAnyColorTest : ScenarioTestBase() {
     init {
-        val colorlessAsAny = SpellPaymentContext(colorlessAsAnyColor = true)
+        val colorlessAsAny = SpellPaymentContext(spendAsAnyColor = com.wingedsheep.sdk.scripting.effects.ManaSpentAsAnyColor.COLORLESS)
         fun cost(value: String) = ManaCost.parse(value)
 
         // --- The floating pool --------------------------------------------------------------
@@ -144,7 +144,7 @@ class ColorlessAsAnyColorTest : ScenarioTestBase() {
                         from = taken,
                         expiry = MayPlayExpiry.Permanent,
                         nonLandOnly = true,
-                        colorlessAsAnyColor = colorlessAsAnyColor
+                        spendAsAnyColor = com.wingedsheep.sdk.scripting.effects.ManaSpentAsAnyColor.COLORLESS.takeIf { colorlessAsAnyColor }
                     ))
                 }
             }

@@ -1765,13 +1765,13 @@ data class GrantMayPlayFromExileEffect(
      */
     val withAnyManaColor: Boolean = false,
     /**
-     * When true, colorless mana may be spent **as though it were mana of any color** to cast the
-     * granted cards (CR 609.4b) — "and you may spend colorless mana as though it were mana of any
-     * color to cast that spell" (Abstruse Appropriation). Narrower than [withAnyManaType]: the cost
-     * is not rewritten, every colored pip simply also accepts colorless mana, and `{C}` still needs
-     * colorless.
+     * Which mana may be spent **as though it were mana of any color** to cast the granted cards
+     * (CR 609.4b), when only some may — [ManaSpentAsAnyColor.COLORLESS] for "and you may spend
+     * colorless mana as though it were mana of any color to cast that spell" (Abstruse
+     * Appropriation). Narrower than [withAnyManaColor]: the cost is not rewritten, every colored
+     * pip simply also accepts that mana, and `{C}` still needs colorless.
      */
-    val colorlessAsAnyColor: Boolean = false,
+    val spendAsAnyColor: ManaSpentAsAnyColor? = null,
     /**
      * Optional gate evaluated each time the play permission is checked. Used for cards
      * that grant a conditional may-play, e.g. Possibility Technician's "you may play it
@@ -1965,7 +1965,7 @@ data class GrantMayPlayFromExileEffect(
         if (asThoughFlash) append(", as though they had flash")
         if (withAnyManaType) append(", and mana of any type can be spent to cast them")
         if (withAnyManaColor) append(", and you may spend mana as though it were mana of any color to cast them")
-        if (colorlessAsAnyColor) append(", and you may spend colorless mana as though it were mana of any color to cast them")
+        spendAsAnyColor?.let { append(", and you may spend ${it.description} as though it were mana of any color to cast them") }
         if (landEntersTapped) append(". Each land played this way enters tapped")
         insteadOfGraveyard?.let { append(it.riderText) }
     }

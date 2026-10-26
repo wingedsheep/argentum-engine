@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
+import com.wingedsheep.sdk.scripting.effects.ManaSpentAsAnyColor
 
 /** An entire pool payment: fixed pips and X compete for the same exact units. */
 internal data class FloatingManaAllocation(
@@ -107,7 +108,11 @@ private fun ManaPool.matchFloating(
     }
     val assignments = mutableListOf<Triple<Int, Int, AllocationNetwork.Edge>>()
     fun acceptsColor(unit: PoolUnits, color: Color) = unit.color == color ||
-        unit.color in spendingColors[color].orEmpty() || (unit.color == null && context?.colorlessAsAnyColor == true)
+        unit.color in spendingColors[color].orEmpty() || when (context?.spendAsAnyColor) {
+            ManaSpentAsAnyColor.COLORLESS -> unit.color == null
+            ManaSpentAsAnyColor.SNOW -> unit.snow
+            null -> false
+        }
     fun accepts(unit: PoolUnits, pip: PoolPip): Boolean {
         if (pip.isX) return xColors.isEmpty() || unit.color in xColors
         return when (val symbol = pip.symbol) {

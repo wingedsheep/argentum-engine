@@ -70,9 +70,9 @@ class FloatingManaAllocationTest : FunSpec({
     }
     test("colorless as any color matches colored and snow while X remains color restricted") {
         val pool = ManaPool(restrictedMana = listOf(entry(null, "a"), entry(null, "b", true)))
-        pool.allocateFloating(ManaCost.parse("{U}{S}"), context.copy(colorlessAsAnyColor = true))!!
+        pool.allocateFloating(ManaCost.parse("{U}{S}"), context.copy(spendAsAnyColor = com.wingedsheep.sdk.scripting.effects.ManaSpentAsAnyColor.COLORLESS))!!
             .pool.dischargedObligations shouldBe setOf("a", "b")
-        pool.allocateFloating(ManaCost.parse("{X}"), context.copy(colorlessAsAnyColor = true),
+        pool.allocateFloating(ManaCost.parse("{X}"), context.copy(spendAsAnyColor = com.wingedsheep.sdk.scripting.effects.ManaSpentAsAnyColor.COLORLESS),
             1, setOf(Color.BLUE)) shouldBe null
     }
     test("previously discharged identities do not displace outstanding contributions") {
