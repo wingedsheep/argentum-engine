@@ -7166,8 +7166,8 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   `gather(CardSource.FromZone(Zone.COMMAND, Player.You, GameObjectFilter.Any.commander().ownedByYou()))` →
   `chooseUpTo(1, …)` (the "may"; partners offer both) → `moveTracked(…, ToZone(BATTLEFIELD))`, and "return it
   to the command zone" is `Effects.Move(target, Zone.COMMAND)` — a real zone change into the **owner's**
-  command zone (whoever resolves it), never intercepted by the commander replacement (CR 903.9 only
-  diverts moves to graveyard/exile/hand/library). Each player's command zone is keyed by owner, so the gather
+  command zone (whoever resolves it), never intercepted by the commander rules (CR 903.9b replaces only
+  moves to hand/library; 903.9a acts after a move to graveyard/exile). Each player's command zone is keyed by owner, so the gather
   never sees an opponent's commander, and `.commander()` keeps emblems, Vanguard avatars and dungeons out;
   a game without commanders gathers nothing. Leaving the command zone this way isn't a cast, so commander
   tax doesn't grow. For "at the beginning of the next end step", wrap the haste grant and the
