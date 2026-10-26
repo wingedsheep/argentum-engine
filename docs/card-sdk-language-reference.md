@@ -7677,6 +7677,12 @@ work for abilities-on-stack (which carry no `CardComponent`).
   rules actions, other executors) match nobody. Never matches in group-static projection.
 - `IsWarpExiled` (filter builder `warpExiled()`) — card in exile via warp's
   end-of-turn delayed trigger (CR 702.185b).
+- `IsForetold` (filter builder `foretold()`) — a **foretold card** (CR 702.143): a card its owner
+  exiled face down with the foretell special action, still in exile. Reads `ForetoldComponent`, which
+  the engine strips when the card leaves exile; a card exiled face down by any other effect never
+  matches. "Each foretold card you own in exile" is
+  `DynamicAmount.Count(Player.You, Zone.EXILE, GameObjectFilter.Any.foretold())` (Niko Defies
+  Destiny, Alrund, God of the Cosmos).
 - `WasCastForWarp` (filter builder `castForWarp()`) — battlefield permanent that
   was cast for its warp cost (CR 702.185). Pair with
   `Conditions.TargetMatchesFilter(GameObjectFilter.Creature.castForWarp(), …)` to
@@ -16762,6 +16768,17 @@ restriction matches the spell context.
 - `ManaRestriction.UnlockDoorOnly` — only the unlock-a-door special action (CR 709.5e).
   Satisfied by `SpellPaymentContext.isUnlockDoorAction`; the unlock-room handler/enumerator pass
   that context. Creeping Peeper (inside `AnyOf`).
+- `ManaRestriction.ForetellOnly` — only the foretell special action's {2} (CR 702.143a): "spend this
+  mana only to foretell a card from your hand". Satisfied by `SpellPaymentContext.isForetellAction`,
+  which the foretell handler and enumerator pass (`SpecialActionManaPayment`'s `spendContext`).
+  Casting the foretold card later is a spell cast, not this. Karfell Harbinger:
+  `AnyOf(ForetellOnly, InstantOrSorceryOnly)`.
+- `ManaRestriction.SpellsWithKeywordOnly(keyword)` — only spells whose card has `keyword` in its
+  definition (base keywords, which include those derived from parameterized keyword abilities like
+  foretell); a keyword granted to the spell by another effect isn't read yet.
+  Satisfied by `SpellPaymentContext.keywords`, filled by `spellPaymentContextFor`. Niko Defies
+  Destiny's "foretell cards or cast spells that have foretell":
+  `AnyOf(ForetellOnly, SpellsWithKeywordOnly(Keyword.FORETELL))`.
 - `ManaRestriction.FaceDownSpellsOnly` — only spells **cast face down** for a morph (CR 702.37a)
   or disguise (CR 702.168a) cost. Satisfied by `SpellPaymentContext.isFaceDownCast`, which every
   face-down cast path sets via `SpellPaymentContext.faceDownCast()` — the CR 708.2 shape (nameless

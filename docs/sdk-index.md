@@ -1389,11 +1389,13 @@ Families:
 - `ManaRestriction.DisturbCostOnly` — "Spend this mana only to pay a disturb cost." Satisfied only by casting a spell for its disturb alternative cost (CR 702.146a — cast transformed from the graveyard).
 - `ManaRestriction.EquipAbilityActivationOnly` — "Spend this mana only to activate equip abilities." Satisfied only by paying the cost of an **equip** ability (CR 702.6a — "Cost: Attach this permanent to target creature you control.
 - `ManaRestriction.FaceDownSpellsOnly` — "Spend this mana only to cast face-down spells." Satisfied by casting a card face down for its morph (CR 702.37a) or disguise (CR 702.168a) cost — a spell with no name and no characteristics but "2…
+- `ManaRestriction.ForetellOnly` — "Spend this mana only to foretell a card from your hand." Satisfied by the foretell special action's fixed {2} payment (CR 702.143a), not by casting the foretold card later for its foretell cost —…
 - `ManaRestriction.InstantOrSorceryOnly` — "Spend this mana only to cast instant or sorcery spells."
 - `ManaRestriction.KickedSpellsOnly` — "Spend this mana only to cast kicked spells."
 - `ManaRestriction.LegendarySpellsOnly` — "Spend this mana only to cast legendary spells." Matches spells with the Legendary supertype (Great Hall of the Citadel, Delighted Halfling).
 - `ManaRestriction.SpellsOnly` — "Spend this mana only to cast spells." Any spell qualifies; ability activations and special actions (turning a permanent face up, unlocking a door) don't.
 - `ManaRestriction.SpellsWithExactColorCount(count: Int)` — "Spend this mana only to cast spells with exactly count colors." Matches a spell whose colors (CR 105.2) number exactly count, read off the spell being cast — a hybrid pip counts both its colors.
+- `ManaRestriction.SpellsWithKeywordOnly(keyword: Keyword)` — "Spend this mana only to cast spells that have keyword" — a spell whose card has the keyword in its definition (printed, or derived from a parameterized keyword ability such as foretell or flashback).
 - `ManaRestriction.SpellsWithManaValueAtLeast(minManaValue: Int, orXInCost: Boolean, creatureOnly: Boolean)` — "Spend this mana only to cast spells with mana value minManaValue or greater or spells with {X} in their mana costs." Parameterized over the threshold and the two optional clauses printed alongside…
 - `ManaRestriction.SubtypeSpellsOnly(subtypes: Set<String>)` — "Spend this mana only to cast a spell that has any of the given subtypes." Generalizes SubtypeSpellsOrAbilitiesOnly to a *set* of subtypes joined by OR, for cards whose mana is usable on more than…
 - `ManaRestriction.SubtypeSpellsOrAbilitiesOnly(subtype: String, creatureOnly: Boolean)` — "Spend this mana only to cast a spell of the specified subtype (or, when creatureOnly is false, also to activate an ability of a source of that subtype)." The subtype is baked at the moment the man…
@@ -1738,6 +1740,7 @@ Families:
 - `StatePredicate.IsEquipped` — Has at least one Equipment attached
 - `StatePredicate.IsFaceDown` — Is face-down (morph, manifest)
 - `StatePredicate.IsFaceUp` — Is face-up (not face-down)
+- `StatePredicate.IsForetold` — A **foretold card** (CR 702.143): a card in exile that its owner exiled face down with the foretell special action.
 - `StatePredicate.IsGrantingPermanent` — The candidate permanent is the *granting permanent* of the ability being resolved — the Equipment/Aura/permanent whose static ability granted the currently-resolving activated or triggered ability…
 - `StatePredicate.IsModified` — Has an Equipment attached, an Aura attached, or any counter (MTG "modified" definition)
 - `StatePredicate.IsMonstrous` — Permanent that currently has the monstrous designation (CR 701.37b, Theros).

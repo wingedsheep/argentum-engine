@@ -94,6 +94,18 @@ data class SpellPaymentContext(
      */
     val isUnlockDoorAction: Boolean = false,
     /**
+     * True when the payment is for the foretell special action's {2} (CR 702.143a). Lets
+     * [ManaRestriction.ForetellOnly] recognize "spend this mana only to foretell a card from your
+     * hand" (Karfell Harbinger, Niko Defies Destiny).
+     */
+    val isForetellAction: Boolean = false,
+    /**
+     * Keywords of the card being cast (its definition's keywords, including those derived from
+     * parameterized keyword abilities such as foretell). Empty for non-spell contexts and for a
+     * face-down cast (CR 708.2). Read by [ManaRestriction.SpellsWithKeywordOnly].
+     */
+    val keywords: Set<com.wingedsheep.sdk.core.Keyword> = emptySet(),
+    /**
      * True when the spell being cast is being cast **face down** for its morph (CR 702.37a) or
      * disguise (CR 702.168a) cost. Lets [ManaRestriction.FaceDownSpellsOnly] recognize "spend
      * this mana only to cast face-down spells" (Tin Street Gossip).
@@ -201,6 +213,8 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
     is ManaRestriction.TurnPermanentsFaceUpOnly -> context.isTurnFaceUpAction
     is ManaRestriction.FaceDownSpellsOnly -> !context.isAbilityActivation && context.isFaceDownCast
     is ManaRestriction.UnlockDoorOnly -> context.isUnlockDoorAction
+    is ManaRestriction.ForetellOnly -> context.isForetellAction
+    is ManaRestriction.SpellsWithKeywordOnly -> context.isSpellCast && keyword in context.keywords
     is ManaRestriction.AbilityActivationOnly -> context.isAbilityActivation
     is ManaRestriction.EquipAbilityActivationOnly -> context.isEquipAbilityActivation
     is ManaRestriction.ClassLevelUpOnly -> context.isClassLevelUpActivation
@@ -213,7 +227,10 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
     is ManaRestriction.CardTypeSpellsOrAbilitiesOnly ->
         if (context.isAbilityActivation) allowAbilities && (!permanentSourcesOnly || context.isAbilitySourceOnBattlefield) &&
             (cardType in context.abilitySourceCardTypes) != negated
-        else allowSpells && (cardType in context.cardTypes) != negated
+        // Only a spell cast satisfies the spell side: a special action (foretell, turning a
+        // permanent face up, unlocking a door) has no card types, which a negated type would
+        // otherwise read as "not a creature spell".
+        else allowSpells && context.isSpellCast && (cardType in context.cardTypes) != negated
     // Negative restriction: only a spell cast can ever violate it, so every other kind of
     // payment passes untouched.
     is ManaRestriction.CannotCastSpellsOtherThan ->

@@ -115,6 +115,7 @@ class AnnouncedCharacteristicsCastEnumerator(private val kind: CharacteristicsAn
                     isFromHand = inHand,
                     isFromExile = state.turnOrder.any { id in state.getZone(ZoneKey(it, Zone.EXILE)) },
                     isFromGraveyard = id in state.getZone(ZoneKey(player, Zone.GRAVEYARD)),
+                    keywords = card.baseKeywords,
                 )
                 fun hasKeyword(keyword: Keyword) =
                     context.grantedKeywordResolver.hasKeyword(state, player, def, keyword, id)

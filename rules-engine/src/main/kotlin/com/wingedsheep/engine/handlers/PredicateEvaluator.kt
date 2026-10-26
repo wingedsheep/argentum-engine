@@ -2550,6 +2550,11 @@ class PredicateEvaluator(
             StatePredicate.IsWarpExiled ->
                 container.has<com.wingedsheep.engine.state.components.identity.WarpExiledComponent>()
 
+            // Foretold card (CR 702.143) — set by ForetellCardHandler, stripped when the card
+            // leaves exile, so only a card still foretold in exile matches.
+            StatePredicate.IsForetold ->
+                container.has<com.wingedsheep.engine.state.components.identity.ForetoldComponent>()
+
             // Battlefield marker — set when a warped spell resolves (CR 702.185).
             StatePredicate.WasCastForWarp ->
                 container.has<com.wingedsheep.engine.state.components.battlefield.WarpedComponent>()

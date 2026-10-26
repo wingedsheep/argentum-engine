@@ -57,4 +57,5 @@ internal fun spellPaymentContextFor(
     isFromGraveyard = isFromGraveyard,
     isDisturbCast = isDisturbCast,
     cardTypes = cardComponent.typeLine.cardTypes,
+    keywords = cardComponent.baseKeywords,
 )

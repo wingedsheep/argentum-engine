@@ -865,6 +865,8 @@ internal class AffectsFilterResolver(
         StatePredicate.IsSuspected -> projectedValues[entityId]?.isSuspected == true
         StatePredicate.IsWarpExiled ->
             container.has<com.wingedsheep.engine.state.components.identity.WarpExiledComponent>()
+        StatePredicate.IsForetold ->
+            container.has<com.wingedsheep.engine.state.components.identity.ForetoldComponent>()
         StatePredicate.WasCastForWarp ->
             container.has<com.wingedsheep.engine.state.components.battlefield.WarpedComponent>()
         // Stack-only: cast-origin zone reads SpellOnStackComponent, which battlefield permanents

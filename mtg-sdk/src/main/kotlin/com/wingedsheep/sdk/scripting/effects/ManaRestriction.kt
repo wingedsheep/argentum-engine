@@ -240,6 +240,36 @@ sealed interface ManaRestriction {
     }
 
     /**
+     * "Spend this mana only to foretell a card from your hand."
+     *
+     * Satisfied by the foretell special action's fixed {2} payment (CR 702.143a), not by casting
+     * the foretold card later for its foretell cost — that is a spell cast, which
+     * [SpellsWithKeywordOnly] (`Keyword.FORETELL`) covers. Karfell Harbinger:
+     * `AnyOf(ForetellOnly, InstantOrSorceryOnly)`; Niko Defies Destiny:
+     * `AnyOf(ForetellOnly, SpellsWithKeywordOnly(Keyword.FORETELL))`.
+     */
+    @SerialName("ForetellOnly")
+    @Serializable
+    data object ForetellOnly : ManaRestriction {
+        override val description: String = "Spend this mana only to foretell a card from your hand"
+    }
+
+    /**
+     * "Spend this mana only to cast spells that have [keyword]" — a spell whose card has the
+     * keyword in its definition (printed, or derived from a parameterized keyword ability such as
+     * foretell or flashback). A keyword granted to the spell by another effect isn't read yet. Niko Defies Destiny's "cast spells that have foretell" is
+     * `SpellsWithKeywordOnly(Keyword.FORETELL)`. Rejects ability activations and non-cast spends.
+     */
+    @SerialName("SpellsWithKeywordOnly")
+    @Serializable
+    data class SpellsWithKeywordOnly(
+        val keyword: com.wingedsheep.sdk.core.Keyword
+    ) : ManaRestriction {
+        override val description: String =
+            "Spend this mana only to cast spells that have ${keyword.displayName.lowercase()}"
+    }
+
+    /**
      * "Spend this mana only to [A], [B], or [C]." Disjunction of restrictions — the mana is
      * spendable in any context that satisfies *any* of the [restrictions]. Used by Creeping
      * Peeper ("cast an enchantment spell, unlock a door, or turn a permanent face up"). Composing
