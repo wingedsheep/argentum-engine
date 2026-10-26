@@ -2421,6 +2421,119 @@
     }
 }
 
+// Oona, Queen of the Fae
+{
+    "name": "Oona, Queen of the Fae",
+    "manaCost": "{3}{U/B}{U/B}{U/B}",
+    "typeLine": "Legendary Creature — Faerie Wizard",
+    "oracleText": "Flying\n{X}{U/B}: Choose a color. Target opponent exiles the top X cards of their library. For each card of the chosen color exiled this way, create a 1/1 blue and black Faerie Rogue creature token with flying.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Oona, Queen of the Fae:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{X}{U/B}"
+                    }
+                },
+                "effect": {
+                    "type": "ChooseColorThen",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": "XValue",
+                                    "player": "TargetOpponent"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile",
+                                    "player": "TargetOpponent"
+                                }
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "gathered0",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "HasChosenColor"
+                                    ]
+                                },
+                                "storeMatching": "matching2"
+                            },
+                            {
+                                "type": "CreateToken",
+                                "count": {
+                                    "type": "VariableReference",
+                                    "variableName": "matching2_count"
+                                },
+                                "power": 1,
+                                "toughness": 1,
+                                "colors": [
+                                    "BLUE",
+                                    "BLACK"
+                                ],
+                                "creatureTypes": [
+                                    "Faerie",
+                                    "Rogue"
+                                ],
+                                "keywords": [
+                                    "FLYING"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/a/0/a07b4786-1592-42c7-9d3e-d0d66abaed99.jpg?1783942698"
+                            }
+                        ]
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{X}{U/B}: Choose a color. Target opponent exiles the top X cards of their library. For each card of the chosen color exiled this way, create a 1/1 blue and black Faerie Rogue creature token with flying."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "rarity": "RARE",
+        "artist": "Adam Rex",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/24ae75f6-fb74-422c-93f6-a0be7f919e47.jpg?1783942730",
+        "rulings": [
+            {
+                "date": "2008-05-01",
+                "text": "You target the opponent when you activate Oona's ability. You don't choose the color until the ability resolves."
+            },
+            {
+                "date": "2008-05-01",
+                "text": "The tokens enter under your control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Oversoul of Dusk
 {
     "name": "Oversoul of Dusk",

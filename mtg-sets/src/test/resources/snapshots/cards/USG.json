@@ -2650,6 +2650,83 @@
     ]
 }
 
+// Goblin Lackey
+{
+    "name": "Goblin Lackey",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Goblin",
+    "oracleText": "Whenever this creature deals damage to a player, you may put a Goblin permanent card from your hand onto the battlefield.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Goblin Lackey:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "permanent Goblin"
+                            },
+                            "storeAs": "put_candidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "put_candidates",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "putting",
+                            "prompt": "Put a Goblin permanent card onto the battlefield?"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "putting",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "rarity": "UNCOMMON",
+        "artist": "Jerry Tiritilli",
+        "flavorText": "All bark, someone else's bite.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9b848caa-aad8-4060-8f86-304a8556de2d.jpg?1783946330",
+        "rulings": [
+            {
+                "date": "2008-08-01",
+                "text": "A Goblin permanent card is an artifact, creature, land, and/or enchantment card with the creature type \"Goblin\". Usually such cards will be creatures in addition to any other types, but they may be kindred instead. For example, you could put Boggart Shenanigans onto the battlefield with this effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Goblin Spelunkers
 {
     "name": "Goblin Spelunkers",

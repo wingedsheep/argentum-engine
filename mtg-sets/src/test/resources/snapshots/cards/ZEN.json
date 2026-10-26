@@ -5234,6 +5234,90 @@
     "colorIdentityOverride": []
 }
 
+// Warren Instigator
+{
+    "name": "Warren Instigator",
+    "manaCost": "{R}{R}",
+    "typeLine": "Creature — Goblin Berserker",
+    "oracleText": "Double strike\nWhenever this creature deals damage to an opponent, you may put a Goblin creature card from your hand onto the battlefield.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "DOUBLE_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Warren Instigator:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "EachOpponent"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "creature Goblin"
+                            },
+                            "storeAs": "put_candidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "put_candidates",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "putting",
+                            "prompt": "Put a Goblin creature card onto the battlefield?"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "putting",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "MYTHIC",
+        "artist": "Andrew Robinson",
+        "flavorText": "\"Danger! Danger! Come out of the safety of your holes!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/98637219-40d8-414c-939d-e2c90b909725.jpg?1783942138",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "Warren Instigator's ability triggers when it deals any kind of damage to an opponent, not just combat damage."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "If Warren Instigator attacks an opponent and isn't blocked, its double strike ability will cause it to deal combat damage to that opponent twice, once during each combat damage step. Its triggered ability will thus trigger twice."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Welkin Tern
 {
     "name": "Welkin Tern",

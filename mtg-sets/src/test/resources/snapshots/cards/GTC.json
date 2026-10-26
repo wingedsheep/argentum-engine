@@ -979,6 +979,49 @@
     ]
 }
 
+// Massive Raid
+{
+    "name": "Massive Raid",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Massive Raid deals damage to any target equal to the number of creatures you control.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature"
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"The Boros lack vision. Give them a convenient scapegoat and they'll be blind to the true threats.\"\n—Lazav",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b16fbd8-fb62-4f75-92b3-a6295d95b327.jpg?1783940123",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "Count the number of creatures you control when Massive Raid resolves to determine how much damage is dealt."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Murder Investigation
 {
     "name": "Murder Investigation",

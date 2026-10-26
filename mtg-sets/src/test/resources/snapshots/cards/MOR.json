@@ -144,6 +144,57 @@
     ]
 }
 
+// Distant Melody
+{
+    "name": "Distant Melody",
+    "manaCost": "{3}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose a creature type. Draw a card for each permanent you control of that type.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ChooseOption",
+                    "optionType": "CREATURE_TYPE",
+                    "storeAs": "chosen0"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsPermanent",
+                                {
+                                    "type": "HasSubtypeFromVariable",
+                                    "variableName": "chosen0"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "artist": "Omar Rayyan",
+        "flavorText": "Oona's song is like a twisted dinner chime. All the faeries return home, but it is Oona who feasts—on the stolen dreams and rumors they serve her.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5a28e4f9-3b68-40bb-bf77-850b08c6b096.jpg?1783942800",
+        "rulings": [
+            {
+                "date": "2008-04-01",
+                "text": "Note that this spell counts the number of permanents you control of the chosen type, not just the number of creatures you control. It will also take your kindred permanents of the chosen type into account."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Fertilid
 {
     "name": "Fertilid",

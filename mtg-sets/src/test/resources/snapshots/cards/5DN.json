@@ -2295,6 +2295,41 @@
     ]
 }
 
+// Vedalken Orrery
+{
+    "name": "Vedalken Orrery",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "You may cast spells as though they had flash.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantFlashToSpellType",
+                "filter": {},
+                "controllerOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "rarity": "RARE",
+        "artist": "John Avon",
+        "flavorText": "The model incorporated the fifth sun effortlessly, as if it had always known.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/94b546fa-af65-4afa-bb16-69b33674d3d1.jpg?1783944371",
+        "rulings": [
+            {
+                "date": "2010-06-15",
+                "text": "This applies only to casting spells. It does not, for example, change when you may activate abilities that can only be activated \"any time you could cast a sorcery\"."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "The controller of Vedalken Orrery can cast nonland artifact, creature, enchantment, and sorcery cards any time they could cast an instant. This includes on other players' turns and during the upkeep step, draw step, combat phase, and end step."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Viridian Scout
 {
     "name": "Viridian Scout",

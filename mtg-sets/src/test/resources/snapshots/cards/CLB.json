@@ -2065,6 +2065,73 @@
     ]
 }
 
+// Patriar's Seal
+{
+    "name": "Patriar's Seal",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add one mana of any color.\n{1}, {T}: Untap target legendary creature you control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Patriar's Seal:1",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Patriar's Seal:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsLegendary"
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{1}, {T}: Untap target legendary creature you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "332",
+        "rarity": "UNCOMMON",
+        "artist": "Kamila Szutenberg",
+        "flavorText": "Only a fool ignores a letter bearing the official mark of a patriar family.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/37f920f0-4dfc-477b-af7e-a17dfc9ba455.jpg?1783922667"
+    },
+    "colorIdentityOverride": []
+}
+
 // Pseudodragon Familiar
 {
     "name": "Pseudodragon Familiar",

@@ -130,6 +130,72 @@
     }
 }
 
+// Galadhrim Ambush
+{
+    "name": "Galadhrim Ambush",
+    "manaCost": "{3}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Create X 1/1 green Elf Warrior creature tokens, where X is the number of attacking creatures.\nPrevent all combat damage that would be dealt this turn by non-Elf creatures.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "Each",
+                        "filter": "creature attacking"
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Elf",
+                        "Warrior"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/0/2/023f668a-a8e6-4fcb-98d1-30adf343f050.jpg?1783916056"
+                },
+                {
+                    "type": "PreventDamageShield",
+                    "scope": "CombatOnly",
+                    "direction": "FromTarget",
+                    "sourceFilter": {
+                        "type": "PreventFromMatching",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Elf"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "RARE",
+        "artist": "John Di Giovanni",
+        "flavorText": "\"None of the Orcs will ever return out of Lórien.\"\n—Haldir",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e69e06f0-6142-4f80-9208-362b3e74d51d.jpg?1783916026",
+        "rulings": [
+            {
+                "date": "2023-06-16",
+                "text": "Galadhrim Ambush counts all attacking creatures no matter which player, planeswalker, or battle they're attacking, including attacking creatures you control if Galadhrim Ambush is cast during your combat phase."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // In the Darkness Bind Them
 {
     "name": "In the Darkness Bind Them",
