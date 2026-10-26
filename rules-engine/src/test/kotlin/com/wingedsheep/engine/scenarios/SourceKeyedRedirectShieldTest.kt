@@ -54,17 +54,17 @@ class SourceKeyedRedirectShieldTest : ScenarioTestBase() {
             game.install(giant, listOf(EffectTarget.Controller), EffectTarget.Self, RedirectScope.CONTINUOUS)
 
             val (afterFirst, firstTarget, firstAmount) =
-                DamageUtils.checkDamageRedirection(game.state, game.player1Id, 3, sourceId = giant)
+                DamageUtils.checkDamageRedirection(game.state, game.player1Id, 3, sourceId = giant, predicateEvaluator = com.wingedsheep.engine.handlers.PredicateEvaluator(cardRegistry = null))
             firstTarget shouldBe bears
             firstAmount shouldBe 3
             withClue("CONTINUOUS: the shield survives its first use") {
-                DamageUtils.checkDamageRedirection(afterFirst, game.player1Id, 2, sourceId = giant).second shouldBe bears
+                DamageUtils.checkDamageRedirection(afterFirst, game.player1Id, 2, sourceId = giant, predicateEvaluator = com.wingedsheep.engine.handlers.PredicateEvaluator(cardRegistry = null)).second shouldBe bears
             }
             withClue("another source's damage to the protected player is untouched") {
-                DamageUtils.checkDamageRedirection(game.state, game.player1Id, 2, sourceId = lions).second shouldBe null
+                DamageUtils.checkDamageRedirection(game.state, game.player1Id, 2, sourceId = lions, predicateEvaluator = com.wingedsheep.engine.handlers.PredicateEvaluator(cardRegistry = null)).second shouldBe null
             }
             withClue("the keyed source's damage to an unprotected recipient is untouched") {
-                DamageUtils.checkDamageRedirection(game.state, game.player2Id, 3, sourceId = giant).second shouldBe null
+                DamageUtils.checkDamageRedirection(game.state, game.player2Id, 3, sourceId = giant, predicateEvaluator = com.wingedsheep.engine.handlers.PredicateEvaluator(cardRegistry = null)).second shouldBe null
             }
         }
 
@@ -74,10 +74,10 @@ class SourceKeyedRedirectShieldTest : ScenarioTestBase() {
             val lions = game.findPermanent("Savannah Lions")!!
             game.install(giant, emptyList(), EffectTarget.TargetController, RedirectScope.CONTINUOUS)
 
-            DamageUtils.checkDamageRedirection(game.state, game.player1Id, 3, sourceId = giant).second shouldBe game.player2Id
-            DamageUtils.checkDamageRedirection(game.state, lions, 3, sourceId = giant).second shouldBe game.player2Id
+            DamageUtils.checkDamageRedirection(game.state, game.player1Id, 3, sourceId = giant, predicateEvaluator = com.wingedsheep.engine.handlers.PredicateEvaluator(cardRegistry = null)).second shouldBe game.player2Id
+            DamageUtils.checkDamageRedirection(game.state, lions, 3, sourceId = giant, predicateEvaluator = com.wingedsheep.engine.handlers.PredicateEvaluator(cardRegistry = null)).second shouldBe game.player2Id
             withClue("damage already aimed at the redirect target stays put — no redirect loop") {
-                DamageUtils.checkDamageRedirection(game.state, game.player2Id, 3, sourceId = giant).second shouldBe null
+                DamageUtils.checkDamageRedirection(game.state, game.player2Id, 3, sourceId = giant, predicateEvaluator = com.wingedsheep.engine.handlers.PredicateEvaluator(cardRegistry = null)).second shouldBe null
             }
         }
 
@@ -92,7 +92,8 @@ class SourceKeyedRedirectShieldTest : ScenarioTestBase() {
 
             val staleRef = shield.chosenSource!!.reference.copy(generation = shield.chosenSource!!.reference.generation + 1)
             DamageUtils.checkDamageRedirection(
-                game.state, game.player1Id, 3, sourceId = giant, damageSourceRef = staleRef
+                game.state, game.player1Id, 3, sourceId = giant, damageSourceRef = staleRef,
+                predicateEvaluator = com.wingedsheep.engine.handlers.PredicateEvaluator(cardRegistry = null)
             ).second shouldBe null
         }
     }

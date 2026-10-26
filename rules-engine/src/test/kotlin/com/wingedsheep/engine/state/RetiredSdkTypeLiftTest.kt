@@ -173,6 +173,23 @@ class RetiredSdkTypeLiftTest : FunSpec({
         ) shouldBe permission.copy(spendAsAnyColor = com.wingedsheep.sdk.scripting.effects.ManaSpentAsAnyColor.COLORLESS)
     }
 
+    test("the redirection shield's retired creaturesOnly flag becomes a Creature protectedFilter, or drops out when false") {
+        val effect = com.wingedsheep.sdk.scripting.effects.RedirectNextDamageEffect(
+            protectedTargets = emptyList(), redirectTo = EffectTarget.Controller
+        )
+        val encodedEffect = json.encodeToJsonElement(Effect.serializer(), effect).jsonObject
+        lifted(Effect.serializer(), JsonObject(encodedEffect - "protectedFilter" + ("creaturesOnly" to JsonPrimitive(true)))) shouldBe
+            effect.copy(protectedFilter = GameObjectFilter.Creature)
+        lifted(Effect.serializer(), JsonObject(encodedEffect - "protectedFilter" + ("creaturesOnly" to JsonPrimitive(false)))) shouldBe
+            effect
+
+        val shield = com.wingedsheep.engine.mechanics.layers.SerializableModification.RedirectNextDamage(EntityId.of("player"))
+        val serializer = com.wingedsheep.engine.mechanics.layers.SerializableModification.serializer()
+        val encodedShield = json.encodeToJsonElement(serializer, shield).jsonObject
+        lifted(serializer, JsonObject(encodedShield - "protectedFilter" + ("creaturesOnly" to JsonPrimitive(true)))) shouldBe
+            shield.copy(protectedFilter = GameObjectFilter.Creature)
+    }
+
     test("the cast-time flag reader becomes a comparison over the numeric capture") {
         lifted(Condition.serializer(), old("CastTimeFlagSet", "flag" to JsonPrimitive("controlledMount"))) shouldBe
             Conditions.CapturedAtCast("controlledMount")

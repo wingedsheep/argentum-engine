@@ -466,7 +466,11 @@
             "protectedTargets": [],
             "redirectTo": "Controller",
             "scope": "CONTINUOUS",
-            "creaturesOnly": true,
+            "protectedFilter": {
+                "cardPredicates": [
+                    "IsCreature"
+                ]
+            },
             "optional": true
         }
     },

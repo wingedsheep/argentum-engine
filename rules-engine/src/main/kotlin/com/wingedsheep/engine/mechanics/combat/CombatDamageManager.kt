@@ -372,7 +372,8 @@ internal class CombatDamageManager(
         // same assignments; nothing has been applied yet that the re-run would repeat.
         val redirectChoice = OptionalDamageRedirect.check(
             redirectedState,
-            finalAssignments.map { OptionalDamageRedirect.Instance(it.sourceId, it.targetId, it.amount) }
+            finalAssignments.map { OptionalDamageRedirect.Instance(it.sourceId, it.targetId, it.amount) },
+            predicateEvaluator
         )
         var newState = when (redirectChoice) {
             is OptionalDamageRedirect.Check.Ask -> {
@@ -1038,7 +1039,8 @@ internal class CombatDamageManager(
             while (workingState.getEntity(current.targetId)?.has<DamageUnpreventableThisTurnComponent>() != true) {
                 val (next, target, amount) = DamageUtils.checkDamageRedirection(
                     workingState, current.targetId, current.amount, inBatch = true,
-                    sourceId = current.sourceId, chosenSourcesOnly = true
+                    sourceId = current.sourceId, chosenSourcesOnly = true,
+                    predicateEvaluator = predicateEvaluator
                 )
                 workingState = next
                 if (target == null) break
@@ -1314,7 +1316,8 @@ internal class CombatDamageManager(
         // simultaneous combat-damage step (CR 510.2); it is consumed once afterwards by
         // consumeBatchRedirectShields.
         val (redirectState, redirectTargetId, redirectAmount) = DamageUtils.checkDamageRedirection(
-            newState, targetId, effectiveAmount, inBatch = true, sourceId = sourceId
+            newState, targetId, effectiveAmount, inBatch = true, sourceId = sourceId,
+            predicateEvaluator = predicateEvaluator
         )
         newState = redirectState
         if (redirectTargetId != null && redirectAmount > 0) {
@@ -1546,7 +1549,8 @@ internal class CombatDamageManager(
         // inBatch=true — a Glarecaster shield protects its controller's creatures too, so a blocked
         // attacker's damage to a protected blocker is redirected as part of the same batch.
         val (redirectState, redirectTargetId, redirectAmount) = DamageUtils.checkDamageRedirection(
-            newState, targetId, effectiveAmount, inBatch = true, sourceId = sourceId
+            newState, targetId, effectiveAmount, inBatch = true, sourceId = sourceId,
+            predicateEvaluator = predicateEvaluator
         )
         newState = redirectState
         if (redirectTargetId != null && redirectAmount > 0) {

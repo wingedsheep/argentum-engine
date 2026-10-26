@@ -133,6 +133,146 @@
     ]
 }
 
+// Ascent of the Worthy
+{
+    "name": "Ascent of the Worthy",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI, II — Choose a creature you control. Until your next turn, all damage that would be dealt to creatures you control is dealt to that creature instead.\nIII — Return target creature card from your graveyard to the battlefield with a flying counter on it. That creature is an Angel Warrior in addition to its other types.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "SelectTarget",
+                            "requirement": {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you"
+                                }
+                            },
+                            "storeAs": "target0",
+                            "nonTargeting": true,
+                            "prompt": "Choose a creature you control to take the damage dealt to your creatures"
+                        },
+                        {
+                            "type": "RedirectNextDamage",
+                            "protectedTargets": [],
+                            "redirectTo": {
+                                "type": "PipelineTarget",
+                                "collectionName": "target0"
+                            },
+                            "scope": "CONTINUOUS",
+                            "protectedFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "SelectTarget",
+                            "requirement": {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you"
+                                }
+                            },
+                            "storeAs": "target0",
+                            "nonTargeting": true,
+                            "prompt": "Choose a creature you control to take the damage dealt to your creatures"
+                        },
+                        {
+                            "type": "RedirectNextDamage",
+                            "protectedTargets": [],
+                            "redirectTo": {
+                                "type": "PipelineTarget",
+                                "collectionName": "target0"
+                            },
+                            "scope": "CONTINUOUS",
+                            "protectedFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Battlefield",
+                            "fromZone": "Graveyard",
+                            "entryCounters": [
+                                {
+                                    "counterType": "FLYING"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "AddCreatureType",
+                            "subtype": "Angel",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "AddCreatureType",
+                            "subtype": "Warrior",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "rarity": "UNCOMMON",
+        "artist": "James Arnold",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0bf01666-0fbf-4b15-a33d-964165bbfafb.jpg?1783928202"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Augury Raven
 {
     "name": "Augury Raven",

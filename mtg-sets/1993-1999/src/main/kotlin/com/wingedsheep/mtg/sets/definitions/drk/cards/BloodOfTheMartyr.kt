@@ -3,6 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.drk.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.RedirectScope
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -14,7 +15,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * you instead.
  *
  * A turn-long, class-wide redirection shield: `RedirectScope.CONTINUOUS` so it is never consumed by
- * use and expires only with the turn, and `creaturesOnly` so it protects *every* creature rather
+ * use and expires only with the turn, and a `Creature` `protectedFilter` so it protects *every* creature rather
  * than a fixed list — including creatures that arrive after it resolves, and never a player.
  *
  * `optional = true` is the printed "you may": before any damage that the shield could catch is
@@ -37,7 +38,7 @@ val BloodOfTheMartyr = card("Blood of the Martyr") {
             protectedTargets = emptyList(),
             redirectTo = EffectTarget.Controller,
             scope = RedirectScope.CONTINUOUS,
-            creaturesOnly = true,
+            protectedFilter = GameObjectFilter.Creature,
             optional = true,
         )
     }

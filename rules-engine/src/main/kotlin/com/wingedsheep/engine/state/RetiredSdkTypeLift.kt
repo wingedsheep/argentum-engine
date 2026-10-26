@@ -143,7 +143,9 @@ internal object RetiredSdkTypeLift {
      * a stored grant. A true flag is a cap of one; a false one is the uncapped default.
      */
     private fun withoutRetiredFields(element: JsonObject, type: String?): JsonObject =
-        withoutSingleEntryCounter(withoutCastTimeFlags(withoutColorlessAsAnyColor(withoutSingleUse(element, type))), type)
+        withoutCreaturesOnly(
+            withoutSingleEntryCounter(withoutCastTimeFlags(withoutColorlessAsAnyColor(withoutSingleUse(element, type))), type)
+        )
 
     /**
      * The may-play `colorlessAsAnyColor` flag became `spendAsAnyColor`, naming *which* mana stands in
@@ -154,6 +156,20 @@ internal object RetiredSdkTypeLift {
         val flag = element["colorlessAsAnyColor"] as? JsonPrimitive ?: return element
         val rest = element - "colorlessAsAnyColor"
         return JsonObject(if (flag.content == "true") rest + ("spendAsAnyColor" to JsonPrimitive("COLORLESS")) else rest)
+    }
+
+    /**
+     * The damage-redirection shield's `creaturesOnly` flag became `protectedFilter` — on
+     * `RedirectNextDamageEffect` in a card script and on the stored `RedirectNextDamage` shield. A
+     * true flag protects every creature; a false one is the unset default.
+     */
+    private fun withoutCreaturesOnly(element: JsonObject): JsonObject {
+        val flag = element["creaturesOnly"] as? JsonPrimitive ?: return element
+        val rest = element - "creaturesOnly"
+        return JsonObject(
+            if (flag.content == "true") rest + ("protectedFilter" to encode(GameObjectFilter.serializer(), GameObjectFilter.Creature))
+            else rest
+        )
     }
 
     /**

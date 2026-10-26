@@ -168,6 +168,17 @@ data class GameObjectFilter(
     }
 
     /**
+     * This filter as a plural noun phrase over permanents, the controller after the noun as Oracle
+     * prints it: "creatures you control", "artifacts an opponent controls".
+     */
+    val pluralPermanentDescription: String
+        get() {
+            val controller = controllerPredicate?.description?.takeIf { it.isNotEmpty() }
+                ?: return permanentNounPhrase(plural = true)
+            return copy(controllerPredicate = null).permanentNounPhrase(plural = true, scope = controller)
+        }
+
+    /**
      * This filter as a noun phrase over permanents, with the controller [scope] placed where Oracle
      * puts it — after the noun, ahead of any trailing clause: "Frog, Rabbit, Raccoon, or Squirrel
      * creature**s** you control that entered the battlefield this turn". A filter with no type words

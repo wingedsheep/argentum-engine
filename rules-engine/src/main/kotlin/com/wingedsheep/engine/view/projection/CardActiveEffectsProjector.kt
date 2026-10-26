@@ -59,6 +59,7 @@ internal class CardActiveEffectsProjector(
         effects += floatingEffectBadges(state, entityId, projectedState)
         effects += temporaryEffectBadges(state, entityId)
         effects += damageShieldBadges(state, entityId)
+        effects += redirectRecipientBadges(state, entityId)
         effects += combatRequirementBadges(state, entityId)
         // Check for triggered ability condition indicators (intervening-if progress)
         effects += conditionBadges.triggerConditionBadges(state, entityId)
@@ -548,6 +549,28 @@ internal class CardActiveEffectsProjector(
         }
         return effects
     }
+
+    /**
+     * A class-wide redirection shield ("all damage that would be dealt to creatures you control is
+     * dealt to that creature instead", Ascent of the Worthy) protects no listed entity, so nothing
+     * would show it. Badge the permanent that soaks the damage instead, worded as the card words it.
+     */
+    private fun redirectRecipientBadges(state: GameState, entityId: EntityId): List<ClientCardEffect> =
+        state.floatingEffects.mapNotNull { floating ->
+            val mod = floating.effect.modification as? SerializableModification.RedirectNextDamage
+                ?: return@mapNotNull null
+            val filter = mod.protectedFilter ?: return@mapNotNull null
+            if (mod.redirectToId != entityId) return@mapNotNull null
+            val verb = if (mod.optional) "may be dealt" else "is dealt"
+            val source = publicSourceName(state, floating)?.let { "$it: " }.orEmpty()
+            ClientCardEffect(
+                effectId = "redirect_recipient_${floating.id}",
+                name = "Takes damage",
+                description = "${source}All damage that would be dealt to " +
+                    "${filter.pluralPermanentDescription} $verb to this instead",
+                icon = "redirect"
+            ).lasting(durationPhrase(state, floating))
+        }
 
     /** One [GoadRules] per state: it scans the whole battlefield, and [project] runs once per card. */
     @Volatile private var goadRulesCache: Pair<GameState, GoadRules>? = null

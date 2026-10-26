@@ -50,7 +50,7 @@ class ChosenSourceDamageRedirectionTest : ScenarioTestBase() {
             game.selectCards(listOf(chosen)).error shouldBe null
         }
         fun redirect(state: GameState, source: EntityId, target: EntityId, amount: Int = 3) =
-            DamageUtils.checkDamageRedirection(state, target, amount, sourceId = source)
+            DamageUtils.checkDamageRedirection(state, target, amount, sourceId = source, predicateEvaluator = com.wingedsheep.engine.handlers.PredicateEvaluator(cardRegistry = null))
 
         val doubler = card("Source Choice Doubler") {
             manaCost = "{0}"

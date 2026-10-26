@@ -63,7 +63,8 @@ class DealDamagePerEntityInZoneExecutor(private val zones: ZoneTransitionService
                 state,
                 playerIds.map { OptionalDamageRedirect.Instance(sourceId, it, totalDamage) },
                 effect,
-                context
+                context,
+                zones.predicateEvaluator
             )
             if (pause != null) return pause
             var newState = readyState
@@ -84,7 +85,8 @@ class DealDamagePerEntityInZoneExecutor(private val zones: ZoneTransitionService
             state,
             listOf(OptionalDamageRedirect.Instance(sourceId, targetId, totalDamage)),
             effect,
-            context
+            context,
+            zones.predicateEvaluator
         )
         if (pause != null) return pause
 

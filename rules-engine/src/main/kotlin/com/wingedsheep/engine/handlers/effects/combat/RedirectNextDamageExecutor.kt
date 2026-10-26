@@ -45,18 +45,18 @@ class RedirectNextDamageExecutor : EffectExecutor<RedirectNextDamageEffect> {
             ChosenDamageSource(ref, state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Source")
         }
 
-        // A creatures-only shield protects a *class*, not a list, so it carries no protected ids
-        // and must not be rejected for having none (Blood of the Martyr). A source-keyed shield
+        // A filter shield protects a *class*, not a list, so it carries no protected ids and must
+        // not be rejected for having none (Blood of the Martyr). A source-keyed shield
         // with no protected targets covers every recipient (Reverberation).
         val coversAnyRecipient = effect.fromSource != null && effect.protectedTargets.isEmpty()
-        if (protectedIds.isEmpty() && !effect.creaturesOnly && !coversAnyRecipient) {
+        if (protectedIds.isEmpty() && effect.protectedFilter == null && !coversAnyRecipient) {
             return EffectResult.error(state, "Could not resolve any protected targets for RedirectNextDamageEffect")
         }
 
         val newState = state.addFloatingEffect(
             layer = Layer.ABILITY,
             modification = SerializableModification.RedirectNextDamage(
-                redirectToId, effect.amount, effect.scope, effect.creaturesOnly, effect.optional,
+                redirectToId, effect.amount, effect.scope, effect.protectedFilter, effect.optional,
                 chosenSource = fromSource,
                 // Keyed to objects, as RedirectDamageFromChosenSource's shield is: a protected or
                 // redirect-to permanent that leaves the battlefield ends the shield (CR 400.7).
@@ -64,7 +64,7 @@ class RedirectNextDamageExecutor : EffectExecutor<RedirectNextDamageEffect> {
                 redirectToRef = if (fromSource != null) state.objectRef(redirectToId) else null
             ),
             affectedEntities = protectedIds,
-            duration = Duration.EndOfTurn,
+            duration = effect.duration,
             context = context
         )
 

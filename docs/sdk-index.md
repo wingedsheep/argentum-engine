@@ -1009,7 +1009,7 @@ Families:
 - `RecordValueAsEnteredEffect(amount: DynamicAmount)` — Record amount on the entering permanent as the value it entered with — the non-choice sibling of PayAnyAmountOfLifeAsEntersEffect, read back the same way through com.wingedsheep.sdk.scripting.value…
 - `RedirectCombatDamageToControllerEffect(target: EffectTarget)`
 - `RedirectDamageFromChosenSourceEffect(protectedTarget: EffectTarget, redirectTo: EffectTarget, duration: Duration)` — Choose a damage source on resolution and redirect its next damage instance to another recipient.
-- `RedirectNextDamageEffect(protectedTargets: List<EffectTarget>, redirectTo: EffectTarget, amount: Int?, scope: RedirectScope, creaturesOnly: Boolean, optional: Boolean, fromSource: EffectTarget?)` — Redirect damage that would be dealt to the protected targets this turn.
+- `RedirectNextDamageEffect(protectedTargets: List<EffectTarget>, redirectTo: EffectTarget, amount: Int?, scope: RedirectScope, protectedFilter: GameObjectFilter?, optional: Boolean, fromSource: EffectTarget?, duration: Duration)` — Redirect damage that would be dealt to the protected targets this turn.
 - `RedistributeLifeTotalsEffect` — "Redistribute any number of players' life totals." (Reverse the Sands).
 - `ReduceMaximumHandSizeEffect(amount: DynamicAmount, target: EffectTarget)` — Reduces the target player's maximum hand size by amount for the rest of the game ("your maximum hand size is reduced by three for the rest of the game" — Inspired Idea).
 - `ReflectCombatDamageEffect(target: EffectTarget)` — Creates a delayed trigger for the rest of the turn that reflects combat damage.

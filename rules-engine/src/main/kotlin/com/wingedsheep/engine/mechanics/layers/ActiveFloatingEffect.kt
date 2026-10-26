@@ -556,13 +556,14 @@ sealed interface SerializableModification {
         val amount: Int? = null,
         val scope: RedirectScope = RedirectScope.NEXT_INSTANCE,
         /**
-         * When true the shield protects **every creature** rather than a fixed list of entities —
-         * Blood of the Martyr's "if damage would be dealt to any creature". Checked against
-         * projected state at damage time, so a creature that entered after the shield was created
-         * is covered and a player never is. An empty `affectedEntities` otherwise means "anything",
-         * players included, which is not what this wants.
+         * When set the shield protects **every permanent matching this filter** rather than a fixed
+         * list of entities — Blood of the Martyr's "any creature", Ascent of the Worthy's "creatures
+         * you control" ("you" being the shield's controller). Matched against projected state at
+         * damage time, so a permanent that entered after the shield was created is covered and a
+         * player never is. An empty `affectedEntities` otherwise means "anything", players included,
+         * which is not what this wants.
          */
-        val creaturesOnly: Boolean = false,
+        val protectedFilter: com.wingedsheep.sdk.scripting.GameObjectFilter? = null,
         /**
          * "**you may** have that damage dealt to you instead" (Blood of the Martyr). The shield's
          * controller is asked per damage instance before that damage is dealt; the answers live in

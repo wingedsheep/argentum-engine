@@ -75,7 +75,8 @@ class DividedDamageExecutor(
                     .filter { (targetId, amount) -> amount > 0 && targetId in stillLegal }
                     .map { (targetId, amount) -> OptionalDamageRedirect.Instance(context.sourceId, targetId, amount) },
                 effect,
-                context
+                context,
+                zones.predicateEvaluator
             )
             if (pause != null) return pause
 
@@ -103,7 +104,8 @@ class DividedDamageExecutor(
                 state,
                 listOf(OptionalDamageRedirect.Instance(context.sourceId, targets.first(), total)),
                 effect,
-                context
+                context,
+                zones.predicateEvaluator
             )
             if (pause != null) return pause
             return dealDamageToTarget(zones, readyState, targets.first(), total, context.sourceId, damageSourceRef = context.objectReferences.origin ?: context.sourceId?.let(state::objectRef))

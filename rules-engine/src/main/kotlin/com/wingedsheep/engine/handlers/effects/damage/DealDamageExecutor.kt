@@ -91,7 +91,8 @@ class DealDamageExecutor(
                 state,
                 recipients.map { OptionalDamageRedirect.Instance(sourceId, it, amount) },
                 effect,
-                context
+                context,
+                zones.predicateEvaluator
             )
             if (pause != null) return pause
             var newState = readyState
@@ -115,7 +116,8 @@ class DealDamageExecutor(
                 state,
                 playerIds.map { OptionalDamageRedirect.Instance(sourceId, it, amount) },
                 effect,
-                context
+                context,
+                zones.predicateEvaluator
             )
             if (pause != null) return pause
             var newState = readyState
@@ -137,7 +139,8 @@ class DealDamageExecutor(
             state,
             listOf(OptionalDamageRedirect.Instance(sourceId, targetId, amount)),
             effect,
-            context
+            context,
+            zones.predicateEvaluator
         )
         if (pause != null) return pause
 

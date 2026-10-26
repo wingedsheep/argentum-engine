@@ -1567,7 +1567,7 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   then `run(Effects.GainLife(dealt.amount))` (Creeping Bloodsucker, Syphon Soul) — never a fixed
   `GainLife(n)`, which ignores prevention and the opponent count.
 - `DamageCantBePreventedThisTurn(target)` — the per-recipient form of the turn-wide shutoff (Whippoorwill).
-- `RedirectNextDamage(protectedTargets, redirectTo, amount?, scope, creaturesOnly, optional, fromSource?)`,
+- `RedirectNextDamage(protectedTargets, redirectTo, amount?, scope, protectedFilter?, optional, fromSource?, duration = EndOfTurn)`,
   `RedirectCombatDamageToController(target = Self)`, `ReflectCombatDamage(target = Controller)`,
   `RemoveDamageShield(target)` — the redirect / reflect / shield-removal effects.
 - `DealDamageExcessToController(amount, target, damageSource?)` — deal damage to a creature; any amount beyond
@@ -10981,12 +10981,18 @@ in the declare-blockers step, even before the turn-based block action has comple
   that slot's own requirement, and not already chosen for another slot of the same "target" word
   (CR 115.3) — is a candidate, and the controller picks which one changes when there are several.
   Only the chosen-new-target form (`to = null`) no-ops on a spell with more than one target.
-- `RedirectNextDamageEffect(protectedTargets, redirectTo, amount, scope, creaturesOnly = false, optional = false, fromSource = null)` —
-  **`creaturesOnly`** protects the *class* of creatures rather than a fixed list of entities: Blood
-  of the Martyr's "if damage would be dealt to any creature". Checked against projected state at
-  damage time, so a creature that entered after the shield resolved is covered and a player never
-  is — an empty `protectedTargets` otherwise means "anything", players included. Pair it with
-  `RedirectScope.CONTINUOUS` for the turn-long form. **`optional`** makes it a printed "you may"
+- `RedirectNextDamageEffect(protectedTargets, redirectTo, amount, scope, protectedFilter = null, optional = false, fromSource = null, duration = EndOfTurn)` —
+  **`protectedFilter`** protects a *class* of permanents rather than a fixed list of entities: Blood
+  of the Martyr's "if damage would be dealt to any creature" (`GameObjectFilter.Creature`), Ascent of
+  the Worthy's "all damage that would be dealt to creatures you control" (`Creature.youControl()`,
+  "you" being the shield's controller, so a chosen creature that changes control still soaks the
+  damage). Matched against projected state at damage time, so a permanent that entered after the
+  shield resolved is covered, a player never is, and damage already headed for `redirectTo` stays
+  there — an empty `protectedTargets` otherwise means "anything", players included. Pair it with
+  `RedirectScope.CONTINUOUS` for the "all damage" form. **`duration`** is how long the shield lasts:
+  "this turn" by default, `Duration.UntilYourNextTurn` for Ascent of the Worthy. A shield whose
+  recipient has left the battlefield redirects nothing (Ascent of the Worthy ruling). The
+  client badges a filter shield's recipient ("Takes damage"), since it protects no listed entity. **`optional`** makes it a printed "you may"
   (Blood of the Martyr): the shield's controller is asked **once per damage instance** the shield
   covers, *before* any of that damage is dealt, so a sweeper hitting four creatures asks four times
   and each answer stands on its own. The question is raised by `OptionalDamageRedirect`'s pre-pass —

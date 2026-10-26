@@ -242,7 +242,7 @@ object DamageUtils {
             if (state.getEntity(targetId)?.has<DamageUnpreventableThisTurnComponent>() == true) {
                 Triple(state, null, 0)
             } else {
-                checkDamageRedirection(state, targetId, amount, sourceId = sourceId, damageSourceRef = damageSourceRef)
+                checkDamageRedirection(state, targetId, amount, sourceId = sourceId, damageSourceRef = damageSourceRef, predicateEvaluator = zones.predicateEvaluator)
             }
         if (redirectTargetId != null) {
             val redirectResult = dealDamageToTarget(zones, redirectState, redirectTargetId, redirectAmount, sourceId, cantBePrevented, isCombatDamage, appliedRedirects, damageSourceRef = damageSourceRef)
@@ -1893,7 +1893,8 @@ object DamageUtils {
         inBatch: Boolean = false,
         sourceId: EntityId? = null,
         damageSourceRef: com.wingedsheep.engine.state.ObjectRef? = sourceId?.let(state::objectRef),
-        chosenSourcesOnly: Boolean = false
+        chosenSourcesOnly: Boolean = false,
+        predicateEvaluator: PredicateEvaluator
     ): Triple<GameState, EntityId?, Int> {
         if (damageAmount <= 0) return Triple(state, null, 0)
         var workingState = state
@@ -1903,7 +1904,7 @@ object DamageUtils {
             if (modification !is SerializableModification.RedirectNextDamage) continue
             if (chosenSourcesOnly && modification.chosenSource == null) continue
             if (modification.chosenSource != null && modification.chosenSource.reference != damageSourceRef) continue
-            if (!OptionalDamageRedirect.redirectShieldCovers(workingState, effect, modification, targetId)) continue
+            if (!OptionalDamageRedirect.redirectShieldCovers(workingState, effect, modification, targetId, predicateEvaluator)) continue
             if (!modification.optional) {
                 shieldIndex = index
                 break

@@ -823,6 +823,14 @@ data object SwapBlockingAssignmentsEffect : Effect {
  * @property redirectTo The target that will receive the redirected damage (chosen at activation)
  * @property amount If set, only redirect up to this many damage (e.g., "the next 1 damage"). Null = redirect all.
  * @property scope When the shield is used up (only meaningful when [amount] is null). See [RedirectScope].
+ * @property protectedFilter Protect every permanent matching this filter instead of a fixed
+ *   [protectedTargets] list — Blood of the Martyr's "any creature" ([GameObjectFilter.Creature]),
+ *   Ascent of the Worthy's "creatures you control" (`Creature.youControl()`, "you" being the
+ *   shield's controller). Matched against projected state at damage time, so permanents that
+ *   arrive later are covered, a player never is, and damage already headed for [redirectTo]
+ *   stays there. Null = protect [protectedTargets].
+ * @property duration How long the shield lasts — "this turn" ([Duration.EndOfTurn], the default)
+ *   or "until your next turn" ([Duration.UntilYourNextTurn], Ascent of the Worthy).
  * @property fromSource Redirect only damage dealt by this one object — "all damage that would be
  *   dealt to you this turn by target attacking creature" (Shimian Night Stalker). Resolved to that
  *   *object* at resolution (CR 400.7: the same card returning later is a different source). With
@@ -837,12 +845,7 @@ data class RedirectNextDamageEffect(
     val redirectTo: EffectTarget,
     val amount: Int? = null,
     val scope: RedirectScope = RedirectScope.NEXT_INSTANCE,
-    /**
-     * Protect **every creature** instead of a fixed [protectedTargets] list — Blood of the Martyr's
-     * "if damage would be dealt to any creature". Evaluated against projected state at damage time,
-     * so creatures that arrive later are covered and players never are.
-     */
-    val creaturesOnly: Boolean = false,
+    val protectedFilter: GameObjectFilter? = null,
     /**
      * Make the redirection a **"you may"** (Blood of the Martyr) instead of a mandatory replacement.
      * The shield's controller is asked once per damage instance the shield could catch, before any
@@ -854,19 +857,20 @@ data class RedirectNextDamageEffect(
      * `com.wingedsheep.engine.handlers.effects.damage.OptionalDamageRedirect`.
      */
     val optional: Boolean = false,
-    val fromSource: EffectTarget? = null
+    val fromSource: EffectTarget? = null,
+    val duration: Duration = Duration.EndOfTurn
 ) : Effect {
     override val description: String = buildString {
         append(if (scope == RedirectScope.CONTINUOUS) "All " else "The next ")
         if (amount != null) append("$amount ")
         val recipients = when {
-            creaturesOnly -> "any creature"
+            protectedFilter != null -> protectedFilter.pluralPermanentDescription
             protectedTargets.isEmpty() -> null
             else -> protectedTargets.joinToString(" and/or ") { it.description }
         }
         append("damage that would be dealt")
         if (recipients != null) append(" to $recipients")
-        append(" this turn")
+        append(if (duration == Duration.EndOfTurn) " this turn" else " ${duration.description}")
         if (fromSource != null) append(" by ${fromSource.description}")
         if (optional) {
             append(" may be dealt to ${redirectTo.description} instead")

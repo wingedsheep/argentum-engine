@@ -58,7 +58,8 @@ class FightEffectExecutor(private val zones: ZoneTransitionService) : EffectExec
                 OptionalDamageRedirect.Instance(target2Id, target1Id, power2)
             ),
             effect,
-            context
+            context,
+            zones.predicateEvaluator
         )
         if (pause != null) return pause
 

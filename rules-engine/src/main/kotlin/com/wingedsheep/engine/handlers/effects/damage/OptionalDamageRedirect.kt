@@ -7,6 +7,8 @@ import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.OptionalRedirectEffectContinuation
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.layers.ActiveFloatingEffect
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.state.GameState
@@ -86,21 +88,27 @@ object OptionalDamageRedirect {
      * [DamageUtils.checkDamageRedirection] would consider them. Mandatory shields are invisible
      * here — they are applied without asking anybody.
      */
-    fun optionalShieldsFor(state: GameState, targetId: EntityId): List<ActiveFloatingEffect> =
+    fun optionalShieldsFor(
+        state: GameState,
+        targetId: EntityId,
+        predicateEvaluator: PredicateEvaluator
+    ): List<ActiveFloatingEffect> =
         state.floatingEffects.filter { floating ->
             val mod = floating.effect.modification
             mod is SerializableModification.RedirectNextDamage &&
                 mod.optional &&
-                redirectShieldCovers(state, floating, mod, targetId)
+                redirectShieldCovers(state, floating, mod, targetId, predicateEvaluator)
         }
 
     /**
      * Whether a redirection shield applies to damage about to be dealt to [targetId].
      *
-     * A `creaturesOnly` shield protects a *class* and is read off projected state, so a creature that
-     * arrived after the shield was created is covered, an animated land counts while it is one, and a
-     * player never is. Any other shield protects the entities it was created with (an empty list
-     * meaning "anything").
+     * A filter shield protects a *class* and is read off projected state from its controller's side,
+     * so a creature that arrived after the shield was created is covered, an animated land counts
+     * while it is one, a player never is, and neither is the shield's own recipient — "all damage
+     * that would be dealt to creatures you control is dealt to that creature instead" leaves the
+     * damage already headed for that creature where it is. Any other shield protects the entities
+     * it was created with (an empty list meaning "anything").
      *
      * A shield whose **recipient** has since left the battlefield covers nothing: there is no
      * object left for the damage to be dealt to "instead", so the original recipient takes it
@@ -111,7 +119,8 @@ object OptionalDamageRedirect {
         state: GameState,
         floating: ActiveFloatingEffect,
         mod: SerializableModification.RedirectNextDamage,
-        targetId: EntityId
+        targetId: EntityId,
+        predicateEvaluator: PredicateEvaluator
     ): Boolean {
         if (mod.chosenSource != null) {
             // Damage already headed for the shield's own recipient has nowhere else to go. Without
@@ -126,8 +135,12 @@ object OptionalDamageRedirect {
         }
         val recipient = state.getEntity(mod.redirectToId) ?: return false
         if (!recipient.has<PlayerComponent>() && mod.redirectToId !in state.getBattlefield()) return false
-        return if (mod.creaturesOnly) {
-            state.projectedState.isCreature(targetId)
+        val filter = mod.protectedFilter
+        return if (filter != null) {
+            targetId != mod.redirectToId && targetId in state.getBattlefield() && predicateEvaluator.matches(
+                state, state.projectedState, targetId, filter,
+                PredicateContext(controllerId = floating.controllerId, sourceId = floating.sourceId)
+            )
         } else {
             floating.effect.affectedEntities.isEmpty() || targetId in floating.effect.affectedEntities
         }
@@ -140,14 +153,14 @@ object OptionalDamageRedirect {
      * that a shield counter ended up eating must not be reused for the next event that happens to
      * pair the same source with the same recipient.
      */
-    fun check(state: GameState, instances: List<Instance>): Check {
+    fun check(state: GameState, instances: List<Instance>, predicateEvaluator: PredicateEvaluator): Check {
         // Every (instance, covering shield) pair this event could raise, in the order the damage
         // pipeline will consider them. Their keys are what the answers are filed under, so they are
         // also what keeps an answer from being pruned as stale mid-event.
         val pairs = instances
             .filter { it.amount > 0 }
             .flatMap { instance ->
-                optionalShieldsFor(state, instance.targetId).map { shield -> shield to instance }
+                optionalShieldsFor(state, instance.targetId, predicateEvaluator).map { shield -> shield to instance }
             }
         val pruned = prune(
             state,
@@ -207,7 +220,7 @@ object OptionalDamageRedirect {
      * instance each time — until every instance is settled and it deals its damage in one go.
      *
      * ```
-     * val (readyState, pause) = OptionalDamageRedirect.beforeDealing(state, instances, effect, context)
+     * val (readyState, pause) = OptionalDamageRedirect.beforeDealing(state, instances, effect, context, predicateEvaluator)
      * if (pause != null) return pause
      * // …deal the damage from readyState…
      * ```
@@ -216,8 +229,9 @@ object OptionalDamageRedirect {
         state: GameState,
         instances: List<Instance>,
         effect: Effect,
-        context: EffectContext
-    ): Pair<GameState, EffectResult?> = when (val check = check(state, instances)) {
+        context: EffectContext,
+        predicateEvaluator: PredicateEvaluator
+    ): Pair<GameState, EffectResult?> = when (val check = check(state, instances, predicateEvaluator)) {
         is Check.Ready -> check.state to null
         is Check.Ask -> {
             val paused = check.state.suspendForDecision(
