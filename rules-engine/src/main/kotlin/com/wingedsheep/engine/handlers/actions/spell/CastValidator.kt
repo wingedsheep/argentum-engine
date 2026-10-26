@@ -356,7 +356,8 @@ internal class CastValidator(
 
         // Modal DFC back face (CR 712.11b) — the hand-side counterpart of disturb. The caster chose
         // the back face, so the card goes on the stack transformed for that face's own mana cost. No
-        // zone guard is needed beyond the resolver's own (it only looks in hand).
+        // zone guard is needed beyond the resolver's own (the hand, or a may-play permission that
+        // covers the back face).
         val modalBackFace = if (action.useAlternativeCost && action.altAllows(AlternativeCostType.MODAL_BACK_FACE)) {
             zoneResolver.modalBackCastFace(state, playerId, cardId)
         } else null
@@ -452,7 +453,7 @@ internal class CastValidator(
         val authorized = when {
             isPrepareCopy -> action.faceIndex == 0 && !modalBack
             modalBack -> permissions.any { it.authorizesModalBack }
-            else -> permissions.any { it.authorizesFace(action.faceIndex) }
+            else -> permissions.any { it.authorizesFace(action.faceIndex, cardDef) }
         }
         if (!authorized) {
             val faceName = (if (modalBack) cardDef?.backFace?.name else null)

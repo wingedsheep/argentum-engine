@@ -16,6 +16,7 @@ import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.sdk.model.CardLayout
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.engine.state.permissions.MayPlayPermission
+import com.wingedsheep.engine.mechanics.AlternativeFaceCasts
 import com.wingedsheep.engine.mechanics.ModalDfcCasts
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.GraveyardCastRiderSelection
@@ -1015,19 +1016,17 @@ class CastFromZoneEnumerator(
             cardDef?.layout == CardLayout.PREPARE
         ) return listOf(ExileCastFace(0))
         val faceIndices = buildSet {
-            if (cardDef?.layout in FACE_CAST_LAYOUTS) cardDef?.cardFaces?.indices?.let { addAll(it) }
+            addAll(AlternativeFaceCasts.spellFaceIndices(cardDef))
             permissions.mapNotNullTo(this) { p -> p.castFaceIndex?.takeIf { cardDef?.cardFaces?.getOrNull(it) != null } }
         }
         return buildList {
-            if (permissions.any { it.authorizesFace(null) }) add(ExileCastFace(null))
-            faceIndices.sorted().filter { i -> permissions.any { it.authorizesFace(i) } }.forEach { add(ExileCastFace(it)) }
+            if (permissions.any { it.authorizesFace(null, cardDef) }) add(ExileCastFace(null))
+            faceIndices.sorted().filter { i -> permissions.any { it.authorizesFace(i, cardDef) } }.forEach { add(ExileCastFace(it)) }
             ModalDfcCasts.castFace(cardDef)
                 ?.takeIf { permissions.any { it.authorizesModalBack } }
                 ?.let { add(ExileCastFace(null, it)) }
         }
     }
-
-    private val FACE_CAST_LAYOUTS = setOf(CardLayout.ADVENTURE, CardLayout.OMEN, CardLayout.MODAL_DFC)
 
     // =========================================================================
     // Linked exile (GrantMayCastFromLinkedExile)

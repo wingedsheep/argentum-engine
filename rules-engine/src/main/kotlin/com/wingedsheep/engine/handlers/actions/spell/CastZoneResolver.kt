@@ -247,7 +247,7 @@ class CastZoneResolver(
             cardId,
         )
         return state.mayPlayEntersTappedRiders(cardId, playerId, conditionEvaluator, cardRegistry) {
-            (if (modalBack) it.authorizesModalBack else it.authorizesFace(action.faceIndex)) &&
+            (if (modalBack) it.authorizesModalBack else it.authorizesFace(action.faceIndex, cardDef)) &&
                 it.authorizesSpellColors(castColors)
         } ?: emptyList()
     }

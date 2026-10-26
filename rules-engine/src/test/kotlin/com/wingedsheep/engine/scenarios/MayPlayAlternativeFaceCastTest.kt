@@ -9,6 +9,8 @@ import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.mtg.sets.definitions.blc.cards.BrightcapBadger
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.assertions.withClue
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -45,6 +47,19 @@ class MayPlayAlternativeFaceCastTest : ScenarioTestBase() {
 
     init {
         cardRegistry.register(BrightcapBadger)
+        // A prepare card's spell face is cast only from a prepared copy (Secrets of Strixhaven), so an
+        // ordinary grant on the card itself must not reach it.
+        cardRegistry.register(card("Test Prepare Adept") {
+            manaCost = "{1}{G}"
+            typeLine = "Creature — Human Wizard"
+            power = 2
+            toughness = 2
+            prepare("Test Prepared Insight") {
+                manaCost = "{G}"
+                typeLine = "Sorcery"
+                spell { effect = Effects.GainLife(1) }
+            }
+        })
 
         fun exiledWith(card: String, vararg lands: Pair<String, Int>) = scenario()
             .withPlayers("Player1", "Player2")
@@ -93,6 +108,15 @@ class MayPlayAlternativeFaceCastTest : ScenarioTestBase() {
                 game.castOffers(card).map { it.faceIndex } shouldBe listOf(null)
                 game.execute(CastSpell(game.player1Id, card, faceIndex = 0)).error shouldNotBe null
             }
+        }
+
+        test("a plain permission does not reach a face of a layout cast only another way (prepare)") {
+            val game = exiledWith("Test Prepare Adept", "Forest" to 2)
+            val card = game.exiled("Test Prepare Adept")
+            game.grantCast(card)
+
+            game.castOffers(card).map { it.faceIndex } shouldBe listOf(null)
+            game.execute(CastSpell(game.player1Id, card, faceIndex = 0)).error shouldNotBe null
         }
 
         test("a primary-only permission rejects a client-supplied alternative face") {

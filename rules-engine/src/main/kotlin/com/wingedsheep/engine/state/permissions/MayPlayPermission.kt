@@ -256,15 +256,17 @@ data class MayPlayPermission(
             (castColorCount == null || castColors.size == castColorCount)
 
     /**
-     * Whether this permission lets its holder cast the card as `cardFaces[faceIndex]` (null: the
+     * Whether this permission lets its holder cast [cardDef] as `cardFaces[faceIndex]` (null: the
      * primary characteristics). [castFaceIndex] pins one face; [primaryFaceOnly] and a
      * [castTransformed] grant (whose cast face is the back, chosen elsewhere) pin the primary;
-     * otherwise every face is covered (CR 712.11b / 715.3).
+     * otherwise every face the card can be cast as is covered (CR 712.11b / 715.3) —
+     * [com.wingedsheep.engine.mechanics.AlternativeFaceCasts.spellFaceIndices].
      */
-    fun authorizesFace(faceIndex: Int?): Boolean = when {
+    fun authorizesFace(faceIndex: Int?, cardDef: com.wingedsheep.sdk.model.CardDefinition?): Boolean = when {
         castFaceIndex != null -> faceIndex == castFaceIndex
         primaryFaceOnly || castTransformed -> faceIndex == null
-        else -> true
+        else -> faceIndex == null ||
+            faceIndex in com.wingedsheep.engine.mechanics.AlternativeFaceCasts.spellFaceIndices(cardDef)
     }
 
     /**

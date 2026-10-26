@@ -8,7 +8,6 @@ import com.wingedsheep.engine.state.components.battlefield.controlledLiveStaticA
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CardLayout
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GrantForetellToCardsInHand
 import com.wingedsheep.sdk.scripting.KeywordAbility
@@ -69,17 +68,13 @@ object ForetellGrants {
     ): Map<String, ManaCost> {
         if (cardDef.keywordAbilities.any { it is KeywordAbility.Foretell }) return emptyMap()
         val faceCosts = buildMap {
-            if (cardDef.layout in FACE_CAST_LAYOUTS) {
-                cardDef.cardFaces.filterNot { it.typeLine.isLand }.forEach { put(it.name, it.manaCost) }
-            }
+            AlternativeFaceCasts.spellFaceIndices(cardDef).map { cardDef.cardFaces[it] }.forEach { put(it.name, it.manaCost) }
             ModalDfcCasts.castFace(cardDef)?.let { put(it.name, it.manaCost) }
         }
         if (faceCosts.isEmpty()) return emptyMap()
         val grant = applicableGrant(state, cardId, playerId, cardRegistry, predicateEvaluator) ?: return emptyMap()
         return faceCosts.mapValues { (_, cost) -> cost.reduceGeneric(grant.costReduction) }
     }
-
-    private val FACE_CAST_LAYOUTS = setOf(CardLayout.ADVENTURE, CardLayout.OMEN, CardLayout.MODAL_DFC)
 
     private fun applicableGrant(
         state: GameState,
