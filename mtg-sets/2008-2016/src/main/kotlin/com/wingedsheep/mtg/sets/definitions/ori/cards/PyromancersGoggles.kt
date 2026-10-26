@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.ManaSpellRider
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Pyromancer's Goggles
@@ -22,7 +23,7 @@ import com.wingedsheep.sdk.scripting.effects.ManaSpellRider
  * spent on anything, not just a red instant or sorcery spell"), so the rider rides along on an
  * `AnySpend` pool entry and simply no-ops when the mana pays for something else.
  *
- * How the rulings map onto [ManaSpellRider.CopySpellWhenSpent]:
+ * How the rulings map onto [ManaSpellRider.TriggersWhenSpent]:
  *  - *"Any red instant or sorcery spell you spend the mana on will be copied, not just one that
  *    requires targets"* — the rider is a plain filter match (`InstantOrSorcery` + red), with no
  *    target requirement of its own.
@@ -50,8 +51,9 @@ val PyromancersGoggles = card("Pyromancer's Goggles") {
         effect = Effects.AddMana(
             color = Color.RED,
             riders = setOf(
-                ManaSpellRider.CopySpellWhenSpent(
-                    GameObjectFilter.InstantOrSorcery.withColor(Color.RED)
+                ManaSpellRider.TriggersWhenSpent(
+                    GameObjectFilter.InstantOrSorcery.withColor(Color.RED),
+                    Effects.CopyTargetSpell(EffectTarget.TriggeringEntity),
                 )
             )
         )

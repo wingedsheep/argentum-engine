@@ -21,7 +21,7 @@ import io.kotest.matchers.shouldBe
  * {T}: Add {R}. When that mana is spent to cast a red instant or sorcery spell, copy that spell
  * and you may choose new targets for the copy.
  *
- * Covers the new [com.wingedsheep.sdk.scripting.effects.ManaSpellRider.CopySpellWhenSpent] rider
+ * Covers the [com.wingedsheep.sdk.scripting.effects.ManaSpellRider.TriggersWhenSpent] rider (with a copy effect)
  * and the `riders` parameter on `AddMana`. The spells here are deliberately **targetless** so the
  * copy resolves without a retarget pause and the "did it happen twice?" assertion is unambiguous —
  * per the ruling, "Any red instant or sorcery spell you spend the mana on will be copied, not just

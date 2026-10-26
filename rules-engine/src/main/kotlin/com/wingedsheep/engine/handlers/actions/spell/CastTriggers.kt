@@ -54,7 +54,7 @@ internal class CastSpellOnStack(
  *
  * - copy triggers: storm (CR 702.40), conspire (CR 702.78), casualty (CR 702.153),
  *   replicate (CR 702.56);
- * - riders carried by the mana that paid (Cavern of Souls, Path of Ancestry, Pyromancer's Goggles,
+ * - riders carried by the mana that paid (Cavern of Souls, Path of Ancestry, Pyromancer's Goggles, Scaled Nurturer,
  *   Carnelian Orb of Dragonkind);
  * - "the next spell you cast" riders — copies (Howl of the Horde), can't-be-countered (Mistrise
  *   Village), affinity (Don & Raph), free cast (World War Hulk I).
@@ -204,8 +204,8 @@ internal class CastTriggers(
                 makeUncounterableWhenSpent(state, spell, rider.spellFilter) to emptyList()
             is ManaSpellRider.ScryOnSharedTypeWithCommander ->
                 state to scryOnSharedTypeWithCommander(state, spell, rider.amount)
-            is ManaSpellRider.CopySpellWhenSpent ->
-                state to copySpellWhenSpent(state, spell, rider.spellFilter)
+            is ManaSpellRider.TriggersWhenSpent ->
+                state to triggerWhenSpent(state, spell, rider.spellFilter, rider.effect)
             is ManaSpellRider.GrantsKeywordWhenSpent ->
                 grantKeywordWhenSpent(state, spell, rider.keyword, rider.spellFilter, rider.duration) to emptyList()
         }
@@ -256,24 +256,24 @@ internal class CastTriggers(
     }
 
     /**
-     * Pyromancer's Goggles' rider: if the cast spell matches [spellFilter], queue a copy trigger
-     * above the spell. Otherwise no-op (the {R} was spent on something else).
+     * Pyromancer's Goggles' / Scaled Nurturer's rider: if the cast spell matches [spellFilter],
+     * queue a trigger running [effect] above the spell. Otherwise no-op (the mana was spent on
+     * something else).
      *
-     * The trigger resolves *before* the spell it copies, which is the printed behavior — the copy is
-     * put onto the stack above the original and resolves first (CR 707.10). The copy's controller
-     * may choose new targets, handled by [CopyTargetSpellEffect]'s own retarget pause. Matching
-     * reads color/type off the spell's [CardComponent] — projected *battlefield* state doesn't apply
-     * to an object on the stack — and happens now, at payment time, not at trigger resolution.
+     * The trigger resolves *before* the spell — for Goggles' copy that is the printed behavior (the
+     * copy is put onto the stack above the original and resolves first, CR 707.10), and the copy's
+     * own retarget pause lets its controller choose new targets. Matching reads color/type off the
+     * spell's [CardComponent] — projected *battlefield* state doesn't apply to an object on the
+     * stack — and happens now, at payment time, not at trigger resolution.
      */
-    private fun copySpellWhenSpent(state: GameState, spell: CastSpellOnStack, spellFilter: GameObjectFilter): List<PendingTrigger> {
+    private fun triggerWhenSpent(
+        state: GameState,
+        spell: CastSpellOnStack,
+        spellFilter: GameObjectFilter,
+        effect: Effect,
+    ): List<PendingTrigger> {
         if (!spellMatches(state, spell.action, spellFilter)) return emptyList()
-        return listOf(
-            selfTrigger(
-                state, spell, "copy_when_spent",
-                CopyTargetSpellEffect(target = EffectTarget.TriggeringEntity),
-                "Copy ${spell.cardComponent.name}. You may choose new targets for the copy."
-            )
-        )
+        return listOf(selfTrigger(state, spell, "trigger_when_spent", effect, effect.description))
     }
 
     /**

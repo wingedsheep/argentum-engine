@@ -2837,7 +2837,7 @@
                     "color": "RED",
                     "riders": [
                         {
-                            "type": "CopySpellWhenSpent",
+                            "type": "TriggersWhenSpent",
                             "spellFilter": {
                                 "cardPredicates": [
                                     {
@@ -2852,6 +2852,10 @@
                                         "color": "RED"
                                     }
                                 ]
+                            },
+                            "effect": {
+                                "type": "CopyTargetSpell",
+                                "target": "TriggeringEntity"
                             }
                         }
                     ]

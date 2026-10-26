@@ -65,28 +65,35 @@ sealed interface ManaSpellRider {
     }
 
     /**
-     * "When that mana is spent to cast a [spellFilter] spell, copy that spell and you may choose
-     * new targets for the copy." (Pyromancer's Goggles, with
-     * `spellFilter = GameObjectFilter.InstantOrSorcery.withColor(Color.RED)`.)
+     * "When you spend this mana to cast a [spellFilter] spell, [effect]." — the delayed triggered
+     * ability a mana ability sets up for the spell its mana pays for. Pyromancer's Goggles
+     * (`spellFilter = GameObjectFilter.InstantOrSorcery.withColor(Color.RED)`,
+     * `effect = CopyTargetSpellEffect(EffectTarget.TriggeringEntity)`): "When that mana is spent to
+     * cast a red instant or sorcery spell, copy that spell …". Scaled Nurturer
+     * (`GameObjectFilter.Creature.withSubtype("Dragon")`, `Effects.GainLife(2)`): "… you gain 2 life".
      *
      * On consumption the cast pipeline matches the spell against [spellFilter] using its cast
-     * characteristics. On a match, a triggered ability is placed on the stack **above** the spell
-     * that, on resolution, copies it (CR 707.10) — so the copy resolves before the original, which
-     * is the printed behavior. The copy's controller may choose new targets.
+     * characteristics, at payment time. On a match, a triggered ability running [effect] is put on
+     * the stack **above** the spell, so it resolves first. [EffectTarget.TriggeringEntity] names the
+     * spell ("that spell" / "it"); the mana's controller controls the trigger. The trigger is built
+     * with the spell as its source, so it fires whether or not the mana's producer is still on the
+     * battlefield, and it still resolves if the spell has left the stack in the meantime.
      *
-     * The rider is a no-op when the spell doesn't match (e.g. the {R} paid for a creature spell).
-     * Consuming two riders copies the spell twice, one independent copy per rider.
+     * The rider is a no-op when the spell doesn't match (the {G} paid for a non-Dragon spell).
+     * Consuming two riders fires [effect] twice, one trigger per rider.
      *
-     * @property spellFilter Which cast spells the rider copies.
+     * @property spellFilter Which cast spells set the trigger off.
+     * @property effect What the trigger does when it resolves.
      */
-    @SerialName("CopySpellWhenSpent")
+    @SerialName("TriggersWhenSpent")
     @Serializable
-    data class CopySpellWhenSpent(
-        val spellFilter: GameObjectFilter
+    data class TriggersWhenSpent(
+        val spellFilter: GameObjectFilter,
+        val effect: Effect,
     ) : ManaSpellRider {
         override val description: String =
-            "When that mana is spent to cast a ${spellFilter.description} spell, copy that spell " +
-                "and you may choose new targets for the copy"
+            "When you spend this mana to cast ${article(spellFilter.description)} spell, " +
+                effect.description.replaceFirstChar { it.lowercase() }
     }
 
     /**

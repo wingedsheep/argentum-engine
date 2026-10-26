@@ -2674,7 +2674,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   pools. Plain `END_OF_TURN` mana, despite the name, is lost as each step and phase ends (CR 500.5).
   See [ManaExpiry](#manaexpiry). `riders` is a `Set<ManaSpellRider>`
   applied to whatever spell this mana ends up paying for (Pyromancer's Goggles tags its {R} with
-  `CopySpellWhenSpent`); as with `AddManaOfChoice`, riders without a `restriction` are stored under
+  `TriggersWhenSpent` carrying a copy effect); as with `AddManaOfChoice`, riders without a `restriction` are stored under
   `ManaRestriction.AnySpend` so the rider survives in the pool while the mana stays spendable on
   anything. See [ManaSpellRider](#manaspellrider).
 - `AddColorlessMana(amount, restriction?, riders?, expiry?)` — add colorless; `riders` and `expiry`
@@ -16961,13 +16961,17 @@ the rider twice (Pyromancer's Goggles: "That many copies will be created").
 - `ManaSpellRider.ScryOnSharedTypeWithCommander(amount)` — Path of Ancestry: if the spell is
   a creature spell that shares a creature type with any of the controller's commanders,
   queues a `scry amount` triggered ability above the spell.
-- `ManaSpellRider.CopySpellWhenSpent(spellFilter)` — Pyromancer's Goggles
-  (`GameObjectFilter.InstantOrSorcery.withColor(Color.RED)`): if the cast spell matches
-  `spellFilter`, queues a `CopyTargetSpellEffect(TriggeringEntity)` triggered ability **above** the
-  spell, so the copy resolves first (CR 707.10) and its controller may choose new targets. Matching
-  happens at payment time against the spell's cast characteristics; a non-matching spell is a silent
-  no-op. Because the queued trigger's source is the *spell*, it still fires if the mana's producer
-  has already left the battlefield.
+- `ManaSpellRider.TriggersWhenSpent(spellFilter, effect)` — "When you spend this mana to cast a
+  [filter] spell, [effect]": the delayed triggered ability a mana ability sets up. If the cast spell
+  matches `spellFilter` (at payment time, against its cast characteristics), queues a triggered
+  ability running `effect` **above** the spell, so it resolves first; `EffectTarget.TriggeringEntity`
+  names the spell ("that spell", "it"). A non-matching spell is a silent no-op, and each rider-carrying
+  mana spent fires its own trigger. Because the queued trigger's source is the *spell*, it still fires
+  if the mana's producer has already left the battlefield, and it still resolves if the spell has left
+  the stack. Pyromancer's Goggles: `TriggersWhenSpent(GameObjectFilter.InstantOrSorcery.withColor(Color.RED),
+  Effects.CopyTargetSpell(EffectTarget.TriggeringEntity))` — the copy resolves before the original
+  (CR 707.10) and its controller may choose new targets. Scaled Nurturer:
+  `TriggersWhenSpent(GameObjectFilter.Creature.withSubtype("Dragon"), Effects.GainLife(2))`.
 - `ManaSpellRider.GrantsKeywordWhenSpent(keyword, spellFilter, duration = Duration.EndOfTurn)` — Carnelian Orb of Dragonkind
   (`Keyword.HASTE`, `GameObjectFilter.Creature.withSubtype("Dragon")`): "If that mana is spent on a
   [filter] spell, it gains [keyword] until end of turn." The one rider that puts **nothing** on the

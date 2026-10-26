@@ -32,12 +32,12 @@ class ManaEmptyingConversionTest : FunSpec({
         test("a restricted unit is recoloured but keeps its restriction and riders") {
             val pool = ManaPoolComponent()
                 .addRestricted(Color.GREEN, 1, ManaRestriction.InstantOrSorceryOnly)
-                .addRestricted(Color.RED, 1, ManaRestriction.AnySpend, riders = setOf(ManaSpellRider.CopySpellWhenSpent(com.wingedsheep.sdk.scripting.GameObjectFilter.InstantOrSorcery)))
+                .addRestricted(Color.RED, 1, ManaRestriction.AnySpend, riders = setOf(ManaSpellRider.TriggersWhenSpent(com.wingedsheep.sdk.scripting.GameObjectFilter.InstantOrSorcery, com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect(com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity))))
             val after = pool.emptyAtBoundary(convertTo = Color.BLACK, retain = emptySet())
             after.black shouldBe 0
             after.restrictedMana.map { Triple(it.color, it.restriction, it.riders) } shouldBe listOf(
                 Triple(Color.BLACK, ManaRestriction.InstantOrSorceryOnly, emptySet()),
-                Triple(Color.BLACK, ManaRestriction.AnySpend, setOf(ManaSpellRider.CopySpellWhenSpent(com.wingedsheep.sdk.scripting.GameObjectFilter.InstantOrSorcery))),
+                Triple(Color.BLACK, ManaRestriction.AnySpend, setOf(ManaSpellRider.TriggersWhenSpent(com.wingedsheep.sdk.scripting.GameObjectFilter.InstantOrSorcery, com.wingedsheep.sdk.scripting.effects.CopyTargetSpellEffect(com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity)))),
             )
         }
 
