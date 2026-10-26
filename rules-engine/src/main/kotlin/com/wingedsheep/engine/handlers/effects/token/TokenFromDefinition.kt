@@ -153,8 +153,11 @@ object TokenFromDefinition {
         newState = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.applyBeforeEntry(newState, tokenId, cardRegistry, predicateEvaluator)
         newState = BattlefieldEntry.place(newState, controllerId, tokenId)
 
-        // As-enters: enters tapped (CR 614). The payLifeCost (shock-land) form is land-only.
-        val entersTapped = cardDef.script.replacementEffects.filterIsInstance<EntersTapped>().firstOrNull()
+        // As-enters: enters tapped (CR 614). The payLifeCost (shock-land) form is land-only. Read from
+        // the identity the token entered with — a granted entry copy replaced the minted definition.
+        val enteringDef = newState.getEntity(tokenId)?.get<CardComponent>()
+            ?.let { cardRegistry.getCard(it.cardDefinitionId) } ?: cardDef
+        val entersTapped = enteringDef.script.replacementEffects.filterIsInstance<EntersTapped>().firstOrNull()
         var enteredTapped = false
         if (entersTapped != null && entersTapped.payLifeCost == null) {
             val shouldEnterTapped = entersTapped.unlessCondition?.let { condition ->

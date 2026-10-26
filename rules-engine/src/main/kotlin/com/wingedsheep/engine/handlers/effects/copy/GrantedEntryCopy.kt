@@ -24,25 +24,35 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * reads it the same way: the permanent-spell resolver, the effect move pipeline (`EffectCopyEntry`,
  * `EffectEntryChoices`, the zone transition) and the token / direct-insertion paths.
  *
- * Copy effects apply before the entrant's other as-enters replacements (CR 614.12 looks at the
- * permanent as it would exist on the battlefield), so the copied identity is installed first and
- * the entrant's own "enters as a copy" choice is not asked — whichever order the two copy effects
- * applied in, it would end up a copy of the bound object.
+ * Copy effects are applied before the entrant's other entry replacements (CR 616.1c), and those
+ * others are then read from the permanent as it would exist with the copy applied (CR 614.12). So
+ * the copied identity is installed first, and the entrant's own "enters as a copy" choice is not
+ * asked: whichever order the two copy effects applied in, it would end up a copy of the bound object.
  *
  * A [Duration.NextUse] grant is spent once it modifies an entry; it keeps applying to the objects
  * entering in that same event and is purged at the event boundary
- * ([com.wingedsheep.engine.replacement.ActiveReplacements.purgeSpent]). When two such grants apply
- * to one entrant the most recent one wins — the last copy effect applied is the one that shows.
+ * ([com.wingedsheep.engine.replacement.ActiveReplacements.purgeSpent]). Every grant that applies to
+ * an entry is applied to it (CR 616.1f) and so spent by it. When grants bound to different objects
+ * apply to one entrant, the copy shown is the most recently granted one's: the entrant's controller
+ * would order them (CR 616.1c), and that ordering choice isn't offered.
+ *
+ * A face-down entrant is still modified: it becomes a copy under its face-down status (CR 708.10) —
+ * it keeps the face-down characteristics, and the copied values show if it is turned face up.
  */
 object GrantedEntryCopy {
 
-    /** A granted copy that applies to an entrant: the grant's index and the identity it copies. */
-    data class Found(val grantIndex: Int, val choice: EntryCopyChoice)
+    /**
+     * The granted copies that modify an entrant: every applying grant's index, and the identity
+     * shown — the most recently granted one's.
+     */
+    data class Found(val grantIndices: List<Int>, val choice: EntryCopyChoice)
 
-    /** The granted copy replacement that modifies [entityId]'s entry, or null when none applies. */
+    /** The granted copy replacements that modify [entityId]'s entry, or null when none applies. */
     fun find(state: GameState, entityId: EntityId, evaluator: PredicateEvaluator): Found? {
         val grants = state.grantedReplacementEffects
         if (grants.isEmpty()) return null
+        var shown: EntryCopyChoice? = null
+        val indices = mutableListOf<Int>()
         for (index in grants.indices.reversed()) {
             val grant = grants[index]
             val replacement = grant.replacement as? EntersAsCopy ?: continue
@@ -52,17 +62,21 @@ object GrantedEntryCopy {
             val context = PredicateContext(sourceId = grant.entityId, controllerId = grant.controllerId)
             if (!evaluator.matches(state, state.projectedState, entityId, pattern.filter, context)) continue
             val copied = referenceIdentity(state, referenceId, grant.referenceSnapshot) ?: continue
-            return Found(index, EntryCopyChoice(replacement, copied, referenceId))
+            indices += index
+            if (shown == null) shown = EntryCopyChoice(replacement, copied, referenceId)
         }
-        return null
+        return shown?.let { Found(indices, it) }
     }
 
-    /** Mark a one-shot grant as having modified an entry. */
+    /** Mark every one-shot grant that modified an entry as spent. */
     fun spend(state: GameState, found: Found): GameState {
-        val grant = state.grantedReplacementEffects.getOrNull(found.grantIndex) ?: return state
-        if (grant.duration !is Duration.NextUse || grant.spent) return state
-        return state.copy(grantedReplacementEffects = state.grantedReplacementEffects.toMutableList().also {
-            it[found.grantIndex] = grant.copy(spent = true)
+        val grants = state.grantedReplacementEffects
+        val toSpend = found.grantIndices.filter { i ->
+            grants.getOrNull(i)?.let { it.duration is Duration.NextUse && !it.spent } == true
+        }
+        if (toSpend.isEmpty()) return state
+        return state.copy(grantedReplacementEffects = grants.toMutableList().also { list ->
+            for (i in toSpend) list[i] = list[i].copy(spent = true)
         })
     }
 

@@ -18397,8 +18397,13 @@ not update an existing copy.
   The entrant copies the object's copiable values as it enters, or as it last existed on the
   battlefield once it has left (its departure snapshot, else the grant-time one). With `NextUse` the
   first entry event it modifies spends it — every matching object entering in that event is copied —
-  and an entry it doesn't match (a noncreature) leaves it waiting. If two such grants apply to one
-  entrant, the most recent wins.
+  and an entry it doesn't match (a noncreature) leaves it waiting. Every grant that applies to an
+  entry is applied and spent by it (CR 616.1f); when grants bound to different objects apply to one
+  entrant, the most recently granted one's copy is the one shown (the controller's CR 616.1c ordering
+  choice isn't offered). A face-down entrant is modified too, copying under its face-down status (CR
+  708.10). The copy has no as-enters choice, so `optional` must be false, and `copyFromZone`,
+  `filterByTotalManaSpent` and `exileCopiedCard` are rejected. Only the granted form is read — a
+  printed `copyOf` (Essence of the Wild) isn't wired.
   **The copy is settled first, then the copied identity's own entry replacements run (CR 614.12).**
   On the cast path the spell takes on the copied identity and then walks the rest of the as-enters
   pipeline *as the copy*: the copied card's `EntersWithChoice` questions (chained in choice-type

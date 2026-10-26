@@ -2,7 +2,9 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -132,11 +134,24 @@ class GrantedEntryCopyReplacementTest : FunSpec({
         }
     }
 
+    val wolfThenWolf = card("Test Wolf Then Wolf") {
+        manaCost = "{G}"
+        typeLine = "Sorcery"
+        oracleText = "Create a 2/2 green Wolf creature token. Then create another."
+        spell { effect = wolves(1) then wolves(1) }
+    }
+
+    val arbor = card("Test Arbor") {
+        typeLine = "Land Creature — Forest Dryad"
+        power = 1
+        toughness = 1
+    }
+
     data class Setup(val driver: GameTestDriver, val me: EntityId, val opponent: EntityId)
 
     fun setup(): Setup {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(reflection, seer, hydra, giant, clone, relic, twinWolves, wolfGift, reanimate))
+        driver.registerCards(TestCards.all + listOf(reflection, seer, hydra, giant, clone, relic, twinWolves, wolfGift, reanimate, wolfThenWolf, arbor))
         driver.initMirrorMatch(deck = Deck.of("Island" to 40), startingLife = 20)
         val me = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -264,6 +279,72 @@ class GrantedEntryCopyReplacementTest : FunSpec({
         driver.state.grantedReplacementEffects shouldHaveSize 1
 
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN, driver.getOpponent(me))
+        driver.state.grantedReplacementEffects.shouldBeEmpty()
+    }
+    test("two grants both apply to the first entry and are both spent; the copy shown is the most recent one's") {
+        val (driver, me) = setup()
+        val giant = driver.putCreatureOnBattlefield(me, "Test Giant")
+        val hydra = driver.putCreatureOnBattlefield(me, "Test Hydra")
+        driver.reflect(me, giant)
+        driver.reflect(me, hydra)
+        driver.state.grantedReplacementEffects shouldHaveSize 2
+
+        driver.cast(me, "Test Seer")
+        driver.named("Test Hydra") shouldHaveSize 2
+        driver.state.grantedReplacementEffects.shouldBeEmpty()
+
+        driver.cast(me, "Test Seer")
+        withClue("the older grant was used up by the same entry, so the next creature enters as itself") {
+            driver.named("Test Seer") shouldHaveSize 1
+        }
+    }
+
+    test("a later, separate entry within the same resolving spell is not copied") {
+        val (driver, me) = setup()
+        val chosen = driver.putCreatureOnBattlefield(me, "Test Giant")
+        driver.reflect(me, chosen)
+        driver.cast(me, "Test Wolf Then Wolf")
+
+        val tokens = driver.state.getBattlefield().filter { driver.state.getEntity(it)?.has<TokenComponent>() == true }
+        tokens.mapNotNull { driver.nameOf(it) }.sorted() shouldBe listOf("Test Giant", "Wolf Token").sorted()
+    }
+
+    test("the copy takes the chosen creature's printed values, not its counters or pump") {
+        val (driver, me) = setup()
+        val chosen = driver.putCreatureOnBattlefield(me, "Test Giant")
+        driver.reflect(me, chosen)
+        driver.cast(me, "Giant Growth", listOf(chosen))
+        driver.cast(me, "Test Seer")
+
+        val copy = driver.named("Test Giant").single { it != chosen }
+        driver.state.projectedState.getPower(copy) shouldBe 3
+        driver.state.projectedState.getToughness(copy) shouldBe 3
+    }
+
+    test("a land creature that is played enters as a copy") {
+        val (driver, me) = setup()
+        val chosen = driver.putCreatureOnBattlefield(me, "Test Giant")
+        driver.reflect(me, chosen)
+        val land = driver.putCardInHand(me, "Test Arbor")
+        driver.playLand(me, land).error shouldBe null
+
+        driver.nameOf(land) shouldBe "Test Giant"
+        driver.state.grantedReplacementEffects.shouldBeEmpty()
+    }
+
+    test("a face-down creature spell is modified too: it stays face down, copying under that status") {
+        val (driver, me) = setup()
+        val chosen = driver.putCreatureOnBattlefield(me, "Test Giant")
+        driver.reflect(me, chosen)
+        val morph = driver.putCardInHand(me, "Morph Test Creature")
+        driver.giveMana(me, Color.GREEN, 3)
+        driver.submit(CastSpell(me, morph, castFaceDown = true)).error shouldBe null
+        driver.bothPass()
+
+        driver.state.getBattlefield().contains(morph) shouldBe true
+        driver.state.getEntity(morph)?.has<FaceDownComponent>() shouldBe true
+        driver.state.projectedState.getPower(morph) shouldBe 2
+        driver.nameOf(morph) shouldBe "Test Giant"
         driver.state.grantedReplacementEffects.shouldBeEmpty()
     }
 })

@@ -22,7 +22,9 @@ import kotlin.reflect.KClass
  * If exactly one, auto-returns it. If none for this player, does nothing.
  * If no cards remain in the linked exile at all, removes the global triggered ability.
  */
-class ReturnOneFromLinkedExileExecutor : EffectExecutor<ReturnOneFromLinkedExileEffect> {
+class ReturnOneFromLinkedExileExecutor(
+    private val zones: com.wingedsheep.engine.handlers.effects.ZoneTransitionService,
+) : EffectExecutor<ReturnOneFromLinkedExileEffect> {
 
     override val effectType: KClass<ReturnOneFromLinkedExileEffect> = ReturnOneFromLinkedExileEffect::class
 
@@ -68,7 +70,7 @@ class ReturnOneFromLinkedExileExecutor : EffectExecutor<ReturnOneFromLinkedExile
         }
 
         if (playerCards.size == 1) {
-            return returnCardToBattlefield(state, playerCards.first(), sourceId)
+            return returnCardToBattlefield(state, playerCards.first(), sourceId, zones.cardRegistry, zones.predicateEvaluator)
         }
 
         // Multiple eligible cards — create a decision
@@ -115,7 +117,9 @@ class ReturnOneFromLinkedExileExecutor : EffectExecutor<ReturnOneFromLinkedExile
         fun returnCardToBattlefield(
             state: GameState,
             cardId: EntityId,
-            sourceId: EntityId
+            sourceId: EntityId,
+            registry: com.wingedsheep.engine.registry.CardRegistry,
+            evaluator: com.wingedsheep.engine.handlers.PredicateEvaluator,
         ): EffectResult {
             val container = state.getEntity(cardId)
                 ?: return EffectResult.success(state)
@@ -135,6 +139,8 @@ class ReturnOneFromLinkedExileExecutor : EffectExecutor<ReturnOneFromLinkedExile
             newState = newState.updateEntity(cardId) {
                 it.without<com.wingedsheep.engine.state.components.identity.ExiledFromZoneComponent>()
             }
+            newState = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy
+                .applyBeforeEntry(newState, cardId, registry, evaluator)
             newState = com.wingedsheep.engine.handlers.effects.BattlefieldEntry
                 .place(newState, ownerId, cardId)
 

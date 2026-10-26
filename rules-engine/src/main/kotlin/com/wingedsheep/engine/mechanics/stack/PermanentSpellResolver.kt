@@ -51,8 +51,9 @@ internal class PermanentSpellResolver(
         val cardDef = cardComponent?.cardDefinitionId?.let { cardRegistry.getCard(it) }
         // A granted "they enter as copies of the chosen creature" (Mystic Reflection) is a copy
         // effect too, with nothing to choose: install it and skip the spell's own copy choice — in
-        // either order the permanent would end up a copy of the bound object.
-        if (cardComponent != null && !spellComponent.castFaceDown) {
+        // either order the permanent would end up a copy of the bound object. A face-down spell is
+        // modified too, becoming a copy under its face-down status (CR 708.10).
+        if (cardComponent != null) {
             val granted = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.find(state, spellId, predicateEvaluator)
             if (granted != null) {
                 val copied = com.wingedsheep.engine.handlers.effects.copy.EffectCopyEntry.apply(state, spellId, granted.choice)

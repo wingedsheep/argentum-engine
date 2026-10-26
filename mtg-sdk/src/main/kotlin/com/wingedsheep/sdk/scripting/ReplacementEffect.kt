@@ -2436,9 +2436,12 @@ data class ReplaceLifePaymentWithLibraryExile(
  *                   is never a permanent's own printed self-copy: it is granted with
  *                   [com.wingedsheep.sdk.scripting.effects.GrantReplacementEffectEffect] (usually with
  *                   [Duration.NextUse]), which binds the reference to the resolving ability's object
- *                   — a [EffectTarget.ContextTarget] becomes the [EffectTarget.SpecificEntity] it named.
- *                   [appliesTo] then says which entrants it modifies, and [copyFilter] / [copyFromZone]
- *                   / [filterByTotalManaSpent] (the as-enters choice) are unused. The copied values
+ *                   — a target reference ([EffectTarget.BoundVariable] / [EffectTarget.ContextTarget])
+ *                   becomes the [EffectTarget.SpecificEntity] it named. It is read only when granted;
+ *                   a printed one (Essence of the Wild's "creatures you control enter as a copy of
+ *                   this") isn't wired. [appliesTo] then says which entrants it modifies; there is no
+ *                   as-enters choice, so `optional` must be false and [copyFilter] is unused
+ *                   ([copyFromZone] / [filterByTotalManaSpent] / [exileCopiedCard] are rejected). The copied values
  *                   are the object's as the entrant enters, or as it last existed on the battlefield
  *                   if it has left. Null (default) is the classic Clone: the entrant's own as-enters
  *                   choice.
@@ -2472,6 +2475,11 @@ data class EntersAsCopy(
         require(duration == Duration.Permanent || duration == Duration.EndOfTurn) {
             "EntersAsCopy supports only Permanent or EndOfTurn durations, got $duration"
         }
+        require(copyOf == null || (!optional && copyFromZone == Zone.BATTLEFIELD &&
+            !filterByTotalManaSpent && !exileCopiedCard)) {
+            "EntersAsCopy(copyOf = …) copies one bound object: it has no as-enters choice, so it can't be " +
+                "optional or set copyFromZone / filterByTotalManaSpent / exileCopiedCard"
+        }
     }
 
     override val priorityGroup: ReplacementPriorityGroup
@@ -2484,7 +2492,8 @@ data class EntersAsCopy(
         val tappedWord = if (tappedIfCopied) "tapped " else ""
         val entrants = (appliesTo as? EventPattern.ZoneChangeEvent)?.filter?.description
         val lead = if (copyOf != null) {
-            "${entrants ?: "they"} enter ${tappedWord}as copies of ${copyOf.description}"
+            val copied = if (copyOf is EffectTarget.SpecificEntity) "the chosen object" else copyOf.description
+            "each ${entrants ?: "permanent"} entering enters ${tappedWord}as a copy of $copied"
         } else if (duration == Duration.EndOfTurn) {
             val who = if (optional) "you may have it" else "it"
             // "Becomes a copy … until end of turn" is printed on non-creatures (Cursed Mirror).

@@ -1116,7 +1116,7 @@ class MiscContinuationResumer(
         }
 
         val result = com.wingedsheep.engine.handlers.effects.linkedexile.ReturnOneFromLinkedExileExecutor
-            .returnCardToBattlefield(state, selectedCard, continuation.sourceId)
+            .returnCardToBattlefield(state, selectedCard, continuation.sourceId, services.cardRegistry, services.predicateEvaluator)
 
         return checkForMore(result.state, result.events)
     }
