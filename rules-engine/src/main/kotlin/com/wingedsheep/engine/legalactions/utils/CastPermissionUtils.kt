@@ -70,6 +70,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.engine.handlers.effects.AnnouncedDivision
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.OnceOnlyAbilityKind
 
 /**
  * Extracted permission-checking helpers from LegalActionsCalculator: per-player cast locks, flash
@@ -916,12 +917,12 @@ class CastPermissionUtils(
      * Generic-only (colored pips untouched, CR 118.7); reductions stack additively and the most
      * restrictive (largest) [ReduceActivatedAbilityCost.manaFloor] is applied as the floor.
      *
-     * [isExhaustAbility] is the activated ability's `isExhaust` flag (CR 702.177). A static with
-     * [ReduceActivatedAbilityCost.exhaustOnly] applies only when it is true — Boom Scholar's "Exhaust
-     * abilities of other permanents you control cost {2} less to activate" leaves those permanents'
-     * ordinary activated abilities at full price. [isPowerUpAbility] is the same story for `isPowerUp`
-     * (CR 702.193) and [ReduceActivatedAbilityCost.powerUpOnly] (Hulk, Gamma Goliath), and it
-     * additionally switches on power-up's *own* cost reduction — see
+     * [onceOnlyKind] is the activated ability's `ActivatedAbility.onceOnlyKind` — exhaust, power-up
+     * or boast. A static with [ReduceActivatedAbilityCost.onceOnlyKind] applies only to abilities of
+     * that kind — Boom Scholar's "Exhaust abilities of other permanents you control cost {2} less to
+     * activate" leaves those permanents' ordinary activated abilities at full price, as do Hulk,
+     * Gamma Goliath (power-up) and Dragonkin Berserker (boast). A power-up ability additionally
+     * switches on power-up's *own* cost reduction — see
      * [applyPowerUpSelfReduction], which is pip-wise rather than generic-only and so runs as its own
      * step before the statics above. CR 601.2f lets multiple cost reductions apply in any order.
      *
@@ -943,18 +944,17 @@ class CastPermissionUtils(
         state: GameState,
         sourceId: EntityId?,
         activatorId: EntityId,
-        isExhaustAbility: Boolean = false,
-        isPowerUpAbility: Boolean = false,
+        onceOnlyKind: OnceOnlyAbilityKind? = null,
         isManaAbility: Boolean = false,
         chosenTargetIds: List<EntityId>? = emptyList(),
         abilityKeyword: com.wingedsheep.sdk.core.Keyword? = null,
     ): AbilityCost {
         if (sourceId == null) return cost
         val reduced =
-            if (isPowerUpAbility) applyPowerUpSelfReduction(cost, state, sourceId) else cost
+            if (onceOnlyKind == OnceOnlyAbilityKind.POWER_UP) applyPowerUpSelfReduction(cost, state, sourceId) else cost
         val (net, manaFloor) =
             sumActivatedAbilityCostModifications(
-                state, sourceId, activatorId, isExhaustAbility, isPowerUpAbility, isManaAbility, chosenTargetIds,
+                state, sourceId, activatorId, onceOnlyKind, isManaAbility, chosenTargetIds,
                 abilityKeyword
             )
         if (net == 0) return reduced
@@ -1066,8 +1066,8 @@ class CastPermissionUtils(
      * any other (battlefield) scope → the source's base filter matched against [sourceId] under
      * projected state.
      *
-     * An `exhaustOnly` reduction contributes nothing unless [isExhaustAbility] is set, and likewise
-     * a `powerUpOnly` one unless [isPowerUpAbility] is set, and a `keyword` one unless
+     * A `onceOnlyKind` reduction contributes nothing unless the ability is of that [onceOnlyKind],
+     * and a `keyword` one unless
      * [abilityKeyword] (the ability's `ActivatedAbility.keyword`) is that keyword. An `excludeManaAbilities` *increase*
      * contributes nothing when [isManaAbility] is set (Suppression Field). An
      * `onlyIfTargetIsSource` reduction contributes only when [chosenTargetIds] include the static's
@@ -1077,8 +1077,7 @@ class CastPermissionUtils(
         state: GameState,
         sourceId: EntityId,
         activatorId: EntityId,
-        isExhaustAbility: Boolean,
-        isPowerUpAbility: Boolean,
+        onceOnlyKind: OnceOnlyAbilityKind?,
         isManaAbility: Boolean,
         chosenTargetIds: List<EntityId>?,
         abilityKeyword: com.wingedsheep.sdk.core.Keyword?,
@@ -1094,8 +1093,7 @@ class CastPermissionUtils(
             for (ability in cardDef.liveStaticAbilities(state, entityId)) {
                 when (ability) {
                     is com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost -> {
-                        if (ability.exhaustOnly && !isExhaustAbility) continue
-                        if (ability.powerUpOnly && !isPowerUpAbility) continue
+                        if (ability.onceOnlyKind != null && ability.onceOnlyKind != onceOnlyKind) continue
                         if (ability.keyword != null && ability.keyword != abilityKeyword) continue
                         if (ability.excludeManaAbilities && isManaAbility) continue
                         if (ability.onlyIfTargetIsSource) {

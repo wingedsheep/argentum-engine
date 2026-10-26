@@ -22,7 +22,7 @@ import io.kotest.matchers.shouldNotBe
  * Boom Scholar (DFT #189) — {1}{R}{G} Goblin Advisor, 3/3.
  *
  * "Exhaust abilities of other permanents you control cost {2} less to activate." — the new
- * `ReduceActivatedAbilityCost(exhaustOnly = true)` qualifier, which gates on the *ability*
+ * `ReduceActivatedAbilityCost(onceOnlyKind = OnceOnlyAbilityKind.EXHAUST)` qualifier, which gates on the *ability*
  * (`isExhaust`, CR 702.177) rather than the permanent. Asserted behaviourally: each board is given
  * *exactly* the mana the reduced (or unreduced) cost needs, so "is this activation affordable" is the
  * assertion — no reliance on a displayed cost string.

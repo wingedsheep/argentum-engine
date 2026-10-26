@@ -585,7 +585,7 @@ class ActivateAbilityHandler(
             state, abilityOnStack, action.targets,
             targetRequirements = effectiveTargetReqs,
             costsTap = effectiveCost.hasTapCost(),
-            isExhaust = ability.isExhaust,
+            onceOnlyKind = ability.onceOnlyKind,
             cantBeCopied = ability.cantBeCopied,
             isLoyalty = ability.isPlaneswalkerAbility,
             loyaltyCountersRemoved = when (val cost = ability.cost) {
@@ -725,7 +725,7 @@ class ActivateAbilityHandler(
             val repeatStackResult = stackResolver.putActivatedAbility(
                 currentState, repeatAbilityOnStack, action.targets,
                 targetRequirements = effectiveTargetReqs,
-                isExhaust = ability.isExhaust,
+                onceOnlyKind = ability.onceOnlyKind,
             )
             currentState = repeatStackResult.newState
             events.addAll(repeatStackResult.events)

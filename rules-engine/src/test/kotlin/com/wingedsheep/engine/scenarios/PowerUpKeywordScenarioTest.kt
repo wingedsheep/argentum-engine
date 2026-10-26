@@ -14,8 +14,10 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ActivationRestriction
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.OnceOnlyAbilityKind
 import com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import io.kotest.assertions.withClue
@@ -23,7 +25,6 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldStartWith
-import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 
 /**
  * Feature tests for the **Power-up** keyword (CR 702.193) — "Power-up — [Cost]: [Effect]" means
@@ -103,12 +104,12 @@ class PowerUpKeywordScenarioTest : ScenarioTestBase() {
             ability = ReduceActivatedAbilityCost(
                 filter = GroupFilter(GameObjectFilter.Creature.youControl(), excludeSelf = true),
                 amount = DynamicAmount.Fixed(3),
-                powerUpOnly = true
+                onceOnlyKind = OnceOnlyAbilityKind.POWER_UP
             )
         }
     }
 
-    /** A plain (non power-up) activated ability, to prove `powerUpOnly` does not discount it. */
+    /** A plain (non power-up) activated ability, to prove `onceOnlyKind = POWER_UP` does not discount it. */
     private val plainActivator = card("Steady Technician") {
         manaCost = "{1}{U}"
         typeLine = "Creature — Human Scientist"
@@ -417,7 +418,7 @@ class PowerUpKeywordScenarioTest : ScenarioTestBase() {
                     ?.getCount(CounterType.PLUS_ONE_PLUS_ONE) shouldBe 1
             }
 
-            test("a powerUpOnly static stacks with power-up's own reduction (CR 601.2f)") {
+            test("a POWER_UP-only static stacks with power-up's own reduction (CR 601.2f)") {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")
                     .withCardOnBattlefield(1, "Temporal Conqueror", enteredThisTurn = true)
@@ -432,7 +433,7 @@ class PowerUpKeywordScenarioTest : ScenarioTestBase() {
                 }
             }
 
-            test("a powerUpOnly static leaves an ordinary activated ability at full price") {
+            test("a POWER_UP-only static leaves an ordinary activated ability at full price") {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")
                     .withCardOnBattlefield(1, "Steady Technician")
@@ -446,7 +447,7 @@ class PowerUpKeywordScenarioTest : ScenarioTestBase() {
                     it.action.let { a -> a is ActivateAbility && a.abilityId == technicianAbilityId }
                 }
                 withClue("the technician's ability must be offered") { action shouldNotBe null }
-                withClue("powerUpOnly gates on the ability, so a plain one keeps its printed cost") {
+                withClue("onceOnlyKind gates on the ability, so a plain one keeps its printed cost") {
                     action!!.description shouldStartWith "{5}{U}{U}{U}:"
                 }
             }

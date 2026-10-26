@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.OnceOnlyAbilityKind
 import com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -20,7 +21,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Exhaust — {4}{R}{G}: Creatures and Vehicles you control gain trample until end of turn. Put two
  * +1/+1 counters on this creature.
  *
- * The discount is [ReduceActivatedAbilityCost] with `exhaustOnly = true` — the qualifier gates on the
+ * The discount is [ReduceActivatedAbilityCost] with `onceOnlyKind = OnceOnlyAbilityKind.EXHAUST` — the qualifier gates on the
  * *ability* (`isExhaust`, CR 702.177), not the permanent, so a matching permanent's ordinary
  * activated abilities stay at full price while its exhaust ability is {2} cheaper. `excludeSelf`
  * carries the printed "**other** permanents", so Boom Scholar's own {4}{R}{G} is never discounted.
@@ -46,7 +47,7 @@ val BoomScholar = card("Boom Scholar") {
         ability = ReduceActivatedAbilityCost(
             filter = GroupFilter(GameObjectFilter.Permanent.youControl(), excludeSelf = true),
             amount = DynamicAmounts.fixed(2),
-            exhaustOnly = true
+            onceOnlyKind = OnceOnlyAbilityKind.EXHAUST
         )
     }
 

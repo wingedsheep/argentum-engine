@@ -14,6 +14,7 @@ import com.wingedsheep.engine.state.nameVisibleToAll
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.targets.*
+import com.wingedsheep.sdk.scripting.OnceOnlyAbilityKind
 
 /**
  * Puts the non-cast stack objects on the stack — a copy of a spell (CR 707.10), a triggered
@@ -287,7 +288,7 @@ internal object StackPlacement {
         targetRequirements: List<TargetRequirement> = emptyList(),
         emitActivationEvent: Boolean = true,
         costsTap: Boolean = false,
-        isExhaust: Boolean = false,
+        onceOnlyKind: OnceOnlyAbilityKind? = null,
         cantBeCopied: Boolean = false,
         isLoyalty: Boolean = false,
         loyaltyCountersRemoved: Int = 0,
@@ -323,7 +324,7 @@ internal object StackPlacement {
                     abilityEntityId = abilityId,
                     costsTap = costsTap,
                     isManaAbility = false,
-                    isExhaust = isExhaust,
+                    onceOnlyKind = onceOnlyKind,
                     isLoyalty = isLoyalty,
                     loyaltyCountersRemoved = loyaltyCountersRemoved,
                     keyword = ability.activatedAbility?.keyword,

@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.scripting.DrawStepFirstCard
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.EventPattern.*
 import com.wingedsheep.sdk.scripting.ExploreReveal
+import com.wingedsheep.sdk.scripting.OnceOnlyAbilityKind
 import com.wingedsheep.sdk.scripting.AbilityTriggerCause
 import com.wingedsheep.sdk.scripting.TapSymbolInCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -936,7 +937,9 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
      * Moon-Reader), [excludeManaAbilities] the explicit exhaust "isn't a mana ability" one.
      * [of] scopes the ability's source permanent; [targeting] is "an ability that targets a creature
      * or player"; [loyalty] / [minLoyaltyRemoved] are loyalty abilities (CR 606.4, a −X counts X);
-     * [exhaust] is an exhaust ability (CR 702.177); [tapInCost] is "with / without {T} in its
+     * [onceOnlyKind] is "an exhaust / power-up / boast ability" (CR 702.177 / 702.193 / 702.142 —
+     * `OnceOnlyAbilityKind.BOAST` for Frenzied Raider's "whenever you activate a boast ability");
+     * [tapInCost] is "with / without {T} in its
      * activation cost" — the Antiquities "without {T}" wording counts mana abilities too, so it pairs
      * with [includeManaAbilities]. [keyword] is
      * "a [keyword] ability" — `keyword = Keyword.NINJUTSU` for "whenever you activate a ninjutsu
@@ -947,7 +950,7 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
         targeting: Recipient? = null,
         loyalty: Boolean = false,
         minLoyaltyRemoved: Int = 0,
-        exhaust: Boolean = false,
+        onceOnlyKind: OnceOnlyAbilityKind? = null,
         includeManaAbilities: Boolean = false,
         excludeManaAbilities: Boolean = false,
         tapInCost: TapSymbolInCost? = null,
@@ -958,7 +961,7 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
             targetMatch = targeting,
             sourceFilter = of,
             tapInCost = tapInCost,
-            requireExhaust = exhaust,
+            onceOnlyKind = onceOnlyKind,
             excludeManaAbilities = excludeManaAbilities,
             includeManaAbilities = includeManaAbilities,
             requireLoyalty = loyalty || minLoyaltyRemoved > 0,

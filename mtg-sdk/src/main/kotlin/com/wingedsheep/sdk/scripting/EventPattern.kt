@@ -2887,10 +2887,12 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * The engine emits an `AbilityActivatedEvent` for every activated ability, mana or not, with
      * `costsTap` set from its cost. Null (the default) imposes nothing.
      *
-     * [requireExhaust] narrows to exhaust abilities (CR 702.177). On its own it is the plain
-     * Aetherdrift wording — "Whenever you activate an exhaust ability" (Adrenaline Jockey, Rangers'
-     * Refueler) — which counts an exhaust *mana* ability too. [excludeManaAbilities] adds back the
-     * "isn't a mana ability" clause for Pit Automaton, whose Oracle text was updated to
+     * [onceOnlyKind] narrows to one "activate only once" keyword's abilities — exhaust (CR 702.177),
+     * power-up (CR 702.193) or boast (CR 702.142), read off `ActivatedAbility.onceOnlyKind`. On its
+     * own it is the plain wording — "Whenever you activate an exhaust ability" (Adrenaline Jockey,
+     * Rangers' Refueler), "Whenever you activate a boast ability" (Frenzied Raider) — which counts
+     * such a *mana* ability too (an exhaust mana ability exists). [excludeManaAbilities] adds back
+     * the "isn't a mana ability" clause for Pit Automaton, whose Oracle text was updated to
      * "an exhaust ability that isn't a mana ability" so its copy payoff can't grab a mana ability.
      *
      * [includeManaAbilities] drops the default "isn't a mana ability" gate entirely: the trigger
@@ -2924,7 +2926,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         val targetMatch: com.wingedsheep.sdk.scripting.events.Recipient? = null,
         val sourceFilter: GameObjectFilter? = null,
         val tapInCost: TapSymbolInCost? = null,
-        val requireExhaust: Boolean = false,
+        val onceOnlyKind: OnceOnlyAbilityKind? = null,
         val excludeManaAbilities: Boolean = false,
         val includeManaAbilities: Boolean = false,
         val requireLoyalty: Boolean = false,
@@ -2956,9 +2958,9 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
             // alone does the narrowing ("you activate a creature's ability" — Elrond).
             val qualifier = when {
                 targetMatch != null -> "targets a " + targetMatch.description
-                requireExhaust && excludeManaAbilities ->
-                    "is an exhaust ability that isn't a mana ability"
-                requireExhaust -> "is an exhaust ability"
+                onceOnlyKind != null && excludeManaAbilities ->
+                    "is ${onceOnlyKind.article} ${onceOnlyKind.displayName} ability that isn't a mana ability"
+                onceOnlyKind != null -> "is ${onceOnlyKind.article} ${onceOnlyKind.displayName} ability"
                 tapInCost == TapSymbolInCost.WITHOUT && includeManaAbilities ->
                     "doesn't have {T} in its activation cost"
                 tapInCost == TapSymbolInCost.WITHOUT -> "doesn't have {T} in its activation cost and isn't a mana ability"

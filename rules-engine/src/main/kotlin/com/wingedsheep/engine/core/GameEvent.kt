@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.TapReason
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import com.wingedsheep.sdk.scripting.OnceOnlyAbilityKind
 
 /**
  * Sealed hierarchy of all game events.
@@ -935,7 +936,8 @@ data class AbilityActivatedEvent(
     val abilityEntityId: EntityId? = null,
     val costsTap: Boolean = false,
     val isManaAbility: Boolean = false,
-    val isExhaust: Boolean = false,
+    /** The "activate only once" keyword the ability carries (exhaust / power-up / boast), if any. */
+    val onceOnlyKind: OnceOnlyAbilityKind? = null,
     /** True for a loyalty ability (CR 606) — "whenever you activate a loyalty ability". */
     val isLoyalty: Boolean = false,
     /**

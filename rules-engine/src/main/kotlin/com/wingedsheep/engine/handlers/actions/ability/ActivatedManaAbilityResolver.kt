@@ -116,7 +116,7 @@ internal class ActivatedManaAbilityResolver(
             abilityEntityId = null,
             costsTap = costsTap,
             isManaAbility = true,
-            isExhaust = ability.isExhaust
+            onceOnlyKind = ability.onceOnlyKind
         )
         val activationEvents = events + manaAbilityActivatedEvent
 

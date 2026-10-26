@@ -1493,6 +1493,107 @@
     ]
 }
 
+// Dragonkin Berserker
+{
+    "name": "Dragonkin Berserker",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Berserker",
+    "oracleText": "First strike\nBoast abilities you activate cost {1} less to activate for each Dragon you control.\nBoast — {4}{R}: Create a 5/5 red Dragon creature token with flying. (Activate only if this creature attacked this turn and only once each turn.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Dragonkin Berserker:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 5,
+                    "toughness": 5,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Dragon"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                },
+                "restrictions": [
+                    "OncePerTurn",
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "AttackedThisTurn"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "isBoast": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ReduceActivatedAbilityCost",
+                "filter": {
+                    "baseFilter": {}
+                },
+                "amount": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "Dragon"
+                },
+                "onceOnlyKind": "BOAST",
+                "reach": "ACTIVATED_BY_YOU"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "rarity": "RARE",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e7f22fe4-2390-4c3d-8b5e-0cf398d97f6a.jpg?1783928231",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The cost reduction applies only to generic mana in the activation costs of boast abilities you activate. It can't reduce requirements of specific colors of mana."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Once you announce that you're activating a boast ability, no player may take actions until the ability has been paid for. Notably, opponents can't try to change the activation cost by removing your Dragons."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "A boast ability can be activated at any point after the creature with that ability has been declared as an attacker. This can be before blockers are declared, after blockers are declared but before combat damage is dealt, during combat after combat damage is dealt, during the postcombat main phase, during the end step, or, in some unusual cases, during the cleanup step."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a creature with a boast ability is put onto the battlefield attacking, it was never declared as an attacker. Its boast ability can't be activated that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Dread Rider
 {
     "name": "Dread Rider",
@@ -2372,6 +2473,52 @@
     "colorIdentityOverride": [
         "BLACK",
         "WHITE"
+    ]
+}
+
+// Frenzied Raider
+{
+    "name": "Frenzied Raider",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Demon Berserker",
+    "oracleText": "Whenever you activate a boast ability, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Frenzied Raider:1",
+                "trigger": {
+                    "type": "AbilityActivatedEvent",
+                    "onceOnlyKind": "BOAST"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "UNCOMMON",
+        "artist": "Lius Lasahido",
+        "flavorText": "\"Arrogant maggot. You won't be so proud when I rip out your tongue and drink from your skull!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/22c59e0b-5b78-4cf5-9c2a-92ccf833778f.jpg?1783928228",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Frenzied Raider's triggered ability will resolve before the boast ability that caused it to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

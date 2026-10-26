@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.OnceOnlyAbilityKind
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -29,7 +30,7 @@ val RangersRefueler = card("Rangers' Refueler") {
         "Crew 2"
 
     triggeredAbility {
-        trigger = Triggers.you.activatesAbility(exhaust = true)
+        trigger = Triggers.you.activatesAbility(onceOnlyKind = OnceOnlyAbilityKind.EXHAUST)
         effect = Effects.DrawCards(1)
     }
 

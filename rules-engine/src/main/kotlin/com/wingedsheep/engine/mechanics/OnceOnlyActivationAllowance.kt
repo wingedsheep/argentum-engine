@@ -105,11 +105,7 @@ object OnceOnlyActivationAllowance {
             ?.activationCount(ability.id)
             ?: 0
         if (timesActivated == 0) return true
-        val kind = when {
-            ability.isExhaust -> OnceOnlyAbilityKind.EXHAUST
-            ability.isPowerUp -> OnceOnlyAbilityKind.POWER_UP
-            else -> return false
-        }
+        val kind = ability.onceOnlyKind?.takeIf { it != OnceOnlyAbilityKind.BOAST } ?: return false
         val extra = extraActivationsFor(state, playerId, kind, cardRegistry, conditionEvaluator)
             ?: return true
         return timesActivated < 1 + extra

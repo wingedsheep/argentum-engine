@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.OnceOnlyAbilityKind
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -35,7 +36,7 @@ val AfterburnerExpert = card("Afterburner Expert") {
 
     triggeredAbility {
         triggerZone = Zone.GRAVEYARD
-        trigger = Triggers.you.activatesAbility(exhaust = true)
+        trigger = Triggers.you.activatesAbility(onceOnlyKind = OnceOnlyAbilityKind.EXHAUST)
         effect = Effects.Move(EffectTarget.Self, Zone.BATTLEFIELD)
         description = "Whenever you activate an exhaust ability, return this card from your " +
             "graveyard to the battlefield."

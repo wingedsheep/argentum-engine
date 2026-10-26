@@ -8677,11 +8677,14 @@ The shapes in this family, with their engine notes.
   **Engine note.** The engine emits `AbilityActivatedEvent` for *every* activated mana ability, on the manual
   activation path and on the auto-tap fast path used to pay for spells and abilities, with `isManaAbility = true`
   and `costsTap` set from the cost. Mana-ability activations are deliberately kept out of the client game log.
-- `Triggers.you.activatesAbility(exhaust = true)` — you activate an ability marked `isExhaust`. Backed by
-  `EventPattern.AbilityActivatedEvent(player = Player.You, requireExhaust = true)` and the activation event's
-  `isExhaust` flag. The event is emitted as soon as the exhaust ability is put on the stack, so the triggered
-  ability is stacked above it and resolves first (Adrenaline Jockey, Rangers' Aetherhive). This is the plain
-  Aetherdrift wording, which counts an exhaust *mana* ability too.
+- `Triggers.you.activatesAbility(onceOnlyKind = OnceOnlyAbilityKind.EXHAUST)` — you activate an ability marked
+  `isExhaust`. Backed by `EventPattern.AbilityActivatedEvent(player = Player.You, onceOnlyKind = EXHAUST)` and the
+  activation event's `onceOnlyKind` (read off `ActivatedAbility.onceOnlyKind`, the one mapping of the
+  `isExhaust` / `isPowerUp` / `isBoast` markers onto `OnceOnlyAbilityKind`). The event is emitted as soon as the
+  exhaust ability is put on the stack, so the triggered ability is stacked above it and resolves first
+  (Adrenaline Jockey, Rangers' Aetherhive). This is the plain Aetherdrift wording, which counts an exhaust *mana*
+  ability too. `OnceOnlyAbilityKind.BOAST` is "whenever you activate a boast ability" (Frenzied Raider), and
+  `POWER_UP` "a power-up ability" — the same axis.
 - `Triggers.you.activatesAbility(keyword = Keyword.NINJUTSU)` — you activate a **ninjutsu** ability (or any keyword
   ability whose `ActivatedAbility.keyword` is set). Backed by `EventPattern.AbilityActivatedEvent(keyword = …)` and the
   activation event's `keyword`. Counts a printed or a granted ninjutsu alike; Satoru Umezawa pairs it with
@@ -8695,8 +8698,8 @@ The shapes in this family, with their engine notes.
   `AbilityActivatedEvent(requireLoyalty = true, minLoyaltyRemoved = n)`, matched against the activation
   event's `loyaltyCountersRemoved` — N for a [−N] cost (CR 606.4), the chosen X for [−X], 0 for [+N] / [0].
   The count is fixed once the cost is paid, so matching it on the event is the same as the CR 603.4 recheck.
-- `Triggers.you.activatesAbility(exhaust = true, excludeManaAbilities = true)` — the same, but with the "that isn't a mana ability" clause
-  (`EventPattern.AbilityActivatedEvent(requireExhaust = true, excludeManaAbilities = true)`). Pit Automaton's
+- `Triggers.you.activatesAbility(onceOnlyKind = OnceOnlyAbilityKind.EXHAUST, excludeManaAbilities = true)` — the same, but with the
+  "that isn't a mana ability" clause (`EventPattern.AbilityActivatedEvent(onceOnlyKind = EXHAUST, excludeManaAbilities = true)`). Pit Automaton's
   Oracle text was updated on release to add that clause so its copy payoff can't latch onto a mana ability;
   the activated ability is exposed as `EffectTarget.TriggeringEntity`, so
   `Effects.CopyTargetSpellOrAbility(EffectTarget.TriggeringEntity)` copies it. Usable as a **delayed** trigger
@@ -11844,7 +11847,7 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   cost `{amount}` less to activate" (Bladehold War-Whip): the reduction skips the bearer's own equip
   abilities and applies to every other equip ability its controller activates. Mutually exclusive with
   `onlyOwnEquip`.
-- `ReduceActivatedAbilityCost(filter, amount, manaFloor = 0, exhaustOnly = false, powerUpOnly = false,
+- `ReduceActivatedAbilityCost(filter, amount, manaFloor = 0, onceOnlyKind = null,
   onlyIfTargetIsSource = false, excludeManaAbilities = false, reach = ActivatedAbilityReach.MATCHING_PERMANENTS,
   keyword = null, firstEachTurn = false)`
   — the activated abilities of permanents
@@ -11864,19 +11867,21 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   from both the enumerator (displayed cost) and `ActivateAbilityHandler` (paid cost), keyed on the
   ability's source permanent; non-mana costs (`{T}`, sacrifice) and abilities with no mana cost are
   unaffected. Backed by `ManaCost.reduceGenericWithManaFloor(amount, minTotalMana)`.
-  `exhaustOnly = true` narrows the reduction to abilities marked `isExhaust` (CR 702.177) — it gates
+  `onceOnlyKind = OnceOnlyAbilityKind.EXHAUST` narrows the reduction to abilities marked `isExhaust` (CR 702.177) — it gates
   on the **ability**, not the permanent, so a matching permanent's ordinary activated abilities stay
   at full price while its exhaust ability is discounted. Boom Scholar: "Exhaust abilities of other
   permanents you control cost {2} less to activate" →
-  `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Permanent.youControl(), excludeSelf = true), DynamicAmount.Fixed(2), exhaustOnly = true)`.
+  `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Permanent.youControl(), excludeSelf = true), DynamicAmount.Fixed(2), onceOnlyKind = OnceOnlyAbilityKind.EXHAUST)`.
   Note that `GroupFilter.excludeSelf` (the printed "**other** permanents") is honored by this read
   site directly — the projection layer never sees this static — so a lord never discounts its own
-  abilities. `powerUpOnly = true` is the same qualifier for power-up abilities (`isPowerUp`,
+  abilities. `onceOnlyKind = POWER_UP` is the same qualifier for power-up abilities (`isPowerUp`,
   CR 702.193) — Hulk, Gamma Goliath: "Power-up abilities of other creatures you control cost {3} less
   to activate" →
-  `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Creature.youControl(), excludeSelf = true), DynamicAmount.Fixed(3), powerUpOnly = true)`.
+  `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Creature.youControl(), excludeSelf = true), DynamicAmount.Fixed(3), onceOnlyKind = OnceOnlyAbilityKind.POWER_UP)`.
   It stacks with power-up's own reduction, which is applied first (CR 601.2f lets multiple reductions
-  apply in any order).
+  apply in any order). `onceOnlyKind = BOAST` with the `ACTIVATED_BY_YOU` reach is Dragonkin Berserker:
+  "Boast abilities you activate cost {1} less to activate for each Dragon you control" →
+  `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Any), DynamicAmounts.battlefield(Player.You, GameObjectFilter.Any.withSubtype(Subtype.DRAGON)).count(), reach = ActivatedAbilityReach.ACTIVATED_BY_YOU, onceOnlyKind = OnceOnlyAbilityKind.BOAST)`.
   `keyword = <Keyword>` narrows the reduction to activations of that keyword ability — the activated
   ability's own `ActivatedAbility.keyword` marker. Silver-Fur Master: "Ninjutsu abilities you activate
   cost {1} less to activate" →
@@ -12741,7 +12746,7 @@ express any power-up cost whose reduction includes a colored pip — which is mo
 Two effects read the `isPowerUp` flag rather than the permanent, and both gate on the *ability*, so a
 permanent's ordinary activated abilities are untouched:
 
-- `ReduceActivatedAbilityCost(..., powerUpOnly = true)` — the sibling of `exhaustOnly`, for "Power-up
+- `ReduceActivatedAbilityCost(..., onceOnlyKind = OnceOnlyAbilityKind.POWER_UP)` — the axis Boom Scholar sets to `EXHAUST`, for "Power-up
   abilities of other creatures you control cost {3} less to activate" (Hulk, Gamma Goliath).
 - `TakeExtraTurn(powerUpAbilitiesCantBeActivated = true)` — "During that turn, power-up abilities
   can't be activated" (Kang the Conqueror). Not a static on the permanent: the lockout binds every
@@ -12764,7 +12769,10 @@ in the postcombat main phase and the end step; and the per-turn activation count
 every other "activate only once each turn" ability. Note boast is once **each turn**, not exhaust's
 once ever — so it never adds `ActivationRestriction.Once`, and a creature that attacks on two
 consecutive turns boasts on both. "Creatures you control can boast twice" (Birgi) raises that per-turn
-limit with `ExtraOnceOnlyActivations(OnceOnlyAbilityKind.BOAST, extraActivations = 1)`.
+limit with `ExtraOnceOnlyActivations(OnceOnlyAbilityKind.BOAST, extraActivations = 1)`. "Whenever you
+activate a boast ability" (Frenzied Raider) is `Triggers.you.activatesAbility(onceOnlyKind =
+OnceOnlyAbilityKind.BOAST)`, and a boast's own "costs {1} less to activate for each Dragon you control"
+(Dragonkin Berserker) is the ordinary `genericCostReduction` over a battlefield count.
 
 ```kotlin
 // Baron Helmut Zemo — Boast — Exile any number of black cards from your graveyard with fifteen or

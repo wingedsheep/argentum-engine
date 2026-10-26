@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.OnceOnlyAbilityKind
 
 /**
  * Rangers' Aetherhive — Aetherdrift #217
@@ -23,7 +24,7 @@ val RangersAetherhive = card("Rangers' Aetherhive") {
     keywords(Keyword.VIGILANCE)
 
     triggeredAbility {
-        trigger = Triggers.you.activatesAbility(exhaust = true)
+        trigger = Triggers.you.activatesAbility(onceOnlyKind = OnceOnlyAbilityKind.EXHAUST)
         effect = Effects.CreateToken(
             power = 1,
             toughness = 1,

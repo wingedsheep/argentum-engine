@@ -132,7 +132,7 @@ class ZoneActivatedAbilityEnumerator(
                         ability, state, entityId, playerId, context.targetUtils,
                         predicateEvaluator = predicateEvaluator
                     ),
-                    state, entityId, playerId, ability.isExhaust, ability.isPowerUp, ability.isManaAbility,
+                    state, entityId, playerId, ability.onceOnlyKind, ability.isManaAbility,
                     chosenTargetIds = if (ability.targetRequirements.isEmpty()) emptyList() else null,
                     abilityKeyword = ability.keyword,
                 )

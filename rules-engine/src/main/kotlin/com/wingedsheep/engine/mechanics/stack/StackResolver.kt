@@ -21,6 +21,7 @@ import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.effects.FaceDownMode
 import com.wingedsheep.sdk.scripting.targets.*
+import com.wingedsheep.sdk.scripting.OnceOnlyAbilityKind
 
 /**
  * Manages the stack: casting spells, activating abilities, and resolution.
@@ -238,13 +239,13 @@ class StackResolver(
         targetRequirements: List<TargetRequirement> = emptyList(),
         emitActivationEvent: Boolean = true,
         costsTap: Boolean = false,
-        isExhaust: Boolean = false,
+        onceOnlyKind: OnceOnlyAbilityKind? = null,
         cantBeCopied: Boolean = false,
         isLoyalty: Boolean = false,
         loyaltyCountersRemoved: Int = 0,
     ): ExecutionResult =
         StackPlacement.putActivatedAbility(
-            state, ability, targets, targetRequirements, emitActivationEvent, costsTap, isExhaust,
+            state, ability, targets, targetRequirements, emitActivationEvent, costsTap, onceOnlyKind,
             cantBeCopied, isLoyalty, loyaltyCountersRemoved
         )
 

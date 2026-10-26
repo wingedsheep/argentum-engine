@@ -1562,6 +1562,9 @@ enum class OnceOnlyAbilityKind {
         POWER_UP -> "power-up"
         BOAST -> "boast"
     }
+
+    /** The indefinite article before [displayName] — "an exhaust ability", "a boast ability". */
+    val article: String get() = if (this == EXHAUST) "an" else "a"
 }
 
 /**

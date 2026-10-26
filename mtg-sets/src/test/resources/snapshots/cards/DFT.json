@@ -133,7 +133,7 @@
                 "id": "Adrenaline Jockey:2",
                 "trigger": {
                     "type": "AbilityActivatedEvent",
-                    "requireExhaust": true
+                    "onceOnlyKind": "EXHAUST"
                 },
                 "binding": "ANY",
                 "effect": {
@@ -354,7 +354,7 @@
                 "id": "Afterburner Expert:2",
                 "trigger": {
                     "type": "AbilityActivatedEvent",
-                    "requireExhaust": true
+                    "onceOnlyKind": "EXHAUST"
                 },
                 "binding": "ANY",
                 "effect": {
@@ -1534,7 +1534,7 @@
                     "type": "Fixed",
                     "amount": 2
                 },
-                "exhaustOnly": true
+                "onceOnlyKind": "EXHAUST"
             }
         ]
     },
@@ -12127,7 +12127,7 @@
                     "trigger": {
                         "event": {
                             "type": "AbilityActivatedEvent",
-                            "requireExhaust": true,
+                            "onceOnlyKind": "EXHAUST",
                             "excludeManaAbilities": true
                         },
                         "binding": "ANY"
@@ -13068,7 +13068,7 @@
                 "id": "Rangers' Aetherhive:1",
                 "trigger": {
                     "type": "AbilityActivatedEvent",
-                    "requireExhaust": true
+                    "onceOnlyKind": "EXHAUST"
                 },
                 "binding": "ANY",
                 "effect": {
@@ -13126,7 +13126,7 @@
                 "id": "Rangers' Refueler:1",
                 "trigger": {
                     "type": "AbilityActivatedEvent",
-                    "requireExhaust": true
+                    "onceOnlyKind": "EXHAUST"
                 },
                 "binding": "ANY",
                 "effect": {

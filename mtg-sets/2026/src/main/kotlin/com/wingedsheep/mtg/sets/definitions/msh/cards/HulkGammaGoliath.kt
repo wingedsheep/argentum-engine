@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.OnceOnlyAbilityKind
 import com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -21,8 +22,8 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Power-up — {6}{R}{G}: Put five +1/+1 counters on Hulk. (Activate each power-up ability only
  * once. Reduce the cost by his mana cost if he entered this turn.)
  *
- * The cycle's payoff card, and the only one that needs `powerUpOnly` on
- * [ReduceActivatedAbilityCost] — the sibling of `exhaustOnly`. Like that flag it gates on the
+ * The cycle's payoff card, and the only one that needs `onceOnlyKind = POWER_UP` on
+ * [ReduceActivatedAbilityCost] — the same axis Boom Scholar sets to `EXHAUST`. It gates on the
  * **ability**, not the permanent: a discounted creature's ordinary activated abilities stay at
  * full price while its power-up is {3} cheaper.
  *
@@ -53,7 +54,7 @@ val HulkGammaGoliath = card("Hulk, Gamma Goliath") {
         ability = ReduceActivatedAbilityCost(
             filter = GroupFilter(GameObjectFilter.Creature.youControl(), excludeSelf = true),
             amount = DynamicAmounts.fixed(3),
-            powerUpOnly = true
+            onceOnlyKind = OnceOnlyAbilityKind.POWER_UP
         )
     }
 

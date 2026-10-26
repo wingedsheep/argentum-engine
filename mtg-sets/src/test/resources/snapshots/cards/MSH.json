@@ -8188,7 +8188,7 @@
                     "type": "Fixed",
                     "amount": 3
                 },
-                "powerUpOnly": true
+                "onceOnlyKind": "POWER_UP"
             }
         ]
     },

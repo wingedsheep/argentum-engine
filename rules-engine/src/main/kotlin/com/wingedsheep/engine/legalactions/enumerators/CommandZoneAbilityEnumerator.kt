@@ -69,7 +69,7 @@ class CommandZoneAbilityEnumerator : ActionEnumerator {
                 // Priced through the board's statics as the activation handler's totaller does —
                 // an "abilities you activate" reduction (Zirda) reaches the command zone too.
                 val effectiveCost = context.castPermissionUtils.applyActivatedAbilityCostReduction(
-                    ability.cost, state, entityId, playerId, ability.isExhaust, ability.isPowerUp,
+                    ability.cost, state, entityId, playerId, ability.onceOnlyKind,
                     ability.isManaAbility,
                     chosenTargetIds = if (ability.targetRequirements.isEmpty()) emptyList() else null,
                     abilityKeyword = ability.keyword,

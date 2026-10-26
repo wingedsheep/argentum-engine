@@ -60,7 +60,7 @@ class TriggerMatcher(
 
     /**
      * The activation-kind axes of [EventPattern.AbilityActivatedEvent] shared by the main loop and
-     * the ATTACHED path: keyword, loyalty, exhaust, {T}-in-cost, and the mana-ability gate.
+     * the ATTACHED path: keyword, loyalty, once-only keyword (exhaust / power-up / boast), {T}-in-cost, and the mana-ability gate.
      */
     fun matchesActivationKind(trigger: EventPattern.AbilityActivatedEvent, event: AbilityActivatedEvent): Boolean {
         if (trigger.keyword != null && event.keyword != trigger.keyword) return false
@@ -71,10 +71,10 @@ class TriggerMatcher(
             TapSymbolInCost.WITHOUT -> if (event.costsTap) return false
             null -> {}
         }
-        return if (trigger.requireExhaust) {
-            // Plain "whenever you activate an exhaust ability" counts an exhaust mana ability
+        return if (trigger.onceOnlyKind != null) {
+            // Plain "whenever you activate an exhaust / boast ability" counts such a mana ability
             // too; only Pit Automaton's updated wording re-adds the exclusion.
-            event.isExhaust && !(trigger.excludeManaAbilities && event.isManaAbility)
+            event.onceOnlyKind == trigger.onceOnlyKind && !(trigger.excludeManaAbilities && event.isManaAbility)
         } else {
             // Default "activates an ability that isn't a mana ability" (Flamescroll Celebrant):
             // the engine emits AbilityActivatedEvent for every activated ability, mana or not.

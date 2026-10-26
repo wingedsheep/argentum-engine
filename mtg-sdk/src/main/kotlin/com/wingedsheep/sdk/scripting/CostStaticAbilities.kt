@@ -1109,12 +1109,14 @@ enum class SpecialActionKind(val costPhrase: String) {
  * an ordinary reduction. Non-mana costs (`{T}`, sacrifice) and abilities with no mana cost are
  * unaffected. Multiple sources stack additively before the floor is applied.
  *
- * [exhaustOnly] narrows the reduction to abilities marked `isExhaust` (CR 702.177) — Boom Scholar's
- * "Exhaust abilities of other permanents you control cost {2} less to activate." It gates on the
+ * [onceOnlyKind] narrows the reduction to one "activate only once" keyword's abilities
+ * (`ActivatedAbility.onceOnlyKind`) — exhaust (CR 702.177): Boom Scholar's "Exhaust abilities of
+ * other permanents you control cost {2} less to activate"; power-up (CR 702.193): Hulk, Gamma
+ * Goliath's "Power-up abilities of other creatures you control cost {3} less to activate"; boast
+ * (CR 702.142): Dragonkin Berserker's "Boast abilities you activate cost {1} less to activate for
+ * each Dragon you control" (with [ActivatedAbilityReach.ACTIVATED_BY_YOU]). It gates on the
  * *ability*, not the permanent, so a matching permanent's ordinary activated abilities cost full
- * price while its exhaust ability is discounted. [powerUpOnly] is its sibling for power-up
- * (CR 702.193) — Hulk, Gamma Goliath's "Power-up abilities of other creatures you control cost {3}
- * less to activate."
+ * price while its exhaust ability is discounted.
  *
  * [onlyIfTargetIsSource] narrows it to activations that **target the static's own source** —
  * Bladegraft Aspirant's "Activated abilities of Equipment you control that target this creature
@@ -1160,8 +1162,7 @@ enum class SpecialActionKind(val costPhrase: String) {
  *   source in whatever zone it is activated from.
  * @property amount Dynamic generic-mana reduction applied to each matching ability's cost.
  * @property manaFloor Minimum total mana the cost may be reduced to (default 0).
- * @property exhaustOnly When true, only exhaust abilities (`ActivatedAbility.isExhaust`) are reduced.
- * @property powerUpOnly When true, only power-up abilities (`ActivatedAbility.isPowerUp`) are reduced.
+ * @property onceOnlyKind When set, only abilities of that keyword (`ActivatedAbility.onceOnlyKind`) are reduced.
  * @property onlyIfTargetIsSource When true, only activations that target this static's source are reduced.
  * @property excludeManaAbilities When true, mana abilities (CR 605) are not reduced.
  * @property reach Which activations the reduction sees — see [ActivatedAbilityReach].
@@ -1178,8 +1179,7 @@ data class ReduceActivatedAbilityCost(
     val filter: GroupFilter,
     val amount: DynamicAmount,
     val manaFloor: Int = 0,
-    val exhaustOnly: Boolean = false,
-    val powerUpOnly: Boolean = false,
+    val onceOnlyKind: OnceOnlyAbilityKind? = null,
     val onlyIfTargetIsSource: Boolean = false,
     val excludeManaAbilities: Boolean = false,
     val reach: ActivatedAbilityReach = ActivatedAbilityReach.MATCHING_PERMANENTS,
@@ -1195,8 +1195,7 @@ data class ReduceActivatedAbilityCost(
     override val description: String = buildString {
         val abilities = when {
             keyword != null -> "${keyword.displayName.lowercase()} abilities"
-            exhaustOnly -> "exhaust abilities"
-            powerUpOnly -> "power-up abilities"
+            onceOnlyKind != null -> "${onceOnlyKind.displayName} abilities"
             else -> "activated abilities"
         }
         if (firstEachTurn) {
@@ -1204,7 +1203,13 @@ data class ReduceActivatedAbilityCost(
             val article = if (noun.firstOrNull()?.lowercaseChar() in setOf('a', 'e', 'i', 'o', 'u')) "an" else "a"
             append("The first activated ability of $article $noun you activate each turn")
         } else if (reach == ActivatedAbilityReach.ACTIVATED_BY_YOU) {
-            append(if (keyword != null) "${keyword.displayName} abilities you activate" else "Abilities you activate")
+            append(
+                when {
+                    keyword != null -> "${keyword.displayName} abilities you activate"
+                    onceOnlyKind != null -> "${onceOnlyKind.displayName.replaceFirstChar { it.uppercase() }} abilities you activate"
+                    else -> "Abilities you activate"
+                }
+            )
             if (excludeManaAbilities) append(" that aren't mana abilities")
         } else if (onlyIfTargetIsSource) {
             append(abilities.replaceFirstChar { it.uppercase() })

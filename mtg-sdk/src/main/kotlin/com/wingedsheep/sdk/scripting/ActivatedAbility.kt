@@ -265,6 +265,20 @@ data class ActivatedAbility(
     val targetRequirement: TargetRequirement?
         get() = targetRequirements.firstOrNull()
 
+    /**
+     * Which "activate only once" keyword this ability is — [isExhaust], [isPowerUp] or [isBoast] —
+     * or null for an ordinary activated ability. The one place that maps the three keyword
+     * markers onto [OnceOnlyAbilityKind], so a card naming the mechanic ("whenever you activate a
+     * boast ability", "Creatures you control can boast twice") reads it the same way everywhere.
+     */
+    val onceOnlyKind: OnceOnlyAbilityKind?
+        get() = when {
+            isExhaust -> OnceOnlyAbilityKind.EXHAUST
+            isPowerUp -> OnceOnlyAbilityKind.POWER_UP
+            isBoast -> OnceOnlyAbilityKind.BOAST
+            else -> null
+        }
+
     val description: String
         get() = descriptionOverride ?: describeWithCost(cost)
 
