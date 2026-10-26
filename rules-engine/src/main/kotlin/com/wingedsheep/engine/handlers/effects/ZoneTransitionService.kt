@@ -80,6 +80,17 @@ import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComp
 
 
 /**
+ * An effect-supplied entry counter ([com.wingedsheep.sdk.scripting.effects.EntryCounter]) with its
+ * count already evaluated — the mover evaluates it before the card leaves its old zone, so the
+ * transition only adds numbers.
+ */
+data class SuppliedEntryCounter(
+    val counterType: com.wingedsheep.sdk.core.CounterType,
+    val onlyIf: com.wingedsheep.sdk.scripting.GameObjectFilter? = null,
+    val count: Int = 1,
+)
+
+/**
  * Options controlling how an entity enters a destination zone.
  */
 data class ZoneEntryOptions(
@@ -97,7 +108,7 @@ data class ZoneEntryOptions(
      * Effect-supplied counters are part of entry, including counter replacements and prevention.
      * Each one's `onlyIf` is read off the entrant's prospective characteristics.
      */
-    val entryCounters: List<com.wingedsheep.sdk.scripting.effects.EntryCounter> = emptyList(),
+    val entryCounters: List<SuppliedEntryCounter> = emptyList(),
     /** Original board for one simultaneous entry event; excludes other entrants' global replacements. */
     val entryCounterReplacementState: GameState? = null,
     /** Opaque game-local token shared only by cards entering in this instruction. */
@@ -1018,7 +1029,7 @@ class ZoneTransitionService(
                                     sourceId = options.entryCounterSourceId,
                                     controllerId = options.entryCounterEffectControllerId ?: destControllerId))
                         } ?: true
-                        if (matches) entryCounterTotals!![entry.counterType] = (entryCounterTotals[entry.counterType] ?: 0) + 1
+                        if (matches) entryCounterTotals!![entry.counterType] = (entryCounterTotals[entry.counterType] ?: 0) + entry.count
                     }
                 }
                 val entryCopy = options.entryCopy?.takeIf { it.copiedCard != null && !options.faceDown }

@@ -359,11 +359,17 @@ data class DestroyAllEquipmentOnTargetEffect(
  * that another effect makes a creature on the battlefield (March of the Machines) counts as a
  * creature, as Recommission's ruling requires, and a permanent that was only a creature through a
  * type-changing effect doesn't (Semester's End's ruling). Null places it unconditionally.
+ *
+ * [count] is how many of them — one by default; a [DynamicAmount] for "return it to the battlefield
+ * with X +1/+1 counters on it, where X is the number of voyage counters on it" (Cosima, God of the
+ * Voyage). It is evaluated once, *before* the card moves, so it can read the card where it was —
+ * counters on a card in exile are gone once it leaves (CR 122.2). Zero or less places none.
  */
 @Serializable
 data class EntryCounter(
     val counterType: CounterType,
-    val onlyIf: GameObjectFilter? = null
+    val onlyIf: GameObjectFilter? = null,
+    val count: DynamicAmount = DynamicAmount.Fixed(1)
 )
 
 @SerialName("MoveToZone")
@@ -391,7 +397,7 @@ data class MoveToZoneEffect(
      */
     val positionFromTop: Int? = null,
     /**
-     * Counters the card enters the battlefield with, one per [EntryCounter], honoring
+     * Counters the card enters the battlefield with, [EntryCounter.count] per entry, honoring
      * counter-placement replacements and prevention. In other destinations they annotate the
      * arriving card — "exile it with a stash counter on it" (Tinybones, Bauble Burglar), "with a dream
      * counter on it" (Goliath Daydreamer). Each entry's [EntryCounter.onlyIf] gates it on the card

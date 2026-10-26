@@ -693,9 +693,15 @@ class DynamicAmountEvaluator(
                 val lkiPolicy = lkiPolicyFor(amount.entity)
                 // A loop's object back on the battlefield is the new object the loop is visiting
                 // (it was returned by this resolution) — read it live, never its old capture.
+                // A triggered ability that functions only off the battlefield (CR 113.6b — one an
+                // exiled card gained there, Cosima, God of the Voyage) reads its source where it
+                // is: the card's battlefield-exit snapshot describes an earlier object.
+                val sourceLiveOffBattlefield = amount.entity == EffectTarget.Self && !staleSource &&
+                    context.resolvingTriggeredAbility?.activeZones?.let { Zone.BATTLEFIELD !in it } == true
                 val readsLastKnown = when (lkiPolicy) {
                     LkiPolicy.LIVE_ONLY -> false
-                    LkiPolicy.LIVE_THEN_LKI -> entityId !in state.getBattlefield() || staleSource || capturedObjectLeft
+                    LkiPolicy.LIVE_THEN_LKI -> !sourceLiveOffBattlefield &&
+                        (entityId !in state.getBattlefield() || staleSource || capturedObjectLeft)
                     LkiPolicy.LIVE_THEN_OWN_MOVE_LKI -> entityId !in state.getBattlefield()
                 }
                 if (readsLastKnown) {

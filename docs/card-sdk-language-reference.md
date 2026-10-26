@@ -1909,7 +1909,7 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   on — by then it's a new object, CR 400.7); `addCounterType` puts one counter of that type on the card
   once it lands ("exile it **with a stash counter on it**" — Tinybones, Bauble Burglar), and is skipped
   along with the move when the `fromZone` gate closes. Both build `MoveToZoneEffect.entryCounters:
-  List<EntryCounter(counterType, onlyIf: GameObjectFilter?)>` (also reachable via `Effects.Move`),
+  List<EntryCounter(counterType, onlyIf: GameObjectFilter?, count: DynamicAmount = Fixed(1))>` (also reachable via `Effects.Move`),
   the single-target counterpart of `MoveCollectionEffect.addCounterType`. `Effects.Move` also takes
   `addCounterIf: GameObjectFilter?` (the one counter's `onlyIf`), which places that counter only when
   the card landed in the destination and matches the filter in *projected* state there — "if a
@@ -1921,7 +1921,12 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   on it if it's a planeswalker" (**Semester's End**: `entryCounters = listOf(EntryCounter(PLUS_ONE_PLUS_ONE,
   Creature), EntryCounter(LOYALTY, Planeswalker))`; a creature planeswalker gets both). On the
   battlefield all of them, plus a planeswalker's printed loyalty, enter as one entry event, so counter
-  replacements (Doubling Season) apply once per counter kind.
+  replacements (Doubling Season) apply once per counter kind. An entry's `count` is evaluated once,
+  *before* the card moves, so it can read the card where it was — "return Cosima to the battlefield
+  with X +1/+1 counters on it, where X is the number of voyage counters on it" (**Cosima, God of the
+  Voyage**: `EntryCounter(PLUS_ONE_PLUS_ONE, count = voyage.amount)` after
+  `storeNumber(countersOnSelf(VOYAGE))`; the exiled card's counters are gone once it leaves exile). A
+  count of zero or less places none.
 - `ExileAndGrantOwnerPlayPermission(target, until?)` — exile + owner may play it (Garth-style).
 - `ExileOpponentsGraveyards()` — exile every card in each opponent's graveyard.
 - `MoveUntilSourceLeaves(target, destination)` — move an object to a non-battlefield, non-stack zone and return it to its previous zone immediately when the source's battlefield visit ends. The return does not use the stack and survives loss of the source's abilities. An exile also populates the ordinary linked-exile pile for client display and linked abilities. Returning permanents enter under their owner's control; tokens and objects that have since left the destination do not return. If the source has already left (including leaving and returning), the initial move does nothing. Ossification uses `Effects.MoveUntilSourceLeaves(victim, Zone.EXILE)` with no leaves trigger.
@@ -18661,6 +18666,7 @@ are their printed spellings (`CounterType.printed`). Text converts back only thr
 - `book` (`CounterType.BOOK`): STX — Spell Satchel. Passive store with no inherent rule: its magecraft trigger adds one, `{T}, Costs.RemoveCounterFromSelf(BOOK)` adds {C}, and `{3}, {T}, Costs.RemoveCounterFromSelf(BOOK, 3)` draws a card. The passive-counter badge displays its count.
 - `study` (`CounterType.STUDY`): STX — Kianne, Dean of Substance // Imbraham, Dean of Theory. A mark on **cards in exile** with no inherent rule: placed by `move(…, ToZone(EXILE), addCounterType = STUDY)` or `run(Effects.AddCountersToCollection(slot, STUDY))` after the exile, read by `GameObjectFilter.Any.withCounter(STUDY)` over `CardSource.FromZone(EXILE, Player.You)` and `DynamicAmounts.zone(Player.You, Zone.EXILE, …).distinctValues(MANA_VALUE)` — cards you *own* in exile, whichever permanent marked them. The counters fall off when the card leaves exile, like any counter on a zone change.
 - `refine` (`CounterType.REFINE`): STX — Uvilda, Dean of Perfection. A countdown on **a card in exile**: Uvilda's `{T}` exiles an instant or sorcery from hand, puts three on it, and grants the card two triggered abilities (`Effects.GrantTriggeredAbility(…, PipelineTarget, Duration.Permanent)` — see *abilities granted to a card in exile*): an `activeZones = EXILE` upkeep trigger that removes one, and a `CountersRemovedEvent(REFINE, lastRemoved = true)` trigger that casts it with `CastFromCollectionWithoutPayingCost(payManaCost = true, costReduction = 4)`. The counters (and the granted abilities) fall off when the card leaves exile.
+- `voyage` (`CounterType.VOYAGE`): KHM — Cosima, God of the Voyage. A tally on **a card in exile** with no inherent rule: Cosima exiles herself at upkeep and gains (in exile, `Duration.Permanent` — see *abilities granted to a card in exile*) a landfall trigger that may add one; declining returns her with that many +1/+1 counters (`EntryCounter.count`) and draws that many. The counters fall off when she leaves exile.
 - `charge`, `time`, `level`, `quest`, `fade`, `vanishing`, `experience`, `age`, `velocity`, `awakening`,
   `blood`, `cage`, `doom`, `storage`, `divinity` (`CounterType.DIVINITY`, a passive counter used by the Myojin
   cycle), `charm`, `music`, `crumble`, `corpse`, `germ`, `ink`, `growth`,

@@ -861,6 +861,13 @@ value class CounterType(val name: String) {
          */
         val REFINE = CounterType("REFINE")
 
+        /**
+         * Voyage counter (KHM — Cosima, God of the Voyage). A tally on a card in exile with no inherent
+         * rule: the ability Cosima gains as she exiles herself adds one per land you control entering,
+         * and returning her reads the count for her +1/+1 counters and cards drawn.
+         */
+        val VOYAGE = CounterType("VOYAGE")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -1014,6 +1021,7 @@ value class CounterType(val name: String) {
             BOOK,
             STUDY,
             REFINE,
+            VOYAGE,
         )
 
         /**

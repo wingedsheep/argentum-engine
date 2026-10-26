@@ -165,12 +165,21 @@ class MoveToZoneEffectExecutor(
             )?.let { return it }
         }
 
+        // Entry-counter counts are read now, while the card is still where it was — "with X +1/+1
+        // counters on it, where X is the number of voyage counters on it" counts the counters it
+        // loses on leaving exile (Cosima, God of the Voyage).
+        val suppliedCounters = effect.entryCounters.mapNotNull { entry ->
+            val count = (entry.count as? com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed)?.amount
+                ?: zones.predicateEvaluator.amounts.evaluate(state, entry.count, context)
+            if (count > 0) com.wingedsheep.engine.handlers.effects.SuppliedEntryCounter(entry.counterType, entry.onlyIf, count) else null
+        }
+
         // Build ZoneEntryOptions based on placement and effect properties
         val entryOptions = buildEntryOptions(effect, cardComponent, controllerId, context.controllerId)
             .copy(lookBackGrants = context.lookBackGrants[targetId], entryCopy = context.entryCopies[targetId], auraHostId = context.entryAuraHosts[targetId],
                 entryChoices = context.entryChoices[targetId]?.values.orEmpty(),
                 grantedRiotModes = context.entryChoices[targetId]?.riotModes.orEmpty(),
-                entryCounters = effect.entryCounters.takeIf { effect.destination == Zone.BATTLEFIELD }.orEmpty(),
+                entryCounters = suppliedCounters.takeIf { effect.destination == Zone.BATTLEFIELD }.orEmpty(),
                 entryCounterSourceId = context.sourceId,
                 entryCounterEffectControllerId = context.controllerId,
                 exiledBy = context.controllerId)
@@ -188,7 +197,7 @@ class MoveToZoneEffectExecutor(
         // everything else. Skip face-down entries: morph creatures enter as 2/2 nameless
         // creatures with no replacement effects from their face-up identity.
         val actualDestZone = transitionResult.actualDestination
-        if (actualDestZone == Zone.BATTLEFIELD && effect.faceDown == null && effect.entryCounters.isEmpty()) {
+        if (actualDestZone == Zone.BATTLEFIELD && effect.faceDown == null && suppliedCounters.isEmpty()) {
             val (counterState, counterEvents) = EntersWithReplacements.applyOnEntry(
                 resultState, targetId, controllerId, cardRegistry,
                 predicateEvaluator = zones.predicateEvaluator, preEntryZone = currentZone
@@ -207,7 +216,7 @@ class MoveToZoneEffectExecutor(
         // An entry's `onlyIf` must match the card in *projected* state where it landed. (Battlefield
         // entries are placed by the zone transition itself, as part of the entry event.)
         if (actualDestZone == effect.destination && actualDestZone != Zone.BATTLEFIELD) {
-            for (entry in effect.entryCounters) {
+            for (entry in suppliedCounters) {
                 val allowed = entry.onlyIf?.let { filter ->
                     zones.predicateEvaluator.matches(
                         resultState, resultState.projectedState, targetId, filter,
@@ -216,7 +225,7 @@ class MoveToZoneEffectExecutor(
                 } ?: true
                 if (allowed) resultState = resultState.updateEntity(targetId) { container ->
                     val existing = container.get<CountersComponent>() ?: CountersComponent()
-                    container.with(existing.withAdded(entry.counterType, 1))
+                    container.with(existing.withAdded(entry.counterType, entry.count))
                 }
             }
         }

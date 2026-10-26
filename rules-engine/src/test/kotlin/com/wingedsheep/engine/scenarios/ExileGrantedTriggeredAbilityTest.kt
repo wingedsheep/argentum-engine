@@ -92,9 +92,32 @@ class ExileGrantedTriggeredAbilityTest : ScenarioTestBase() {
         typeLine = "Artifact"
     }
 
+    /**
+     * Exiles *itself* from the battlefield, so the exiled card carries a battlefield-exit snapshot
+     * (no counters) — the exile-active ability must still count the counters it has in exile.
+     */
+    private val voyager = card("Exile Grant Voyager") {
+        manaCost = "{0}"
+        typeLine = "Artifact"
+        val tally = grantedTriggeredAbility {
+            trigger = Triggers.a(GameObjectFilter.Land.youControl()).enters()
+            triggerZone = Zone.EXILE
+            interveningIf = Conditions.SourceInZone(Zone.EXILE)
+            effect = Effects.GainLife(com.wingedsheep.sdk.dsl.DynamicAmounts.countersOnSelf(CounterType.REFINE))
+            description = "Whenever a land you control enters, if this card is exiled, you gain 1 life for each refine counter on it."
+        }
+        activatedAbility {
+            cost = Costs.Tap
+            effect = Effects.Exile(EffectTarget.Self) then
+                Effects.AddCounters(CounterType.REFINE, 2, EffectTarget.Self) then
+                Effects.GrantTriggeredAbility(tally, EffectTarget.Self, Duration.Permanent)
+        }
+    }
+
     init {
         cardRegistry.register(refinery)
         cardRegistry.register(trinket)
+        cardRegistry.register(voyager)
 
         fun TestGame.activate(index: Int) {
             val source = findPermanent("Exile Grant Refinery")!!
@@ -137,6 +160,25 @@ class ExileGrantedTriggeredAbilityTest : ScenarioTestBase() {
             withClue("the last removal fires the exile-active grant only; the battlefield-only one stays inert") {
                 game.getLifeTotal(1) shouldBe life + 3
             }
+        }
+
+        test("an exile-active ability reads its exiled source's counters, not its battlefield snapshot") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Exile Grant Voyager")
+                .withCardInHand(1, "Plains")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val source = game.findPermanent("Exile Grant Voyager")!!
+            game.execute(ActivateAbility(game.player1Id, source, voyager.activatedAbilities[0].id)).error shouldBe null
+            game.resolveStack()
+            game.isInExile(1, "Exile Grant Voyager") shouldBe true
+
+            val life = game.getLifeTotal(1)
+            game.execute(com.wingedsheep.engine.core.PlayLand(game.player1Id, game.findCardsInHand(1, "Plains").single())).error shouldBe null
+            game.resolveStack()
+            game.getLifeTotal(1) shouldBe life + 2
         }
 
         test("the grants end when the card leaves exile") {

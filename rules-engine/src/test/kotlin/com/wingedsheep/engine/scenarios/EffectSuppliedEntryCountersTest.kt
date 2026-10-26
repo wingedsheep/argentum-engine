@@ -384,4 +384,53 @@ class EffectSuppliedEntryCountersTest : FunSpec({
         counters.getCount(CounterType.STASH) shouldBe 1
         counters.getCount(CounterType.FINALITY) shouldBe 0
     }
+    // Cosima, God of the Voyage: "return Cosima to the battlefield with X +1/+1 counters on it, where X
+    // is the number of voyage counters on it" — the count is read off the card in exile, before the
+    // move strips its counters (CR 122.2).
+    fun exiledWithVoyage(d: GameTestDriver, voyage: Int): com.wingedsheep.sdk.model.EntityId {
+        val id = d.putCardInExile(d.player1, "Grizzly Bears")
+        d.replaceState(d.state.updateEntity(id) { it.with(CountersComponent().withAdded(CounterType.VOYAGE, voyage)) })
+        return id
+    }
+    fun returnWithVoyageCount(id: com.wingedsheep.sdk.model.EntityId) = Effects.Move(
+        EffectTarget.SpecificEntity(id), Zone.BATTLEFIELD, fromZone = Zone.EXILE,
+        entryCounters = listOf(EntryCounter(kind, count = com.wingedsheep.sdk.dsl.DynamicAmounts.countersOn(
+            EffectTarget.SpecificEntity(id), CounterType.VOYAGE))))
+    test("a dynamic entry-counter count is read off the card before it leaves exile") {
+        val d = driver()
+        val id = exiledWithVoyage(d, 3)
+        val result = d.services.effectExecutorRegistry.execute(d.state, returnWithVoyageCount(id),
+            EffectContext(sourceId = null, controllerId = d.player1))
+        (id in result.state.getBattlefield()) shouldBe true
+        val counters = result.state.getEntity(id)!!.get<CountersComponent>()!!
+        counters.getCount(kind) shouldBe 3
+        counters.getCount(CounterType.VOYAGE) shouldBe 0
+        result.events.filterIsInstance<CountersAddedEvent>().sumOf { it.amount } shouldBe 3
+    }
+    test("a dynamic entry-counter count is one placement for counter replacements") {
+        val d = driver()
+        d.putPermanentOnBattlefield(d.player1, doubler.name)
+        val id = exiledWithVoyage(d, 2)
+        val result = d.services.effectExecutorRegistry.execute(d.state, returnWithVoyageCount(id),
+            EffectContext(sourceId = null, controllerId = d.player1))
+        result.state.getEntity(id)!!.get<CountersComponent>()!!.getCount(kind) shouldBe 4
+    }
+    test("a dynamic entry-counter count of zero places no counters") {
+        val d = driver()
+        val id = exiledWithVoyage(d, 0)
+        val result = d.services.effectExecutorRegistry.execute(d.state, returnWithVoyageCount(id),
+            EffectContext(sourceId = null, controllerId = d.player1))
+        (id in result.state.getBattlefield()) shouldBe true
+        (result.state.getEntity(id)?.get<CountersComponent>()?.getCount(kind) ?: 0) shouldBe 0
+        result.events.filterIsInstance<CountersAddedEvent>() shouldBe emptyList()
+    }
+    test("a dynamic entry-counter count annotates a card moved to a non-battlefield zone") {
+        val d = driver()
+        val id = d.putCardInGraveyard(d.player1, "Grizzly Bears")
+        val result = d.services.effectExecutorRegistry.execute(d.state,
+            Effects.Move(EffectTarget.SpecificEntity(id), Zone.EXILE,
+                entryCounters = listOf(EntryCounter(CounterType.STASH, count = com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed(2)))),
+            EffectContext(sourceId = null, controllerId = d.player1))
+        result.state.getEntity(id)!!.get<CountersComponent>()!!.getCount(CounterType.STASH) shouldBe 2
+    }
 })

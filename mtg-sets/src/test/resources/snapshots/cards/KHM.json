@@ -1042,6 +1042,257 @@
     ]
 }
 
+// Cosima, God of the Voyage
+{
+    "name": "Cosima, God of the Voyage",
+    "manaCost": "{2}{U}",
+    "typeLine": "Legendary Creature — God",
+    "oracleText": "At the beginning of your upkeep, you may exile Cosima. If you do, it gains \"Whenever a land you control enters, if Cosima is exiled, you may put a voyage counter on it. If you don't, return Cosima to the battlefield with X +1/+1 counters on it and draw X cards, where X is the number of voyage counters on it.\"",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cosima, God of the Voyage:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Exile Cosima?"
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": "Self",
+                                "destination": "Exile",
+                                "fromZone": "Battlefield"
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "SourceInZone",
+                                        "zones": [
+                                            "Exile"
+                                        ]
+                                    }
+                                },
+                                "then": {
+                                    "type": "GrantTriggeredAbility",
+                                    "ability": {
+                                        "id": "Cosima, God of the Voyage:1",
+                                        "trigger": {
+                                            "type": "ZoneChangeEvent",
+                                            "filter": "land ctrl:you",
+                                            "to": "Battlefield"
+                                        },
+                                        "binding": "ANY",
+                                        "effect": {
+                                            "type": "Gated",
+                                            "gate": {
+                                                "type": "Gate.MayDecide",
+                                                "prompt": "Put a voyage counter on Cosima? If you don't, she returns to the battlefield."
+                                            },
+                                            "then": {
+                                                "type": "AddCounters",
+                                                "counterType": "VOYAGE",
+                                                "count": 1,
+                                                "target": "Self"
+                                            },
+                                            "otherwise": {
+                                                "type": "Composite",
+                                                "effects": [
+                                                    {
+                                                        "type": "StoreNumber",
+                                                        "name": "number0",
+                                                        "amount": {
+                                                            "type": "EntityProperty",
+                                                            "entity": "Self",
+                                                            "numericProperty": {
+                                                                "type": "CounterCount",
+                                                                "counterType": "VOYAGE"
+                                                            }
+                                                        }
+                                                    },
+                                                    {
+                                                        "type": "MoveToZone",
+                                                        "target": "Self",
+                                                        "destination": "Battlefield",
+                                                        "fromZone": "Exile",
+                                                        "entryCounters": [
+                                                            {
+                                                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                                                "count": {
+                                                                    "type": "VariableReference",
+                                                                    "variableName": "number0"
+                                                                }
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "DrawCards",
+                                                        "count": {
+                                                            "type": "VariableReference",
+                                                            "variableName": "number0"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "activeZones": [
+                                            "Exile"
+                                        ],
+                                        "interveningIf": {
+                                            "type": "SourceInZone",
+                                            "zones": [
+                                                "Exile"
+                                            ]
+                                        },
+                                        "descriptionOverride": "Whenever a land you control enters, if Cosima is exiled, you may put a voyage counter on it. If you don't, return Cosima to the battlefield with X +1/+1 counters on it and draw X cards, where X is the number of voyage counters on it."
+                                    },
+                                    "target": "Self",
+                                    "duration": "Permanent"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "The Omenkeel",
+        "manaCost": "{1}{U}",
+        "typeLine": "Legendary Artifact — Vehicle",
+        "oracleText": "Whenever a Vehicle you control deals combat damage to a player, that player exiles that many cards from the top of their library. You may play lands from among those cards for as long as they remain exiled.\nCrew 1",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "keywords": [
+            "CREW"
+        ],
+        "keywordAbilities": [
+            {
+                "type": "Numeric",
+                "keyword": "CREW",
+                "n": 1
+            }
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "The Omenkeel:1",
+                    "trigger": {
+                        "type": "DealsDamageEvent",
+                        "damageType": "DamageCombat",
+                        "recipient": {
+                            "type": "RecipientPlayer",
+                            "player": "Any"
+                        },
+                        "sourceFilter": "permanent Vehicle ctrl:you"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "ContextProperty",
+                                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                                    },
+                                    "player": "TriggeringPlayer"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile",
+                                    "player": "TriggeringPlayer"
+                                }
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "gathered0",
+                                "filter": "land",
+                                "storeMatching": "matching2"
+                            },
+                            {
+                                "type": "GrantMayPlayFromExile",
+                                "from": "matching2",
+                                "expiry": "Permanent"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "50",
+            "rarity": "RARE",
+            "artist": "Micah Epstein",
+            "imageUri": "https://cards.scryfall.io/normal/back/f/a/fab2fca4-a99f-4ffe-9c02-edb6e0be2358.jpg?1783928272",
+            "rulings": [
+                {
+                    "date": "2021-02-05",
+                    "text": "The Omenkeel doesn't allow you to play additional lands during your turn, nor does it allow you to play lands at times you normally can't. In most cases, you'll be able to play only one land from among cards exiled with The Omenkeel during each of your turns."
+                },
+                {
+                    "date": "2021-02-05",
+                    "text": "You can play lands from among cards exiled with The Omenkeel for as long as they remain exiled, even if The Omenkeel leaves the battlefield or another player gains control of it."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "RARE",
+        "artist": "Micah Epstein",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fab2fca4-a99f-4ffe-9c02-edb6e0be2358.jpg?1783928272",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Cosima's ability triggers only if Cosima is on the battlefield at the beginning of your upkeep, and you may exile Cosima only if it is still on the battlefield as the ability resolves."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "While the triggered ability Cosima gains is resolving, if you don't put a voyage counter on Cosima, you'll immediately return it to the battlefield and draw cards equal to the number of voyage counters Cosima had on it in exile. Players can't respond to this choice, and no player may take actions during this process."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "You may choose to return Cosima to the battlefield even if it doesn't have any voyage counters on it. If you do, it won't enter with any +1/+1 counters on it and you won't draw any cards."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a land enters the battlefield under your control while Cosima is exiled and has the added triggered ability, that ability will trigger. As the ability tries to resolve, it will check to see if Cosima is still in exile. If Cosima has left exile before the ability tries to resolve, it won't resolve and none of its effects will happen. This is true even if Cosima returns to exile before that ability tries to resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ],
+    "layout": "MODAL_DFC"
+}
+
 // Cosmos Charger
 {
     "name": "Cosmos Charger",
