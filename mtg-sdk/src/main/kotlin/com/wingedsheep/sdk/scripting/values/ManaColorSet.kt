@@ -152,7 +152,7 @@ sealed interface ManaColorSet {
      * [base] minus the color chosen earlier in this resolution (`ChooseColorThenEffect`'s
      * chosen-color context) — "any **other** color". "Add two mana of any one color and two mana
      * of any other color" (Open the Omenpaths) is
-     * `ChooseColorThen(Composite(AddManaOfChoice(AnyColor, 2), AddManaOfChoice(ExceptChosenColor(), 2)))`:
+     * `ChooseColorThen(AddManaOfChoice(AnyColor, 2) then AddManaOfChoice(ExceptChosenColor(), 2))`:
      * the first add takes the chosen color, the second offers the four others.
      *
      * Unlike [SourceChosenColor] (a color stored on the source permanent) this reads the

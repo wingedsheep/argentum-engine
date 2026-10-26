@@ -546,6 +546,7 @@ private fun collectChoiceColors(colorSet: ManaColorSet, out: MutableSet<Color>) 
     when (colorSet) {
         is ManaColorSet.Specific -> out.addAll(colorSet.colors)
         is ManaColorSet.Union -> colorSet.members.forEach { collectChoiceColors(it, out) }
+        is ManaColorSet.ExceptChosenColor -> collectChoiceColors(colorSet.base, out)
         else -> out.addAll(Color.entries)
     }
 }
