@@ -12,7 +12,10 @@ import com.wingedsheep.sdk.model.CardLayout
 import com.wingedsheep.sdk.model.EntityId
 import kotlinx.serialization.Serializable
 
-/** The off-stack characteristics restored when a split half, Adventure or Omen spell leaves the stack. */
+/**
+ * The off-stack characteristics restored when a split half, Adventure, Omen or modal DFC spell back
+ * leaves the stack.
+ */
 @Serializable
 data class SplitSpellCharacteristicsComponent(val original: CardComponent) : Component
 
@@ -79,10 +82,11 @@ object SplitSpellCasts {
     /**
      * An Adventure (CR 715.3b), an Omen (CR 720.3b) or a modal double-faced card's spell back
      * (CR 712.8f) is on the stack with only that face's characteristics — the face's mana cost, so
-     * its mana value, plus its type line, colors and keywords. The cast rails already evaluate the face on their own (CR 715.3a / 720.3a), so
-     * this only reshapes the stack object, the way a split half is reshaped; [end] restores the
-     * creature card when it leaves the stack. The card keeps its name, which name-keyed trackers
-     * read. Null for any other cast.
+     * its mana value, plus its type line, colors and keywords. The cast rails already evaluate the
+     * face on their own (CR 715.3a / 720.3a), so this only reshapes the stack object, the way a
+     * split half is reshaped; [end] restores the card when it leaves the stack. The card keeps its
+     * own name — a simplification of the rule, which name-keyed trackers rely on. Null for any
+     * other cast.
      */
     private fun alternativeFaceDefinition(printed: CardDefinition, action: CastSpell): CardDefinition? {
         if (printed.layout !in ALTERNATIVE_FACE_LAYOUTS) return null

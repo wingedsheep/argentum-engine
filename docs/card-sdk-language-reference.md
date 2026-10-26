@@ -19108,7 +19108,8 @@ Card authors rarely reference these directly; they are created/updated by the ma
   and restores the card when it leaves the stack (CR 715.4). So the `SpellCastEvent` mana value
   (`DynamicAmounts.triggeringSpellManaValue()`), cast-trigger filters ("an instant spell", "a creature spell",
   `withSubtype("Adventure")`) and "spell with mana value N" checks all read the Adventure, never the creature. The
-  card keeps its name. Omens (CR 720.3b) and modal DFC spell backs cast with `faceIndex` (CR 712.8f) get the same
+  stack object still keeps the *card's* name — an engine simplification (CR 715.3b gives the spell the Adventure's
+  name too) that name-keyed trackers rely on; no card here names an Adventure spell yet. Omens (CR 720.3b) and modal DFC spell backs cast with `faceIndex` (CR 712.8f) get the same
   swap. "an Adventure or Dragon spell" is therefore one filter, `GameObjectFilter.Any.withAnySubtype("Adventure",
   "Dragon")` (Lozhan, Dragons' Legacy).
 - **Omen (Tarkir: Dragonstorm)** — `layout = OMEN` + `cardFaces[0]` Omen spell; DSL:
