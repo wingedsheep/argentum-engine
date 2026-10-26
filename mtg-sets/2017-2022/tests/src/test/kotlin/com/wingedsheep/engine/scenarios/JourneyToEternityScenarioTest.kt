@@ -10,6 +10,9 @@ import com.wingedsheep.mtg.sets.definitions.rix.cards.JourneyToEternity
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import io.kotest.assertions.withClue
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
@@ -29,7 +32,16 @@ import io.kotest.matchers.shouldBe
  */
 class JourneyToEternityScenarioTest : ScenarioTestBase() {
 
+    private val wipe = card("Wipe Test Spell") {
+        manaCost = "{0}"
+        typeLine = "Sorcery"
+        oracleText = "Destroy all creatures and enchantments."
+        spell { effect = Effects.DestroyAll(GameObjectFilter.Creature or GameObjectFilter.Enchantment) }
+    }
+
     init {
+        cardRegistry.register(listOf(wipe))
+
         context("Journey to Eternity") {
 
             test("when the enchanted creature dies, it and the Aura return — the Aura as Atzal") {
@@ -58,6 +70,23 @@ class JourneyToEternityScenarioTest : ScenarioTestBase() {
                     game.state.projectedState.getController(atzal) shouldBe game.player1Id
                     game.state.getEntity(atzal)!!.has<TappedComponent>() shouldBe false
                 }
+            }
+
+            test("when the Aura and the creature are destroyed together, both still return") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Grizzly Bears", summoningSickness = false)
+                    .withCardAttachedTo(1, "Journey to Eternity", "Grizzly Bears")
+                    .withCardInHand(1, "Wipe Test Spell")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Wipe Test Spell").error shouldBe null
+                game.resolveStack()
+
+                game.findPermanent("Grizzly Bears").shouldNotBeNull()
+                game.findPermanent("Atzal, Cave of Eternity").shouldNotBeNull()
             }
 
             test("cards you control but don't own come back under your control") {

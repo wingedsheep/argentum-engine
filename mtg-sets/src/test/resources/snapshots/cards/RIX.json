@@ -1670,7 +1670,7 @@
     "name": "Journey to Eternity",
     "manaCost": "{1}{B}{G}",
     "typeLine": "Legendary Enchantment — Aura",
-    "oracleText": "Enchant creature you control\nWhen enchanted creature dies, return it to the battlefield under your control, then return Journey to Eternity to the battlefield transformed under your control.",
+    "oracleText": "Enchant creature you control\nWhen enchanted creature dies, return it to the battlefield under your control, then return this card to the battlefield transformed under your control.",
     "script": {
         "triggeredAbilities": [
             {

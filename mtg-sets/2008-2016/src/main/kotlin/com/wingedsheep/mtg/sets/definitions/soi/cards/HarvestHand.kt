@@ -24,7 +24,7 @@ private val HarvestHandFront = card("Harvest Hand") {
 
     triggeredAbility {
         trigger = Triggers.self.dies()
-        effect = Effects.ReturnSelfFromGraveyardTransformed(tapped = false)
+        effect = Effects.ReturnSelfFromGraveyardTransformed(underYourControl = true)
         description = "When Harvest Hand dies, return it to the battlefield transformed under your control."
     }
 

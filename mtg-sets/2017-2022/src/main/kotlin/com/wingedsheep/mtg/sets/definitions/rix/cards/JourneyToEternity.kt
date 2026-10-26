@@ -36,7 +36,7 @@ private val JourneyToEternityFront = card("Journey to Eternity") {
     typeLine = "Legendary Enchantment — Aura"
     oracleText = "Enchant creature you control\n" +
         "When enchanted creature dies, return it to the battlefield under your control, then " +
-        "return Journey to Eternity to the battlefield transformed under your control."
+        "return this card to the battlefield transformed under your control."
 
     auraTarget = TargetObject(filter = TargetFilter.CreatureYouControl)
 
