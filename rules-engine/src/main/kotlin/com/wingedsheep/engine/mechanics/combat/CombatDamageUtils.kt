@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.AssignDamageEqualToToughness
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Helpers for calculating the amount of combat damage a creature assigns.
@@ -200,8 +201,7 @@ internal object CombatDamageUtils {
         // combat damage, and the list is empty in the overwhelmingly common case.
         val grantsByEntity = state.grantedStaticAbilities.groupBy { it.entityId }
         for (permanentId in state.getBattlefield()) {
-            val permCardId = state.getEntity(permanentId)?.get<CardComponent>()?.cardDefinitionId
-            val printed = permCardId?.let { cardRegistry.getCard(it)?.staticAbilities }.orEmpty()
+            val printed = state.faceUpCardDefinition(permanentId, cardRegistry)?.staticAbilities.orEmpty()
             val granted = grantsByEntity[permanentId]?.map { it.ability }.orEmpty()
             val abilities = if (granted.isEmpty()) printed else printed + granted
             if (abilities.isEmpty()) continue

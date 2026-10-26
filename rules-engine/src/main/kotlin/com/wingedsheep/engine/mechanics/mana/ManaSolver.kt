@@ -69,6 +69,7 @@ import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Represents the mana production capability of a source.
@@ -2610,8 +2611,7 @@ class ManaSolver private constructor(
     private fun hasDampLandManaProduction(state: GameState): Boolean {
         for (playerId in state.turnOrder) {
             for (entityId in state.getBattlefield(playerId)) {
-                val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
-                val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+                val cardDef = state.getEntity(entityId)?.faceUpCardDefinition(cardRegistry) ?: continue
                 if (cardDef.script.staticAbilities.any { it is DampLandManaProduction }) {
                     return true
                 }

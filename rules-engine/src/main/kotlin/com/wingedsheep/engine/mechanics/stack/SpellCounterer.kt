@@ -28,6 +28,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GrantCantBeCountered
 import com.wingedsheep.sdk.scripting.effects.LibraryChoicePosition
 import com.wingedsheep.sdk.scripting.targets.*
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Removes a spell or ability from the stack without resolving it: countering (CR 701.6) — to the
@@ -687,8 +688,7 @@ class SpellCounterer(
     private fun isGrantedCantBeCountered(state: GameState, spellId: EntityId): Boolean {
         for (playerId in state.turnOrder) {
             for (entityId in state.getBattlefield(playerId)) {
-                val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
-                val def = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+                val def = state.getEntity(entityId)?.faceUpCardDefinition(cardRegistry) ?: continue
                 val sourceControllerId =
                     state.getEntity(entityId)?.get<ControllerComponent>()?.playerId ?: playerId
                 val context = PredicateContext(controllerId = sourceControllerId, sourceId = entityId)
@@ -733,8 +733,7 @@ class SpellCounterer(
     private fun isAbilityGrantedCantBeCountered(state: GameState, abilityId: EntityId): Boolean {
         for (playerId in state.turnOrder) {
             for (entityId in state.getBattlefield(playerId)) {
-                val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
-                val def = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+                val def = state.getEntity(entityId)?.faceUpCardDefinition(cardRegistry) ?: continue
                 val sourceControllerId =
                     state.getEntity(entityId)?.get<ControllerComponent>()?.playerId ?: playerId
                 val context = PredicateContext(controllerId = sourceControllerId, sourceId = entityId)

@@ -40,6 +40,7 @@ import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Handles the declare blockers step of combat.
@@ -949,8 +950,7 @@ internal class BlockPhaseManager(
         var cap: Int? = null
         var capDescription = ""
         for (permId in state.getBattlefield()) {
-            val cardComponent = state.getEntity(permId)?.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
+            val cardDef = state.getEntity(permId)?.faceUpCardDefinition(cardRegistry) ?: continue
             for (ability in cardDef.staticAbilities.filterIsInstance<BlockerCountLimit>()) {
                 if (cap == null || ability.maxBlockers < cap) {
                     cap = ability.maxBlockers

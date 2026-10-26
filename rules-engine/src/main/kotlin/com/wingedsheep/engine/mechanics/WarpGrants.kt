@@ -5,12 +5,12 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
-import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GrantWarpToCardsInHand
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Single source of truth for "does this card have warp, and at what cost?" — used by every warp
@@ -83,8 +83,7 @@ object WarpGrants {
         // currently controls the source permanent (Mind Control, Act of Treason, etc.) rather
         // than its owner. CR 109.5: "you" in an ability refers to the object's controller.
         for (entityId in state.controlledBattlefield(playerId)) {
-            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
-            val def = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val def = state.getEntity(entityId)?.faceUpCardDefinition(cardRegistry) ?: continue
             for (ability in def.script.staticAbilities) {
                 if (ability !is GrantWarpToCardsInHand) continue
                 if (predicateEvaluator.matches(state, state.projectedState, cardId, ability.filter, context)) {

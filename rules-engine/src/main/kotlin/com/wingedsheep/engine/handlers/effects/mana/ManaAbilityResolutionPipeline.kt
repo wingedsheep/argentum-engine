@@ -28,6 +28,7 @@ import com.wingedsheep.sdk.scripting.AdditionalManaOnTap
 import com.wingedsheep.sdk.scripting.AdditionalSourceTriggers
 import com.wingedsheep.sdk.scripting.DampLandManaProduction
 import com.wingedsheep.sdk.scripting.TappedForManaType
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Everything that happens *after* a mana ability's own effect has resolved: the Damping Sphere
@@ -262,9 +263,7 @@ class ManaAbilityResolutionPipeline(
         // on and grants it to its controller for the turn.
         val holders: List<Pair<EntityId, AdditionalManaOnSourceTap>> =
             currentState.getBattlefield().flatMap { entityId ->
-                val container = currentState.getEntity(entityId)
-                val card = container?.get<CardComponent>()
-                val cardDef = card?.let { cardRegistry.getCard(it.cardDefinitionId) }
+                val cardDef = currentState.faceUpCardDefinition(entityId, cardRegistry)
                 cardDef?.script?.staticAbilities.orEmpty()
                     .filterIsInstance<AdditionalManaOnSourceTap>()
                     .map { entityId to it }
@@ -423,8 +422,7 @@ class ManaAbilityResolutionPipeline(
     private fun hasDampLandManaProduction(state: GameState): Boolean {
         for (playerId in state.turnOrder) {
             for (entityId in state.getBattlefield(playerId)) {
-                val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
-                val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+                val cardDef = state.getEntity(entityId)?.faceUpCardDefinition(cardRegistry) ?: continue
                 if (cardDef.script.staticAbilities.any { it is DampLandManaProduction }) {
                     return true
                 }

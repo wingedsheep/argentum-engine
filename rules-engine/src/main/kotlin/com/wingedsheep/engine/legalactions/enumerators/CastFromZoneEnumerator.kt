@@ -71,6 +71,7 @@ import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.mechanics.mana.spellPaymentContextFor
 import com.wingedsheep.engine.mechanics.mana.TapForGeneric
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Enumerates spells and lands castable/playable from non-hand zones:
@@ -2799,8 +2800,7 @@ class CastFromZoneEnumerator(
             val container = state.getEntity(permId) ?: continue
             val controller = container.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()?.playerId
             if (controller != playerId) continue
-            val cardComp = container.get<CardComponent>() ?: continue
-            val cardDef = context.cardRegistry.getCard(cardComp.cardDefinitionId) ?: continue
+            val cardDef = container.faceUpCardDefinition(context.cardRegistry) ?: continue
             for (sa in cardDef.liveStaticAbilities(state, permId)) {
                 if (sa is MayCastFromGraveyard && !grantIsSpent(permId, sa)) {
                     permissions.add(GraveyardCastPermission(sa, permId, scopedCardId = null))

@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GraveyardCardsHaveEscape
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /** Escape costs available from printed abilities, individual grants, and battlefield statics. */
 object EscapeCasts {
@@ -30,8 +31,7 @@ object EscapeCasts {
         val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return@buildList
         val context = PredicateContext(controllerId = controllerId)
         for (granterId in state.controlledBattlefield(controllerId)) {
-            val def = state.getEntity(granterId)?.get<CardComponent>()
-                ?.let { cardRegistry.getCard(it.cardDefinitionId) } ?: continue
+            val def = state.getEntity(granterId)?.faceUpCardDefinition(cardRegistry) ?: continue
             for (ability in def.script.staticAbilities) {
                 if (ability !is GraveyardCardsHaveEscape) continue
                 if (ability.duringYourTurnOnly && !state.isActiveTurnFor(controllerId)) continue

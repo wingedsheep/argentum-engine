@@ -48,6 +48,7 @@ import com.wingedsheep.sdk.scripting.PlayLandsAndCastFilteredFromTopOfLibrary
 import com.wingedsheep.engine.handlers.actions.spell.allowsLand
 import kotlin.reflect.KClass
 import com.wingedsheep.engine.core.Outcome
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Handler for the PlayLand action.
@@ -803,8 +804,7 @@ class PlayLandHandler(
     private fun hasPlayFromTopOfLibrary(state: GameState, playerId: EntityId, cardId: EntityId): Boolean {
         val landCard = state.getEntity(cardId)?.get<CardComponent>() ?: return false
         for (entityId in state.getBattlefield(playerId)) {
-            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val cardDef = state.getEntity(entityId)?.faceUpCardDefinition(cardRegistry) ?: continue
             for (ability in cardDef.liveStaticAbilities(state, entityId)) {
                 // Honor a conditional gate (e.g. The Lunar Whale's "as long as it attacked this
                 // turn") against the granting permanent before allowing the land play from top.
@@ -892,8 +892,7 @@ class PlayLandHandler(
      */
     private fun hasLandGraveyardPlayPermission(state: GameState, playerId: EntityId): Boolean {
         for (entityId in state.getBattlefield(playerId)) {
-            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val cardDef = state.getEntity(entityId)?.faceUpCardDefinition(cardRegistry) ?: continue
             val classLevel = state.getEntity(entityId)?.get<ClassLevelComponent>()?.currentLevel
             for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
                 // Unwrap mode/condition-gated abilities (e.g. Glacierwood Siege's Sultai mode)
@@ -941,8 +940,7 @@ class PlayLandHandler(
         typeName: String
     ): EntityId? {
         for (entityId in state.getBattlefield(playerId)) {
-            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val cardDef = state.getEntity(entityId)?.faceUpCardDefinition(cardRegistry) ?: continue
             if (cardDef.liveStaticAbilities(state, entityId).any { it is MayPlayPermanentsFromGraveyard }) {
                 val tracker = state.getEntity(entityId)?.get<GraveyardPlayPermissionUsedComponent>()
                 if (tracker == null || !tracker.hasUsedType(typeName)) {

@@ -42,6 +42,7 @@ import com.wingedsheep.sdk.scripting.effects.AddOneManaOfEachColorAmongEffect
 import com.wingedsheep.engine.mechanics.mana.BorrowedManaAbilities
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.ManaColorSet
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Resolves a paid mana ability immediately, off the stack (CR 605.3): applies the mana
@@ -396,8 +397,7 @@ internal class ActivatedManaAbilityResolver(
             val container = state.getEntity(entityId) ?: continue
             val attachedTo = container.get<AttachedToComponent>()
             if (attachedTo?.targetId != sourceId) continue
-            val card = container.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val cardDef = container.faceUpCardDefinition(cardRegistry) ?: continue
             for (staticAbility in cardDef.script.staticAbilities) {
                 val o = staticAbility as? OverrideEnchantedLandManaColor ?: continue
                 override = o.color
@@ -421,8 +421,8 @@ internal class ActivatedManaAbilityResolver(
         val grantsByEntity = state.grantedStaticAbilities.groupBy { it.entityId }
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
-            val card = container.get<CardComponent>() ?: continue
-            val printed = cardRegistry.getCard(card.cardDefinitionId)?.script?.staticAbilities.orEmpty()
+            // A face-down permanent has no printed statics (CR 708.2); granted ones still apply.
+            val printed = container.faceUpCardDefinition(cardRegistry)?.script?.staticAbilities.orEmpty()
             // Granted statics too — a durational "{U}: … until end of turn" mana rule (Deep Water)
             // or an indefinite one on a targeted land (Quarum Trench Gnomes) lives only in
             // `grantedStaticAbilities`, since the layer projector doesn't carry them.
@@ -492,8 +492,7 @@ internal class ActivatedManaAbilityResolver(
         var multiplier = 1
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
-            val card = container.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val cardDef = container.faceUpCardDefinition(cardRegistry) ?: continue
             for (staticAbility in cardDef.script.staticAbilities) {
                 val static = staticAbility as? MultiplyManaOnSourceTap ?: continue
                 if (static.multiplier <= 1) continue

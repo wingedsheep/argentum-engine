@@ -31,6 +31,7 @@ import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.PlayersRevealTopOfLibrary
 import com.wingedsheep.sdk.scripting.RevealTopOfLibrary
 import com.wingedsheep.sdk.scripting.StaticAbility
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * The engine's single source of truth for which card identities a player may see.
@@ -376,8 +377,7 @@ class Visibility(
         predicate: (StaticAbility) -> Boolean,
     ): Boolean {
         for (entityId in state.controlledBattlefield(playerId)) {
-            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val cardDef = state.getEntity(entityId)?.faceUpCardDefinition(cardRegistry) ?: continue
             if (cardDef.liveStaticAbilities(state, entityId).any { ability ->
                     activeStaticAbility(state, ability, entityId, playerId)?.let(predicate) == true
                 }

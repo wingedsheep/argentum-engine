@@ -36,10 +36,10 @@ class BecomeCreatureTypeExecutor : EffectExecutor<BecomeCreatureTypeEffect> {
             return EffectResult.success(state.tick())
         }
 
-        val targetCard = state.getEntity(targetId)?.get<CardComponent>()
-            ?: return EffectResult.success(state.tick())
-
-        if (!targetCard.typeLine.isCreature) {
+        // Read the target's current characteristics, not its card: a face-down permanent is a
+        // 2/2 creature with no subtypes (CR 708.2), whatever card it is.
+        val projected = state.projectedState
+        if (!projected.isCreature(targetId)) {
             return EffectResult.success(state.tick())
         }
 
@@ -51,9 +51,8 @@ class BecomeCreatureTypeExecutor : EffectExecutor<BecomeCreatureTypeEffect> {
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
 
         // Prefill search with the target's first creature subtype
-        val defaultSearch = targetCard.typeLine.subtypes
-            .firstOrNull { it.value in allCreatureTypes }
-            ?.value
+        val defaultSearch = projected.getSubtypes(targetId)
+            .firstOrNull { it in allCreatureTypes }
 
         val decision = { decisionId: String -> ChooseOptionDecision(
             id = decisionId,

@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GraveyardCardsHaveMayhem
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Single source of truth for "does this card have mayhem, and at what cost?" — used by every mayhem
@@ -67,8 +68,7 @@ object MayhemGrants {
         val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return null
         val context = PredicateContext(controllerId = controllerId)
         for (granterId in state.controlledBattlefield(controllerId)) {
-            val def = state.getEntity(granterId)?.get<CardComponent>()
-                ?.let { cardRegistry.getCard(it.cardDefinitionId) } ?: continue
+            val def = state.getEntity(granterId)?.faceUpCardDefinition(cardRegistry) ?: continue
             for (ability in def.script.staticAbilities) {
                 if (ability !is GraveyardCardsHaveMayhem) continue
                 if (ability.duringYourTurnOnly && !state.isActiveTurnFor(controllerId)) continue

@@ -12,9 +12,8 @@ import com.wingedsheep.engine.mechanics.sba.SbaOrder
 import com.wingedsheep.engine.mechanics.sba.StateBasedActionCheck
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -35,7 +34,7 @@ class LegendRuleCheck(
 
     /**
      * The filters of every [LegendRuleDoesNotApplyTo] static that applies to [playerId]'s
-     * [permanents] (a single player's battlefield). Collected once per player so the per-legendary
+     * [permanents] (the permanents that player controls). Collected once per player so the per-legendary
      * exemption test doesn't re-scan the battlefield. Two sources:
      *  - printed statics on those permanents (Spider-Verse: "The 'legend rule' doesn't apply to
      *    Spiders you control");
@@ -52,13 +51,16 @@ class LegendRuleCheck(
      */
     private fun collectExemptionFilters(
         state: GameState,
+        projected: ProjectedState,
         playerId: EntityId,
         permanents: List<EntityId>
     ): List<GameObjectFilter> {
         val filters = mutableListOf<GameObjectFilter>()
         for (permId in permanents) {
-            val cardDef = state.getEntity(permId)?.get<CardComponent>()
-                ?.let { cardRegistry.getCard(it.cardDefinitionId) } ?: continue
+            // A face-down permanent has none of its card's abilities (CR 708.2), nor does one that
+            // has lost all abilities: a face-down Spider-Verse exempts nothing.
+            if (projected.hasLostAllAbilities(permId)) continue
+            val cardDef = state.faceUpCardDefinition(permId, cardRegistry) ?: continue
             for (ability in cardDef.script.staticAbilities) {
                 activeExemption(state, ability, permId, playerId)?.let { filters.add(it.filter) }
             }
@@ -118,11 +120,11 @@ class LegendRuleCheck(
     override fun check(state: GameState): ExecutionResult {
         val projected = state.projectedState
         for (playerId in state.turnOrder) {
-            val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
-            val permanents = state.getZone(battlefieldZone)
+            // The rule counts the legends a player *controls* (CR 704.5j), not the ones they own.
+            val permanents = state.controlledBattlefield(playerId)
 
             // Collect this player's legend-rule exemptions once, not per legendary permanent.
-            val exemptionFilters = collectExemptionFilters(state, playerId, permanents)
+            val exemptionFilters = collectExemptionFilters(state, projected, playerId, permanents)
 
             val legendaryByName = mutableMapOf<String, MutableList<EntityId>>()
 

@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Granted-Riot synthesis. Riot (CR 702.136) is composed at authoring time into an
@@ -49,8 +50,7 @@ object RiotSynthesis {
     ): Int {
         var count = 0
         for (sourceId in state.getBattlefield()) {
-            val srcCard = state.getEntity(sourceId)?.get<CardComponent>() ?: continue
-            val def = cardRegistry.getCard(srcCard.cardDefinitionId) ?: continue
+            val def = state.getEntity(sourceId)?.faceUpCardDefinition(cardRegistry) ?: continue
             val srcController = state.projectedState.getController(sourceId) ?: continue
             for (ability in def.staticAbilities) {
                 if (ability !is GrantKeyword || ability.keyword != Keyword.RIOT.name) continue

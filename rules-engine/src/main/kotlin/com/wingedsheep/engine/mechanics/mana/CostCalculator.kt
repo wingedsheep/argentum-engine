@@ -57,6 +57,7 @@ import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Calculates effective spell costs after applying cost reductions.
@@ -377,8 +378,7 @@ class CostCalculator(
         for (playerId in state.turnOrder) {
             for (entityId in state.getBattlefield(playerId)) {
                 val container = state.getEntity(entityId) ?: continue
-                val card = container.get<CardComponent>() ?: continue
-                val permanentDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+                val permanentDef = container.faceUpCardDefinition(cardRegistry) ?: continue
                 val classLevel = container.get<ClassLevelComponent>()?.currentLevel
                 for (ability in permanentDef.script.effectiveStaticAbilities(classLevel)) {
                     if (ability is ModifySpellCost) {
@@ -2237,8 +2237,7 @@ class CostCalculator(
         val costs = mutableListOf<AlternativeCastingCostGrant>()
         for (entityId in state.getBattlefield(casterId)) {
             val container = state.getEntity(entityId) ?: continue
-            val card = container.get<CardComponent>() ?: continue
-            val permanentDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val permanentDef = container.faceUpCardDefinition(cardRegistry) ?: continue
             val classLevel = container.get<ClassLevelComponent>()?.currentLevel
 
             for (ability in permanentDef.script.effectiveStaticAbilities(classLevel)) {

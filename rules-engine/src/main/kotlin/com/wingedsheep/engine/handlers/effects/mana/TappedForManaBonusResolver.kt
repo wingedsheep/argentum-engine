@@ -22,6 +22,7 @@ import com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.ManaColorSet
 import com.wingedsheep.engine.core.Outcome
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Resolves "additional one mana of any color" tap bonuses from [AdditionalManaOnTap] auras with
@@ -52,8 +53,7 @@ class TappedForManaBonusResolver(
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
             if (container.get<AttachedToComponent>()?.targetId != landId) continue
-            val card = container.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val cardDef = container.faceUpCardDefinition(cardRegistry) ?: continue
             for (staticAbility in cardDef.script.staticAbilities) {
                 val bonus = staticAbility as? AdditionalManaOnTap ?: continue
                 if (!bonus.anyColor) continue

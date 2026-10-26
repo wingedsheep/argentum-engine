@@ -31,6 +31,7 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.PlotFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.conditions.SourcePlottedOnPriorTurn
 import kotlin.reflect.KClass
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Handler for the [PlotCard] special action (CR 718, Outlaws of Thunder Junction).
@@ -86,8 +87,7 @@ class PlotCardHandler(
         val library = state.getLibrary(action.playerId)
         if (library.firstOrNull() == action.cardId) {
             val filter = state.getBattlefield(action.playerId).asSequence()
-                .mapNotNull { state.getEntity(it)?.get<CardComponent>() }
-                .mapNotNull { cardRegistry.getCard(it.cardDefinitionId) }
+                .mapNotNull { state.faceUpCardDefinition(it, cardRegistry) }
                 .flatMap { it.script.staticAbilities.asSequence() }
                 .filterIsInstance<PlotFromTopOfLibrary>()
                 .firstOrNull()?.filter

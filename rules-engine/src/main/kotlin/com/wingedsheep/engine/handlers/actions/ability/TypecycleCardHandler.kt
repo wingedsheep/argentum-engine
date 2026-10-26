@@ -33,6 +33,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PreventCycling
 import kotlin.reflect.KClass
 import com.wingedsheep.engine.core.Outcome
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Handler for the TypecycleCard action.
@@ -278,8 +279,7 @@ class TypecycleCardHandler(
 
     private fun isCyclingPrevented(state: GameState): Boolean {
         for (entityId in state.getBattlefield()) {
-            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val cardDef = state.getEntity(entityId)?.faceUpCardDefinition(cardRegistry) ?: continue
             if (cardDef.script.staticAbilities.any { it is PreventCycling }) {
                 return true
             }

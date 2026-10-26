@@ -99,6 +99,7 @@ import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.sdk.scripting.events.Recipient
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Outcome of a chosen-source deflection/reflection shield matching an incoming damage instance.
@@ -2901,8 +2902,7 @@ object DamageUtils {
             if (sourceController != null) {
                 for (entityId in state.controlledBattlefield(sourceController)) {
                     val container = state.getEntity(entityId) ?: continue
-                    val card = container.get<CardComponent>() ?: continue
-                    val permanentDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+                    val permanentDef = container.faceUpCardDefinition(cardRegistry) ?: continue
                     val classLevel = container.get<ClassLevelComponent>()?.currentLevel
 
                     for (ability in permanentDef.script.effectiveStaticAbilities(classLevel)) {

@@ -35,6 +35,7 @@ import com.wingedsheep.sdk.scripting.UntapSelfDuringOtherUntapSteps
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Handles beginning phase logic: untap step, upkeep step, and saga lore counters.
@@ -166,10 +167,10 @@ class BeginningPhaseManager(
             // If the controller has a skip untap component, check if this permanent should be skipped
             val skipUntap = skipUntapByPlayer[projected.getController(entityId)]
             if (skipUntap != null) {
-                val cardComponent = newState.getEntity(entityId)?.get<CardComponent>()
-                val typeLine = cardComponent?.typeLine
-                val isCreature = typeLine?.isCreature == true
-                val isLand = typeLine?.isLand == true
+                // Current types, not the card's: a face-down permanent is a creature whatever it
+                // is (CR 708.2), and type-changing effects count too.
+                val isCreature = projected.isCreature(entityId)
+                val isLand = projected.hasType(entityId, "LAND")
 
                 // Skip this permanent if it matches the skip criteria
                 val shouldSkip = (skipUntap.affectsCreatures && isCreature) ||
@@ -282,8 +283,7 @@ class BeginningPhaseManager(
             val selfUntapIds = mutableListOf<EntityId>()
 
             for (permanentId in projectedForSeedborn.getBattlefieldControlledBy(playerId)) {
-                val card = newState.getEntity(permanentId)?.get<CardComponent>() ?: continue
-                val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+                val cardDef = newState.getEntity(permanentId)?.faceUpCardDefinition(cardRegistry) ?: continue
                 for (ability in cardDef.script.staticAbilities) {
                     when (ability) {
                         is UntapDuringOtherUntapSteps ->

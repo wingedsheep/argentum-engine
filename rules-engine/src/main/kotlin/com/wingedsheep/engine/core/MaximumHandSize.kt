@@ -9,7 +9,6 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
 import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
 import com.wingedsheep.engine.state.components.battlefield.chosenPlayer
-import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.PlayerMaximumHandSizeReductionComponent
 import com.wingedsheep.engine.state.components.player.PlayerNoMaximumHandSizeComponent
 import com.wingedsheep.sdk.model.EntityId
@@ -18,6 +17,7 @@ import com.wingedsheep.sdk.scripting.NoMaximumHandSize
 import com.wingedsheep.sdk.scripting.SetMaximumHandSize
 import com.wingedsheep.sdk.scripting.StaticAbility
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * The single source of truth for a player's effective maximum hand size (CR 402.2).
@@ -74,8 +74,7 @@ object MaximumHandSize {
             val controllerId = projected.getController(permanentId) ?: continue
             if (controllerId == playerId) noMaximumTimestamps(state, permanentId).forEach { candidates += it to null }
             val container = state.getEntity(permanentId) ?: continue
-            val card = container.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val cardDef = container.faceUpCardDefinition(cardRegistry) ?: continue
             if (cardDef.script.staticAbilities.isEmpty()) continue
             val timestamp = entryTimestamp(state, permanentId)
             val context = EffectContext(sourceId = permanentId, controllerId = controllerId)

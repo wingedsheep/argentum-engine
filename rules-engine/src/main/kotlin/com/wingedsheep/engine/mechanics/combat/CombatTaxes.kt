@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.scripting.AttackTax
 import com.wingedsheep.sdk.scripting.BlockTax
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.sdk.scripting.CantAttackOrBlockUnlessPay
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * What a proposed attack or block costs in generic mana before it may be declared — Ghostly Prison,
@@ -69,8 +70,7 @@ object CombatTaxes {
             val defenderPermanents = projected.getBattlefieldControlledBy(defenderId)
             for (entityId in defenderPermanents) {
                 val container = state.getEntity(entityId) ?: continue
-                val cardComponent = container.get<CardComponent>() ?: continue
-                val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
+                val cardDef = container.faceUpCardDefinition(cardRegistry) ?: continue
                 for (ability in cardDef.staticAbilities) {
                     if (ability !is AttackTax) continue
                     val attackerCount = (attackersAtPlayer[defenderId] ?: 0) +
@@ -111,8 +111,7 @@ object CombatTaxes {
         var totalTax = 0
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
-            val cardComponent = container.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
+            val cardDef = container.faceUpCardDefinition(cardRegistry) ?: continue
             for (ability in cardDef.staticAbilities) {
                 if (ability !is BlockTax) continue
                 val controllerId = projected.getController(entityId) ?: continue

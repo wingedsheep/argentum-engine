@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeywordToOwnSpells
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Resolves whether a spell being cast effectively has a given keyword, either because it is
@@ -94,8 +95,7 @@ class GrantedKeywordResolver(
             val container = state.getEntity(permanentId) ?: continue
             val controllerId = container.get<ControllerComponent>()?.playerId ?: continue
             if (controllerId != playerId) continue
-            val cardComponent = container.get<CardComponent>() ?: continue
-            val sourceDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
+            val sourceDef = container.faceUpCardDefinition(cardRegistry) ?: continue
             for (ability in sourceDef.script.staticAbilities) {
                 if (ability is GrantKeywordToOwnSpells &&
                     ability.keyword == keyword &&
@@ -128,8 +128,7 @@ class GrantedKeywordResolver(
             val container = state.getEntity(permanentId) ?: continue
             val controllerId = container.get<ControllerComponent>()?.playerId ?: continue
             if (controllerId != playerId) continue
-            val cardComponent = container.get<CardComponent>() ?: continue
-            val sourceDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
+            val sourceDef = container.faceUpCardDefinition(cardRegistry) ?: continue
             for (ability in sourceDef.script.staticAbilities) {
                 if (ability is GrantKeywordToOwnSpells &&
                     ability.keyword == keyword &&

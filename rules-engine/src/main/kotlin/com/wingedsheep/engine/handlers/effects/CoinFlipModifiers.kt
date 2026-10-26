@@ -2,11 +2,11 @@ package com.wingedsheep.engine.handlers.effects
 
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.FlippedCoinsThisTurnComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.FlipAdditionalCoins
 import com.wingedsheep.sdk.scripting.WinCoinFlips
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Shared application path for coin-flip replacement, consulted from [CoinFlipService] — the single
@@ -41,8 +41,7 @@ object CoinFlipModifiers {
     fun shouldForceWin(state: GameState, cardRegistry: CardRegistry, playerId: EntityId): Boolean {
         val alreadyFlippedThisTurn = state.getEntity(playerId)?.has<FlippedCoinsThisTurnComponent>() == true
         return state.projectedState.getBattlefieldControlledBy(playerId).any { permanentId ->
-            val card = state.getEntity(permanentId)?.get<CardComponent>() ?: return@any false
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: return@any false
+            val cardDef = state.getEntity(permanentId)?.faceUpCardDefinition(cardRegistry) ?: return@any false
             cardDef.script.staticAbilities.any { ability ->
                 ability is WinCoinFlips && (!ability.firstFlipEachTurn || !alreadyFlippedThisTurn)
             }
@@ -70,8 +69,7 @@ object CoinFlipModifiers {
      */
     fun coinsPerFlip(state: GameState, cardRegistry: CardRegistry, playerId: EntityId): Int =
         state.projectedState.getBattlefieldControlledBy(playerId).fold(1) { coins, permanentId ->
-            val card = state.getEntity(permanentId)?.get<CardComponent>() ?: return@fold coins
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: return@fold coins
+            val cardDef = state.getEntity(permanentId)?.faceUpCardDefinition(cardRegistry) ?: return@fold coins
             cardDef.script.staticAbilities
                 .filterIsInstance<FlipAdditionalCoins>()
                 .fold(coins) { running, ability -> running * ability.coinsPerFlip.coerceAtLeast(1) }

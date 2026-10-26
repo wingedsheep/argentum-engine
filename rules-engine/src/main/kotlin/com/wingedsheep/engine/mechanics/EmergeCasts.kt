@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GrantEmergeToOwnSpells
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Single source of truth for "can this card be emerge-cast, which creatures can pay for it, and
@@ -67,8 +68,7 @@ object EmergeCasts {
         val context = PredicateContext(controllerId = playerId)
         // Controlled view, so the grant follows whoever controls the granter (CR 109.5).
         for (permanentId in state.controlledBattlefield(playerId)) {
-            val source = state.getEntity(permanentId)?.get<CardComponent>() ?: continue
-            val sourceDef = cardRegistry.getCard(source.cardDefinitionId) ?: continue
+            val sourceDef = state.getEntity(permanentId)?.faceUpCardDefinition(cardRegistry) ?: continue
             for (ability in sourceDef.script.staticAbilities) {
                 if (ability !is GrantEmergeToOwnSpells) continue
                 if (predicateEvaluator.matches(state, projected, cardId, ability.spellFilter, context)) {

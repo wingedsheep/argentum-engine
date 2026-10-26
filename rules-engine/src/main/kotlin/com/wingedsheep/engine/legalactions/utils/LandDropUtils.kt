@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantAdditionalLandDrop
 import com.wingedsheep.sdk.scripting.PlayersCantPlayLands
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Utility for calculating additional land drops from static abilities.
@@ -46,8 +47,7 @@ object LandDropUtils {
         val projected = state.projectedState
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
-            val card = container.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val cardDef = container.faceUpCardDefinition(cardRegistry) ?: continue
             val sourceController = projected.getController(entityId) ?: continue
             // Class levels and unlocked Room doors carry statics outside `script.staticAbilities`.
             for (ability in RoomFaceStatics.activeStaticAbilities(container, cardDef)) {
@@ -144,8 +144,7 @@ object LandDropUtils {
         var bonus = 0
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
-            val card = container.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val cardDef = container.faceUpCardDefinition(cardRegistry) ?: continue
             val sourceController = projected.getController(entityId) ?: continue
             // Class levels and unlocked Room doors carry statics outside `script.staticAbilities`.
             for (ability in RoomFaceStatics.activeStaticAbilities(container, cardDef)) {

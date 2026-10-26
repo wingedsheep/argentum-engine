@@ -23,6 +23,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Unblockable: Cannot be blocked at all (CANT_BE_BLOCKED flag).
@@ -683,8 +684,7 @@ class CantBeBlockedWhilePropertyAtMostRule : BlockEvasionRule {
 
         // Scan the attacking player's battlefield for permanents with this ability
         for (entityId in ctx.projected.getBattlefieldControlledBy(attackerController)) {
-            val card = ctx.state.getEntity(entityId)?.get<CardComponent>() ?: continue
-            val cardDef = ctx.cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val cardDef = ctx.state.getEntity(entityId)?.faceUpCardDefinition(ctx.cardRegistry) ?: continue
             for (ability in cardDef.staticAbilities.filterIsInstance<CantBeBlockedWhilePropertyAtMost>()) {
                 if (ability.filter.scope is Scope.Self && entityId != ctx.attackerId) continue
                 val checks = ability.properties

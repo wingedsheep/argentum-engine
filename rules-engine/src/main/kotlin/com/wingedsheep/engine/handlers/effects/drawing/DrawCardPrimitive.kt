@@ -14,6 +14,7 @@ import com.wingedsheep.engine.state.components.player.AttemptedDrawFromEmptyLibr
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.RevealFirstDrawEachTurn
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Primitive single-card draw.
@@ -165,8 +166,7 @@ class DrawCardPrimitive(
     ): CardRevealedFromDrawEvent? {
         val projected = state.projectedState
         val hasRevealAbility = projected.getBattlefieldControlledBy(playerId).any { permanentId ->
-            val card = state.getEntity(permanentId)?.get<CardComponent>() ?: return@any false
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: return@any false
+            val cardDef = state.getEntity(permanentId)?.faceUpCardDefinition(cardRegistry) ?: return@any false
             cardDef.script.staticAbilities.any { it is RevealFirstDrawEachTurn }
         }
         if (!hasRevealAbility) return null

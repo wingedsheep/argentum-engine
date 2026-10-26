@@ -8,6 +8,7 @@ import com.wingedsheep.engine.mechanics.mana.AdditionalManaForCounters
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.scripting.AdditionalManaForEntryCounters
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Marks cast offers that may carry the optional "pay any amount of mana" additional cost of an
@@ -26,8 +27,7 @@ internal object AdditionalManaForCountersOffer {
         val playerId = context.playerId
         // Cheap gate: nothing to do unless the player controls a permanent printing the static.
         val anyGrant = state.projectedState.getBattlefieldControlledBy(playerId).any { id ->
-            val card = state.getEntity(id)?.get<CardComponent>() ?: return@any false
-            context.cardRegistry.getCard(card.cardDefinitionId)?.script?.staticAbilities
+            state.faceUpCardDefinition(id, context.cardRegistry)?.script?.staticAbilities
                 ?.any { it is AdditionalManaForEntryCounters } == true
         }
         if (!anyGrant) return actions

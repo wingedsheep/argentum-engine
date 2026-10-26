@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.hidden
 
+import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CardsSelectedResponse
+import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.GameAction
 import com.wingedsheep.engine.core.PassPriority
@@ -11,6 +13,7 @@ import com.wingedsheep.engine.core.SubmitDecision
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.support.HiddenIdentityForkChecker
 import com.wingedsheep.engine.support.HiddenIdentityForkChecker.End
 import com.wingedsheep.engine.support.ScenarioTestBase
@@ -22,6 +25,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.OnEnterRun
 import com.wingedsheep.sdk.scripting.conditions.Exists
@@ -321,6 +325,35 @@ class HiddenIdentityForkCasesTest : ScenarioTestBase() {
             outcome.checked shouldBe actions.size
             outcome.leak.shouldBeNull()
             game.state.pendingDecision.shouldBeInstanceOf<ReorderLibraryDecision>()
+        }
+
+        // #3340 group D: a face-down permanent is read by its face-down characteristics, never by
+        // the card underneath.
+        test("a face-down permanent is asked about as a creature whatever card it is") {
+            // P2's Imagecrafter targets P1's face-down permanent. It is a 2/2 creature whether the
+            // card is a Grizzly Bears or a Forest, so the creature-type question is asked in both.
+            val game = scenario()
+                .withPlayers()
+                .withCardOnBattlefield(2, "Imagecrafter")
+                .withCardOnBattlefield(1, "Grizzly Bears")
+                .withActivePlayer(2)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val faceDown = game.findPermanent("Grizzly Bears")!!
+            game.state = game.state.updateEntity(faceDown) { it.with(FaceDownComponent) }
+            val start = game.state
+            val imagecrafter = game.findPermanent("Imagecrafter")!!
+            val ability = cardRegistry.requireCard("Imagecrafter").activatedAbilities.single().id
+            val actions = mutableListOf<GameAction>().apply {
+                play(game, ActivateAbility(game.player2Id, imagecrafter, ability, targets = listOf(ChosenTarget.Permanent(faceDown))))
+            }
+            game.state.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>()
+
+            val outcome = checker.checkFaceDownFork(start, faceDown, cardRegistry.requireCard("Forest"), game.player2Id, actions)
+
+            outcome.leak.shouldBeNull()
+            outcome.end shouldBe End.Completed
+            outcome.checked shouldBe actions.size
         }
     }
 }

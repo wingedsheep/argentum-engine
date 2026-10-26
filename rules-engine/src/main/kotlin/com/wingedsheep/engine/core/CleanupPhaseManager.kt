@@ -127,6 +127,7 @@ import com.wingedsheep.engine.state.components.combat.PlayerAttackedPlayersThisT
 import com.wingedsheep.engine.state.components.player.CreatureLeftBattlefieldThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CreatureDeathsThisTurnComponent
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Handles all end-of-turn cleanup: discard to hand size, damage removal,
@@ -647,8 +648,7 @@ class CleanupPhaseManager(
     private fun isManaPoolEmptyingPrevented(state: GameState): Boolean {
         val registry = cardRegistry
         for (entityId in state.getBattlefield()) {
-            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
-            val cardDef = registry.getCard(card.cardDefinitionId) ?: continue
+            val cardDef = state.getEntity(entityId)?.faceUpCardDefinition(registry) ?: continue
             if (cardDef.script.staticAbilities.any { it is PreventManaPoolEmptying }) {
                 return true
             }

@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GrantFlashToSpellType
 import com.wingedsheep.sdk.scripting.StaticAbility
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * The single source of truth for "may this card be cast as though it had flash?" — every source of
@@ -99,8 +100,7 @@ object FlashTypeGrants {
         // permanent "is treated as though it does not exist").
         for (playerId in state.turnOrder) {
             for (entityId in state.controlledBattlefield(playerId)) {
-                val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
-                val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+                val cardDef = state.getEntity(entityId)?.faceUpCardDefinition(cardRegistry) ?: continue
                 val classLevel = state.getEntity(entityId)?.get<ClassLevelComponent>()?.currentLevel
                 for (raw in cardDef.script.effectiveStaticAbilities(classLevel)) {
                     val ability = activeGrant(state, raw, entityId, playerId, conditionEvaluator)

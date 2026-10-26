@@ -5,11 +5,11 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
-import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GrantWebSlingingToSpells
 import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Web-slinging cost helper (CR 702.188, Marvel's Spider-Man).
@@ -54,8 +54,7 @@ object WebSlinging {
         if (controllerId != null && cardRegistry != null && predicateEvaluator != null) {
             val context = PredicateContext(controllerId = controllerId)
             for (granterId in state.controlledBattlefield(controllerId)) {
-                val def = state.getEntity(granterId)?.get<CardComponent>()
-                    ?.let { cardRegistry.getCard(it.cardDefinitionId) } ?: continue
+                val def = state.getEntity(granterId)?.faceUpCardDefinition(cardRegistry) ?: continue
                 for (ability in def.script.staticAbilities) {
                     if (ability !is GrantWebSlingingToSpells) continue
                     if (predicateEvaluator.matches(state, state.projectedState, spellCardId, ability.spellFilter, context)) {

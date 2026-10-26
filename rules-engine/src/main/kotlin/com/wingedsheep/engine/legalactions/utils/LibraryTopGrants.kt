@@ -4,11 +4,11 @@ import com.wingedsheep.engine.event.GrantedStaticAbility
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.liveStaticAbilities
-import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.PlayFromTopWithAlternativeCost
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * The library-top permissions that name *whose* library they open — [PlayFromTopWithAlternativeCost]
@@ -57,8 +57,7 @@ object LibraryTopGrants {
         // A printed permission only ever opens its controller's own library.
         if (libraryOwnerId == playerId) {
             for (entityId in state.getBattlefield(playerId)) {
-                val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
-                val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+                val cardDef = state.getEntity(entityId)?.faceUpCardDefinition(cardRegistry) ?: continue
                 cardDef.liveStaticAbilities(state, entityId)
                     .firstOrNull { it is PlayFromTopWithAlternativeCost && it.libraryOwner == EffectTarget.Controller }
                     ?.let { return it as PlayFromTopWithAlternativeCost }

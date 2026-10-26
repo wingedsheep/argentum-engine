@@ -4,9 +4,9 @@ import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalManaForEntryCounters
+import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Finds the [AdditionalManaForEntryCounters] static (Chorus of the Conclave) that lets [casterId]
@@ -31,8 +31,7 @@ object AdditionalManaForCounters {
         val projected = state.projectedState
         for (permanentId in projected.getBattlefieldControlledBy(casterId)) {
             if (projected.hasLostAllAbilities(permanentId)) continue
-            val card = state.getEntity(permanentId)?.get<CardComponent>() ?: continue
-            val def = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val def = state.getEntity(permanentId)?.faceUpCardDefinition(cardRegistry) ?: continue
             for (ability in def.script.staticAbilities) {
                 if (ability !is AdditionalManaForEntryCounters) continue
                 val matches = predicateEvaluator.matches(

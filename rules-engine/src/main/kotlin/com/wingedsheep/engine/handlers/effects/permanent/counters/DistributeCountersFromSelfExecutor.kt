@@ -46,14 +46,11 @@ class DistributeCountersFromSelfExecutor : EffectExecutor<DistributeCountersFrom
             return EffectResult.success(state, emptyList())
         }
 
-        // Find all other creatures on the battlefield
+        // Find all other creatures on the battlefield, by their current types: a manifested
+        // noncreature card is a creature, an animated land is one too (CR 708.2, 613.1d).
+        val projected = state.projectedState
         val otherCreatures = state.getBattlefield()
-            .filter { it != sourceId }
-            .filter { entityId ->
-                val entity = state.getEntity(entityId) ?: return@filter false
-                val card = entity.get<CardComponent>() ?: return@filter false
-                card.isCreature
-            }
+            .filter { it != sourceId && projected.isCreature(it) }
 
         if (otherCreatures.isEmpty()) {
             return EffectResult.success(state, emptyList())
