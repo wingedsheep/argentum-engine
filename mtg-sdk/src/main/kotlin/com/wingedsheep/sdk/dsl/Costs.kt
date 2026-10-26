@@ -303,7 +303,14 @@ object Costs {
      * to, without moving zones (CR 701.3d). Only payable while it *is* attached, which is the whole
      * of Sunforger's first ruling. See [CostAtom.Unattach].
      */
-    val Unattach: AbilityCost = AbilityCost.Atom(CostAtom.Unattach)
+    val Unattach: AbilityCost = AbilityCost.Atom(CostAtom.Unattach())
+
+    /**
+     * "Unattach [this Equipment]" inside an ability the Equipment *grants* (Toralf's Hammer's
+     * "{1}{R}, {T}, Unattach Toralf's Hammer: …") — detaches the granter, not the host that has the
+     * ability. The Unattach sibling of [TapGrantingPermanent]. See [CostAtom.Unattach].
+     */
+    val UnattachGrantingPermanent: AbilityCost = AbilityCost.Atom(CostAtom.Unattach(ofGrantingPermanent = true))
 
     // =========================================================================
     // Exile Costs

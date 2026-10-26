@@ -113,7 +113,14 @@ class CostHandler(private val zones: ZoneTransitionService) {
             is AbilityCost.OwnManaCost -> ownManaCostOrNull(state, sourceId)?.let {
                 canPayAtom(state, CostAtom.Mana(it), sourceId, controllerId, manaPool, lifePurpose, abilityContext)
             } ?: false
-            is AbilityCost.Atom -> canPayAtom(state, cost.atom, sourceId, controllerId, manaPool, lifePurpose, abilityContext)
+            is AbilityCost.Atom -> {
+                val atom = cost.atom
+                // "Unattach Toralf's Hammer" in an ability the Hammer grants gates on the *granter's*
+                // attachment, which only this layer knows. An unresolved granter defers to payment
+                // time, matching TapGrantingPermanent.
+                if (atom is CostAtom.Unattach && atom.ofGrantingPermanent) granterId == null || isAttached(state, granterId)
+                else canPayAtom(state, atom, sourceId, controllerId, manaPool, lifePurpose, abilityContext)
+            }
             is AbilityCost.Tap -> {
                 !state.getEntity(sourceId)!!.has<TappedComponent>()
             }
@@ -794,10 +801,8 @@ class CostHandler(private val zones: ZoneTransitionService) {
         // "You can't pay the cost of unattaching Sunforger unless Sunforger is attached to a
         // creature" — its own 2020-08-07 ruling, and the reason this is a real affordability gate
         // rather than a free rider.
-        is CostAtom.Unattach ->
-            state.getEntity(sourceId)
-                ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
-                ?.targetId != null
+        // The granter-scoped form is gated in canPayAbilityCost, the only layer that knows the granter.
+        is CostAtom.Unattach -> atom.ofGrantingPermanent || isAttached(state, sourceId)
         // Adding counters takes nothing away, so there is never a reason it can't be paid — this
         // is what keeps Mazemind Tome activatable on the very activation that exiles it.
         is CostAtom.PutCountersOnSelf -> true
@@ -834,6 +839,12 @@ class CostHandler(private val zones: ZoneTransitionService) {
     }
 
     /** Perform payment for a single [CostAtom] paid as an activated-ability cost. */
+    /** Is [entityId] attached to something? The Unattach cost's payability gate. */
+    private fun isAttached(state: GameState, entityId: EntityId): Boolean =
+        state.getEntity(entityId)
+            ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+            ?.targetId != null
+
     private fun payAtom(
         state: GameState,
         atom: CostAtom,
@@ -1005,8 +1016,11 @@ class CostHandler(private val zones: ZoneTransitionService) {
             // as it sees the UnattachEquipmentEffect. It no-ops when nothing is attached; the gate
             // above already established that something is, so that only happens if the host left
             // between the two checks — in which case the cost is paid by there being nothing owed.
+            val holderId = if (atom.ofGrantingPermanent) {
+                choices.granterId ?: return CostPaymentResult.failure("Granting permanent not provided for cost")
+            } else sourceId
             val (unattached, events) = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
-                .unattachEmittingEvent(state, sourceId)
+                .unattachEmittingEvent(state, holderId)
             CostPaymentResult.success(unattached, manaPool, events)
         }
         is CostAtom.RevealNotedCreatureType -> {

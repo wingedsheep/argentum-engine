@@ -499,7 +499,7 @@ Families:
 - `CostAtom.Sacrifice(filter: GameObjectFilter, count: Int, excludeSelf: Boolean, distinctNames: Boolean)` — Sacrifice count permanents matching filter.
 - `CostAtom.SacrificeAll(filter: GameObjectFilter)` — Sacrifice **every** permanent you control matching filter — "as an additional cost to cast this spell, sacrifice all creatures you control" (Soulblast).
 - `CostAtom.TapPermanents(count: Int, filter: GameObjectFilter, excludeSelf: Boolean, sharedCreatureType: Boolean, direction: TapCostDirection)` — Tap count untapped permanents matching filter you control.
-- `CostAtom.Unattach` — Unattach the ability's source from the permanent it is attached to (CR 701.3d) — "Unattach this Equipment" (Sunforger).
+- `CostAtom.Unattach(ofGrantingPermanent: Boolean)` — Unattach the ability's source from the permanent it is attached to (CR 701.3d) — "Unattach this Equipment" (Sunforger).
 - `CostAtom.VariablePermanents(filter: GameObjectFilter, minCount: Int, excludeSelf: Boolean, action: PermanentCostAction, xMeasure: VariableCostMeasure, minMeasure: Int, maxCount: Int?)` — Put one or more permanents matching filter you control into another zone — a *variable-count* cost: the payer chooses how many (at least minCount).
 
 ## CostGating
@@ -1755,6 +1755,7 @@ Families:
 - `StatePredicate.IsSuspected` — Permanent that is currently suspected (CR 701.60a, Murders at Karlov Manor).
 - `StatePredicate.IsTapped`
 - `StatePredicate.IsTransformed` — Is a **transformed permanent** (CR 701.27g): a nonmodal double-faced permanent on the battlefield with its back face up — a Siege cast transformed, a werewolf flipped at night, a saga that exiled i…
+- `StatePredicate.IsTriggeringEntity` — The candidate is the *triggering entity* of the resolving triggered ability — the permanent the trigger's event was about (read from the evaluation context's `triggeringEntityId`).
 - `StatePredicate.IsUnblocked` — Attacker with unblocked status after blockers are declared
 - `StatePredicate.IsUntapped`
 - `StatePredicate.IsWarpExiled` — Card in exile that was put there by the delayed triggered ability of a warp keyword (CR 702.185b).

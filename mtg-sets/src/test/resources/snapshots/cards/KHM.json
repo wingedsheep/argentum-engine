@@ -7293,6 +7293,227 @@
     ]
 }
 
+// Toralf, God of Fury
+{
+    "name": "Toralf, God of Fury",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Legendary Creature — God",
+    "oracleText": "Trample\nWhenever a creature or planeswalker an opponent controls is dealt excess noncombat damage, Toralf deals damage equal to the excess to any target other than that permanent.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Toralf, God of Fury:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageNonCombat",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": "creature|planeswalker ctrl:opponent"
+                    },
+                    "requireExcess": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_EXCESS_DAMAGE_AMOUNT"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsTriggeringEntity"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever a creature or planeswalker an opponent controls is dealt excess noncombat damage, Toralf deals damage equal to the excess to any target other than that permanent."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Toralf's Hammer",
+        "manaCost": "{1}{R}",
+        "typeLine": "Legendary Artifact — Equipment",
+        "oracleText": "Equipped creature has \"{1}{R}, {T}, Unattach Toralf's Hammer: It deals 3 damage to any target. Return Toralf's Hammer to its owner's hand.\"\nEquipped creature gets +3/+0 as long as it's legendary.\nEquip {1}{R}",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Toralf's Hammer:2",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{1}{R}"
+                        }
+                    },
+                    "effect": {
+                        "type": "AttachEquipment",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "creature you control"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "creature you control"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isEquipAbility": true
+                }
+            ],
+            "staticAbilities": [
+                {
+                    "type": "GrantActivatedAbility",
+                    "ability": {
+                        "id": "Toralf's Hammer:1",
+                        "cost": {
+                            "type": "CostComposite",
+                            "costs": [
+                                {
+                                    "type": "CostAtomWrapper",
+                                    "atom": {
+                                        "type": "AtomMana",
+                                        "cost": "{1}{R}"
+                                    }
+                                },
+                                "CostTap",
+                                {
+                                    "type": "CostAtomWrapper",
+                                    "atom": {
+                                        "type": "AtomUnattach",
+                                        "ofGrantingPermanent": true
+                                    }
+                                }
+                            ]
+                        },
+                        "effect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    },
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "damageSource": "GrantingSource"
+                                },
+                                {
+                                    "type": "MoveToZone",
+                                    "target": "GrantingSource",
+                                    "destination": "Hand"
+                                }
+                            ]
+                        },
+                        "targetRequirements": [
+                            {
+                                "type": "AnyTarget",
+                                "id": "t0"
+                            }
+                        ],
+                        "descriptionOverride": "{1}{R}, {T}, Unattach Toralf's Hammer: It deals 3 damage to any target. Return Toralf's Hammer to its owner's hand."
+                    }
+                },
+                {
+                    "type": "ConditionalStaticAbility",
+                    "ability": {
+                        "type": "ModifyStats",
+                        "powerBonus": 3,
+                        "toughnessBonus": 0
+                    },
+                    "condition": {
+                        "type": "EntityMatches",
+                        "entity": "EnchantedPermanent",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "IsLegendary"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "equipCost": "{1}{R}",
+        "metadata": {
+            "collectorNumber": "154",
+            "rarity": "MYTHIC",
+            "artist": "Tyler Jacobson",
+            "imageUri": "https://cards.scryfall.io/normal/back/2/2/22a6a5f1-1405-4efb-af3e-e1f58d664e99.jpg?1783928227",
+            "rulings": [
+                {
+                    "date": "2021-02-05",
+                    "text": "The creature equipped by Toralf's Hammer is the source of the activated ability, but Toralf's Hammer is the source of the damage. For example, if the equipped creature is green, that ability can't target a permanent with protection from green. It could target one with protection from red, though the damage would be prevented as it would have been dealt by a red source (Toralf's Hammer)."
+                },
+                {
+                    "date": "2021-02-05",
+                    "text": "If the target is an illegal target as the ability tries to resolve, the ability won't resolve and none of its effects will happen. You won't return Toralf's Hammer to its owner's hand."
+                },
+                {
+                    "date": "2021-02-05",
+                    "text": "You unattach Toralf's Hammer as part of the cost of activating the ability. If the ability doesn't resolve, Toralf's Hammer doesn't become reattached."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "MYTHIC",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/22a6a5f1-1405-4efb-af3e-e1f58d664e99.jpg?1783928227",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "A creature has been dealt excess damage if one or more sources deal more damage to it than the minimum amount of damage required to be lethal damage. In most cases, this means damage greater than its toughness, but consider any damage already dealt to it that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "A planeswalker is dealt excess damage if it's dealt damage greater than its current loyalty."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "It doesn't matter if a creature or planeswalker an opponent controls was dealt combat damage earlier in the turn. The only thing that matters is that the damage dealt to that permanent that caused excess damage to be dealt was noncombat damage."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The damage Toralf deals because of its triggered ability is noncombat damage. That damage may cause Toralf's ability to trigger again."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ],
+    "layout": "MODAL_DFC"
+}
+
 // Toski, Bearer of Secrets
 {
     "name": "Toski, Bearer of Secrets",

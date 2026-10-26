@@ -923,6 +923,12 @@ interface ObjectFilterBuilder<out Self> {
     fun notGrantingPermanent() = withStatePredicate(StatePredicate.Not(StatePredicate.IsGrantingPermanent))
 
     /**
+     * Must NOT be the triggering entity of the resolving trigger — "any target other than that
+     * permanent" (Toralf, God of Fury). See [StatePredicate.IsTriggeringEntity].
+     */
+    fun notTriggeringEntity() = withStatePredicate(StatePredicate.Not(StatePredicate.IsTriggeringEntity))
+
+    /**
      * Must be attached to a permanent matching [hostFilter] (general form of attachment matching —
      * the host filter may carry a controller predicate, e.g. "a creature you control"). Used by
      * Stolen Uniform's reflexive "if it's attached to a creature you control" guard.

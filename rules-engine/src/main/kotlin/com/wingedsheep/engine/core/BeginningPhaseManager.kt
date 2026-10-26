@@ -569,6 +569,8 @@ class BeginningPhaseManager(
             container.has<com.wingedsheep.engine.state.components.identity.CommanderComponent>()
         // No granter context in untap filtering — granter-relative exclusion is resolution-time only.
         StatePredicate.IsGrantingPermanent -> false
+        // Likewise no trigger context in untap filtering.
+        StatePredicate.IsTriggeringEntity -> false
         // Counter history is plain per-entity state, so answer it exactly rather than falling open.
         // In practice cleanup wiped the marker at the end of the previous turn, so this is false for
         // every permanent by the time the untap step runs on a normal turn.

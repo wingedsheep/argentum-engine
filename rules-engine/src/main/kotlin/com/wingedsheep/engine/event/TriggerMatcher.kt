@@ -3004,6 +3004,8 @@ class TriggerMatcher(
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsProtectedBy -> false
         // No granter context in trigger gating — granter-relative exclusion is resolution-time only.
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsGrantingPermanent -> false
+        // The trigger is still being matched, so it has no triggering entity yet.
+        is com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsTriggeringEntity -> false
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.Or ->
             predicate.predicates.any { matchesStatePredicateForTrigger(it, state, entityId) }
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.And ->

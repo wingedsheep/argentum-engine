@@ -1606,6 +1606,21 @@ sealed interface StatePredicate {
     }
 
     /**
+     * The candidate is the *triggering entity* of the resolving triggered ability — the permanent
+     * the trigger's event was about (read from the evaluation context's `triggeringEntityId`).
+     * Negate with [Not] for "other than that permanent" target exclusions on target kinds that
+     * carry a [GameObjectFilter][com.wingedsheep.sdk.scripting.GameObjectFilter] rather than a
+     * `TargetFilter` — Toralf, God of Fury's "any target other than that permanent" (an
+     * `AnyTarget`, whose player half no `TargetFilter` reaches). `TargetFilter`-based requirements
+     * keep their own `excludeTriggeringEntity` flag. False with no trigger context.
+     */
+    @SerialName("IsTriggeringEntity")
+    @Serializable
+    data object IsTriggeringEntity : Entity {
+        override val description: String = "that permanent"
+    }
+
+    /**
      * The candidate permanent is the permanent the effect's source is attached to — i.e. the
      * creature/permanent enchanted or equipped by the source (read from the source's
      * `AttachedToComponent`). Source-relative: resolves against the source supplied in the

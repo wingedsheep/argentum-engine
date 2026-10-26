@@ -2490,6 +2490,7 @@ class PredicateEvaluator(
                     ?.get<com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent>()
                     ?.timestamp == context.sourceBattlefieldTimestamp)
             StatePredicate.IsGrantingPermanent -> context?.granterId != null && context.granterId == entityId
+            StatePredicate.IsTriggeringEntity -> context?.triggeringEntityId != null && context.triggeringEntityId == entityId
 
             // Source-relative — the candidate is the permanent the effect's source is attached
             // to (its enchanted/equipped creature). Read the source's AttachedToComponent and

@@ -56,7 +56,8 @@ class CostAtomSerializationTest : FunSpec({
         CostAtom.RevealNotedCreatureType,
         CostAtom.DiscardHand,
         CostAtom.SacrificeAll(GameObjectFilter.Creature),
-        CostAtom.Unattach,
+        CostAtom.Unattach(),
+        CostAtom.Unattach(ofGrantingPermanent = true),
         CostAtom.ExileFromGraveyardForTotal(
             filter = GameObjectFilter.Any.withColor(Color.BLACK),
             measure = CardMeasure.ColoredManaSymbols(listOf(Color.BLACK)),

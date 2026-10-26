@@ -773,6 +773,14 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   trigger cannot tell the two apart. Activated-ability-only: a spell on the stack is attached to
   nothing, so every other cost context reports it unpayable rather than half-paying it. Sunforger is
   `Costs.Composite(Costs.Mana("{R}{W}"), Costs.Unattach)`.
+- `Costs.UnattachGrantingPermanent` (ability cost) — "**Unattach [this Equipment]**" inside an ability the
+  Equipment *grants* (KHM — Toralf's Hammer: equipped creature has "{1}{R}, {T}, Unattach Toralf's Hammer: …").
+  `CostAtom.Unattach(ofGrantingPermanent = true)`: the same cost as `Costs.Unattach`, but it detaches the
+  permanent whose static granted the ability (resolved at activation, like `Costs.TapGrantingPermanent`) rather
+  than the creature that has it — `{T}` taps the creature, this unattaches the Equipment. Per CR 201.5a only that
+  specific granter is unattached; a second Equipment on the same creature stays put. Same affordability gate:
+  the granter must be attached to something. Pair with `EffectTarget.GrantingSource` for "it deals …" / "return
+  [it] to its owner's hand" — the granter is captured on the stack, so those still resolve after the unattach.
 - `Costs.CollectEvidence(n)` (ability cost) / `Costs.additional.CollectEvidence(n)` (mandatory
   additional cost) / `card { collectEvidence(n) }` (the optional **linked** cast cost) — Collect
   evidence N (CR 701.59a): "exile any number of cards from your graveyard with total mana value N or
@@ -7575,6 +7583,12 @@ work for abilities-on-stack (which carry no `CardComponent`).
   1:1 onto the N granters. Not populated for leaves-the-battlefield granted triggers (a granted "dies"
   ability): the source is already gone when the trigger fires, so the granter can't be recovered from its
   attachment index — reference the granter by other means there, or scope with `notAttachedToSource()`.
+- `IsTriggeringEntity` (negated builder `notTriggeringEntity()`) — matches the resolving trigger's *triggering
+  entity* (the evaluation context's `triggeringEntityId`). Negate for "any target other than that permanent" on
+  target kinds that carry a `GameObjectFilter` instead of a `TargetFilter` — Toralf, God of Fury's
+  `Targets.Any(GameObjectFilter.Any.notTriggeringEntity())`, where the damaged permanent is excluded but players
+  stay legal. `TargetFilter`-based requirements keep `otherThanTriggeringEntity()`. False with no trigger
+  context (projection, untap and trigger-matching evaluate it as false).
 - `HasGreatestPower` (filter builder `hasGreatestPower()`) / `HasLeastPower` (filter builder
   `hasLeastPower()`) — has the greatest / least projected power among creatures *its controller*
   controls (ties all qualify). Used for "creature with the greatest/least power" target and edict

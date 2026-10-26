@@ -420,11 +420,10 @@ class ActivatedAbilityEnumerator(
                         // "Unattach this Equipment" (Sunforger). No selection — the source detaches
                         // from whatever it is on — but a *real* affordability gate: the ability is
                         // not offered while the Equipment is unattached (its own 2020-08-07 ruling).
+                        // The granter-scoped form (Toralf's Hammer) gates on the granting
+                        // Equipment instead of the host that has the ability.
                         is CostAtom.Unattach -> {
-                            if (state.getEntity(entityId)
-                                    ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
-                                    ?.targetId == null
-                            ) continue
+                            if (!unattachSubjectIsAttached(state, atom, entityId, granterByAbilityId[ability.id])) continue
                         }
                         // CR 701.17b — a mill cost is unpayable when the library holds fewer cards.
                         // No selection: the milled cards are the top of the library.
@@ -681,10 +680,7 @@ class ActivatedAbilityEnumerator(
                                     is CostAtom.RevealNotedCreatureType -> {}
                                     // See the top-level branch: unpayable while unattached.
                                     is CostAtom.Unattach -> {
-                                        if (state.getEntity(entityId)
-                                                ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
-                                                ?.targetId == null
-                                        ) {
+                                        if (!unattachSubjectIsAttached(state, atom, entityId, granterByAbilityId[ability.id])) {
                                             costCanBePaid = false
                                             break
                                         }
@@ -1636,6 +1632,23 @@ class ActivatedAbilityEnumerator(
      * [AbilityCost.TapGrantingPermanent]; an unresolved granter (null) is treated as unpayable,
      * since the cost names a specific permanent that must still be there to tap (CR 201.5a).
      */
+    /**
+     * The Unattach cost's payability gate (Sunforger's ruling): the permanent it detaches — the
+     * source, or with [CostAtom.Unattach.ofGrantingPermanent] the granter — must be attached to
+     * something. An unresolvable granter can't be unattached.
+     */
+    private fun unattachSubjectIsAttached(
+        state: com.wingedsheep.engine.state.GameState,
+        atom: CostAtom.Unattach,
+        sourceId: EntityId,
+        granterId: EntityId?,
+    ): Boolean {
+        val subjectId = if (atom.ofGrantingPermanent) granterId ?: return false else sourceId
+        return state.getEntity(subjectId)
+            ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+            ?.targetId != null
+    }
+
     private fun granterIsUntapped(state: com.wingedsheep.engine.state.GameState, granterId: EntityId?): Boolean {
         if (granterId == null) return false
         val granter = state.getEntity(granterId) ?: return false
