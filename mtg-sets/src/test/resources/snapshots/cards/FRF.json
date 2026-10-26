@@ -1215,6 +1215,77 @@
     ]
 }
 
+// Silumgar, the Drifting Death
+{
+    "name": "Silumgar, the Drifting Death",
+    "manaCost": "{4}{U}{B}",
+    "typeLine": "Legendary Creature — Dragon",
+    "oracleText": "Flying, hexproof\nWhenever a Dragon you control attacks, creatures defending player controls get -1/-1 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 7
+    },
+    "keywords": [
+        "FLYING",
+        "HEXPROOF"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Silumgar, the Drifting Death:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature Dragon ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "controllerPredicate": {
+                                    "type": "ControlledByReferencedPlayer",
+                                    "target": {
+                                        "type": "PlayerRef",
+                                        "player": "DefendingPlayer"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "rarity": "RARE",
+        "artist": "Steven Belledin",
+        "flavorText": "\"No machinations, no puppet strings, no plots. Just pure, sweeping death.\"\n—Tasigur, the Golden Fang",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4c9108e7-6c39-4587-aa3a-0ec27f9761b2.jpg?1783938673"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Smoldering Efreet
 {
     "name": "Smoldering Efreet",

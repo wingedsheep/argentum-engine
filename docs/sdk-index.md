@@ -1098,6 +1098,7 @@ Families:
 - `EffectTarget.AffectedEntity` — AFFECTED ENTITY: the permanent a continuous effect is being applied to during state projection — the creature an Aura's static bonus lands on, one member of a lord's group.
 - `EffectTarget.AmassedArmy` — AMASSED ARMY: the Army chosen by the most recent Amass step in the resolving pipeline — "the amassed Army", whether or not it received counters (CR 701.47c).
 - `EffectTarget.AttachedToTriggeringPermanent` — ATTACHED-TO TRIGGERING PERMANENT: the permanent that the triggering attachment (Aura/ Equipment) became attached to — or, for the unattach mirror, came off of.
+- `EffectTarget.AttackedBy(attacker: EffectTarget.SingleEntity)` — ATTACKED BY: "the player or planeswalker attacker is attacking" — the defender itself, not the defending player (Raid Bombardment, Hellrider: "deals 1 damage to the player or planeswalker that crea…
 - `EffectTarget.BoundVariable(name: String)` — NAMED TARGET BINDING: Refers to a cast-time target by name rather than positional index.
 - `EffectTarget.ChosenCreature` — CHOSEN CREATURE: Refers to the creature chosen when this permanent entered the battlefield.
 - `EffectTarget.ContextTarget(index: Int)` — TARGET BINDING: Refers to a specific target selection from the declaration phase.

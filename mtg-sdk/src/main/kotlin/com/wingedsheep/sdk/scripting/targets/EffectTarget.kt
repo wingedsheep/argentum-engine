@@ -370,6 +370,26 @@ sealed interface EffectTarget {
     }
 
     /**
+     * ATTACKED BY: "the player or planeswalker [attacker] is attacking" — the defender itself, not
+     * the defending player (Raid Bombardment, Hellrider: "deals 1 damage to the player or
+     * planeswalker that creature is attacking"). [attacker] is usually [TriggeringEntity] inside a
+     * `Triggers.a(...).attacks()` trigger.
+     *
+     * Read from the attacker's attack assignment, or — once it has left the battlefield — from the
+     * defender frozen in its last-known snapshot (the creature "was attacking before it left").
+     * A creature attacking a battle resolves to nothing: "player or planeswalker" is literal, and
+     * the payoff does nothing (Raid Bombardment's ruling).
+     *
+     * Distinct from `PlayerRef(Player.DefendingPlayer)`, which is always a *player* (the attacked
+     * planeswalker's controller); this names the planeswalker itself when one is attacked.
+     */
+    @SerialName("AttackedBy")
+    @Serializable
+    data class AttackedBy(val attacker: SingleEntity = TriggeringEntity) : SingleEntity {
+        override val description: String = "the player or planeswalker ${attacker.description} is attacking"
+    }
+
+    /**
      * DISCARDED AS COST: a card discarded to pay this spell's additional cost
      * (`Costs.additional.DiscardCards(...)`) or this activated ability's cost (`Costs.Discard(...)`),
      * by index. The discard counterpart of [SacrificedAsCost] / [TappedAsCost]. Resolves to the discarded card's entity id —

@@ -1687,10 +1687,14 @@ class PredicateEvaluator(
         // only at resolution. Without it every candidate fails the controller predicate, the
         // trigger finds no legal targets, and it is removed from the stack without ever asking its
         // "you may" question. Reads combat off the source, with the same removed-from-combat
-        // fallback the resolution-time path uses (CR 802.2a).
+        // fallback the resolution-time path uses (CR 802.2a). The triggering attacker comes first,
+        // in the same order as TargetResolutionUtils.resolveDefendingPlayer (CR 508.5): "whenever a
+        // creature you control attacks, … target creature defending player controls" names that
+        // creature's defender, whether or not the source is attacking too.
         is EffectTarget.PlayerRef -> when (target.player) {
             Player.DefendingPlayer -> TargetResolutionUtils
-                .defendingPlayerOfAttacker(state, context.sourceId)
+                .defendingPlayerOfAttacker(state, context.triggeringEntityId)
+                ?: TargetResolutionUtils.defendingPlayerOfAttacker(state, context.sourceId)
             // "…deals combat damage to a player, [that player] …" (Balefire Dragon). A self-bound
             // damage trigger carries the damaged player on `triggeringEntityId` and sets no
             // distinct `triggeringPlayerId` (see DamageTriggerDetector), which is exactly the

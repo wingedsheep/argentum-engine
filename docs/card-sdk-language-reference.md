@@ -5647,8 +5647,15 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   `storePlayer` handle. List-only like `EachTargetedPlayer`: `ForEachPlayer` and the counting
   primitives read it; the single-player resolver returns null. Plaguecrafter's "each player who
   can't discards" and the tempting-offer accepters (`Patterns.Mechanic.temptingOffer`).
-- `Player.DefendingPlayer` — CR 802.2a: the player the ability's source is attacking, read from
-  the source's attack assignment (a creature attacking a planeswalker defends against its
+- `Player.DefendingPlayer` — CR 802.2a: the player the triggering attacker is attacking — or, when
+  the trigger isn't an attacker's, the player the ability's source is attacking. The triggering
+  attacker wins (CR 508.5: an ability naming an attacking creature and a defending player means
+  that creature's defender), so in a per-attacker `Triggers.a(Creature.youControl()).attacks()`
+  each trigger names its own attacker's player even when the source attacks someone else
+  (Brutal Hordechief, Silumgar, the Drifting Death:
+  `modifyStatsForAll(-1, -1, GroupFilter(Creature.targetPlayerControls(PlayerRef(Player.DefendingPlayer))))`
+  — not `defendingPlayerControls()`, which matches every defending seat). Read from the attack
+  assignment (a creature attacking a planeswalker defends against its
   controller); once the source has left the battlefield the defender frozen into its exit snapshot
   answers instead (CR 608.2h), so an ability that **sacrifices its own attacking source before
   naming the defending player** — Mindstab Thrull, Necrite — still resolves against the right
@@ -5810,6 +5817,13 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   `resolveTarget(state, target)` overload.
 - `EnchantedPermanent` — same `AttachedToComponent` resolution as `EnchantedCreature`, but type-agnostic; use for
   Auras that enchant non-creature permanents (e.g. Wellspring enchants a land: "gain control of enchanted land").
+- `AttackedBy(attacker = TriggeringEntity)` — "the player or planeswalker [attacker] is attacking":
+  the defender itself, so an attacked planeswalker is named rather than its controller (Raid
+  Bombardment, Hellrider: `Triggers.a(Creature.youControl()).attacks()` +
+  `DealDamage(1, EffectTarget.AttackedBy())`). Read from the attacker's `AttackingComponent`, else the
+  defender frozen in its exit snapshot once it has left the battlefield; names nothing for a
+  creature that isn't attacking, one attacking a battle ("player or planeswalker" is literal), or
+  a planeswalker that has since left. For the defending *player* use `PlayerRef(Player.DefendingPlayer)`.
 - `AttachedToTriggeringPermanent` — the permanent on the other end of an attachment trigger; requires
   the state-aware `resolveTarget(target, state)` overload. Inside `Triggers.<subject>.becomesAttached(to, controller)` it is the
   host the triggering attachment became attached to, resolved **live** from the triggering object's

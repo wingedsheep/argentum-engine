@@ -2700,6 +2700,43 @@
     ]
 }
 
+// Raid Bombardment
+{
+    "name": "Raid Bombardment",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature you control with power 2 or less attacks, this enchantment deals 1 damage to the player or planeswalker that creature is attacking.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Raid Bombardment:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature pow<=2 ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "AttackedBy"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "artist": "Matt Cavotta",
+        "flavorText": "Goblins in the first wave of a fire raid always bemoan the aim of everyone else.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c2d1a48-efde-4134-95f0-b23f6cf85259.jpg?1783941971"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Reinforced Bulwark
 {
     "name": "Reinforced Bulwark",
