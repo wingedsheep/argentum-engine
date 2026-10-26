@@ -1022,10 +1022,11 @@ data class DamageDealtToCreaturesThisTurnComponent(
 
 /**
  * Last-known snapshot of a source that dealt damage to the bearer this turn — captured at the
- * moment the damage was dealt (CR 608.2h / 603.10a). Holds just what observer-style death triggers
- * need to evaluate a source filter ("dealt damage by a Spider you controlled"): the source's
- * controller and creature-subtypes as they were when it dealt the damage. Stored on the *damaged*
- * creature so it survives a source that died in the same combat.
+ * moment the damage was dealt (CR 608.2i / 603.10a). Holds just what a look-back source filter
+ * needs ("dealt damage by a Spider you controlled", "a Giant, Wizard, or spell you controlled dealt
+ * damage to it this turn"): the source's controller, card types, subtypes and name as they were
+ * when it dealt the damage. Stored on the *damaged* creature or planeswalker so it survives a
+ * source that died in the same combat.
  *
  * [sourceId] names the damaging object itself, so a "dealt damage by this creature" trigger on a
  * source that left the battlefield alongside its victim can still look back and find it (CR 603.10a).
@@ -1076,6 +1077,8 @@ data class DamageSourceLki(
         com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsSorcery ->
             com.wingedsheep.sdk.core.CardType.SORCERY in sourceCardTypes
         is com.wingedsheep.sdk.scripting.predicates.CardPredicate.Or -> predicate.predicates.any(::matchesCard)
+        // `or` wraps a multi-predicate branch (Creature.withSubtype(...)) in an And.
+        is com.wingedsheep.sdk.scripting.predicates.CardPredicate.And -> predicate.predicates.all(::matchesCard)
         is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype -> predicate.subtype in sourceSubtypes
         is com.wingedsheep.sdk.scripting.predicates.CardPredicate.NameEquals -> predicate.name == sourceName
         else -> false
@@ -1083,8 +1086,8 @@ data class DamageSourceLki(
 }
 
 /**
- * Tracks the last-known snapshots of all sources that dealt damage to this creature this turn.
- * Read by observer death triggers of the form "whenever another creature dealt damage this turn by
+ * Tracks the last-known snapshots of all sources that dealt damage to this creature or
+ * planeswalker this turn. Read by observer death triggers of the form "whenever another creature dealt damage this turn by
  * [a source matching a filter] dies" (Shelob, Child of Ungoliant). Captured as last-known info on
  * the [com.wingedsheep.engine.core.ZoneChangeEvent] when the bearer leaves the battlefield, and
  * cleared at end of turn by [com.wingedsheep.engine.core.CleanupPhaseManager].

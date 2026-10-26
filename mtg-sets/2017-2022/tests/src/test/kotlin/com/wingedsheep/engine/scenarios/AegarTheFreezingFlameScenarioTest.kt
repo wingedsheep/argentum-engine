@@ -23,9 +23,16 @@ class AegarTheFreezingFlameScenarioTest : ScenarioTestBase() {
         startingLoyalty = 2
     }
 
+    private val apprentice = card("Aegar Test Apprentice") {
+        manaCost = "{2}{U}"
+        typeLine = "Creature — Human Wizard"
+        power = 3
+        toughness = 3
+    }
+
     init {
         cardRegistry.register(AegarTheFreezingFlame)
-        cardRegistry.register(walker)
+        cardRegistry.register(listOf(walker, apprentice))
 
         fun board(vararg opponents: String): TestGame {
             val builder = scenario()
@@ -71,6 +78,7 @@ class AegarTheFreezingFlameScenarioTest : ScenarioTestBase() {
                 game.castSpell(1, "Lightning Bolt", game.findPermanent("Aegar Test Walker")!!).error shouldBe null
                 game.resolveStack()
 
+                game.isInGraveyard(2, "Aegar Test Walker") shouldBe true
                 withClue("3 damage to a 2-loyalty planeswalker is 1 excess") { game.handSize(1) shouldBe handBefore }
             }
 
@@ -103,6 +111,54 @@ class AegarTheFreezingFlameScenarioTest : ScenarioTestBase() {
 
                 game.isInGraveyard(2, "Grizzly Bears") shouldBe true
                 game.handSize(1) shouldBe handBefore + 1
+            }
+
+            test("excess combat damage from a Wizard you control that isn't a Giant draws a card") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Aegar, the Freezing Flame")
+                    .withCardOnBattlefield(1, "Aegar Test Apprentice")
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withCardInLibrary(1, "Island")
+                    .withCardInLibrary(2, "Island")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                val handBefore = game.handSize(1)
+
+                game.attackAndBeBlocked("Aegar Test Apprentice", "Grizzly Bears")
+
+                game.isInGraveyard(2, "Grizzly Bears") shouldBe true
+                game.handSize(1) shouldBe handBefore + 1
+            }
+
+            test("an earlier hit from an opponent's spell doesn't count — it has to be yours") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Aegar, the Freezing Flame")
+                    .withCardOnBattlefield(1, "Centaur Courser")
+                    .withCardOnBattlefield(2, "Hill Giant")
+                    .withCardInHand(2, "Shock")
+                    .withLandsOnBattlefield(2, "Mountain", 1)
+                    .withCardInLibrary(1, "Island")
+                    .withCardInLibrary(2, "Island")
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                val handBefore = game.handSize(1)
+
+                game.castSpell(2, "Shock", game.findPermanent("Hill Giant")!!).error shouldBe null
+                game.resolveStack()
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Hill Giant" to 1)).error shouldBe null
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_BLOCKERS)
+                game.declareBlockers(mapOf("Centaur Courser" to listOf("Hill Giant"))).error shouldBe null
+                game.passUntilPhase(Phase.COMBAT, Step.END_COMBAT)
+
+                withClue("the Courser's 3 on top of the opponent's Shock is excess, but neither source qualifies") {
+                    game.isInGraveyard(2, "Hill Giant") shouldBe true
+                    game.handSize(1) shouldBe handBefore
+                }
             }
 
             test("an earlier hit from your spell counts when another source deals the excess later") {

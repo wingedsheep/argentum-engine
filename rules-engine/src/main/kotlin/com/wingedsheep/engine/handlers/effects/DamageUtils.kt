@@ -1402,7 +1402,7 @@ object DamageUtils {
      * matching a filter] dies" (Shelob), and by "if a Giant, Wizard, or spell you controlled dealt
      * damage to it this turn" on a creature or planeswalker (Aegar, the Freezing Flame).
      * Snapshotting on the *damaged* permanent means a source that died in the same combat is still
-     * evaluated against its damage-time state (CR 608.2h). [amount] accumulates per source, so a
+     * evaluated against its damage-time state (CR 608.2i). [amount] accumulates per source, so a
      * dies trigger can sum the damage from matching sources ("by other sources named Blazing Effigy").
      */
     fun trackDamageSourceLki(state: GameState, sourceId: EntityId, targetId: EntityId, amount: Int): GameState {

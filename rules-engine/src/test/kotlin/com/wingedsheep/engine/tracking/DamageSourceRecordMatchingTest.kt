@@ -55,6 +55,13 @@ class DamageSourceRecordMatchingTest : FunSpec({
         bear.matches(giantWizardOrSpell, you) shouldBe false
     }
 
+    test("a multi-predicate branch of an or union is matched whole") {
+        val giantCreatureOrSpell = GameObjectFilter.Creature.withSubtype("Giant") or GameObjectFilter.InstantOrSorcery
+        giant.matches(giantCreatureOrSpell, you) shouldBe true
+        bear.matches(giantCreatureOrSpell, you) shouldBe false
+        bolt.matches(giantCreatureOrSpell, you) shouldBe true
+    }
+
     test("a record written before card types were kept never matches a spell filter") {
         DamageSourceLki(sourceControllerId = you, sourceWasCreature = false)
             .matches(GameObjectFilter.InstantOrSorcery, you) shouldBe false
