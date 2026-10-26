@@ -130,12 +130,17 @@ sealed interface ManaRestriction {
 
     /**
      * "Spend this mana only to cast legendary spells." Matches spells with the Legendary supertype
-     * (Great Hall of the Citadel, Delighted Halfling).
+     * (Great Hall of the Citadel, Delighted Halfling). [creatureOnly] narrows it to legendary
+     * *creature* spells (The Ringhart Crest's "or a legendary creature spell"), the same axis
+     * [SpellsWithManaValueAtLeast] and [SubtypeSpellsOrAbilitiesOnly] carry.
      */
     @SerialName("LegendarySpellsOnly")
     @Serializable
-    data object LegendarySpellsOnly : ManaRestriction {
-        override val description: String = "Spend this mana only to cast legendary spells"
+    data class LegendarySpellsOnly(
+        val creatureOnly: Boolean = false,
+    ) : ManaRestriction {
+        override val description: String =
+            "Spend this mana only to cast legendary ${if (creatureOnly) "creature spells" else "spells"}"
     }
 
     /**
@@ -160,6 +165,31 @@ sealed interface ManaRestriction {
     data class SubtypeSpellsOrAbilitiesOnly(
         val subtype: String,
         val creatureOnly: Boolean = false
+    ) : ManaRestriction {
+        override val description: String = if (creatureOnly) {
+            "Spend this mana only to cast a creature spell of the chosen type"
+        } else {
+            "Spend this mana only to cast a spell of the chosen type or activate an ability of a source of the chosen type"
+        }
+    }
+
+    /**
+     * "Spend this mana only to cast a [creature] spell of the chosen type" — the *unbound* form of
+     * [SubtypeSpellsOrAbilitiesOnly], for a card that chose a creature type as it entered (CR 614.12
+     * "as enters" choice) and makes mana restricted to it: Cavern of Souls, Unclaimed Territory, The
+     * Ringhart Crest. The engine binds it the moment the mana is made, replacing it — also inside an
+     * [AnyOf] / [AllOf] — with `SubtypeSpellsOrAbilitiesOnly(<the producing source's chosen type>,
+     * creatureOnly)`, so the pool only ever holds the self-contained bound form. Left unbound (the
+     * source never chose a type) it is satisfied by nothing.
+     *
+     * A separate type rather than a placeholder subtype string on [SubtypeSpellsOrAbilitiesOnly]:
+     * a sentinel value would let a printed subtype and "the chosen one" collide, and
+     * [SubtypeSpellsOnly] (a fixed set of subtypes) has the same problem.
+     */
+    @SerialName("OfChosenType")
+    @Serializable
+    data class OfChosenType(
+        val creatureOnly: Boolean = false,
     ) : ManaRestriction {
         override val description: String = if (creatureOnly) {
             "Spend this mana only to cast a creature spell of the chosen type"

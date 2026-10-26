@@ -31,7 +31,6 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.MultiplyManaOnSourceTap
 import com.wingedsheep.sdk.scripting.OverrideEnchantedLandManaColor
 import com.wingedsheep.sdk.scripting.ReplaceLandManaColor
-import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
@@ -301,8 +300,7 @@ internal class ActivatedManaAbilityResolver(
     private fun Effect.isReportedManaEffect(): Boolean =
         this is AddManaEffect ||
             this is AddColorlessManaEffect ||
-            this is AddManaOfChoiceEffect ||
-            this is AddAnyColorManaSpendOnChosenTypeEffect
+            this is AddManaOfChoiceEffect
 
     /**
      * The [ManaAddedEvent] reporting what a (non-composite) mana [effect] produced, or null for an
@@ -333,11 +331,6 @@ internal class ActivatedManaAbilityResolver(
         is AddManaOfChoiceEffect -> manaAddedEventFromPoolDelta(
             oldState, newState, action, activation.cardComponent
         )
-        is AddAnyColorManaSpendOnChosenTypeEffect -> {
-            val chosenColor = action.manaColorChoice ?: Color.GREEN
-            val amount = dynamicAmountEvaluator.evaluate(oldState, effect.amount, context)
-            coloredManaAddedEvent(action, activation.sourceName, chosenColor, amount)
-        }
         else -> null
     }
 
@@ -520,9 +513,6 @@ internal class ActivatedManaAbilityResolver(
     /**
      * Adds [restriction] to the mana [effect] produces, keeping any restriction it already carries
      * (both then apply). Recurses into a [CompositeEffect] like [multiplyManaProduced].
-     *
-     * [AddAnyColorManaSpendOnChosenTypeEffect] derives its restriction at resolution and has no
-     * field to add to, so its mana is left as is.
      */
     private fun restrictManaProduced(effect: Effect, restriction: ManaRestriction): Effect = when (effect) {
         is AddManaEffect -> effect.copy(restriction = BorrowedManaAbilities.combine(effect.restriction, restriction))
@@ -550,8 +540,6 @@ internal class ActivatedManaAbilityResolver(
         is AddManaEffect -> effect.copy(amount = DynamicAmount.Multiply(effect.amount, multiplier))
         is AddColorlessManaEffect -> effect.copy(amount = DynamicAmount.Multiply(effect.amount, multiplier))
         is AddManaOfChoiceEffect -> effect.copy(amount = DynamicAmount.Multiply(effect.amount, multiplier))
-        is AddAnyColorManaSpendOnChosenTypeEffect ->
-            effect.copy(amount = DynamicAmount.Multiply(effect.amount, multiplier))
         is AddDynamicManaEffect ->
             effect.copy(amountSource = DynamicAmount.Multiply(effect.amountSource, multiplier))
         is CompositeEffect -> effect.copy(effects = effect.effects.map { multiplyManaProduced(it, multiplier) })

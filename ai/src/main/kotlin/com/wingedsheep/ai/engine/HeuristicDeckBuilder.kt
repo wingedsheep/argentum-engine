@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
@@ -535,7 +534,7 @@ private fun collectProducedColors(effect: Effect, out: MutableSet<Color>) {
         is AddColorlessManaEffect -> Unit
         is AddManaOfChoiceEffect -> collectChoiceColors(effect.colorSet, out)
         is AddDynamicManaEffect -> out.addAll(effect.allowedColors)
-        is AddAnyColorManaSpendOnChosenTypeEffect, is AddOneManaOfEachColorAmongEffect -> out.addAll(Color.entries)
+        is AddOneManaOfEachColorAmongEffect -> out.addAll(Color.entries)
         is CompositeEffect -> effect.effects.forEach { collectProducedColors(it, out) }
         else -> Unit
     }

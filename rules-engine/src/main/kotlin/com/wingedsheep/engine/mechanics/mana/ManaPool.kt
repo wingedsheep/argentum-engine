@@ -199,13 +199,17 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
             (!creatureOnly || context.isCreature) &&
             (context.manaValue >= minManaValue || (orXInCost && context.hasXInCost))
     is ManaRestriction.CreatureSpellsOnly -> !context.isAbilityActivation && context.isCreature
-    is ManaRestriction.LegendarySpellsOnly -> !context.isAbilityActivation && context.isLegendary
+    is ManaRestriction.LegendarySpellsOnly ->
+        !context.isAbilityActivation && context.isLegendary && (!creatureOnly || context.isCreature)
     is ManaRestriction.ColorlessSpellsOnly -> context.isSpellCast && context.isColorless
     is ManaRestriction.SpellsWithExactColorCount -> context.isSpellCast && context.colorCount == count
     is ManaRestriction.CostsContainingXOnly -> (context.isSpellCast || context.isAbilityActivation) && context.hasXInCost
     is ManaRestriction.SubtypeSpellsOrAbilitiesOnly ->
         (!creatureOnly || (!context.isAbilityActivation && context.isCreature)) &&
             context.subtypes.any { it.equals(subtype, ignoreCase = true) }
+    // Bound to SubtypeSpellsOrAbilitiesOnly when the mana is made (ChosenTypeManaRestriction);
+    // still unbound means the source never chose a type, so nothing can spend it.
+    is ManaRestriction.OfChosenType -> false
     is ManaRestriction.CastFromExileOnly -> !context.isAbilityActivation && context.isFromExile
     is ManaRestriction.CastFromGraveyardOnly -> !context.isAbilityActivation && context.isFromGraveyard
     is ManaRestriction.DisturbCostOnly -> !context.isAbilityActivation && context.isDisturbCast

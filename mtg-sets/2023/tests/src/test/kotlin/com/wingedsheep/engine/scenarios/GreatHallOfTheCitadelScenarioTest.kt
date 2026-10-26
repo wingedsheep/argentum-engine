@@ -22,7 +22,7 @@ import io.kotest.matchers.shouldNotBe
 /**
  * Great Hall of the Citadel — "{1}, {T}: Add two mana in any combination of colors. Spend this mana
  * only to cast legendary spells." Exercises the any-combination ability composing
- * `ManaRestriction.LegendarySpellsOnly`: two legendary-only mana that pay for a legendary spell but
+ * `ManaRestriction.LegendarySpellsOnly()`: two legendary-only mana that pay for a legendary spell but
  * not a non-legendary one.
  */
 class GreatHallOfTheCitadelScenarioTest : FunSpec({
@@ -70,7 +70,7 @@ class GreatHallOfTheCitadelScenarioTest : FunSpec({
 
         val pool = d.state.getEntity(you)?.get<ManaPoolComponent>()!!
         pool.restrictedMana.size shouldBe 2
-        pool.restrictedMana.all { it.restriction == ManaRestriction.LegendarySpellsOnly } shouldBe true
+        pool.restrictedMana.all { it.restriction == ManaRestriction.LegendarySpellsOnly() } shouldBe true
 
         val legend = d.putCardInHand(you, "Citadel Test Legend")
         val cast = d.submit(CastSpell(playerId = you, cardId = legend, paymentStrategy = PaymentStrategy.FromPool))

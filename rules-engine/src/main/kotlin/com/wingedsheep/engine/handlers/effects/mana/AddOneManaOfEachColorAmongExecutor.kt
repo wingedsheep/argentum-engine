@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.mana
 
+import com.wingedsheep.engine.mechanics.mana.ChosenTypeManaRestriction
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
@@ -59,11 +60,12 @@ class AddOneManaOfEachColorAmongExecutor(
             return EffectResult.success(state)
         }
 
+        val restriction = ChosenTypeManaRestriction.bind(effect.restriction, state, context.sourceId)
         val newState = state.updateEntity(context.controllerId) { container ->
             var manaPool = container.get<ManaPoolComponent>() ?: ManaPoolComponent()
             for (color in availableColors) {
-                manaPool = if (effect.restriction != null) {
-                    manaPool.addRestricted(color, 1, effect.restriction!!)
+                manaPool = if (restriction != null) {
+                    manaPool.addRestricted(color, 1, restriction)
                 } else {
                     manaPool.add(color, 1)
                 }

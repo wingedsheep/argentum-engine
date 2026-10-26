@@ -788,8 +788,11 @@
                 "id": "Cavern of Souls:2",
                 "cost": "CostTap",
                 "effect": {
-                    "type": "AddAnyColorManaSpendOnChosenType",
-                    "creatureOnly": true,
+                    "type": "AddManaOfChoice",
+                    "restriction": {
+                        "type": "OfChosenType",
+                        "creatureOnly": true
+                    },
                     "riders": [
                         "MakesSpellUncounterable"
                     ]

@@ -15,7 +15,7 @@ import com.wingedsheep.sdk.scripting.effects.ManaRestriction
  * {1}, {T}: Add two mana in any combination of colors. Spend this mana only to cast legendary spells.
  *
  * Gap 22 (restricted mana) was engine-landed except a "legendary spells only" variant — this set adds
- * `ManaRestriction.LegendarySpellsOnly`. The two-color mana composes from `AddManaInAnyCombination`.
+ * `ManaRestriction.LegendarySpellsOnly()`. The two-color mana composes from `AddManaInAnyCombination`.
  */
 val GreatHallOfTheCitadel = card("Great Hall of the Citadel") {
     typeLine = "Land"
@@ -31,7 +31,7 @@ val GreatHallOfTheCitadel = card("Great Hall of the Citadel") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{1}"), Costs.Tap)
-        effect = Effects.AddManaInAnyCombination(2, restriction = ManaRestriction.LegendarySpellsOnly)
+        effect = Effects.AddManaInAnyCombination(2, restriction = ManaRestriction.LegendarySpellsOnly())
         manaAbility = true
         timing = TimingRule.ManaAbility
     }

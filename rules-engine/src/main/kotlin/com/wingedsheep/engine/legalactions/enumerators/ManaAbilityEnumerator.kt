@@ -36,7 +36,6 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.engine.handlers.PredicateContext
-import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect
@@ -425,10 +424,9 @@ class ManaAbilityEnumerator(
                         minX = if (hasNonManaX) ability.minimumXValue else 0,
                         additionalCostInfo = costInfo,
                         requiresManaColorChoice = (ability.effect is AddManaOfChoiceEffect ||
-                            ability.effect is AddAnyColorManaSpendOnChosenTypeEffect ||
                             (ability.effect is CompositeEffect &&
                                 (ability.effect as CompositeEffect).effects.any {
-                                    it is AddManaOfChoiceEffect || it is AddAnyColorManaSpendOnChosenTypeEffect
+                                    it is AddManaOfChoiceEffect
                                 })) &&
                             // Spectral Searchlight: the chosen player picks the color as the
                             // ability resolves, so the activator isn't asked up front.

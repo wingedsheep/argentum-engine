@@ -5075,9 +5075,9 @@ the corpus's 205 restriction sentences**. What blocks the rest is mostly not thi
 - **contexts with no SDK atom** — "on costs that contain {X}" (4 lines, and Rosheen Meanderer is a
   card people play), "a multicolored spell" (4 cards), "a colorless spell", "spells from your
   graveyard", "your commander";
-- **the chosen type** (5 lines) — a different *effect*, `AddAnyColorManaSpendOnChosenTypeEffect`, which
-  mints its restriction at resolution from the source's `CastChoicesComponent`, so the whole two-sentence
-  span is one rule rather than a restriction slot;
+- **the chosen type** (5 lines) — now a restriction atom, `ManaRestriction.OfChosenType(creatureOnly)`,
+  that the engine binds to the source's chosen type when the mana is made, so it can fill the ordinary
+  restriction slot (and an `AnyOf`) — no grammar rule reads it yet;
 - **`creatureOnly` on a printed subtype** — "cast Dragon creature spells", "an Elf creature spell". The
   field exists on `SubtypeSpellsOrAbilitiesOnly`, but every hand-written user of it is a chosen-type
   card whose printed wording is "a creature spell of the chosen type", so reading a *named* subtype onto

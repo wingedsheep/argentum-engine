@@ -14,7 +14,6 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ActivatedAbility
 import com.wingedsheep.sdk.scripting.costs.CostAtom
-import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
@@ -167,8 +166,7 @@ object ManaAbilityLifeCost {
     private fun effectProduces(effect: Effect, color: Color?): Boolean = when (effect) {
         is AddManaEffect -> effect.color == color
         is AddColorlessManaEffect -> color == null
-        is AddManaOfChoiceEffect,
-        is AddAnyColorManaSpendOnChosenTypeEffect -> color != null  // any non-null color
+        is AddManaOfChoiceEffect -> color != null  // any non-null color
         is AddDynamicManaEffect -> color != null && color in effect.allowedColors
         else -> false
     }
@@ -182,6 +180,5 @@ object ManaAbilityLifeCost {
     internal fun isManaEffect(effect: Effect): Boolean = effect is AddManaEffect ||
         effect is AddColorlessManaEffect ||
         effect is AddManaOfChoiceEffect ||
-        effect is AddAnyColorManaSpendOnChosenTypeEffect ||
         effect is AddDynamicManaEffect
 }

@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.mana
 
+import com.wingedsheep.engine.mechanics.mana.ChosenTypeManaRestriction
 import com.wingedsheep.engine.core.ChooseManaColorContinuation
 import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.EffectResult
@@ -140,7 +141,7 @@ class AddManaOfChoiceExecutor(
         // When riders are attached but no restriction is specified, store the mana as
         // restricted entries under [ManaRestriction.AnySpend] so riders are preserved
         // through the pool while the mana itself remains spendable on anything.
-        val effectiveRestriction: ManaRestriction? = effect.restriction
+        val effectiveRestriction: ManaRestriction? = ChosenTypeManaRestriction.bind(effect.restriction, state, context.sourceId)
             ?: if (effect.riders.isNotEmpty()) ManaRestriction.AnySpend else null
 
         var newState = state.updateEntity(recipientId) { container ->

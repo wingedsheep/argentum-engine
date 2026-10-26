@@ -695,7 +695,6 @@ Families:
 - `AdaptEffect(amount: Int, target: EffectTarget)` — Adapt amount (CR 701.46a): "If this permanent has no +1/+1 counters on it, put amount +1/+1 counters on it." The check happens as the effect resolves; a permanent that already has a +1/+1 counter f…
 - `AddAdditionalEndStepsEffect(amount: DynamicAmount)` — Insert additional end step(s) directly after the current end step (Y'shtola Rhul: "there is an additional end step after this step").
 - `AddAdditionalUpkeepStepsEffect(amount: DynamicAmount)` — Give the controller additional upkeep steps after the current phase (Obeka, Splitter of Seconds: "you get that many additional upkeep steps after this phase").
-- `AddAnyColorManaSpendOnChosenTypeEffect(amount: DynamicAmount, creatureOnly: Boolean, riders: Set<ManaSpellRider>)` — Add one mana of any color, restricted to spells (and optionally activated abilities) of the source's chosen subtype, optionally carrying spell riders.
 - `AddBeginningPhaseEffect` — Insert a single additional beginning phase into the current turn — untap, upkeep and draw steps (CR 501.1) — after this phase (Shadow of the Second Sun).
 - `AddCardTypeEffect(cardType: String, target: EffectTarget, duration: Duration)` — Add a card type to a target permanent.
 - `AddColorEffect(colors: Set<String>, target: EffectTarget, duration: Duration)` — Add one or more colors to a single target, in addition to its existing colors.
@@ -1392,7 +1391,8 @@ Families:
 - `ManaRestriction.ForetellOnly` — "Spend this mana only to foretell a card from your hand." Satisfied by the foretell special action's fixed {2} payment (CR 702.143a), not by casting the foretold card later for its foretell cost —…
 - `ManaRestriction.InstantOrSorceryOnly` — "Spend this mana only to cast instant or sorcery spells."
 - `ManaRestriction.KickedSpellsOnly` — "Spend this mana only to cast kicked spells."
-- `ManaRestriction.LegendarySpellsOnly` — "Spend this mana only to cast legendary spells." Matches spells with the Legendary supertype (Great Hall of the Citadel, Delighted Halfling).
+- `ManaRestriction.LegendarySpellsOnly(creatureOnly: Boolean)` — "Spend this mana only to cast legendary spells." Matches spells with the Legendary supertype (Great Hall of the Citadel, Delighted Halfling).
+- `ManaRestriction.OfChosenType(creatureOnly: Boolean)` — "Spend this mana only to cast a creature spell of the chosen type" — the *unbound* form of SubtypeSpellsOrAbilitiesOnly, for a card that chose a creature type as it entered (CR 614.12 "as enters" c…
 - `ManaRestriction.SpellsOnly` — "Spend this mana only to cast spells." Any spell qualifies; ability activations and special actions (turning a permanent face up, unlocking a door) don't.
 - `ManaRestriction.SpellsWithExactColorCount(count: Int)` — "Spend this mana only to cast spells with exactly count colors." Matches a spell whose colors (CR 105.2) number exactly count, read off the spell being cast — a hybrid pip counts both its colors.
 - `ManaRestriction.SpellsWithKeywordOnly(keyword: Keyword)` — "Spend this mana only to cast spells that have keyword" — a spell whose card has the keyword in its definition (printed, or derived from a parameterized keyword ability such as foretell or flashback).

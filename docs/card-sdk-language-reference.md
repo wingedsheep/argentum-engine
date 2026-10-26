@@ -2712,7 +2712,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   cards' colors"). Pair with a `MoveToZoneEffect(linkToSource = true)` that records the exiled pile.
 - `AddManaOfColorLandsCouldProduce(scope)` — sugar for `AddManaOfChoice(ManaColorSet.LandsCouldProduce(scope))`. Fellwar Stone / Exotic Orchard shape. Colors only — "any **type**" (Reflecting Pool, Naga Vitalist) adds a gated `{C}` ability, see `.couldProduceColorlessMana()`.
 - `AddManaOfColorInCommanderColorIdentity()` — sugar for `AddManaOfChoice(ManaColorSet.CommanderIdentity)`. Arcane Signet / Command Tower shape.
-- `AddAnyColorManaSpendOnChosenType(typeName)` — mana that can only pay for a specific card type (kept separate because it derives a runtime [ManaRestriction] from the source's chosen subtype).
+- `AddAnyColorManaSpendOnChosenType(amount?, creatureOnly?, riders?)` — sugar for `AddManaOfChoice(ManaColorSet.AnyColor, restriction = ManaRestriction.OfChosenType(creatureOnly), riders)`: any-color mana spendable only on spells (and, unless `creatureOnly`, abilities) of the source's chosen creature type. Unclaimed Territory (default); Cavern of Souls (`creatureOnly = true, riders = setOf(MakesSpellUncounterable())`).
 - `AddDynamicMana(amount, allowedColors, restriction?)` — split X across a fixed color set, distinct from `AddManaOfChoice` because it distributes the full X total across multiple colors rather than producing X copies of one chosen color.
 - `AddManaInAnyCombination(amount, allowedColors?, restriction?)` — "Add N mana in any combination of colors" (Wizard's Rockets, Thornvault Forager, Interdimensional Web Watch). Sugar for `AddDynamicMana`; `allowedColors` defaults to all five. The controller colors **each** pip independently at resolution (3+ colors → pip-by-pip color choice; 2 colors → one "how much of the first" prompt; ≤0 → no mana, no prompt), so the result can mix colors — distinct from `AddAnyColorMana`, where all N share one color. For "any combination of **its** colors" (a looked-at card), repeat `AddManaOfChoice(ManaColorSet.ColorsOf(…))` N times.
 - Several fixed kinds on one tap ("{T}: Add {R}{G}", Timeless Lotus's "{T}: Add {W}{U}{B}{R}{G}") — chain
@@ -16714,16 +16714,25 @@ restriction matches the spell context.
   `buildAbilityPaymentContext`). Not `SpellsWithManaValueAtLeast(orXInCost = true)`, which is spell-only
   and also admits high-MV spells without X. Only the {X} mana symbol counts — a loyalty −X or "remove X
   counters" cost doesn't. Rosheen, Roaring Prophet.
-- `ManaRestriction.LegendarySpellsOnly` — only legendary spells (matches `SpellPaymentContext.isLegendary`,
+- `ManaRestriction.LegendarySpellsOnly(creatureOnly = false)` — only legendary spells (matches `SpellPaymentContext.isLegendary`,
   populated from the cast card's `typeLine.isLegendary`). Great Hall of the Citadel
-  (`AddManaInAnyCombination(2, restriction = LegendarySpellsOnly)`); Delighted Halfling pairs it with
-  the `ManaSpellRider.MakesSpellUncounterable` rider on a one-mana any-color ability.
+  (`AddManaInAnyCombination(2, restriction = LegendarySpellsOnly())`); Delighted Halfling pairs it with
+  the `ManaSpellRider.MakesSpellUncounterable` rider on a one-mana any-color ability. `creatureOnly = true`
+  narrows it to legendary *creature* spells (The Ringhart Crest).
 - `ManaRestriction.SpellsWithExactColorCount(count)` — only spells with exactly `count` colors (1–5;
   matches `SpellPaymentContext.colorCount`, the cast card's color count; a hybrid pip counts both colors).
   Ability activations never satisfy it, and a context that doesn't set `colorCount` refuses it.
   Meeting of the Five (`AddMana(color, 2, restriction = SpellsWithExactColorCount(3))` ×5).
-- `ManaRestriction.SubtypeSpellsOrAbilitiesOnly(subtype, creatureOnly?)` — Cavern of Souls /
-  Unclaimed Territory: only spells of a baked subtype, optionally creature-only.
+- `ManaRestriction.SubtypeSpellsOrAbilitiesOnly(subtype, creatureOnly?)` — only spells (and, unless
+  `creatureOnly`, abilities of sources) of a baked subtype. Cards don't write it for "the chosen type" —
+  they write `OfChosenType`, which the engine binds to this.
+- `ManaRestriction.OfChosenType(creatureOnly = false)` — "Spend this mana only to cast a [creature] spell
+  of the chosen type": the unbound form, for a source that chose a creature type as it entered
+  (`EntersWithChoice(ChoiceType.CREATURE_TYPE)`). The engine binds it, also inside `AnyOf` / `AllOf`, to
+  `SubtypeSpellsOrAbilitiesOnly(<chosen type>, creatureOnly)` the moment the mana is made (any mana effect's
+  `restriction`, and the auto-pay solver's view of the source). With no type chosen it stays unbound and pays
+  for nothing. The Ringhart Crest: `AddMana(GREEN, restriction = AnyOf(listOf(OfChosenType(true),
+  LegendarySpellsOnly(true))))` — "a creature spell of the chosen type or a legendary creature spell".
 - `ManaRestriction.SubtypeSpellsOnly(subtypes)` — multi-subtype spend restriction: only spells
   whose type line carries **any** of the given subtypes (OR-joined). Spell-only (no ability
   variant). Maelstrom of the Spirit Dragon: `SubtypeSpellsOnly(setOf("Dragon", "Omen"))`

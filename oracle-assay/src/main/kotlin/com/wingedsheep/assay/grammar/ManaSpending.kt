@@ -313,7 +313,7 @@ object ManaSpending {
         ),
         atom(
             "cast legendary spells",
-            ManaRestriction.LegendarySpellsOnly,
+            ManaRestriction.LegendarySpellsOnly(),
             "cast a legendary spell",
         ),
         atom(

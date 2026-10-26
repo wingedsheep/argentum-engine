@@ -19,7 +19,7 @@ import com.wingedsheep.sdk.scripting.values.ManaColorSet
  * {T}: Add one mana of any color. Spend this mana only to cast a legendary spell, and that spell
  * can't be countered.
  *
- * Composes `ManaRestriction.LegendarySpellsOnly` (added with Great Hall of the Citadel) with the
+ * Composes `ManaRestriction.LegendarySpellsOnly()` (added with Great Hall of the Citadel) with the
  * existing `ManaSpellRider.MakesSpellUncounterable` on a one-mana any-color ability.
  */
 val DelightedHalfling = card("Delighted Halfling") {
@@ -44,7 +44,7 @@ val DelightedHalfling = card("Delighted Halfling") {
         effect = Effects.AddManaOfChoice(
             colorSet = ManaColorSet.AnyColor,
             amount = 1,
-            restriction = ManaRestriction.LegendarySpellsOnly,
+            restriction = ManaRestriction.LegendarySpellsOnly(),
             riders = setOf(ManaSpellRider.MakesSpellUncounterable())
         )
         manaAbility = true

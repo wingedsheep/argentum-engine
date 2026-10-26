@@ -17,7 +17,7 @@ import com.wingedsheep.sdk.scripting.effects.ManaRestriction
  *
  * The entry clause is the [EntersTapped] replacement effect rather than a trigger — it is a
  * replacement on the zone change, so the land never touches the battlefield untapped. The mana
- * ability carries [ManaRestriction.LegendarySpellsOnly], which `ManaPool` enforces at spend time,
+ * ability carries [ManaRestriction.LegendarySpellsOnly()], which `ManaPool` enforces at spend time,
  * and is marked `manaAbility` with [TimingRule.ManaAbility] so it never uses the stack.
  */
 val UntaidakeTheCloudKeeper = card("Untaidake, the Cloud Keeper") {
@@ -31,7 +31,7 @@ val UntaidakeTheCloudKeeper = card("Untaidake, the Cloud Keeper") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Tap, Costs.PayLife(2))
-        effect = Effects.AddColorlessMana(2, restriction = ManaRestriction.LegendarySpellsOnly)
+        effect = Effects.AddColorlessMana(2, restriction = ManaRestriction.LegendarySpellsOnly())
         manaAbility = true
         timing = TimingRule.ManaAbility
     }

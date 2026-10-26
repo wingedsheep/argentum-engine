@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.mana
 
+import com.wingedsheep.engine.mechanics.mana.ChosenTypeManaRestriction
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.ManaPoolChangedEvent
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
@@ -38,7 +39,7 @@ class AddColorlessManaExecutor(
             // spendable on any cost without retaining unrelated mana (mirrors AddManaExecutor).
             val updatedPool = when {
                 effect.restriction != null ->
-                    manaPool.addRestricted(null, amount, effect.restriction!!, effect.riders, expiry = effect.expiry)
+                    manaPool.addRestricted(null, amount, ChosenTypeManaRestriction.bind(effect.restriction, state, context.sourceId)!!, effect.riders, expiry = effect.expiry)
                 effect.riders.isNotEmpty() || effect.expiry != ManaExpiry.END_OF_TURN ->
                     manaPool.addRestricted(null, amount, ManaRestriction.AnySpend, effect.riders, expiry = effect.expiry)
                 else -> manaPool.addColorless(amount)

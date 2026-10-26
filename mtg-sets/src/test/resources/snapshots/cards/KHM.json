@@ -3982,6 +3982,231 @@
     ]
 }
 
+// Kolvori, God of Kinship
+{
+    "name": "Kolvori, God of Kinship",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Legendary Creature — God",
+    "oracleText": "As long as you control three or more legendary creatures, Kolvori gets +4/+2 and has vigilance.\n{1}{G}, {T}: Look at the top six cards of your library. You may reveal a legendary creature card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kolvori, God of Kinship:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{G}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 6
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsLegendary"
+                                ]
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal a legendary creature card from among them and put it into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Look at the top six cards of your library. You may reveal a legendary creature card from among them and put it into your hand. Put the rest on the bottom of your library in a random order."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 4,
+                    "toughnessBonus": 2,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "IsLegendary"
+                            ]
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "VIGILANCE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "IsLegendary"
+                            ]
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "The Ringhart Crest",
+        "manaCost": "{1}{G}",
+        "typeLine": "Legendary Artifact",
+        "oracleText": "As The Ringhart Crest enters, choose a creature type.\n{T}: Add {G}. Spend this mana only to cast a creature spell of the chosen type or a legendary creature spell.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "The Ringhart Crest:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "GREEN",
+                        "restriction": {
+                            "type": "AnyOf",
+                            "restrictions": [
+                                {
+                                    "type": "OfChosenType",
+                                    "creatureOnly": true
+                                },
+                                {
+                                    "type": "LegendarySpellsOnly",
+                                    "creatureOnly": true
+                                }
+                            ]
+                        }
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                {
+                    "type": "EntersWithChoice",
+                    "choiceType": "CREATURE_TYPE"
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "181",
+            "rarity": "RARE",
+            "artist": "Grzegorz Rutkowski",
+            "flavorText": "Kolvori's love for her family knows no bounds.",
+            "imageUri": "https://cards.scryfall.io/normal/back/b/7/b76bed98-30b1-4572-b36c-684ada06826c.jpg?1783928215",
+            "rulings": [
+                {
+                    "date": "2021-02-05",
+                    "text": "For The Ringhart Crest's first ability, you must choose an existing creature type, such as Fungus or Archer. You can't choose card types (e.g., artifact) or supertypes (e.g., snow)."
+                },
+                {
+                    "date": "2021-02-05",
+                    "text": "If The Ringhart Crest is somehow on the battlefield with no choice of creature type, the mana produced by its activated ability can still be spent to cast a legendary creature spell."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "RARE",
+        "artist": "Grzegorz Rutkowski",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b76bed98-30b1-4572-b36c-684ada06826c.jpg?1783928215",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Because damage remains marked on creatures until the damage is removed as the turn ends, nonlethal damage dealt to Kolvori may become lethal if you controlled three or more legendary creatures and some of them leave the battlefield that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ],
+    "layout": "MODAL_DFC"
+}
+
 // Koma, Cosmos Serpent
 {
     "name": "Koma, Cosmos Serpent",

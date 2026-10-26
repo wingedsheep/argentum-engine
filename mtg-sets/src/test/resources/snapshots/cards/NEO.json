@@ -18345,7 +18345,10 @@
             {
                 "id": "Secluded Courtyard:2",
                 "cost": "CostTap",
-                "effect": "AddAnyColorManaSpendOnChosenType",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "restriction": "OfChosenType"
+                },
                 "timing": "ManaAbility",
                 "isManaAbility": true
             }

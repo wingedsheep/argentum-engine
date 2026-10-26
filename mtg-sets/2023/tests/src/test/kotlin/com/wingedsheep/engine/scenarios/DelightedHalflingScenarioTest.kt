@@ -24,7 +24,7 @@ import com.wingedsheep.engine.core.Outcome
 /**
  * Delighted Halfling — "{T}: Add one mana of any color. Spend this mana only to cast a legendary
  * spell, and that spell can't be countered." Exercises the any-color ability composing
- * `ManaRestriction.LegendarySpellsOnly` with the `MakesSpellUncounterable` rider: the mana pays for
+ * `ManaRestriction.LegendarySpellsOnly()` with the `MakesSpellUncounterable` rider: the mana pays for
  * a legendary spell (but not a non-legendary one) and the legendary spell it pays for can't be countered.
  */
 class DelightedHalflingScenarioTest : FunSpec({
@@ -69,7 +69,7 @@ class DelightedHalflingScenarioTest : FunSpec({
 
         val pool = d.state.getEntity(you)?.get<ManaPoolComponent>()!!
         pool.restrictedMana.size shouldBe 1
-        pool.restrictedMana.single().restriction shouldBe ManaRestriction.LegendarySpellsOnly
+        pool.restrictedMana.single().restriction shouldBe ManaRestriction.LegendarySpellsOnly()
 
         val legend = d.putCardInHand(you, "Halfling Test Legend")
         val cast = d.submit(CastSpell(playerId = you, cardId = legend, paymentStrategy = PaymentStrategy.FromPool))

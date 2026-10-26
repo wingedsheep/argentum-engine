@@ -127,7 +127,6 @@ object CardLinter {
         "AddColorlessMana",
         "AddManaOfChoice",
         "AddDynamicMana",
-        "AddAnyColorManaSpendOnChosenType",
         "AddOneManaOfEachColorAmong",
     )
 

@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.mana
 
+import com.wingedsheep.engine.mechanics.mana.ChosenTypeManaRestriction
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
@@ -42,12 +43,13 @@ class AddDynamicManaExecutor(
             return EffectResult.success(state)
         }
 
+        val restriction = ChosenTypeManaRestriction.bind(effect.restriction, state, context.sourceId)
         val colors = effect.allowedColors.toList().sorted()
 
         // Single color — just add it all
         if (colors.size <= 1) {
             val color = colors.firstOrNull() ?: return EffectResult.success(state)
-            val newState = addMana(state, context.controllerId, mapOf(color to amount), effect.restriction)
+            val newState = addMana(state, context.controllerId, mapOf(color to amount), restriction)
             return EffectResult.success(newState)
         }
 
@@ -64,7 +66,7 @@ class AddDynamicManaExecutor(
                 sourceName = sourceName,
                 remainingPips = amount,
                 allowedColors = effect.allowedColors,
-                restriction = effect.restriction,
+                restriction = restriction,
                 decisionHandler = decisionHandler
             )
         }
@@ -81,7 +83,7 @@ class AddDynamicManaExecutor(
             totalAmount = amount,
             firstColor = firstColor,
             secondColor = secondColor,
-            restriction = effect.restriction
+            restriction = restriction
         )
 
         val decisionResult = decisionHandler.createNumberDecision(

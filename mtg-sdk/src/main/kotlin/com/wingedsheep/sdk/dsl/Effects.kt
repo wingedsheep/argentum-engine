@@ -16,7 +16,6 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.effects.SwitchPowerToughnessEffect
-import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
@@ -3109,14 +3108,19 @@ object Effects {
      *    `AddAnyColorManaSpendOnChosenType(creatureOnly = true,
      *     riders = setOf(ManaSpellRider.MakesSpellUncounterable))`
      *
-     * The executor reads the source's `CastChoicesComponent` and bakes that
-     * subtype into the restriction at the moment mana is added to the pool.
+     * Composes [AddManaOfChoiceEffect] with the unbound [ManaRestriction.OfChosenType]; the
+     * engine binds it to the source's chosen creature type as the mana is made.
      */
     fun AddAnyColorManaSpendOnChosenType(
         amount: Int = 1,
         creatureOnly: Boolean = false,
         riders: Set<ManaSpellRider> = emptySet()
-    ): Effect = AddAnyColorManaSpendOnChosenTypeEffect(amount, creatureOnly, riders)
+    ): Effect = AddManaOfChoiceEffect(
+        ManaColorSet.AnyColor,
+        DynamicAmount.Fixed(amount),
+        ManaRestriction.OfChosenType(creatureOnly),
+        riders,
+    )
 
     /**
      * Add X mana in any combination of the allowed colors.

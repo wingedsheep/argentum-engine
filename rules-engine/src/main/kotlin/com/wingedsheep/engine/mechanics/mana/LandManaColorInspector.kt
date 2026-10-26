@@ -7,7 +7,6 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
@@ -136,7 +135,6 @@ object LandManaColorInspector {
             is AddManaEffect -> out.add(effect.color)
             is AddColorlessManaEffect -> Unit
             is AddManaOfChoiceEffect -> collectChoiceColors(effect.colorSet, sourceContainer, out)
-            is AddAnyColorManaSpendOnChosenTypeEffect -> out.addAll(Color.entries)
             is AddDynamicManaEffect -> out.addAll(effect.allowedColors)
             is CompositeEffect -> {
                 for (sub in effect.effects) collectColors(sub, sourceContainer, out)

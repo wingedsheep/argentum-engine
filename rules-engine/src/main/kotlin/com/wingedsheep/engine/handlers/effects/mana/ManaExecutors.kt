@@ -19,7 +19,6 @@ class ManaExecutors(
         AddManaExecutor(amountEvaluator),
         AddColorlessManaExecutor(amountEvaluator),
         AddManaOfChoiceExecutor(cardRegistry, amountEvaluator),
-        AddAnyColorManaSpendOnChosenTypeExecutor(amountEvaluator),
         AddDynamicManaExecutor(amountEvaluator = amountEvaluator),
         AddOneManaOfEachColorAmongExecutor(predicateEvaluator = amountEvaluator.predicates),
         RetainUnspentManaExecutor(),

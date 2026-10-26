@@ -19,7 +19,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * {T}: Add one mana of any color among legendary permanents you control.
  * {3}, {T}, Exile this land: Target legendary creature gains hexproof and indestructible until end of turn.
  *
- * The restricted any-color mana carries [ManaRestriction.LegendarySpellsOnly] (enforced by
+ * The restricted any-color mana carries [ManaRestriction.LegendarySpellsOnly()] (enforced by
  * `ManaPool` at spend time, as on Untaidake). The third ability reads the projected colors of
  * legendary permanents you control, like Mox Amber; with none (or only colorless ones) it adds
  * nothing.
@@ -40,7 +40,7 @@ val PlazaOfHeroes = card("Plaza of Heroes") {
 
     activatedAbility {
         cost = Costs.Tap
-        effect = Effects.AddAnyColorMana(1, restriction = ManaRestriction.LegendarySpellsOnly)
+        effect = Effects.AddAnyColorMana(1, restriction = ManaRestriction.LegendarySpellsOnly())
         manaAbility = true
         timing = TimingRule.ManaAbility
     }
