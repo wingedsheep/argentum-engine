@@ -69,6 +69,45 @@ export function useCategorizedActions(): CategorizedActions {
 }
 
 /**
+ * Whether [action] is one the player takes by clicking the card [cardId] — cast it, play it,
+ * cycle, plot, foretell or suspend it from hand, activate its abilities, crew or saddle it, unlock
+ * its door. The one card-to-action mapping behind both the card's action menu and a click on it.
+ */
+export function isActionOnCard(action: LegalActionInfo, cardId: EntityId): boolean {
+  const a = action.action
+  switch (a.type) {
+    case 'PlayLand':
+      return a.cardId === cardId
+    case 'CastSpell':
+      return a.cardId === cardId
+    case 'CycleCard':
+      return a.cardId === cardId
+    case 'TypecycleCard':
+      return a.cardId === cardId
+    case 'PlotCard':
+      return a.cardId === cardId
+    case 'ForetellCard':
+      return a.cardId === cardId
+    case 'PutCompanionIntoHand':
+      return a.cardId === cardId
+    case 'SuspendCardFromHand':
+      return a.cardId === cardId
+    case 'ActivateAbility':
+      return a.sourceId === cardId
+    case 'TurnFaceUp':
+      return a.sourceId === cardId
+    case 'CrewVehicle':
+      return a.vehicleId === cardId
+    case 'SaddleMount':
+      return a.mountId === cardId
+    case 'UnlockRoomDoor':
+      return a.roomId === cardId
+    default:
+      return false
+  }
+}
+
+/**
  * Hook to get legal actions for a specific card.
  */
 export function useCardActions(cardId: EntityId | null): LegalActionInfo[] {
@@ -89,39 +128,7 @@ export function useCardActions(cardId: EntityId | null): LegalActionInfo[] {
       }
     }
 
-    return legalActions.filter((action) => {
-      const a = action.action
-      switch (a.type) {
-        case 'PlayLand':
-          return a.cardId === cardId
-        case 'CastSpell':
-          return a.cardId === cardId
-        case 'CycleCard':
-          return a.cardId === cardId
-        case 'TypecycleCard':
-          return a.cardId === cardId
-        case 'PlotCard':
-          return a.cardId === cardId
-        case 'ForetellCard':
-          return a.cardId === cardId
-        case 'PutCompanionIntoHand':
-          return a.cardId === cardId
-        case 'SuspendCardFromHand':
-          return a.cardId === cardId
-        case 'ActivateAbility':
-          return a.sourceId === cardId
-        case 'TurnFaceUp':
-          return a.sourceId === cardId
-        case 'CrewVehicle':
-          return a.vehicleId === cardId
-        case 'SaddleMount':
-          return a.mountId === cardId
-        case 'UnlockRoomDoor':
-          return a.roomId === cardId
-        default:
-          return false
-      }
-    })
+    return legalActions.filter((action) => isActionOnCard(action, cardId))
   }, [legalActions, cardId])
 }
 

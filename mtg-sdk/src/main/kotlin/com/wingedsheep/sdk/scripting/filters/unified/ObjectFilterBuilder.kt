@@ -1125,6 +1125,12 @@ interface ObjectFilterBuilder<out Self> {
     fun warpExiled() = withStatePredicate(StatePredicate.IsWarpExiled)
 
     /**
+     * Must be a foretold card (CR 702.143) — a card in exile foretold by its owner. Use with an
+     * exile-zone filter for "foretold cards you own in exile".
+     */
+    fun foretold() = withStatePredicate(StatePredicate.IsForetold)
+
+    /**
      * Must be a card exiled by the effect's source permanent (recorded in the source's
      * `LinkedExileComponent`). Source-relative — use when filtering candidates in the exile zone
      * for "target card exiled with ~" reanimation abilities (The Darkness Crystal).

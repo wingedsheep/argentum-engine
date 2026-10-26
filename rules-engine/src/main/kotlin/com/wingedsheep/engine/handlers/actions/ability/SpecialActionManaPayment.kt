@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
+import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.mechanics.mana.withSpendingColors
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -19,12 +20,15 @@ import com.wingedsheep.sdk.model.EntityId
  * {3}: floating mana first, then the player's chosen sources ([PaymentStrategy.Explicit]) or the
  * auto-tapper for the remainder, ending in one [ManaSpentEvent] labelled [reason].
  *
- * A special action has no spell context, so there is nothing for a cost reducer or a spending
- * restriction to read; that is what keeps this smaller than the cast and activation payers.
+ * A special action has no spell context, so there is nothing for a cost reducer to read; that is
+ * what keeps this smaller than the cast and activation payers. [spendContext] names the action for
+ * spending restrictions that whitelist it ("spend this mana only to foretell a card", CR 702.143a);
+ * null leaves restricted mana unspendable, as for the companion's {3}.
  */
 internal class SpecialActionManaPayment(
     private val manaSolver: ManaSolver,
     private val manaAbilitySideEffectExecutor: ManaAbilitySideEffectExecutor,
+    private val spendContext: SpellPaymentContext? = null,
 ) {
     /** The validation half: an error message, or null when [cost] can be paid as [strategy] says. */
     fun validate(state: GameState, playerId: EntityId, cost: ManaCost, strategy: PaymentStrategy): String? {
@@ -35,7 +39,7 @@ internal class SpecialActionManaPayment(
             }
             return null
         }
-        return if (manaSolver.canPay(state, playerId, cost)) null else "Not enough mana to pay $cost"
+        return if (manaSolver.canPay(state, playerId, cost, spellContext = spendContext)) null else "Not enough mana to pay $cost"
     }
 
     /** Pays [cost]; null when the auto-tapper can't find the mana after all. */
@@ -62,7 +66,7 @@ internal class SpecialActionManaPayment(
             manaUnits = poolComponent.manaUnits,
             snowColorless = poolComponent.snowColorless
         ).withSpendingColors(currentState, playerId)
-        val partial = pool.payPartial(cost)
+        val partial = pool.payPartial(cost, spendContext)
         val poolAfter = partial.newPool
         val spentFromPool = partial.manaSpent
 
@@ -92,7 +96,7 @@ internal class SpecialActionManaPayment(
 
         if (!partial.remainingCost.isEmpty()) {
             if (strategy is PaymentStrategy.Explicit) {
-                val credited = manaSolver.creditExplicitSources(currentState, playerId, strategy.manaAbilitiesToActivate, partial.remainingCost)
+                val credited = manaSolver.creditExplicitSources(currentState, playerId, strategy.manaAbilitiesToActivate, partial.remainingCost, spellContext = spendContext)
                 for (sourceId in strategy.manaAbilitiesToActivate) {
                     val (tapped, tapEvents) = manaAbilitySideEffectExecutor
                         .tapForManaPayingLife(currentState, sourceId, playerId, credited[sourceId])
@@ -100,7 +104,7 @@ internal class SpecialActionManaPayment(
                     events.addAll(tapEvents)
                 }
             } else {
-                val solution = manaSolver.solve(currentState, playerId, partial.remainingCost, 0) ?: return null
+                val solution = manaSolver.solve(currentState, playerId, partial.remainingCost, 0, spellContext = spendContext) ?: return null
                 val (tapped, tapEvents) = manaAbilitySideEffectExecutor
                     .tapSourcesWithSideEffects(currentState, solution, playerId)
                 currentState = tapped

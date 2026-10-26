@@ -53,7 +53,7 @@ class ForetellCardHandler(
 ) : ActionHandler<ForetellCard> {
     override val actionType: KClass<ForetellCard> = ForetellCard::class
 
-    private val payment = SpecialActionManaPayment(manaSolver, manaAbilitySideEffectExecutor)
+    private val payment = SpecialActionManaPayment(manaSolver, manaAbilitySideEffectExecutor, FORETELL_SPEND_CONTEXT)
 
     /** The fixed setup cost to foretell a card, per CR 702.143a. */
     private val setupCost: ManaCost = ManaCost.parse("{2}")
@@ -165,3 +165,10 @@ class ForetellCardHandler(
         }
     }
 }
+
+/**
+ * The spend context of the foretell special action's {2}: what lets "spend this mana only to
+ * foretell a card" (ManaRestriction.ForetellOnly) pay it. Shared with [ForetellEnumerator] so the
+ * affordability preview and the payment agree.
+ */
+internal val FORETELL_SPEND_CONTEXT = com.wingedsheep.engine.mechanics.mana.SpellPaymentContext(isForetellAction = true)

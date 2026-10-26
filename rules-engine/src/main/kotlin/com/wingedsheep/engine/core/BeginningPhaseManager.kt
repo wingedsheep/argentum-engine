@@ -691,6 +691,7 @@ class BeginningPhaseManager(
         StatePredicate.CrewedOrSaddledSourceThisTurn,
         StatePredicate.CrewedOrSaddledBySourceThisTurn,
         StatePredicate.IsWarpExiled,
+        StatePredicate.IsForetold,
         StatePredicate.NotTargetedByAbilityFromSameNamedSource,
         StatePredicate.IsSource,
         StatePredicate.IsAttachedToBySource,

@@ -3515,6 +3515,48 @@
     ]
 }
 
+// Karfell Harbinger
+{
+    "name": "Karfell Harbinger",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Zombie Wizard",
+    "oracleText": "{T}: Add {U}. Spend this mana only to foretell a card from your hand or cast an instant or sorcery spell.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Karfell Harbinger:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE",
+                    "restriction": {
+                        "type": "AnyOf",
+                        "restrictions": [
+                            "ForetellOnly",
+                            "InstantOrSorceryOnly"
+                        ]
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "artist": "Josh Hass",
+        "flavorText": "\"This is a realm of the living. King Narfi's legion is coming to change that.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/4911016c-b92a-47cc-9553-b424d7be196a.jpg?1783928260"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Karfell Kennel-Master
 {
     "name": "Karfell Kennel-Master",
@@ -4167,6 +4209,103 @@
         ]
     },
     "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Niko Defies Destiny
+{
+    "name": "Niko Defies Destiny",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — You gain 2 life for each foretold card you own in exile.\nII — Add {W}{U}. Spend this mana only to foretell cards or cast spells that have foretell.\nIII — Return target card with foretell from your graveyard to your hand.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Exile",
+                            "filter": {
+                                "statePredicates": [
+                                    "IsForetold"
+                                ]
+                            }
+                        },
+                        "multiplier": 2
+                    }
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "WHITE",
+                            "restriction": {
+                                "type": "AnyOf",
+                                "restrictions": [
+                                    "ForetellOnly",
+                                    {
+                                        "type": "SpellsWithKeywordOnly",
+                                        "keyword": "FORETELL"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "AddMana",
+                            "color": "BLUE",
+                            "restriction": {
+                                "type": "AnyOf",
+                                "restrictions": [
+                                    "ForetellOnly",
+                                    {
+                                        "type": "SpellsWithKeywordOnly",
+                                        "keyword": "FORETELL"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "kw:foretell own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "226",
+        "rarity": "UNCOMMON",
+        "artist": "Bastien L. Deharme",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19312f53-5b9d-4e76-91e8-65f444bb68c9.jpg?1783928191"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
         "BLUE"
     ]
 }

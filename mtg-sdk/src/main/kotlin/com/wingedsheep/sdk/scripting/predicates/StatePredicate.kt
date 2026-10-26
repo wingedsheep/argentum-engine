@@ -1502,6 +1502,20 @@ sealed interface StatePredicate {
     }
 
     /**
+     * A **foretold card** (CR 702.143): a card in exile that its owner exiled face down with the
+     * foretell special action. Matches the `ForetoldComponent` the engine stamps on the card when
+     * it is foretold and strips the moment the card leaves exile, so a foretold card that is cast
+     * (or otherwise moved) is no longer foretold, and a card exiled face down by any other effect
+     * never was. Compose with an exile-zone count for "each foretold card you own in exile"
+     * (Alrund, God of the Cosmos; Niko Defies Destiny).
+     */
+    @SerialName("IsForetold")
+    @Serializable
+    data object IsForetold : Entity {
+        override val description: String = "foretold"
+    }
+
+    /**
      * Permanent on the battlefield that was cast for its warp cost (CR 702.185).
      * Matches the `WarpedComponent` marker the engine writes when a warped spell
      * resolves — the permanent-side bookkeeping equivalent of 702.185c's "a spell

@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.legalactions.enumerators
 
 import com.wingedsheep.engine.core.ForetellCard
+import com.wingedsheep.engine.handlers.actions.ability.FORETELL_SPEND_CONTEXT
 import com.wingedsheep.engine.legalactions.ActionEnumerator
 import com.wingedsheep.engine.legalactions.EnumerationContext
 import com.wingedsheep.engine.legalactions.LegalAction
@@ -37,11 +38,13 @@ class ForetellEnumerator : ActionEnumerator {
                 ?: continue
 
             val canAfford = context.manaSolver.canPay(
-                state, playerId, setupCost, precomputedSources = context.availableManaSources
+                state, playerId, setupCost, spellContext = FORETELL_SPEND_CONTEXT,
+                precomputedSources = context.availableManaSources
             )
             val autoTapPreview = if (context.skipAutoTapPreview) null else {
                 context.manaSolver.solve(
-                    state, playerId, setupCost, precomputedSources = context.availableManaSources
+                    state, playerId, setupCost, spellContext = FORETELL_SPEND_CONTEXT,
+                    precomputedSources = context.availableManaSources
                 )?.sources?.map { it.entityId }
             }
             result.add(
