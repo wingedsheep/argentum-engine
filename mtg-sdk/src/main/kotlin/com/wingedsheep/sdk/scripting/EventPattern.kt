@@ -3595,25 +3595,37 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * combat damage by one or more matching creatures. The matching creatures that hit that
      * recipient are the trigger's captured collection ("one of those Dragons").
      *
+     * [toOneOrMorePlayers] is the "… deal combat damage to **one or more players**" form
+     * (Contaminant Grafter): it fires once per combat-damage batch however many players (and, with
+     * [orBattle], battles) were hit, capturing every matching creature that hit any of them. It binds
+     * no triggering player — there is no single "that player" — so its effect must not read
+     * `Player.TriggeringPlayer`. Each combat damage step (first strike, then regular) is its own
+     * batch, so a first-strike step and the regular step can each fire it once.
+     *
      * Examples:
      *   → OneOrMoreDealCombatDamageToPlayerEvent(sourceFilter = GameObjectFilter.Creature.withSubtype("Bird"))
      *     "Whenever one or more Birds you control deal combat damage to a player"
      *   → OneOrMoreDealCombatDamageToPlayerEvent(GameObjectFilter.Creature.withSubtype("Dragon"), orBattle = true)
      *     "Whenever one or more Dragons you control deal combat damage to a player or battle"
      *     (Zurgo and Ojutai)
+     *   → OneOrMoreDealCombatDamageToPlayerEvent(toOneOrMorePlayers = true)
+     *     "Whenever one or more creatures you control deal combat damage to one or more players"
+     *     (Contaminant Grafter)
      */
     @SerialName("OneOrMoreDealCombatDamageToPlayerEvent")
     @Serializable
     data class OneOrMoreDealCombatDamageToPlayerEvent(
         val sourceFilter: GameObjectFilter = GameObjectFilter.Companion.Creature,
         /** Also count combat damage dealt to a battle — "to a player or battle". */
-        val orBattle: Boolean = false
+        val orBattle: Boolean = false,
+        /** Fire once per batch across every damaged player — "to one or more players". */
+        val toOneOrMorePlayers: Boolean = false
     ) : EventPattern {
         override val description: String = buildString {
             append("one or more ")
             append(describeObjectForEvent(sourceFilter))
-            append(" you control deal combat damage to a player")
-            if (orBattle) append(" or battle")
+            append(if (toOneOrMorePlayers) " you control deal combat damage to one or more players" else " you control deal combat damage to a player")
+            if (orBattle) append(if (toOneOrMorePlayers) " or battles" else " or battle")
         }
 
         override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
@@ -3628,14 +3640,27 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * [OneOrMoreDealCombatDamageToPlayerEvent] — fires at most once per combat-damage batch
      * regardless of how many creatures connected with you.
      *
+     * By default it binds only an arbitrary matching source as the triggering entity.
+     *
+     * [perSourceController] splits the batch by **who controls the damaging creatures**: it fires
+     * once for each player controlling one or more matching creatures that dealt you combat damage
+     * in the batch, binding that player as the triggering player (`Player.TriggeringPlayer`, "that
+     * opponent") and capturing that player's matching creatures. A creature killed by the same
+     * damage counts for its controller at the time it dealt the damage (last-known information).
+     *
      * Examples:
      *   → OneOrMoreDealCombatDamageToYouEvent()
      *     "Whenever one or more creatures deal combat damage to you" (Witch-king of Angmar)
+     *   → OneOrMoreDealCombatDamageToYouEvent(Creature.opponentControls(), perSourceController = true)
+     *     "Whenever one or more creatures an opponent controls deal combat damage to you, that
+     *     opponent gets a poison counter" (Norn's Decree)
      */
     @SerialName("OneOrMoreDealCombatDamageToYouEvent")
     @Serializable
     data class OneOrMoreDealCombatDamageToYouEvent(
-        val sourceFilter: GameObjectFilter = GameObjectFilter.Companion.Creature
+        val sourceFilter: GameObjectFilter = GameObjectFilter.Companion.Creature,
+        /** Fire once per controller of the damaging creatures, binding that controller. */
+        val perSourceController: Boolean = false
     ) : EventPattern {
         override val description: String = buildString {
             append("one or more ")

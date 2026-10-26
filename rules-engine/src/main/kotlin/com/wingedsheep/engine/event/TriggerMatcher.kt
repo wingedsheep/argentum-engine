@@ -1994,6 +1994,7 @@ class TriggerMatcher(
     ): Boolean {
         return when (player) {
             Player.EachDefendingPlayer -> eventPlayerId in com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state)
+            Player.EachAttackedPlayer -> eventPlayerId in com.wingedsheep.engine.mechanics.combat.CombatDefenders.attackedPlayersInApnapOrder(state)
             Player.You -> eventPlayerId == controllerId
             Player.Each -> true
             Player.EachOpponent -> state.isOpponentOf(eventPlayerId, controllerId)
@@ -2241,6 +2242,7 @@ class TriggerMatcher(
     ): Boolean {
         return when (player) {
             Player.EachDefendingPlayer -> com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state).any { state.isActiveTurnFor(it) }
+            Player.EachAttackedPlayer -> com.wingedsheep.engine.mechanics.combat.CombatDefenders.attackedPlayersInApnapOrder(state).any { state.isActiveTurnFor(it) }
             Player.You -> state.isActiveTurnFor(controllerId)
             Player.Each -> true
             Player.EachOpponent -> !state.isActiveTurnFor(controllerId)

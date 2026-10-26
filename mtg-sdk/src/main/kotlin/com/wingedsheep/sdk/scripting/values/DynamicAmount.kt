@@ -1709,7 +1709,11 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     ) : DynamicAmount {
         override val description: String =
             "the greatest ${inner.description} among ${
-                if (players == Player.EachOpponent) "your opponents" else "all players"
+                when (players) {
+                    Player.EachOpponent -> "your opponents"
+                    Player.EachAttackedPlayer -> "the players being attacked"
+                    else -> "all players"
+                }
             }"
 
         override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount {

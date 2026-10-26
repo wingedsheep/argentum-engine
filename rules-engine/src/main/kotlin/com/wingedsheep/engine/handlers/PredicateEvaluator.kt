@@ -333,6 +333,7 @@ class PredicateEvaluator(
         context: PredicateContext,
     ): Boolean = when (player) {
         Player.EachDefendingPlayer -> playerId in com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state)
+        Player.EachAttackedPlayer -> playerId in com.wingedsheep.engine.mechanics.combat.CombatDefenders.attackedPlayersInApnapOrder(state)
         Player.Any, Player.Each -> true
         Player.You -> playerId == context.controllerId
         Player.EachOpponent, Player.AnOpponent -> state.isOpponentOf(playerId, context.controllerId)

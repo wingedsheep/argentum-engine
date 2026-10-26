@@ -74,6 +74,25 @@ sealed interface Player {
         override val description: String = "each defending player"
     }
 
+    /**
+     * Every player **being attacked** in the current combat, in APNAP order: each player with at
+     * least one attacking creature attacking that player directly. Narrower than
+     * [EachDefendingPlayer] — the rules tell "a player being attacked" apart from one who only
+     * controls a planeswalker or protects a battle that's being attacked (CR 802.4), so neither of
+     * those makes its player "being attacked", and an opponent no creature attacks isn't either.
+     * Read live: a player stops being attacked once the last creature attacking them leaves combat.
+     * Outside combat, or before attackers are declared, this names nobody.
+     *
+     * "If one or more players being attacked are poisoned" (Norn's Decree) is
+     * `GreatestAmongPlayers(EachAttackedPlayer, PlayerCounterCount(POISON, You)) >= 1`. List-only
+     * like [EachDefendingPlayer]: the single-player resolver returns null for it.
+     */
+    @SerialName("EachAttackedPlayer")
+    @Serializable
+    data object EachAttackedPlayer : Player {
+        override val description: String = "each player being attacked"
+    }
+
     /** All opponents */
     @SerialName("EachOpponent")
     @Serializable
@@ -514,6 +533,7 @@ sealed interface Player {
             AnOpponent -> "an opponent's"
             DefendingPlayer -> "defending player's"
             EachDefendingPlayer -> "each defending player's"
+            EachAttackedPlayer -> "each attacked player's"
             TargetOpponent -> "target opponent's"
             TargetPlayer -> "target player's"
             ControllerOfIterationEntity -> "its controller's"

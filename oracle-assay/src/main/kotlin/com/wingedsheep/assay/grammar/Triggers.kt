@@ -598,7 +598,10 @@ object Triggers {
      * many" and "them" regardless.
      *
      * `OneOrMoreDealCombatDamageToPlayerEvent` carries two readings, "to a player" and "to a
-     * player or battle" (its `orBattle` flag); each row reads back only its own.
+     * player or battle" (its `orBattle` flag); each row reads back only its own. Its
+     * `toOneOrMorePlayers` axis ("to one or more players") and `OneOrMoreDealCombatDamageToYouEvent`'s
+     * `perSourceController` axis have no row yet, so the readers refuse them rather than print the
+     * once-per-player / once-per-batch sentence over a model that means something else.
      */
     private data class Scope(val words: String, val predicate: ControllerPredicate?)
 
@@ -726,7 +729,7 @@ object Triggers {
                 "whenever one or more {filter} you control deal combat damage to a player or battle",
                 "whenever one or more creatures you control deal combat damage to a player or battle",
                 Filters.pluralSubject,
-                { (it as? EventPattern.OneOrMoreDealCombatDamageToPlayerEvent)?.takeIf { e -> e.orBattle }?.sourceFilter },
+                { (it as? EventPattern.OneOrMoreDealCombatDamageToPlayerEvent)?.takeIf { e -> e.orBattle && !e.toOneOrMorePlayers }?.sourceFilter },
             ) {
                 SdkTriggers.oneOrMore(it).dealCombatDamageToAPlayerOrBattle()
             },
@@ -734,7 +737,7 @@ object Triggers {
                 "whenever one or more {filter} you control deal combat damage to a player",
                 "whenever one or more creatures you control deal combat damage to a player",
                 Filters.pluralSubject,
-                { (it as? EventPattern.OneOrMoreDealCombatDamageToPlayerEvent)?.takeUnless { e -> e.orBattle }?.sourceFilter },
+                { (it as? EventPattern.OneOrMoreDealCombatDamageToPlayerEvent)?.takeUnless { e -> e.orBattle || e.toOneOrMorePlayers }?.sourceFilter },
             ) {
                 SdkTriggers.oneOrMore(it).dealCombatDamageToAPlayer()
             },
@@ -742,7 +745,7 @@ object Triggers {
                 "whenever one or more {filter} deal combat damage to you",
                 "whenever one or more creatures deal combat damage to you",
                 Filters.pluralSubject,
-                { (it as? EventPattern.OneOrMoreDealCombatDamageToYouEvent)?.sourceFilter },
+                { (it as? EventPattern.OneOrMoreDealCombatDamageToYouEvent)?.takeUnless { e -> e.perSourceController }?.sourceFilter },
             ) { SdkTriggers.oneOrMore(it).dealCombatDamageToYou() },
             batchRule(
                 "whenever one or more {filter} leave your graveyard",

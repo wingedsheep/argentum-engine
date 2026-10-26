@@ -770,10 +770,26 @@ class BatchTriggerSubject internal constructor(
         return spec(OneOrMoreDealCombatDamageToPlayerEvent(sourceFilter = filter, orBattle = true))
     }
 
-    /** "deal combat damage to you" — defensive; fires once per combat-damage batch. */
-    fun dealCombatDamageToYou(): TriggerSpec {
+    /**
+     * "deal combat damage to one or more players" — once per combat-damage batch however many
+     * players were hit; every matching creature that hit one is the captured collection. No
+     * triggering player is bound (Contaminant Grafter).
+     */
+    fun dealCombatDamageToOneOrMorePlayers(): TriggerSpec {
+        noOther("dealCombatDamageToOneOrMorePlayers")
+        return spec(OneOrMoreDealCombatDamageToPlayerEvent(sourceFilter = filter, toOneOrMorePlayers = true))
+    }
+
+    /**
+     * "deal combat damage to you" — defensive; fires once per combat-damage batch.
+     *
+     * [perSourceController] fires once per player controlling matching creatures that hit you,
+     * binding that player as `Player.TriggeringPlayer` — "whenever one or more creatures an
+     * opponent controls deal combat damage to you, that opponent …" (Norn's Decree).
+     */
+    fun dealCombatDamageToYou(perSourceController: Boolean = false): TriggerSpec {
         noOther("dealCombatDamageToYou")
-        return spec(OneOrMoreDealCombatDamageToYouEvent(sourceFilter = filter))
+        return spec(OneOrMoreDealCombatDamageToYouEvent(sourceFilter = filter, perSourceController = perSourceController))
     }
 
     /**

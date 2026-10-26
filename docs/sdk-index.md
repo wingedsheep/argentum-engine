@@ -1237,8 +1237,8 @@ Families:
 - `EventPattern.MutateEvent` — When a mutating creature spell merges with a permanent (CR 702.140d).
 - `EventPattern.NthCardDrawnEvent(nthCard: Int, player: Player)` — Fires on a `CardsDrawnEvent` when the drawing player's per-turn draw count crosses the specified threshold (CR 121.2 — each card drawn is an individual draw, so a single multi-card draw fires at mo…
 - `EventPattern.NthSpellCastEvent(nthSpell: Int, player: Player, spellFilter: GameObjectFilter?)` — When a player casts their Nth spell in a turn.
-- `EventPattern.OneOrMoreDealCombatDamageToPlayerEvent(sourceFilter: GameObjectFilter, orBattle: Boolean)` — Whenever one or more creatures matching sourceFilter you control deal combat damage to a player.
-- `EventPattern.OneOrMoreDealCombatDamageToYouEvent(sourceFilter: GameObjectFilter)` — Whenever one or more creatures matching sourceFilter deal combat damage to *you* (the trigger's controller).
+- `EventPattern.OneOrMoreDealCombatDamageToPlayerEvent(sourceFilter: GameObjectFilter, orBattle: Boolean, toOneOrMorePlayers: Boolean)` — Whenever one or more creatures matching sourceFilter you control deal combat damage to a player.
+- `EventPattern.OneOrMoreDealCombatDamageToYouEvent(sourceFilter: GameObjectFilter, perSourceController: Boolean)` — Whenever one or more creatures matching sourceFilter deal combat damage to *you* (the trigger's controller).
 - `EventPattern.OpponentsDealtCombatDamageEvent` — Whenever one or more of *your opponents* (the trigger controller's opponents, CR 102.3) are dealt combat damage.
 - `EventPattern.PermanentsEnteredEvent(filter: GameObjectFilter, excludeSource: Boolean)` — Whenever one or more permanents matching a filter you control enter the battlefield.
 - `EventPattern.PermanentsSacrificedEvent(filter: GameObjectFilter, sacrificedBy: Player, perPermanent: Boolean)` — Whenever you sacrifice one or more permanents matching a filter.
@@ -1473,6 +1473,7 @@ Families:
 - `Player.ControllerOfTriggeringEntity` — The controller of the **triggering entity** — the player half of com.wingedsheep.sdk.scripting.targets.EffectTarget.ControllerOfTriggeringEntity, for the places that take a Player reference rather…
 - `Player.DefendingPlayer` — The defending player, per CR 802.2a: one specific player, determined per attacking creature — never "the opponent" via turn order.
 - `Player.Each` — All players
+- `Player.EachAttackedPlayer` — Every player **being attacked** in the current combat, in APNAP order: each player with at least one attacking creature attacking that player directly.
 - `Player.EachDefendingPlayer` — All defending players in the current combat, in APNAP order, including those with no attackers assigned and before attackers are declared.
 - `Player.EachOpponent` — All opponents
 - `Player.EachOtherPlayer` — Every player other than you, in turn order — "each other player" (Grave Pact).

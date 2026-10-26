@@ -348,6 +348,7 @@ private fun matchesPlayerFilter(
 ): Boolean {
     return when (player) {
         Player.EachDefendingPlayer -> affectedPlayerId in com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state)
+        Player.EachAttackedPlayer -> affectedPlayerId in com.wingedsheep.engine.mechanics.combat.CombatDefenders.attackedPlayersInApnapOrder(state)
         Player.Each, Player.Any -> true
         Player.You -> affectedPlayerId == sourceControllerId
         Player.EachOpponent, Player.AnOpponent -> affectedPlayerId in state.getOpponents(sourceControllerId)

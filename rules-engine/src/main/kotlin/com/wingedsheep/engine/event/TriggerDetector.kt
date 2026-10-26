@@ -3716,6 +3716,8 @@ class TriggerDetector(
             val targetPlayerId: EntityId,
             val toBattle: Boolean = false,
             val lastKnown: EntitySnapshot? = null,
+            /** The source's controller when it dealt the damage (live, or last-known). */
+            val sourceControllerId: EntityId,
         )
         val combatDamageByController = mutableMapOf<EntityId, MutableList<CombatDamageInfo>>()
         val combatDamageByDamagedPlayer = mutableMapOf<EntityId, MutableList<CombatDamageInfo>>()
@@ -3732,7 +3734,10 @@ class TriggerDetector(
             } else {
                 lastKnown?.controllerId
             } ?: continue
-            val info = CombatDamageInfo(event.sourceId, event.targetId, toBattle = !toPlayer, lastKnown = lastKnown)
+            val info = CombatDamageInfo(
+                event.sourceId, event.targetId, toBattle = !toPlayer, lastKnown = lastKnown,
+                sourceControllerId = controller
+            )
             combatDamageByController.getOrPut(controller) { mutableListOf() }.add(info)
             if (toPlayer) combatDamageByDamagedPlayer.getOrPut(event.targetId) { mutableListOf() }.add(info)
         }
@@ -3745,6 +3750,35 @@ class TriggerDetector(
             // the damaged player (the observer's controller) instead of the source controller.
             if (trigger is EventPattern.OneOrMoreDealCombatDamageToYouEvent) {
                 val damageEvents = combatDamageByDamagedPlayer[controllerId] ?: return
+                // "… creatures an opponent controls deal combat damage to you, that opponent …":
+                // one trigger per player controlling matching sources that hit you, binding that
+                // player. The filter is read relative to the trigger's controller, so an
+                // "opponent controls" filter compares each source's (live or last-known)
+                // controller against you.
+                if (trigger.perSourceController) {
+                    val matching = damageEvents.filter { info ->
+                        combatDamageSourceMatches(
+                            state, projected, info.sourceId, info.lastKnown, trigger.sourceFilter,
+                            PredicateContext(controllerId = controllerId, sourceId = sourceId)
+                        )
+                    }
+                    for ((sourceController, infos) in matching.groupBy { it.sourceControllerId }) {
+                        triggers.add(
+                            PendingTrigger(
+                                ability = ability,
+                                sourceId = sourceId,
+                                sourceName = sourceName,
+                                controllerId = controllerId,
+                                triggerContext = TriggerContext(
+                                    triggeringEntityId = infos.first().sourceId,
+                                    triggeringPlayerId = sourceController,
+                                    capturedEntityIds = infos.map { it.sourceId }.distinct()
+                                )
+                            )
+                        )
+                    }
+                    return
+                }
                 val firstMatchingInfo = damageEvents.firstOrNull { info ->
                     combatDamageSourceMatches(
                         state, projected, info.sourceId, info.lastKnown, trigger.sourceFilter,
@@ -3813,6 +3847,25 @@ class TriggerDetector(
             // The "or battle" variant also fires once per battle hit (no triggering player).
             // Either way the matching sources that hit that recipient are captured, so a
             // payoff can act on "those creatures" (Zurgo and Ojutai).
+            // "… to one or more players": a single trigger for the whole batch, whoever was hit,
+            // capturing every matching source. There is no single damaged player to bind.
+            if (trigger.toOneOrMorePlayers) {
+                if (matchingInfos.isEmpty()) return
+                triggers.add(
+                    PendingTrigger(
+                        ability = ability,
+                        sourceId = sourceId,
+                        sourceName = sourceName,
+                        controllerId = controllerId,
+                        triggerContext = TriggerContext(
+                            triggeringEntityId = matchingInfos.first().sourceId,
+                            capturedEntityIds = matchingInfos.map { it.sourceId }.distinct()
+                        )
+                    )
+                )
+                return
+            }
+
             for ((recipientId, infos) in matchingInfos.groupBy { it.targetPlayerId }) {
                 triggers.add(
                     PendingTrigger(

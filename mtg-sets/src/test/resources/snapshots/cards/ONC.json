@@ -1,3 +1,130 @@
+// Contaminant Grafter
+{
+    "name": "Contaminant Grafter",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Phyrexian Druid",
+    "oracleText": "Trample, toxic 1\nWhenever one or more creatures you control deal combat damage to one or more players, proliferate.\nCorrupted — At the beginning of your end step, if an opponent has three or more poison counters, draw a card, then you may put a land card from your hand onto the battlefield.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE",
+        "TOXIC"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TOXIC",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Contaminant Grafter:1",
+                "trigger": {
+                    "type": "OneOrMoreDealCombatDamageToPlayerEvent",
+                    "toOneOrMorePlayers": true
+                },
+                "binding": "ANY",
+                "effect": "Proliferate",
+                "descriptionOverride": "Whenever one or more creatures you control deal combat damage to one or more players, proliferate."
+            },
+            {
+                "id": "Contaminant Grafter:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand",
+                                        "filter": "land"
+                                    },
+                                    "storeAs": "put_candidates"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "put_candidates",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "putting"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "putting",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Battlefield"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": {
+                            "type": "PlayerCounterCount",
+                            "counterType": "POISON"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "descriptionOverride": "Corrupted — At the beginning of your end step, if an opponent has three or more poison counters, draw a card, then you may put a land card from your hand onto the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "RARE",
+        "artist": "Lars Grant-West",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0ef2f776-ff35-464b-bfcf-075c9ae4baa7.jpg?1783918158",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "Toxic doesn't change the amount of combat damage a creature deals. For example, if a 2/2 creature with toxic 1 deals combat damage to a player, that creature will deal 2 damage. The results of that damage are the player loses 2 life and gets a poison counter."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "Multiple instances of toxic are cumulative. For example, if a creature has toxic 2 and gains toxic 1 due to another effect, combat damage that creature deals to a player will cause that player to get 3 poison counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Glistening Sphere
 {
     "name": "Glistening Sphere",
@@ -200,6 +327,92 @@
         "WHITE",
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Norn's Decree
+{
+    "name": "Norn's Decree",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever one or more creatures an opponent controls deal combat damage to you, that opponent gets a poison counter.\nWhenever a player attacks, if one or more players being attacked are poisoned, the attacking player draws a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Norn's Decree:1",
+                "trigger": {
+                    "type": "OneOrMoreDealCombatDamageToYouEvent",
+                    "sourceFilter": "creature ctrl:opponent",
+                    "perSourceController": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "POISON",
+                    "count": 1,
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "descriptionOverride": "Whenever one or more creatures an opponent controls deal combat damage to you, that opponent gets a poison counter."
+            },
+            {
+                "id": "Norn's Decree:2",
+                "trigger": {
+                    "type": "YouAttackEvent",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "players": "EachAttackedPlayer",
+                        "inner": {
+                            "type": "PlayerCounterCount",
+                            "counterType": "POISON"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever a player attacks, if one or more players being attacked are poisoned, the attacking player draws a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "rarity": "RARE",
+        "artist": "Néstor Ossandón Leal",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/76f28aa2-1c18-4d58-a3f9-6cd5b49280d8.jpg?1783918161",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "A player is poisoned if that player has one or more poison counters."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "A player with ten or more poison counters loses the game. This is a state-based action and doesn't use the stack. In other words, it happens immediately and players can't respond to it, just like a player losing the game due to having 0 or less life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

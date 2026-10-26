@@ -143,6 +143,23 @@ object CombatDefenders {
     }
 
     /**
+     * Every player **being attacked** right now, in APNAP order: each player some attacking
+     * creature on the battlefield is attacking directly. A player whose planeswalker or battle is
+     * the only thing attacked isn't "being attacked" (CR 802.4 tells the two apart), and neither is
+     * a defending player no creature attacks. Read live, so a player stops being attacked once the
+     * last creature attacking them leaves combat. Backs [com.wingedsheep.sdk.scripting.references.Player.EachAttackedPlayer].
+     */
+    fun attackedPlayersInApnapOrder(state: GameState): List<EntityId> {
+        if (state.step.phase != com.wingedsheep.sdk.core.Phase.COMBAT) return emptyList()
+        val attacked = state.getBattlefield()
+            .mapNotNull { state.getEntity(it)?.get<AttackingComponent>()?.defenderId }
+            .filter { it in state.turnOrder }
+            .toSet()
+        if (attacked.isEmpty()) return emptyList()
+        return state.apnapOrder.filter { it in attacked }
+    }
+
+    /**
      * The defending players ordered for sequential block declaration: turn order starting
      * from the active player (CR 101.4 APNAP). The active player is never a defender, so in
      * practice this is the defenders in turn order after the active player, wrapping around.
