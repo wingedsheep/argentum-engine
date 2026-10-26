@@ -114,6 +114,19 @@ class SnowManaAsAnyColorTest : ScenarioTestBase() {
             services.manaSolver.canPay(game.state, game.player1Id, cost("{U}")) shouldBe false
         }
 
+        test("floating snow mana covers one pip and a land the rest — a partial floating payment stays snow-aware") {
+            val game = scenario().withPlayers().withLandsOnBattlefield(1, "Swamp", 1).withActivePlayer(1).build()
+            game.state = game.state.updateEntity(game.player1Id) {
+                it.with(ManaPoolComponent(green = 1, snowMana = mapOf(Color.GREEN to 1)))
+            }
+            services.manaSolver.canPay(game.state, game.player1Id, cost("{B}{B}"), spellContext = snowAsAny) shouldBe true
+            services.manaSolver.canPay(game.state, game.player1Id, cost("{B}{B}")) shouldBe false
+            val partial = ManaPool(green = 1, snowMana = mapOf(Color.GREEN to 1)).payPartial(cost("{1}{B}{B}"), snowAsAny)
+            partial.manaSpent.green shouldBe 1
+            partial.remainingCost.genericAmount shouldBe 1
+            partial.remainingCost.symbols.count { it == com.wingedsheep.sdk.core.ManaSymbol.Colored(Color.BLACK) } shouldBe 1
+        }
+
         // --- Through a static exile-cast permission -----------------------------------------
 
         cardRegistry.register(card("Test Ice Warden") {

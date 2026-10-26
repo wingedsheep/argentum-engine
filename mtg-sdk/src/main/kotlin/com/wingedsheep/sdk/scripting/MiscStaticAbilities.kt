@@ -994,6 +994,12 @@ data class MayPlayCardsFromExile(
     val oncePerTurn: Boolean = false,
     val spendAsAnyColor: ManaSpentAsAnyColor? = null,
 ) : StaticAbility {
+    init {
+        require(!(withAnyManaColor && spendAsAnyColor != null)) {
+            "withAnyManaColor already lets all mana stand in for a color; spendAsAnyColor narrows it — set one"
+        }
+    }
+
     override val description: String = buildString {
         if (oncePerTurn) append("Once each turn, you may play ${filter.description} from exile")
         else append("You may play ${filter.description} from exile")

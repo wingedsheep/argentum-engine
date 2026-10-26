@@ -498,6 +498,8 @@ internal class CastCostPayer(
     fun castSpendAsAnyColor(state: GameState, action: CastSpell): com.wingedsheep.sdk.scripting.effects.ManaSpentAsAnyColor? {
         val inGrantableZone = isCastFrom(state, action.cardId, Zone.EXILE) || isCastFrom(state, action.cardId, Zone.GRAVEYARD)
         if (!inGrantableZone) return null
+        // Two overlapping narrow riders (colorless from one grant, snow from another) aren't
+        // modelled: no printed pair of them can cover the same card today, so the first one wins.
         return state.activeMayPlayFor(action.cardId, action.playerId, conditionEvaluator, cardRegistry)
             .firstNotNullOfOrNull { it.spendAsAnyColor }
     }

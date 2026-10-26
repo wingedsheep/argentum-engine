@@ -43,7 +43,7 @@ class DraugrNecromancerScenarioTest : ScenarioTestBase() {
         resolveStack()
     }
 
-    private fun TestGame.icedBears(): EntityId? = state.getExile(player2Id).firstOrNull {
+    private fun TestGame.icedBears(owner: EntityId = player2Id): EntityId? = state.getExile(owner).firstOrNull {
         state.getEntity(it)?.get<CardComponent>()?.name == "Grizzly Bears"
     }
 
@@ -75,6 +75,17 @@ class DraugrNecromancerScenarioTest : ScenarioTestBase() {
                 game.killBears()
                 val bears = game.icedBears()!!
                 game.execute(CastSpell(game.player1Id, bears)).error shouldNotBe null
+            }
+
+            test("your own card an opponent controls is iced but can't be cast (ruling)") {
+                val game = board("Snow-Covered Island", bearsOwner = 1)
+                val bears = game.findPermanent("Grizzly Bears")!!
+                game.state = game.state.updateEntity(bears) { it.with(ControllerComponent(game.player2Id)) }
+                game.killBears()
+                val iced = game.icedBears(owner = game.player1Id)
+                withClue("Grizzly Bears is in its owner's (your) exile") { iced shouldNotBe null }
+                game.state.getEntity(iced!!)?.get<CountersComponent>()?.getCount(CounterType.ICE) shouldBe 1
+                game.execute(CastSpell(game.player1Id, iced)).error shouldNotBe null
             }
 
             test("your own creature dies normally") {

@@ -135,7 +135,18 @@ internal object RetiredSdkTypeLift {
      * a stored grant. A true flag is a cap of one; a false one is the uncapped default.
      */
     private fun withoutRetiredFields(element: JsonObject, type: String?): JsonObject =
-        withoutSingleEntryCounter(withoutCastTimeFlags(withoutSingleUse(element, type)), type)
+        withoutSingleEntryCounter(withoutCastTimeFlags(withoutColorlessAsAnyColor(withoutSingleUse(element, type))), type)
+
+    /**
+     * The may-play `colorlessAsAnyColor` flag became `spendAsAnyColor`, naming *which* mana stands in
+     * for a color — on `GrantMayPlayFromExileEffect` in a card script and `MayPlayPermission` on a
+     * stored grant. A true flag is `COLORLESS`; a false one is the unset default.
+     */
+    private fun withoutColorlessAsAnyColor(element: JsonObject): JsonObject {
+        val flag = element["colorlessAsAnyColor"] as? JsonPrimitive ?: return element
+        val rest = element - "colorlessAsAnyColor"
+        return JsonObject(if (flag.content == "true") rest + ("spendAsAnyColor" to JsonPrimitive("COLORLESS")) else rest)
+    }
 
     /**
      * `MoveToZoneEffect` carried one entry counter as `addCounterType` + `addCounterIf`; it now

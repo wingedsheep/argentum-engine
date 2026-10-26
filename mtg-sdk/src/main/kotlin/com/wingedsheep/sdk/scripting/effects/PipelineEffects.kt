@@ -1930,6 +1930,9 @@ data class GrantMayPlayFromExileEffect(
     val maxPlays: Int? = null
 ) : Effect {
     init {
+        require(!(withAnyManaColor && spendAsAnyColor != null)) {
+            "withAnyManaColor already lets all mana stand in for a color; spendAsAnyColor narrows it — set one"
+        }
         require(maxPlays == null || maxPlays >= 1) { "maxPlays must be at least 1, or null for unlimited" }
     }
 

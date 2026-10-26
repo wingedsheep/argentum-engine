@@ -142,8 +142,9 @@ data class SpellPaymentContext(
      * accepts that mana; `{C}`, `{S}` and generic are untouched. Unlike "mana of any type" this
      * does not rewrite the cost — it widens which mana may pay it — so it is applied in the pool's
      * pip matching and the auto-tap solver rather than to the [com.wingedsheep.sdk.core.ManaCost].
-     * Snow substitution needs to know which floating units are snow, so it always takes the
-     * unit-exact [allocateFloating] path.
+     * Snow substitution needs to know which floating units are snow, so with floating snow mana
+     * it takes the unit-exact [allocateFloating] path — for a partial payment too, through
+     * [ManaPool.payPartialExactly].
      */
     val spendAsAnyColor: ManaSpentAsAnyColor? = null,
 ) {
@@ -805,6 +806,36 @@ data class ManaPool(
     )
 
     /**
+     * The largest part of [cost] the floating pool pays exactly, through [allocateFloating]: pips
+     * are kept one at a time, colored requirements before generic, while the kept set stays
+     * payable; the rest (and any X) is left for the lands. Used when snow mana may stand in for a
+     * color — the greedy partial path below can't see which floating units are snow, so with
+     * floating snow {G} and a Swamp it would leave {B}{B} for the Swamp alone. Null when the pool
+     * pays none of it.
+     */
+    private fun payPartialExactly(cost: ManaCost, context: SpellPaymentContext): PartialPaymentResult? {
+        val pips = cost.symbols.flatMap { symbol ->
+            when (symbol) {
+                is ManaSymbol.Generic -> List(symbol.amount) { ManaSymbol.Generic(1) }
+                is ManaSymbol.X -> emptyList()
+                else -> listOf(symbol)
+            }
+        }.sortedBy { if (it is ManaSymbol.Generic) 1 else 0 }
+        val kept = mutableListOf<ManaSymbol>()
+        val unpaid = mutableListOf<ManaSymbol>()
+        for (pip in pips) {
+            if (allocateFloating(ManaCost(kept + pip), context) != null) kept += pip else unpaid += pip
+        }
+        if (kept.isEmpty()) return null
+        val allocation = allocateFloating(ManaCost(kept), context) ?: return null
+        val unpaidGeneric = unpaid.count { it is ManaSymbol.Generic }
+        val remaining = unpaid.filter { it !is ManaSymbol.Generic } +
+            (if (unpaidGeneric > 0) listOf(ManaSymbol.Generic(unpaidGeneric)) else emptyList()) +
+            cost.symbols.filterIsInstance<ManaSymbol.X>()
+        return PartialPaymentResult(allocation.pool, ManaCost(remaining), allocation.spent)
+    }
+
+    /**
      * Pay as much of a mana cost as possible from this pool.
      * Returns the new pool, the remaining unpaid cost, and the mana that was spent.
      * This is used for AutoPay to use floating mana before tapping lands.
@@ -814,6 +845,9 @@ data class ManaPool(
         if (allocatesExactly(cost, spellContext)) {
             allocateFloating(cost, spellContext)?.let {
                 return PartialPaymentResult(it.pool, ManaCost(cost.symbols.filterIsInstance<ManaSymbol.X>()), it.spent)
+            }
+            if (spellContext?.spendAsAnyColor == ManaSpentAsAnyColor.SNOW) {
+                payPartialExactly(cost, spellContext)?.let { return it }
             }
         }
         if (substitutes(cost, spellContext)) {

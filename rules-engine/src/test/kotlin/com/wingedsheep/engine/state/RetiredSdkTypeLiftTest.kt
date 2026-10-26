@@ -143,6 +143,24 @@ class RetiredSdkTypeLiftTest : FunSpec({
         ) shouldBe permission.copy(playsRemaining = 1)
     }
 
+    test("the retired colorlessAsAnyColor flag becomes spendAsAnyColor = COLORLESS, or drops out when false") {
+        val grant = GrantMayPlayFromExileEffect(from = "exiled", nonLandOnly = true)
+        val encodedGrant = json.encodeToJsonElement(Effect.serializer(), grant).jsonObject
+        lifted(Effect.serializer(), JsonObject(encodedGrant - "spendAsAnyColor" + ("colorlessAsAnyColor" to JsonPrimitive(true)))) shouldBe
+            grant.copy(spendAsAnyColor = com.wingedsheep.sdk.scripting.effects.ManaSpentAsAnyColor.COLORLESS)
+        lifted(Effect.serializer(), JsonObject(encodedGrant - "spendAsAnyColor" + ("colorlessAsAnyColor" to JsonPrimitive(false)))) shouldBe
+            grant
+
+        val permission = MayPlayPermission(
+            id = EntityId.of("perm"), cardIds = setOf(EntityId.of("card")), controllerId = EntityId.of("player"), timestamp = 1
+        )
+        val encodedPermission = json.encodeToJsonElement(MayPlayPermission.serializer(), permission).jsonObject
+        lifted(
+            MayPlayPermission.serializer(),
+            JsonObject(encodedPermission - "spendAsAnyColor" + ("colorlessAsAnyColor" to JsonPrimitive(true)))
+        ) shouldBe permission.copy(spendAsAnyColor = com.wingedsheep.sdk.scripting.effects.ManaSpentAsAnyColor.COLORLESS)
+    }
+
     test("the cast-time flag reader becomes a comparison over the numeric capture") {
         lifted(Condition.serializer(), old("CastTimeFlagSet", "flag" to JsonPrimitive("controlledMount"))) shouldBe
             Conditions.CapturedAtCast("controlledMount")
