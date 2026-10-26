@@ -41,8 +41,8 @@ import kotlin.reflect.KClass
  * any later turn. It emits a [ForetoldEvent] for "whenever you foretell a card" triggers.
  *
  * Which cards can be foretold, and for what later cost, is [ForetellGrants]' call: a printed
- * foretell, or one a `HandCardsHaveForetell` (Dream Devourer) grants to cards in hand. The cost is
- * fixed on the card as it is foretold, so it outlives the grant (CR 702.143d).
+ * foretell, or one a `GrantForetellToCardsInHand` (Dream Devourer) grants to cards in hand. The cost is
+ * fixed on the card as it is foretold, so it outlives the grant (Dream Devourer rulings).
  *
  * The cast-later path reuses the same fixed-alternative-cost cast-from-exile machinery as
  * Airbend: [com.wingedsheep.engine.legalactions.enumerators.CastFromZoneEnumerator] and

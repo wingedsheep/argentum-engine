@@ -17,7 +17,7 @@ import com.wingedsheep.sdk.scripting.SpecialActionKind
  * own turn (CR 116.2h) — or on any turn with a [com.wingedsheep.sdk.scripting.MayForetellOnAnyTurn]
  * (Cosmos Charger). Like plot it costs mana to set up; the setup cost is a fixed {2} rather than a
  * per-card cost, modified by `ModifySpecialActionCost(FORETELL)` statics. Which cards can be
- * foretold — printed foretell, or granted by `HandCardsHaveForetell` (Dream Devourer) — is
+ * foretold — printed foretell, or granted by `GrantForetellToCardsInHand` (Dream Devourer) — is
  * [ForetellGrants]' call, shared with the handler. The cast-from-exile entry for an already-foretold card is emitted by
  * [CastFromZoneEnumerator] (via the may-play permission + fixed-alternative-cost component
  * added by the foretell handler), so it only appears on a later turn for the card's
@@ -37,6 +37,22 @@ class ForetellEnumerator : ActionEnumerator {
         val setupCost = context.specialActionCostReducer.effectiveCost(
             state, playerId, SpecialActionKind.FORETELL, printedSetupCost
         )
+        // The setup cost is the same for every card, so its affordability is solved once (lazily, as
+        // a hand with nothing foretellable needs neither).
+        val canAfford by lazy {
+            context.manaSolver.canPay(
+                state, playerId, setupCost, spellContext = FORETELL_SPEND_CONTEXT,
+                precomputedSources = context.availableManaSources
+            )
+        }
+        val autoTapPreview by lazy {
+            if (context.skipAutoTapPreview) null else {
+                context.manaSolver.solve(
+                    state, playerId, setupCost, spellContext = FORETELL_SPEND_CONTEXT,
+                    precomputedSources = context.availableManaSources
+                )?.sources?.map { it.entityId }
+            }
+        }
         val hand = state.getHand(playerId)
         for (cardId in hand) {
             val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
@@ -45,16 +61,6 @@ class ForetellEnumerator : ActionEnumerator {
                 state, cardId, cardDef, playerId, context.cardRegistry, context.predicateEvaluator
             ) ?: continue
 
-            val canAfford = context.manaSolver.canPay(
-                state, playerId, setupCost, spellContext = FORETELL_SPEND_CONTEXT,
-                precomputedSources = context.availableManaSources
-            )
-            val autoTapPreview = if (context.skipAutoTapPreview) null else {
-                context.manaSolver.solve(
-                    state, playerId, setupCost, spellContext = FORETELL_SPEND_CONTEXT,
-                    precomputedSources = context.availableManaSources
-                )?.sources?.map { it.entityId }
-            }
             result.add(
                 LegalAction(
                     actionType = "ForetellCard",

@@ -4,14 +4,14 @@ import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.controlledLiveStaticAbilities
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.HandCardsHaveForetell
+import com.wingedsheep.sdk.scripting.GrantForetellToCardsInHand
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.MayForetellOnAnyTurn
-import com.wingedsheep.sdk.scripting.StaticAbility
 
 /**
  * Single source of truth for "can this card in hand be foretold, for what later cost, and when?" —
@@ -20,7 +20,7 @@ import com.wingedsheep.sdk.scripting.StaticAbility
  * accepted.
  *
  * Foretell (CR 702.143) is printed on the card ([KeywordAbility.Foretell]) or granted to cards in
- * hand by a battlefield [HandCardsHaveForetell] (Dream Devourer). A printed foretell wins — the grant
+ * hand by a battlefield [GrantForetellToCardsInHand] (Dream Devourer). A printed foretell wins — the grant
  * is to cards "without foretell". The timing is "any time you have priority during your turn"
  * (CR 116.2h) unless the player controls a [MayForetellOnAnyTurn] (Cosmos Charger).
  */
@@ -42,10 +42,13 @@ object ForetellGrants {
         cardDef.keywordAbilities.firstOrNull { it is KeywordAbility.Foretell }
             ?.let { return (it as KeywordAbility.Foretell).cost }
 
+        // "Equal to its mana cost" — a card with no mana cost has an unpayable foretell cost
+        // (CR 118.6), so it gains nothing it could cast.
+        if (cardDef.hasNoManaCost) return null
         val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return null
         val context = PredicateContext(controllerId = playerId)
-        val grant = controlledStatics(state, playerId, cardRegistry)
-            .filterIsInstance<HandCardsHaveForetell>()
+        val grant = state.controlledLiveStaticAbilities(playerId, cardRegistry).map { it.second }
+            .filterIsInstance<GrantForetellToCardsInHand>()
             .firstOrNull { predicateEvaluator.matches(state, state.projectedState, cardId, it.filter, context) }
             ?: return null
         return cardComponent.manaCost.reduceGeneric(grant.costReduction)
@@ -55,12 +58,5 @@ object ForetellGrants {
     fun mayForetellNow(state: GameState, playerId: EntityId, cardRegistry: CardRegistry): Boolean =
         state.hasPriority(playerId) &&
             (state.isActiveTurnFor(playerId) ||
-                controlledStatics(state, playerId, cardRegistry).any { it is MayForetellOnAnyTurn })
-
-    private fun controlledStatics(state: GameState, playerId: EntityId, cardRegistry: CardRegistry): Sequence<StaticAbility> =
-        state.controlledBattlefield(playerId).asSequence().flatMap { permanentId ->
-            state.getEntity(permanentId)?.get<CardComponent>()
-                ?.let { cardRegistry.getCard(it.cardDefinitionId) }
-                ?.script?.staticAbilities.orEmpty()
-        }
+                state.controlledLiveStaticAbilities(playerId, cardRegistry).any { it.second is MayForetellOnAnyTurn })
 }

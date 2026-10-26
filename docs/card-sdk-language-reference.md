@@ -12117,13 +12117,13 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   payment. Granted escape uses the ordinary destination on resolution and marks an escaped
   permanent (`Conditions.Escaped`); the player chooses among available costs. Underworld Breach: `GraveyardCardsHaveEscape(GameObjectFilter.Nonland,
   additionalCost = Costs.additional.ExileOtherCards(3))`.
-- `HandCardsHaveForetell(filter, costReduction = 0)` — "Each `filter` card in your hand without
+- `GrantForetellToCardsInHand(filter, costReduction = 0)` — "Each `filter` card in your hand without
   foretell has foretell. Its foretell cost is equal to its mana cost reduced by {`costReduction`}"
-  (Dream Devourer: `HandCardsHaveForetell(GameObjectFilter.Nonland, costReduction = 2)`). Read with
+  (Dream Devourer: `GrantForetellToCardsInHand(GameObjectFilter.Nonland, costReduction = 2)`). Read with
   printed foretell through `ForetellGrants.effectiveForetellCost` by the foretell enumerator and
   handler; a printed foretell wins. The reduction comes off the **generic** part only ({1}{G}{G} →
   {G}{G}), and the cost is fixed on the card as it is foretold, so the foretold card can still be cast
-  for it after the grant is gone (CR 702.143d).
+  for it after the grant is gone (Dream Devourer ruling).
 - `MayForetellOnAnyTurn` — "Foretelling cards from your hand … can be done on any player's turn"
   (Cosmos Charger): while you control it, you may foretell any time you have priority, not only during
   your turn (CR 116.2h). The "costs {1} less" half is `ModifySpecialActionCost(FORETELL, …)`.

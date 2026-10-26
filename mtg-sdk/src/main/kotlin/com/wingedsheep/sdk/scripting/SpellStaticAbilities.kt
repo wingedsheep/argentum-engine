@@ -915,20 +915,20 @@ data class GraveyardCardsHaveEscape(
  * whole-hand group grant of [KeywordAbility.Foretell] (CR 702.143) to every card in the
  * controller's hand matching [filter], read through `ForetellGrants.effectiveForetellCost` by the
  * foretell enumerator and handler. Dream Devourer:
- * `HandCardsHaveForetell(GameObjectFilter.Nonland, costReduction = 2)`.
+ * `GrantForetellToCardsInHand(GameObjectFilter.Nonland, costReduction = 2)`.
  *
  * A card with a printed foretell keeps its own ("without foretell"). The granted cost is the card's
  * mana cost with [costReduction] taken off its **generic** part only — {1}{G}{G} becomes {G}{G}
  * (Dream Devourer ruling) — fixed at the moment the card is foretold: the foretold card no longer
  * has the ability once it leaves the hand, but can still be cast later for that cost even if the
- * granting permanent is gone (CR 702.143d).
+ * granting permanent is gone (Dream Devourer rulings).
  *
  * @property filter Which hand cards gain foretell (matched against the card's characteristics).
  * @property costReduction Generic mana taken off the card's mana cost to form its foretell cost.
  */
-@SerialName("HandCardsHaveForetell")
+@SerialName("GrantForetellToCardsInHand")
 @Serializable
-data class HandCardsHaveForetell(
+data class GrantForetellToCardsInHand(
     val filter: GameObjectFilter,
     val costReduction: Int = 0,
 ) : StaticAbility {

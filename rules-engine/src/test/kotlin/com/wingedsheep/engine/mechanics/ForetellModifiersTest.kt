@@ -14,7 +14,7 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CostModification
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.HandCardsHaveForetell
+import com.wingedsheep.sdk.scripting.GrantForetellToCardsInHand
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.MayForetellOnAnyTurn
 import com.wingedsheep.sdk.scripting.ModifySpecialActionCost
@@ -26,9 +26,9 @@ import io.kotest.matchers.shouldNotBe
 
 /**
  * Foretell modifiers (CR 702.143, CR 116.2h):
- *  - `HandCardsHaveForetell` — grants foretell to matching cards in hand; the cost is the card's
+ *  - `GrantForetellToCardsInHand` — grants foretell to matching cards in hand; the cost is the card's
  *    mana cost reduced in its generic part only, fixed as the card is foretold, and it outlives the
- *    grant (CR 702.143d). A printed foretell keeps its own cost.
+ *    grant (Dream Devourer rulings). A printed foretell keeps its own cost.
  *  - `EventPattern.ForetoldEvent` — "whenever you foretell a card": the special action, not the
  *    later cast.
  *  - `ModifySpecialActionCost(FORETELL)` — the {2} setup cost, stacking, floored at {0}.
@@ -44,7 +44,7 @@ class ForetellModifiersTest : FunSpec({
         toughness = 3
         oracleText = "Each nonland card in your hand without foretell has foretell. Its foretell cost is equal to its mana cost reduced by {2}.\n" +
             "Whenever you foretell a card, this creature gets +2/+0 until end of turn."
-        staticAbility { ability = HandCardsHaveForetell(GameObjectFilter.Nonland, costReduction = 2) }
+        staticAbility { ability = GrantForetellToCardsInHand(GameObjectFilter.Nonland, costReduction = 2) }
         triggeredAbility {
             trigger = Triggers.you.foretells()
             effect = Effects.ModifyStats(2, 0, EffectTarget.Self)
@@ -69,8 +69,25 @@ class ForetellModifiersTest : FunSpec({
         keywordAbility(KeywordAbility.foretell("{W}"))
     }
 
+    val neutralize = card("Test Neutralize") {
+        manaCost = "{U}"
+        typeLine = "Instant"
+        oracleText = "Target creature loses all abilities until end of turn."
+        spell {
+            val creature = target(com.wingedsheep.sdk.scripting.filters.unified.TargetFilter.Creature)
+            effect = Effects.RemoveAllAbilities(creature)
+        }
+    }
+
+    val shock = card("Test Ping") {
+        manaCost = "{R}"
+        typeLine = "Instant"
+        oracleText = "You gain 1 life."
+        spell { effect = Effects.GainLife(1) }
+    }
+
     fun driver() = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(granter, discounter, printedForetell))
+        registerCards(TestCards.all + listOf(granter, discounter, printedForetell, neutralize, shock))
         initMirrorMatch(deck = Deck.of("Swamp" to 40), startingLife = 20)
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -81,7 +98,7 @@ class ForetellModifiersTest : FunSpec({
     fun GameTestDriver.stampedCost(card: EntityId): ManaCost? =
         state.getEntity(card)?.get<PlayWithFixedAlternativeManaCostComponent>()?.fixedCost
 
-    context("HandCardsHaveForetell") {
+    context("GrantForetellToCardsInHand") {
         test("a nonland card without foretell can be foretold only while the granter is out") {
             val d = driver()
             val p = d.activePlayer!!
@@ -97,6 +114,27 @@ class ForetellModifiersTest : FunSpec({
             d.putCreatureOnBattlefield(p, "Test Foretell Granter")
             val forest = d.putCardInHand(p, "Forest")
             d.foretellAction(p, forest) shouldBe null
+        }
+
+        test("a card with no mana cost doesn't gain foretell (its foretell cost would be unpayable)") {
+            val d = driver()
+            val p = d.activePlayer!!
+            d.putCreatureOnBattlefield(p, "Test Foretell Granter")
+            val vision = d.putCardInHand(p, "Ancestral Vision")
+            d.foretellAction(p, vision) shouldBe null
+            d.submitExpectFailure(ForetellCard(p, vision))
+        }
+
+        test("a granter that has lost all its abilities grants nothing") {
+            val d = driver()
+            val p = d.activePlayer!!
+            val granterId = d.putCreatureOnBattlefield(p, "Test Foretell Granter")
+            val giant = d.putCardInHand(p, "Hill Giant")
+            val neutralizeId = d.putCardInHand(p, "Test Neutralize")
+            d.giveMana(p, Color.BLUE, 1)
+            d.castSpell(p, neutralizeId, listOf(granterId)).error shouldBe null
+            d.bothPass()
+            d.foretellAction(p, giant) shouldBe null
         }
 
         test("the granted cost is the mana cost reduced in its generic part only") {
@@ -188,6 +226,22 @@ class ForetellModifiersTest : FunSpec({
             d.state.priorityPlayerId shouldBe p
             d.foretellAction(p, instant) shouldBe null
             d.submitExpectFailure(ForetellCard(p, instant))
+        }
+
+        test("on your turn you may foretell with a spell on the stack, in response") {
+            val d = driver()
+            val p = d.activePlayer!!
+            val instant = d.putCardInHand(p, "Test Printed Foretell")
+            val ping = d.putCardInHand(p, "Test Ping")
+            d.giveMana(p, Color.RED, 1)
+            d.castSpell(p, ping).error shouldBe null
+            d.state.stack.size shouldBe 1
+            d.state.priorityPlayerId shouldBe p
+            d.giveColorlessMana(p, 2)
+            d.foretellAction(p, instant)?.affordable shouldBe true
+            d.submitSuccess(ForetellCard(p, instant))
+            d.getExile(p).contains(instant) shouldBe true
+            d.state.stack.size shouldBe 1
         }
 
         test("MayForetellOnAnyTurn lets you foretell on an opponent's turn") {

@@ -1591,7 +1591,7 @@
         ],
         "staticAbilities": [
             {
-                "type": "HandCardsHaveForetell",
+                "type": "GrantForetellToCardsInHand",
                 "filter": "nonland",
                 "costReduction": 2
             }

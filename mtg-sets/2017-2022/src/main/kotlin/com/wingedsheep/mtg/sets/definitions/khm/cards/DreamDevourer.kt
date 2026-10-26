@@ -5,7 +5,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.HandCardsHaveForetell
+import com.wingedsheep.sdk.scripting.GrantForetellToCardsInHand
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -15,7 +15,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * mana cost reduced by {2}.
  * Whenever you foretell a card, this creature gets +2/+0 until end of turn.
  *
- * [HandCardsHaveForetell] grants foretell to the nonland cards in hand; the cost is fixed as the card
+ * [GrantForetellToCardsInHand] grants foretell to the nonland cards in hand; the cost is fixed as the card
  * is foretold, so it can still be cast later after Dream Devourer is gone. The trigger is the
  * foretell special action itself (`Triggers.you.foretells()`), not casting a foretold card.
  */
@@ -30,7 +30,7 @@ val DreamDevourer = card("Dream Devourer") {
         "Whenever you foretell a card, this creature gets +2/+0 until end of turn."
 
     staticAbility {
-        ability = HandCardsHaveForetell(GameObjectFilter.Nonland, costReduction = 2)
+        ability = GrantForetellToCardsInHand(GameObjectFilter.Nonland, costReduction = 2)
     }
 
     triggeredAbility {

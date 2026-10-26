@@ -1287,7 +1287,7 @@ class StaticAbilityHandler(
 
             // Foretell grants and timing (ForetellGrants, read by ForetellEnumerator /
             // ForetellCardHandler):
-            is com.wingedsheep.sdk.scripting.HandCardsHaveForetell,
+            is com.wingedsheep.sdk.scripting.GrantForetellToCardsInHand,
             is com.wingedsheep.sdk.scripting.MayForetellOnAnyTurn,
 
             // Spells on the stack (StackResolver / GrantedKeywordResolver):

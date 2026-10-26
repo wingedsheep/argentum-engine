@@ -13,3 +13,24 @@ import com.wingedsheep.sdk.scripting.StaticAbility
  */
 fun CardDefinition.liveStaticAbilities(state: GameState, entityId: EntityId): List<StaticAbility> =
     script.effectiveStaticAbilities(state.getEntity(entityId)?.get<ClassLevelComponent>()?.currentLevel)
+
+/**
+ * Every live static ability on the battlefield permanents [playerId] controls, paired with its
+ * source: [liveStaticAbilities] per permanent, skipping a face-down permanent and one that has lost
+ * all its abilities — neither has the printed statics to grant. For battlefield-wide grant scans
+ * that aren't continuous effects (foretell grants, special-action cost modifiers).
+ */
+fun GameState.controlledLiveStaticAbilities(
+    playerId: EntityId,
+    cardRegistry: com.wingedsheep.engine.registry.CardRegistry,
+): Sequence<Pair<EntityId, StaticAbility>> =
+    controlledBattlefield(playerId).asSequence().flatMap { permanentId ->
+        val container = getEntity(permanentId)
+        if (container == null ||
+            container.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>() ||
+            projectedState.hasLostAllAbilities(permanentId)
+        ) return@flatMap emptySequence()
+        val def = container.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
+            ?.let { cardRegistry.getCard(it.cardDefinitionId) } ?: return@flatMap emptySequence()
+        def.liveStaticAbilities(this, permanentId).asSequence().map { permanentId to it }
+    }

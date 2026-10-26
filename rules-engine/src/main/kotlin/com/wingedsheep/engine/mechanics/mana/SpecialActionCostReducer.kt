@@ -2,8 +2,7 @@ package com.wingedsheep.engine.mechanics.mana
 
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
-import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.battlefield.controlledLiveStaticAbilities
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.model.EntityId
@@ -32,9 +31,8 @@ class SpecialActionCostReducer(
     fun effectiveCost(state: GameState, actorId: EntityId, action: SpecialActionKind, baseCost: ManaCost): ManaCost {
         var totalReduction = 0
         var totalIncrease = 0
-        for ((sourceId, ability) in scanBattlefield(state)) {
-            if (ability.action != action) continue
-            if (state.projectedState.getController(sourceId) != actorId) continue
+        for ((_, ability) in state.controlledLiveStaticAbilities(actorId, cardRegistry)) {
+            if (ability !is ModifySpecialActionCost || ability.action != action) continue
             when (val mod = ability.modification) {
                 is CostModification.ReduceGeneric -> totalReduction += mod.amount
                 is CostModification.IncreaseGeneric -> totalIncrease += mod.amount
@@ -50,21 +48,5 @@ class SpecialActionCostReducer(
     private fun increaseGeneric(cost: ManaCost, increase: Int): ManaCost {
         val colored = cost.symbols.filter { it !is ManaSymbol.Generic }
         return ManaCost(listOf(ManaSymbol.Generic(cost.genericAmount + increase)) + colored)
-    }
-
-    private fun scanBattlefield(state: GameState): List<Pair<EntityId, ModifySpecialActionCost>> {
-        val results = mutableListOf<Pair<EntityId, ModifySpecialActionCost>>()
-        for (playerId in state.turnOrder) {
-            for (entityId in state.getBattlefield(playerId)) {
-                val container = state.getEntity(entityId) ?: continue
-                val card = container.get<CardComponent>() ?: continue
-                val def = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-                val classLevel = container.get<ClassLevelComponent>()?.currentLevel
-                for (ability in def.script.effectiveStaticAbilities(classLevel)) {
-                    if (ability is ModifySpecialActionCost) results += entityId to ability
-                }
-            }
-        }
-        return results
     }
 }
