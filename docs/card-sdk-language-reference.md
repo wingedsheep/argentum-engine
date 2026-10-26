@@ -16012,7 +16012,7 @@ forbids `DynamicAmount.X` in card definitions.
   (CR 903.4f): an effect reads 0, and a `Costs.PayLife` priced from it is unpayable (War Room).
   Not `EntityNumericProperty.ColorCount` (one object's current colors) nor an `AggregateBattlefield`
   distinct-colors count (colors among permanents) — identity is fixed before the game (CR 903.4a).
-- `DevotionTo(colors, player = You)` — a player's **devotion** to one or more colors (CR 700.5):
+- `DevotionTo(colors, player = You, ofChosenColor = false)` — a player's **devotion** to one or more colors (CR 700.5):
   the number of mana symbols of those colors among the mana costs of permanents the player controls.
   One color = "devotion to red"; several = devotion to that combination ("white and black"), where a
   symbol matching more than one listed color is counted once. Every colored symbol contributes —
@@ -16023,6 +16023,13 @@ forbids `DynamicAmount.X` in card definitions.
   (Clive, Ifrit's Dominant). For the pips inside **one object's** cost ("a spell with one or more
   blue mana symbols in its mana cost") use `DynamicAmounts.coloredManaSymbolsOf(entity, …)` — same
   counting rule (`ManaCost.coloredSymbolCount`), different scope.
+  `ofChosenColor = true` adds the color chosen earlier in the same resolution ("your devotion to
+  **that color**"): the color a wrapping `ChooseColorThen` picked, or — inside
+  `AddManaOfChoiceEffect`, whose amount is evaluated with the color it is adding — the mana color
+  just chosen, at activation or through its own prompt. Facade `DynamicAmounts.devotionToChosenColor()`;
+  Nykthos, Shrine to Nyx and Nyx Lotus are `Effects.AddAnyColorMana(DynamicAmounts.devotionToChosenColor())`.
+  With no color in context it reads only `colors`, so the mana auto-payer (which sizes abilities before
+  any color is chosen) treats such an ability as adding nothing and leaves it for manual activation.
 - `UnlockedDoors(player = You, distinctNames = false)` — the number of unlocked doors among Rooms
   `player` controls (CR 709.5). Reads per-face door state, so a single Room with **both** doors
   unlocked counts as **two** — an entity-level `AggregateBattlefield`/`Count` cannot see this. With

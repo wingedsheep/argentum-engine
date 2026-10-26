@@ -458,6 +458,15 @@ object DynamicAmounts {
         DynamicAmount.DevotionTo(colors.toList())
 
     /**
+     * Your devotion to the color chosen earlier in this resolution ("your devotion to that color") —
+     * the amount of Nykthos, Shrine to Nyx's and Nyx Lotus's "Choose a color. Add an amount of mana
+     * of that color equal to your devotion to that color", fed to `Effects.AddManaOfChoice`. See
+     * [DynamicAmount.DevotionTo.ofChosenColor].
+     */
+    fun devotionToChosenColor(): DynamicAmount =
+        DynamicAmount.DevotionTo(emptyList(), ofChosenColor = true)
+
+    /**
      * The number of colors in your commanders' color identity (War Room) — 0 for a colorless
      * commander; a Partner / Background pair counts the union of their identities. As a cost it is
      * unpayable for a player with no commander. See [DynamicAmount.CommanderColorIdentityCount].

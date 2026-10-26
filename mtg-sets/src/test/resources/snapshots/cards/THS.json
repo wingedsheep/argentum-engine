@@ -1825,6 +1825,65 @@
     ]
 }
 
+// Nykthos, Shrine to Nyx
+{
+    "name": "Nykthos, Shrine to Nyx",
+    "manaCost": "",
+    "typeLine": "Legendary Land",
+    "oracleText": "{T}: Add {C}.\n{2}, {T}: Choose a color. Add an amount of mana of that color equal to your devotion to that color. (Your devotion to a color is the number of mana symbols of that color in the mana costs of permanents you control.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nykthos, Shrine to Nyx:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Nykthos, Shrine to Nyx:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "amount": {
+                        "type": "DevotionTo",
+                        "colors": [],
+                        "ofChosenColor": true
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{2}, {T}: Choose a color. Add an amount of mana of that color equal to your devotion to that color."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "RARE",
+        "artist": "Jung Park",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/3/834b27a0-dfd7-4f96-8cde-cacac4b24acc.jpg?1783939713"
+    },
+    "colorIdentityOverride": []
+}
+
 // Nylea, God of the Hunt
 {
     "name": "Nylea, God of the Hunt",

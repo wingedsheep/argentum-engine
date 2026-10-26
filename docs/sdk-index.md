@@ -643,7 +643,7 @@ Families:
 - `DynamicAmount.CraftedMaterialsTotalPower` — Total printed power of the cards exiled to craft the source permanent (CR 702.167c).
 - `DynamicAmount.CreaturesThatCrewedOrSaddledThisTurn` — Number of distinct creatures that crewed (CR 702.122) or saddled (CR 702.171) the source permanent this turn.
 - `DynamicAmount.CreaturesWithSubtypeDiedThisTurn(subtype: Subtype, player: Player)` — The number of creatures with subtype that died (were put into a graveyard from the battlefield) this turn while under player's control.
-- `DynamicAmount.DevotionTo(colors: List<Color>, player: Player)` — A player's **devotion** to one or more colors (CR 700.5): the number of mana symbols of colors among the mana costs of permanents that player controls.
+- `DynamicAmount.DevotionTo(colors: List<Color>, player: Player, ofChosenColor: Boolean)` — A player's **devotion** to one or more colors (CR 700.5): the number of mana symbols of colors among the mana costs of permanents that player controls.
 - `DynamicAmount.DistinctCardTypesInCollections(collections: List<String>)` — Number of distinct *card types* among the cards in the named pipeline collections (the union of every collection, de-duplicated by card type).
 - `DynamicAmount.DistinctColorsManaSpent(payment: ManaPayment)` — The number of distinct *colors* of mana spent to cast the source spell (0–5).
 - `DynamicAmount.DistinctEntitiesInCollections(collections: List<String>)` — Number of *distinct* entities across several named pipeline collections.

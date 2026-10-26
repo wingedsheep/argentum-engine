@@ -607,7 +607,9 @@ class DynamicAmountEvaluator(
                 val playerIds = resolveUnifiedPlayerIds(state, amount.player, context, projectedState).toSet()
                 if (playerIds.isEmpty()) return 0
                 val projection = resolveProjection(state, projectedState)
-                val wanted = amount.colors.toSet()
+                val wanted = if (amount.ofChosenColor) amount.colors.toSet() + listOfNotNull(context.chosenColor)
+                    else amount.colors.toSet()
+                if (wanted.isEmpty()) return 0
                 state.getBattlefield().sumOf { entityId ->
                     if (controllerOf(state, projection, entityId) !in playerIds) return@sumOf 0
                     val entity = state.getEntity(entityId) ?: return@sumOf 0

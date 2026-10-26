@@ -1133,17 +1133,27 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
      *
      * Used by "draw cards equal to your devotion to red" / "gain life equal to your devotion to
      * white" payoffs (Clive, Ifrit's Dominant).
+     *
+     * [ofChosenColor] adds the color chosen earlier in the same resolution (`EffectContext.chosenColor`
+     * — set by a wrapping `ChooseColorThenEffect`, or by [com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect]
+     * while it sizes the mana of the color just picked) to [colors]: "Choose a color. Add an amount of
+     * mana of that color equal to your devotion to that color" (Nykthos, Shrine to Nyx; Nyx Lotus) is
+     * `AddManaOfChoiceEffect(AnyColor, DevotionTo(emptyList(), ofChosenColor = true))`. With no color
+     * chosen in context it contributes nothing — so an auto-payer sizing the ability before a color
+     * exists reads only [colors]. Same reading of the context color as `ManaColorSet.ExceptChosenColor`.
      */
     @SerialName("DevotionTo")
     @Serializable
     data class DevotionTo(
         val colors: List<Color>,
-        val player: Player = Player.You
+        val player: Player = Player.You,
+        val ofChosenColor: Boolean = false,
     ) : DynamicAmount {
         override val description: String = buildString {
             append(if (player == Player.You) "your" else player.possessive)
             append(" devotion to ")
-            append(colors.joinToString(" and ") { it.displayName.lowercase() })
+            val names = colors.map { it.displayName.lowercase() } + listOfNotNull("that color".takeIf { ofChosenColor })
+            append(names.joinToString(" and "))
         }
     }
 

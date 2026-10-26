@@ -2302,6 +2302,43 @@
     ]
 }
 
+// Nyx Lotus
+{
+    "name": "Nyx Lotus",
+    "manaCost": "{4}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "Nyx Lotus enters tapped.\n{T}: Choose a color. Add an amount of mana of that color equal to your devotion to that color. (Your devotion to a color is the number of mana symbols of that color in the mana costs of permanents you control.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nyx Lotus:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "amount": {
+                        "type": "DevotionTo",
+                        "colors": [],
+                        "ofChosenColor": true
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Choose a color. Add an amount of mana of that color equal to your devotion to that color."
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "235",
+        "rarity": "RARE",
+        "artist": "Raoul Vitale",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5bd6353f-d119-40e6-895c-030a11a7a2fe.jpg?1783931514"
+    },
+    "colorIdentityOverride": []
+}
+
 // Nyxborn Brute
 {
     "name": "Nyxborn Brute",
