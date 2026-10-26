@@ -815,6 +815,52 @@
     "colorIdentityOverride": []
 }
 
+// Boreal Outrider
+{
+    "name": "Boreal Outrider",
+    "manaCost": "{2}{G}",
+    "typeLine": "Snow Creature — Elf Warrior",
+    "oracleText": "Whenever you cast a creature spell, if {S} of any of that spell's colors was spent to cast it, that creature enters with an additional +1/+1 counter on it. ({S} is mana from a snow source.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Boreal Outrider:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    },
+                    "requires": [
+                        "SpellPaidWithSnowManaOfItsColors"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "TriggeringEntity"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "rarity": "UNCOMMON",
+        "artist": "Alex Konstad",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/455ae615-20d7-4251-828d-72a3345d06f1.jpg?1783928219"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Breakneck Berserker
 {
     "name": "Breakneck Berserker",

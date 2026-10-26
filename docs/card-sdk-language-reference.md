@@ -8841,6 +8841,13 @@ matcher branch — `SpellCastEvent` does not grow a new field per axis.
   are snapshotted at production from the *projected* type line (an animated land's mana is creature
   mana), and restricted mana carries its source tag too. Read via `ManaSpentReader.cardTypeSpent`
   (stack spell, then `CastRecordComponent`).
+- `SpellCastPredicate.PaidWithSnowManaOfItsColors` — snow mana (mana from a snow source, CR 107.4h)
+  of at least one of the spell's own colors was spent on the cast, on any part of the cost. Boreal
+  Outrider: "Whenever you cast a creature spell, if {S} of any of that spell's colors was spent to
+  cast it, …" is `Triggers.you.casts(GameObjectFilter.Creature, requires = setOf(PaidWithSnowManaOfItsColors))`.
+  Snow colorless mana and snow mana of another color don't count, nor does a colorless spell. The
+  colors of the snow units spent are recorded on the spell (`SpentManaProvenance.snowColors`) from
+  tapped sources, the floating pool and restricted units alike; read via `ManaSpentReader.snowColorsSpent`.
 - `SpellCastPredicate.PaidWithManaFromSource` — mana produced by the trigger's own source permanent
   was spent on the cast ("Whenever you cast a … spell using mana produced by this" — Tecutlan, the
   Searing Rift / Barracks of the Thousand / The Myriad Pools). Matched against the source that made

@@ -2392,6 +2392,10 @@ class TriggerMatcher(
         is SpellCastPredicate.PaidWithManaFromSource -> sourceId in event.spentManaSourceIds
         is SpellCastPredicate.PaidWithManaFromCardType ->
             ManaSpentReader.cardTypeSpent(state, event.spellEntityId, predicate.cardType) >= predicate.atLeast
+        // Snow mana is mana from a snow source (CR 107.4h); the spell's colors are read wherever it is.
+        SpellCastPredicate.PaidWithSnowManaOfItsColors ->
+            ManaSpentReader.snowColorsSpent(state, event.spellEntityId)
+                .any { it in state.projectedState.colorSetOf(event.spellEntityId) }
         SpellCastPredicate.IsModal -> event.chosenModesCount > 0
         // "casts an instant or sorcery *card*": a cast copy of a card (CR 707.12) is a stack-style
         // copy — `CopyOfComponent` with no pre-copy snapshot — or a prepare-spell copy; neither

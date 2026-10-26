@@ -263,7 +263,12 @@ data class SpentManaProvenance(
     /** Producing-source card type → mana units carrying it (Inga and Esika's "mana from creatures"). */
     val byCardType: Map<com.wingedsheep.sdk.core.CardType, Int> = emptyMap(),
     /** Units produced by a snow source — the "{S} spent" of CR 107.4h. Exact, not proportional. */
-    val snow: Int = 0
+    val snow: Int = 0,
+    /**
+     * The colors of the snow units in [snow] (colorless snow mana adds none) — Boreal Outrider's
+     * "{S} of any of that spell's colors was spent".
+     */
+    val snowColors: Set<Color> = emptySet()
 ) {
     val isEmpty: Boolean get() = bySubtype.isEmpty() && sourceIds.isEmpty() && byCardType.isEmpty() && snow == 0
 
@@ -282,7 +287,8 @@ data class SpentManaProvenance(
             bySubtype = sumCounts(bySubtype, other.bySubtype),
             sourceIds = sourceIds + other.sourceIds,
             byCardType = sumCounts(byCardType, other.byCardType),
-            snow = snow + other.snow
+            snow = snow + other.snow,
+            snowColors = snowColors + other.snowColors
         )
     }
 
@@ -315,7 +321,19 @@ data class SpentManaProvenance(
                 if (idx >= 0) { remaining.removeAt(idx); false } else true
             }
             return ofUnits(consumed.mapNotNull { it.source })
+                .copy(snowColors = consumed.mapNotNullTo(mutableSetOf()) { e -> e.color.takeIf { e.source?.isSnow == true } })
         }
+
+        /**
+         * The unrestricted snow mana a payment took from the floating pool: the drop in each
+         * color's snow units between [beforeSnow] and [afterSnow], and the total drop
+         * ([beforeTotal] - [afterTotal], colorless snow included).
+         */
+        fun ofFloatingSnow(beforeSnow: Map<Color, Int>, beforeTotal: Int, afterSnow: Map<Color, Int>, afterTotal: Int) =
+            SpentManaProvenance(
+                snow = beforeTotal - afterTotal,
+                snowColors = beforeSnow.keys.filterTo(mutableSetOf()) { (beforeSnow[it] ?: 0) > (afterSnow[it] ?: 0) }
+            )
     }
 }
 

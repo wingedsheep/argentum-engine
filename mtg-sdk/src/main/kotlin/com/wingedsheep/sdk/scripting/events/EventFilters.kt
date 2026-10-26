@@ -322,6 +322,23 @@ sealed interface SpellCastPredicate {
     }
 
     /**
+     * Snow mana of at least one of the spell's own colors was spent on the cast — Boreal Outrider's
+     * "if {S} of any of that spell's colors was spent to cast it". Snow mana is mana from a snow
+     * source (CR 107.4h), so this asks whether some colored unit spent on the cast came from a snow
+     * source *and* shares a color with the spell; snow colorless mana never counts (colorless is not
+     * a color), nor does a colorless spell. Neighbours: [PaidWithManaFromCardType] and
+     * [PaidWithManaFromSubtype] read the source's types but not the mana's color, and
+     * `DynamicAmount.SnowManaSpent` counts snow mana of any color spent on the ability's own source,
+     * not on a triggering spell. Like them the payment never changes, so it reads the same when the
+     * trigger is put on the stack and when it resolves.
+     */
+    @SerialName("SpellPaidWithSnowManaOfItsColors")
+    @Serializable
+    data object PaidWithSnowManaOfItsColors : SpellCastPredicate {
+        override val description = "if {S} of any of that spell's colors was spent to cast it"
+    }
+
+    /**
      * Mana produced by the trigger's own source permanent was spent on the cast — "Whenever you cast
      * a … spell using mana produced by [this]" (Tecutlan, the Searing Rift / Barracks of the Thousand
      * / The Myriad Pools). Matched against the source that produced the mana, not a subtype, so it

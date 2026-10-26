@@ -2,6 +2,8 @@ package com.wingedsheep.engine.mechanics.mana
 
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.components.player.ManaSourceTag
+import com.wingedsheep.engine.state.components.player.RestrictedManaEntry
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.CardType
@@ -12,6 +14,9 @@ import com.wingedsheep.sdk.core.Supertype
 import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.effects.ManaRestriction
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.nulls.shouldBeNull
@@ -118,6 +123,39 @@ class SnowManaTest : FunSpec({
             val driver = driverWith("Test Snow Island")
             val solution = solverFor().solve(driver.state, driver.player1, ManaCost.parse("{1}")).shouldNotBeNull()
             solution.manaProduced.values.single().snow shouldBe true
+        }
+    }
+
+    context("snow colors spent") {
+        test("floating snow units record the colors they were spent as") {
+            val before = ManaPool(green = 1, blue = 1, colorless = 1)
+                .markSnow(Color.GREEN, 1).markSnow(Color.BLUE, 1).markSnow(null, 1)
+            val after = before.spend(Color.GREEN)!!.spendColorless(1)!!
+            val spent = SpentManaProvenance.ofFloatingSnow(before.snowMana, before.snowTotal, after.snowMana, after.snowTotal)
+            spent.snow shouldBe 2
+            withClue("colorless snow mana is not a color; the unspent snow {U} is not recorded") {
+                spent.snowColors shouldBe setOf(Color.GREEN)
+            }
+        }
+
+        test("restricted units spent from a snow source record their color, plain ones don't") {
+            val snowTag = ManaSourceTag(EntityId("snow"), isSnow = true)
+            val plainTag = ManaSourceTag(EntityId("plain"))
+            val anySpell = ManaRestriction.SpellsOnly
+            val before = listOf(
+                RestrictedManaEntry(Color.RED, anySpell, source = snowTag),
+                RestrictedManaEntry(Color.WHITE, anySpell, source = plainTag),
+                RestrictedManaEntry(Color.BLUE, anySpell, source = snowTag),
+            )
+            val spent = SpentManaProvenance.ofConsumedRestricted(before, before.drop(2))
+            spent.snow shouldBe 1
+            spent.snowColors shouldBe setOf(Color.RED)
+        }
+
+        test("summing two payments unions their snow colors") {
+            (SpentManaProvenance(snow = 1, snowColors = setOf(Color.RED)) +
+                SpentManaProvenance(snow = 1, snowColors = setOf(Color.GREEN))).snowColors shouldBe
+                setOf(Color.RED, Color.GREEN)
         }
     }
 

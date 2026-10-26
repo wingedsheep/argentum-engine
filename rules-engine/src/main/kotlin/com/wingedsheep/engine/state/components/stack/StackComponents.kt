@@ -216,6 +216,11 @@ data class SpellOnStackComponent(
      */
     val manaSpentSnow: Int = 0,
     /**
+     * The colors of the snow mana in [manaSpentSnow] (colorless snow mana adds none). Read via
+     * [ManaSpentReader] by `SpellCastPredicate.PaidWithSnowManaOfItsColors` (Boreal Outrider).
+     */
+    val manaSpentSnowColors: Set<Color> = emptySet(),
+    /**
      * Per-color mana spent on the `{X}` portion of this spell, for a color-restricted X
      * (e.g. Soul Burn's "spend only black and/or red mana on X"). Read at resolution via
      * `DynamicAmount.ManaSpentOnX`. Empty when X was unrestricted or the spell has no X.

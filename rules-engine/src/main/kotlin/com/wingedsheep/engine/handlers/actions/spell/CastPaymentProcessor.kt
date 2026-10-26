@@ -126,16 +126,17 @@ class CastPaymentProcessor(
         val byCardType = mutableMapOf<com.wingedsheep.sdk.core.CardType, Int>()
         val sourceIds = mutableSetOf<EntityId>()
         var snow = 0
+        val snowColors = mutableSetOf<Color>()
         for ((sourceId, production) in manaProduced) {
             val amount = production.amount + production.colorless
             if (amount <= 0) continue
             sourceIds.add(sourceId)
-            if (production.snow) snow += amount
+            if (production.snow) { snow += amount; production.color?.let(snowColors::add) }
             val tag = ManaProvenanceTracker.sourceTag(state, sourceId)
             for (subtype in tag.subtypes) bySubtype.merge(subtype, amount, Int::plus)
             for (cardType in tag.cardTypes) byCardType.merge(cardType, amount, Int::plus)
         }
-        return SpentManaProvenance(bySubtype, sourceIds, byCardType, snow)
+        return SpentManaProvenance(bySubtype, sourceIds, byCardType, snow, snowColors)
     }
 
     fun processPayment(
@@ -336,7 +337,7 @@ class CastPaymentProcessor(
         val (poolWithProvenanceUpdated, unrestrictedProvenance) = poolAfterPayment.consumeProvenance(maxOf(0, unrestrictedSpent))
         val spentProvenance = unrestrictedProvenance +
             SpentManaProvenance.ofConsumedRestricted(poolComponent.restrictedMana, poolAfterPayment.restrictedMana) +
-            SpentManaProvenance(snow = poolComponent.snowTotal - poolAfterPayment.snowTotal)
+            SpentManaProvenance.ofFloatingSnow(poolComponent.snowMana, poolComponent.snowTotal, poolAfterPayment.snowMana, poolAfterPayment.snowTotal)
 
         val newState = state.updateEntity(playerId) { container ->
             container.with(toComponent(poolWithProvenanceUpdated))
@@ -381,7 +382,7 @@ class CastPaymentProcessor(
         val (updated, ordinaryProvenance) = after.consumeProvenance(allocation.spent.total - restrictedSpent)
         val provenance = ordinaryProvenance +
             SpentManaProvenance.ofConsumedRestricted(before.restrictedMana, after.restrictedMana) +
-            SpentManaProvenance(snow = before.snowTotal - after.snowTotal)
+            SpentManaProvenance.ofFloatingSnow(before.snowMana, before.snowTotal, after.snowMana, after.snowTotal)
         val spent = allocation.spent
         return PaymentResult(
             state.updateEntity(playerId) { it.with(toComponent(updated)) },
@@ -497,7 +498,7 @@ class CastPaymentProcessor(
         val (poolWithProvenanceUpdated, poolProvenance) = poolAfterPayment.consumeProvenance(poolUnrestrictedSpent)
         var spentProvenance = poolProvenance +
             SpentManaProvenance.ofConsumedRestricted(poolComponent.restrictedMana, poolAfterPayment.restrictedMana) +
-            SpentManaProvenance(snow = poolComponent.snowTotal - poolAfterPayment.snowTotal)
+            SpentManaProvenance.ofFloatingSnow(poolComponent.snowMana, poolComponent.snowTotal, poolAfterPayment.snowMana, poolAfterPayment.snowTotal)
 
         currentState = currentState.updateEntity(playerId) { container ->
             container.with(toComponent(poolWithProvenanceUpdated))

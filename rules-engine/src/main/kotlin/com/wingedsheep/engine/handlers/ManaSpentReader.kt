@@ -121,6 +121,14 @@ object ManaSpentReader {
     }
 
     /**
+     * The colors of the snow mana spent to cast [entityId] while it is a spell on the stack (empty
+     * once it has left it, or if no colored snow mana was spent). Backs
+     * `SpellCastPredicate.PaidWithSnowManaOfItsColors`, a cast-trigger read.
+     */
+    fun snowColorsSpent(state: GameState, entityId: EntityId): Set<Color> =
+        state.getEntity(entityId)?.get<SpellOnStackComponent>()?.manaSpentSnowColors ?: emptySet()
+
+    /**
      * How many mana units produced by a source of [cardType] were spent to cast [entityId] — same
      * stack-then-cast-record read as [subtypeSpent]. Backs
      * `SpellCastPredicate.PaidWithManaFromCardType` (Inga and Esika's "mana from creatures").
