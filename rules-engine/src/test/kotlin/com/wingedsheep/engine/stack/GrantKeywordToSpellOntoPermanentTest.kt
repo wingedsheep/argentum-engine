@@ -22,13 +22,14 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 /**
- * `GrantKeywordToSpellEffect.permanentDuration` — "whenever you cast a creature spell, it gains
+ * `GrantKeywordToSpellEffect` on a permanent spell — "whenever you cast a creature spell, it gains
  * haste until end of turn" (Tyvar Kell's emblem). An effect that gives a permanent spell an ability
- * keeps applying to the permanent the spell becomes; the grant is frozen onto the stack object and
+ * keeps applying to the permanent the spell becomes (CR 400.7a), for the effect's duration; the
+ * grant is frozen onto the stack object and
  * handed over as it enters, so a spell that never resolves carries nothing on (CR 400.7: a card
  * that changes zones is a new object).
  */
-class GrantKeywordToSpellPermanentDurationTest : FunSpec({
+class GrantKeywordToSpellOntoPermanentTest : FunSpec({
 
     val projector = StateProjector()
 
@@ -38,17 +39,18 @@ class GrantKeywordToSpellPermanentDurationTest : FunSpec({
         oracleText = "Whenever you cast a creature spell, it gains haste."
         triggeredAbility {
             trigger = Triggers.you.casts(GameObjectFilter.Creature)
-            effect = Effects.GrantKeywordToSpell(Keyword.HASTE, EffectTarget.TriggeringEntity, duration)
+            effect = if (duration == null) Effects.GrantKeywordToSpell(Keyword.HASTE)
+            else Effects.GrantKeywordToSpell(Keyword.HASTE, EffectTarget.TriggeringEntity, duration)
         }
     }
 
     val endOfTurnBanner = banner("Test End-of-Turn Banner", Duration.EndOfTurn)
-    val permanentBanner = banner("Test Permanent Banner", Duration.Permanent)
-    val stackOnlyBanner = banner("Test Stack-Only Banner", null)
+    /** No printed end: "it gains haste" — the default duration. */
+    val permanentBanner = banner("Test Permanent Banner", null)
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(endOfTurnBanner, permanentBanner, stackOnlyBanner))
+        driver.registerCards(TestCards.all + listOf(endOfTurnBanner, permanentBanner))
         driver.initMirrorMatch(deck = Deck.of("Forest" to 40), startingLife = 20)
         return driver
     }
@@ -91,7 +93,7 @@ class GrantKeywordToSpellPermanentDurationTest : FunSpec({
         projector.project(driver.state).hasKeyword(courser, Keyword.HASTE) shouldBe false
     }
 
-    test("a permanent-duration grant outlasts the turn") {
+    test("a grant with no printed end stays on the permanent past the turn") {
         val driver = createDriver()
         val you = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -103,18 +105,6 @@ class GrantKeywordToSpellPermanentDurationTest : FunSpec({
         driver.passPriorityUntil(Step.UPKEEP)
         (driver.state.turnNumber > turn) shouldBe true
         projector.project(driver.state).hasKeyword(courser, Keyword.HASTE) shouldBe true
-    }
-
-    test("without a permanent duration the grant ends with the spell") {
-        val driver = createDriver()
-        val you = driver.activePlayer!!
-        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
-
-        val courser = castCourserUnder(driver, you, "Test Stack-Only Banner")
-        driver.state.getEntity(courser)?.get<SpellGrantedKeywordsComponent>()?.keywords shouldBe setOf("HASTE")
-        driver.bothPass()
-
-        projector.project(driver.state).hasKeyword(courser, Keyword.HASTE) shouldBe false
     }
 
     test("a countered spell leaves no grant behind for the card in its graveyard") {

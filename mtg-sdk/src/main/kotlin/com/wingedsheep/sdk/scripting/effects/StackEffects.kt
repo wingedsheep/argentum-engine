@@ -910,32 +910,31 @@ data class StormCopyEffect(
  * Used for cards like Spinerock Tyrant: "those spells gain wither" — the granted
  * keyword applies for damage/source checks while the spell resolves, then disappears with the spell.
  *
- * A permanent spell's grant can carry through to the permanent the spell becomes: Tyvar Kell's
- * emblem — "Whenever you cast an Elf spell, it gains haste until end of turn" — is
- * `permanentDuration = Duration.EndOfTurn`. The keyword is frozen onto the stack object and
+ * A permanent spell's grant carries through to the permanent the spell becomes (CR 400.7a), for
+ * [duration]: Tyvar Kell's emblem — "Whenever you cast an Elf spell, it gains haste until end of
+ * turn" — is `duration = Duration.EndOfTurn`. The keyword is frozen onto the stack object and
  * granted as the permanent enters, so a spell that's countered or otherwise never resolves carries
  * nothing into its next zone (CR 400.7).
  *
  * @property keyword The keyword to grant (enum name)
  * @property target The effect target referencing the spell on the stack
  *                  (typically [EffectTarget.TriggeringEntity] or [EffectTarget.ContextTarget])
- * @property permanentDuration How long the permanent this spell becomes keeps [keyword], or null
- *                  when the grant ends as the spell leaves the stack (instants and sorceries,
- *                  Judith's "that spell gains deathtouch and lifelink").
+ * @property duration How long the permanent a permanent spell becomes keeps [keyword]; an
+ *                  instant or sorcery has no permanent, so its grant simply ends with the spell.
  */
 @SerialName("GrantKeywordToSpell")
 @Serializable
 data class GrantKeywordToSpellEffect(
     val keyword: String,
     val target: EffectTarget = EffectTarget.TriggeringEntity,
-    val permanentDuration: Duration? = null,
+    val duration: Duration = Duration.Permanent,
 ) : Effect {
-    constructor(keyword: Keyword, target: EffectTarget = EffectTarget.TriggeringEntity, permanentDuration: Duration? = null) :
-        this(keyword.name, target, permanentDuration)
+    constructor(keyword: Keyword, target: EffectTarget = EffectTarget.TriggeringEntity, duration: Duration = Duration.Permanent) :
+        this(keyword.name, target, duration)
 
     override val description: String =
         com.wingedsheep.sdk.scripting.util.describeKeywordGrant(target.description, keyword) +
-            (permanentDuration?.description?.takeIf { it.isNotEmpty() }?.let { " $it" } ?: "")
+            (duration.description.takeIf { it.isNotEmpty() }?.let { " $it" } ?: "")
 }
 
 @SerialName("CopyTargetSpell")

@@ -24,7 +24,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * {2}{G}{G} Legendary Planeswalker — Tyvar, loyalty 3
  *
  * The −6 emblem's "it gains haste until end of turn" is a [Effects.GrantKeywordToSpell] with
- * `permanentDuration = Duration.EndOfTurn`: per the ruling, the change carries through to the
+ * `duration = Duration.EndOfTurn`: per the ruling (CR 400.7a), the change carries through to the
  * permanent the Elf spell becomes.
  */
 private const val EMBLEM_TEXT =
@@ -77,7 +77,7 @@ val TyvarKell = card("Tyvar Kell") {
                 effect = Effects.GrantKeywordToSpell(
                     Keyword.HASTE,
                     EffectTarget.TriggeringEntity,
-                    permanentDuration = Duration.EndOfTurn
+                    duration = Duration.EndOfTurn
                 ) then Effects.DrawCards(2)
                 description = EMBLEM_TEXT
             },

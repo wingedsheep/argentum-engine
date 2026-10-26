@@ -7004,7 +7004,7 @@
                                 {
                                     "type": "GrantKeywordToSpell",
                                     "keyword": "HASTE",
-                                    "permanentDuration": "EndOfTurn"
+                                    "duration": "EndOfTurn"
                                 },
                                 {
                                     "type": "DrawCards",

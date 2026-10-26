@@ -48,7 +48,7 @@ data class SpellOnStackComponent(
      * Keywords the permanent this spell becomes gains, each for its own duration: frozen at payment
      * time by a `ManaSpellRider.GrantsKeywordWhenSpent` (Hall of the Bandit Lord's "it gains haste",
      * Carnelian Orb of Dragonkind's "until end of turn"), or while on the stack by a
-     * `GrantKeywordToSpellEffect` with a `permanentDuration` (Tyvar Kell's emblem). Granted as the
+     * `GrantKeywordToSpellEffect` (Tyvar Kell's emblem; CR 400.7a). Granted as the
      * permanent enters; kept here on the stack object rather than as a floating effect so a spell
      * that never resolves carries nothing into its next zone (CR 400.7).
      */

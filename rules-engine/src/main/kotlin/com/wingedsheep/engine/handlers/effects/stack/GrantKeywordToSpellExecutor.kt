@@ -18,10 +18,10 @@ import kotlin.reflect.KClass
  * component when checking source keywords (e.g. wither, lifelink) so granted keywords
  * apply for the rest of the spell's time on the stack.
  *
- * With a `permanentDuration` the keyword is also frozen onto the spell's
+ * The keyword is also frozen, with the effect's duration, onto a spell's
  * [SpellOnStackComponent.entryKeywordGrants], which `PermanentEntry` turns into a grant on the
- * permanent the spell becomes ("it gains haste until end of turn" — Tyvar Kell's emblem). A spell
- * or ability that never becomes a permanent simply never reads it.
+ * permanent the spell becomes (CR 400.7a — "it gains haste until end of turn", Tyvar Kell's
+ * emblem). A spell that never becomes a permanent simply never reads it.
  */
 class GrantKeywordToSpellExecutor : EffectExecutor<GrantKeywordToSpellEffect> {
 
@@ -42,10 +42,12 @@ class GrantKeywordToSpellExecutor : EffectExecutor<GrantKeywordToSpellEffect> {
         val updated = SpellGrantedKeywordsComponent((existing?.keywords ?: emptySet()) + effect.keyword)
         val newState = state.updateEntity(targetId) { c ->
             val onStack = c.get<SpellOnStackComponent>()
-            val duration = effect.permanentDuration
-            if (onStack == null || duration == null) c.with(updated)
+            if (onStack == null) c.with(updated)
             else c.with(updated).with(
-                onStack.copy(entryKeywordGrants = onStack.entryKeywordGrants + EntryKeywordGrant(effect.keyword, duration, context.sourceId))
+                onStack.copy(
+                    entryKeywordGrants = onStack.entryKeywordGrants +
+                        EntryKeywordGrant(effect.keyword, effect.duration, context.sourceId)
+                )
             )
         }
 
