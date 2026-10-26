@@ -25,7 +25,7 @@ import io.kotest.matchers.shouldNotBe
  * characteristic) — "protection from God creatures" (Sigrid, God-Favored) and "protection from
  * legendary creatures" (Tsabo Tavoc). The source must have the subtype/supertype *and* the card
  * type, so a God that isn't a creature, or a legendary artifact, is not a quality the permanent is
- * protected from. Each leg of protection (CR 702.16b–e: targeting, blocking, damage) is pinned, plus
+ * protected from. Targeting (CR 702.16b), damage (702.16e) and blocking (702.16f) are pinned, plus
  * the un-narrowed "protection from Gods" for contrast.
  */
 class TypeQualityProtectionTest : FunSpec({

@@ -1,6 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.khm.cards
 
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -19,7 +20,9 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * the battlefield.
  *
  * "Protection from God creatures" is a subtype narrowed to a card type, so a God that isn't
- * currently a creature (a Theros God below its devotion) doesn't match.
+ * currently a creature (a Theros God below its devotion) doesn't match. The exile is
+ * [Effects.MoveUntilSourceLeaves]: the return is a one-shot duration, not a leaves trigger, so it
+ * happens even if Sigrid lost her abilities (CR 610.3).
  */
 val SigridGodFavored = card("Sigrid, God-Favored") {
     manaCost = "{1}{W}{W}"
@@ -37,12 +40,7 @@ val SigridGodFavored = card("Sigrid, God-Favored") {
     triggeredAbility {
         trigger = Triggers.self.enters()
         val creature = target(TargetFilter.AttackingOrBlockingCreature, optional = true)
-        effect = Effects.ExileUntilLeaves(creature)
-    }
-
-    triggeredAbility {
-        trigger = Triggers.self.leaves()
-        effect = Effects.ReturnLinkedExileUnderOwnersControl()
+        effect = Effects.MoveUntilSourceLeaves(creature, Zone.EXILE)
     }
 
     metadata {

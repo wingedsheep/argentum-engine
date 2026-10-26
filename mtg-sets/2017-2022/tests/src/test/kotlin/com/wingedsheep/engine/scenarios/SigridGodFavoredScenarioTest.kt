@@ -58,8 +58,7 @@ class SigridGodFavoredScenarioTest : FunSpec({
         driver.giveMana(attackingPlayer, Color.BLACK, 2)
         driver.castSpellWithTargets(attackingPlayer, doomBlade, listOf(ChosenTarget.Permanent(sigrid!!)))
             .outcome shouldBe Outcome.Done
-        driver.bothPass() // Doom Blade resolves
-        driver.bothPass() // leaves trigger resolves
+        driver.bothPass() // Doom Blade resolves; the exiled creature returns immediately
 
         driver.findPermanent(attackingPlayer, "Glory Seeker") shouldNotBe null
         driver.getExileCardNames(attackingPlayer) shouldNotContain "Glory Seeker"
