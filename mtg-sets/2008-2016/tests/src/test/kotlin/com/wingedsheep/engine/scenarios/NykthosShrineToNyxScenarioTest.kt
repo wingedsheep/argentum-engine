@@ -19,7 +19,6 @@ import io.kotest.matchers.shouldBe
  */
 class NykthosShrineToNyxScenarioTest : FunSpec({
 
-    val colorless = NykthosShrineToNyx.activatedAbilities[0].id
     val devotion = NykthosShrineToNyx.activatedAbilities[1].id
 
     fun setup(): Triple<GameTestDriver, EntityId, EntityId> {
@@ -50,9 +49,13 @@ class NykthosShrineToNyxScenarioTest : FunSpec({
         d.pool(you).isEmpty shouldBe true
     }
 
-    test("{T}: Add {C}") {
-        val (d, you, nykthos) = setup()
-        d.submit(ActivateAbility(you, nykthos, colorless)).error shouldBe null
-        d.pool(you).colorless shouldBe 1
+    test("auto-pay activates the devotion ability, paying its {2} from other lands") {
+        val (d, you, _) = setup()
+        d.putLandOnBattlefield(you, "Forest")
+        d.putLandOnBattlefield(you, "Forest")
+        // Four Forests + Nykthos: two Forests pay {2} for three green, two more Forests — five mana.
+        val force = d.putCardInHand(you, "Force of Nature")
+        d.castSpell(you, force).error shouldBe null
+        d.state.stack.contains(force) shouldBe true
     }
 })

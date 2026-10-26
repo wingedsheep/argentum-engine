@@ -16028,8 +16028,8 @@ forbids `DynamicAmount.X` in card definitions.
   `AddManaOfChoiceEffect`, whose amount is evaluated with the color it is adding — the mana color
   just chosen, at activation or through its own prompt. Facade `DynamicAmounts.devotionToChosenColor()`;
   Nykthos, Shrine to Nyx and Nyx Lotus are `Effects.AddAnyColorMana(DynamicAmounts.devotionToChosenColor())`.
-  With no color in context it reads only `colors`, so the mana auto-payer (which sizes abilities before
-  any color is chosen) treats such an ability as adding nothing and leaves it for manual activation.
+  With no color in context it reads only `colors`; the mana auto-payer sizes such an ability per color
+  (a color it would add nothing of isn't offered), so auto-pay and the AI use Nykthos like any land.
 - `UnlockedDoors(player = You, distinctNames = false)` — the number of unlocked doors among Rooms
   `player` controls (CR 709.5). Reads per-face door state, so a single Room with **both** doors
   unlocked counts as **two** — an entity-level `AggregateBattlefield`/`Count` cannot see this. With

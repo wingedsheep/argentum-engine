@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 
 /**
  * `DynamicAmount.DevotionTo(ofChosenColor = true)` — "your devotion to that color" for the color
@@ -108,6 +109,24 @@ class DevotionToChosenColorTest : FunSpec({
         d.bothPass()
         d.submitDecision(you, ColorChosenResponse(d.pendingDecision!!.id, Color.WHITE)).error shouldBe null
         d.getLifeTotal(you) shouldBe 23
+    }
+
+    test("auto-pay taps it for the color with devotion, sized by that devotion") {
+        val (d, you) = setup()
+        d.putPermanentOnBattlefield(you, "Devotion Prism")
+        d.putLandOnBattlefield(you, "Forest")
+        d.putLandOnBattlefield(you, "Forest")
+        val force = d.putCardInHand(you, "Force of Nature") // {3}{G}{G}: 3 green from the Prism + 2 Forests
+        d.castSpell(you, force).error shouldBe null
+        d.state.stack.contains(force) shouldBe true
+    }
+
+    test("auto-pay never counts it for more than devotion to the color it makes") {
+        val (d, you) = setup()
+        d.putPermanentOnBattlefield(you, "Devotion Prism")
+        d.putLandOnBattlefield(you, "Forest")
+        val force = d.putCardInHand(you, "Force of Nature") // only 3 + 1 available
+        d.castSpell(you, force).error shouldNotBe null
     }
 
     test("with no color chosen in context it reads only its fixed colors") {

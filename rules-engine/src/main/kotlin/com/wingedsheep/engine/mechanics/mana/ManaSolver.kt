@@ -1815,9 +1815,21 @@ class ManaSolver private constructor(
                             cardRegistry = cardRegistry,
                             predicateEvaluator = predicateEvaluator
                         )
-                        combinedColors.addAll(resolved)
-                        effectColors.addAll(resolved)
-                        if (resolved.isNotEmpty()) {
+                        // An amount sized by the color picked ("devotion to that color" — Nykthos)
+                        // yields per color; a color that would add nothing isn't producible.
+                        val perColor = if (readsChosenColor(effect.amount)) {
+                            resolved.associateWith { evaluateManaAmount(effect.amount, state, entityId, playerId, it) }
+                                .filterValues { it > 0 }
+                        } else null
+                        val producible = perColor?.keys ?: resolved
+                        combinedColors.addAll(producible)
+                        effectColors.addAll(producible)
+                        if (perColor != null) {
+                            for ((color, manaAmount) in perColor) {
+                                maxManaAmount = maxOf(maxManaAmount, manaAmount)
+                                recordAmount(listOf(color), colorless = false, amount = manaAmount)
+                            }
+                        } else if (resolved.isNotEmpty()) {
                             val manaAmount = evaluateManaAmount(effect.amount, state, entityId, playerId)
                             maxManaAmount = maxOf(maxManaAmount, manaAmount)
                             recordAmount(resolved, colorless = false, amount = manaAmount)
@@ -2194,10 +2206,22 @@ class ManaSolver private constructor(
     ): Int? = when (effect) {
         is AddManaEffect -> evaluateManaAmount(effect.amount, state, sourceId, playerId)
         is AddColorlessManaEffect -> evaluateManaAmount(effect.amount, state, sourceId, playerId)
-        is AddManaOfChoiceEffect -> evaluateManaAmount(effect.amount, state, sourceId, playerId)
+        is AddManaOfChoiceEffect -> if (readsChosenColor(effect.amount)) {
+            Color.entries.maxOf { evaluateManaAmount(effect.amount, state, sourceId, playerId, it) }
+        } else {
+            evaluateManaAmount(effect.amount, state, sourceId, playerId)
+        }
         is AddDynamicManaEffect -> evaluateManaAmount(effect.amountSource, state, sourceId, playerId)
         else -> null
     }
+
+    /**
+     * True when [amount] depends on the color the mana ability picks — `AddManaOfChoiceEffect`
+     * evaluates its amount with that color bound (Nykthos, Shrine to Nyx's "devotion to that
+     * color"), so the solver must size such an ability per color rather than once.
+     */
+    private fun readsChosenColor(amount: DynamicAmount): Boolean =
+        amount is DynamicAmount.DevotionTo && amount.ofChosenColor
 
     /**
      * True when activating this mana ability would add no mana whatsoever at this moment.
@@ -2234,14 +2258,16 @@ class ManaSolver private constructor(
         amount: DynamicAmount,
         state: GameState,
         sourceId: EntityId,
-        playerId: EntityId
+        playerId: EntityId,
+        chosenColor: Color? = null,
     ): Int {
         if (amount is DynamicAmount.Fixed) return amount.amount
         val context = EffectContext(
             sourceId = sourceId,
             controllerId = playerId,
             targets = emptyList(),
-            xValue = null
+            xValue = null,
+            chosenColor = chosenColor,
         )
         return maxOf(0, dynamicAmountEvaluator.evaluate(state, amount, context))
     }

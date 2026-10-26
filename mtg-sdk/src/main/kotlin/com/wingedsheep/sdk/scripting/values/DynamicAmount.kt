@@ -1139,8 +1139,7 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
      * while it sizes the mana of the color just picked) to [colors]: "Choose a color. Add an amount of
      * mana of that color equal to your devotion to that color" (Nykthos, Shrine to Nyx; Nyx Lotus) is
      * `AddManaOfChoiceEffect(AnyColor, DevotionTo(emptyList(), ofChosenColor = true))`. With no color
-     * chosen in context it contributes nothing — so an auto-payer sizing the ability before a color
-     * exists reads only [colors]. Same reading of the context color as `ManaColorSet.ExceptChosenColor`.
+     * chosen in context it contributes nothing; the mana auto-payer sizes such an ability once per color. Same reading of the context color as `ManaColorSet.ExceptChosenColor`.
      */
     @SerialName("DevotionTo")
     @Serializable
