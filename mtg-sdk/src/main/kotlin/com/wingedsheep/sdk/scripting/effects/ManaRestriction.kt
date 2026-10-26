@@ -176,7 +176,7 @@ sealed interface ManaRestriction {
     /**
      * "Spend this mana only to cast a [creature] spell of the chosen type" — the *unbound* form of
      * [SubtypeSpellsOrAbilitiesOnly], for a card that chose a creature type as it entered (CR 614.12
-     * "as enters" choice) and makes mana restricted to it: Cavern of Souls, Unclaimed Territory, The
+     * "as enters" choice) and makes mana restricted to it: Cavern of Souls, Secluded Courtyard, The
      * Ringhart Crest. The engine binds it the moment the mana is made, replacing it — also inside an
      * [AnyOf] / [AllOf] — with `SubtypeSpellsOrAbilitiesOnly(<the producing source's chosen type>,
      * creatureOnly)`, so the pool only ever holds the self-contained bound form. Left unbound (the

@@ -564,7 +564,7 @@ Every subtype hand-written cards use that Assay never produces. Examples are up 
 | `ReturnSpellOrPermanentToOwnersHand` | 4 | Fatehold Charm; Press the Enemy; Divide by Zero; Jeskai Revelation |
 | `ReturnSpellToOwnersHand` | 4 | Bilbo's Gambit; Reprieve; Hullbreaker Horror; Spellscorn Coven |
 | `UnlockDoor` | 4 | Ghostly Dancers; Ghostly Keybearer; Keys to the House; Marina Vendrell |
-| `AddAnyColorManaSpendOnChosenType` | 3 | Cavern of Souls; Eclipsed Realms; Secluded Courtyard |
+| ~~`AddAnyColorManaSpendOnChosenType`~~ (deleted — now `AddManaOfChoice` + `ManaRestriction.OfChosenType`) | 3 | Cavern of Souls; Eclipsed Realms; Secluded Courtyard |
 | `AddMainPhase` | 3 | Aggravated Assault; All-Out Assault; Relentless Assault |
 | `AddOneManaOfEachColorAmong` | 3 | Tarnation Vista; Bloom Tender; Sunbird Standard |
 | `BecomeSaddled` | 3 | Alacrian Armory; Guidelight Matrix; Kolodin, Triumph Caster |

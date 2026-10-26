@@ -9,7 +9,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 /**
- * Tests for [ManaRestriction.LegendarySpellsOnly()] (Great Hall of the Citadel, Delighted Halfling):
+ * Tests for [ManaRestriction.LegendarySpellsOnly] (Great Hall of the Citadel, Delighted Halfling):
  * "Spend this mana only to cast legendary spells." Mirrors the card-type restriction tests.
  */
 class ManaSpendRestrictionLegendaryTest : FunSpec({
