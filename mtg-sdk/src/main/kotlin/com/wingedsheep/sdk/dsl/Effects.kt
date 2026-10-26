@@ -1319,9 +1319,16 @@ object Effects {
      *
      * @param tapped return the back-face permanent tapped ("...return it to the battlefield
      *   **tapped** and transformed", Ojer Axonil/Kaslem/Pakpatiq/Taq // Temples, Aclazotz).
+     * @param underYourControl the permanent enters under the ability's controller rather than its
+     *   owner ("...return this card to the battlefield transformed **under your control**", Journey
+     *   to Eternity) — the same axis as [PutOntoBattlefieldFromGraveyard]'s.
      */
-    fun ReturnSelfFromGraveyardTransformed(tapped: Boolean = false): Effect =
-        ReturnSelfFromZoneTransformedEffect(Zone.GRAVEYARD, tapped = tapped)
+    fun ReturnSelfFromGraveyardTransformed(tapped: Boolean = false, underYourControl: Boolean = false): Effect =
+        ReturnSelfFromZoneTransformedEffect(
+            Zone.GRAVEYARD,
+            tapped = tapped,
+            controllerOverride = if (underYourControl) EffectTarget.Controller else null
+        )
 
     /**
      * Exile a double-faced permanent, then return it to the battlefield as a new object on the

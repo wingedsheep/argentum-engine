@@ -1038,7 +1038,7 @@ Families:
 - `ReturnOneFromLinkedExileEffect` — Return one card from the source's linked exile (LinkedExileComponent) to the battlefield.
 - `ReturnSameNamedFromGraveyardEffect(target: EffectTarget)` — Return the target graveyard card and every other card with the same name in the controller's graveyard to the battlefield tapped under the controller's control.
 - `ReturnSelfFromExileTransformedEffect` — Return the source of a Craft activated ability (CR 702.167a) from exile to the battlefield transformed under its owner's control.
-- `ReturnSelfFromZoneTransformedEffect(fromZone: Zone, tapped: Boolean)` — Return the source **card** from a non-battlefield zone to the battlefield with its back face up — "Return this card from your graveyard to the battlefield transformed" (Garland, Knight of Cornelia).
+- `ReturnSelfFromZoneTransformedEffect(fromZone: Zone, tapped: Boolean, controllerOverride: EffectTarget?)` — Return the source **card** from a non-battlefield zone to the battlefield with its back face up — "Return this card from your graveyard to the battlefield transformed" (Garland, Knight of Cornelia).
 - `ReturnSelfToBattlefieldAttachedEffect(target: EffectTarget, transformed: Boolean, controllerOverride: EffectTarget?)` — Returns the source permanent (typically an Aura) from its current zone to the battlefield attached to the specified target.
 - `ReturnSpellOrPermanentToOwnersHandEffect(target: EffectTarget)` — Return a single target — which may be a **spell on the stack** or a **permanent on the battlefield** — to its owner's hand.
 - `ReturnSpellToOwnersHandEffect` — Remove a target spell from the stack and put it into its owner's hand.

@@ -24,7 +24,8 @@ import kotlin.reflect.KClass
  * The face flip + zone move is the shared [returnDfcFace] helper (it flips-then-moves from
  * whatever zone the entity is currently in), always to the back face: a card in a
  * non-battlefield zone is front-face-up by definition, so "transformed" can only mean the
- * back face.
+ * back face. It enters under its owner's control unless
+ * [ReturnSelfFromZoneTransformedEffect.controllerOverride] names another player.
  */
 class ReturnSelfFromZoneTransformedExecutor(
     private val zones: ZoneTransitionService,
@@ -58,9 +59,13 @@ class ReturnSelfFromZoneTransformedExecutor(
         val workingState = ensureDoubleFacedComponent(state, cardRegistry, sourceId)
             ?: return EffectResult.success(state)
 
+        // "...under your control" (Journey to Eternity): the ability's controller, not the owner.
+        val controllerId = effect.controllerOverride?.let { context.resolveTarget(it, state) }
+
         val transition = returnDfcFace(
             zones,
-            workingState, cardRegistry, sourceId, DoubleFacedComponent.Face.BACK, tapped = effect.tapped
+            workingState, cardRegistry, sourceId, DoubleFacedComponent.Face.BACK,
+            tapped = effect.tapped, controllerId = controllerId
         )
         return EffectResult.success(transition.state, transition.events)
     }

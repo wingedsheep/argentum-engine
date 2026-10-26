@@ -168,14 +168,22 @@ data object ReturnSelfFromExileTransformedEffect : Effect {
  * Because the graveyard→battlefield move preserves the entity id, a card that enters with
  * counters ("...with three time counters on it", Ojer Pakpatiq) composes this effect with a
  * following `AddCounters(..., EffectTarget.Self)` — no dedicated counter parameter is needed.
+ *
+ * [controllerOverride] names the player the back-face permanent enters under, the same axis as
+ * [MoveToZoneEffect.controllerOverride]: null is the owner (the god cycle, Garland), and
+ * [EffectTarget.Controller] is "return this card to the battlefield transformed **under your
+ * control**" (Journey to Eternity), which differs from the owner when the ability's controller
+ * doesn't own the card.
  */
 @SerialName("ReturnSelfFromZoneTransformed")
 @Serializable
 data class ReturnSelfFromZoneTransformedEffect(
     val fromZone: Zone = Zone.GRAVEYARD,
     val tapped: Boolean = false,
+    val controllerOverride: EffectTarget? = null,
 ) : Effect {
     override val description: String =
         "Return this card from your ${fromZone.noun} to the battlefield transformed" +
-            if (tapped) " tapped" else ""
+            (if (tapped) " tapped" else "") +
+            (if (controllerOverride != null) " under your control" else "")
 }

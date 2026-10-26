@@ -2117,7 +2117,7 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   the old effect. No additional card-authoring flag is needed. It can't be transformed (CR 712.4c) and never
   matches `transformed()` (CR 701.27g). The upkeep / end-step / beginning-of-combat meld triggers keep their
   intervening "if" as the trigger condition; the ownership half is checked by the effect as it resolves.
-- `ReturnSelfFromGraveyardTransformed(tapped = false)` — "Return this card from your graveyard to the
+- `ReturnSelfFromGraveyardTransformed(tapped = false, underYourControl = false)` — "Return this card from your graveyard to the
   battlefield transformed" (Garland, Knight of Cornelia). Returns the *source card* from the graveyard
   to the battlefield with its back face up; pair with `activateFromZone = Zone.GRAVEYARD` on the owning
   activated ability, **or wire it to `Triggers.self.dies()`** for the "when this dies, return it transformed"
@@ -2129,8 +2129,10 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   transformed"). Because the graveyard→battlefield move preserves the entity id, "...with N counters
   on it" (Ojer Pakpatiq's three time counters) composes as `Composite(ReturnSelfFromGraveyardTransformed(
   tapped = true), AddCounters(counter, n, EffectTarget.Self))` — the following `Self` still resolves to
-  the returned permanent. Raw type `ReturnSelfFromZoneTransformedEffect(fromZone, tapped)` generalizes
-  to other source zones.
+  the returned permanent. `underYourControl = true` is "...return this card to the battlefield transformed
+  **under your control**" (Journey to Eternity): the back face enters under the ability's controller rather
+  than the card's owner (the same `controllerOverride` axis as `PutOntoBattlefieldFromGraveyard`). Raw type
+  `ReturnSelfFromZoneTransformedEffect(fromZone, tapped, controllerOverride)` generalizes to other source zones.
 - `ReturnCreaturesPutInGraveyardThisTurn(player)` — Patriarch's Bidding shape.
 - `ReturnSameNamedFromGraveyard(target = ContextTarget(0))` — return the target graveyard card and
   **every other card with the same name** in the controller's graveyard to the battlefield **tapped**
