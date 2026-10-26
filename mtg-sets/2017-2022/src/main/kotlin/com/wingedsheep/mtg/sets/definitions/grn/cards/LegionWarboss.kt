@@ -47,7 +47,7 @@ val LegionWarboss = card("Legion Warboss") {
             imageUri = "https://cards.scryfall.io/normal/front/b/2/b27dc0bd-ba46-4a5c-9559-7c11eb4ec37b.jpg?1783934062",
         ) then
             Effects.GrantKeyword(Keyword.HASTE, EffectTarget.PipelineTarget(CREATED_TOKENS, 0)) then
-            Effects.MarkMustAttackThisTurn(EffectTarget.PipelineTarget(CREATED_TOKENS, 0))
+            Effects.MarkMustAttackNextCombat(EffectTarget.PipelineTarget(CREATED_TOKENS, 0))
     }
 
     metadata {

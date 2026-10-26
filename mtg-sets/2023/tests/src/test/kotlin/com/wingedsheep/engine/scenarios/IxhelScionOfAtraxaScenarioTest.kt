@@ -47,8 +47,8 @@ class IxhelScionOfAtraxaScenarioTest : FunSpec({
         val safeTop = driver.putCardOnTopOfLibrary(belowThreshold, "Grizzly Bears")
 
         driver.passPriorityUntil(Step.END)
-        repeat(20) {
-            if (driver.state.stack.isEmpty() && driver.pendingDecision == null) return@repeat
+        var steps = 0
+        while ((driver.state.stack.isNotEmpty() || driver.pendingDecision != null) && steps++ < 20) {
             if (driver.pendingDecision != null) driver.autoResolveDecision()
             else driver.passPriority(driver.state.priorityPlayerId!!)
         }
