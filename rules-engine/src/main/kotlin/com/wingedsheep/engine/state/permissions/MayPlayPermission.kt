@@ -178,6 +178,7 @@ data class MayPlayPermission(
      * Adventure's own exile — "may cast the creature later from exile" (CR 715.3d) — which grants
      * the creature half alone. Read through [authorizesFace] / [authorizesModalBack].
      */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val primaryFaceOnly: Boolean = false,
     /**
      * When set, this permission authorizes casting only spells of this **color** — the color is
