@@ -316,19 +316,28 @@ data class AddManaOfChoiceEffect(
  *
  * @property amountSource What determines the amount of mana to add
  * @property allowedColors The colors of mana that can be produced (player chooses distribution)
+ * @property expiry When the produced mana leaves the pool — [ManaExpiry.KEPT_UNTIL_END_OF_TURN] for
+ *   "Until end of turn, you don't lose this mana as steps and phases end" (Klauth, Unrivaled Ancient).
+ *   Mirrors [AddManaEffect.expiry].
  */
 @SerialName("AddDynamicMana")
 @Serializable
 data class AddDynamicManaEffect(
     val amountSource: DynamicAmount,
     val allowedColors: Set<Color>,
-    val restriction: ManaRestriction? = null
+    val restriction: ManaRestriction? = null,
+    val expiry: ManaExpiry = ManaExpiry.END_OF_TURN
 ) : Effect {
     override val description: String = buildString {
         append("Add X mana in any combination of ")
         append(allowedColors.joinToString(" and/or ") { "{${it.symbol}}" })
         append(", where X is ${amountSource.description}")
         if (restriction != null) append(". ${restriction.description}")
+        when (expiry) {
+            ManaExpiry.END_OF_COMBAT -> append(". Until end of combat, you don't lose this mana as steps and phases end")
+            ManaExpiry.KEPT_UNTIL_END_OF_TURN -> append(". Until end of turn, you don't lose this mana as steps and phases end")
+            ManaExpiry.END_OF_TURN -> Unit
+        }
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {

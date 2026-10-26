@@ -11,6 +11,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
+import com.wingedsheep.sdk.scripting.effects.ManaExpiry
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import kotlin.reflect.KClass
 
@@ -49,7 +50,7 @@ class AddDynamicManaExecutor(
         // Single color — just add it all
         if (colors.size <= 1) {
             val color = colors.firstOrNull() ?: return EffectResult.success(state)
-            val newState = addMana(state, context.controllerId, mapOf(color to amount), restriction)
+            val newState = addMana(state, context.controllerId, mapOf(color to amount), restriction, effect.expiry)
             return EffectResult.success(newState)
         }
 
@@ -67,6 +68,7 @@ class AddDynamicManaExecutor(
                 remainingPips = amount,
                 allowedColors = effect.allowedColors,
                 restriction = restriction,
+                expiry = effect.expiry,
                 decisionHandler = decisionHandler
             )
         }
@@ -83,7 +85,8 @@ class AddDynamicManaExecutor(
             totalAmount = amount,
             firstColor = firstColor,
             secondColor = secondColor,
-            restriction = restriction
+            restriction = restriction,
+            expiry = effect.expiry
         )
 
         val decisionResult = decisionHandler.createNumberDecision(
@@ -119,6 +122,7 @@ class AddDynamicManaExecutor(
             remainingPips: Int,
             allowedColors: Set<Color>,
             restriction: ManaRestriction?,
+            expiry: ManaExpiry = ManaExpiry.END_OF_TURN,
             decisionHandler: DecisionHandler = DecisionHandler()
         ): EffectResult {
             val continuation = AddManaPipsContinuation(
@@ -127,7 +131,8 @@ class AddDynamicManaExecutor(
                 sourceName = sourceName,
                 remainingPips = remainingPips,
                 allowedColors = allowedColors,
-                restriction = restriction
+                restriction = restriction,
+                expiry = expiry
             )
 
             val decisionResult = decisionHandler.createColorDecision(
@@ -147,15 +152,27 @@ class AddDynamicManaExecutor(
             )
         }
 
-        fun addMana(state: GameState, playerId: com.wingedsheep.sdk.model.EntityId, amounts: Map<Color, Int>, restriction: ManaRestriction? = null): GameState {
+        /**
+         * Add [amounts] to [playerId]'s pool. Mana with a [restriction] or a non-default [expiry] is
+         * stored as restricted entries (under [ManaRestriction.AnySpend] when only the expiry is
+         * set), so the pool can keep or discard it on its own schedule — mirrors AddManaExecutor.
+         */
+        fun addMana(
+            state: GameState,
+            playerId: com.wingedsheep.sdk.model.EntityId,
+            amounts: Map<Color, Int>,
+            restriction: ManaRestriction? = null,
+            expiry: ManaExpiry = ManaExpiry.END_OF_TURN
+        ): GameState {
             return state.updateEntity(playerId) { container ->
                 var manaPool = container.get<ManaPoolComponent>() ?: ManaPoolComponent()
                 for ((color, amount) in amounts) {
                     if (amount > 0) {
-                        manaPool = if (restriction != null) {
-                            manaPool.addRestricted(color, amount, restriction)
-                        } else {
-                            manaPool.add(color, amount)
+                        manaPool = when {
+                            restriction != null -> manaPool.addRestricted(color, amount, restriction, expiry = expiry)
+                            expiry != ManaExpiry.END_OF_TURN ->
+                                manaPool.addRestricted(color, amount, ManaRestriction.AnySpend, expiry = expiry)
+                            else -> manaPool.add(color, amount)
                         }
                     }
                 }

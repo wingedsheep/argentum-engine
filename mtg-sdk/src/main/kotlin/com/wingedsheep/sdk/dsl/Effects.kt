@@ -3144,11 +3144,16 @@ object Effects {
         restriction: ManaRestriction? = null
     ): Effect = AddDynamicManaEffect(DynamicAmount.Fixed(amount), allowedColors, restriction)
 
+    /**
+     * [expiry] covers "Until end of turn, you don't lose this mana as steps and phases end"
+     * ([com.wingedsheep.sdk.scripting.effects.ManaExpiry.KEPT_UNTIL_END_OF_TURN] — Klauth, Unrivaled Ancient).
+     */
     fun AddManaInAnyCombination(
         amount: DynamicAmount,
         allowedColors: Set<Color> = Color.entries.toSet(),
-        restriction: ManaRestriction? = null
-    ): Effect = AddDynamicManaEffect(amount, allowedColors, restriction)
+        restriction: ManaRestriction? = null,
+        expiry: com.wingedsheep.sdk.scripting.effects.ManaExpiry = com.wingedsheep.sdk.scripting.effects.ManaExpiry.END_OF_TURN
+    ): Effect = AddDynamicManaEffect(amount, allowedColors, restriction, expiry)
 
     /**
      * Add one mana of the color chosen when this permanent entered the battlefield.

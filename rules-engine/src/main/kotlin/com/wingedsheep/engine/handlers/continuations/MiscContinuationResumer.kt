@@ -1172,7 +1172,8 @@ class MiscContinuationResumer(
         val newState = com.wingedsheep.engine.handlers.effects.mana.AddDynamicManaExecutor.addMana(
             state, continuation.playerId,
             mapOf(continuation.firstColor to firstAmount, continuation.secondColor to secondAmount),
-            continuation.restriction
+            continuation.restriction,
+            continuation.expiry
         ).let { ManaProvenanceTracker.markSnowProduction(state, it, continuation.sourceId, continuation.playerId) }
 
         return checkForMore(newState, emptyList())
@@ -1198,7 +1199,8 @@ class MiscContinuationResumer(
         val newState = com.wingedsheep.engine.handlers.effects.mana.AddDynamicManaExecutor.addMana(
             state, continuation.playerId,
             mapOf(color to 1),
-            continuation.restriction
+            continuation.restriction,
+            continuation.expiry
         ).let { ManaProvenanceTracker.markSnowProduction(state, it, continuation.sourceId, continuation.playerId) }
 
         val event = ManaAddedEvent(
@@ -1227,7 +1229,8 @@ class MiscContinuationResumer(
             sourceName = continuation.sourceName,
             remainingPips = remaining,
             allowedColors = continuation.allowedColors,
-            restriction = continuation.restriction
+            restriction = continuation.restriction,
+            expiry = continuation.expiry
         )
 
         return ExecutionResult.propagatePause(

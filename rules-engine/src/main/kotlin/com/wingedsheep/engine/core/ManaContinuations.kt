@@ -510,6 +510,7 @@ data class AddDynamicManaContinuation(
     val firstColor: Color,
     val secondColor: Color,
     val restriction: ManaRestriction? = null,
+    val expiry: com.wingedsheep.sdk.scripting.effects.ManaExpiry = com.wingedsheep.sdk.scripting.effects.ManaExpiry.END_OF_TURN,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : AnswerContinuation
 
@@ -523,6 +524,7 @@ data class AddDynamicManaContinuation(
  *   (decrements by 1 per resume; the loop ends when this reaches 0)
  * @property allowedColors The palette the player chooses from for each pip
  * @property restriction Optional restriction stamped onto every pip added to the pool
+ * @property expiry When every pip added to the pool expires
  */
 @Serializable
 data class AddManaPipsContinuation(
@@ -532,6 +534,7 @@ data class AddManaPipsContinuation(
     val remainingPips: Int,
     val allowedColors: Set<Color>,
     val restriction: ManaRestriction? = null,
+    val expiry: com.wingedsheep.sdk.scripting.effects.ManaExpiry = com.wingedsheep.sdk.scripting.effects.ManaExpiry.END_OF_TURN,
     val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : AnswerContinuation
 

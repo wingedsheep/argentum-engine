@@ -66,6 +66,59 @@
     ]
 }
 
+// Klauth, Unrivaled Ancient
+{
+    "name": "Klauth, Unrivaled Ancient",
+    "manaCost": "{5}{R}{G}",
+    "typeLine": "Legendary Creature — Dragon",
+    "oracleText": "Flying, haste\nWhenever Klauth attacks, add X mana in any combination of colors, where X is the total power of attacking creatures. Spend this mana only to cast spells. Until end of turn, you don't lose this mana as steps and phases end.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Klauth, Unrivaled Ancient:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "AddDynamicMana",
+                    "amountSource": {
+                        "type": "AggregateBattlefield",
+                        "player": "Each",
+                        "filter": "creature attacking",
+                        "aggregation": "SUM",
+                        "property": "POWER"
+                    },
+                    "allowedColors": [
+                        "WHITE",
+                        "BLUE",
+                        "BLACK",
+                        "RED",
+                        "GREEN"
+                    ],
+                    "restriction": "SpellsOnly",
+                    "expiry": "KEPT_UNTIL_END_OF_TURN"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "rarity": "MYTHIC",
+        "artist": "Andrew Mar",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f5cf828-17b2-4105-9a9a-ee0ab720c2ee.jpg?1783926239"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Mantle of the Ancients
 {
     "name": "Mantle of the Ancients",
