@@ -2050,8 +2050,15 @@ class TriggerMatcher(
         // (Valkmira, Protector's Shield — `Player.You`). Every other becomes-target wording in the
         // pool is about objects (null), so a targeted player must not wake them.
         if (event.targetIsPlayer) {
-            val players = trigger.playerTargets ?: return false
-            if (!matchesPlayer(state, players, event.targetEntityId, controllerId, sourceId)) return false
+            val matches = when (val players = trigger.playerTargets) {
+                null -> false
+                Player.Any, Player.Each -> true
+                Player.You, Player.EachOpponent ->
+                    matchesPlayer(state, players, event.targetEntityId, controllerId, sourceId)
+                // Fail closed: `matchesPlayer`'s permissive fallback would fire on every player.
+                else -> false
+            }
+            if (!matches) return false
         }
 
         // "Becomes the target of a spell" (King of the Oathbreakers) ignores abilities;

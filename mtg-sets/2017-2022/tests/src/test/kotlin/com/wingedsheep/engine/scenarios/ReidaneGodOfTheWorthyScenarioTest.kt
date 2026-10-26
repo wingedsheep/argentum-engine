@@ -97,6 +97,22 @@ class ReidaneGodOfTheWorthyScenarioTest : ScenarioTestBase() {
                 game.isInGraveyard(2, "Lightning Bolt") shouldBe true
             }
 
+            test("Valkmira itself being targeted doesn't trigger it — 'another permanent'") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Valkmira, Protector's Shield")
+                    .withCardInHand(2, "Shatter")
+                    .withLandsOnBattlefield(2, "Mountain", 3)
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                game.castSpell(2, "Shatter", game.findPermanent("Valkmira, Protector's Shield")!!).error shouldBe null
+                game.resolveStack()
+
+                game.state.pendingDecision shouldBe null
+                game.findPermanent("Valkmira, Protector's Shield") shouldBe null
+            }
+
             test("an opponent targeting their own creature doesn't trigger it") {
                 val game = valkmiraBoard(opponentMountains = 1)
                 val giant = game.findPermanent("Hill Giant")!!
