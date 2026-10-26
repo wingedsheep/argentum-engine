@@ -336,6 +336,59 @@
     ]
 }
 
+// Conspicuous Snoop
+{
+    "name": "Conspicuous Snoop",
+    "manaCost": "{R}{R}",
+    "typeLine": "Creature — Goblin Rogue",
+    "oracleText": "Play with the top card of your library revealed.\nYou may cast Goblin spells from the top of your library.\nAs long as the top card of your library is a Goblin card, this creature has all activated abilities of that card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            "RevealTopOfLibrary",
+            {
+                "type": "CastSpellTypesFromTopOfLibrary",
+                "filter": "Goblin"
+            },
+            {
+                "type": "HasAllActivatedAbilitiesOfCards",
+                "donors": "TopOfYourLibrary",
+                "cardFilter": "Goblin"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d878dab-5ed2-4ef3-b2c7-472290892854.jpg?1783930693",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If the top card of your library changes while you're casting a spell, playing a land, or activating an ability, you don't reveal the new top card until you finish doing so. This means that if you cast the top card of your library, you can't look at the next one until you're done paying for that spell. While the top card isn't revealed, Conspicuous Snoop doesn't have any abilities of that card."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "You must follow the normal timing permissions and restrictions of the Goblin spells you cast from your library."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "You still pay all costs for a Goblin spell you cast from your library, including additional costs. You may also pay alternative costs."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "If an activated ability of Goblin card on top of your library references the card it's printed on by name, treat Conspicuous Snoop's instance of that ability as though it referenced Conspicuous Snoop by name instead. For instance, if Conspicuous Snoop has Brash Taunter's ability, Conspicuous Snoop fights, not Brash Taunter."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Daybreak Charger
 {
     "name": "Daybreak Charger",

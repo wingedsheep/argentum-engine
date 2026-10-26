@@ -2109,7 +2109,8 @@ fun donorGrantReaches(
  * Enlightenment; CR 702.167c — "the exiled cards used to craft it"); [DonorCards.YOUR_GRAVEYARD]
  * reads the graveyard of the source's *controller* (Thranduil, the Elvenking); [DonorCards.ALL_GRAVEYARDS]
  * reads every player's graveyard (Mirran Safehouse); [DonorCards.ALL_EXILE] reads every card in exile
- * (Rex, Cyber-Hound, narrowed to brain-counter cards). Face-down donors are skipped. It looks up each donor card's definition and
+ * (Rex, Cyber-Hound, narrowed to brain-counter cards); [DonorCards.TOP_OF_YOUR_LIBRARY] reads only the top
+ * card of the source controller's library (Conspicuous Snoop, narrowed to Goblin cards). Face-down donors are skipped. It looks up each donor card's definition and
  * returns its `activatedAbilities` — for a land donor with basic land types, its mana abilities are
  * the intrinsic ones those types give it (CR 305.6), so a Watery Grave donates "{T}: Add {U}" and
  * "{T}: Add {B}" though its definition declares no mana ability. The caller grants each with the *receiver*
@@ -2160,6 +2161,7 @@ fun donorCardsActivatedAbilities(
         com.wingedsheep.sdk.scripting.DonorCards.YOUR_GRAVEYARD -> controllerId?.let { state.getGraveyard(it) }
         com.wingedsheep.sdk.scripting.DonorCards.ALL_GRAVEYARDS -> state.activePlayers.flatMap { state.getGraveyard(it) }
         com.wingedsheep.sdk.scripting.DonorCards.ALL_EXILE -> state.activePlayers.flatMap { state.getExile(it) }
+        com.wingedsheep.sdk.scripting.DonorCards.TOP_OF_YOUR_LIBRARY -> controllerId?.let { state.getLibrary(it).take(1) }
     } ?: return emptyList()
     val unfiltered = cardFilter == com.wingedsheep.sdk.scripting.GameObjectFilter.Any
     // A filtered pool with no resolvable controller can't be evaluated — fail closed (grant nothing)

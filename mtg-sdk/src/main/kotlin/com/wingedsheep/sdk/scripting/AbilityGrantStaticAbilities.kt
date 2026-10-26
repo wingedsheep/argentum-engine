@@ -154,6 +154,15 @@ enum class DonorCards {
      * `withCounter(...)` card filter reads them directly.
      */
     @SerialName("AllExile") ALL_EXILE,
+
+    /**
+     * The single card on top of the library of the source's *controller* (Conspicuous Snoop — "as
+     * long as the top card of your library is a Goblin card, this has all activated abilities of
+     * that card", narrowed by `cardFilter`). Anchored to the player like [YOUR_GRAVEYARD] and re-read
+     * live, so the grant follows whatever card is on top right now. Pair it with
+     * [RevealTopOfLibrary]: the donor is public only because the card says to play with it revealed.
+     */
+    @SerialName("TopOfYourLibrary") TOP_OF_YOUR_LIBRARY,
 }
 
 /**
@@ -211,6 +220,7 @@ data class HasAllActivatedAbilitiesOfCards(
                 DonorCards.YOUR_GRAVEYARD -> " cards in your graveyard"
                 DonorCards.ALL_GRAVEYARDS -> " cards in all graveyards"
                 DonorCards.ALL_EXILE -> " cards in exile"
+                DonorCards.TOP_OF_YOUR_LIBRARY -> " card on top of your library"
             }
         )
         if (oncePerTurnEach) append(" (each only once each turn)")
