@@ -3909,9 +3909,11 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   ability sources carry their original identity through noncombat damage. Redirection retains damage
   source, combat status and unpreventability; an absent/invalid recipient leaves the shield unused.
   Jade Monolith and Beacon of Destiny.
-- `RedirectNextDamageEffect(protectedTargets, redirectTo, amount, scope)` — redirection shield (CR 614.9):
-  while active, damage that would be dealt to any of `protectedTargets` this turn is dealt to `redirectTo`
-  instead. Installed as a `Duration.EndOfTurn` floating effect and checked during damage resolution.
+- `RedirectNextDamageEffect(protectedTargets, redirectTo, amount, scope, protectedFilter, optional, fromSource, duration)` —
+  redirection shield (CR 614.9): while active, damage that would be dealt to any of `protectedTargets` (or to
+  any permanent matching `protectedFilter`, see below) is dealt to `redirectTo` instead. Installed as a
+  floating effect lasting `duration` (`Duration.EndOfTurn` by default — "this turn") and checked during
+  damage resolution; a `redirectTo` permanent that leaves the battlefield ends it (CR 400.7).
   `amount` caps the redirected damage (`null` = redirect all). **`scope` decides when an unlimited shield is
   used up** (a capacity shield, `amount != null`, is always used up once its capacity hits 0 — CR 615.7):
   - `RedirectScope.NEXT_INSTANCE` (default) — one source's damage instance, then gone.
@@ -3921,7 +3923,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
     attacker hitting the protected player/creature — not just the first. "The next time damage would be dealt
     to X and/or you…" (Glarecaster). The shield survives the per-assignment apply loop (`inBatch=true`) and is
     consumed once afterwards by `CombatDamageManager.consumeBatchRedirectShields`.
-  - `RedirectScope.CONTINUOUS` — never self-consumed; redirects every instance until end of turn.
+  - `RedirectScope.CONTINUOUS` — never self-consumed; redirects every instance until its `duration` ends.
     "All damage that would be dealt to it this turn…" (Karona's Zealot).
   **`fromSource`** keys the shield to the damage of one *object* — resolved at resolution, so the same
   card returning later is a new source the shield doesn't know (CR 400.7). Shimian Night Stalker's "{B},

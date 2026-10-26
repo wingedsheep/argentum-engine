@@ -127,12 +127,13 @@ object OptionalDamageRedirect {
             // this an every-recipient shield (Reverberation) would redirect its redirected damage again.
             if (targetId == mod.redirectToId) return false
             if (mod.protectedRef != null && !state.isCurrentObject(mod.protectedRef)) return false
-            if (mod.redirectToRef != null && !state.isCurrentObject(mod.redirectToRef)) return false
             val projected = state.projectedState
             fun validRecipient(id: EntityId): Boolean = id in state.turnOrder ||
                 (id in state.getBattlefield() && (projected.isCreature(id) || projected.isPlaneswalker(id) || projected.isBattle(id)))
             if (!validRecipient(targetId) || !validRecipient(mod.redirectToId)) return false
         }
+        // The recipient as an object: one that left and came back is a new object (CR 400.7).
+        if (mod.redirectToRef != null && !state.isCurrentObject(mod.redirectToRef)) return false
         val recipient = state.getEntity(mod.redirectToId) ?: return false
         if (!recipient.has<PlayerComponent>() && mod.redirectToId !in state.getBattlefield()) return false
         val filter = mod.protectedFilter

@@ -153,6 +153,68 @@ class AscentOfTheWorthyScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("with no creature to choose the chapter does nothing") {
+                val game = scenario()
+                    .withPlayers("Worthy", "Opponent")
+                    .withCardInHand(1, "Ascent of the Worthy")
+                    .withLandsOnBattlefield(1, "Plains", 1)
+                    .withLandsOnBattlefield(1, "Swamp", 2)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .apply { repeat(4) { withCardInLibrary(1, "Plains"); withCardInLibrary(2, "Mountain") } }
+                    .build()
+
+                game.castSpell(1, "Ascent of the Worthy").error shouldBe null
+                game.resolveStack()
+                game.hasPendingDecision() shouldBe false
+                game.state.stack.isEmpty() shouldBe true
+                game.findPermanent("Ascent of the Worthy").shouldNotBeNull()
+            }
+
+            test("a flickered chosen creature is a new object and soaks nothing") {
+                val game = builder()
+                    .withCardInHand(1, "Cloudshift")
+                    .withLandsOnBattlefield(1, "Plains", 1)
+                    .withCardInHand(2, "Shock")
+                    .build()
+                val bears = game.findPermanent("Grizzly Bears")!!
+                val giant = game.findPermanent("Hill Giant")!!
+                game.castAndChoose(giant)
+
+                game.castSpell(1, "Cloudshift", giant).error shouldBe null
+                game.resolveStack()
+                val returnedGiant = game.findPermanent("Hill Giant").shouldNotBeNull()
+
+                game.passPriority()
+                game.castSpell(2, "Shock", bears).error shouldBe null
+                game.resolveStack()
+                withClue("\"that creature\" left the battlefield, so the Shock stays on the Bears") {
+                    game.findPermanent("Grizzly Bears") shouldBe null
+                    game.damageOn(returnedGiant) shouldBe 0
+                }
+            }
+
+            test("a creature that enters after the chapter resolves is covered too") {
+                val game = builder()
+                    .withCardInHand(1, "Grizzly Bears")
+                    .withLandsOnBattlefield(1, "Forest", 2)
+                    .withCardInHand(2, "Shock")
+                    .build()
+                val giant = game.findPermanent("Hill Giant")!!
+                game.castAndChoose(giant)
+
+                val before = game.findAllPermanents("Grizzly Bears").toSet()
+                game.castSpell(1, "Grizzly Bears").error shouldBe null
+                game.resolveStack()
+                val newBears = (game.findAllPermanents("Grizzly Bears").toSet() - before).single()
+
+                game.passPriority()
+                game.castSpell(2, "Shock", newBears).error shouldBe null
+                game.resolveStack()
+                game.damageOn(newBears) shouldBe 0
+                game.damageOn(giant) shouldBe 2
+            }
+
             test("combat damage on the opponent's turn is redirected, and the shield ends as your next turn begins") {
                 val game = builder()
                     .withCardOnBattlefield(2, "Gray Ogre")

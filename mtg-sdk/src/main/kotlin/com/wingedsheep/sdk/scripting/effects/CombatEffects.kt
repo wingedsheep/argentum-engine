@@ -814,10 +814,10 @@ data object SwapBlockingAssignmentsEffect : Effect {
 }
 
 /**
- * Redirect damage that would be dealt to the protected targets this turn.
+ * Redirect damage that would be dealt to the protected targets (or a filtered class) for a duration.
  * "The next time damage would be dealt to [protected targets] this turn,
- *  that damage is dealt to [redirectTo] instead."
- * Used for Glarecaster and similar redirection effects.
+ *  that damage is dealt to [redirectTo] instead" (Glarecaster); "until your next turn, all damage that
+ *  would be dealt to creatures you control is dealt to that creature instead" (Ascent of the Worthy).
  *
  * @property protectedTargets The entities protected by this redirection shield (e.g., Self + Controller)
  * @property redirectTo The target that will receive the redirected damage (chosen at activation)
