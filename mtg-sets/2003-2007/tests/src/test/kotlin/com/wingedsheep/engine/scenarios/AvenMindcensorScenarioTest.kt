@@ -11,6 +11,7 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.chk.cards.CranialExtraction
 import com.wingedsheep.mtg.sets.definitions.fut.cards.AvenMindcensor
 import com.wingedsheep.mtg.sets.definitions.lea.cards.DemonicTutor
+import com.wingedsheep.mtg.sets.definitions.mir.cards.RampantGrowth
 import com.wingedsheep.mtg.sets.definitions.tla.cards.WanShiTongLibrarian
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
@@ -33,7 +34,7 @@ class AvenMindcensorScenarioTest : FunSpec({
 
     fun driver(): GameTestDriver {
         val d = GameTestDriver()
-        d.registerCards(TestCards.all + listOf(AvenMindcensor, DemonicTutor, CranialExtraction, WanShiTongLibrarian))
+        d.registerCards(TestCards.all + listOf(AvenMindcensor, DemonicTutor, RampantGrowth, CranialExtraction, WanShiTongLibrarian))
         d.initMirrorMatch(deck = Deck.of("Swamp" to 40), skipMulligans = true, startingPlayer = 0)
         d.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return d
@@ -69,6 +70,25 @@ class AvenMindcensorScenarioTest : FunSpec({
         d.getHand(d.player1) shouldContain top.first()
         withClue("the whole library is still there to shuffle") {
             d.state.getZone(ZoneKey(d.player1, Zone.LIBRARY)) shouldContain deep
+        }
+    }
+
+    test("a filtered search can't find a match buried below the top four") {
+        val d = driver()
+        d.putPermanentOnBattlefield(d.player2, "Aven Mindcensor")
+        val buriedForest = d.putCardOnTopOfLibrary(d.player1, "Forest")
+        repeat(4) { d.putCardOnTopOfLibrary(d.player1, "Savannah Lions") }
+
+        d.giveMana(d.player1, Color.GREEN, 2)
+        val spell = d.putCardInHand(d.player1, "Rampant Growth")
+        val cast = d.castSpell(d.player1, spell)
+        withClue(cast.error ?: "casting Rampant Growth failed") { cast.outcome shouldBe Outcome.Done }
+        d.bothPass()
+
+        withClue("no basic land is among the top four, so the search finds nothing") {
+            (d.pendingDecision as? SelectCardsDecision)?.options.orEmpty() shouldBe emptyList()
+            d.state.getBattlefield() shouldNotContain buriedForest
+            d.state.getZone(ZoneKey(d.player1, Zone.LIBRARY)) shouldContain buriedForest
         }
     }
 

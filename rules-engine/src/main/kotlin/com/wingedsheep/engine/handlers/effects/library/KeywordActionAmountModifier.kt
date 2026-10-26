@@ -26,6 +26,9 @@ import com.wingedsheep.sdk.scripting.references.Player
  * pattern's `player` filter relative to the acting player and the source's projected controller, checks
  * `restrictions`, sums the modifier, and clamps the result to `≥ 0`. A base count of 0 is left
  * untouched — a mill, scry or surveil of 0 is no event.
+ *
+ * Also home to [librarySearchDepth], the [LimitLibrarySearch] lookup for the search keyword action
+ * (CR 701.23f): a search announces no count, but it shares the same scope-and-restriction scan.
  */
 object KeywordActionAmountModifier {
 

@@ -536,14 +536,6 @@ class GatherCardsExecutor(
         TargetResolutionUtils.resolvePlayerRef(player, context, state) ?: context.controllerId
 
     /**
-     * Resolve a [Player] reference to the list of player ids whose zone should be gathered
-     * from. Multi-player references like [Player.Each] / [Player.ActivePlayerFirst] /
-     * [Player.EachOpponent] fan out (turn-order; opponents in turn-order minus controller),
-     * so a single [CardSource.FromZone] / [CardSource.FromMultipleZones] / [CardSource.TopOfLibrary]
-     * can gather "each player's graveyard/hand/library" at once. Single-player references
-     * collapse to a one-element list.
-     */
-    /**
      * "That player searches the top four cards of that library instead" (Aven Mindcensor, CR
      * 701.23f): when a [com.wingedsheep.sdk.scripting.LimitLibrarySearch] covers [searcher], a
      * library card is findable only if it is among the top N of its library. Non-library cards
@@ -559,6 +551,14 @@ class GatherCardsExecutor(
         return gathered.filter { it !in allLibraryCards || it in searchable }
     }
 
+    /**
+     * Resolve a [Player] reference to the list of player ids whose zone should be gathered
+     * from. Multi-player references like [Player.Each] / [Player.ActivePlayerFirst] /
+     * [Player.EachOpponent] fan out (turn-order; opponents in turn-order minus controller),
+     * so a single [CardSource.FromZone] / [CardSource.FromMultipleZones] / [CardSource.TopOfLibrary]
+     * can gather "each player's graveyard/hand/library" at once. Single-player references
+     * collapse to a one-element list.
+     */
     private fun resolvePlayers(
         player: Player,
         context: EffectContext,
