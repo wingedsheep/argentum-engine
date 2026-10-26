@@ -3,6 +3,10 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.core.CardsSelectedResponse
+import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.SelectCardsDecision
+import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
@@ -41,7 +45,9 @@ import io.kotest.matchers.shouldBe
  * and however it enters (a resolving spell, tokens, an effect putting a card onto the battlefield);
  * the copy applies first, so the copied creature's own "enters with" and enters triggers work and a
  * Clone's own copy choice is moot; a chosen creature that has left the battlefield is copied as it
- * last existed; an entry it doesn't apply to leaves it waiting, and unused it ends with the turn.
+ * last existed; an entry it doesn't apply to leaves it waiting, and unused it ends with the turn;
+ * when grants bound to different creatures apply to one entrant, its controller chooses the order
+ * and the copy applied last is what it copies (CR 616.1), all of them spent.
  */
 class GrantedEntryCopyReplacementTest : FunSpec({
 
@@ -281,7 +287,18 @@ class GrantedEntryCopyReplacementTest : FunSpec({
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN, driver.getOpponent(me))
         driver.state.grantedReplacementEffects.shouldBeEmpty()
     }
-    test("two grants both apply to the first entry and are both spent; the copy shown is the most recent one's") {
+    fun GameTestDriver.chooseCopyOf(player: EntityId, name: String) {
+        val decision = pendingDecision
+        decision?.playerId shouldBe player
+        val response = when (decision) {
+            is SelectCardsDecision -> CardsSelectedResponse(decision.id, listOf(decision.options.single { nameOf(it) == name }))
+            is ChooseOptionDecision -> OptionChosenResponse(decision.id, decision.options.indexOf(name))
+            else -> error("expected the copy-order choice, got $decision")
+        }
+        submitDecision(player, response).error shouldBe null
+    }
+
+    test("two grants copying different creatures: the controller chooses which copy applies last, and both are spent") {
         val (driver, me) = setup()
         val giant = driver.putCreatureOnBattlefield(me, "Test Giant")
         val hydra = driver.putCreatureOnBattlefield(me, "Test Hydra")
@@ -290,13 +307,86 @@ class GrantedEntryCopyReplacementTest : FunSpec({
         driver.state.grantedReplacementEffects shouldHaveSize 2
 
         driver.cast(me, "Test Seer")
-        driver.named("Test Hydra") shouldHaveSize 2
+        val decision = driver.pendingDecision as SelectCardsDecision
+        withClue("picked on the battlefield among the copied creatures, the most recent grant's first") {
+            decision.options shouldBe listOf(hydra, giant)
+            decision.useTargetingUI shouldBe true
+            decision.minSelections shouldBe 1
+        }
+        driver.chooseCopyOf(me, "Test Giant")
+        withClue("the older grant's copy was applied last, so the Seer is a Giant") {
+            driver.named("Test Giant") shouldHaveSize 2
+            driver.named("Test Hydra") shouldHaveSize 1
+        }
         driver.state.grantedReplacementEffects.shouldBeEmpty()
 
         driver.cast(me, "Test Seer")
-        withClue("the older grant was used up by the same entry, so the next creature enters as itself") {
+        withClue("both grants were used up by the same entry, so the next creature enters as itself") {
             driver.named("Test Seer") shouldHaveSize 1
         }
+    }
+
+    test("once a copied creature has left the battlefield, the choice is between their names") {
+        val (driver, me) = setup()
+        val giant = driver.putCreatureOnBattlefield(me, "Test Giant")
+        val hydra = driver.putCreatureOnBattlefield(me, "Test Hydra")
+        driver.reflect(me, giant)
+        driver.reflect(me, hydra)
+        driver.cast(me, "Lightning Bolt", listOf(giant))
+        driver.state.getBattlefield().contains(giant) shouldBe false
+
+        driver.cast(me, "Test Seer")
+        (driver.pendingDecision as ChooseOptionDecision).options shouldBe listOf("Test Hydra", "Test Giant")
+        driver.chooseCopyOf(me, "Test Giant")
+        withClue("copied as the Giant last existed") {
+            driver.named("Test Giant") shouldHaveSize 1
+        }
+    }
+
+    test("the chosen copy's enters-with counters still apply once the order is chosen") {
+        val (driver, me) = setup()
+        val giant = driver.putCreatureOnBattlefield(me, "Test Giant")
+        val hydra = driver.putCreatureOnBattlefield(me, "Test Hydra")
+        driver.reflect(me, hydra)
+        driver.reflect(me, giant)
+
+        driver.cast(me, "Test Seer")
+        driver.chooseCopyOf(me, "Test Hydra")
+        val copy = driver.named("Test Hydra").single { it != hydra }
+        driver.plusOnes(copy) shouldBe 2
+    }
+
+    test("two grants copying the same creature leave nothing to order") {
+        val (driver, me) = setup()
+        val giant = driver.putCreatureOnBattlefield(me, "Test Giant")
+        driver.reflect(me, giant)
+        driver.reflect(me, giant)
+
+        driver.cast(me, "Test Seer")
+        driver.pendingDecision shouldBe null
+        driver.named("Test Giant") shouldHaveSize 2
+        driver.state.grantedReplacementEffects.shouldBeEmpty()
+    }
+
+    test("a card an effect puts onto the battlefield asks for the order too, before it enters") {
+        val (driver, me) = setup()
+        val giant = driver.putCreatureOnBattlefield(me, "Test Giant")
+        val hydra = driver.putCreatureOnBattlefield(me, "Test Hydra")
+        val dead = driver.putCardInGraveyard(me, "Test Seer")
+        driver.reflect(me, giant)
+        driver.reflect(me, hydra)
+        val spell = driver.putCardInHand(me, "Test Reanimate")
+        driver.giveMana(me, Color.GREEN, 1)
+        driver.castSpellWithTargets(me, spell, listOf(ChosenTarget.Card(dead, me, Zone.GRAVEYARD))).error shouldBe null
+        driver.bothPass()
+
+        withClue("still in the graveyard while the order is chosen") {
+            driver.state.getGraveyard(me).contains(dead) shouldBe true
+        }
+        driver.chooseCopyOf(me, "Test Giant")
+        driver.state.getBattlefield().contains(dead) shouldBe true
+        driver.nameOf(dead) shouldBe "Test Giant"
+        driver.state.grantedReplacementEffects.shouldBeEmpty()
     }
 
     test("a later, separate entry within the same resolving spell is not copied") {

@@ -315,6 +315,12 @@ class StackResolver(
     internal fun resolvePermanentSpellAfterEntryCopy(state: GameState, spellId: EntityId): ExecutionResult =
         permanentSpellResolver.resolveAfterEntryCopy(state, spellId)
 
+    internal fun resolvePermanentSpellWithGrantedCopy(
+        state: GameState,
+        spellId: EntityId,
+        choice: com.wingedsheep.engine.handlers.effects.copy.EntryCopyChoice,
+    ): ExecutionResult = permanentSpellResolver.resolveWithGrantedCopy(state, spellId, choice)
+
     /**
      * Apply the resolving permanent's "enters with …" replacement effects (CR 614.1c). See
      * [PermanentEntry.applyEntersWithReplacements].

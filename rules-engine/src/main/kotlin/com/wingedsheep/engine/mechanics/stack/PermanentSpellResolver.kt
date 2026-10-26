@@ -50,15 +50,21 @@ internal class PermanentSpellResolver(
 
         val cardDef = cardComponent?.cardDefinitionId?.let { cardRegistry.getCard(it) }
         // A granted "they enter as copies of the chosen creature" (Mystic Reflection) is a copy
-        // effect too, with nothing to choose: install it and skip the spell's own copy choice — in
-        // either order the permanent would end up a copy of the bound object. A face-down spell is
-        // modified too, becoming a copy under its face-down status (CR 708.10).
+        // effect too: install it and skip the spell's own copy choice — in either order the
+        // permanent would end up a copy of the bound object. Grants copying different objects are
+        // ordered by the controller (CR 616.1), which comes down to choosing the copy applied last.
+        // A face-down spell is modified too, becoming a copy under its face-down status (CR 708.10).
         if (cardComponent != null) {
             val granted = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.find(state, spellId, predicateEvaluator)
             if (granted != null) {
-                val copied = com.wingedsheep.engine.handlers.effects.copy.EffectCopyEntry.apply(state, spellId, granted.choice)
-                return resolveAfterEntryCopy(
-                    com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.spend(copied, granted), spellId)
+                if (granted.needsOrder) {
+                    return state.suspendForDecision(
+                        com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.question(
+                            state, granted, spellId, cardComponent.name, controllerId),
+                        GrantedEntryCopyOrderContinuation(spellId, granted.options, replay = null),
+                    )
+                }
+                return resolveWithGrantedCopy(state, spellId, granted.choice)
             }
         }
         if (cardDef != null && !spellComponent.castFaceDown) {
@@ -79,6 +85,22 @@ internal class PermanentSpellResolver(
      * Called by the clone resumer with the copy already stamped on the spell; reads the spell's
      * current components so the copied definition drives every step.
      */
+    /**
+     * Install the granted entry copy [choice] on the resolving spell, spend every grant that
+     * modifies its entry, and finish entry from the copied identity.
+     */
+    fun resolveWithGrantedCopy(
+        state: GameState,
+        spellId: EntityId,
+        choice: com.wingedsheep.engine.handlers.effects.copy.EntryCopyChoice,
+    ): ExecutionResult {
+        val granted = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.find(state, spellId, predicateEvaluator)
+            ?: return resolveAfterEntryCopy(state, spellId)
+        val copied = com.wingedsheep.engine.handlers.effects.copy.EffectCopyEntry.apply(state, spellId, granted.chosen(choice))
+        return resolveAfterEntryCopy(
+            com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.spend(copied, granted), spellId)
+    }
+
     fun resolveAfterEntryCopy(state: GameState, spellId: EntityId): ExecutionResult {
         val container = state.getEntity(spellId)
             ?: return ExecutionResult.error(state, "Spell entity not found: $spellId")

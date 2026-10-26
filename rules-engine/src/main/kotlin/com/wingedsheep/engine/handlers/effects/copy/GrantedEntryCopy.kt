@@ -33,8 +33,12 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * entering in that same event and is purged at the event boundary
  * ([com.wingedsheep.engine.replacement.ActiveReplacements.purgeSpent]). Every grant that applies to
  * an entry is applied to it (CR 616.1f) and so spent by it. When grants bound to different objects
- * apply to one entrant, the copy shown is the most recently granted one's: the entrant's controller
- * would order them (CR 616.1c), and that ordering choice isn't offered.
+ * apply to one entrant, its controller orders them (CR 616.1) and the copy effect applied last decides
+ * what it copies, so the order comes down to choosing that copy: [Found.options] lists the distinct
+ * copies and [Found.chosen] reads the controller's answer. A permanent spell asks as it resolves
+ * ([question]); an effect move asks while preparing its entrants
+ * ([EffectCopyEntry.prepare]) and carries the answer as the entrant's entry copy. A token or a played
+ * land is inserted with no pause before its entry, so it takes the most recent grant's copy.
  *
  * A face-down entrant is still modified: it becomes a copy under its face-down status (CR 708.10) —
  * it keeps the face-down characteristics, and the copied values show if it is turned face up.
@@ -42,16 +46,25 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 object GrantedEntryCopy {
 
     /**
-     * The granted copies that modify an entrant: every applying grant's index, and the identity
-     * shown — the most recently granted one's.
+     * The granted copies that modify an entrant: every applying grant's index, and the distinct
+     * copies they would make, most recently granted first. [choice] is the default, the most recent.
      */
-    data class Found(val grantIndices: List<Int>, val choice: EntryCopyChoice)
+    data class Found(val grantIndices: List<Int>, val options: List<EntryCopyChoice>) {
+        val choice: EntryCopyChoice get() = options.first()
+
+        /** Whether the entrant's controller has an order to choose: two grants copy different things. */
+        val needsOrder: Boolean get() = options.size > 1
+
+        /** The copy the controller chose to apply last ([answer], when it is one of [options]). */
+        fun chosen(answer: EntryCopyChoice?): EntryCopyChoice =
+            answer?.let { a -> options.firstOrNull { it.sameCopyAs(a) } } ?: choice
+    }
 
     /** The granted copy replacements that modify [entityId]'s entry, or null when none applies. */
     fun find(state: GameState, entityId: EntityId, evaluator: PredicateEvaluator): Found? {
         val grants = state.grantedReplacementEffects
         if (grants.isEmpty()) return null
-        var shown: EntryCopyChoice? = null
+        val options = mutableListOf<EntryCopyChoice>()
         val indices = mutableListOf<Int>()
         for (index in grants.indices.reversed()) {
             val grant = grants[index]
@@ -63,9 +76,64 @@ object GrantedEntryCopy {
             if (!evaluator.matches(state, state.projectedState, entityId, pattern.filter, context)) continue
             val copied = referenceIdentity(state, referenceId, grant.referenceSnapshot) ?: continue
             indices += index
-            if (shown == null) shown = EntryCopyChoice(replacement, copied, referenceId)
+            val option = EntryCopyChoice(replacement, copied, referenceId)
+            if (options.none { it.copiedCard == copied && it.replacement.exceptions == replacement.exceptions }) {
+                options += option
+            }
         }
-        return shown?.let { Found(indices, it) }
+        return if (options.isEmpty()) null else Found(indices, options)
+    }
+
+    /**
+     * The controller's choice of which granted copy [entrantName] ends up as — the copy effect it
+     * applies last (CR 616.1). While every copied creature is still on the battlefield it is picked
+     * there, like a Clone's choice; once one has left, the choice is a list of their names.
+     * [chosenOption] reads the answer.
+     */
+    fun question(
+        state: GameState,
+        found: Found,
+        entrantId: EntityId,
+        entrantName: String,
+        controllerId: EntityId,
+    ): (String) -> com.wingedsheep.engine.core.PendingDecision {
+        val prompt = "Choose what $entrantName enters as a copy of"
+        val context = com.wingedsheep.engine.core.DecisionContext(
+            sourceId = entrantId, sourceName = entrantName,
+            phase = com.wingedsheep.engine.core.DecisionPhase.RESOLUTION,
+        )
+        val onBattlefield = found.options.mapNotNull { it.copiedEntity }
+            .takeIf { ids -> ids.size == found.options.size && found.options.all { it.isLiveOn(state) } }
+        return { decisionId ->
+            if (onBattlefield != null) {
+                com.wingedsheep.engine.core.SelectCardsDecision(
+                    id = decisionId, playerId = controllerId, prompt = prompt, context = context,
+                    options = onBattlefield, minSelections = 1, maxSelections = 1, useTargetingUI = true,
+                )
+            } else {
+                com.wingedsheep.engine.core.ChooseOptionDecision(
+                    id = decisionId, playerId = controllerId, prompt = prompt, context = context,
+                    options = found.options.map { it.copiedCard?.name ?: "Unknown" },
+                )
+            }
+        }
+    }
+
+    /** Whether [this] copies its object as it is now on the battlefield (the same visit, CR 400.7). */
+    private fun EntryCopyChoice.isLiveOn(state: GameState): Boolean {
+        val id = copiedEntity ?: return false
+        return id in state.getBattlefield() && state.getEntity(id)?.copiableCardComponent() == copiedCard
+    }
+
+    /** The option a [question] answer picked, or null for an answer that isn't one. */
+    fun chosenOption(
+        options: List<EntryCopyChoice>,
+        response: com.wingedsheep.engine.core.DecisionResponse,
+    ): EntryCopyChoice? = when (response) {
+        is com.wingedsheep.engine.core.OptionChosenResponse -> options.getOrNull(response.optionIndex)
+        is com.wingedsheep.engine.core.CardsSelectedResponse ->
+            response.selectedCards.singleOrNull()?.let { id -> options.firstOrNull { it.copiedEntity == id } }
+        else -> null
     }
 
     /** Mark every one-shot grant that modified an entry as spent. */

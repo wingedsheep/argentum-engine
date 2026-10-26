@@ -35,6 +35,7 @@ class ModalAndCloneContinuationResumer(
         resumer(ModalContinuation::class, ::resumeModal),
         resumer(ModalTargetContinuation::class, ::resumeModalTarget),
         resumer(EffectCopyEntryContinuation::class, ::resumeEffectCopyEntry),
+        resumer(GrantedEntryCopyOrderContinuation::class, ::resumeGrantedEntryCopyOrder),
         resumer(EffectEntryChoiceContinuation::class, ::resumeEffectEntryChoice),
         resumer(EffectDiscardDestinationContinuation::class, ::resumeEffectDiscardDestination),
         resumer(EffectDiscardOrderContinuation::class, ::resumeEffectDiscardOrder),
@@ -114,6 +115,37 @@ class ModalAndCloneContinuationResumer(
         val result = services.effectExecutorRegistry.execute(state, continuation.effect, context)
         if (result.outcome !is Outcome.Done) return result.toExecutionResult()
         return checkForMore(result.stateWithOutputsHandedOn(), result.events)
+    }
+
+    /**
+     * Resume after the entrant's controller chose which granted entry copy applies last. An effect
+     * move is replayed carrying it as the entrant's entry copy; a resolving permanent spell takes
+     * it on and finishes its entry.
+     */
+    private fun resumeGrantedEntryCopyOrder(
+        state: GameState,
+        continuation: GrantedEntryCopyOrderContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore,
+    ): ExecutionResult {
+        val chosen = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy
+            .chosenOption(continuation.options, response)
+            ?: return ExecutionResult.error(state, "Expected one of the granted copies to be chosen")
+        val replay = continuation.replay
+        if (replay != null) {
+            val context = replay.context.copy(entryCopies = replay.context.entryCopies + (continuation.entityId to chosen))
+            val result = services.effectExecutorRegistry.execute(state, replay.effect, context)
+            if (result.outcome !is Outcome.Done) return result.toExecutionResult()
+            return checkForMore(result.stateWithOutputsHandedOn(), result.events)
+        }
+        val spellId = continuation.entityId
+        val name = state.getEntity(spellId)?.get<CardComponent>()?.name
+            ?: return ExecutionResult.error(state, "Spell entity not found: $spellId")
+        val entry = services.stackResolver.resolvePermanentSpellWithGrantedCopy(state, spellId, chosen)
+        if (entry.outcome is Outcome.Paused) return ExecutionResult.propagatePause(entry.state, entry.events)
+        if (entry.outcome !is Outcome.Done) return entry
+        val resolvedName = entry.state.getEntity(spellId)?.get<CardComponent>()?.name ?: name
+        return checkForMore(entry.state, entry.events + ResolvedEvent(spellId, resolvedName))
     }
 
     private fun resumeEffectEntryChoice(

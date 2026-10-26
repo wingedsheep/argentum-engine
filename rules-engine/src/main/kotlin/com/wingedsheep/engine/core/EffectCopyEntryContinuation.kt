@@ -14,6 +14,24 @@ data class EffectCopyEntryContinuation(
     val replacement: EntersAsCopy,
 ) : AnswerContinuation
 
+/** The effect move to replay once an entrant's entry question is answered. */
+@Serializable
+data class EffectReplay(val effect: Effect, val context: EffectContext)
+
+/**
+ * The entrant [entityId]'s controller choosing which of several granted entry copies
+ * ([com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy]) it applies last (CR 616.1) —
+ * two Mystic Reflections bound to different creatures. The answer picks one of [options].
+ * [replay] is the effect move to replay with the answer as the entrant's entry copy; null for a
+ * resolving permanent spell, which then finishes its entry.
+ */
+@Serializable
+data class GrantedEntryCopyOrderContinuation(
+    val entityId: EntityId,
+    val options: List<com.wingedsheep.engine.handlers.effects.copy.EntryCopyChoice>,
+    val replay: EffectReplay?,
+) : AnswerContinuation
+
 /**
  * One "as this permanent enters, choose …" question ([com.wingedsheep.sdk.scripting.EntersWithChoice])
  * asked for [entityId] before an effect puts it onto the battlefield. [question] is the answer frame

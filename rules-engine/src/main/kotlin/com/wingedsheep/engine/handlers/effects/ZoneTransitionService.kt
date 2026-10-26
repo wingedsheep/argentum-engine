@@ -946,16 +946,18 @@ class ZoneTransitionService(
                 // the stack with their own captured ability data, so it is safe to wipe.
                 newState = newState.withoutObjectGrants(entityId)
                 // A granted "enters as a copy of the chosen creature" (Mystic Reflection) is the
-                // last copy effect applied, so it wins over the entrant's own as-enters choice.
+                // last copy effect applied, so it wins over the entrant's own as-enters choice;
+                // among several, the one the controller chose to apply last ([options.entryCopy]).
                 // A face-down entrant is modified too: it copies under its face-down status (CR 708.10).
                 val grantedCopy = com.wingedsheep.engine.handlers.effects.copy
                     .GrantedEntryCopy.find(newState, entityId, predicateEvaluator)
+                val grantedChoice = grantedCopy?.chosen(options.entryCopy)
                 if (grantedCopy != null) {
                     newState = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.spend(newState, grantedCopy)
                     if (options.faceDown) newState = com.wingedsheep.engine.handlers.effects.copy.EffectCopyEntry
-                        .apply(newState, entityId, grantedCopy.choice)
+                        .apply(newState, entityId, grantedChoice!!)
                 }
-                val entryCopyChoice = grantedCopy?.choice ?: options.entryCopy
+                val entryCopyChoice = grantedChoice ?: options.entryCopy
                 if (!options.faceDown) {
                     entryCopyChoice?.let { choice ->
                         // Face tracking belongs to the physical entrant, not the copied definition.
