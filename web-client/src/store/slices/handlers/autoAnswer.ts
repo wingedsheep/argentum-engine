@@ -15,15 +15,38 @@ import { getWebSocket } from '../shared'
 import type { GetState, SetState } from './types'
 
 /**
- * How long a forced question waits before it is answered.
+ * How long a forced question waits before it is answered: a fresh draw per question, shaped like
+ * the time a person takes to click the only button on a dialog that has just appeared.
  *
- * The opponent still sees "deciding…" while it waits, and an instant answer would make forced
- * questions stand out from real ones by their length alone. One second is about as fast as a
- * person clicks the only button on a dialog that has just appeared, so the forced answer sits at
- * the quick end of real answers rather than off on its own. It is fixed rather than tuned per
- * question: answer timing in general is out of scope for #3340.
+ * The opponent still sees "deciding…" while it waits. An instant answer would make forced questions
+ * stand out from real ones by their length alone, and so would any fixed length — the same second
+ * every time is a fingerprint of its own. So the wait is 800 ms of reading and reaching for the
+ * button plus a log-normal tail (median 400 ms more, σ = 0.6): most answers land between about
+ * 1.0 and 1.6 s, a few take two seconds or more, and none passes [AUTO_ANSWER_MAX_DELAY_MS].
  */
-export const AUTO_ANSWER_DELAY_MS = 1000
+export const AUTO_ANSWER_MIN_DELAY_MS = 800
+export const AUTO_ANSWER_MAX_DELAY_MS = 2500
+const TAIL_MEDIAN_MS = 400
+const TAIL_SIGMA = 0.6
+
+/** One human-like answer delay, in ms, drawn with [random] (uniform on [0, 1), like Math.random). */
+export function humanAnswerDelayMs(random: () => number = Math.random): number {
+  // Box–Muller: a standard normal from two uniforms; 1 - u keeps the log's argument above zero.
+  const z = Math.sqrt(-2 * Math.log(1 - random())) * Math.cos(2 * Math.PI * random())
+  const delay = AUTO_ANSWER_MIN_DELAY_MS + TAIL_MEDIAN_MS * Math.exp(TAIL_SIGMA * z)
+  return Math.round(Math.min(AUTO_ANSWER_MAX_DELAY_MS, delay))
+}
+
+let drawDelay: () => number = () => humanAnswerDelayMs()
+
+/** Tests: replace the delay draw with a deterministic one; returns the function that restores it. */
+export function setAutoAnswerDelayForTests(draw: () => number): () => void {
+  const previous = drawDelay
+  drawDelay = draw
+  return () => {
+    drawDelay = previous
+  }
+}
 
 /** A forced question this client is going to answer, and the answer the server sent for it. */
 export interface AutoAnswer {
@@ -61,8 +84,8 @@ export function cancelAutoAnswer(): void {
 }
 
 /**
- * Answer [auto] after [AUTO_ANSWER_DELAY_MS], or cancel the pending answer when this update has
- * none. The same question arriving again (a resync) keeps its original clock.
+ * Answer [auto] after a delay drawn for this question, or cancel the pending answer when this
+ * update has none. The same question arriving again (a resync) keeps its original clock.
  */
 export function scheduleAutoAnswer(auto: AutoAnswer | null, set: SetState, get: GetState): void {
   if (!auto) {
@@ -93,7 +116,7 @@ export function scheduleAutoAnswer(auto: AutoAnswer | null, set: SetState, get: 
         text: describeAutoAnswer(auto.decision, auto.response, gameState),
       },
     })
-  }, AUTO_ANSWER_DELAY_MS)
+  }, drawDelay())
   scheduled = { decisionId, handle }
 }
 

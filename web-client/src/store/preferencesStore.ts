@@ -62,8 +62,9 @@ export interface Preferences {
     autoOrderTriggers: boolean
     /**
      * Answer a question that has only one legal answer for you ("you may reveal a Dragon card"
-     * with none in hand), after a short delay, with a notice instead of a dialog. The server says
-     * which questions those are.
+     * with none in hand), after a short randomized delay, with a notice instead of a dialog. The
+     * server says which questions those are. Shown as "Choices with only one answer": Answer for
+     * me (true) / Ask me every time (false).
      */
     autoAnswerForced: boolean
     /** Multiplayer: move the camera to the board where the action is. */

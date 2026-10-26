@@ -744,10 +744,12 @@ A browser update whose `pendingDecision` has exactly one legal answer also carri
 `autoAnswer` (a `DecisionResponse` already keyed to the routed decision ID). The server decides it
 from the engine's own decision with `ForcedDecisionAutoAnswer`, which applies the AI's
 `TrivialDecisions` and still asks when the question is how the player looks at cards. The client
-never derives one: unless the player turned *Answer forced choices for me* off, it keeps the
-question off screen and submits `autoAnswer` unchanged after a one-second delay, as an ordinary
+never derives one: unless the player set *Choices with only one answer* to *Ask me every time*
+(`gameplay.autoAnswerForced = false`), it keeps the question off screen and submits `autoAnswer`
+unchanged after a human-like delay drawn fresh per question (0.8–2.5 s, skewed short; see
+`humanAnswerDelayMs` in `web-client/src/store/slices/handlers/autoAnswer.ts`), as an ordinary
 `SubmitDecision`. The engine still always asks (#3340), and other seats still see the decision
-status for that second. AI seats get no `autoAnswer`; they answer through `TrivialDecisions` directly.
+status while it waits. AI seats get no `autoAnswer`; they answer through `TrivialDecisions` directly.
 
 #### One store
 

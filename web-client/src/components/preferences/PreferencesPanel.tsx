@@ -25,6 +25,23 @@ const MODE_OPTIONS: { value: PriorityModeValue; label: string; hint: string }[] 
   { value: 'fullControl', label: 'Full control', hint: 'Never passes for you: you get every priority window.' },
 ]
 
+/**
+ * `gameplay.autoAnswerForced`, shown as the two modes it switches between. The hint names the
+ * trade-off: the forced answer is faster, but its timing is the game's, not yours.
+ */
+const FORCED_CHOICE_OPTIONS: { value: 'answer' | 'ask'; label: string; hint: string }[] = [
+  {
+    value: 'answer',
+    label: 'Answer for me',
+    hint: 'When a question has only one legal answer — “you may reveal a Dragon card” with none in hand, a search with nothing to find, a trigger whose only legal target is itself — the game answers it after a short, human-like pause and shows a notice. Faster, but an observant opponent may read something into the timing.',
+  },
+  {
+    value: 'ask',
+    label: 'Ask me every time',
+    hint: 'Every question waits for you, even one with a single legal answer. Slower, but you click through it like any other choice, so your timing gives nothing away.',
+  },
+]
+
 const MOTION_OPTIONS: { value: MotionPreference; label: string }[] = [
   { value: 'system', label: 'Follow system' },
   { value: 'reduce', label: 'Always reduce' },
@@ -183,12 +200,17 @@ export function PreferencesPanel({ compact = false }: { compact?: boolean }) {
           checked={gameplay.autoOrderTriggers}
           onChange={(autoOrderTriggers) => update('gameplay', { autoOrderTriggers })}
         />
-        <Toggle
-          label="Answer forced choices for me"
-          hint="When a question has only one legal answer — “you may reveal a Dragon card” with none in hand, a search with nothing to find, a trigger whose only legal target is itself — answer it after a moment and show a short notice instead of a dialog. Off: every question waits for you."
-          checked={gameplay.autoAnswerForced}
-          onChange={(autoAnswerForced) => update('gameplay', { autoAnswerForced })}
-        />
+        <Field
+          label="Choices with only one answer"
+          hint={FORCED_CHOICE_OPTIONS.find((o) => o.value === (gameplay.autoAnswerForced ? 'answer' : 'ask'))?.hint}
+        >
+          <Segmented
+            value={gameplay.autoAnswerForced ? 'answer' : 'ask'}
+            options={FORCED_CHOICE_OPTIONS}
+            onChange={(mode) => update('gameplay', { autoAnswerForced: mode === 'answer' })}
+            label="Choices with only one answer"
+          />
+        </Field>
         <Toggle
           label="Follow the action"
           hint="In games with three or more players, move the camera to the board where something is happening."

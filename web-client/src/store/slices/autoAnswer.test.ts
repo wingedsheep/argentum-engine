@@ -8,7 +8,14 @@ vi.stubGlobal('window', { addEventListener: () => {}, removeEventListener: () =>
 const { useGameStore } = await import('../gameStore')
 const { createGameplayHandlers } = await import('./handlers/gameplayHandlers')
 const { setWebSocket } = await import('./shared')
-const { AUTO_ANSWER_DELAY_MS, cancelAutoAnswer, describeAutoAnswer } = await import('./handlers/autoAnswer')
+const {
+  AUTO_ANSWER_MAX_DELAY_MS,
+  AUTO_ANSWER_MIN_DELAY_MS,
+  cancelAutoAnswer,
+  describeAutoAnswer,
+  humanAnswerDelayMs,
+  setAutoAnswerDelayForTests,
+} = await import('./handlers/autoAnswer')
 const { usePreferences } = await import('@/store/preferencesStore')
 const { entityId, Phase, Step } = await import('@/types')
 
@@ -16,6 +23,9 @@ const ME = entityId('me')
 const KAVU = entityId('kavu')
 const EPOCH = 'epoch'
 const send = vi.fn()
+/** The delays the next questions draw, in order; the scheduler takes one per new question. */
+let delays: number[] = []
+let restoreDelay: () => void = () => {}
 const handlers = createGameplayHandlers(useGameStore.setState, useGameStore.getState)
 
 function setAutoAnswer(autoAnswerForced: boolean): void {
@@ -66,10 +76,13 @@ beforeEach(() => {
   setWebSocket({ send, onStateVersionReceived: vi.fn(), requestResync: vi.fn() } as unknown as GameWebSocket)
   useGameStore.setState({ sessionId: 'auto-answer-test', playerId: ME, interactionEpoch: null, autoAnswerNotice: null })
   setAutoAnswer(true)
+  delays = [1400, 2100]
+  restoreDelay = setAutoAnswerDelayForTests(() => delays.shift() ?? 1000)
 })
 
 afterEach(() => {
   cancelAutoAnswer()
+  restoreDelay()
   vi.useRealTimers()
 })
 
@@ -78,7 +91,7 @@ describe('forced questions', () => {
     receive(reveal, forced)
     expect(useGameStore.getState().pendingDecision).toBeNull()
 
-    vi.advanceTimersByTime(AUTO_ANSWER_DELAY_MS - 1)
+    vi.advanceTimersByTime(1400 - 1)
     expect(send).not.toHaveBeenCalled()
     vi.advanceTimersByTime(1)
     expect(send).toHaveBeenCalledTimes(1)
@@ -89,16 +102,29 @@ describe('forced questions', () => {
 
   it('keeps the original clock when the same question is re-sent', () => {
     receive(reveal, forced)
-    vi.advanceTimersByTime(AUTO_ANSWER_DELAY_MS / 2)
+    vi.advanceTimersByTime(700)
     receive(reveal, forced)
-    vi.advanceTimersByTime(AUTO_ANSWER_DELAY_MS / 2)
+    vi.advanceTimersByTime(700)
     expect(send).toHaveBeenCalledTimes(1)
+  })
+
+  it('draws a fresh delay for each new question', () => {
+    receive(reveal, forced)
+    vi.advanceTimersByTime(1400)
+    expect(send).toHaveBeenCalledTimes(1)
+
+    const next = { ...reveal, id: `${EPOCH}:next` }
+    receive(next, { ...forced, decisionId: next.id } as DecisionResponse)
+    vi.advanceTimersByTime(2100 - 1)
+    expect(send).toHaveBeenCalledTimes(1)
+    vi.advanceTimersByTime(1)
+    expect(send).toHaveBeenCalledTimes(2)
   })
 
   it('drops the answer when the question goes away before the delay is up', () => {
     receive(reveal, forced)
     receive()
-    vi.advanceTimersByTime(AUTO_ANSWER_DELAY_MS * 2)
+    vi.advanceTimersByTime(AUTO_ANSWER_MAX_DELAY_MS * 2)
     expect(send).not.toHaveBeenCalled()
   })
 
@@ -110,8 +136,43 @@ describe('forced questions', () => {
     setAutoAnswer(true)
     receive({ ...reveal, id: `${EPOCH}:other` }, forced)
     expect(useGameStore.getState().pendingDecision?.id).toBe(`${EPOCH}:other`)
-    vi.advanceTimersByTime(AUTO_ANSWER_DELAY_MS * 2)
+    vi.advanceTimersByTime(AUTO_ANSWER_MAX_DELAY_MS * 2)
     expect(send).not.toHaveBeenCalled()
+  })
+})
+
+describe('humanAnswerDelayMs', () => {
+  /** mulberry32: a small seeded generator, so the sample is the same on every run. */
+  function seeded(seed: number): () => number {
+    let a = seed
+    return () => {
+      a = (a + 0x6d2b79f5) | 0
+      let t = Math.imul(a ^ (a >>> 15), 1 | a)
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+    }
+  }
+
+  it('stays in range, skews short, and varies', () => {
+    const random = seeded(3340)
+    const sample = Array.from({ length: 10_000 }, () => humanAnswerDelayMs(random)).sort((a, b) => a - b)
+    const at = (q: number) => sample[Math.floor(q * (sample.length - 1))]!
+    expect(sample[0]).toBeGreaterThanOrEqual(AUTO_ANSWER_MIN_DELAY_MS)
+    expect(sample[sample.length - 1]).toBeLessThanOrEqual(AUTO_ANSWER_MAX_DELAY_MS)
+    // Median near 1.2 s; the long tail pulls the mean above it.
+    expect(at(0.5)).toBeGreaterThan(1100)
+    expect(at(0.5)).toBeLessThan(1300)
+    const mean = sample.reduce((sum, x) => sum + x, 0) / sample.length
+    expect(mean).toBeGreaterThan(at(0.5))
+    // Most answers are quick, a few are slow, and no single value dominates.
+    expect(at(0.9)).toBeLessThan(1800)
+    expect(at(0.99)).toBeGreaterThan(2000)
+    expect(new Set(sample).size).toBeGreaterThan(500)
+  })
+
+  it('handles the extremes of the uniform source', () => {
+    expect(humanAnswerDelayMs(() => 0)).toBe(AUTO_ANSWER_MIN_DELAY_MS + 400)
+    expect(humanAnswerDelayMs(() => 0.999999999)).toBeLessThanOrEqual(AUTO_ANSWER_MAX_DELAY_MS)
   })
 })
 
