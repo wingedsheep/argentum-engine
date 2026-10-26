@@ -187,7 +187,12 @@ class PlayLandHandler(
      * That check is what culls a second copy of a legendary land (CR 704.5j), and it runs after
      * detection, so a landfall trigger whose land the legend rule removes still fires (CR 603.10).
      */
-    override fun execute(state: GameState, action: PlayLand): ExecutionResult = executePlay(state, action)
+    override fun execute(state: GameState, action: PlayLand): ExecutionResult {
+        val played = executePlay(state, action)
+        // A land creature that owes its controller an entry-copy order (CR 616.1): ask, then replay.
+        return com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy
+            .askIfUnasked(state, played.state, com.wingedsheep.engine.core.PlayLandReplay(action)) ?: played
+    }
 
     private fun executePlay(state: GameState, action: PlayLand): ExecutionResult {
         val container = state.getEntity(action.cardId)

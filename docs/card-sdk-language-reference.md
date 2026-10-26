@@ -18488,10 +18488,12 @@ not update an existing copy.
   entrant, its controller orders them (CR 616.1) and the copy applied last decides what it copies, so
   the engine asks "Choose what <entrant> enters as a copy of" — picked on the battlefield among the
   copied creatures (a `SelectCardsDecision`, like a Clone's choice), or from their names once one has
-  left — as a permanent spell resolves or while an effect move prepares its entrants
-  (`GrantedEntryCopyOrderContinuation`). A token or a played land, inserted with
-  no pause before entry, still takes the most recent grant's copy. A face-down entrant is modified too, copying under its face-down status (CR
-  708.10). The copy has no as-enters choice, so `optional` must be false, and `copyFromZone`,
+  left (`GrantedEntryCopyOrderContinuation`). A permanent spell is asked as it resolves; every other
+  entrant — an effect move, each token, a played land creature, a token a resumed answer creates — is
+  asked before it enters by replay: the work that placed it is discarded, the question asked, and the
+  effect, answer or land play replayed with the answer waiting (`GameState.entryCopyOrders`). Several
+  tokens entering together are asked about one at a time. A face-down entrant is modified too,
+  copying under its face-down status (CR 708.10). The copy has no as-enters choice, so `optional` must be false, and `copyFromZone`,
   `filterByTotalManaSpent` and `exileCopiedCard` are rejected. Only the granted form is read — a
   printed `copyOf` (Essence of the Wild) isn't wired.
   **The copy is settled first, then the copied identity's own entry replacements run (CR 614.12).**

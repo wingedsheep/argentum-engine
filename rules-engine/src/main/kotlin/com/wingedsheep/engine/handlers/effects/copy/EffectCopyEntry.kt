@@ -40,17 +40,10 @@ object EffectCopyEntry {
         val playerOrder = state.apnapOrder.withIndex().associate { it.value to it.index }
         for ((id, controller) in entrants.entries.sortedBy { playerOrder[it.value] ?: Int.MAX_VALUE }) {
             if (id in context.entryCopies || id in state.getBattlefield()) continue
-            val card = state.getEntity(id)?.get<CardComponent>() ?: continue
             // A granted copy of a bound object (Mystic Reflection) supersedes the entrant's own
-            // choice; the transition installs it. Grants copying different objects are ordered by
-            // the entrant's controller (CR 616.1): the one it applies last is the entry copy.
-            val granted = GrantedEntryCopy.find(state, id, evaluator)
-            if (granted != null) {
-                if (!granted.needsOrder) continue
-                return EffectResult.from(state.suspendForDecision(
-                    GrantedEntryCopy.question(state, granted, id, card.name, controller),
-                    GrantedEntryCopyOrderContinuation(id, granted.options, EffectReplay(effect, context))))
-            }
+            // choice; the transition installs it, asking for an order between grants by replay.
+            if (GrantedEntryCopy.find(state, id, evaluator) != null) continue
+            val card = state.getEntity(id)?.get<CardComponent>() ?: continue
             val replacement = registry.getCard(card.cardDefinitionId)?.script?.replacementEffects
                 ?.filterIsInstance<EntersAsCopy>()?.firstOrNull { it.copyOf == null } ?: continue
             val candidates = PermanentEntryReplacements.entersAsCopyCandidates(

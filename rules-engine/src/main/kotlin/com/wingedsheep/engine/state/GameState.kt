@@ -587,6 +587,16 @@ data class GameState(
     val optionalDamageRedirectChoices: Map<String, Boolean> = emptyMap(),
 
     /**
+     * The controller's orderings of granted entry copies (CR 616.1, two Mystic Reflections) for
+     * entrants inserted with no pause before their entry — tokens, played lands, effect moves. An
+     * entrant placed before its controller was asked records itself as unasked; the nearest replay
+     * seam (an effect, a resumed answer, a land play) discards that work, asks, and replays it with
+     * the answer here. See [com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy].
+     */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val entryCopyOrders: com.wingedsheep.engine.handlers.effects.copy.EntryCopyOrders? = null,
+
+    /**
      * A resolved "restart the game" (CR 727) waiting for its resolution to finish; the settle
      * boundary carries it out through [com.wingedsheep.engine.core.GameRestarter].
      */

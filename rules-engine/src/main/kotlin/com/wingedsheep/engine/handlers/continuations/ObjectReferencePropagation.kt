@@ -12,7 +12,11 @@ internal fun AnswerContinuation.objectReferences(): ObjectReferenceEnvironment? 
     is EffectCopyAuraEntryContinuation -> context.objectReferences
     is EnteringAttackDefenderContinuation -> context.objectReferences
     is EffectCopyEntryContinuation -> context.objectReferences
-    is GrantedEntryCopyOrderContinuation -> replay?.context?.objectReferences
+    is GrantedEntryCopyOrderContinuation -> when (val replay = replay) {
+        is EffectReplay -> replay.context.objectReferences
+        is AnswerReplay -> replay.suspension.answer.objectReferences()
+        is PlayLandReplay, null -> null
+    }
     is EffectEntryChoiceContinuation -> context.objectReferences
     is EffectDiscardDestinationContinuation -> context.objectReferences
     is EffectDiscardOrderContinuation -> context.objectReferences
@@ -136,8 +140,11 @@ internal fun AnswerContinuation.withObjectReferences(refs: ObjectReferenceEnviro
     is EffectCopyAuraEntryContinuation -> copy(context = context.copy(objectReferences = refs))
     is EnteringAttackDefenderContinuation -> copy(context = context.copy(objectReferences = refs))
     is EffectCopyEntryContinuation -> copy(context = context.copy(objectReferences = refs))
-    is GrantedEntryCopyOrderContinuation ->
-        copy(replay = replay?.let { it.copy(context = it.context.copy(objectReferences = refs)) })
+    is GrantedEntryCopyOrderContinuation -> copy(replay = when (val replay = replay) {
+        is EffectReplay -> replay.copy(context = replay.context.copy(objectReferences = refs))
+        is AnswerReplay -> replay.copy(suspension = replay.suspension.copy(answer = replay.suspension.answer.withObjectReferences(refs)))
+        is PlayLandReplay, null -> replay
+    })
     is EffectEntryChoiceContinuation -> copy(context = context.copy(objectReferences = refs))
     is EffectDiscardDestinationContinuation -> copy(context = context.copy(objectReferences = refs))
     is EffectDiscardOrderContinuation -> copy(context = context.copy(objectReferences = refs))

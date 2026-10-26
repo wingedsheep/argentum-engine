@@ -370,9 +370,15 @@ class CreateTokenExecutor(
 
         // Apply "enters with counters" replacement effects from other battlefield permanents
         // (e.g., Gev, Scaled Scorch granting +1/+1 counters to tokens entering under your control).
+        // A token that entered as a copy of a card (a granted entry copy) has that card's own too.
         val counterEvents = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
         for (tokenId in createdTokens) {
-            val (nextState, events) = EntersWithReplacements.applyGlobal(
+            val enteredAsCopy = newState.getEntity(tokenId)
+                ?.has<com.wingedsheep.engine.state.components.identity.CopyOfComponent>() == true
+            val (nextState, events) = if (enteredAsCopy && cardRegistry != null) EntersWithReplacements.applyOnEntry(
+                newState, tokenId, tokenControllerId, cardRegistry,
+                predicateEvaluator = amountEvaluator.predicates
+            ) else EntersWithReplacements.applyGlobal(
                 newState, tokenId, tokenControllerId, cardRegistry,
                 predicateEvaluator = amountEvaluator.predicates
             )

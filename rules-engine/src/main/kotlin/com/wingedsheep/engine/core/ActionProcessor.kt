@@ -82,7 +82,9 @@ class ActionProcessor(
 
         // Handlers never detect triggers or check state-based actions themselves. The one settle
         // boundary does that for every action, paused or not (CR 117.5, 603.3).
-        val executed = services.settler.settle(registry.execute(ControlHistory.initialize(state), action))
+        val executed = services.settler.settle(registry.execute(ControlHistory.initialize(state), action)).let {
+            it.copy(state = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.settle(it.state))
+        }
         val paymentError = forcedManaPaymentSafety.rejection(state, executed, action)
         val checked = paymentError?.let { ExecutionResult.error(state, it) } ?: executed
 

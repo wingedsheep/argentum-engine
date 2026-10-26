@@ -118,9 +118,9 @@ class ModalAndCloneContinuationResumer(
     }
 
     /**
-     * Resume after the entrant's controller chose which granted entry copy applies last. An effect
-     * move is replayed carrying it as the entrant's entry copy; a resolving permanent spell takes
-     * it on and finishes its entry.
+     * Resume after the entrant's controller chose which granted entry copy applies last. Replayed
+     * work finds the answer waiting for its entrant; a resolving permanent spell takes it on and
+     * finishes its entry. A replayed answer is re-answered by the continuation handler itself.
      */
     private fun resumeGrantedEntryCopyOrder(
         state: GameState,
@@ -131,12 +131,21 @@ class ModalAndCloneContinuationResumer(
         val chosen = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy
             .chosenOption(continuation.options, response)
             ?: return ExecutionResult.error(state, "Expected one of the granted copies to be chosen")
-        val replay = continuation.replay
-        if (replay != null) {
-            val context = replay.context.copy(entryCopies = replay.context.entryCopies + (continuation.entityId to chosen))
-            val result = services.effectExecutorRegistry.execute(state, replay.effect, context)
-            if (result.outcome !is Outcome.Done) return result.toExecutionResult()
-            return checkForMore(result.stateWithOutputsHandedOn(), result.events)
+        val answered = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy
+            .withAnswer(state, continuation.entityId, chosen)
+        when (val replay = continuation.replay) {
+            is EffectReplay -> {
+                val result = services.effectExecutorRegistry.execute(answered, replay.effect, replay.context)
+                if (result.outcome !is Outcome.Done) return result.toExecutionResult()
+                return checkForMore(result.stateWithOutputsHandedOn(), result.events)
+            }
+            is PlayLandReplay -> {
+                val result = services.playLandHandler.execute(answered, replay.action)
+                if (result.outcome !is Outcome.Done) return result
+                return checkForMore(result.state, result.events)
+            }
+            is AnswerReplay -> return ExecutionResult.error(state, "A replayed answer is resumed by the continuation handler")
+            null -> Unit
         }
         val spellId = continuation.entityId
         val name = state.getEntity(spellId)?.get<CardComponent>()?.name

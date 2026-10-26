@@ -60,7 +60,7 @@ internal class PermanentSpellResolver(
                 if (granted.needsOrder) {
                     return state.suspendForDecision(
                         com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.question(
-                            state, granted, spellId, cardComponent.name, controllerId),
+                            state, granted.options, spellId, cardComponent.name, controllerId),
                         GrantedEntryCopyOrderContinuation(spellId, granted.options, replay = null),
                     )
                 }

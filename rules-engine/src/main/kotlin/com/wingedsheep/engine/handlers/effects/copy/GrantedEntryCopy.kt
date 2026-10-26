@@ -1,5 +1,9 @@
 package com.wingedsheep.engine.handlers.effects.copy
 
+import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.GrantedEntryCopyOrderContinuation
+import com.wingedsheep.engine.core.EntryCopyReplay
+import com.wingedsheep.engine.core.suspendForDecision
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.registry.CardRegistry
@@ -7,7 +11,9 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
 import com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.CopyOfComponent
+import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.identity.copiableCardComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -15,6 +21,26 @@ import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EntersAsCopy
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import kotlinx.serialization.Serializable
+
+/**
+ * An entrant whose granted copies needed ordering but that was placed before its controller was
+ * asked; the replay seam asks about it. [options] are [GrantedEntryCopy.Found.options].
+ */
+@Serializable
+data class UnaskedEntryCopyOrder(
+    val entityId: EntityId,
+    val controllerId: EntityId,
+    val entrantName: String,
+    val options: List<EntryCopyChoice>,
+)
+
+/** [GameState.entryCopyOrders]: answers awaiting their replayed entrant, and the entrant to ask about. */
+@Serializable
+data class EntryCopyOrders(
+    val answers: Map<EntityId, EntryCopyChoice> = emptyMap(),
+    val unasked: UnaskedEntryCopyOrder? = null,
+)
 
 /**
  * Granted "enters as a copy of *that* object" replacements — an [EntersAsCopy] with a bound
@@ -36,9 +62,13 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * apply to one entrant, its controller orders them (CR 616.1) and the copy effect applied last decides
  * what it copies, so the order comes down to choosing that copy: [Found.options] lists the distinct
  * copies and [Found.chosen] reads the controller's answer. A permanent spell asks as it resolves
- * ([question]); an effect move asks while preparing its entrants
- * ([EffectCopyEntry.prepare]) and carries the answer as the entrant's entry copy. A token or a played
- * land is inserted with no pause before its entry, so it takes the most recent grant's copy.
+ * ([question]). Every other entrant — an effect move, a token, a played land — is put onto the
+ * battlefield with no pause before its entry, so it is asked by replay: the first entrant placed
+ * without an answer is recorded as [EntryCopyOrders.unasked] (taking the most recent grant's copy
+ * meanwhile), and the nearest seam — the effect executor registry, the continuation handler for a
+ * resumed answer, the land play — throws that work away, asks ([askIfUnasked]) and replays it from
+ * the same state with the answer in [EntryCopyOrders.answers]. Entity ids are minted from the state,
+ * so the replay creates the same tokens and each finds its answer.
  *
  * A face-down entrant is still modified: it becomes a copy under its face-down status (CR 708.10) —
  * it keeps the face-down characteristics, and the copied values show if it is turned face up.
@@ -92,18 +122,19 @@ object GrantedEntryCopy {
      */
     fun question(
         state: GameState,
-        found: Found,
+        options: List<EntryCopyChoice>,
         entrantId: EntityId,
         entrantName: String,
         controllerId: EntityId,
     ): (String) -> com.wingedsheep.engine.core.PendingDecision {
         val prompt = "Choose what $entrantName enters as a copy of"
+        // A token being replayed doesn't exist yet in the state asked from: name it only.
         val context = com.wingedsheep.engine.core.DecisionContext(
-            sourceId = entrantId, sourceName = entrantName,
+            sourceId = entrantId.takeIf { state.getEntity(it) != null }, sourceName = entrantName,
             phase = com.wingedsheep.engine.core.DecisionPhase.RESOLUTION,
         )
-        val onBattlefield = found.options.mapNotNull { it.copiedEntity }
-            .takeIf { ids -> ids.size == found.options.size && found.options.all { it.isLiveOn(state) } }
+        val onBattlefield = options.mapNotNull { it.copiedEntity }
+            .takeIf { ids -> ids.size == options.size && options.all { it.isLiveOn(state) } }
         return { decisionId ->
             if (onBattlefield != null) {
                 com.wingedsheep.engine.core.SelectCardsDecision(
@@ -113,7 +144,7 @@ object GrantedEntryCopy {
             } else {
                 com.wingedsheep.engine.core.ChooseOptionDecision(
                     id = decisionId, playerId = controllerId, prompt = prompt, context = context,
-                    options = found.options.map { it.copiedCard?.name ?: "Unknown" },
+                    options = options.map { it.copiedCard?.name ?: "Unknown" },
                 )
             }
         }
@@ -136,6 +167,63 @@ object GrantedEntryCopy {
         else -> null
     }
 
+    /**
+     * The copy [entityId] enters as: [explicit] (an effect move's prepared entry copy), else the
+     * controller's answer awaiting it (consumed), else the most recent grant's — recording the
+     * entrant as [EntryCopyOrders.unasked] when its controller had an order to choose.
+     */
+    fun decide(
+        state: GameState,
+        found: Found,
+        entityId: EntityId,
+        entrantName: String,
+        controllerId: EntityId,
+        explicit: EntryCopyChoice? = null,
+    ): Pair<EntryCopyChoice, GameState> {
+        val orders = state.entryCopyOrders
+        val answer = explicit?.takeIf { e -> found.options.any { it.sameCopyAs(e) } }
+            ?: orders?.answers?.get(entityId)
+        var next = state
+        if (orders != null && entityId in orders.answers) {
+            next = next.copy(entryCopyOrders = orders.copy(answers = orders.answers - entityId))
+        }
+        if (answer == null && found.needsOrder && next.entryCopyOrders?.unasked == null) {
+            val unasked = UnaskedEntryCopyOrder(entityId, controllerId, entrantName, found.options)
+            next = next.copy(entryCopyOrders = (next.entryCopyOrders ?: EntryCopyOrders()).copy(unasked = unasked))
+        }
+        return found.chosen(answer) to next
+    }
+
+    /**
+     * The replay seam: when running from [input] left an entrant unasked in [result], drop that
+     * work and ask its controller from [input]; the answer replays it ([replay]). Null otherwise.
+     */
+    fun askIfUnasked(input: GameState, result: GameState, replay: EntryCopyReplay): ExecutionResult? {
+        val unasked = result.entryCopyOrders?.unasked ?: return null
+        if (input.entryCopyOrders?.unasked != null) return null
+        return input.suspendForDecision(
+            question(input, unasked.options, unasked.entityId, unasked.entrantName, unasked.controllerId),
+            GrantedEntryCopyOrderContinuation(unasked.entityId, unasked.options, replay),
+        )
+    }
+
+    /** [state] with the controller's [choice] waiting for [entityId]'s replayed entry. */
+    fun withAnswer(state: GameState, entityId: EntityId, choice: EntryCopyChoice): GameState {
+        val orders = state.entryCopyOrders ?: EntryCopyOrders()
+        return state.copy(entryCopyOrders = orders.copy(answers = orders.answers + (entityId to choice)))
+    }
+
+    /**
+     * At the end of an action: forget an unasked entrant no seam replayed (it keeps the most recent
+     * grant's copy), and once nothing is pending, any answer whose entrant never came.
+     */
+    fun settle(state: GameState): GameState {
+        val orders = state.entryCopyOrders ?: return state
+        if (state.pendingDecision == null) return state.copy(entryCopyOrders = null)
+        if (orders.unasked == null) return state
+        return state.copy(entryCopyOrders = orders.copy(unasked = null).takeIf { it.answers.isNotEmpty() })
+    }
+
     /** Mark every one-shot grant that modified an entry as spent. */
     fun spend(state: GameState, found: Found): GameState {
         val grants = state.grantedReplacementEffects
@@ -150,7 +238,7 @@ object GrantedEntryCopy {
 
     /**
      * For an entrant that is inserted onto the battlefield directly (a token, a played land): if a
-     * granted copy applies, install the copied identity with its static and replacement payload
+     * granted copy applies, install the copy [decide] picks — its copied identity with its static and replacement payload
      * ([withCopyIdentity]) before the entrant is placed, and spend the grant.
      */
     fun applyBeforeEntry(
@@ -160,16 +248,20 @@ object GrantedEntryCopy {
         evaluator: PredicateEvaluator,
     ): GameState {
         val found = find(state, entityId, evaluator) ?: return state
-        val original = state.getEntity(entityId)?.get<CardComponent>() ?: return state
-        val copied = EffectCopyEntry.copiedIdentity(original, found.choice) ?: return state
-        val withCopy = state.updateEntity(entityId) { c ->
+        val entity = state.getEntity(entityId) ?: return state
+        val original = entity.get<CardComponent>() ?: return state
+        val controllerId = entity.get<ControllerComponent>()?.playerId
+            ?: entity.get<OwnerComponent>()?.playerId ?: return state
+        val (choice, decided) = decide(state, found, entityId, original.name, controllerId)
+        val copied = EffectCopyEntry.copiedIdentity(original, choice) ?: return state
+        val withCopy = decided.updateEntity(entityId) { c ->
             EffectCopyEntry.tagCopyDuration(
                 c.withCopyIdentity(copied, registry).with(CopyOfComponent(
                     originalCardDefinitionId = original.cardDefinitionId,
                     copiedCardDefinitionId = copied.cardDefinitionId,
                     originalCardComponent = original,
                 )),
-                found.choice.replacement.duration,
+                choice.replacement.duration,
             )
         }
         return spend(withCopy, found)

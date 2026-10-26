@@ -947,15 +947,18 @@ class ZoneTransitionService(
                 newState = newState.withoutObjectGrants(entityId)
                 // A granted "enters as a copy of the chosen creature" (Mystic Reflection) is the
                 // last copy effect applied, so it wins over the entrant's own as-enters choice;
-                // among several, the one the controller chose to apply last ([options.entryCopy]).
+                // among several, the one the controller chose to apply last (asked by replay).
                 // A face-down entrant is modified too: it copies under its face-down status (CR 708.10).
                 val grantedCopy = com.wingedsheep.engine.handlers.effects.copy
                     .GrantedEntryCopy.find(newState, entityId, predicateEvaluator)
-                val grantedChoice = grantedCopy?.chosen(options.entryCopy)
+                var grantedChoice: com.wingedsheep.engine.handlers.effects.copy.EntryCopyChoice? = null
                 if (grantedCopy != null) {
-                    newState = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.spend(newState, grantedCopy)
+                    val (choice, decided) = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy
+                        .decide(newState, grantedCopy, entityId, cardComponent.name, destControllerId, options.entryCopy)
+                    grantedChoice = choice
+                    newState = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.spend(decided, grantedCopy)
                     if (options.faceDown) newState = com.wingedsheep.engine.handlers.effects.copy.EffectCopyEntry
-                        .apply(newState, entityId, grantedChoice!!)
+                        .apply(newState, entityId, choice)
                 }
                 val entryCopyChoice = grantedChoice ?: options.entryCopy
                 if (!options.faceDown) {

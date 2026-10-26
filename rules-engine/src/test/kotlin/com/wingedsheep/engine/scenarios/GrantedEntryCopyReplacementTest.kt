@@ -47,7 +47,9 @@ import io.kotest.matchers.shouldBe
  * Clone's own copy choice is moot; a chosen creature that has left the battlefield is copied as it
  * last existed; an entry it doesn't apply to leaves it waiting, and unused it ends with the turn;
  * when grants bound to different creatures apply to one entrant, its controller chooses the order
- * and the copy applied last is what it copies (CR 616.1), all of them spent.
+ * and the copy applied last is what it copies (CR 616.1), all of them spent — asked for each
+ * entrant however it enters: a spell, an effect move, each token, a played land creature, a token
+ * a resumed answer creates.
  */
 class GrantedEntryCopyReplacementTest : FunSpec({
 
@@ -153,11 +155,18 @@ class GrantedEntryCopyReplacementTest : FunSpec({
         toughness = 1
     }
 
+    val mirrorMaker = card("Test Mirror Maker") {
+        manaCost = "{U}"
+        typeLine = "Sorcery"
+        oracleText = "Choose a permanent you control. Create a token that's a copy of it."
+        spell { effect = Effects.CreateTokenCopyOfChosenPermanent() }
+    }
+
     data class Setup(val driver: GameTestDriver, val me: EntityId, val opponent: EntityId)
 
     fun setup(): Setup {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(reflection, seer, hydra, giant, clone, relic, twinWolves, wolfGift, reanimate, wolfThenWolf, arbor))
+        driver.registerCards(TestCards.all + listOf(reflection, seer, hydra, giant, clone, relic, twinWolves, wolfGift, reanimate, wolfThenWolf, arbor, mirrorMaker))
         driver.initMirrorMatch(deck = Deck.of("Island" to 40), startingLife = 20)
         val me = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -229,6 +238,16 @@ class GrantedEntryCopyReplacementTest : FunSpec({
         tokens shouldHaveSize 2
         tokens.map { driver.nameOf(it) } shouldBe listOf("Test Giant", "Test Giant")
         driver.state.grantedReplacementEffects.shouldBeEmpty()
+    }
+
+    test("a token entering as a copy gets the copied creature's own enters-with counters") {
+        val (driver, me) = setup()
+        val hydra = driver.putCreatureOnBattlefield(me, "Test Hydra")
+        driver.reflect(me, hydra)
+        driver.cast(me, "Test Twin Wolves")
+
+        val tokens = driver.state.getBattlefield().filter { driver.state.getEntity(it)?.has<TokenComponent>() == true }
+        tokens.map { driver.plusOnes(it) } shouldBe listOf(2, 2)
     }
 
     test("it applies to a creature entering under an opponent's control") {
@@ -435,6 +454,91 @@ class GrantedEntryCopyReplacementTest : FunSpec({
         driver.state.getEntity(morph)?.has<FaceDownComponent>() shouldBe true
         driver.state.projectedState.getPower(morph) shouldBe 2
         driver.nameOf(morph) shouldBe "Test Giant"
+        driver.state.grantedReplacementEffects.shouldBeEmpty()
+    }
+
+    fun GameTestDriver.tokens() = state.getBattlefield().filter { state.getEntity(it)?.has<TokenComponent>() == true }
+
+    test("two grants copying different creatures: each token's controller orders them, before the tokens exist") {
+        val (driver, me) = setup()
+        val giant = driver.putCreatureOnBattlefield(me, "Test Giant")
+        val hydra = driver.putCreatureOnBattlefield(me, "Test Hydra")
+        driver.reflect(me, giant)
+        driver.reflect(me, hydra)
+        driver.cast(me, "Test Twin Wolves")
+
+        withClue("asked about the first token on the battlefield among the copied creatures; no token yet") {
+            (driver.pendingDecision as SelectCardsDecision).options shouldBe listOf(hydra, giant)
+            driver.tokens().shouldBeEmpty()
+        }
+        driver.chooseCopyOf(me, "Test Giant")
+        withClue("then about the second, still before either enters") {
+            (driver.pendingDecision as SelectCardsDecision).options shouldBe listOf(hydra, giant)
+            driver.tokens().shouldBeEmpty()
+        }
+        driver.chooseCopyOf(me, "Test Hydra")
+
+        driver.pendingDecision shouldBe null
+        val tokens = driver.tokens()
+        tokens.mapNotNull { driver.nameOf(it) }.sorted() shouldBe listOf("Test Giant", "Test Hydra")
+        withClue("the Hydra copy's enters-with counters applied") {
+            driver.plusOnes(tokens.single { driver.nameOf(it) == "Test Hydra" }) shouldBe 2
+        }
+        driver.state.grantedReplacementEffects.shouldBeEmpty()
+        driver.state.entryCopyOrders shouldBe null
+    }
+
+    test("a token an opponent gets is ordered by that opponent") {
+        val (driver, me, opponent) = setup()
+        val giant = driver.putCreatureOnBattlefield(me, "Test Giant")
+        val hydra = driver.putCreatureOnBattlefield(me, "Test Hydra")
+        driver.reflect(me, giant)
+        driver.reflect(me, hydra)
+        driver.cast(me, "Test Wolf Gift")
+
+        driver.chooseCopyOf(opponent, "Test Giant")
+        driver.getCreatures(opponent).map { driver.nameOf(it) } shouldBe listOf("Test Giant")
+    }
+
+    test("a played land creature asks for the order before it enters") {
+        val (driver, me) = setup()
+        val giant = driver.putCreatureOnBattlefield(me, "Test Giant")
+        val hydra = driver.putCreatureOnBattlefield(me, "Test Hydra")
+        driver.reflect(me, giant)
+        driver.reflect(me, hydra)
+        val land = driver.putCardInHand(me, "Test Arbor")
+        driver.playLand(me, land).error shouldBe null
+
+        withClue("still in hand while the order is chosen") {
+            driver.state.getHand(me).contains(land) shouldBe true
+        }
+        driver.chooseCopyOf(me, "Test Giant")
+        driver.state.getBattlefield().contains(land) shouldBe true
+        driver.nameOf(land) shouldBe "Test Giant"
+        driver.state.grantedReplacementEffects.shouldBeEmpty()
+    }
+
+    test("a token created by answering another question asks too, then that answer is replayed") {
+        val (driver, me) = setup()
+        val giant = driver.putCreatureOnBattlefield(me, "Test Giant")
+        val hydra = driver.putCreatureOnBattlefield(me, "Test Hydra")
+        val seer = driver.putCreatureOnBattlefield(me, "Test Seer")
+        driver.reflect(me, giant)
+        driver.reflect(me, hydra)
+        driver.cast(me, "Test Mirror Maker")
+
+        val pick = driver.pendingDecision as SelectCardsDecision
+        driver.submitDecision(me, CardsSelectedResponse(pick.id, listOf(seer))).error shouldBe null
+        withClue("the token copy of the Seer is about to enter: its order is asked first") {
+            (driver.pendingDecision as SelectCardsDecision).options shouldBe listOf(hydra, giant)
+            driver.tokens().shouldBeEmpty()
+        }
+        driver.chooseCopyOf(me, "Test Hydra")
+
+        driver.pendingDecision shouldBe null
+        val token = driver.tokens().single()
+        driver.nameOf(token) shouldBe "Test Hydra"
+        driver.plusOnes(token) shouldBe 2
         driver.state.grantedReplacementEffects.shouldBeEmpty()
     }
 })
