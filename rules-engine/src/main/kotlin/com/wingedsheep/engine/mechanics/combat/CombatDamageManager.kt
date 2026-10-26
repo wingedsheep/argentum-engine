@@ -1336,11 +1336,18 @@ internal class CombatDamageManager(
         if (newState.getEntity(targetId)?.get<LifeTotalComponent>() == null) return newState
         // CR 810.9 — combat damage applies to the team's shared life total.
         val currentLife = newState.lifeTotal(targetId)
-        var lifeLossAmount = DamageUtils.applyStaticLifeLossModification(newState, targetId, effectiveAmount, predicateEvaluator = predicateEvaluator)
-        lifeLossAmount = DamageUtils.applyLifeLossFloors(newState, targetId, currentLife, lifeLossAmount, predicateEvaluator = predicateEvaluator)
-        val (written, newLife) = DamageUtils.writeLifeReduction(newState, targetId, currentLife, currentLife - lifeLossAmount, predicateEvaluator)
+        // CR 702.90b — damage from a source with infect gives poison counters (below) instead of
+        // causing life loss, so the life-loss replacements never see it.
+        val hasInfect = DamageUtils.sourceHasInfect(newState, newState.projectedState, sourceId)
+        val (written, newLife) = if (hasInfect) newState to currentLife else {
+            var lifeLossAmount = DamageUtils.applyStaticLifeLossModification(newState, targetId, effectiveAmount, predicateEvaluator = predicateEvaluator)
+            lifeLossAmount = DamageUtils.applyLifeLossFloors(newState, targetId, currentLife, lifeLossAmount, predicateEvaluator = predicateEvaluator)
+            DamageUtils.writeLifeReduction(newState, targetId, currentLife, currentLife - lifeLossAmount, predicateEvaluator)
+        }
         newState = written
-        newState = DamageUtils.trackDamageReceivedByPlayer(newState, targetId, effectiveAmount, sourceId, isCombatDamage = true)
+        newState = DamageUtils.trackDamageReceivedByPlayer(
+            newState, targetId, effectiveAmount, sourceId, isCombatDamage = true, causedLifeLoss = !hasInfect
+        )
 
         // Track combat damage: source dealt damage + dealt combat damage to player
         newState = DamageUtils.trackDamageDealt(newState, sourceId, effectiveAmount, isCombatDamage = true)
@@ -1377,14 +1384,17 @@ internal class CombatDamageManager(
             sourceName = sourceName, targetName = "Player", targetIsPlayer = true,
             sourceAttachmentIds = attachmentIdsOf(state, sourceId),
             sourceLastKnown = captureLastKnown(state, sourceId)))
-        events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
+        if (!hasInfect) events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
 
         // Commander damage (CR 903.10a)
         newState = accumulateCommanderDamage(newState, sourceId, targetId, effectiveAmount)
 
-        val toxicAmount = getToxicAmount(newState, newState.projectedState, sourceId)
-        newState = giveToxicPoison(newState, targetId, toxicAmount,
-            placerId = newState.projectedState.getController(sourceId), events = events)
+        // Infect's poison (CR 120.3b) and toxic's (CR 120.3g) are separate results of the same
+        // damage, so a creature with both gives the sum.
+        val poisonAmount = (if (hasInfect) effectiveAmount else 0) +
+            getToxicAmount(newState, newState.projectedState, sourceId)
+        newState = DamageUtils.givePoisonCounters(newState, targetId, poisonAmount,
+            newState.projectedState.getController(sourceId), events, predicateEvaluator)
 
         // Reflection (Harsh Justice)
         newState = applyDamageReflection(newState, sourceId, targetId, originalAmount, events)
@@ -1599,11 +1609,16 @@ internal class CombatDamageManager(
         if (isPlayer) {
             // CR 810.9 — applies to the team's shared total (isPlayer already guards presence).
             val currentLife = newState.lifeTotal(targetId)
+            // CR 702.90b — damage from a source with infect gives poison counters instead of
+            // causing life loss (placed below, after the damage bookkeeping).
+            val hasInfect = DamageUtils.sourceHasInfect(newState, projected, sourceId)
             // CR 119.8 — damage to a player who can't lose life leaves the total unchanged.
-            val (written, newLife) = if (newState.isLifeLossLocked(targetId)) newState to currentLife
+            val (written, newLife) = if (hasInfect || newState.isLifeLossLocked(targetId)) newState to currentLife
                 else DamageUtils.writeLifeReduction(newState, targetId, currentLife, currentLife - amount, predicateEvaluator)
             newState = written
-            newState = DamageUtils.trackDamageReceivedByPlayer(newState, targetId, amount, sourceId, isCombatDamage = true)
+            newState = DamageUtils.trackDamageReceivedByPlayer(
+                newState, targetId, amount, sourceId, isCombatDamage = true, causedLifeLoss = !hasInfect
+            )
             // Track combat damage: source dealt damage + dealt combat damage to player
             newState = DamageUtils.trackDamageDealt(newState, sourceId, amount, isCombatDamage = true)
             if (sourceId in newState.getBattlefield()) {
@@ -1638,14 +1653,16 @@ internal class CombatDamageManager(
                 sourceName = sourceName, targetName = "Player", targetIsPlayer = true,
                 sourceAttachmentIds = attachmentIdsOf(newState, sourceId),
                 sourceLastKnown = captureLastKnown(newState, sourceId)))
-            events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
+            if (!hasInfect) events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
 
             // Commander damage (CR 903.10a)
             newState = accumulateCommanderDamage(newState, sourceId, targetId, amount)
 
-            val toxicAmount = getToxicAmount(newState, projected, sourceId)
-            newState = giveToxicPoison(newState, targetId, toxicAmount,
-                placerId = projected.getController(sourceId), events = events)
+            // Infect's poison (CR 120.3b) and toxic's (CR 120.3g) are separate results of the
+            // same damage, so a creature with both gives the sum.
+            val poisonAmount = (if (hasInfect) amount else 0) + getToxicAmount(newState, projected, sourceId)
+            newState = DamageUtils.givePoisonCounters(newState, targetId, poisonAmount,
+                projected.getController(sourceId), events, predicateEvaluator)
         } else if (isPlaneswalker || isBattle) {
             if (targetId !in newState.getBattlefield()) return newState
             val counterType = if (isPlaneswalker) com.wingedsheep.sdk.core.CounterType.LOYALTY
@@ -1664,7 +1681,10 @@ internal class CombatDamageManager(
                 )
             }
             val projected = newState.projectedState
-            val hasWither = projected.hasKeyword(sourceId, Keyword.WITHER)
+            // Wither (CR 702.80) and infect (CR 702.90c) both deal damage to creatures as -1/-1
+            // counters (CR 120.3d).
+            val hasWither = projected.hasKeyword(sourceId, Keyword.WITHER) ||
+                DamageUtils.sourceHasInfect(newState, projected, sourceId)
             // Excess damage (CR 120.4a): damage past lethal, whether it is marked or dealt as
             // wither's -1/-1 counters (CR 702.80a). With deathtouch any damage greater than 1 is
             // excess — lethal collapses to a flat 1 regardless of marked damage (CR 120.4a refs
@@ -1765,29 +1785,6 @@ internal class CombatDamageManager(
      * counters" trigger reads. The counters go through the same placement replacements as any other
      * counter placement — a poison cap (Melira, the Living Cure) cuts them and locks the player out.
      */
-    private fun giveToxicPoison(
-        state: GameState,
-        targetId: EntityId,
-        toxicAmount: Int,
-        placerId: EntityId?,
-        events: MutableList<GameEvent>
-    ): GameState {
-        if (toxicAmount <= 0) return state
-        val placed = ReplacementEffectUtils.applyCounterPlacementModifiers(
-            state, targetId, CounterType.POISON, toxicAmount, placerId = placerId,
-            predicateEvaluator = predicateEvaluator, byEffect = true
-        )
-        if (placed <= 0) return state
-        val counters = state.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
-        val newState = state.updateEntity(targetId) { container ->
-            container.with(counters.withAdded(CounterType.POISON, placed))
-        }
-        events.add(CountersAddedEvent(targetId, CounterType.POISON, placed, "Player", placedBy = placerId))
-        return ReplacementEffectUtils.recordCounterPlacementLock(
-            newState, targetId, CounterType.POISON, placed, predicateEvaluator
-        )
-    }
-
     /**
      * Toxic N total — printed and granted flow through the same projected `TOXIC_<n>`
      * keyword form (see [com.wingedsheep.engine.state.components.identity.ToxicComponent]

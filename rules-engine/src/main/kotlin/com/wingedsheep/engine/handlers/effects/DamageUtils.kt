@@ -476,7 +476,18 @@ object DamageUtils {
         // Check if target is a player, planeswalker, or creature
         val lifeComponent = newState.getEntity(targetId)?.get<LifeTotalComponent>()
         val projected = newState.projectedState
-        if (lifeComponent != null) {
+        if (lifeComponent != null && sourceId != null && sourceHasInfect(state, projected, sourceId)) {
+            // CR 120.3b / 702.90b: damage to a player by a source with infect doesn't cause life
+            // loss; its controller gives the player that many poison counters instead. It is
+            // still damage dealt to the player, so the damage tallies (and lifelink below) apply.
+            newState = trackDamageReceivedByPlayer(
+                newState, targetId, effectiveAmount, sourceId, isCombatDamage, causedLifeLoss = false
+            )
+            newState = givePoisonCounters(
+                newState, targetId, effectiveAmount, damageSourceController(newState, projected, sourceId),
+                events, zones.predicateEvaluator
+            )
+        } else if (lifeComponent != null) {
             // CR 120.3a: damage to a player by a source without infect causes that player
             // to lose that much life, so life-loss replacements (Bloodletter of Aclazotz)
             // modify the life total reduction here. Lifelink and other damage-based effects
@@ -542,10 +553,12 @@ object DamageUtils {
             // It's a creature - mark damage (or place -1/-1 counters if source has wither)
             val hasWither = sourceId != null && (
                 sourceHasKeyword(state, projected, sourceId, Keyword.WITHER) ||
-                state.getEntity(sourceId)?.get<SpellGrantedKeywordsComponent>()?.keywords?.contains(Keyword.WITHER.name) == true
+                state.getEntity(sourceId)?.get<SpellGrantedKeywordsComponent>()?.keywords?.contains(Keyword.WITHER.name) == true ||
+                sourceHasInfect(state, projected, sourceId)
             )
             if (hasWither) {
-                // Wither (CR 702.80): damage to creatures is dealt in the form of -1/-1 counters.
+                // Wither (CR 702.80) and infect (CR 702.90c): damage to creatures is dealt in the
+                // form of -1/-1 counters (CR 120.3d).
                 // It is still damage, so the excess (CR 120.4a) is measured against lethal damage
                 // exactly as for marked damage, before the counters change the toughness.
                 val witherLethalNeeded =
@@ -736,12 +749,7 @@ object DamageUtils {
             if (sourceHasKeyword(newState, projected, sourceId, Keyword.LIFELINK) ||
                 sourceHasGrantedDamageKeyword(zones.cardRegistry, newState, sourceId, Keyword.LIFELINK)
             ) {
-                val controllerId = projected.getController(sourceId)
-                    ?: newState.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
-                    // A spell source carries no ControllerComponent; its controller is the caster.
-                    ?: newState.getEntity(sourceId)?.get<SpellOnStackComponent>()?.casterId
-                    // A permanent that left the battlefield: its controller as it last existed there.
-                    ?: newState.getEntity(sourceId)?.get<LastKnownPermanentComponent>()?.snapshot?.controllerId
+                val controllerId = damageSourceController(newState, projected, sourceId)
                 if (controllerId != null) {
                     val (gainedState, gainEvent) = gainLife(newState, controllerId, effectiveAmount, predicateEvaluator = zones.predicateEvaluator)
                     newState = gainedState
@@ -781,7 +789,9 @@ object DamageUtils {
         playerId: EntityId,
         amount: Int,
         sourceId: EntityId? = null,
-        isCombatDamage: Boolean = false
+        isCombatDamage: Boolean = false,
+        /** False for damage from a source with infect, which gives poison counters instead (CR 702.90b). */
+        causedLifeLoss: Boolean = true
     ): GameState {
         if (amount <= 0) return state
         // Every path that deals damage to a player — combat and noncombat alike — funnels through
@@ -808,12 +818,15 @@ object DamageUtils {
                 ?: com.wingedsheep.engine.state.components.player.LifeLostAmountThisTurnComponent()
             var updated = WasDealtDamageThisTurnComponent.markedOn(container, isCombatDamage)
                 .with(com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent(existing.amount + amount))
-                .with(com.wingedsheep.engine.state.components.player.LifeLostThisTurnComponent)
-                .with(
-                    com.wingedsheep.engine.state.components.player.LifeLostAmountThisTurnComponent(
-                        existingLifeLost.amount + amount
+            if (causedLifeLoss) {
+                updated = updated
+                    .with(com.wingedsheep.engine.state.components.player.LifeLostThisTurnComponent)
+                    .with(
+                        com.wingedsheep.engine.state.components.player.LifeLostAmountThisTurnComponent(
+                            existingLifeLost.amount + amount
+                        )
                     )
-                )
+            }
             if (sourceIsArtifact) {
                 val existingArtifact = container.get<com.wingedsheep.engine.state.components.player.DamageReceivedFromArtifactsThisTurnComponent>()
                     ?: com.wingedsheep.engine.state.components.player.DamageReceivedFromArtifactsThisTurnComponent()
@@ -982,6 +995,55 @@ object DamageUtils {
         if (projected.hasKeyword(sourceId, keyword)) return true
         val lastKnown = state.getEntity(sourceId)?.get<LastKnownPermanentComponent>() ?: return false
         return keyword.name in lastKnown.snapshot.keywords && sourceId !in state.getBattlefield()
+    }
+
+    /**
+     * The controller of a damage source: a permanent's projected controller, a spell's caster, or
+     * — for a permanent that has left the battlefield — its controller as it last existed there.
+     */
+    private fun damageSourceController(state: GameState, projected: ProjectedState, sourceId: EntityId): EntityId? =
+        projected.getController(sourceId)
+            ?: state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+            // A spell source carries no ControllerComponent; its controller is the caster.
+            ?: state.getEntity(sourceId)?.get<SpellOnStackComponent>()?.casterId
+            ?: state.getEntity(sourceId)?.get<LastKnownPermanentComponent>()?.snapshot?.controllerId
+
+    /**
+     * Does [sourceId] have infect for the damage it is dealing right now (CR 702.90)? Projected
+     * keywords for a battlefield source, last-known keywords for one that has left (CR 702.90d),
+     * and the one-shot spell grant for a spell on the stack — infect works from any zone
+     * (CR 702.90e). Public so combat damage reads the same answer.
+     */
+    fun sourceHasInfect(state: GameState, projected: ProjectedState, sourceId: EntityId): Boolean =
+        sourceHasKeyword(state, projected, sourceId, Keyword.INFECT) ||
+            state.getEntity(sourceId)?.get<SpellGrantedKeywordsComponent>()?.keywords?.contains(Keyword.INFECT.name) == true
+
+    /**
+     * [placerId] gives [playerId] [amount] poison counters as the result of damage — infect
+     * (CR 120.3b) or toxic (CR 120.3g). A counter placement, so placement replacements apply.
+     */
+    fun givePoisonCounters(
+        state: GameState,
+        playerId: EntityId,
+        amount: Int,
+        placerId: EntityId?,
+        events: MutableList<EngineGameEvent>,
+        predicateEvaluator: PredicateEvaluator
+    ): GameState {
+        if (amount <= 0) return state
+        val placed = ReplacementEffectUtils.applyCounterPlacementModifiers(
+            state, playerId, CounterType.POISON, amount, placerId = placerId,
+            predicateEvaluator = predicateEvaluator, byEffect = true
+        )
+        if (placed <= 0) return state
+        val counters = state.getEntity(playerId)?.get<CountersComponent>() ?: CountersComponent()
+        val newState = state.updateEntity(playerId) { container ->
+            container.with(counters.withAdded(CounterType.POISON, placed))
+        }
+        events.add(CountersAddedEvent(playerId, CounterType.POISON, placed, "Player", placedBy = placerId))
+        return ReplacementEffectUtils.recordCounterPlacementLock(
+            newState, playerId, CounterType.POISON, placed, predicateEvaluator
+        )
     }
 
     private fun sourceHasGrantedDamageKeyword(

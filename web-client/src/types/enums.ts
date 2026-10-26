@@ -249,6 +249,7 @@ export enum Keyword {
   OFFSPRING = 'OFFSPRING',
   // Damage modification
   WITHER = 'WITHER',
+  INFECT = 'INFECT',
   TOXIC = 'TOXIC',
   // Death replacement
   PERSIST = 'PERSIST',
@@ -403,6 +404,7 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.PLOT]: 'Plot',
   [Keyword.OFFSPRING]: 'Offspring',
   [Keyword.WITHER]: 'Wither',
+  [Keyword.INFECT]: 'Infect',
   [Keyword.TOXIC]: 'Toxic',
   [Keyword.PERSIST]: 'Persist',
   [Keyword.UNDYING]: 'Undying',

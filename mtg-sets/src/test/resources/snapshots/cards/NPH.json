@@ -137,6 +137,33 @@
     ]
 }
 
+// Blighted Agent
+{
+    "name": "Blighted Agent",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Phyrexian Human Rogue",
+    "oracleText": "Infect (This creature deals damage to creatures in the form of -1/-1 counters and to players in the form of poison counters.)\nThis creature can't be blocked.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "INFECT"
+    ],
+    "flags": [
+        "CANT_BE_BLOCKED"
+    ],
+    "metadata": {
+        "collectorNumber": "29",
+        "artist": "Anthony Francisco",
+        "flavorText": "\"Urabrask may suspect our surveillance, but he cannot stop it.\"\n—Avaricta, Gitaxian sective",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cddaebde-a060-4510-8c97-68432d931987.jpg?1783941323"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Deceiver Exarch
 {
     "name": "Deceiver Exarch",

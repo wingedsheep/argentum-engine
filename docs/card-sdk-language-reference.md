@@ -13384,6 +13384,16 @@ derives `CardDefinition.colors` from it), Convoke, Delve, Improvise, Affinity, E
 Offspring, Persist, Undying, Enduring, Ascend, Storied, Start your engines!, Max speed, Wither, Toxic, Eerie, Vivid, Fateful Bite, Exploit, Champion, Evolve, Ravenous, Soulbond, Daybound, Nightbound, … (display-only — engine effect lives in handlers or
 composite abilities).
 
+**Infect** (`Keyword.INFECT`, CR 702.90) — a plain `keywords(Keyword.INFECT)`, grantable like any other
+keyword (`GrantKeyword(Keyword.INFECT)`, `Effects.GrantKeywordToSpell(Keyword.INFECT)`). Read at every damage
+site (combat and noncombat, via `DamageUtils.sourceHasInfect`): damage to a player gives that player that many
+poison counters from the source's controller instead of life loss (CR 120.3b) — no `LifeChangedEvent`, no
+life-lost-this-turn tally, and life-loss replacements never see it, but it is still damage dealt (combat-damage
+triggers, damage tallies, commander damage and lifelink all apply). Damage to a creature is dealt as -1/-1
+counters exactly like wither (CR 120.3d); damage to a planeswalker or battle is unchanged. A source that has left
+the battlefield is read by last-known information (CR 702.90d). Toxic on the same creature adds its poison on top.
+Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
+
 **Parameterized `KeywordAbility.*`**
 
 - `Ward(cost: WardCost)` — the opponent pays `cost` or their spell/ability targeting this is countered

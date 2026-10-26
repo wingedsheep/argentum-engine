@@ -802,6 +802,13 @@ enum class Keyword(val displayName: String) {
 
     // ── Damage modification ──────────────────────────────
     WITHER("Wither"),
+    /**
+     * Infect (CR 702.90): damage this source deals to a player gives that player that many poison
+     * counters instead of causing life loss (CR 120.3b); damage to a creature is dealt as -1/-1
+     * counters, exactly as with [WITHER] (CR 120.3d). Works from any zone (a spell with infect),
+     * and multiple instances are redundant.
+     */
+    INFECT("Infect"),
     TOXIC("Toxic"),
 
     // ── Numeric (parameterized by N) ──────────────────────
