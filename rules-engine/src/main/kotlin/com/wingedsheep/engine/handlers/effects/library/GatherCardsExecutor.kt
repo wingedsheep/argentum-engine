@@ -568,6 +568,7 @@ class GatherCardsExecutor(
         is Player.Each, is Player.ActivePlayerFirst -> state.turnOrder
         is Player.EachStartingWithYou -> state.turnOrderStartingWith(context.controllerId)
         is Player.EachOpponent -> state.turnOrder.filter { it != context.controllerId }
+        is Player.EachOtherPlayer -> state.getOtherPlayers(context.controllerId)
         else -> resolvePlayer(player, context, state)?.let { listOf(it) }
     }
 }

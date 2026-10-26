@@ -447,7 +447,7 @@ object TargetResolutionUtils {
             // EachTargetedPlayer by DynamicAmountEvaluator.resolveUnifiedPlayerIds. Collapsing
             // either to its first player is exactly the bug they exist to avoid, so neither gets a
             // single-player arm.
-            Player.Each, Player.EachOpponent, Player.EachDefendingPlayer, Player.ActivePlayerFirst,
+            Player.Each, Player.EachOpponent, Player.EachOtherPlayer, Player.EachDefendingPlayer, Player.ActivePlayerFirst,
             Player.EachStartingWithYou,
             Player.EachTargetedPlayer, Player.OwnersOfLinkedExile, is Player.InCollection -> null
         }
@@ -650,6 +650,7 @@ object TargetResolutionUtils {
                 Player.ActivePlayerFirst -> state.apnapOrder
                 Player.EachStartingWithYou -> state.turnOrderStartingWith(context.controllerId)
                 Player.EachOpponent -> state.getOpponents(context.controllerId)
+                Player.EachOtherPlayer -> state.getOtherPlayers(context.controllerId)
                 else -> resolvePlayerRef(effectTarget.player, context, state)
                     ?.let { listOf(it) } ?: emptyList()
             }

@@ -90,6 +90,7 @@ class GatherUntilMatchExecutor(
             Player.ActivePlayerFirst -> state.apnapOrder
             Player.EachStartingWithYou -> state.turnOrderStartingWith(context.controllerId)
             Player.EachOpponent -> state.getOpponents(context.controllerId)
+            Player.EachOtherPlayer -> state.getOtherPlayers(context.controllerId)
             else -> listOf(TargetResolutionUtils.resolvePlayerRef(player, context, state) ?: context.controllerId)
         }
 }

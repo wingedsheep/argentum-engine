@@ -997,6 +997,13 @@ data class GameState(
     }
 
     /**
+     * Every player other than [playerId], in turn order, excluding players who have lost or left
+     * the game — `Player.EachOtherPlayer`. Unlike [getOpponents] it keeps [playerId]'s teammates:
+     * "each other player" is not "each opponent" in a team game (CR 102.3).
+     */
+    fun getOtherPlayers(playerId: EntityId): List<EntityId> = activePlayers.filter { it != playerId }
+
+    /**
      * Whether [playerId] is an opponent of [ofPlayerId] (CR 102.3) — the predicate form of
      * [getOpponents], for the `Player.EachOpponent` branch of every "does this player match the
      * pattern?" check. Never spell that branch as `playerId != controllerId`: in a team game the

@@ -319,6 +319,7 @@ class ForEachExecutor(
             Player.EachStartingWithYou -> state.turnOrderStartingWith(context.controllerId)
             Player.You -> listOf(context.controllerId)
             Player.EachOpponent -> state.getOpponents(context.controllerId)
+            Player.EachOtherPlayer -> state.getOtherPlayers(context.controllerId)
             // Distinct owners of the cards still in the source's linked-exile pile. Resolve to
             // exactly those owners (empty when the pile is empty) — never the activePlayers
             // fallback below, so "the exiled card's owner does X" does nothing when nothing was

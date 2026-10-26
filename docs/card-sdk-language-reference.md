@@ -5830,6 +5830,15 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   until no one puts a card onto the battlefield") = `RepeatWhile(Pipeline {
   forEachPlayerCollecting(Player.EachStartingWithYou) { chooseUpTo(1, permanents in hand) → move(→
   BATTLEFIELD) } }, WhileCondition(CollectionContainsMatch(putThisRound)))`.
+- `Player.EachOtherPlayer` — every player **other than you**, in turn order — "each other player".
+  Not `Player.EachOpponent`: a player's opponents are everyone not on their team (CR 102.3), so in a
+  team game (Two-Headed Giant) "each opponent" skips your teammate while "each other player" includes
+  them; outside team play the two name the same players. A plural reference: it fans out in
+  `PlayerRef` effect targets (edicts, life loss, draws), `ForEachPlayer`, the gathers,
+  `AnyPlayerMayPay`, player counts, and matches "another player" in player predicates and event
+  patterns. Grave Pact ("whenever a creature you control dies, each other player sacrifices a creature
+  of their choice") = `Effects.Sacrifice(GameObjectFilter.Creature, 1,
+  EffectTarget.PlayerRef(Player.EachOtherPlayer))` — in 2HG the teammate sacrifices too.
 - `handle.asPlayer` (`Player.BoundVariable(name)`) — the player chosen for a named target, read in a
   player-typed slot: `CardSource.FromZone(Zone.HAND, opponent.asPlayer)`,
   `DynamicAmounts.damageReceivedThisTurn(opponent.asPlayer)`. It shares `EffectTarget.BoundVariable`'s

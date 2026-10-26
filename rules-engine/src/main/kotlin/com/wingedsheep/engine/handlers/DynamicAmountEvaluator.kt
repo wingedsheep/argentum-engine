@@ -1592,6 +1592,7 @@ class DynamicAmountEvaluator(
             is Player.ControllerOfIterationEntity, is Player.OwnerOfIterationEntity ->
                 listOfNotNull(TargetResolutionUtils.resolvePlayerRef(player, context, state))
             is Player.EachOpponent -> state.getOpponents(context.controllerId)
+            is Player.EachOtherPlayer -> state.getOtherPlayers(context.controllerId)
             is Player.TargetOpponent, is Player.TargetPlayer -> listOfNotNull(
                 TargetResolutionUtils.resolvePlayerRef(player, context, state)
             )

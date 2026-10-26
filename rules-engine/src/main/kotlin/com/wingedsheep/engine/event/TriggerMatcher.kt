@@ -1997,6 +1997,7 @@ class TriggerMatcher(
             Player.You -> eventPlayerId == controllerId
             Player.Each -> true
             Player.EachOpponent -> state.isOpponentOf(eventPlayerId, controllerId)
+            Player.EachOtherPlayer -> eventPlayerId != controllerId
             Player.EnchantedPlayer ->
                 sourceId == null || TargetResolutionUtils.enchantedPlayer(sourceId, state) == eventPlayerId
             Player.ChosenOpponent ->

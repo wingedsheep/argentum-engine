@@ -336,6 +336,7 @@ class PredicateEvaluator(
         Player.Any, Player.Each -> true
         Player.You -> playerId == context.controllerId
         Player.EachOpponent, Player.AnOpponent -> state.isOpponentOf(playerId, context.controllerId)
+        Player.EachOtherPlayer -> playerId != context.controllerId && playerId in state.activePlayers
         else -> {
             val reference = EffectTarget.PlayerRef(player)
             (context.resolvePlayerTarget(reference)

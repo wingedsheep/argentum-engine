@@ -72,6 +72,7 @@ class AnyPlayerMayPayExecutor(
             Player.EachStartingWithYou -> state.turnOrderStartingWith(context.controllerId)
             Player.EachOpponent -> state.getOpponents(context.controllerId).toSet()
                 .let { opponents -> apnapOrder.filter { it in opponents } }
+            Player.EachOtherPlayer -> apnapOrder.filter { it != context.controllerId }
             Player.You -> apnapOrder.filter { it == context.controllerId }
             else -> apnapOrder
         }
