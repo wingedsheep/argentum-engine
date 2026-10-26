@@ -68,6 +68,25 @@ class NaturesEmbraceScenarioTest : ScenarioTestBase() {
                     after shouldBe before + 1
                 }
             }
+
+            test("the auto-payer uses the enchanted land's granted ability") {
+                // Two Forests can't pay {2}{U} on their own; the enchanted one's "{T}: Add two mana
+                // of any one color" (UU) plus the other Forest's {G} can.
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withLandsOnBattlefield(1, "Forest", 2)
+                    .withCardAttachedTo(1, "Nature's Embrace", "Forest")
+                    .withCardInHand(1, "Divination")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Divination").error shouldBe null
+                game.resolveStack()
+                withClue("Divination resolved, paid through the granted ability") {
+                    game.isInGraveyard(1, "Divination") shouldBe true
+                }
+            }
         }
     }
 }

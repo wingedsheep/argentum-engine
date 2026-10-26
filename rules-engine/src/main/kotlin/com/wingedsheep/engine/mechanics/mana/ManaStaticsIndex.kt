@@ -55,7 +55,7 @@ class ManaStaticsIndex private constructor(
      * [GrantActivatedAbility] statics whose granted ability is a mana ability — Clement, the
      * Worrywort and Greenhouse (battlefield scope), Nature's Embrace (enchanted permanent), The
      * World Tree (gated by a condition). The per-source work that remains is one scope/filter match
-     * against each grantor ([ManaAbilityGrantor.reaches]).
+     * against each grantor, in `ManaSolver.getStaticGrantedManaAbilities`.
      */
     val manaAbilityGrantors: List<ManaAbilityGrantor>,
     /**
@@ -171,8 +171,10 @@ class ManaStaticsIndex private constructor(
                 val attachedTo = container.get<AttachedToComponent>()?.targetId
                 val faceDown = container.has<FaceDownComponent>()
 
-                // Bucket 1 — battlefield-scope mana-ability grants. Face-down permanents have no
-                // abilities (CR 708.2); an unlocked Room face's statics do count (CR 709.5).
+                // Bucket 1 — mana-ability grants (battlefield group, enchanted/equipped permanent,
+                // self), unwrapping a conditional grant while its condition holds. Face-down
+                // permanents have no abilities (CR 708.2); an unlocked Room face's statics do count
+                // (CR 709.5).
                 if (!faceDown) {
                     for (rawAbility in RoomFaceStatics.activeStaticAbilities(container, cardDef)) {
                         val ability = if (rawAbility is ConditionalStaticAbility) {
