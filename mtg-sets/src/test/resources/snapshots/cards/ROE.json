@@ -2339,6 +2339,79 @@
     "colorIdentityOverride": []
 }
 
+// Pawn of Ulamog
+{
+    "name": "Pawn of Ulamog",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Vampire Shaman",
+    "oracleText": "Whenever this creature or another nontoken creature you control dies, you may create a 0/1 colorless Eldrazi Spawn creature token. It has \"Sacrifice this token: Add {C}.\"",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pawn of Ulamog:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "CreatePredefinedToken",
+                        "tokenType": "Eldrazi Spawn"
+                    },
+                    "descriptionOverride": "Whenever this creature or another nontoken creature you control dies, you may create a 0/1 colorless Eldrazi Spawn creature token. It has \"Sacrifice this token: Add {C}.\""
+                },
+                "descriptionOverride": "Whenever this creature or another nontoken creature you control dies, you may create a 0/1 colorless Eldrazi Spawn creature token. It has \"Sacrifice this token: Add {C}.\""
+            },
+            {
+                "id": "Pawn of Ulamog:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "CreatePredefinedToken",
+                        "tokenType": "Eldrazi Spawn"
+                    },
+                    "descriptionOverride": "Whenever this creature or another nontoken creature you control dies, you may create a 0/1 colorless Eldrazi Spawn creature token. It has \"Sacrifice this token: Add {C}.\""
+                },
+                "descriptionOverride": "Whenever this creature or another nontoken creature you control dies, you may create a 0/1 colorless Eldrazi Spawn creature token. It has \"Sacrifice this token: Add {C}.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/5/85f4d77d-e0de-48fe-899b-5718cee779e2.jpg?1783941982",
+        "rulings": [
+            {
+                "date": "2010-06-15",
+                "text": "If you control more than one Pawn of Ulamog and a nontoken creature you control is put into a graveyard, each of those Pawns' abilities will trigger. You may put up to that many Eldrazi Spawn tokens onto the battlefield."
+            },
+            {
+                "date": "2010-06-15",
+                "text": "If multiple nontoken creatures you control (possibly including Pawn of Ulamog itself) are put into their owners' graveyards at the same time, Pawn of Ulamog's triggered ability will trigger that many times."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Pelakka Wurm
 {
     "name": "Pelakka Wurm",

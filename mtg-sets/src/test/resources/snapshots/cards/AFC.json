@@ -1,3 +1,71 @@
+// Dragonborn Champion
+{
+    "name": "Dragonborn Champion",
+    "manaCost": "{2}{R}{G}",
+    "typeLine": "Creature — Dragon Warrior",
+    "oracleText": "Trample\nWhenever a source you control deals 5 or more damage to a player, draw a card.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dragonborn Champion:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    },
+                    "sourceFilter": "ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "triggerRestriction": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                },
+                "descriptionOverride": "Whenever a source you control deals 5 or more damage to a player, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "RARE",
+        "artist": "Andrey Kuzinskiy",
+        "flavorText": "\"I was raised on the stories of my ancestors, and I want to write my own pages in the tales.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f6e43a7-84b9-4e89-bfe1-442d08df34d8.jpg?1783926240",
+        "rulings": [
+            {
+                "date": "2021-07-23",
+                "text": "Dragonborn Champion's last ability only triggers if 5 or more damage is dealt by the same source at the same time. If a source deals 3 damage to a player and then later deals 2 more damage to the same player, this will not cause the ability to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Mantle of the Ancients
 {
     "name": "Mantle of the Ancients",
