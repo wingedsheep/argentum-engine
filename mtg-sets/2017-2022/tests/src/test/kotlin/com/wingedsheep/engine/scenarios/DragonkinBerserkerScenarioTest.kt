@@ -102,6 +102,14 @@ class DragonkinBerserkerScenarioTest : ScenarioTestBase() {
                     g.canActivate(g.findPermanent("Dragonkin Berserker")!!, boastId) shouldBe true
                 }
             }
+            attackingBoard(drakes = 2, mountains = 3).let { g ->
+                withClue("and it is really paid at that price") {
+                    g.execute(ActivateAbility(g.player1Id, g.findPermanent("Dragonkin Berserker")!!, boastId)).error shouldBe null
+                    if (g.hasPendingDecision()) g.submitManaSourcesAutoPay()
+                    g.resolveStack()
+                    g.findPermanents("Dragon Token").size shouldBe 1
+                }
+            }
             attackingBoard(drakes = 2, mountains = 2).let { g ->
                 withClue("but not with two") {
                     g.canActivate(g.findPermanent("Dragonkin Berserker")!!, boastId) shouldBe false

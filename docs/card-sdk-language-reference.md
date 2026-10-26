@@ -12771,8 +12771,9 @@ once ever — so it never adds `ActivationRestriction.Once`, and a creature that
 consecutive turns boasts on both. "Creatures you control can boast twice" (Birgi) raises that per-turn
 limit with `ExtraOnceOnlyActivations(OnceOnlyAbilityKind.BOAST, extraActivations = 1)`. "Whenever you
 activate a boast ability" (Frenzied Raider) is `Triggers.you.activatesAbility(onceOnlyKind =
-OnceOnlyAbilityKind.BOAST)`, and a boast's own "costs {1} less to activate for each Dragon you control"
-(Dragonkin Berserker) is the ordinary `genericCostReduction` over a battlefield count.
+OnceOnlyAbilityKind.BOAST)`, and "Boast abilities you activate cost {1} less to activate for each Dragon you
+control" (Dragonkin Berserker) is `ReduceActivatedAbilityCost(onceOnlyKind = OnceOnlyAbilityKind.BOAST,
+reach = ActivatedAbilityReach.ACTIVATED_BY_YOU)` — see its entry above.
 
 ```kotlin
 // Baron Helmut Zemo — Boast — Exile any number of black cards from your graveyard with fifteen or
