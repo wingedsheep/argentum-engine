@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.core
 
+import com.wingedsheep.engine.mechanics.targeting.TypeQualityProtection
 import com.wingedsheep.engine.mechanics.targeting.SourceKind
 import com.wingedsheep.engine.registry.PrintingRegistry
 import com.wingedsheep.engine.state.ComponentContainer
@@ -266,10 +267,10 @@ object CardEntityFactory {
             }
         }.toSet()
         val protectionSubtypes = protections.mapNotNull {
-            (it.scope as? ProtectionScope.Subtype)?.subtype
+            (it.scope as? ProtectionScope.Subtype)?.let { s -> TypeQualityProtection.quality(s.subtype, s.cardType) }
         }.toSet()
         val protectionSupertypes = protections.mapNotNull {
-            (it.scope as? ProtectionScope.Supertype)?.supertype
+            (it.scope as? ProtectionScope.Supertype)?.let { s -> TypeQualityProtection.quality(s.supertype, s.cardType) }
         }.toSet()
         // "Protection from instants" (Emrakul, the Promised End). Normalized to the uppercase card
         // type name here so the projector can emit `PROTECTION_FROM_CARDTYPE_<TYPE>` — the same

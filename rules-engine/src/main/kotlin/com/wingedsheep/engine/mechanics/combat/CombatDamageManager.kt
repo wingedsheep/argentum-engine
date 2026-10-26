@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.combat
 
+import com.wingedsheep.engine.mechanics.targeting.TypeQualityProtection
 import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
 import com.wingedsheep.engine.mechanics.targeting.ColorProtection
 import com.wingedsheep.engine.core.*
@@ -1941,7 +1942,6 @@ internal class CombatDamageManager(
                         val damageCantBePrevented =
                             DamageUtils.isDamagePreventionDisabled(state, targetId, attackerId, predicateEvaluator = predicateEvaluator)
                         val attackerColors = projected.getColors(attackerId)
-                        val attackerSubtypes = projected.getSubtypes(attackerId)
                         val attackerTypes = projected.getTypes(attackerId)
                         val protectedFromOpponent = !damageCantBePrevented &&
                             projected.hasKeyword(targetId, "PROTECTION_FROM_EACH_OPPONENT") &&
@@ -1951,9 +1951,9 @@ internal class CombatDamageManager(
                                 srcController != null && tgtController != null && srcController != tgtController
                             }
                         val blockerProtected = !damageCantBePrevented && (
-                            ColorProtection.isProtected(projected, targetId, attackerColors) || attackerSubtypes.any {
-                            projected.hasKeyword(targetId, "PROTECTION_FROM_SUBTYPE_${it.uppercase()}")
-                        } || attackerTypes.any {
+                            ColorProtection.isProtected(projected, targetId, attackerColors) ||
+                            TypeQualityProtection.matchedQuality(projected, targetId, attackerId) != null ||
+                            attackerTypes.any {
                             projected.hasKeyword(targetId, "PROTECTION_FROM_CARDTYPE_${it.uppercase()}")
                         }) || protectedFromOpponent ||
                             (!damageCantBePrevented && SourceKindProtection.isProtectedFromObject(state, targetId, attackerId))

@@ -31,7 +31,7 @@ val TsaboTavoc = card("Tsabo Tavoc") {
         "Whenever Tsabo Tavoc deals combat damage to a player, that player sacrifices a creature.\n" +
         "{T}: Destroy target legendary creature."
 
-    keywordAbility(KeywordAbility.protectionFromSupertype("Legendary"))
+    keywordAbility(KeywordAbility.protectionFromSupertype("Legendary", "Creature"))
 
     triggeredAbility {
         trigger = Triggers.self.dealsCombatDamage(Recipient.AnyPlayer)

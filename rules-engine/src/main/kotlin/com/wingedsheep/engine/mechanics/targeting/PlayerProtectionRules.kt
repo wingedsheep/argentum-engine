@@ -71,20 +71,23 @@ object PlayerProtectionRules {
         val onBattlefield = sourceId in state.getBattlefield()
         // Projected on the battlefield, the card's own (or an off-battlefield SetColors') elsewhere.
         fun colors(): Set<String> = if (card == null && !onBattlefield) emptySet() else projected.colorsOf(sourceId)
+        fun hasCardType(cardType: String): Boolean = if (onBattlefield) projected.hasType(sourceId, cardType.uppercase())
+            else card?.typeLine?.cardTypes?.any { it.name.equals(cardType, ignoreCase = true) } == true
         return when (scope) {
             is ProtectionScope.Color -> scope.color.name in colors()
             is ProtectionScope.Colors -> scope.colors.any { it.name in colors() }
             is ProtectionScope.NonColor -> scope.color.name !in colors()
             ProtectionScope.Multicolored -> colors().size >= 2
             ProtectionScope.Monocolored -> colors().size == 1
-            is ProtectionScope.Subtype -> if (onBattlefield)
+            is ProtectionScope.Subtype -> (if (onBattlefield)
                 projected.getSubtypes(sourceId).any { it.equals(scope.subtype, ignoreCase = true) }
-                else card?.typeLine?.subtypes?.any { it.value.equals(scope.subtype, ignoreCase = true) } == true
-            is ProtectionScope.Supertype -> if (onBattlefield)
+                else card?.typeLine?.subtypes?.any { it.value.equals(scope.subtype, ignoreCase = true) } == true) &&
+                (scope.cardType?.let { hasCardType(it) } ?: true)
+            is ProtectionScope.Supertype -> (if (onBattlefield)
                 projected.getSupertypes(sourceId).any { it.equals(scope.supertype, ignoreCase = true) }
-                else card?.typeLine?.supertypes?.any { it.name.equals(scope.supertype, ignoreCase = true) } == true
-            is ProtectionScope.CardType -> if (onBattlefield) projected.hasType(sourceId, scope.cardType.uppercase())
-                else card?.typeLine?.cardTypes?.any { it.name.equals(scope.cardType, ignoreCase = true) } == true
+                else card?.typeLine?.supertypes?.any { it.name.equals(scope.supertype, ignoreCase = true) } == true) &&
+                (scope.cardType?.let { hasCardType(it) } ?: true)
+            is ProtectionScope.CardType -> hasCardType(scope.cardType)
             is ProtectionScope.EachOpponent -> {
                 val sourceController = casterId
                     ?: projected.getController(sourceId)

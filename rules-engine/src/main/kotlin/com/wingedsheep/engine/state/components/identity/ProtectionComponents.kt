@@ -15,6 +15,9 @@ import kotlinx.serialization.Serializable
  * block-evasion checks consult. A quality that lands in no field here is silently unenforced,
  * so every [com.wingedsheep.sdk.scripting.ProtectionScope] the engine honors needs a home.
  *
+ * @property subtypes Subtype qualities in [com.wingedsheep.engine.mechanics.targeting.TypeQualityProtection.quality]
+ *   form — `GOBLIN`, or `GOD@CREATURE` for "protection from God creatures".
+ * @property supertypes Supertype qualities in the same form — `LEGENDARY@CREATURE`.
  * @property cardTypes Uppercase card type names, e.g. `INSTANT` for "protection from instants".
  */
 @Serializable

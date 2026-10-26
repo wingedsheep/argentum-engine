@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.layers
 
+import com.wingedsheep.engine.mechanics.targeting.TypeQualityProtection
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
@@ -799,13 +800,13 @@ class StateProjector {
                 values.keywords.add("${textReplacement.replaceCreatureType(landType).uppercase()}WALK")
             }
 
-            val protectionSubtypePrefix = "PROTECTION_FROM_SUBTYPE_"
+            val protectionSubtypePrefix = TypeQualityProtection.SUBTYPE_PREFIX
             val protectionKeywords = values.keywords.filter { it.startsWith(protectionSubtypePrefix) }
             values.keywords.removeAll(protectionKeywords.toSet())
             for (keyword in protectionKeywords) {
-                val originalSubtype = keyword.removePrefix(protectionSubtypePrefix)
-                val transformed = textReplacement.applyToCreatureType(originalSubtype).uppercase()
-                values.keywords.add("$protectionSubtypePrefix$transformed")
+                val (originalSubtype, cardType) = TypeQualityProtection.split(keyword.removePrefix(protectionSubtypePrefix))
+                val transformed = textReplacement.applyToCreatureType(originalSubtype)
+                values.keywords.add(TypeQualityProtection.subtypeKeyword(transformed, cardType))
             }
 
             // Rewrite protection-from-color keywords for color-word changes (Crystal Spray:

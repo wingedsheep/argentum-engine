@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.combat
 
+import com.wingedsheep.engine.mechanics.targeting.TypeQualityProtection
 import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
 import com.wingedsheep.engine.mechanics.targeting.ColorProtection
 import com.wingedsheep.engine.handlers.PredicateContext
@@ -99,8 +100,9 @@ internal class ProtectionModifier(
             val sourceSupertypes = projected.getSupertypes(assignment.sourceId)
             val sourceTypes = projected.getTypes(assignment.sourceId)
             val protectedByColor = ColorProtection.isProtected(projected, assignment.targetId, sourceColors)
-            val protectedBySubtype = sourceSubtypes.any { projected.hasKeyword(assignment.targetId, "PROTECTION_FROM_SUBTYPE_${it.uppercase()}") }
-            val protectedBySupertype = sourceSupertypes.any { projected.hasKeyword(assignment.targetId, "PROTECTION_FROM_SUPERTYPE_${it.uppercase()}") }
+            val protectedByTypeQuality = TypeQualityProtection.matchedQuality(
+                projected, assignment.targetId, sourceSubtypes, sourceSupertypes, sourceTypes
+            ) != null
             val protectedByCardType = sourceTypes.any { projected.hasKeyword(assignment.targetId, "PROTECTION_FROM_CARDTYPE_${it.uppercase()}") }
             val protectedFromOpponent = projected.hasKeyword(assignment.targetId, "PROTECTION_FROM_EACH_OPPONENT") &&
                 run {
@@ -109,7 +111,7 @@ internal class ProtectionModifier(
                     srcController != null && tgtController != null && srcController != tgtController
                 }
             val protectedFromKind = SourceKindProtection.isProtectedFromObject(state, assignment.targetId, assignment.sourceId)
-            !protectedByColor && !protectedBySubtype && !protectedBySupertype && !protectedByCardType &&
+            !protectedByColor && !protectedByTypeQuality && !protectedByCardType &&
                 !protectedFromOpponent && !protectedFromKind
         }
     }

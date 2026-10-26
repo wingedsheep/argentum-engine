@@ -13350,7 +13350,9 @@ composite abilities).
   targeting by abilities whose source is a Ring-bearer (CR 702.16b). Printed (`KeywordAbility.Protection`),
   granted to a group (`GrantProtectionFromToGroup` — Lord of the Nazgûl), as hexproof, or as player
   protection.
-- `Protection(ProtectionScope.Supertype("Legendary"))` / `KeywordAbility.protectionFromSupertype("Legendary")` — protection from a supertype, e.g. "protection from legendary creatures" (Tsabo Tavoc). Enforced across targeting, blocking, and combat damage via projected `PROTECTION_FROM_SUPERTYPE_<X>` keywords.
+- `Protection(ProtectionScope.Supertype("Legendary", cardType = "Creature"))` / `KeywordAbility.protectionFromSupertype("Legendary", "Creature")` — protection from a supertype, optionally narrowed to a card type: "protection from legendary creatures" (Tsabo Tavoc) doesn't stop a legendary artifact or land.
+- `Protection(ProtectionScope.Subtype("God", cardType = "Creature"))` / `KeywordAbility.protectionFromSubtype("God", "Creature")` — "protection from God creatures" (Sigrid, God-Favored): a subtype narrowed to a card type, so a Theros God that isn't currently a creature doesn't match. Without `cardType` it's the plain "protection from Goblins".
+  Both type scopes are enforced across targeting, enchanting/equipping, blocking and damage through `TypeQualityProtection` (projected `PROTECTION_FROM_SUBTYPE_<X>[@<TYPE>]` / `PROTECTION_FROM_SUPERTYPE_<X>[@<TYPE>]` keywords).
 - `Protection(ProtectionScope.CardType("Instant"))` — protection from a card type, e.g. "protection from
   instants" (Emrakul, the Promised End). Projected as `PROTECTION_FROM_CARDTYPE_<TYPE>` — the same keyword
   the *granted* card-type protections emit ([`GrantProtectionFromCardType`](#14-static-abilities) on Sword of

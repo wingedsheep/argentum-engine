@@ -540,9 +540,10 @@ class TargetValidator(
         val protectionFromOpponentError = checkProtectionFromEachOpponent(state, target, casterId)
         if (protectionFromOpponentError != null) return protectionFromOpponentError
 
-        // Check protection from supertype, e.g. "protection from legendary creatures" (Rule 702.16)
-        val protectionFromSupertypeError = checkProtectionFromSupertype(state, target, sourceId)
-        if (protectionFromSupertypeError != null) return protectionFromSupertypeError
+        // Check protection from a subtype or supertype, e.g. "protection from Goblins",
+        // "protection from God creatures" (Rule 702.16)
+        val protectionFromTypeError = checkProtectionFromTypeQuality(state, target, sourceId, sourceSubtypes)
+        if (protectionFromTypeError != null) return protectionFromTypeError
 
         // Check protection from card type, e.g. "protection from instants and from sorceries"
         // (Rule 702.16). Sword of Wealth and Power.
@@ -578,29 +579,30 @@ class TargetValidator(
     }
 
     /**
-     * Check if a target has protection from one of the source's supertypes
-     * (e.g. "protection from legendary creatures"). Format: PROTECTION_FROM_SUPERTYPE_<SUPERTYPE>.
+     * Check if a target has protection from one of the source's subtypes or supertypes, optionally
+     * narrowed to a card type ("protection from God creatures"). Subtypes are the caller's (the
+     * face being cast); supertypes and card types are projected on the battlefield, the card's
+     * elsewhere.
      */
-    private fun checkProtectionFromSupertype(
+    private fun checkProtectionFromTypeQuality(
         state: GameState,
         target: ChosenTarget,
-        sourceId: EntityId?
+        sourceId: EntityId?,
+        sourceSubtypes: Set<String>
     ): String? {
-        if (sourceId == null) return null
-        val entityId = when (target) {
-            is ChosenTarget.Permanent -> target.entityId
-            else -> return null
-        }
+        val entityId = (target as? ChosenTarget.Permanent)?.entityId ?: return null
         if (entityId !in state.getBattlefield()) return null
-
         val projected = state.projectedState
-        for (supertype in projected.getSupertypes(sourceId)) {
-            if (projected.hasKeyword(entityId, "PROTECTION_FROM_SUPERTYPE_${supertype.uppercase()}")) {
-                val cardName = state.getEntity(entityId)?.get<CardComponent>()?.name ?: "target"
-                return "$cardName has protection from ${supertype.lowercase()} permanents"
-            }
-        }
-        return null
+        val onBattlefield = sourceId != null && sourceId in state.getBattlefield()
+        val typeLine = sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.typeLine }
+        val supertypes = if (onBattlefield) projected.getSupertypes(sourceId!!)
+            else typeLine?.supertypes?.map { it.name }.orEmpty()
+        val cardTypes = if (onBattlefield) projected.getTypes(sourceId!!)
+            else typeLine?.cardTypes?.map { it.name }.orEmpty()
+        val quality = TypeQualityProtection.matchedQuality(projected, entityId, sourceSubtypes, supertypes, cardTypes)
+            ?: return null
+        val cardName = state.getEntity(entityId)?.get<CardComponent>()?.name ?: "target"
+        return "$cardName has protection from $quality"
     }
 
     /**
@@ -782,12 +784,6 @@ class TargetValidator(
             ColorProtection.matchedQuality(projected, entityId, sourceColors.map { it.name })?.let { quality ->
                 val cardName = state.getEntity(entityId)?.get<CardComponent>()?.name ?: "target"
                 return "$cardName has protection from ${ColorProtection.describe(quality)}"
-            }
-        }
-        for (subtype in sourceSubtypes) {
-            if (projected.hasKeyword(entityId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")) {
-                val cardName = state.getEntity(entityId)?.get<CardComponent>()?.name ?: "target"
-                return "$cardName has protection from ${subtype.lowercase()}s"
             }
         }
         return null

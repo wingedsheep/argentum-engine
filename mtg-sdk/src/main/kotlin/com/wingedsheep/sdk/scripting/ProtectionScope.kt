@@ -58,15 +58,24 @@ sealed interface ProtectionScope {
     @Serializable
     data class CardType(val cardType: String) : ProtectionScope
 
-    /** Protection from a creature subtype — "from Goblins". */
+    /**
+     * Protection from a subtype — "from Goblins". [cardType] narrows the quality to objects that
+     * are also of that card type — "from God creatures" (Sigrid, God-Favored): a God that isn't
+     * currently a creature (a Theros God below its devotion) doesn't match. Null matches the
+     * subtype alone.
+     */
     @SerialName("ProtectionScope.Subtype")
     @Serializable
-    data class Subtype(val subtype: String) : ProtectionScope
+    data class Subtype(val subtype: String, val cardType: String? = null) : ProtectionScope
 
-    /** Protection from a supertype — "from legendary creatures" (Tsabo Tavoc). */
+    /**
+     * Protection from a supertype, optionally narrowed to a [cardType] — "from legendary
+     * creatures" (Tsabo Tavoc) is `Supertype("Legendary", "Creature")`, which a legendary
+     * artifact or land doesn't match.
+     */
     @SerialName("ProtectionScope.Supertype")
     @Serializable
-    data class Supertype(val supertype: String) : ProtectionScope
+    data class Supertype(val supertype: String, val cardType: String? = null) : ProtectionScope
 
     /** Protection from everything (Rule 702.16i). */
     @SerialName("ProtectionScope.Everything")

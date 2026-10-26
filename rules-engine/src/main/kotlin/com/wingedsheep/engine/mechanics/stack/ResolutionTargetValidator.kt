@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.stack
 
+import com.wingedsheep.engine.mechanics.targeting.TypeQualityProtection
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.toEntityId
 
 import com.wingedsheep.engine.mechanics.targeting.HexproofFromRules
@@ -401,11 +402,6 @@ internal class ResolutionTargetValidator(
         ) {
             return false
         }
-        for (subtype in sourceSubtypes) {
-            if (projected.hasKeyword(target.entityId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")) {
-                return false
-            }
-        }
         // Check protection from the source's card type, e.g. "protection from creatures"
         // (Rule 702.16). Prefer projected types (permanent sources); fall back to the
         // card's printed card types for spell/ability sources not in the projection.
@@ -422,7 +418,18 @@ internal class ResolutionTargetValidator(
                     return false
                 }
             }
-        }
+            // Protection from a subtype or supertype, optionally narrowed to a card type
+            // ("protection from God creatures").
+            val sourceSupertypes = if (projectedTypes.isNotEmpty()) projected.getSupertypes(sourceId)
+                else state.getEntity(sourceId)?.get<CardComponent>()?.typeLine?.supertypes?.map { it.name }.orEmpty()
+            if (TypeQualityProtection.matchedQuality(
+                    projected, target.entityId, sourceSubtypes, sourceSupertypes, sourceCardTypes
+                ) != null
+            ) return false
+        } else if (TypeQualityProtection.matchedQuality(
+                projected, target.entityId, sourceSubtypes, emptySet(), emptySet()
+            ) != null
+        ) return false
 
         // Check protection from each opponent (Rule 702.16e)
         if (projected.hasKeyword(target.entityId, "PROTECTION_FROM_EACH_OPPONENT") &&

@@ -591,7 +591,7 @@ object Primitives {
     private val subtypeScope: Phrase<ProtectionScope> = phrase("{subtype}", name = "a creature type") {
         slot("subtype", pluralSubtype)
         build { ProtectionScope.Subtype(it.value<Subtype>("subtype").value) }
-        match { (it as? ProtectionScope.Subtype)?.let { s -> bind("subtype" to Subtype(s.subtype)) } }
+        match { (it as? ProtectionScope.Subtype)?.takeIf { s -> s.cardType == null }?.let { s -> bind("subtype" to Subtype(s.subtype)) } }
     }
 
     /**

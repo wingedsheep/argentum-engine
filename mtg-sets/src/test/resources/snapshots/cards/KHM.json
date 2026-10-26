@@ -6069,6 +6069,107 @@
     "colorIdentityOverride": []
 }
 
+// Sigrid, God-Favored
+{
+    "name": "Sigrid, God-Favored",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "Flash\nFirst strike, protection from God creatures\nWhen Sigrid enters, exile up to one target attacking or blocking creature until Sigrid leaves the battlefield.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH",
+        "FIRST_STRIKE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Subtype",
+                "subtype": "God",
+                "cardType": "Creature"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sigrid, God-Favored:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ExileUntilLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "StateOr",
+                                    "predicates": [
+                                        "IsAttacking",
+                                        "IsBlocking"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "id": "Sigrid, God-Favored:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "RARE",
+        "artist": "Johannes Voss",
+        "flavorText": "Never alone, never afraid.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/aeec3c1e-e612-4700-888e-300912932552.jpg?1783928275"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Skemfar Elderhall
 {
     "name": "Skemfar Elderhall",

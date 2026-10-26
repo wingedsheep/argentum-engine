@@ -20,8 +20,8 @@ object ProtectionKeywords {
         is ProtectionScope.Colors -> scope.colors.mapTo(linkedSetOf()) { "PROTECTION_FROM_${it.name}" }
         ProtectionScope.Multicolored -> setOf(ColorProtection.PROTECTION_FROM_MULTICOLORED)
         is ProtectionScope.CardType -> setOf("PROTECTION_FROM_CARDTYPE_${scope.cardType.uppercase()}")
-        is ProtectionScope.Subtype -> setOf("PROTECTION_FROM_SUBTYPE_${scope.subtype.uppercase()}")
-        is ProtectionScope.Supertype -> setOf("PROTECTION_FROM_SUPERTYPE_${scope.supertype.uppercase()}")
+        is ProtectionScope.Subtype -> setOf(TypeQualityProtection.subtypeKeyword(scope.subtype, scope.cardType))
+        is ProtectionScope.Supertype -> setOf(TypeQualityProtection.supertypeKeyword(scope.supertype, scope.cardType))
         ProtectionScope.EachOpponent -> setOf(Keyword.PROTECTION_FROM_EACH_OPPONENT.name)
         ProtectionScope.Spells,
         ProtectionScope.PermanentsCastThisTurn,

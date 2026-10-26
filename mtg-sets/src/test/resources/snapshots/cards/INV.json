@@ -15979,7 +15979,8 @@
             "type": "Protection",
             "scope": {
                 "type": "ProtectionScope.Supertype",
-                "supertype": "Legendary"
+                "supertype": "Legendary",
+                "cardType": "Creature"
             }
         }
     ],

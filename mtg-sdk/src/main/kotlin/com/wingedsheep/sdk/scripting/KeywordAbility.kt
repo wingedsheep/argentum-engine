@@ -132,8 +132,8 @@ sealed interface KeywordAbility {
             is ProtectionScope.Multicolored -> "Protection from multicolored"
             is ProtectionScope.Monocolored -> "Protection from monocolored"
             is ProtectionScope.CardType -> "Protection from ${scope.cardType.lowercase()}"
-            is ProtectionScope.Subtype -> "Protection from ${scope.subtype}s"
-            is ProtectionScope.Supertype -> "Protection from ${scope.supertype.lowercase()}"
+            is ProtectionScope.Subtype -> "Protection from ${scope.subtype}${scope.cardType?.let { " ${it.lowercase()}s" } ?: "s"}"
+            is ProtectionScope.Supertype -> "Protection from ${scope.supertype.lowercase()}${scope.cardType?.let { " ${it.lowercase()}s" } ?: ""}"
             is ProtectionScope.Everything -> "Protection from everything"
             is ProtectionScope.EachOpponent -> "Protection from each opponent"
             is ProtectionScope.Spells -> "Protection from spells"
@@ -170,8 +170,8 @@ sealed interface KeywordAbility {
             is ProtectionScope.Multicolored -> "Hexproof from multicolored"
             is ProtectionScope.Monocolored -> "Hexproof from monocolored"
             is ProtectionScope.CardType -> "Hexproof from ${scope.cardType.lowercase()}"
-            is ProtectionScope.Subtype -> "Hexproof from ${scope.subtype}s"
-            is ProtectionScope.Supertype -> "Hexproof from ${scope.supertype.lowercase()}"
+            is ProtectionScope.Subtype -> "Hexproof from ${scope.subtype}${scope.cardType?.let { " ${it.lowercase()}s" } ?: "s"}"
+            is ProtectionScope.Supertype -> "Hexproof from ${scope.supertype.lowercase()}${scope.cardType?.let { " ${it.lowercase()}s" } ?: ""}"
             is ProtectionScope.Everything -> "Hexproof from everything"
             is ProtectionScope.EachOpponent -> "Hexproof from each opponent"
             is ProtectionScope.Spells -> "Hexproof from spells"
@@ -1530,12 +1530,12 @@ sealed interface KeywordAbility {
         /**
          * Create Protection from a creature subtype.
          */
-        fun protectionFromSubtype(subtype: String): KeywordAbility =
-            Protection(ProtectionScope.Subtype(subtype))
+        fun protectionFromSubtype(subtype: String, cardType: String? = null): KeywordAbility =
+            Protection(ProtectionScope.Subtype(subtype, cardType))
 
         /** Protection from a supertype — "from legendary creatures" (Tsabo Tavoc). */
-        fun protectionFromSupertype(supertype: String): KeywordAbility =
-            Protection(ProtectionScope.Supertype(supertype))
+        fun protectionFromSupertype(supertype: String, cardType: String? = null): KeywordAbility =
+            Protection(ProtectionScope.Supertype(supertype, cardType))
 
         /** "Bands with other legendary creatures" (CR 702.22b) — the Legends land cycle. */
         fun bandsWithOther(supertype: com.wingedsheep.sdk.core.Supertype): BandsWithOther =

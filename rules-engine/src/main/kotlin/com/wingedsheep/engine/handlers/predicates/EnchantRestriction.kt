@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.predicates
 
+import com.wingedsheep.engine.mechanics.targeting.TypeQualityProtection
 import com.wingedsheep.engine.mechanics.targeting.ColorProtection
 import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
 import com.wingedsheep.engine.handlers.PredicateContext
@@ -154,9 +155,8 @@ object EnchantRestriction {
         val types = if (battlefield) projected.getTypes(attachmentId) else attachmentCard.typeLine.cardTypes.map { it.name }.toSet()
         if (types.any { projected.hasKeyword(hostId, "PROTECTION_FROM_CARDTYPE_$it") }) return true
         val subtypes = if (battlefield) projected.getSubtypes(attachmentId) else attachmentCard.typeLine.subtypes.map { it.value }.toSet()
-        if (subtypes.any { projected.hasKeyword(hostId, "PROTECTION_FROM_SUBTYPE_${it.uppercase()}") }) return true
         val supertypes = if (battlefield) projected.getSupertypes(attachmentId) else attachmentCard.typeLine.supertypes.map { it.name }.toSet()
-        if (supertypes.any { projected.hasKeyword(hostId, "PROTECTION_FROM_SUPERTYPE_${it.uppercase()}") }) return true
+        if (TypeQualityProtection.matchedQuality(projected, hostId, subtypes, supertypes, types) != null) return true
         // An Aura or Equipment that was cast this turn (CR 702.16c/d) — Emrakul, the World Anew.
         if (SourceKindProtection.isProtectedFromObject(state, hostId, attachmentId)) return true
         if (projected.hasKeyword(hostId, "PROTECTION_FROM_EACH_OPPONENT")) {

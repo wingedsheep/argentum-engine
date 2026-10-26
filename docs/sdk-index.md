@@ -1514,8 +1514,8 @@ Families:
 - `ProtectionScope.PermanentsCastThisTurn` — From permanents that were cast this turn — a battlefield source that entered this turn by resolving as a cast spell (not a copy, a token, or a permanent put onto the battlefield), and hasn't left s…
 - `ProtectionScope.RingBearers` — From Ring-bearers — a battlefield source that is its controller's Ring-bearer (CR 701.54).
 - `ProtectionScope.Spells` — From spells — the quality of *being a spell* (CR 702.16a: the quality "can be any characteristic value or information").
-- `ProtectionScope.Subtype(subtype: String)` — Protection from a creature subtype — "from Goblins".
-- `ProtectionScope.Supertype(supertype: String)` — Protection from a supertype — "from legendary creatures" (Tsabo Tavoc).
+- `ProtectionScope.Subtype(subtype: String, cardType: String?)` — Protection from a subtype — "from Goblins".
+- `ProtectionScope.Supertype(supertype: String, cardType: String?)` — Protection from a supertype, optionally narrowed to a cardType — "from legendary creatures" (Tsabo Tavoc) is `Supertype("Legendary", "Creature")`, which a legendary artifact or land doesn't match.
 - `ProtectionScope.TriggeredAbilities` — From triggered abilities — the triggered twin of ActivatedAbilities.
 
 ## Recipient

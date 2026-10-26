@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.combat.rules
 
+import com.wingedsheep.engine.mechanics.targeting.TypeQualityProtection
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureOf
 import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
 import com.wingedsheep.engine.mechanics.targeting.ColorProtection
@@ -544,37 +545,16 @@ class ProtectionFromSourceKindRule : BlockEvasionRule {
 }
 
 /**
- * Protection from subtype: Attacker can't be blocked by creatures of a subtype it has protection from.
+ * Protection from a subtype or supertype, optionally narrowed to a card type: the attacker can't
+ * be blocked by creatures of that quality ("protection from Goblins", "from legendary creatures",
+ * "from God creatures").
  */
-class ProtectionFromSubtypeRule : BlockEvasionRule {
+class ProtectionFromTypeQualityRule : BlockEvasionRule {
     override fun check(ctx: BlockCheckContext): String? {
+        val quality = TypeQualityProtection.matchedQuality(ctx.projected, ctx.attackerId, ctx.blockerId) ?: return null
         val attackerName = ctx.state.getEntity(ctx.attackerId)?.get<CardComponent>()?.name ?: "Creature"
         val blockerName = ctx.state.getEntity(ctx.blockerId)?.get<CardComponent>()?.name ?: "Creature"
-
-        for (subtype in ctx.projected.getSubtypes(ctx.blockerId)) {
-            if (ctx.projected.hasKeyword(ctx.attackerId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")) {
-                return "$attackerName has protection from ${subtype.lowercase()}s and can't be blocked by $blockerName"
-            }
-        }
-        return null
-    }
-}
-
-/**
- * Protection from supertype: Attacker can't be blocked by creatures of a supertype it has
- * protection from (e.g. "protection from legendary creatures").
- */
-class ProtectionFromSupertypeRule : BlockEvasionRule {
-    override fun check(ctx: BlockCheckContext): String? {
-        val attackerName = ctx.state.getEntity(ctx.attackerId)?.get<CardComponent>()?.name ?: "Creature"
-        val blockerName = ctx.state.getEntity(ctx.blockerId)?.get<CardComponent>()?.name ?: "Creature"
-
-        for (supertype in ctx.projected.getSupertypes(ctx.blockerId)) {
-            if (ctx.projected.hasKeyword(ctx.attackerId, "PROTECTION_FROM_SUPERTYPE_${supertype.uppercase()}")) {
-                return "$attackerName has protection from ${supertype.lowercase()} and can't be blocked by $blockerName"
-            }
-        }
-        return null
+        return "$attackerName has protection from $quality and can't be blocked by $blockerName"
     }
 }
 
@@ -791,8 +771,7 @@ fun defaultBlockEvasionRules(
     CantBeBlockedWhilePropertyAtMostRule(),
     CantBeBlockedIfCastSpellTypeRule(predicateEvaluator),
     ProtectionFromColorRule(),
-    ProtectionFromSubtypeRule(),
-    ProtectionFromSupertypeRule(),
+    ProtectionFromTypeQualityRule(),
     ProtectionFromCardTypeRule(),
     ProtectionFromEachOpponentRule(),
     ProtectionFromSourceKindRule(),

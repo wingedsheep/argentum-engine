@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects
 
+import com.wingedsheep.engine.mechanics.targeting.TypeQualityProtection
 import com.wingedsheep.engine.mechanics.FaceUpInstead
 import com.wingedsheep.engine.mechanics.targeting.ColorProtection
 import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
@@ -301,11 +302,10 @@ object DamageUtils {
                 // Damage is prevented — return success with no state change
                 return EffectResult.success(state)
             }
-            val sourceSubtypes = projected.getSubtypes(sourceId)
-            for (subtype in sourceSubtypes) {
-                if (projected.hasKeyword(targetId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")) {
-                    return EffectResult.success(state)
-                }
+            // Protection from a subtype or supertype, optionally narrowed to a card type
+            // ("protection from God creatures", "from legendary creatures").
+            if (TypeQualityProtection.matchedQuality(projected, targetId, sourceId) != null) {
+                return EffectResult.success(state)
             }
             // Protection from card type, e.g. "protection from creatures" (Pippin, Guard of the Citadel)
             for (cardType in projected.getTypes(sourceId)) {

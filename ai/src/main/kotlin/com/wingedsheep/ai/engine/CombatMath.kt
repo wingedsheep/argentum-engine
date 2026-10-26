@@ -2,6 +2,7 @@ package com.wingedsheep.ai.engine
 
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.targeting.ColorProtection
+import com.wingedsheep.engine.mechanics.targeting.TypeQualityProtection
 import com.wingedsheep.engine.mechanics.targeting.SourceKindProtection
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
@@ -195,8 +196,7 @@ object CombatMath {
         blocker: EntityId,
     ): Boolean {
         if (ColorProtection.isProtected(projected, attacker, projected.getColors(blocker))) return true
-        if (projected.getSubtypes(blocker).any { projected.hasKeyword(attacker, "PROTECTION_FROM_SUBTYPE_${it.uppercase()}") }) return true
-        if (projected.getSupertypes(blocker).any { projected.hasKeyword(attacker, "PROTECTION_FROM_SUPERTYPE_${it.uppercase()}") }) return true
+        if (TypeQualityProtection.matchedQuality(projected, attacker, blocker) != null) return true
         if (projected.getTypes(blocker).any { projected.hasKeyword(attacker, "PROTECTION_FROM_CARDTYPE_${it.uppercase()}") }) return true
         if (projected.hasKeyword(attacker, "PROTECTION_FROM_EACH_OPPONENT")) {
             val attackerController = projected.getController(attacker)
