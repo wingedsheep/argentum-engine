@@ -60,7 +60,8 @@ fun GameState.emblemStaticAbilitiesOf(
     playerId: EntityId
 ): List<Pair<EntityId, StaticAbility>> {
     val result = mutableListOf<Pair<EntityId, StaticAbility>>()
-    for ((entityId, container) in entities) {
+    for (entityId in emblemStaticHolders) {
+        val container = entities[entityId] ?: continue
         val statics = container.get<EmblemStaticAbilityComponent>() ?: continue
         if (container.get<ControllerComponent>()?.playerId != playerId) continue
         for (ability in statics.abilities) result.add(entityId to ability)

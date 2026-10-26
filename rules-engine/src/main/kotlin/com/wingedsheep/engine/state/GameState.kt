@@ -1493,6 +1493,19 @@ data class GameState(
      * allocation instead of the `filterKeys` map copy + `flatten` + `filter` chain that
      * ran on every call. A body `val` is not serialized (only constructor params are).
      */
+    /**
+     * Entities carrying emblem static abilities, memoized like [cachedBattlefield]: permission
+     * reads ask "does this player have an emblem granting X" once per candidate card, and the
+     * set never changes within a state instance.
+     */
+    val emblemStaticHolders: List<EntityId> by lazy {
+        val result = ArrayList<EntityId>()
+        for ((id, container) in entities) {
+            if (container.has<com.wingedsheep.engine.state.components.identity.EmblemStaticAbilityComponent>()) result.add(id)
+        }
+        result
+    }
+
     private val cachedBattlefield: List<EntityId> by lazy {
         val result = ArrayList<EntityId>()
         for ((key, ids) in zones) {

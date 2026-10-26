@@ -69,6 +69,7 @@ class ValkiGodOfLiesScenarioTest : ScenarioTestBase() {
         game.castSpell(1, valki).error shouldBe null
         game.resolveStack()
         val decision = game.getPendingDecision().shouldBeInstanceOf<SelectCardsDecision>()
+        withClue("Valki's controller makes the choice") { decision.playerId shouldBe game.player1Id }
         withClue("only the creature cards of the revealed hand are choosable") {
             decision.options.toSet() shouldBe game.findCardsInHand(2, "Grizzly Bears").toSet() +
                 game.findCardsInHand(2, "Hill Giant")
