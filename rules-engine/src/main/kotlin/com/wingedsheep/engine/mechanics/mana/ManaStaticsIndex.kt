@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.mechanics.mana
 
+import com.wingedsheep.engine.handlers.ConditionEvaluator
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
@@ -13,6 +15,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalManaOnSourceTap
 import com.wingedsheep.sdk.scripting.AdditionalManaOnTap
+import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GrantActivatedAbility
 import com.wingedsheep.sdk.scripting.HasAllActivatedAbilitiesOfCards
 import com.wingedsheep.sdk.scripting.MultiplyManaOnSourceTap
@@ -37,6 +40,11 @@ import com.wingedsheep.sdk.scripting.filters.unified.Scope
  *
  * - [manaAbilityGrantors] skips face-down permanents (CR 708.2) and reads
  *   [RoomFaceStatics.activeStaticAbilities], so an unlocked Room face's grant counts (CR 709.5).
+ *   A grant wrapped in a [ConditionalStaticAbility] ("as long as you control six or more lands,
+ *   lands you control have …" — The World Tree; Nature's Embrace's "as long as enchanted permanent
+ *   is a land") is unwrapped and kept only while its condition holds, evaluated once per build
+ *   against the granter — the same gate `CastPermissionUtils.getStaticGrantedAbilitiesWithGranter`
+ *   applies for a manual activation, so the auto-payer and a manual tap agree.
  * - The others read `script.staticAbilities` and do **not** skip face-down permanents.
  *
  * Those differences are pre-existing behaviour, preserved deliberately: this is a hoist, not a
@@ -44,9 +52,10 @@ import com.wingedsheep.sdk.scripting.filters.unified.Scope
  */
 class ManaStaticsIndex private constructor(
     /**
-     * Battlefield-scope [GrantActivatedAbility] statics whose granted ability is a mana ability —
-     * Clement, the Worrywort; Greenhouse. The per-source work that remains is one filter match
-     * against each grantor.
+     * [GrantActivatedAbility] statics whose granted ability is a mana ability — Clement, the
+     * Worrywort and Greenhouse (battlefield scope), Nature's Embrace (enchanted permanent), The
+     * World Tree (gated by a condition). The per-source work that remains is one scope/filter match
+     * against each grantor ([ManaAbilityGrantor.reaches]).
      */
     val manaAbilityGrantors: List<ManaAbilityGrantor>,
     /**
@@ -76,11 +85,15 @@ class ManaStaticsIndex private constructor(
     /** [MultiplyManaOnSourceTap] statics (Virtue of Strength) anywhere on the battlefield. */
     val sourceTapMultipliers: List<SourceTapMultiplier>,
 ) {
-    /** A battlefield-scope grant of a mana ability, with the granter's projected controller. */
+    /**
+     * A grant of a mana ability, with the granter's projected controller and — for an
+     * enchanted/equipped-permanent grant — the permanent the granter is attached to.
+     */
     data class ManaAbilityGrantor(
         val granterId: EntityId,
         val grant: GrantActivatedAbility,
         val granterControllerId: EntityId,
+        val attachedToId: EntityId? = null,
     )
 
     /** A [HasAllActivatedAbilitiesOfCards] static and the permanent carrying it. */
@@ -140,7 +153,7 @@ class ManaStaticsIndex private constructor(
          * Entities with no card definition, and statics of no interest here, cost one `when`
          * branch each; nothing is retained for an ordinary land or creature.
          */
-        fun build(state: GameState, cardRegistry: CardRegistry): ManaStaticsIndex {
+        fun build(state: GameState, cardRegistry: CardRegistry, conditions: ConditionEvaluator): ManaStaticsIndex {
             var grantors: MutableList<ManaAbilityGrantor>? = null
             var donorGrantors: MutableList<DonorGrantor>? = null
             var overrides: MutableMap<EntityId, Color>? = null
@@ -161,7 +174,20 @@ class ManaStaticsIndex private constructor(
                 // Bucket 1 — battlefield-scope mana-ability grants. Face-down permanents have no
                 // abilities (CR 708.2); an unlocked Room face's statics do count (CR 709.5).
                 if (!faceDown) {
-                    for (ability in RoomFaceStatics.activeStaticAbilities(container, cardDef)) {
+                    for (rawAbility in RoomFaceStatics.activeStaticAbilities(container, cardDef)) {
+                        val ability = if (rawAbility is ConditionalStaticAbility) {
+                            val inner = rawAbility.ability
+                            if (inner !is GrantActivatedAbility && inner !is HasAllActivatedAbilitiesOfCards) continue
+                            if (inner is GrantActivatedAbility && !inner.ability.isManaAbility) continue
+                            val controller = projected.getController(permanentId)
+                                ?: container.get<ControllerComponent>()?.playerId
+                                ?: continue
+                            val context = EffectContext(sourceId = permanentId, controllerId = controller)
+                            if (!conditions.evaluate(state, rawAbility.condition, context, projected)) continue
+                            inner
+                        } else {
+                            rawAbility
+                        }
                         if (ability is HasAllActivatedAbilitiesOfCards) {
                             (donorGrantors ?: mutableListOf<DonorGrantor>().also { donorGrantors = it })
                                 .add(DonorGrantor(permanentId, ability))
@@ -170,11 +196,15 @@ class ManaStaticsIndex private constructor(
                         if (ability !is GrantActivatedAbility) continue
                         if (ability.recipientZone != com.wingedsheep.sdk.core.Zone.BATTLEFIELD) continue
                         if (projected.hasLostAllAbilities(permanentId)) continue
-                        if (ability.filter.scope !is Scope.Battlefield) continue
+                        when (ability.filter.scope) {
+                            Scope.Battlefield, Scope.Self -> {}
+                            Scope.AttachedTo -> if (attachedTo == null) continue
+                            else -> continue
+                        }
                         if (!ability.ability.isManaAbility) continue
                         val granterController = projected.getController(permanentId) ?: continue
                         (grantors ?: mutableListOf<ManaAbilityGrantor>().also { grantors = it })
-                            .add(ManaAbilityGrantor(permanentId, ability, granterController))
+                            .add(ManaAbilityGrantor(permanentId, ability, granterController, attachedTo))
                     }
                 }
 

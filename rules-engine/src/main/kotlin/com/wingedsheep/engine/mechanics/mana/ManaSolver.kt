@@ -19,6 +19,7 @@ import com.wingedsheep.engine.legalactions.utils.donorGrantReaches
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.activeManaSpendingScope
+import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.engine.state.manaAbilitySourceAllowed
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent
@@ -1357,7 +1358,7 @@ class ManaSolver private constructor(
         // Building eagerly would charge a battlefield walk to exactly the calls that used to do no
         // scanning whatsoever — measurably the wrong trade in a benchmark full of tapped-out
         // windows. NONE is safe because a solve never leaves the calling thread.
-        val manaStatics by lazy(LazyThreadSafetyMode.NONE) { ManaStaticsIndex.build(state, cardRegistry) }
+        val manaStatics by lazy(LazyThreadSafetyMode.NONE) { ManaStaticsIndex.build(state, cardRegistry, conditionEvaluator) }
         // Mana abilities handed to a permanent by a resolved effect (GrantActivatedAbilityEffect:
         // Glorious Sunrise, Hydro-Man, Emrakul, the Exigent Doom's "{T}: Add {C}{C}"), indexed once.
         val runtimeGrants = runtimeGrantedManaAbilities(state)
@@ -2522,6 +2523,13 @@ class ManaSolver private constructor(
         }
         for (grantor in manaStatics.manaAbilityGrantors) {
             val grant = grantor.grant
+            when (grant.filter.scope) {
+                // "Enchanted land has …" (Nature's Embrace) / "this permanent has …": the
+                // recipient is fixed, so there is no filter to match.
+                Scope.AttachedTo -> { if (grantor.attachedToId == entityId) result.add(grant.ability); continue }
+                Scope.Self -> { if (grantor.granterId == entityId) result.add(grant.ability); continue }
+                else -> {}
+            }
             if (grant.filter.excludeSelf && grantor.granterId == entityId) continue
             val matches = predicateEvaluator.matches(
                 state,
@@ -3156,7 +3164,7 @@ class ManaSolver private constructor(
         playerId: EntityId
     ): TapPermanentsBonusMana {
         val projected = state.projectedState
-        val manaStatics = ManaStaticsIndex.build(state, cardRegistry)
+        val manaStatics = ManaStaticsIndex.build(state, cardRegistry, conditionEvaluator)
         val runtimeGrants = runtimeGrantedManaAbilities(state)
         var total = TapPermanentsBonusMana()
 

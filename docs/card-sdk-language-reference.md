@@ -10036,6 +10036,15 @@ staticAbility {
   source removes its printed grant immediately; an already activated ability remains on the
   stack. Self-references bind to the receiving card, not the granting permanent. Ordinary
   battlefield grants do not leak onto cards in other zones. No new effect or keyword type is needed.
+  **A granted mana ability reaches the auto-payer** through `ManaStaticsIndex`, which collects
+  battlefield-group, enchanted-permanent (`Scope.AttachedTo`) and self grants, and unwraps a
+  `ConditionalStaticAbility` around the grant, keeping it only while the condition holds (evaluated
+  against the granter, the same gate a manual activation applies). The World Tree's "As long as you
+  control six or more lands, lands you control have '{T}: Add one mana of any color.'" =
+  `staticAbility { condition = Conditions.ControlLandsAtLeast(6); ability = GrantActivatedAbility(
+  ActivatedAbility({T}: AddAnyColorMana(1), isManaAbility = true, timing = ManaAbility),
+  GroupFilter(GameObjectFilter.Land.youControl())) }`; Nature's Embrace's land half is the
+  enchanted-permanent form.
 - `GrantStaticAbility(ability, filter = GroupFilter.attachedCreature())` — "[filter] have '<static ability>'",
   the static sibling of `GrantTriggeredAbility` / `GrantActivatedAbility` and the continuous counterpart of the
   one-shot `Effects.GrantStaticAbility`. Lowered to a Layer 6 (CR 613.1f) ability grant over `filter` (relative

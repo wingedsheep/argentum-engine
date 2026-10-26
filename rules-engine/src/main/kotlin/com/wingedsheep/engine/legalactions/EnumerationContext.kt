@@ -97,7 +97,7 @@ class EnumerationContext(
 
     // Mana-relevant battlefield statics (aura color overrides, mana-ability grants, tap bonuses).
     // Built once per pass instead of once per permanent being labelled — see ManaStaticsIndex.
-    val manaStatics: ManaStaticsIndex by lazy { ManaStaticsIndex.build(state, cardRegistry) }
+    val manaStatics: ManaStaticsIndex by lazy { ManaStaticsIndex.build(state, cardRegistry, conditionEvaluator) }
 
     // Timing flags. CR 805.5a — on a shared team turn either teammate may take sorcery-speed
     // actions, so this is gated on the active *team*, not the single active player.
