@@ -104,6 +104,7 @@ class ExileLibraryUntilManaValueExecutor(private val zones: ZoneTransitionServic
             Player.EachStartingWithYou -> state.turnOrderStartingWith(context.controllerId)
             Player.You -> listOf(context.controllerId)
             Player.EachOpponent -> state.getOpponents(context.controllerId)
+            Player.EachOtherPlayer -> state.getOtherPlayers(context.controllerId)
             Player.TargetOpponent -> listOfNotNull(
                 TargetResolutionUtils.resolvePlayerRef(player, context, state)
             )

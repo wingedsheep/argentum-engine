@@ -1276,6 +1276,7 @@ class ConditionEvaluator(
         val playerIds: List<EntityId> = when (condition.player) {
             is Player.You -> controllerId?.let { listOf(it) } ?: emptyList()
             is Player.EachOpponent -> controllerId?.let { state.getOpponents(it) } ?: emptyList()
+            is Player.EachOtherPlayer -> controllerId?.let { state.getOtherPlayers(it) } ?: emptyList()
             is Player.EachDefendingPlayer -> com.wingedsheep.engine.mechanics.combat.CombatDefenders
                 .allDefendingPlayersInApnapOrder(state)
             is Player.Each -> state.activePlayers
@@ -1559,6 +1560,10 @@ class ConditionEvaluator(
             is Player.EachOpponent -> {
                 val controller = resolvePlayer(state, Player.You, ctx) ?: return 0
                 state.getOpponents(controller)
+            }
+            is Player.EachOtherPlayer -> {
+                val controller = resolvePlayer(state, Player.You, ctx) ?: return 0
+                state.getOtherPlayers(controller)
             }
             else -> listOfNotNull(resolvePlayer(state, condition.player, ctx))
         }

@@ -394,6 +394,8 @@ class ReflexiveTriggerEffectExecutor(
             state.turnOrderStartingWith(context.controllerId)
         is com.wingedsheep.sdk.scripting.references.Player.EachOpponent ->
             state.turnOrder.filter { it != context.controllerId }
+        is com.wingedsheep.sdk.scripting.references.Player.EachOtherPlayer ->
+            state.getOtherPlayers(context.controllerId)
         else -> TargetResolutionUtils.resolvePlayerRef(player, context, state)?.let { listOf(it) }
     }
 

@@ -188,6 +188,73 @@
     ]
 }
 
+// Grave Pact
+{
+    "name": "Grave Pact",
+    "manaCost": "{1}{B}{B}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature you control dies, each other player sacrifices a creature of their choice.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Grave Pact:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "creature",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOtherPlayer"
+                    }
+                },
+                "descriptionOverride": "Whenever a creature you control dies, each other player sacrifices a creature of their choice."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "rarity": "RARE",
+        "artist": "Scott Kirschner",
+        "flavorText": "\"The bonds of loyalty can tie one to the grave.\"\n—Crovax",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/940536be-fce1-4a90-9126-195815a43e0f.jpg?1783946563",
+        "rulings": [
+            {
+                "date": "2023-09-01",
+                "text": "When the triggered ability resolves, first the player whose turn it is (if it isn't your turn) chooses which creature they will sacrifice, then each other player in turn order does the same, then all chosen creatures are sacrificed at the same time."
+            },
+            {
+                "date": "2023-09-01",
+                "text": "None of the players are targeted. A player with hexproof would still sacrifice a creature."
+            },
+            {
+                "date": "2023-09-01",
+                "text": "If multiple creatures you control die at the same time, Grave Pact's ability will trigger that many times."
+            },
+            {
+                "date": "2023-09-01",
+                "text": "If you control more than one Grave Pact and a creature you control dies, each of the triggered abilities will trigger. Each other player will sacrifice a creature each time one of those abilities resolves."
+            },
+            {
+                "date": "2023-09-01",
+                "text": "If two players each control a Grave Pact and a creature controlled by one of those players dies, a chain reaction happens. First the ability of that player's Grave Pact will trigger, causing each other player to sacrifice a creature. That sacrifice causes the ability of the other player's Grave Pact to trigger, and so on."
+            },
+            {
+                "date": "2023-09-01",
+                "text": "In a Two-Headed Giant game, when a creature you control dies, Grave Pact's triggered ability will cause each other player, including your teammate, to sacrifice a creature. Grave Pact's ability won't trigger when a creature your teammate controls dies."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Hermit Druid
 {
     "name": "Hermit Druid",

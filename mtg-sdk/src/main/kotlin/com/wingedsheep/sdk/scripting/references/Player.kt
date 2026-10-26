@@ -81,6 +81,22 @@ sealed interface Player {
         override val description: String = "each opponent"
     }
 
+    /**
+     * Every player other than you, in turn order — "each other player" (Grave Pact).
+     *
+     * Not [EachOpponent]: CR 102.3 makes a player's opponents everyone *not on their team*, so in a
+     * team game (Two-Headed Giant, CR 810) "each opponent" skips your teammate while "each other
+     * player" includes them. Outside team play the two name the same players. Not [Each] either,
+     * which includes you. Like [EachOpponent] this is a plural reference — it fans out in effect and
+     * counting slots (`PlayerRef`, `ForEachPlayer`, player-scoped amounts) and has no single-player
+     * resolution.
+     */
+    @SerialName("EachOtherPlayer")
+    @Serializable
+    data object EachOtherPlayer : Player {
+        override val description: String = "each other player"
+    }
+
     /** All players */
     @SerialName("Each")
     @Serializable
@@ -509,6 +525,7 @@ sealed interface Player {
             ActivePlayerFirst -> "each player's"
             EachStartingWithYou -> "each player's"
             EachOpponent -> "each opponent's"
+            EachOtherPlayer -> "each other player's"
             Any -> "a player's"
             is ContextPlayer -> "that player's"
             is BoundVariable -> "$description's"

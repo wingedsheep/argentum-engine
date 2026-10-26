@@ -1997,6 +1997,7 @@ class TriggerMatcher(
             Player.You -> eventPlayerId == controllerId
             Player.Each -> true
             Player.EachOpponent -> state.isOpponentOf(eventPlayerId, controllerId)
+            Player.EachOtherPlayer -> eventPlayerId != controllerId && eventPlayerId in state.activePlayers
             Player.EnchantedPlayer ->
                 sourceId == null || TargetResolutionUtils.enchantedPlayer(sourceId, state) == eventPlayerId
             Player.ChosenOpponent ->
@@ -2243,6 +2244,8 @@ class TriggerMatcher(
             Player.You -> state.isActiveTurnFor(controllerId)
             Player.Each -> true
             Player.EachOpponent -> !state.isActiveTurnFor(controllerId)
+            // A shared team turn (CR 805) is your turn too, so it is not "another player's" step.
+            Player.EachOtherPlayer -> !state.isActiveTurnFor(controllerId)
             Player.ChosenOpponent -> {
                 val chosen = sourceId?.let { state.getEntity(it)?.chosenOpponent() } ?: return false
                 state.isActiveTurnFor(chosen)
