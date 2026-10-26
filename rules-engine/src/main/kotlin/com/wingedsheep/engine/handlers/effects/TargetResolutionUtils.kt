@@ -265,17 +265,6 @@ object TargetResolutionUtils {
             ?: context.targets.firstOrNull()?.toEntityId()
 
     /**
-     * The defending player for the ability's source, per CR 802.2a: an explicitly bound
-     * defender (attack-declaration legality checks bind [EffectContext.defendingPlayerId]
-     * before the attacker has an `AttackingComponent`), else read from the source's attack
-     * assignment (a creature attacking a planeswalker defends against that planeswalker's
-     * controller). When the source has already left combat (e.g. it died dealing combat
-     * damage), the trigger event's player is last-known information for "deals combat
-     * damage to a player" triggers. A source that never attacks — an Equipment or Aura whose
-     * "whenever equipped creature attacks" fired — reads the triggering attacker's assignment
-     * instead (Nuka-Nuke Launcher's "defending player").
-     */
-    /**
      * "Defending player" for an effect (CR 506.2, 508.5): the player bound into the context by a
      * combat check, else the player the *triggering* attacker is attacking, else the one the source
      * is attacking. The triggering attacker wins over the source because an ability that refers to
@@ -283,14 +272,24 @@ object TargetResolutionUtils {
      * "Whenever a Dragon you control attacks, creatures defending player controls get -1/-1"
      * (Silumgar, the Drifting Death) answers with that Dragon's defender in multiplayer, even when
      * Silumgar itself attacks someone else. For "whenever this attacks" both are the same creature.
+     * Outside combat the last resort is the trigger's player — the damaged player of a "deals combat
+     * damage to a player" trigger whose source has since left.
      */
     fun resolveDefendingPlayer(context: EffectContext, state: GameState): EntityId? {
         context.defendingPlayerId?.let { return it }
-        defendingPlayerOfAttacker(state, context.triggeringEntityId)?.let { return it }
-        defendingPlayerOfAttacker(state, context.sourceId)?.let { return it }
+        defendingPlayerOfTriggerOrSource(state, context.triggeringEntityId, context.sourceId)?.let { return it }
         return (context.triggeringPlayerId ?: context.triggeringEntityId)
             ?.takeIf { it in state.turnOrder }
     }
+
+    /**
+     * The combat half of [resolveDefendingPlayer], shared with target-filter evaluation (which has
+     * no [EffectContext]): the triggering attacker's defending player, else the source's (CR 508.5).
+     * Also covers a source that never attacks — an Equipment or Aura whose "whenever equipped
+     * creature attacks" fired reads the equipped attacker (Nuka-Nuke Launcher).
+     */
+    fun defendingPlayerOfTriggerOrSource(state: GameState, triggeringEntityId: EntityId?, sourceId: EntityId?): EntityId? =
+        defendingPlayerOfAttacker(state, triggeringEntityId) ?: defendingPlayerOfAttacker(state, sourceId)
 
     /**
      * The player a creature [controllerId] puts onto the battlefield "tapped and attacking"

@@ -47,9 +47,11 @@ sealed interface Player {
     }
 
     /**
-     * The defending player, per CR 802.2a: the specific player the ability's source is
-     * attacking, determined per attacking creature — never "the opponent" via turn order.
-     * Resolves through the source's attack assignment (a creature attacking a planeswalker
+     * The defending player, per CR 802.2a: one specific player, determined per attacking
+     * creature — never "the opponent" via turn order. The triggering attacker's defender in an
+     * attack trigger (CR 508.5: "whenever a creature you control attacks" names that creature's
+     * defender), else the player the ability's source is attacking. Resolves through the attack
+     * assignment (a creature attacking a planeswalker
      * defends against that planeswalker's controller); for "deals combat damage to a
      * player" triggers whose source has left combat before resolution, the damaged player
      * is read from the trigger context as last-known information.

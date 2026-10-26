@@ -1693,8 +1693,7 @@ class PredicateEvaluator(
         // creature's defender, whether or not the source is attacking too.
         is EffectTarget.PlayerRef -> when (target.player) {
             Player.DefendingPlayer -> TargetResolutionUtils
-                .defendingPlayerOfAttacker(state, context.triggeringEntityId)
-                ?: TargetResolutionUtils.defendingPlayerOfAttacker(state, context.sourceId)
+                .defendingPlayerOfTriggerOrSource(state, context.triggeringEntityId, context.sourceId)
             // "…deals combat damage to a player, [that player] …" (Balefire Dragon). A self-bound
             // damage trigger carries the damaged player on `triggeringEntityId` and sets no
             // distinct `triggeringPlayerId` (see DamageTriggerDetector), which is exactly the

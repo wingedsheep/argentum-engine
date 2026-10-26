@@ -5652,7 +5652,7 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   attacker wins (CR 508.5: an ability naming an attacking creature and a defending player means
   that creature's defender), so in a per-attacker `Triggers.a(Creature.youControl()).attacks()`
   each trigger names its own attacker's player even when the source attacks someone else
-  (Brutal Hordechief, Silumgar, the Drifting Death:
+  (Silumgar, the Drifting Death:
   `modifyStatsForAll(-1, -1, GroupFilter(Creature.targetPlayerControls(PlayerRef(Player.DefendingPlayer))))`
   — not `defendingPlayerControls()`, which matches every defending seat). Read from the attack
   assignment (a creature attacking a planeswalker defends against its

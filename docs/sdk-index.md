@@ -1470,7 +1470,7 @@ Families:
 - `Player.ControllerOfIterationEntity` — Controller of the entity the enclosing `ForEachInGroup` is currently iterating over — "for each attacking red creature, … unless **its controller** pays {2}{R}" (Heroism, Tidal Flats).
 - `Player.ControllerOfSource` — The controller of the effect's **source** — read off the source permanent rather than off the resolution context's `controllerId`.
 - `Player.ControllerOfTriggeringEntity` — The controller of the **triggering entity** — the player half of com.wingedsheep.sdk.scripting.targets.EffectTarget.ControllerOfTriggeringEntity, for the places that take a Player reference rather…
-- `Player.DefendingPlayer` — The defending player, per CR 802.2a: the specific player the ability's source is attacking, determined per attacking creature — never "the opponent" via turn order.
+- `Player.DefendingPlayer` — The defending player, per CR 802.2a: one specific player, determined per attacking creature — never "the opponent" via turn order.
 - `Player.Each` — All players
 - `Player.EachDefendingPlayer` — All defending players in the current combat, in APNAP order, including those with no attackers assigned and before attackers are declared.
 - `Player.EachOpponent` — All opponents

@@ -155,7 +155,7 @@ class AttackingCreatureDefenderTest : FunSpec({
         d.getLifeTotal(p3) shouldBe 18
     }
 
-    test("creatures defending player controls: only the attacked player's creatures shrink") {
+    test("creatures defending player controls: each trigger shrinks its own attacker's defender") {
         val (d, p1, others) = threePlayer()
         val (p2, p3) = others
         val source = d.ready(p1, "Test Defender Shrinker")
@@ -166,13 +166,13 @@ class AttackingCreatureDefenderTest : FunSpec({
         val p3Creature = d.putCreatureOnBattlefield(p3, "Test Defender Shrinker")
 
         d.passPriorityUntil(Step.DECLARE_ATTACKERS)
-        d.declareAttackers(p1, mapOf(source to p2, bears to p2)).error shouldBe null
+        d.declareAttackers(p1, mapOf(source to p2, bears to p3)).error shouldBe null
         d.resolveAll()
-        withClue("two attackers at p2: two triggers, both naming p2") {
-            d.state.projectedState.getPower(p2Creature) shouldBe 1
+        withClue("the source's own trigger shrinks only p2") {
+            d.state.projectedState.getPower(p2Creature) shouldBe 2
         }
-        withClue("p3 is a defending seat but no attacker named it") {
-            d.state.projectedState.getPower(p3Creature) shouldBe 3
+        withClue("CR 508.5: the Bears' trigger shrinks the Bears' defender, not the source's") {
+            d.state.projectedState.getPower(p3Creature) shouldBe 2
         }
         d.state.projectedState.getPower(bears) shouldBe 2
     }
