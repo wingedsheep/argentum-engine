@@ -87,8 +87,8 @@ object LandManaColorInspector {
      * Whether a single land could produce colorless mana ({C}) via any of its mana abilities — the
      * colorless half of "any **type** a land could produce" (colorless is a type of mana, CR 106.1b;
      * "could produce" is CR 106.7).
-     * Costs, activation restrictions and tapped state are ignored, like [colorsLandCouldProduce] —
-     * except the gate of a reflected {C} half (see [reflectedColorlessScope]), which *is* the
+     * Costs (CR 106.7), activation restrictions and tapped state (Reflecting Pool rulings) are ignored, like [colorsLandCouldProduce] —
+     * except the gate of a reflected {C} half (see [reflectedColorlessGate]), which *is* the
      * reflection: that {C} counts only when another land on the chain could produce {C}.
      * False for non-lands.
      */
@@ -102,7 +102,10 @@ object LandManaColorInspector {
         val chain = visiting + entityId
         return manaAbilities(state, projected, entityId, cardRegistry).any { ability ->
             if (!producesColorless(ability.effect)) return@any false
-            val scope = reflectedColorlessScope(ability) ?: return@any true
+            val gate = reflectedColorlessGate(ability) ?: return@any true
+            // A reflective gate whose player names no land scope fails closed rather than
+            // letting the {C} half unlock itself.
+            val scope = gate.scope ?: return@any false
             landsInScope(state, projected, entityId, scope).any {
                 it !in chain && landCouldProduceColorless(state, projected, it, cardRegistry, chain)
             }
@@ -129,11 +132,14 @@ object LandManaColorInspector {
         projected: ProjectedState,
         controllerId: EntityId,
         scope: LandControllerScope,
-    ): List<EntityId> = state.getBattlefield().filter { permId ->
-        projected.hasType(permId, "LAND") && when (scope) {
-            LandControllerScope.YOU -> projected.getController(permId) == controllerId
-            LandControllerScope.OPPONENTS -> projected.getController(permId).let { it != null && it != controllerId }
-            LandControllerScope.ANY -> true
+    ): List<EntityId> {
+        val opponents = if (scope == LandControllerScope.OPPONENTS) state.getOpponents(controllerId).toHashSet() else emptySet()
+        return state.getBattlefield().filter { permId ->
+            projected.hasType(permId, "LAND") && when (scope) {
+                LandControllerScope.YOU -> projected.getController(permId) == controllerId
+                LandControllerScope.OPPONENTS -> projected.getController(permId) in opponents
+                LandControllerScope.ANY -> true
+            }
         }
     }
 
@@ -182,25 +188,32 @@ object LandManaColorInspector {
     }
 
     /**
-     * The scope a reflected {C} half reflects, or null for an ordinary {C} ability. "Add one mana
+     * The gate of a reflected {C} half, or null for an ordinary {C} ability. "Add one mana
      * of any **type** a land you control could produce" is authored as two mana abilities (Naga
      * Vitalist, Reflecting Pool): the colors through `ManaColorSet.LandsCouldProduce`, and `{C}`
      * gated on `Exists(<player>, battlefield, <land filter>.couldProduceColorlessMana())`. That
      * gate is the colorless reflection, not an activation legality check, so it is read here as
      * one.
      */
-    private fun reflectedColorlessScope(ability: ActivatedAbility): LandControllerScope? =
+    private fun reflectedColorlessGate(ability: ActivatedAbility): ReflectedGate? =
         ability.restrictions.firstNotNullOfOrNull { restriction ->
             val gate = (restriction as? ActivationRestriction.OnlyIfCondition)?.condition as? Exists
             when {
                 gate == null || gate.negate || gate.zone != Zone.BATTLEFIELD -> null
                 CardPredicate.CouldProduceColorlessMana !in gate.filter.cardPredicates -> null
-                gate.player == Player.You -> LandControllerScope.YOU
-                gate.player == Player.EachOpponent -> LandControllerScope.OPPONENTS
-                gate.player == Player.Any -> LandControllerScope.ANY
-                else -> null
+                else -> ReflectedGate(
+                    when (gate.player) {
+                        Player.You -> LandControllerScope.YOU
+                        Player.EachOpponent -> LandControllerScope.OPPONENTS
+                        Player.Any -> LandControllerScope.ANY
+                        else -> null
+                    }
+                )
             }
         }
+
+    /** A reflected {C} gate and the lands it reflects; a null [scope] names none (fails closed). */
+    private data class ReflectedGate(val scope: LandControllerScope?)
 
     private fun producesColorless(effect: Effect): Boolean = when (effect) {
         is AddColorlessManaEffect -> true

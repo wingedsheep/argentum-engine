@@ -95,6 +95,10 @@ class ReflectingPoolScenarioTest : FunSpec({
         driver.putLandOnBattlefield(driver.getOpponent(me), "Island")
 
         driver.submit(ActivateAbility(me, reflectingPool, colorAbility, manaColorChoice = Color.BLUE))
-        driver.pool(me).blue shouldBe 0
+        withClue("blue isn't on offer; green, from my Forest, is the only mana that can come out") {
+            val pool = driver.pool(me)
+            pool.blue shouldBe 0
+            (pool.white + pool.black + pool.red + pool.colorless) shouldBe 0
+        }
     }
 })

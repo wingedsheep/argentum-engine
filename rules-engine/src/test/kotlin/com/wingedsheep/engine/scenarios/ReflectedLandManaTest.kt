@@ -61,6 +61,17 @@ class ReflectedLandManaTest : ScenarioTestBase() {
         }
     }
 
+    // Fellwar Stone shape: a nonland reflecting opponents' lands.
+    private val stone = card("Test Stone") {
+        manaCost = "{2}"
+        typeLine = "Artifact"
+        activatedAbility {
+            cost = Costs.Tap
+            manaAbility = true
+            effect = Effects.AddManaOfColorLandsCouldProduce(LandControllerScope.OPPONENTS)
+        }
+    }
+
     private val colorlessLand = card("Test Wastes") {
         typeLine = "Land"
         activatedAbility {
@@ -112,6 +123,7 @@ class ReflectedLandManaTest : ScenarioTestBase() {
     init {
         cardRegistry.register(pool)
         cardRegistry.register(orchard)
+        cardRegistry.register(stone)
         cardRegistry.register(colorlessLand)
         cardRegistry.register(restrictedRainbow)
 
@@ -182,6 +194,18 @@ class ReflectedLandManaTest : ScenarioTestBase() {
 
             withClue("no artifact, yet the Spire's any-color ability counts") {
                 game.colorsFor(pool, LandControllerScope.YOU) shouldBe Color.entries.toSet()
+            }
+        }
+
+        test("a Stone facing an opponent's Pool and Island reflects only blue") {
+            val game = base()
+                .withCardOnBattlefield(1, "Test Stone")
+                .withCardOnBattlefield(2, "Test Pool")
+                .withCardOnBattlefield(2, "Island")
+                .build()
+
+            withClue("the opponent's Pool reflects their Island, not all five colors") {
+                game.colorsFor(game.findPermanent("Test Stone")!!, LandControllerScope.OPPONENTS) shouldBe setOf(Color.BLUE)
             }
         }
 
