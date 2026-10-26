@@ -704,8 +704,10 @@ data class RemoveFromCombatEffect(
 
 /**
  * Mark a creature as required to attack if able, for the [window] named — "target creature
- * attacks this turn if able" (Walking Desecration, via `ForEachInGroup` over a group) or "that
- * creature attacks during its controller's next combat phase if able" (Sizzling Soloist).
+ * attacks this turn if able" or "that creature attacks during its controller's next combat phase
+ * if able" (Sizzling Soloist). It marks only the objects it names; a group requirement that must
+ * also reach creatures arriving later ("creatures your opponents control attack … if able",
+ * CR 611.2c) is [MustAttackGroupEffect].
  *
  * The requirement is on the creature, not on any effect source: it survives the source leaving
  * the battlefield, and it doesn't care which defender the creature attacks.

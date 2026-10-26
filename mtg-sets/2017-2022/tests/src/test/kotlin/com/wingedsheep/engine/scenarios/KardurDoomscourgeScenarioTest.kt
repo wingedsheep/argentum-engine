@@ -73,7 +73,7 @@ class KardurDoomscourgeScenarioTest : ScenarioTestBase() {
                 withClue("Kardur's controller gains 1") { game.getLifeTotal(1) shouldBe 21 }
             }
 
-            test("your own attacker dying triggers it too, but a dying blocker doesn't") {
+            test("your own attacking creature dying triggers it too") {
                 val game = scenario()
                     .withPlayers("Kardur", "Opponent")
                     .withCardOnBattlefield(1, "Kardur, Doomscourge")

@@ -429,13 +429,11 @@ internal class CardActiveEffectsProjector(
                 icon = "cant-block"
             )
         }
-        // The unrestricted requirement (Culvert Ambusher). Badged for the same reason as
-        // "Must Attack": the defending player finds out about it when their declaration is
-        // rejected, which is far too late to be the first they hear of it.
         // Kardur, Doomscourge's group requirement. Badged on each creature it binds, like goad, so
-        // the attacking player sees whom to send it at before declaring.
+        // the attacking player sees whom to send it at before declaring. One id per requirement
+        // shape, so two of them on one creature stay two badges.
         is SerializableModification.SetMustAttack -> ClientCardEffect(
-            effectId = "must_attack_group",
+            effectId = "must_attack_group_${modification.otherThan?.value ?: modification.defender.name}",
             name = "Must Attack",
             description = when (modification.defender) {
                 MustAttackDefender.APlayer -> "This creature attacks a player each combat if able"
@@ -448,6 +446,9 @@ internal class CardActiveEffectsProjector(
             },
             icon = "must-attack"
         )
+        // The unrestricted requirement (Culvert Ambusher). Badged for the same reason as
+        // "Must Attack": the defending player finds out about it when their declaration is
+        // rejected, which is far too late to be the first they hear of it.
         is SerializableModification.SetMustBlock -> ClientCardEffect(
             effectId = "must_block_this_turn",
             name = "Must Block",

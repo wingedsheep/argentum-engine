@@ -81,7 +81,8 @@ data class MustAttack(
  * Whom a [MustAttack] requirement says the creature attacks. A requirement naming a defender is
  * obeyed only by attacking that defender, so attacking another is an error while the named one
  * could legally be attacked (CR 508.1d — obey as many requirements as possible); when it can't
- * be, the creature is under no requirement from this ability at all.
+ * be, the creature is under no requirement from this ability at all. [PlayerOtherThanYou] is the
+ * exception: it names whom to avoid, and the creature attacks even when it can't avoid them.
  */
 @Serializable
 enum class MustAttackDefender(

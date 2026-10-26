@@ -663,6 +663,12 @@ internal class AttackPhaseManager(
      * chooses its own defender, and a restriction such as "can't attack unless defending player
      * controls a Mountain" or "creatures can't attack you" is about one particular defender).
      * Order is preserved.
+     *
+     * It also drops the defenders an "attacks a player other than X if able" requirement on this
+     * creature rules out (goad, CR 701.15b; [MustAttackDefender.PlayerOtherThanYou]): that check
+     * depends on this creature alone, so a declaration aimed at one of them fails whatever the
+     * other attackers do. A player some other attackable opponent is named less often than always
+     * remains, so the list never empties on this account.
      */
     fun legalDefendersFor(
         state: GameState,
@@ -670,8 +676,18 @@ internal class AttackPhaseManager(
         attackingPlayer: EntityId,
         candidates: List<EntityId>,
     ): List<EntityId> {
-        val ctx = AttackCheckContext(state, state.projectedState, attackerId, attackingPlayer, cardRegistry)
-        return candidates.filter { defenderId -> attackDefenderRules.all { it.check(ctx, defenderId) == null } }
+        val projected = state.projectedState
+        val ctx = AttackCheckContext(state, projected, attackerId, attackingPlayer, cardRegistry)
+        val legal = candidates.filter { defenderId -> attackDefenderRules.all { it.check(ctx, defenderId) == null } }
+        val avoided = GoadRules(state, cardRegistry, predicateEvaluator).playersToAttackOtherThan(attackerId)
+        if (avoided.isEmpty()) return legal
+        val opponents = state.getOpponents(attackingPlayer)
+        return legal.filterNot { defenderId ->
+            breaksAvoidableRequirement(
+                state, projected, attackingPlayer, attackerId,
+                defenderControllerOf(state, projected, defenderId), avoided, opponents
+            )
+        }
     }
 
     // =========================================================================
@@ -1018,10 +1034,11 @@ internal class AttackPhaseManager(
      *      the "if able" lookup considers only opponent players, not their
      *      planeswalkers. CR 701.15c stacks the requirement per goader, and every
      *      "other than X" requirement stacks with them ([GoadRules.playersToAttackOtherThan]).
-     *      CR 508.1d asks for as many requirements obeyed as possible, so the player the
-     *      creature attacks must be named by no more of them than some other opponent
-     *      player it could legally attack. When every such player is named equally often
-     *      (in two-player, the only opponent), the creature may attack any of them.
+     *      The attacked player must be named by no more of these requirements than some
+     *      other opponent player the creature could legally attack (CR 508.1d, counted
+     *      over the "other than X" requirements only — a Trove of Temptation or Public
+     *      Enemy requirement is weighed by its own check). When every such player is named
+     *      equally often (in two-player, the only opponent), the creature may attack any of them.
      *
      * The chosen defender may itself be a planeswalker; [defenderControllerOf] maps
      * it to its controller so attacking a goader's planeswalker is still caught as

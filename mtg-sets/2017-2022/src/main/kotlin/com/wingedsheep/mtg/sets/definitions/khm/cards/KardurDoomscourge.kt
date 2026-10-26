@@ -12,7 +12,7 @@ import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
- * Kardur, Doomscourge — Kaldheim #223 (canonical printing)
+ * Kardur, Doomscourge — Kaldheim #216 (canonical printing)
  * {2}{B}{R} Legendary Creature — Demon Berserker 4/3
  *
  * The enters trigger is a durational group requirement, not goad: the creatures aren't goaded, and
@@ -49,9 +49,9 @@ val KardurDoomscourge = card("Kardur, Doomscourge") {
 
     metadata {
         rarity = Rarity.UNCOMMON
-        collectorNumber = "223"
+        collectorNumber = "216"
         artist = "Chris Rahn"
-        imageUri = "https://cards.scryfall.io/normal/front/7/c/7c0f7712-7bbf-471b-8107-3a49cf922ad9.jpg?1783909592"
+        imageUri = "https://cards.scryfall.io/normal/front/9/6/9685e2a0-5573-41bc-a914-f40c3011459b.jpg?1783928196"
         ruling("2021-02-05", "Kardur's first ability affects all creatures your opponents control, including any that enter the battlefield after the ability resolves.")
         ruling("2021-02-05", "If a creature an opponent controls doesn't qualify for any of the above exceptions and can attack, it must attack a player other than you if able. If the creature can't attack any of those players, or if there are no such players, it must attack you or an opposing planeswalker.")
         ruling("2021-02-05", "Kardur's last ability will trigger no matter who controlled the attacking creature and no matter who it was attacking.")

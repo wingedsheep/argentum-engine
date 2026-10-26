@@ -107,6 +107,8 @@ class MustAttackGroupEffectTest : FunSpec({
         driver.applyKardur(p[0])
         driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
 
+        driver.legalActions(p[1]).single { it.actionType == "DeclareAttackers" }
+            .attackTargetsByAttacker?.get(theirs) shouldBe listOf(p[2])
         driver.declareAttackers(p[1], emptyMap()).error shouldNotBe null
         driver.declareAttackers(p[1], mapOf(theirs to p[0])).error!! shouldContain "a player other than"
         driver.declareAttackers(p[1], mapOf(theirs to p[2])).error shouldBe null
@@ -165,9 +167,9 @@ class MustAttackGroupEffectTest : FunSpec({
 
         val view = ClientStateTransformer(driver.cardRegistry, predicateEvaluator = PredicateEvaluator(cardRegistry = driver.cardRegistry))
             .transform(driver.state, p[1])
-        val badge = view.cards.getValue(theirs).activeEffects.single { it.effectId == "must_attack_group" }
+        val badge = view.cards.getValue(theirs).activeEffects.single { it.effectId.startsWith("must_attack_group") }
         badge.description!! shouldContain "a player other than Player 1"
-        view.cards.getValue(mine).activeEffects.none { it.effectId == "must_attack_group" } shouldBe true
+        view.cards.getValue(mine).activeEffects.none { it.effectId.startsWith("must_attack_group") } shouldBe true
     }
 
     test("the printed static names its holder's controller") {
