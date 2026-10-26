@@ -418,6 +418,41 @@
     ]
 }
 
+// Krenko's Command
+{
+    "name": "Krenko's Command",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create two 1/1 red Goblin creature tokens.",
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            },
+            "power": 1,
+            "toughness": 1,
+            "colors": [
+                "RED"
+            ],
+            "creatureTypes": [
+                "Goblin"
+            ],
+            "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e67efea-8a80-42ec-8e77-07d387d933d4.jpg?1783940442"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "artist": "Karl Kopinski",
+        "flavorText": "Goblins are eager to follow orders, especially when those orders involve stealing, hurting, annoying, eating, destroying, or swearing.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/84df41e9-e973-4441-b17f-434517134d46.jpg?1783940481"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Krenko, Mob Boss
 {
     "name": "Krenko, Mob Boss",

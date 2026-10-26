@@ -2625,6 +2625,119 @@
     ]
 }
 
+// Legion Warboss
+{
+    "name": "Legion Warboss",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Goblin Soldier",
+    "oracleText": "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)\nAt the beginning of combat on your turn, create a 1/1 red Goblin creature token. That token gains haste until end of turn and attacks this combat if able.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENTOR"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Legion Warboss:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerLessThanEntity",
+                                    "reference": "Self"
+                                }
+                            ],
+                            "statePredicates": [
+                                "IsAttacking"
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "Mentor (Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.)"
+            },
+            {
+                "id": "Legion Warboss:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "RED"
+                            ],
+                            "creatureTypes": [
+                                "Goblin"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/b/2/b27dc0bd-ba46-4a5c-9559-7c11eb4ec37b.jpg?1783934062"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        },
+                        {
+                            "type": "MarkMustAttack",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "RARE",
+        "artist": "Alex Konstad",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5e84cb9c-9876-47a4-aea4-78574321bc36.jpg?1783934160",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "If the token can't attack for any reason (such as becoming tapped), then it doesn't attack. If there's a cost associated with having it attack, its controller isn't forced to pay that cost, so it doesn't have to attack in that case either."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Mentor compares the power of the creature with mentor with that of the target creature at two different times: once as the triggered ability is put onto the stack, and once as the triggered ability resolves. If you wish to raise a creature's power so its mentor ability can target a bigger creature, the last chance you have to do so is during the beginning of combat step."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If the creature with mentor leaves the battlefield with mentor on the stack, use its power as that creature last existed on the battlefield to determine whether the target creature has less power."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Loxodon Restorer
 {
     "name": "Loxodon Restorer",

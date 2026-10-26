@@ -1,1 +1,282 @@
+// Glistening Sphere
+{
+    "name": "Glistening Sphere",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact enters tapped.\nWhen this artifact enters, proliferate.\n{T}: Add one mana of any color.\nCorrupted — {T}: Add three mana of any one color. Activate only if an opponent has three or more poison counters.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Glistening Sphere:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": "Proliferate",
+                "descriptionOverride": "When this artifact enters, proliferate."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Glistening Sphere:2",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add one mana of any color."
+            },
+            {
+                "id": "Glistening Sphere:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "timing": "ManaAbility",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "GreatestAmongPlayers",
+                                "players": "EachOpponent",
+                                "inner": {
+                                    "type": "PlayerCounterCount",
+                                    "counterType": "POISON"
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    }
+                ],
+                "isManaAbility": true,
+                "descriptionOverride": "Corrupted — {T}: Add three mana of any one color. Activate only if an opponent has three or more poison counters."
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "rarity": "RARE",
+        "artist": "Tuan Duong Chu",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/8/b825db05-7e95-400b-944b-526cfa6addc0.jpg?1783918158",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "You don't have to choose every permanent or player that has a counter, only the ones you want to add another counter to."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
 
+// Ixhel, Scion of Atraxa
+{
+    "name": "Ixhel, Scion of Atraxa",
+    "manaCost": "{1}{W}{B}{G}",
+    "typeLine": "Legendary Creature — Phyrexian Angel",
+    "oracleText": "Flying, vigilance, toxic 2\nCorrupted — At the beginning of your end step, each opponent who has three or more poison counters exiles the top card of their library face down. You may look at and play those cards for as long as they remain exiled, and you may spend mana as though it were mana of any color to cast those spells.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE",
+        "TOXIC"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "TOXIC",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ixhel, Scion of Atraxa:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "Compare",
+                                "left": {
+                                    "type": "PlayerCounterCount",
+                                    "counterType": "POISON"
+                                },
+                                "operator": "GTE",
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        },
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeAs": "gathered0",
+                                    "lookAudience": "None"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "gathered0",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Exile"
+                                    },
+                                    "faceDown": "HIDDEN"
+                                },
+                                {
+                                    "type": "GrantMayPlayFromExile",
+                                    "from": "gathered0",
+                                    "expiry": "Permanent",
+                                    "withAnyManaColor": true,
+                                    "recipient": {
+                                        "type": "PlayerRef",
+                                        "player": "ControllerOfSource"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "Corrupted — At the beginning of your end step, each opponent who has three or more poison counters exiles the top card of their library face down. You may look at and play those cards for as long as they remain exiled, and you may spend mana as though it were mana of any color to cast those spells."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "MYTHIC",
+        "artist": "Campbell White",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/ab866ec4-dcb4-47ef-8de1-a369986609c0.jpg?1783918163",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "You may look at and cast the exiled cards (and spend mana as though it were mana of any color to do so) even if Ixhel leaves the battlefield. If another player gains control of Ixhel, that player can't look at or cast the cards, and you still can."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "Ixhel doesn't change when you can cast an exiled card. For example, if you exile a creature card without flash, you can cast it only during your main phase when the stack is empty."
+            },
+            {
+                "date": "2023-02-04",
+                "text": "Casting an exiled card causes it to leave exile. You can't cast it multiple times."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Phyresis Outbreak
+{
+    "name": "Phyresis Outbreak",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each opponent gets a poison counter. Then each creature your opponents control gets -1/-1 until end of turn for each poison counter its controller has.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "POISON",
+                        "count": 1,
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "You"
+                        }
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Multiply",
+                            "amount": {
+                                "type": "PlayerCounterCount",
+                                "counterType": "POISON",
+                                "player": "ControllerOfIterationEntity"
+                            },
+                            "multiplier": -1
+                        },
+                        "toughnessModifier": {
+                            "type": "Multiply",
+                            "amount": {
+                                "type": "PlayerCounterCount",
+                                "counterType": "POISON",
+                                "player": "ControllerOfIterationEntity"
+                            },
+                            "multiplier": -1
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "RARE",
+        "artist": "Matthew G. Lewis",
+        "flavorText": "\"It is amusing that the fleshlings believe we are at war. In truth, they are nothing but scurrying pests to be eradicated.\"\n—Azax-Azog, the Demon Thane",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/812498c8-974c-460c-b782-506f5f735346.jpg?1783918160",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "The amount a creature's power and toughness are reduced is determined only once, at the time Phyresis Outbreak resolves. It won't change if that creature's controller later gets more poison counters or if another player takes control of it later in the same turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}

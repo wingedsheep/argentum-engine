@@ -1174,6 +1174,52 @@
     ]
 }
 
+// Goblin Chieftain
+{
+    "name": "Goblin Chieftain",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Creature — Goblin",
+    "oracleText": "Haste (This creature can attack and {T} as soon as it comes under your control.)\nOther Goblin creatures you control get +1/+1 and have haste.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Goblin ctrl:you",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE",
+                "filter": {
+                    "baseFilter": "creature Goblin ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "RARE",
+        "artist": "Sam Wood",
+        "flavorText": "\"We are goblinkind, heirs to the mountain empires of chieftains past. Rest is death to us, and arson is our call to war.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f5c8a4a4-1611-4188-9c59-8aefb016b5ad.jpg?1783942372"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Griffin Sentinel
 {
     "name": "Griffin Sentinel",

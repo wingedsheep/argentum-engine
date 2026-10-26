@@ -392,6 +392,83 @@
     ]
 }
 
+// Goblin Recruiter
+{
+    "name": "Goblin Recruiter",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Goblin",
+    "oracleText": "When this creature enters, search your library for any number of Goblin cards, reveal them, then shuffle and put those cards on top in any order.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Goblin Recruiter:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "Goblin"
+                            },
+                            "storeAs": "gathered0",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "Search your library for any number of Goblin cards"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "selected1"
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent",
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "UNCOMMON",
+        "artist": "Scott Kirschner",
+        "flavorText": "\"Next!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6ee791d5-1d48-40e8-b65f-b6aa889f3467.jpg?1783946989",
+        "rulings": [
+            {
+                "date": "2008-04-01",
+                "text": "You can search for any card with the creature type Goblin, including creature or kindred cards. Older cards of type \"Summon Goblin\" and \"Summon Goblins\" also count. You can't search for cards that have Goblin in the name but don't have the creature type Goblin."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Hulking Cyclops
 {
     "name": "Hulking Cyclops",

@@ -422,6 +422,40 @@
     ]
 }
 
+// Battle Hymn
+{
+    "name": "Battle Hymn",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Add {R} for each creature you control.",
+    "script": {
+        "spellEffect": {
+            "type": "AddMana",
+            "color": "RED",
+            "amount": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "artist": "Nils Hamm",
+        "flavorText": "\"A church is just wood and walls. A congregation is the faithful praising the angels.\"\n—Kolman, elder of Gatstaf",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/43b5d46e-7054-44f8-9a14-b412f2f0ab86.jpg?1783940689",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "Battle Hymn uses the stack and can be responded to. The amount of mana produced is based on the number of creatures you control when Battle Hymn resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Blood Artist
 {
     "name": "Blood Artist",
