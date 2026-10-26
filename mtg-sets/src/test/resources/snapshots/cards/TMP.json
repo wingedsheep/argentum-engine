@@ -4644,6 +4644,69 @@
     ]
 }
 
+// Reflecting Pool
+{
+    "name": "Reflecting Pool",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add one mana of any type that a land you control could produce.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Reflecting Pool:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "colorSet": {
+                        "type": "ManaColorSet.LandsCouldProduce",
+                        "scope": "YOU"
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add one mana of any color that a land you control could produce."
+            },
+            {
+                "id": "Reflecting Pool:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsLand",
+                                    "CouldProduceColorlessMana"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {C}. Activate only if a land you control could produce colorless mana."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "322",
+        "rarity": "RARE",
+        "artist": "Adam Rex",
+        "flavorText": "\"The reflection of land interests me far more than its reality.\"\n—Volrath",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b633ac2-bf98-42bd-8c26-8737a7d8edc7.jpg?1783946597"
+    }
+}
+
 // Respite
 {
     "name": "Respite",

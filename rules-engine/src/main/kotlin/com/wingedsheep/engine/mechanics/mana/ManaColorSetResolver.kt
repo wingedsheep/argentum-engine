@@ -12,7 +12,6 @@ import com.wingedsheep.engine.state.components.identity.CommanderRegistryCompone
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.values.LandControllerScope
 import com.wingedsheep.sdk.scripting.values.ManaColorSet
 
 /**
@@ -134,15 +133,7 @@ object ManaColorSetResolver {
         controllerId: EntityId,
         cardRegistry: CardRegistry,
     ): Set<Color> {
-        val targetPlayers = when (colorSet.scope) {
-            LandControllerScope.YOU -> setOf(controllerId)
-            LandControllerScope.OPPONENTS -> state.turnOrder.filter { it != controllerId }.toSet()
-            LandControllerScope.ANY -> state.turnOrder.toSet()
-        }
-        if (targetPlayers.isEmpty()) return emptySet()
-        val landIds = state.getBattlefield().filter { permId ->
-            projected.hasType(permId, "LAND") && projected.getController(permId) in targetPlayers
-        }
+        val landIds = LandManaColorInspector.landsInScopeOf(state, projected, controllerId, colorSet.scope)
         return LandManaColorInspector.colorsLandsCouldProduce(state, projected, landIds, cardRegistry)
     }
 

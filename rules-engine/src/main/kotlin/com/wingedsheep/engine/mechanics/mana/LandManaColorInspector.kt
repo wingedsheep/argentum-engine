@@ -7,6 +7,13 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.ActivatedAbility
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.ActivationRestriction
+import com.wingedsheep.sdk.scripting.conditions.Exists
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.values.LandControllerScope
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
@@ -21,6 +28,12 @@ import com.wingedsheep.sdk.scripting.values.ManaColorSet
  * (CR rulings: "checks the effects of all mana-producing abilities of lands ... but
  * doesn't check their costs").
  *
+ * Reflection (CR 106.7): a land whose own mana ability is itself "could produce"-shaped
+ * (Reflecting Pool, Exotic Orchard) reflects the lands it names, *excluding every land already
+ * being inspected on this chain*. That is what makes two Reflecting Pools with no other lands
+ * produce nothing ("Multiple Reflecting Pools won't help each other produce mana"), and keeps a
+ * Pool from reflecting its own colors or its own {C}.
+ *
  * Colorless production is intentionally ignored — Fellwar Stone-style abilities
  * produce only colored mana ("Fellwar Stone can't be tapped for colorless mana, even
  * if a land an opponent controls could produce colorless mana").
@@ -28,17 +41,20 @@ import com.wingedsheep.sdk.scripting.values.ManaColorSet
 object LandManaColorInspector {
 
     /**
-     * The colors that any land in [landIds] could produce.
+     * The colors that any land in [landIds] could produce. Lands in [visiting] — the chain of
+     * lands already being inspected — are skipped, so reflection never loops back on itself.
      */
     fun colorsLandsCouldProduce(
         state: GameState,
         projected: ProjectedState,
         landIds: Iterable<EntityId>,
         cardRegistry: CardRegistry,
+        visiting: Set<EntityId> = emptySet(),
     ): Set<Color> {
         val colors = mutableSetOf<Color>()
         for (landId in landIds) {
-            colors.addAll(colorsLandCouldProduce(state, projected, landId, cardRegistry))
+            if (landId in visiting) continue
+            colors.addAll(colorsLandCouldProduce(state, projected, landId, cardRegistry, visiting))
             if (colors.size == Color.entries.size) return colors
         }
         return colors
@@ -53,11 +69,16 @@ object LandManaColorInspector {
         projected: ProjectedState,
         entityId: EntityId,
         cardRegistry: CardRegistry,
+        visiting: Set<EntityId> = emptySet(),
     ): Set<Color> {
         val container = state.getEntity(entityId) ?: return emptySet()
+        val chain = visiting + entityId
+        val reflect = { scope: LandControllerScope ->
+            colorsLandsCouldProduce(state, projected, landsInScope(state, projected, entityId, scope), cardRegistry, chain)
+        }
         val colors = mutableSetOf<Color>()
-        for (effect in manaAbilityEffects(state, projected, entityId, cardRegistry)) {
-            collectColors(effect, container, colors)
+        for (ability in manaAbilities(state, projected, entityId, cardRegistry)) {
+            collectColors(ability.effect, container, colors, reflect)
         }
         return colors
     }
@@ -66,30 +87,71 @@ object LandManaColorInspector {
      * Whether a single land could produce colorless mana ({C}) via any of its mana abilities — the
      * colorless half of "any **type** a land could produce" (colorless is a type of mana, CR 106.1b;
      * "could produce" is CR 106.7).
-     * Costs and tapped state are ignored, like [colorsLandCouldProduce]. False for non-lands.
+     * Costs, activation restrictions and tapped state are ignored, like [colorsLandCouldProduce] —
+     * except the gate of a reflected {C} half (see [reflectedColorlessScope]), which *is* the
+     * reflection: that {C} counts only when another land on the chain could produce {C}.
+     * False for non-lands.
      */
     fun landCouldProduceColorless(
         state: GameState,
         projected: ProjectedState,
         entityId: EntityId,
         cardRegistry: CardRegistry,
-    ): Boolean = manaAbilityEffects(state, projected, entityId, cardRegistry).any(::producesColorless)
+        visiting: Set<EntityId> = emptySet(),
+    ): Boolean {
+        val chain = visiting + entityId
+        return manaAbilities(state, projected, entityId, cardRegistry).any { ability ->
+            if (!producesColorless(ability.effect)) return@any false
+            val scope = reflectedColorlessScope(ability) ?: return@any true
+            landsInScope(state, projected, entityId, scope).any {
+                it !in chain && landCouldProduceColorless(state, projected, it, cardRegistry, chain)
+            }
+        }
+    }
 
     /**
-     * The effects of every mana ability the land has: intrinsic basic-land-type abilities, else its
-     * printed ones, plus granted ones.
+     * The lands [scope] names, relative to the controller of [sourceId] (Reflecting Pool's "lands
+     * you control", Exotic Orchard's "a land an opponent controls").
      */
-    private fun manaAbilityEffects(
+    fun landsInScope(
+        state: GameState,
+        projected: ProjectedState,
+        sourceId: EntityId,
+        scope: LandControllerScope,
+    ): List<EntityId> {
+        val controllerId = projected.getController(sourceId) ?: return emptyList()
+        return landsInScopeOf(state, projected, controllerId, scope)
+    }
+
+    /** The lands [scope] names, relative to [controllerId]. */
+    fun landsInScopeOf(
+        state: GameState,
+        projected: ProjectedState,
+        controllerId: EntityId,
+        scope: LandControllerScope,
+    ): List<EntityId> = state.getBattlefield().filter { permId ->
+        projected.hasType(permId, "LAND") && when (scope) {
+            LandControllerScope.YOU -> projected.getController(permId) == controllerId
+            LandControllerScope.OPPONENTS -> projected.getController(permId).let { it != null && it != controllerId }
+            LandControllerScope.ANY -> true
+        }
+    }
+
+    /**
+     * Every mana ability the land has: intrinsic basic-land-type abilities, else its printed ones,
+     * plus granted ones.
+     */
+    private fun manaAbilities(
         state: GameState,
         projected: ProjectedState,
         entityId: EntityId,
         cardRegistry: CardRegistry,
-    ): List<Effect> {
+    ): List<ActivatedAbility> {
         val container = state.getEntity(entityId) ?: return emptyList()
         val card = container.get<CardComponent>() ?: return emptyList()
         if (!projected.hasType(entityId, "LAND")) return emptyList()
 
-        val effects = mutableListOf<Effect>()
+        val abilities = mutableListOf<ActivatedAbility>()
 
         // A land that has lost all abilities (e.g. Imprisoned in the Moon) keeps its land
         // subtypes (only card types/abilities are overwritten, not subtypes — CR 205.4b) but per
@@ -100,25 +162,45 @@ object LandManaColorInspector {
         if (!ownAbilitiesSuppressed) {
             // Intrinsic abilities derived from projected basic-land subtypes (Plains/Island/...).
             val intrinsic = IntrinsicManaAbilities.forEntity(state, projected, entityId)
-            intrinsic.mapTo(effects) { it.effect }
+            abilities.addAll(intrinsic)
 
             // Card-defined activated abilities (if any). Skip when intrinsic abilities are
             // present — basic land types replace the printed mana ability (matches
             // ManaAbilityEnumerator's behavior for shock lands etc.).
             if (intrinsic.isEmpty()) {
                 cardRegistry.getCard(card.cardDefinitionId)?.script?.activatedAbilities
-                    ?.filter { it.isManaAbility }
-                    ?.mapTo(effects) { it.effect }
+                    ?.filterTo(abilities) { it.isManaAbility }
             }
         }
 
         // Granted mana abilities (e.g., from auras / continuous effects)
         state.grantedActivatedAbilities
             .filter { it.entityId == entityId && it.ability.isManaAbility }
-            .mapTo(effects) { it.ability.effect }
+            .mapTo(abilities) { it.ability }
 
-        return effects
+        return abilities
     }
+
+    /**
+     * The scope a reflected {C} half reflects, or null for an ordinary {C} ability. "Add one mana
+     * of any **type** a land you control could produce" is authored as two mana abilities (Naga
+     * Vitalist, Reflecting Pool): the colors through `ManaColorSet.LandsCouldProduce`, and `{C}`
+     * gated on `Exists(<player>, battlefield, <land filter>.couldProduceColorlessMana())`. That
+     * gate is the colorless reflection, not an activation legality check, so it is read here as
+     * one.
+     */
+    private fun reflectedColorlessScope(ability: ActivatedAbility): LandControllerScope? =
+        ability.restrictions.firstNotNullOfOrNull { restriction ->
+            val gate = (restriction as? ActivationRestriction.OnlyIfCondition)?.condition as? Exists
+            when {
+                gate == null || gate.negate || gate.zone != Zone.BATTLEFIELD -> null
+                CardPredicate.CouldProduceColorlessMana !in gate.filter.cardPredicates -> null
+                gate.player == Player.You -> LandControllerScope.YOU
+                gate.player == Player.EachOpponent -> LandControllerScope.OPPONENTS
+                gate.player == Player.Any -> LandControllerScope.ANY
+                else -> null
+            }
+        }
 
     private fun producesColorless(effect: Effect): Boolean = when (effect) {
         is AddColorlessManaEffect -> true
@@ -130,14 +212,15 @@ object LandManaColorInspector {
         effect: Effect,
         sourceContainer: com.wingedsheep.engine.state.ComponentContainer,
         out: MutableSet<Color>,
+        reflect: (LandControllerScope) -> Set<Color>,
     ) {
         when (effect) {
             is AddManaEffect -> out.add(effect.color)
             is AddColorlessManaEffect -> Unit
-            is AddManaOfChoiceEffect -> collectChoiceColors(effect.colorSet, sourceContainer, out)
+            is AddManaOfChoiceEffect -> collectChoiceColors(effect.colorSet, sourceContainer, out, reflect)
             is AddDynamicManaEffect -> out.addAll(effect.allowedColors)
             is CompositeEffect -> {
-                for (sub in effect.effects) collectColors(sub, sourceContainer, out)
+                for (sub in effect.effects) collectColors(sub, sourceContainer, out, reflect)
             }
             else -> Unit
         }
@@ -145,15 +228,17 @@ object LandManaColorInspector {
 
     /**
      * Stateless approximation of [ManaColorSetResolver] used here because we only have a
-     * source container, not full game state. For color sets that need state to resolve
-     * (commander identity, colors among permanents, lands could produce), we
-     * conservatively report all five colors — matches the legacy `AddManaOfColorAmong`
+     * source container, not full game state. [ManaColorSet.LandsCouldProduce] is resolved
+     * through [reflect] (the land's own scope, minus the lands already on the chain). For the
+     * other color sets that need state to resolve (commander identity, colors among permanents),
+     * we conservatively report all five colors — matches the legacy `AddManaOfColorAmong`
      * behavior and is the safe choice for "could this land produce X?" lookups.
      */
     private fun collectChoiceColors(
         colorSet: ManaColorSet,
         sourceContainer: com.wingedsheep.engine.state.ComponentContainer,
         out: MutableSet<Color>,
+        reflect: (LandControllerScope) -> Set<Color>,
     ) {
         when (colorSet) {
             is ManaColorSet.AnyColor -> out.addAll(Color.entries)
@@ -161,15 +246,15 @@ object LandManaColorInspector {
             is ManaColorSet.SourceChosenColor -> {
                 sourceContainer.chosenColor()?.let { out.add(it) }
             }
-            is ManaColorSet.Union -> colorSet.members.forEach { collectChoiceColors(it, sourceContainer, out) }
+            is ManaColorSet.Union -> colorSet.members.forEach { collectChoiceColors(it, sourceContainer, out, reflect) }
             // No resolution-time choice exists outside an effect, so nothing is removed.
-            is ManaColorSet.ExceptChosenColor -> collectChoiceColors(colorSet.base, sourceContainer, out)
+            is ManaColorSet.ExceptChosenColor -> collectChoiceColors(colorSet.base, sourceContainer, out, reflect)
+            is ManaColorSet.LandsCouldProduce -> out.addAll(reflect(colorSet.scope))
             is ManaColorSet.CommanderIdentity,
             is ManaColorSet.AmongPermanents,
             is ManaColorSet.AmongCardsInGraveyard,
             is ManaColorSet.AmongLinkedExiledCards,
-            is ManaColorSet.ColorsOf,
-            is ManaColorSet.LandsCouldProduce -> out.addAll(Color.entries)
+            is ManaColorSet.ColorsOf -> out.addAll(Color.entries)
         }
     }
 }
