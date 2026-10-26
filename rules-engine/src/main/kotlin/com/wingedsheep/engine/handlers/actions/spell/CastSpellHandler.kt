@@ -411,8 +411,9 @@ class CastSpellHandler(
         // that source to another cost of this same spell doesn't take the counters back.
         val additionalEntryCounters = if (action.additionalManaForCounters > 0) {
             AdditionalManaForCounters.applicableGrant(announcedState, action.playerId, action.cardId, cardRegistry, predicateEvaluator = predicateEvaluator)
-                ?.let { AdditionalEntryCounters(it.counterType, action.additionalManaForCounters) }
-        } else null
+                ?.let { listOf(AdditionalEntryCounters(it.counterType, action.additionalManaForCounters)) }
+                .orEmpty()
+        } else emptyList()
 
         // --- 3. Pay (CR 601.2g–h) ----------------------------------------------------------------
 
@@ -680,7 +681,7 @@ class CastSpellHandler(
         returned: ReturnedForAlternativeCost,
         marks: AlternativeCostMarks,
         splicedCardNames: List<String>,
-        additionalEntryCounters: AdditionalEntryCounters?,
+        additionalEntryCounters: List<AdditionalEntryCounters>,
     ): ExecutionResult {
         // Derive per-mode target groups from the flat target list when the action arrived with
         // chosenModes but no modeTargetsOrdered (current web-client cast-time UI for choose-1 modal

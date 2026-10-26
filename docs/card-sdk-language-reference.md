@@ -2354,7 +2354,13 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `DynamicAmounts.countersOnSelf(null)`). Every kind a card names must be one of `CounterType.KNOWN` —
   `CounterTypeVocabularyTest` walks the corpus for it — so a new kind is a constant in `CounterType`
   (plus the client's mirror in `web-client/src/types/enums.ts`), never a string on a card.
-- `AddCounters(type, count, target)` — add N counters of `type`.
+- `AddCounters(type, count, target)` — add N counters of `type`. **On a permanent spell on the stack**
+  (`EffectTarget.TriggeringEntity` of a cast trigger or `ManaSpellRider.TriggersWhenSpent`) it reads
+  "that creature enters with N additional counters on it" (Runadi, Behemoth Caller; Boreal Outrider;
+  Jade Orb of Dragonkind): the counters are owed to the spell (`SpellOnStackComponent.additionalEntryCounters`)
+  and given to the permanent as it enters, so counter-placement replacements (Hardened Scales) apply then
+  (CR 122.6). A countered spell carries none into its next zone, and a copy of the spell owes none
+  (CR 707.2). `AddDynamicCounters` behaves the same.
 - `Adapt(amount, target = Self)` (`AdaptEffect`) — adapt N (CR 701.46a): if the permanent has no +1/+1
   counters as this resolves, put N +1/+1 counters on it. Always spell adapt this way, never as an `If` over
   `AddCounters` — `AdaptAsThoughNoCounters` shields can only see a real adapt. Placement goes through the
@@ -16977,7 +16983,12 @@ the rider twice (Pyromancer's Goggles: "That many copies will be created").
   the stack. Pyromancer's Goggles: `TriggersWhenSpent(GameObjectFilter.InstantOrSorcery.withColor(Color.RED),
   Effects.CopyTargetSpell(EffectTarget.TriggeringEntity))` — the copy resolves before the original
   (CR 707.10) and its controller may choose new targets. Scaled Nurturer:
-  `TriggersWhenSpent(GameObjectFilter.Creature.withSubtype("Dragon"), Effects.GainLife(2))`.
+  `TriggersWhenSpent(GameObjectFilter.Creature.withSubtype("Dragon"), Effects.GainLife(2))`. Jade Orb
+  of Dragonkind ("it enters with an additional +1/+1 counter on it and gains hexproof until your next
+  turn"): `TriggersWhenSpent(GameObjectFilter.Creature.withSubtype("Dragon"),
+  Effects.AddCounters(PLUS_ONE_PLUS_ONE, 1, TriggeringEntity) then
+  Effects.GrantKeywordToSpell(Keyword.HEXPROOF, TriggeringEntity, Duration.UntilYourNextTurn))` — the
+  counter is owed to the spell and placed as it enters (see `AddCounters`).
 - `ManaSpellRider.GrantsKeywordWhenSpent(keyword, spellFilter, duration = Duration.EndOfTurn)` — Carnelian Orb of Dragonkind
   (`Keyword.HASTE`, `GameObjectFilter.Creature.withSubtype("Dragon")`): "If that mana is spent on a
   [filter] spell, it gains [keyword] until end of turn." The one rider that puts **nothing** on the

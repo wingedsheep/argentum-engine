@@ -38,12 +38,15 @@ data class SpellOnStackComponent(
     val wasBlightPaid: Boolean = false,  // For BlightOrPay additional cost — true if blight path was taken
     val wasWaterbendPaid: Boolean = false,  // For optional spell waterbend additional cost (Avatar) — true if "you may waterbend {N}" was paid; readable via WaterbendWasPaid
     /**
-     * Extra counters owed to the permanent this spell becomes, bought with the optional "pay any
-     * amount of mana" additional cost of an `AdditionalManaForEntryCounters` static (Chorus of the
-     * Conclave). Fixed when the cost is paid, so the counters arrive even if the granting permanent
-     * has left the battlefield before the spell resolves. Null when nothing was paid.
+     * Extra counters owed to the permanent this spell becomes, placed as it enters (CR 122.6) so
+     * counter-placement replacements see them then. Bought with the optional "pay any amount of
+     * mana" additional cost of an `AdditionalManaForEntryCounters` static (Chorus of the Conclave),
+     * or put on the spell while it's on the stack by a counter effect — "that creature enters with
+     * an additional +1/+1 counter on it" (Runadi, Jade Orb of Dragonkind). Fixed when owed, so the
+     * counters arrive even if whatever granted them has left the battlefield before the spell
+     * resolves. Not copied (CR 707.2): a copy of the spell owes nothing.
      */
-    val additionalEntryCounters: AdditionalEntryCounters? = null,
+    val additionalEntryCounters: List<AdditionalEntryCounters> = emptyList(),
     /**
      * Keywords the permanent this spell becomes gains, each for its own duration: frozen at payment
      * time by a `ManaSpellRider.GrantsKeywordWhenSpent` (Hall of the Bandit Lord's "it gains haste",
@@ -257,8 +260,9 @@ data class SpellOnStackComponent(
 ) : Component
 
 /**
- * [count] counters of [counterType] a resolving permanent spell enters with, bought as an additional
- * cost while casting (see [SpellOnStackComponent.additionalEntryCounters]).
+ * [count] counters of [counterType] a resolving permanent spell enters with — bought as an additional
+ * cost while casting, or put on the spell while it was on the stack (see
+ * [SpellOnStackComponent.additionalEntryCounters]).
  */
 @Serializable
 data class AdditionalEntryCounters(

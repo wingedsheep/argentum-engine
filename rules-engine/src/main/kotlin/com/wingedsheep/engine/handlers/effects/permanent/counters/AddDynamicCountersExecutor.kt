@@ -6,6 +6,7 @@ import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.EntersWithReplacements
 import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
@@ -39,6 +40,10 @@ class AddDynamicCountersExecutor(
         }
 
         val counterType = effect.counterType
+
+        // A permanent spell on the stack is given them as it enters, not now (CR 122.6).
+        EntersWithReplacements.oweToSpell(state, targetId, counterType, count)
+            ?.let { return EffectResult.success(it, emptyList()) }
 
         val current = state.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
 

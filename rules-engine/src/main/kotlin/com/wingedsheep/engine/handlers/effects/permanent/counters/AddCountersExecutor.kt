@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.EntersWithReplacements
 import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
@@ -44,6 +45,10 @@ class AddCountersExecutor(
         } else {
             context.resolveTarget(effect.target, state)
         } ?: return EffectResult.error(state, "No valid target for counters")
+
+        // A permanent spell on the stack is given them as it enters, not now (CR 122.6).
+        EntersWithReplacements.oweToSpell(state, targetId, effect.counterType, effect.count)
+            ?.let { return EffectResult.success(it, emptyList()) }
 
         if (!state.projectedState.canReceiveCounters(targetId)) {
             return EffectResult.success(state, emptyList())

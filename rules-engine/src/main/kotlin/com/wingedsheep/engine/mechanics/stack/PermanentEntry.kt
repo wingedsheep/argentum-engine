@@ -744,20 +744,21 @@ internal class PermanentEntry(
             counterEvents.addAll(riderEvents)
         }
 
-        // Counters bought while casting (Chorus of the Conclave: "that creature enters with that
-        // many additional +1/+1 counters on it"). Recorded on the spell when the cost was paid, so
-        // they arrive even if the granting permanent has since left the battlefield. Placed through
-        // the shared entry-counter path so counter-modifying replacements see them.
-        val boughtCounters = spellComponent.additionalEntryCounters
-        if (boughtCounters != null && boughtCounters.count > 0) {
-            val (boughtState, boughtEvents) = com.wingedsheep.engine.handlers.effects.EntersWithReplacements.placeEntryCounters(
+        // Counters owed to the permanent: bought while casting (Chorus of the Conclave: "that
+        // creature enters with that many additional +1/+1 counters on it"), or put on the spell
+        // while it was on the stack (Runadi, Jade Orb of Dragonkind). Recorded on the spell, so they
+        // arrive even if whatever granted them has since left the battlefield. Placed through the
+        // shared entry-counter path so counter-modifying replacements see them (CR 122.6).
+        for (owed in spellComponent.additionalEntryCounters) {
+            if (owed.count <= 0) continue
+            val (owedState, owedEvents) = com.wingedsheep.engine.handlers.effects.EntersWithReplacements.placeEntryCounters(
                 newState, spellId,
-                boughtCounters.counterType, boughtCounters.count,
+                owed.counterType, owed.count,
                 controllerId, cardComponent?.name ?: "",
                 predicateEvaluator = conditionEvaluator.predicates
             )
-            newState = boughtState
-            counterEvents.addAll(boughtEvents)
+            newState = owedState
+            counterEvents.addAll(owedEvents)
         }
 
         // Impending (CR 702.176a): "If you chose to pay this permanent's impending cost, it enters

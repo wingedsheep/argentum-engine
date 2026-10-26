@@ -110,13 +110,13 @@ class DelayedTriggerFromNotedTypeTest : FunSpec({
             ?.get<com.wingedsheep.engine.state.components.battlefield.NotedCreatureTypesComponent>()
             ?.types shouldBe setOf("Elf")
 
-        // Cast an Elf creature — the delayed trigger fires on cast and adds +1/+1 counter
-        // to the spell entity. Counter travels with the spell to the battlefield.
+        // Cast an Elf creature — the delayed trigger fires on cast and owes the spell a +1/+1
+        // counter, given to the permanent as it enters (CR 122.6).
         val elfCardId = driver.putCardInHand(active, "Elf Warrior Test")
         driver.giveMana(active, Color.GREEN, 1)
         driver.giveColorlessMana(active, 1)
         driver.castSpell(active, elfCardId)
-        driver.bothPass()
+        while (driver.stackSize > 0) driver.bothPass()
 
         val elfPlus = driver.state.getEntity(elfCardId)
             ?.get<CountersComponent>()
@@ -140,7 +140,7 @@ class DelayedTriggerFromNotedTypeTest : FunSpec({
         val goblinCardId = driver.putCardInHand(active, "Goblin Scout Test")
         driver.giveMana(active, Color.RED, 1)
         driver.castSpell(active, goblinCardId)
-        driver.bothPass()
+        while (driver.stackSize > 0) driver.bothPass()
 
         val goblinPlus = driver.state.getEntity(goblinCardId)
             ?.get<CountersComponent>()
@@ -165,7 +165,7 @@ class DelayedTriggerFromNotedTypeTest : FunSpec({
         driver.giveMana(active, Color.GREEN, 1)
         driver.giveColorlessMana(active, 1)
         driver.castSpell(active, first)
-        driver.bothPass()
+        while (driver.stackSize > 0) driver.bothPass()
         driver.state.getEntity(first)
             ?.get<CountersComponent>()
             ?.getCount(CounterType.PLUS_ONE_PLUS_ONE) shouldBe 1
@@ -175,7 +175,7 @@ class DelayedTriggerFromNotedTypeTest : FunSpec({
         driver.giveMana(active, Color.GREEN, 1)
         driver.giveColorlessMana(active, 1)
         driver.castSpell(active, second)
-        driver.bothPass()
+        while (driver.stackSize > 0) driver.bothPass()
         val secondCounters = driver.state.getEntity(second)
             ?.get<CountersComponent>()
             ?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0

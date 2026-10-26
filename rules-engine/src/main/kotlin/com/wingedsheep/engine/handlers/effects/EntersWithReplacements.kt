@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.handlers.effects
 
 import com.wingedsheep.engine.core.CountersAddedEvent
+import com.wingedsheep.engine.state.components.stack.AdditionalEntryCounters
+import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.KeywordGrantedEvent
 import com.wingedsheep.engine.handlers.EffectContext
@@ -308,6 +310,22 @@ object EntersWithReplacements {
         state.updateEntity(entityId) { c ->
             c.withCastChoice(ChoiceSlot.MODE, ChoiceValue.TextChoice(RIOT_MODE_HASTE))
         }
+
+    /**
+     * Counters put on a permanent spell while it's on the stack — "that creature enters with an
+     * additional +1/+1 counter on it" (Runadi, Behemoth Caller; Jade Orb of Dragonkind) — aren't
+     * placed on the stack object. They're owed to the permanent the spell becomes and placed as it
+     * enters (CR 122.6), which is when counter-placement replacements such as Hardened Scales see
+     * them. Returns the updated state, or null when [entityId] isn't a spell on the stack. Nothing
+     * is announced now; the entry placement emits the [CountersAddedEvent].
+     */
+    fun oweToSpell(state: GameState, entityId: EntityId, counterType: CounterType, count: Int): GameState? {
+        val spell = state.getEntity(entityId)?.get<SpellOnStackComponent>() ?: return null
+        if (count <= 0) return state
+        return state.updateEntity(entityId) { c ->
+            c.with(spell.copy(additionalEntryCounters = spell.additionalEntryCounters + AdditionalEntryCounters(counterType, count)))
+        }
+    }
 
     /**
      * Place [count] counters of [counterType] on [entityId] as it enters (CR 614.1c), honouring

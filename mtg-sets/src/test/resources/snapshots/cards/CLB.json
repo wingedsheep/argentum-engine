@@ -1656,6 +1656,84 @@
     ]
 }
 
+// Jade Orb of Dragonkind
+{
+    "name": "Jade Orb of Dragonkind",
+    "manaCost": "{2}{G}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {G}. When you spend this mana to cast a Dragon creature spell, it enters with an additional +1/+1 counter on it and gains hexproof until your next turn. (It can't be the target of spells or abilities your opponents control.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Jade Orb of Dragonkind:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN",
+                    "riders": [
+                        {
+                            "type": "TriggersWhenSpent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Dragon"
+                                    }
+                                ]
+                            },
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "PLUS_ONE_PLUS_ONE",
+                                        "count": 1,
+                                        "target": "TriggeringEntity"
+                                    },
+                                    {
+                                        "type": "GrantKeywordToSpell",
+                                        "keyword": "HEXPROOF",
+                                        "duration": "UntilYourNextTurn"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "236",
+        "artist": "Olena Richards",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1b32bae4-65e4-4bdb-8bc5-b98a5aac1568.jpg?1783922712",
+        "rulings": [
+            {
+                "date": "2022-06-10",
+                "text": "The mana created by Jade Orb of Dragonkind can be spent on anything, not just Dragon creature spells."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "The delayed triggered ability will trigger whether Jade Orb of Dragonkind is still on the battlefield or not."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "If more than one {G} produced by a Jade Orb of Dragonkind is spent to cast a single Dragon creature spell, the delayed triggered ability associated with each mana spent will trigger. That creature will enter the battlefield with that many +1/+1 counters."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "If the mana is spent on a Dragon creature spell, that creature will have hexproof as soon as it enters the battlefield. There is no opportunity to target the creature before it gains hexproof."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Jaheira, Friend of the Forest
 {
     "name": "Jaheira, Friend of the Forest",
