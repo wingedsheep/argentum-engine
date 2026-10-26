@@ -4055,6 +4055,58 @@
     ]
 }
 
+// Utvara Hellkite
+{
+    "name": "Utvara Hellkite",
+    "manaCost": "{6}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhenever a Dragon you control attacks, create a 6/6 red Dragon creature token with flying.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Utvara Hellkite:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature Dragon ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 6,
+                    "toughness": 6,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Dragon"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/8/4/84310f84-3e5f-4db8-bff1-16bef64de1a0.jpg?1783940383"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "rarity": "MYTHIC",
+        "artist": "Mark Zug",
+        "flavorText": "The fear of dragons is as old and as powerful as the fear of death itself.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f17c6478-dd80-4854-9560-bfc5ef597872.jpg?1783940353"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Vandalblast
 {
     "name": "Vandalblast",

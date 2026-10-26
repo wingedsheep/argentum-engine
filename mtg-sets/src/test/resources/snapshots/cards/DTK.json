@@ -1046,6 +1046,81 @@
     ]
 }
 
+// Dragon Tempest
+{
+    "name": "Dragon Tempest",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature you control with flying enters, it gains haste until end of turn.\nWhenever a Dragon you control enters, it deals X damage to any target, where X is the number of Dragons you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dragon Tempest:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature kw:flying ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": "TriggeringEntity"
+                }
+            },
+            {
+                "id": "Dragon Tempest:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Dragon ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent Dragon"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "damageSource": "TriggeringEntity"
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "RARE",
+        "artist": "Willian Murai",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/cefac283-8491-4d11-9a40-0e90cbeac19f.jpg?1783938589",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "The amount of damage dealt by the Dragon that entered the battlefield is based on the number of Dragons you control when the ability resolves."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "If a Dragon entering the battlefield causes Dragon Tempest's second ability to trigger but leaves the battlefield before that ability resolves, that Dragon still deals damage."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "The two abilities aren't mutually exclusive. If a Dragon with flying (which is most of them) enters the battlefield under your control, both abilities will trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Dragon's Eye Sentry
 {
     "name": "Dragon's Eye Sentry",
@@ -1144,6 +1219,42 @@
         "imageUri": "https://cards.scryfall.io/normal/front/c/7/c7463c18-5bef-42a0-a37e-6112809ebc78.jpg?1783938569"
     },
     "colorIdentityOverride": []
+}
+
+// Dragonlord Dromoka
+{
+    "name": "Dragonlord Dromoka",
+    "manaCost": "{4}{G}{W}",
+    "typeLine": "Legendary Creature — Elder Dragon",
+    "oracleText": "This spell can't be countered.\nFlying, lifelink\nYour opponents can't cast spells during your turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 7
+    },
+    "keywords": [
+        "FLYING",
+        "LIFELINK"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "PlayersCantCastSpells",
+                "condition": "IsYourTurn"
+            }
+        ],
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "rarity": "MYTHIC",
+        "artist": "Eric Deschamps",
+        "flavorText": "Dromoka's followers forsake blood ties so that they may join a greater family.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/908042f3-0d03-4edf-816a-ec846a1e315f.jpg?1783938573"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
 }
 
 // Dragonlord's Servant
@@ -1595,6 +1706,124 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Haven of the Spirit Dragon
+{
+    "name": "Haven of the Spirit Dragon",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{T}: Add one mana of any color. Spend this mana only to cast a Dragon creature spell.\n{2}, {T}, Sacrifice this land: Return target Dragon creature card or Ugin planeswalker card from your graveyard to your hand.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Haven of the Spirit Dragon:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Haven of the Spirit Dragon:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "restriction": {
+                        "type": "SubtypeSpellsOrAbilitiesOnly",
+                        "subtype": "Dragon",
+                        "creatureOnly": true
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add one mana of any color. Spend this mana only to cast a Dragon creature spell."
+            },
+            {
+                "id": "Haven of the Spirit Dragon:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            {
+                                                "type": "And",
+                                                "predicates": [
+                                                    "IsCreature",
+                                                    {
+                                                        "type": "HasSubtype",
+                                                        "subtype": "Dragon"
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "And",
+                                                "predicates": [
+                                                    "IsPlaneswalker",
+                                                    {
+                                                        "type": "HasSubtype",
+                                                        "subtype": "Ugin"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "controllerPredicate": "OwnedByYou"
+                            },
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}, {T}, Sacrifice this land: Return target Dragon creature card or Ugin planeswalker card from your graveyard to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "249",
+        "rarity": "RARE",
+        "artist": "Raymond Swanland",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/9910042e-091f-47da-ad29-8f76c9d3b8c1.jpg?1783938567",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "The mana produced by Haven of the Spirit Dragon's second ability can be used to pay for any additional or alternative costs (such as dash costs) involved in casting a Dragon creature spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Herald of Dromoka
@@ -2650,6 +2879,117 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Sarkhan Unbroken
+{
+    "name": "Sarkhan Unbroken",
+    "manaCost": "{2}{G}{U}{R}",
+    "typeLine": "Legendary Planeswalker — Sarkhan",
+    "oracleText": "+1: Draw a card, then add one mana of any color.\n−2: Create a 4/4 red Dragon creature token with flying.\n−8: Search your library for any number of Dragon creature cards, put them onto the battlefield, then shuffle.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sarkhan Unbroken:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "AddManaOfChoice"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Sarkhan Unbroken:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Dragon"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/e/1ee0725f-8562-49c2-83fa-11a702e5c78d.jpg?1783938561"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Sarkhan Unbroken:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -8
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "creature Dragon"
+                            },
+                            "storeAs": "gathered0",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "Search your library for any number of Dragon creature cards"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "MYTHIC",
+        "artist": "Aleksi Briclot",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/192452f8-93c2-4a20-a52b-0093741a9e45.jpg?1783938570"
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE",
+        "RED"
     ]
 }
 

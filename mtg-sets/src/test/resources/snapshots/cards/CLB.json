@@ -1294,6 +1294,74 @@
     ]
 }
 
+// Miirym, Sentinel Wyrm
+{
+    "name": "Miirym, Sentinel Wyrm",
+    "manaCost": "{3}{G}{U}{R}",
+    "typeLine": "Legendary Creature — Dragon Spirit",
+    "oracleText": "Flying, ward {2}\nWhenever another nontoken Dragon you control enters, create a token that's a copy of it, except the token isn't legendary.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Miirym, Sentinel Wyrm:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Dragon nontoken ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": "TriggeringEntity",
+                    "exceptions": {
+                        "removedSupertypes": [
+                            "LEGENDARY"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "284",
+        "rarity": "RARE",
+        "artist": "Kekai Kotaki",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a934590b-5c70-4f07-af67-fbe817a99531.jpg?1783922689",
+        "rulings": [
+            {
+                "date": "2022-06-10",
+                "text": "Miirym, Sentinel Wyrm's triggered ability copies the printed values of the Dragon that entered the battlefield. It won't copy any counters on that creature or any effects that have changed its power, toughness, types, color, and so on."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "If the Dragon that entered the battlefield is copying something else as the triggered ability resolves, the token will be a copy of whatever that creature is a copy of."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Passageway Seer
 {
     "name": "Passageway Seer",
