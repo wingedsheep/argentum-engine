@@ -75,17 +75,6 @@ internal class PermanentSpellResolver(
     }
 
     /**
-     * The as-enters steps after "enters as a copy" has been settled. The copy applies first: CR
-     * 614.12 picks the entry replacements from the permanent as it would exist on the battlefield,
-     * taking into account replacement effects that already modified its entry. So once the spell
-     * has taken on the copied identity, its remaining choices and entry replacements are the copied
-     * card's — a Clone copying a "choose a color" permanent makes a color choice of its own; the
-     * original's choice is not a copiable value.
-     *
-     * Called by the clone resumer with the copy already stamped on the spell; reads the spell's
-     * current components so the copied definition drives every step.
-     */
-    /**
      * Install the granted entry copy [choice] on the resolving spell, spend every grant that
      * modifies its entry, and finish entry from the copied identity.
      */
@@ -101,6 +90,17 @@ internal class PermanentSpellResolver(
             com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.spend(copied, granted), spellId)
     }
 
+    /**
+     * The as-enters steps after "enters as a copy" has been settled. The copy applies first: CR
+     * 614.12 picks the entry replacements from the permanent as it would exist on the battlefield,
+     * taking into account replacement effects that already modified its entry. So once the spell
+     * has taken on the copied identity, its remaining choices and entry replacements are the copied
+     * card's — a Clone copying a "choose a color" permanent makes a color choice of its own; the
+     * original's choice is not a copiable value.
+     *
+     * Called by the clone resumer with the copy already stamped on the spell; reads the spell's
+     * current components so the copied definition drives every step.
+     */
     fun resolveAfterEntryCopy(state: GameState, spellId: EntityId): ExecutionResult {
         val container = state.getEntity(spellId)
             ?: return ExecutionResult.error(state, "Spell entity not found: $spellId")
