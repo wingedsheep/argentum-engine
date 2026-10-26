@@ -84,6 +84,11 @@ data class ProjectedValues(
     val cantBeTurnedFaceUp: Boolean = false,
     val mustAttack: Boolean = false,
     val mustAttackPlayer: Boolean = false,
+    /**
+     * Players this creature must attack someone other than, if able — one entry per requirement
+     * ([Modification.SetMustAttackOtherThan]); a player named twice stays twice.
+     */
+    val mustAttackOtherThan: List<EntityId> = emptyList(),
     val mustBlock: Boolean = false,
     val cantBeBlockedExceptByFilters: List<com.wingedsheep.sdk.scripting.GameObjectFilter> = emptyList(),
     val canOnlyBlockCreaturesWithFilters: List<com.wingedsheep.sdk.scripting.GameObjectFilter> = emptyList(),
@@ -368,6 +373,9 @@ class ProjectedState(
 
     fun mustAttackPlayer(entityId: EntityId): Boolean = projectedValues[entityId]?.mustAttackPlayer == true
 
+    fun mustAttackOtherThan(entityId: EntityId): List<EntityId> =
+        projectedValues[entityId]?.mustAttackOtherThan.orEmpty()
+
     fun mustBlock(entityId: EntityId): Boolean = projectedValues[entityId]?.mustBlock == true
 
     fun getCantBeBlockedExceptByFilters(entityId: EntityId): List<com.wingedsheep.sdk.scripting.GameObjectFilter> =
@@ -452,6 +460,7 @@ internal fun buildIntermediateProjectedState(
             cantBeTurnedFaceUp = v.cantBeTurnedFaceUp,
             mustAttack = v.mustAttack,
             mustAttackPlayer = v.mustAttackPlayer,
+            mustAttackOtherThan = v.mustAttackOtherThan.toList(),
             mustBlock = v.mustBlock,
             cantBeBlockedExceptByFilters = v.cantBeBlockedExceptByFilters.toList(),
             canOnlyBlockCreaturesWithFilters = v.canOnlyBlockCreaturesWithFilters.toList(),

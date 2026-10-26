@@ -70,8 +70,7 @@ data class MustAttack(
     val filter: GroupFilter = GroupFilter.source(),
     val defender: MustAttackDefender = MustAttackDefender.Any
 ) : StaticAbility {
-    override val description: String =
-        "${filter.description} attack${defender.phrase} each combat if able"
+    override val description: String = defender.describe(filter.description)
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this
@@ -87,7 +86,9 @@ data class MustAttack(
 @Serializable
 enum class MustAttackDefender(
     /** The words the requirement adds after "attack": "" for [Any]. */
-    val phrase: String
+    val phrase: String,
+    /** A second requirement the wording adds after "each combat if able", if any. */
+    val rider: String = ""
 ) {
     /** "attacks each combat if able" — any player, planeswalker or battle obeys it. */
     Any(""),
@@ -109,7 +110,22 @@ enum class MustAttackDefender(
      * something only on an attached source: granted to a creature attached to nothing, it names
      * nobody.
      */
-    EnchantedCreatureController(" enchanted creature's controller")
+    EnchantedCreatureController(" enchanted creature's controller"),
+
+    /**
+     * "attack each combat if able and attack **a player other than you** if able" (Kardur,
+     * Doomscourge): two requirements, the goad pair of CR 701.15b without the goad designation. The
+     * creature attacks even when every player it could attack is "you"; while some other player
+     * could legally be attacked, attacking you (or a planeswalker you control) is an error. "You" is
+     * the ability's controller — the holder's projected controller for a static, the resolving
+     * effect's controller for a [com.wingedsheep.sdk.scripting.effects.MustAttackGroupEffect]. The
+     * requirement points at players only, like goad's: attacking another player's planeswalker
+     * doesn't break it. It stacks with goad, each naming its own player.
+     */
+    PlayerOtherThanYou("", rider = " and attack a player other than you if able");
+
+    /** "<subject> attack… each combat if able…" for a requirement on [subject]. */
+    fun describe(subject: String): String = "$subject attack$phrase each combat if able$rider"
 }
 
 /**

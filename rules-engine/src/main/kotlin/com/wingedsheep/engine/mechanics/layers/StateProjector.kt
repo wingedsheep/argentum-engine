@@ -594,6 +594,7 @@ class StateProjector {
                 cantBeTurnedFaceUp = v.cantBeTurnedFaceUp,
                 mustAttack = v.mustAttack,
                 mustAttackPlayer = v.mustAttackPlayer,
+                mustAttackOtherThan = v.mustAttackOtherThan.toList(),
                 mustBlock = v.mustBlock,
                 cantBeBlockedExceptByFilters = v.cantBeBlockedExceptByFilters.toList(),
                 canOnlyBlockCreaturesWithFilters = v.canOnlyBlockCreaturesWithFilters.toList(),

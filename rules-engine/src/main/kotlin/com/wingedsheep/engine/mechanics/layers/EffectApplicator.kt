@@ -436,6 +436,10 @@ internal class EffectApplicator(
                     values.mustAttack = true
                     values.mustAttackPlayer = true
                 }
+                is Modification.SetMustAttackOtherThan -> {
+                    values.mustAttack = true
+                    values.mustAttackOtherThan.add(mod.playerId)
+                }
                 is Modification.SetMustBlock -> {
                     values.mustBlock = true
                 }

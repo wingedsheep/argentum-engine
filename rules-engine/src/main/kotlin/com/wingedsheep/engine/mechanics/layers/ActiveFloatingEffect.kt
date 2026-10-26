@@ -6,6 +6,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.MustAttackDefender
 import com.wingedsheep.sdk.scripting.effects.RedirectScope
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -518,6 +519,21 @@ sealed interface SerializableModification {
     data object SetMustBlock : SerializableModification
 
     /**
+     * Attack requirement: creature attacks each combat if able, aimed as [defender] says
+     * ([com.wingedsheep.sdk.scripting.effects.MustAttackGroupEffect], Kardur, Doomscourge).
+     *
+     * Floating counterpart of the static [com.wingedsheep.sdk.scripting.MustAttack]: both project
+     * onto `ProjectedState.mustAttack` and its defender halves. [otherThan] is the player
+     * [MustAttackDefender.PlayerOtherThanYou] names — the effect's controller, fixed at resolution —
+     * and is null for every other defender.
+     */
+    @Serializable
+    data class SetMustAttack(
+        val defender: MustAttackDefender = MustAttackDefender.Any,
+        val otherThan: EntityId? = null
+    ) : SerializableModification
+
+    /**
      * "It can't be turned face up." Used by Unable to Scream while it enchants a face-down
      * creature. Projected onto the affected permanent; [TurnFaceUpHandler] reads it.
      */
@@ -947,6 +963,14 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.SetAttacksWithoutTapping -> Modification.SetAttacksWithoutTapping
     // SetMustBlock maps to the layer modification for the "must block" requirement projection
     is SerializableModification.SetMustBlock -> Modification.SetMustBlock
+    is SerializableModification.SetMustAttack -> when (defender) {
+        MustAttackDefender.Any -> Modification.SetMustAttack
+        MustAttackDefender.APlayer -> Modification.SetMustAttackPlayer
+        MustAttackDefender.PlayerOtherThanYou ->
+            otherThan?.let { Modification.SetMustAttackOtherThan(it) } ?: Modification.SetMustAttack
+        // Never built: MustAttackGroupEffect rejects it, as a resolved effect has no attached source.
+        MustAttackDefender.EnchantedCreatureController -> Modification.SetMustAttack
+    }
     // SetSuspected maps to the layer modification for the "suspected" status projection
     is SerializableModification.SetSuspected -> Modification.SetSuspected
     // PreventAllDamageDealtBy doesn't map to a layer modification - it's checked during damage resolution directly

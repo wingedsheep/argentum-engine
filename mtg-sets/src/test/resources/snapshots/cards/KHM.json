@@ -4686,6 +4686,96 @@
     "layout": "MODAL_DFC"
 }
 
+// Kardur, Doomscourge
+{
+    "name": "Kardur, Doomscourge",
+    "manaCost": "{2}{B}{R}",
+    "typeLine": "Legendary Creature — Demon Berserker",
+    "oracleText": "When Kardur enters, until your next turn, creatures your opponents control attack each combat if able and attack a player other than you if able.\nWhenever an attacking creature dies, each opponent loses 1 life and you gain 1 life.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kardur, Doomscourge:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MustAttackGroup",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "defender": "PlayerOtherThanYou",
+                    "duration": "UntilYourNextTurn"
+                },
+                "descriptionOverride": "When Kardur enters, until your next turn, creatures your opponents control attack each combat if able and attack a player other than you if able."
+            },
+            {
+                "id": "Kardur, Doomscourge:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature attacking",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever an attacking creature dies, each opponent loses 1 life and you gain 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c0f7712-7bbf-471b-8107-3a49cf922ad9.jpg?1783909592",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Kardur's first ability affects all creatures your opponents control, including any that enter the battlefield after the ability resolves."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a creature an opponent controls doesn't qualify for any of the above exceptions and can attack, it must attack a player other than you if able. If the creature can't attack any of those players, or if there are no such players, it must attack you or an opposing planeswalker."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Kardur's last ability will trigger no matter who controlled the attacking creature and no matter who it was attacking."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Karfell Harbinger
 {
     "name": "Karfell Harbinger",

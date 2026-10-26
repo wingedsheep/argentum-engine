@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.view.projection
 
+import com.wingedsheep.sdk.scripting.MustAttackDefender
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.DamageUtils
@@ -170,8 +171,13 @@ internal class CardActiveEffectsProjector(
         projectedState: ProjectedState?
     ): Boolean {
         if (floating.effect.dynamicGroupFilter == null || projectedState == null) return false
-        return when (floating.effect.modification) {
+        return when (val mod = floating.effect.modification) {
             is SerializableModification.SetAttacksWithoutTapping -> projectedState.attacksWithoutTapping(entityId)
+            is SerializableModification.SetMustAttack -> when (mod.defender) {
+                MustAttackDefender.PlayerOtherThanYou -> mod.otherThan in projectedState.mustAttackOtherThan(entityId)
+                MustAttackDefender.APlayer -> projectedState.mustAttackPlayer(entityId)
+                else -> projectedState.mustAttack(entityId)
+            }
             else -> false
         }
     }
@@ -426,6 +432,22 @@ internal class CardActiveEffectsProjector(
         // The unrestricted requirement (Culvert Ambusher). Badged for the same reason as
         // "Must Attack": the defending player finds out about it when their declaration is
         // rejected, which is far too late to be the first they hear of it.
+        // Kardur, Doomscourge's group requirement. Badged on each creature it binds, like goad, so
+        // the attacking player sees whom to send it at before declaring.
+        is SerializableModification.SetMustAttack -> ClientCardEffect(
+            effectId = "must_attack_group",
+            name = "Must Attack",
+            description = when (modification.defender) {
+                MustAttackDefender.APlayer -> "This creature attacks a player each combat if able"
+                MustAttackDefender.PlayerOtherThanYou -> {
+                    val name = modification.otherThan
+                        ?.let { state.getEntity(it)?.get<PlayerComponent>()?.name } ?: "the player who created this requirement"
+                    "This creature attacks each combat if able and attacks a player other than $name if able"
+                }
+                else -> "This creature attacks each combat if able"
+            },
+            icon = "must-attack"
+        )
         is SerializableModification.SetMustBlock -> ClientCardEffect(
             effectId = "must_block_this_turn",
             name = "Must Block",

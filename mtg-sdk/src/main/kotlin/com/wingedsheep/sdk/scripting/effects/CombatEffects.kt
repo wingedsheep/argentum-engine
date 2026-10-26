@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.scripting.effects
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.MustAttackDefender
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -449,6 +450,45 @@ data class ForceBlockEffect(
         "Target creature blocks ${target.description} this combat if able"
     } else {
         "${target.description} blocks ${attacker.description} this combat if able"
+    }
+}
+
+/**
+ * "[filter] attack each combat if able" for [duration] — Kardur, Doomscourge's "until your next
+ * turn, creatures your opponents control attack each combat if able and attack a player other than
+ * you if able" ([MustAttackDefender.PlayerOtherThanYou]).
+ *
+ * The durational, group-wide counterpart of the printed [com.wingedsheep.sdk.scripting.MustAttack]
+ * static. A rule-modifying effect, so — like [CantAttackGroupEffect] — it reaches every creature
+ * matching [filter] when attackers are declared, including ones that arrived after it resolved
+ * (CR 611.2c). [MarkMustAttackEffect] is the per-object sibling: it marks the creatures it names
+ * and never reaches a later one. "You" in the filter and in [defender] is the effect's controller,
+ * fixed when it resolves.
+ *
+ * [MustAttackDefender.EnchantedCreatureController] names a player through an attached source, which
+ * a resolved effect doesn't have, so it isn't accepted here.
+ */
+@SerialName("MustAttackGroup")
+@Serializable
+data class MustAttackGroupEffect(
+    val filter: GroupFilter,
+    val defender: MustAttackDefender = MustAttackDefender.Any,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    init {
+        require(defender != MustAttackDefender.EnchantedCreatureController) {
+            "MustAttackGroupEffect can't name enchanted creature's controller"
+        }
+    }
+
+    override val description: String = defender.describe(filter.description).let { requirement ->
+        if (duration.description.isEmpty()) requirement
+        else "${duration.description.replaceFirstChar { it.uppercase() }}, ${requirement.replaceFirstChar { it.lowercase() }}"
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
     }
 }
 

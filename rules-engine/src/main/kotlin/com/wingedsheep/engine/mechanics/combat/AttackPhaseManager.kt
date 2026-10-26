@@ -1003,20 +1003,25 @@ internal class AttackPhaseManager(
             ?.takeIf { it.activeThisTurn }
 
     /**
-     * Validate goaded-creature requirements (CR 701.15b–c).
+     * Validate goaded-creature requirements (CR 701.15b–c), and the "attacks a player other than
+     * you if able" requirement that shares goad's second half without goading
+     * ([MustAttackDefender.PlayerOtherThanYou], Kardur, Doomscourge).
      *
      * Per CR 701.15b a goaded creature has two combat requirements:
      *   1. It attacks each combat if able. We enforce this here by requiring every
      *      valid attacker [GoadRules] reports goaded to appear in [attackers]
      *      — same shape as the must-attack-this-turn check, just keyed off the
-     *      component instead.
+     *      component instead. (A Kardur-style requirement projects `mustAttack`, which
+     *      [validateProjectedMustAttackRequirements] enforces.)
      *   2. It attacks a player other than each of its goaders if able. CR 701.15b
      *      phrases this requirement in terms of a *player* — not a planeswalker — so
      *      the "if able" lookup considers only opponent players, not their
-     *      planeswalkers. CR 701.15c stacks the requirement per goader. If every
-     *      opponent player the creature could legally attack is a goader, the
-     *      requirement is unsatisfiable, so the creature may attack a goader (and
-     *      must attack something, per requirement 1).
+     *      planeswalkers. CR 701.15c stacks the requirement per goader, and every
+     *      "other than X" requirement stacks with them ([GoadRules.playersToAttackOtherThan]).
+     *      CR 508.1d asks for as many requirements obeyed as possible, so the player the
+     *      creature attacks must be named by no more of them than some other opponent
+     *      player it could legally attack. When every such player is named equally often
+     *      (in two-player, the only opponent), the creature may attack any of them.
      *
      * The chosen defender may itself be a planeswalker; [defenderControllerOf] maps
      * it to its controller so attacking a goader's planeswalker is still caught as
@@ -1034,36 +1039,53 @@ internal class AttackPhaseManager(
 
         for (attackerId in validAttackers) {
             val goaderIds = goadRules.goadersOf(attackerId)
-            if (goaderIds.isEmpty()) continue
             val cardName = state.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
 
-            if (attackerId !in attackers.keys) {
+            if (goaderIds.isNotEmpty() && attackerId !in attackers.keys) {
                 return "$cardName is goaded and must attack this combat if able"
             }
 
-            // Is there a non-goader *player* this creature could legally attack right
-            // now (honoring per-defender restrictions)? Per CR 701.15b the "attack a
-            // player other than the goader" requirement only ever points at players,
-            // so planeswalkers are not part of this alternative pool.
-            val ctx = com.wingedsheep.engine.mechanics.combat.rules.AttackCheckContext(
-                state, projected, attackerId, attackingPlayer, cardRegistry
-            )
-            val hasNonGoaderPlayer = opponents.any { playerId ->
-                playerId !in goaderIds &&
-                    attackDefenderRules.all { rule -> rule.check(ctx, playerId) == null }
-            }
-            if (!hasNonGoaderPlayer) continue
-
             val chosenDefenderId = attackers[attackerId] ?: continue
+            val avoided = goadRules.playersToAttackOtherThan(attackerId)
+            if (avoided.isEmpty()) continue
             val chosenDefenderController = defenderControllerOf(state, projected, chosenDefenderId)
-            if (chosenDefenderController in goaderIds) {
-                val goaderName = state.getEntity(chosenDefenderController)?.get<PlayerComponent>()?.name
-                    ?: "their goader"
-                return "$cardName is goaded and must attack a player other than $goaderName if able"
+            if (!breaksAvoidableRequirement(state, projected, attackingPlayer, attackerId, chosenDefenderController, avoided, opponents)) {
+                continue
+            }
+            val avoidedName = state.getEntity(chosenDefenderController)?.get<PlayerComponent>()?.name
+                ?: "that player"
+            return if (chosenDefenderController in goaderIds) {
+                "$cardName is goaded and must attack a player other than $avoidedName if able"
+            } else {
+                "$cardName must attack a player other than $avoidedName if able"
             }
         }
 
         return null
+    }
+
+    /**
+     * Whether attacking [player] (or something of theirs) breaks more of [attackerId]'s "attacks a
+     * player other than X if able" requirements ([avoided], one entry per requirement) than
+     * attacking some other opponent *player* it could legally attack would — CR 508.1d's "as many
+     * requirements as possible", over goad's player-only alternatives (CR 701.15b).
+     */
+    private fun breaksAvoidableRequirement(
+        state: GameState,
+        projected: ProjectedState,
+        attackingPlayer: EntityId,
+        attackerId: EntityId,
+        player: EntityId,
+        avoided: List<EntityId>,
+        opponents: List<EntityId>
+    ): Boolean {
+        val broken = avoided.count { it == player }
+        if (broken == 0) return false
+        val ctx = AttackCheckContext(state, projected, attackerId, attackingPlayer, cardRegistry)
+        return opponents.any { other ->
+            other != player && avoided.count { it == other } < broken &&
+                attackDefenderRules.all { rule -> rule.check(ctx, other) == null }
+        }
     }
 
     /**
@@ -1116,7 +1138,7 @@ internal class AttackPhaseManager(
 
     /**
      * Whether [attackerId] could attack one of [defenders] (all belonging to [player]) at no cost
-     * and without breaking its goad requirement — the "if able" of
+     * and without breaking its goad (or other "a player other than X") requirement — the "if able" of
      * [validateOpponentsMustAttackYou]. A creature that can't attack unless another creature
      * also attacks counts only if one of [validAttackers] could be that co-attacker; otherwise a
      * lone Scarred Puma would leave no legal declaration at all.
@@ -1136,14 +1158,11 @@ internal class AttackPhaseManager(
         if (coAttackerRestrictions(state, attackerId).any {
                 !coAttackerAvailable(state, projected, attackerId, it, validAttackers)
             }) return false
-        val ctx = AttackCheckContext(state, projected, attackerId, attackingPlayer, cardRegistry)
-        val goaders = goadRules.goadersOf(attackerId)
-        if (player in goaders) {
-            val hasNonGoaderPlayer = opponents.any { other ->
-                other !in goaders && attackDefenderRules.all { it.check(ctx, other) == null }
-            }
-            if (hasNonGoaderPlayer) return false
+        val avoided = goadRules.playersToAttackOtherThan(attackerId)
+        if (breaksAvoidableRequirement(state, projected, attackingPlayer, attackerId, player, avoided, opponents)) {
+            return false
         }
+        val ctx = AttackCheckContext(state, projected, attackerId, attackingPlayer, cardRegistry)
         return defenders.any { defenderId ->
             attackDefenderRules.all { it.check(ctx, defenderId) == null } &&
                 calculateTotalAttackTax(state, mapOf(attackerId to defenderId), projected) == 0

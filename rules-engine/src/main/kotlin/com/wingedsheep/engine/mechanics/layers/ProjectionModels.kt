@@ -762,6 +762,14 @@ sealed interface Modification {
     data object SetMustAttackPlayer : Modification {
         override val layer get() = Layer.ABILITY
     }
+    /**
+     * "Attacks each combat if able and attacks a player other than [playerId] if able" — sets
+     * `mustAttack` and adds [playerId] to `mustAttackOtherThan` (Kardur, Doomscourge).
+     */
+    @Serializable
+    data class SetMustAttackOtherThan(val playerId: EntityId) : Modification {
+        override val layer get() = Layer.ABILITY
+    }
     @Serializable
     data object SetMustBlock : Modification {
         override val layer get() = Layer.ABILITY
@@ -927,6 +935,7 @@ internal data class MutableProjectedValues(
     var cantBeTurnedFaceUp: Boolean = false,
     var mustAttack: Boolean = false,
     var mustAttackPlayer: Boolean = false,
+    val mustAttackOtherThan: MutableList<EntityId> = mutableListOf(),
     var mustBlock: Boolean = false,
     val cantBeBlockedExceptByFilters: MutableList<GameObjectFilter> = mutableListOf(),
     val canOnlyBlockCreaturesWithFilters: MutableList<GameObjectFilter> = mutableListOf(),

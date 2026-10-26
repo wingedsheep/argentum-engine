@@ -949,6 +949,12 @@ class StaticAbilityHandler(
                     modification = Modification.SetMustAttackPlayer,
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
+                // Attacking is projected; the "a player other than you" half names the holder's
+                // controller, so GoadRules reads it at declaration with goad's own half.
+                MustAttackDefender.PlayerOtherThanYou -> ContinuousEffectData(
+                    modification = Modification.SetMustAttack,
+                    affectsFilter = convertGroupFilter(ability.filter)
+                )
                 // Whether it binds a creature depends on who is declaring attackers, so it is
                 // enforced at declaration (DirectedAttackRequirements), never projected.
                 MustAttackDefender.EnchantedCreatureController -> null

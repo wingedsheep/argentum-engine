@@ -1482,6 +1482,7 @@ serialized shape; the facade for each is:
 | `MarkExileControllerGraveyardOnDeathEffect` | `Effects.MarkExileControllerGraveyardOnDeath` |
 | `MarkExileOnDeathEffect` | `Effects.MarkExileOnDeath` |
 | `MarkMustAttackEffect` | `Effects.MarkMustAttackThisTurn`, `Effects.MarkMustAttackNextCombat` |
+| `MustAttackGroupEffect` | `Effects.MustAttackGroup` |
 | `MarkSpellExileWithCountersEffect` | `Effects.MarkSpellExileWithCounters` |
 | `ModalEffect` | `Effects.Modal` |
 | `ModifyStatsEffect` | `Effects.ModifyStats` |
@@ -3441,6 +3442,14 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `AttackPhaseManager`, the mandatory-attacker pre-selection, and the `Goaded` badge — goes through
   it. Unlike the designation it has no "until your next turn" expiry; it ends with the ability. A
   face-down or ability-stripped holder goads nothing.
+- `Effects.MustAttackGroup(filter, defender = MustAttackDefender.Any, duration = Duration.EndOfTurn)`
+  (`MustAttackGroupEffect`) — "[filter] attack each combat if able" for `duration`, the durational group
+  form of the printed `MustAttack` static. One floating effect over a dynamic group, so creatures that
+  arrive later are bound too (CR 611.2c), unlike `MarkMustAttackEffect`, which marks only the objects it
+  names. `defender` takes `Any`, `APlayer` or `PlayerOtherThanYou` ("you" = the effect's controller,
+  fixed at resolution); `EnchantedCreatureController` is rejected. Kardur, Doomscourge:
+  `Effects.MustAttackGroup(GroupFilter.AllCreaturesOpponentsControl, MustAttackDefender.PlayerOtherThanYou, Duration.UntilYourNextTurn)`.
+  Badged "Must Attack" on each creature it binds.
 - `Effects.MarkMustAttackThisTurn(target = ContextTarget(0))` (`MarkMustAttackEffect`, window
   `MustAttackWindow.ThisTurn`) — require one creature to attack this turn if able. The transient marker is
   enforced by `AttackPhaseManager` and removed during cleanup. It composes with the token pipeline for “that
@@ -10678,7 +10687,15 @@ staticAbility {
   MustAttackDefender.EnchantedCreatureController)`): the player is the host's projected controller, read at
   declaration; only attacking that player (not their planeswalker) obeys it, and a creature that player
   controls, or one that can't attack them at no cost, is under no requirement; it means something only on
-  an attached source (granted to a creature attached to nothing, it names nobody). Grant it for a
+  an attached source (granted to a creature attached to nothing, it names nobody).
+  `MustAttackDefender.PlayerOtherThanYou` is "attack each combat if able **and attack a player other than
+  you** if able" (Kardur, Doomscourge): goad's two requirements (CR 701.15b) without the goad designation —
+  the creature isn't goaded. "You" is the holder's projected controller. It still attacks when every
+  player it could attack is you; otherwise attacking you (or your planeswalker) is rejected. It stacks
+  with goad: `GoadRules.playersToAttackOtherThan` lists one entry per "other than X" requirement
+  (goaders included), and the attacked player must be named no more often than another opponent player
+  the creature could legally attack (CR 508.1d). The durational group form is `Effects.MustAttackGroup`.
+  Grant it for a
   duration with `Effects.GrantStaticAbility(MustAttack(defender = MustAttackDefender.APlayer), creature, Duration.UntilYourNextTurn)`
   (Nahiri, the Unforgiving) — a granted static's `UntilYourNextTurn` ends at the start of the *granting*
   player's next turn, even when an opponent controls the creature.

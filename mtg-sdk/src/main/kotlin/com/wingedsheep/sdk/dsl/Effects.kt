@@ -73,6 +73,8 @@ import com.wingedsheep.sdk.scripting.effects.CantBlockEffect
 import com.wingedsheep.sdk.scripting.effects.GoadEffect
 import com.wingedsheep.sdk.scripting.effects.MarkMustAttackEffect
 import com.wingedsheep.sdk.scripting.effects.MustAttackWindow
+import com.wingedsheep.sdk.scripting.effects.MustAttackGroupEffect
+import com.wingedsheep.sdk.scripting.MustAttackDefender
 import com.wingedsheep.sdk.scripting.effects.MarkMustBlockThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveSuspectedEffect
 import com.wingedsheep.sdk.scripting.effects.SuspectEffect
@@ -6161,6 +6163,17 @@ object Effects {
      */
     fun CantAttackGroup(filter: GroupFilter, duration: Duration = Duration.EndOfTurn): Effect =
         CantAttackGroupEffect(filter, duration)
+
+    /**
+     * "[filter] attack each combat if able" for [duration], reaching creatures that arrive later
+     * (CR 611.2c) — Kardur, Doomscourge: `MustAttackGroup(GroupFilter.AllCreaturesOpponentsControl,
+     * MustAttackDefender.PlayerOtherThanYou, Duration.UntilYourNextTurn)`. See [MustAttackGroupEffect].
+     */
+    fun MustAttackGroup(
+        filter: GroupFilter,
+        defender: MustAttackDefender = MustAttackDefender.Any,
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = MustAttackGroupEffect(filter, defender, duration)
 
     /**
      * "Attacking doesn't cause [filter] creatures to tap" for [duration], optionally only while
