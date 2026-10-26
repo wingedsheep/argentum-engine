@@ -1249,9 +1249,10 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         val zone: Zone = Zone.BATTLEFIELD,
     ) : CardPredicate {
         override val description: String = buildString {
+            val noun = filter.description
             append("with the same name as ")
-            if (excludeSelf) append("another ")
-            append(filter.description)
+            append(if (excludeSelf) "another " else if (noun.firstOrNull()?.lowercaseChar()?.let { it in "aeiou" } == true) "an " else "a ")
+            append(noun)
             append(if (zone == Zone.BATTLEFIELD) " you control" else " in your ${zone.noun}")
         }
         override fun applyTextReplacement(replacer: TextReplacer): CardPredicate {

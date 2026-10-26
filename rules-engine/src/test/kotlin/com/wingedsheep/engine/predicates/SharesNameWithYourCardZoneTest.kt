@@ -107,6 +107,8 @@ class SharesNameWithYourCardZoneTest : FunSpec({
 
     test("the description names the zone") {
         CardPredicate.SharesNameWithYourCard(GameObjectFilter.Any, zone = Zone.GRAVEYARD).description shouldBe
-            "with the same name as ${GameObjectFilter.Any.description} in your graveyard"
+            "with the same name as a card in your graveyard"
+        CardPredicate.SharesNameWithYourCard(GameObjectFilter.Permanent).description shouldBe
+            "with the same name as a permanent you control"
     }
 })

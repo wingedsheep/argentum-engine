@@ -1352,6 +1352,8 @@ class PredicateEvaluator(
                 }
                 compared.any { otherId ->
                     (!predicate.excludeSelf || otherId != entityId) &&
+                        // Projection covers face-down permanents; off the battlefield (a foretold
+                        // card in exile) only the component says the card is face down.
                         !projected.isFaceDown(otherId) &&
                         state.getEntity(otherId)?.has<FaceDownComponent>() != true &&
                         (projected.getName(otherId) ?: state.getEntity(otherId)?.get<CardComponent>()?.name) == name &&
