@@ -23,7 +23,7 @@ import com.wingedsheep.sdk.scripting.references.Player
  *
  * Canonical printing: Dissension, the card's earliest real printing. The search is an any-number
  * pick over the library's creature cards capped by [SelectionRestriction.TotalManaValueAtMost],
- * so the server rejects a set whose mana values sum past 6 ({X} counts as 0 in a library).
+ * so picks that would push the total past 6 are dropped ({X} counts as 0 in a library).
  */
 val ProteanHulk = card("Protean Hulk") {
     manaCost = "{5}{G}{G}"
