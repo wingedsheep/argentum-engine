@@ -172,7 +172,8 @@ internal object StackPlacement {
             // copiable values (CR 707.2), so the uncast copy has no offspring to have paid.
             declaredCostSlot = sourceSpell.declaredCostSlot.takeUnless { it == ChoiceSlot.OFFSPRING },
             entryKeywordGrants = emptyList(),
-            // Counters owed to the original aren't copied either (CR 707.2).
+            // Counters owed to the original aren't copied either (CR 707.2) — neither a cast
+            // trigger's nor Chorus of the Conclave's bought ones: a copy isn't cast (CR 707.10).
             additionalEntryCounters = emptyList(),
             manaSpentWhite = 0,
             manaSpentBlue = 0,

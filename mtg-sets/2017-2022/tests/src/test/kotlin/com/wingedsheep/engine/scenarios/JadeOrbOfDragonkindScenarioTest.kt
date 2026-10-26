@@ -82,8 +82,9 @@ class JadeOrbOfDragonkindScenarioTest : FunSpec({
         driver.state.stack.size shouldBe 2
 
         driver.bothPass()
-        // The trigger resolved above the Dragon; the Dragon is still a spell.
+        // The trigger resolved above the Dragon; the Dragon is still a spell, owed its counter.
         driver.state.stack shouldContain wyrm
+        driver.plusOnes(wyrm) shouldBe 0
 
         driver.bothPass()
         driver.findPermanent(you, dragon.name) shouldBe wyrm

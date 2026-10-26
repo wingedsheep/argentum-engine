@@ -116,8 +116,10 @@ class CountersOwedToSpellTest : FunSpec({
     }
 
     test("a counter-placement replacement applies as it enters (CR 122.6)") {
-        val d = driver(patron.name, scales.name)
+        val d = driver(patron.name)
         val bearId = d.castBearAndResolveTrigger()
+        // Scales arrives only after the counter was owed: it still modifies the entry placement.
+        d.putPermanentOnBattlefield(d.player1, scales.name)
 
         d.bothPass()
         d.plusOnes(bearId) shouldBe 2

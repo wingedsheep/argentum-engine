@@ -320,6 +320,7 @@ object EntersWithReplacements {
      * is announced now; the entry placement emits the [CountersAddedEvent].
      */
     fun oweToSpell(state: GameState, entityId: EntityId, counterType: CounterType, count: Int): GameState? {
+        if (entityId !in state.stack) return null
         val spell = state.getEntity(entityId)?.get<SpellOnStackComponent>() ?: return null
         if (count <= 0) return state
         return state.updateEntity(entityId) { c ->
