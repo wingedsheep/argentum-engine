@@ -8691,7 +8691,11 @@
                                 "type": "GrantMayPlayFromExile",
                                 "from": "selected1",
                                 "expiry": "Permanent",
-                                "landEntersTapped": true
+                                "entersTapped": {
+                                    "cardPredicates": [
+                                        "IsLand"
+                                    ]
+                                }
                             },
                             {
                                 "type": "GrantPlayWithCostIncrease",

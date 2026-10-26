@@ -411,12 +411,18 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
     /**
      * Fields these captures carry that the engine has since retired. A may-play permission's
      * `singleUse` flag became the `playsRemaining` cap; every captured permission is uncapped, so the
-     * flag is false and drops out (its replacement defaults to null).
+     * flag is false and drops out (its replacement defaults to null). Its `landEntersTapped` flag
+     * became the `entersTapped` filter; every captured permission's flag is false, which is a null
+     * filter.
      */
     private fun withoutRetiredFields(value: JsonElement): JsonElement = when (value) {
         is JsonObject -> {
             if ("singleUse" in value) value.getValue("singleUse") shouldBe JsonPrimitive(false)
-            JsonObject((value - "singleUse").mapValues { (_, child) -> withoutRetiredFields(child) })
+            val lifted = if ("landEntersTapped" in value) {
+                value.getValue("landEntersTapped") shouldBe JsonPrimitive(false)
+                JsonObject(value - "landEntersTapped" + ("entersTapped" to JsonNull))
+            } else value
+            JsonObject((lifted - "singleUse").mapValues { (_, child) -> withoutRetiredFields(child) })
         }
         is JsonArray -> JsonArray(value.map { withoutRetiredFields(it) })
         else -> value

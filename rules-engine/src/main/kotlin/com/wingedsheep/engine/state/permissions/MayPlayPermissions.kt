@@ -2,6 +2,7 @@ package com.wingedsheep.engine.state.permissions
 
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.model.EntityId
@@ -127,6 +128,31 @@ fun GameState.activeMayPlayFor(
         permission.controllerId == playerId && cardId in permission.cardIds
     } + StaticMayPlayGrants.forCard(this, cardId, playerId, cardRegistry, predicateEvaluator = conditionEvaluator.predicates)
     ).filter { permission -> permission.gateOpen(this, cardId, conditionEvaluator) }
+
+/**
+ * True when playing [cardId] through its may-play permissions puts it onto the battlefield tapped:
+ * some active permission authorizes the play, and every one that does carries an
+ * [MayPlayPermission.entersTapped] filter the card matches. The rider belongs to the permission a
+ * play goes through, so a rider-free permission covering the same card is the one the player plays
+ * it with. [landPlay] leaves out the `nonLandOnly` permissions, which never authorize a land play.
+ * Read while the card is still in the zone it is played from.
+ */
+fun GameState.mayPlayEntersTapped(
+    cardId: EntityId,
+    playerId: EntityId,
+    conditionEvaluator: ConditionEvaluator,
+    cardRegistry: CardRegistry,
+    landPlay: Boolean,
+): Boolean {
+    val authorizing = activeMayPlayFor(cardId, playerId, conditionEvaluator, cardRegistry)
+        .filter { !landPlay || !it.nonLandOnly }
+    if (authorizing.isEmpty()) return false
+    val context = PredicateContext(controllerId = playerId)
+    return authorizing.all { permission ->
+        val filter = permission.entersTapped ?: return false
+        conditionEvaluator.predicates.matches(this, projectedState, cardId, filter, context)
+    }
+}
 
 /**
  * True when at least one active permission authorizes [playerId] to play [cardId].

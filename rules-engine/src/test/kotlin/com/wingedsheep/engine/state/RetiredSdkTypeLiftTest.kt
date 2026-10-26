@@ -173,6 +173,24 @@ class RetiredSdkTypeLiftTest : FunSpec({
         ) shouldBe permission.copy(spendAsAnyColor = com.wingedsheep.sdk.scripting.effects.ManaSpentAsAnyColor.COLORLESS)
     }
 
+    test("the retired landEntersTapped flag becomes a Land entersTapped filter, or drops out when false") {
+        val grant = GrantMayPlayFromExileEffect(from = "exiled")
+        val encodedGrant = json.encodeToJsonElement(Effect.serializer(), grant).jsonObject
+        lifted(Effect.serializer(), JsonObject(encodedGrant - "entersTapped" + ("landEntersTapped" to JsonPrimitive(true)))) shouldBe
+            grant.copy(entersTapped = GameObjectFilter.Land)
+        lifted(Effect.serializer(), JsonObject(encodedGrant - "entersTapped" + ("landEntersTapped" to JsonPrimitive(false)))) shouldBe
+            grant
+
+        val permission = MayPlayPermission(
+            id = EntityId.of("perm"), cardIds = setOf(EntityId.of("card")), controllerId = EntityId.of("player"), timestamp = 1
+        )
+        val encodedPermission = json.encodeToJsonElement(MayPlayPermission.serializer(), permission).jsonObject
+        lifted(
+            MayPlayPermission.serializer(),
+            JsonObject(encodedPermission - "entersTapped" + ("landEntersTapped" to JsonPrimitive(true)))
+        ) shouldBe permission.copy(entersTapped = GameObjectFilter.Land)
+    }
+
     test("the redirection shield's retired creaturesOnly flag becomes a Creature protectedFilter, or drops out when false") {
         val effect = com.wingedsheep.sdk.scripting.effects.RedirectNextDamageEffect(
             protectedTargets = emptyList(), redirectTo = EffectTarget.Controller

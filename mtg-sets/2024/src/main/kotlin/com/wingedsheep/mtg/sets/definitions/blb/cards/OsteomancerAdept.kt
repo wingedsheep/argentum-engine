@@ -23,7 +23,7 @@ import com.wingedsheep.sdk.model.Rarity
  * - Forage additional cost: Costs.additional.Forage + CostHandler validation
  * - Graveyard casting permission: MayCastCreaturesFromGraveyardWithForageComponent
  * - Legal action enumeration: CastFromZoneEnumerator.enumerateGraveyardCreaturesWithForage
- * - Finality counter on ETB: CastSpellHandler freezes a GraveyardCastRiderComponent
+ * - Finality counter on ETB: CastSpellHandler freezes a CastThisWayEntryRiderComponent
  *   (entersWithCounter = FINALITY) onto the forage-cast spell, applied on entry by
  *   StackResolver -> EntersWithReplacements.applyCastFromGraveyardRider (shared with
  *   The Tomb of Aclazotz's rider-bearing MayCastFromGraveyard grant).

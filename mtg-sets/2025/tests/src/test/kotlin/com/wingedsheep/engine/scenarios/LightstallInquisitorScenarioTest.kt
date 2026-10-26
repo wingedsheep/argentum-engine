@@ -79,7 +79,7 @@ class LightstallInquisitorScenarioTest : ScenarioTestBase() {
                     mayPlay!!.permanent shouldBe true
                 }
                 withClue("The permission must force any played land tapped") {
-                    mayPlay!!.landEntersTapped shouldBe true
+                    mayPlay!!.entersTapped shouldBe com.wingedsheep.sdk.scripting.GameObjectFilter.Land
                 }
 
                 val costIncrease = game.state.getEntity(mountainId)?.get<PlayWithCostIncreaseComponent>()

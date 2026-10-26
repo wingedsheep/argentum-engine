@@ -31,10 +31,11 @@ import kotlinx.serialization.Serializable
  * @param spendAsAnyColor Which mana may be spent as though it were mana of any color to cast —
  *   colorless (Abstruse Appropriation) or mana from snow sources (Draugr Necromancer); read into
  *   [com.wingedsheep.engine.mechanics.mana.SpellPaymentContext.spendAsAnyColor].
- * @param landEntersTapped If true, a land card played via this permission enters the battlefield
- *   tapped. Used by Lightstall Inquisitor-style exile-from-hand effects whose "lands played
- *   this way enter tapped" clause must be enforced on top of the played card's intrinsic ETB
- *   state, independent of the card's own script.
+ * @param entersTapped Which cards played via this permission enter the battlefield tapped — a
+ *   land played or a permanent spell cast through it, when the card matches (Lightstall
+ *   Inquisitor's "each land played this way enters tapped", Kaldring, the Rimestaff's "if you do,
+ *   it enters tapped"). Enforced on top of the played card's own entry, independent of its script;
+ *   read through [mayPlayEntersTapped].
  * @param permanent If true, the permission is not auto-removed at end of turn cleanup. Permanent
  *   permissions are removed explicitly (e.g., when their card resolves). Non-permanent grants
  *   expire via [expiresAfterTurn].
@@ -62,7 +63,7 @@ data class MayPlayPermission(
      * flash" (Azula, Cunning Usurper). Does not waive any cost.
      */
     val asThoughFlash: Boolean = false,
-    val landEntersTapped: Boolean = false,
+    val entersTapped: com.wingedsheep.sdk.scripting.GameObjectFilter? = null,
     val permanent: Boolean = false,
     val expiresAfterTurn: Int? = null,
     /**

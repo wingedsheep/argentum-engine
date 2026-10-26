@@ -22,6 +22,7 @@ import com.wingedsheep.engine.state.permissions.activeMayPlayFor
 import com.wingedsheep.engine.state.permissions.spendCappedMayPlayFor
 import com.wingedsheep.engine.state.permissions.oncePerTurnGranterToSpend
 import com.wingedsheep.engine.state.permissions.hasMayPlayFor
+import com.wingedsheep.engine.state.permissions.mayPlayEntersTapped
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.PlayerCantPlayFromHandComponent
@@ -362,12 +363,10 @@ class PlayLandHandler(
         val landEntersUntapped = com.wingedsheep.engine.handlers.effects.EnterUntappedReplacements
             .entersUntapped(newState, action.cardId, action.playerId, predicateEvaluator = predicateEvaluator)
 
-        // A may-play permission with landEntersTapped=true forces the played land
-        // tapped regardless of the card's own ETB script — Lightstall Inquisitor's
-        // "each land played this way enters tapped" clause.
-        val permissionForcesTapped = fromZone == Zone.EXILE && permissionForcesLandTapped(
-            state, action.playerId, action.cardId
-        )
+        // A may-play permission's entersTapped rider forces the played land tapped regardless of
+        // the card's own ETB script — Lightstall Inquisitor's "each land played this way enters
+        // tapped" (exile), Kaldring, the Rimestaff's "if you do, it enters tapped" (graveyard).
+        val permissionForcesTapped = permissionForcesLandTapped(state, action.playerId, action.cardId, fromZone)
         if (permissionForcesTapped && !landEntersUntapped) {
             newState = newState.updateEntity(action.cardId) { c -> c.with(TappedComponent) }
         }
@@ -773,22 +772,27 @@ class PlayLandHandler(
     }
 
     /**
-     * True when some active may-play permission authorizing [playerId] to play [cardId]
-     * also forces the played land tapped (Lightstall Inquisitor's "each land played this
-     * way enters tapped" clause). Read from [state] *before* the card left exile, since
-     * its grants are dropped as the card moves to the battlefield.
-     *
-     * A `nonLandOnly` permission never authorizes a land play in the first place (mirrors
-     * [isInExileWithPlayPermission]'s filter) — its `landEntersTapped` rider is therefore only
-     * relevant when it's actually the permission the land played through, never as a rider
-     * leaking onto a land authorized by a *different*, plain permission.
+     * True when the land is played through a may-play permission whose `entersTapped` rider
+     * covers it (see [mayPlayEntersTapped]) and no rider-free permission could play it instead: a
+     * linked-exile grant for an exiled land, Crucible / Muldrotha / Mayhem / a shared graveyard
+     * grant for one in the graveyard. Read from [state] *before* the card left its zone, since its
+     * grants are dropped as it moves to the battlefield.
      */
     private fun permissionForcesLandTapped(
         state: GameState,
         playerId: EntityId,
-        cardId: EntityId
-    ): Boolean = state.activeMayPlayFor(cardId, playerId, conditionEvaluator, cardRegistry)
-        .any { !it.nonLandOnly && it.landEntersTapped }
+        cardId: EntityId,
+        fromZone: Zone,
+    ): Boolean {
+        if (!state.mayPlayEntersTapped(cardId, playerId, conditionEvaluator, cardRegistry, landPlay = true)) return false
+        return when (fromZone) {
+            Zone.EXILE -> !com.wingedsheep.engine.handlers.effects.linkedexile.LinkedExilePlayUtils
+                .canPlayLand(state, playerId, cardId, legality)
+            Zone.GRAVEYARD -> !hasNonPermissionGraveyardLandPlay(state, playerId, cardId) &&
+                zoneResolver.graveyardLandPlayGrant(state, playerId, cardId) == null
+            else -> false
+        }
+    }
 
     private fun hasPlayFromTopOfLibrary(state: GameState, playerId: EntityId, cardId: EntityId): Boolean {
         val landCard = state.getEntity(cardId)?.get<CardComponent>() ?: return false
@@ -848,6 +852,18 @@ class PlayLandHandler(
         // a land — mirrors isInExileWithPlayPermission.
         if (state.activeMayPlayFor(cardId, playerId, conditionEvaluator, cardRegistry)
                 .any { !it.nonLandOnly }) return true
+        return hasNonPermissionGraveyardLandPlay(state, playerId, cardId)
+    }
+
+    /**
+     * The graveyard land permissions that aren't a per-card may-play grant: Crucible-style
+     * statics and emblems, Muldrotha's land allowance, and Mayhem.
+     */
+    private fun hasNonPermissionGraveyardLandPlay(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): Boolean {
         if (hasLandGraveyardPlayPermission(state, playerId)) return true
         if (findGraveyardPlayPermissionSource(state, playerId, CardType.LAND.name) != null) return true
         // Mayhem (CR 702.187c): a Mayhem land discarded this turn may be played from the graveyard.

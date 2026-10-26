@@ -719,7 +719,7 @@ object EntersWithReplacements {
      * Apply a graveyard-cast entry rider (The Tomb of Aclazotz) to a permanent that just resolved
      * onto the battlefield after being cast from the graveyard under a rider-bearing
      * [com.wingedsheep.sdk.scripting.MayCastFromGraveyard] grant (frozen at cast time on the stack
-     * spell as [com.wingedsheep.engine.state.components.stack.GraveyardCastRiderComponent]):
+     * spell as [com.wingedsheep.engine.state.components.stack.CastThisWayEntryRiderComponent]):
      *  - it enters with one [counter] counter (CR 614.1c), emitting a [CountersAddedEvent] so the
      *    finality death-replacement (ZoneMovementUtils) and counter watchers see it; and
      *  - it gains [addedSubtype] "in addition to its other types" via a floating [Layer.TYPE]

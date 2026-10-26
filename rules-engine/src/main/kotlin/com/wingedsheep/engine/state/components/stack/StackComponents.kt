@@ -748,9 +748,11 @@ data class SpellCopyTokenRidersComponent(
 ) : Component
 
 /**
- * Cast-this-way entry rider for a spell cast from the graveyard under a
- * [com.wingedsheep.sdk.scripting.MayCastFromGraveyard] grant that carries rider fields
- * (The Tomb of Aclazotz). The rider is frozen onto the stack spell at cast time — from the
+ * Cast-this-way entry rider for a spell cast under a permission that carries rider fields: a
+ * [com.wingedsheep.sdk.scripting.MayCastFromGraveyard] grant (The Tomb of Aclazotz), a forage or
+ * linked-exile permission's finality counter, or a may-play permission's
+ * [com.wingedsheep.engine.state.permissions.MayPlayPermission.entersTapped] (Kaldring, the
+ * Rimestaff — [entersTapped]). The rider is frozen onto the stack spell at cast time — from the
  * *specific* grant that authorized the cast, so it survives grant expiry and is unambiguous when
  * several graveyard-cast grants are active. Read by
  * [com.wingedsheep.engine.mechanics.stack.StackResolver] when the spell resolves onto the
@@ -760,8 +762,10 @@ data class SpellCopyTokenRidersComponent(
  * the stack (countered / fizzled spells simply never apply it).
  */
 @Serializable
-data class GraveyardCastRiderComponent(
+@SerialName("com.wingedsheep.engine.state.components.stack.GraveyardCastRiderComponent")
+data class CastThisWayEntryRiderComponent(
     val entersWithCounter: com.wingedsheep.sdk.core.CounterType? = null,
     val addedSubtype: String? = null,
-    val grantedAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null
+    val grantedAbility: com.wingedsheep.sdk.scripting.TriggeredAbility? = null,
+    val entersTapped: Boolean = false,
 ) : Component

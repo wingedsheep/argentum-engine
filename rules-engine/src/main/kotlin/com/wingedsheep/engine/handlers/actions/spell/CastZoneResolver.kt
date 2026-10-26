@@ -30,6 +30,7 @@ import com.wingedsheep.engine.state.components.identity.CommanderComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.engine.state.permissions.hasMayPlayFor
+import com.wingedsheep.engine.state.permissions.mayPlayEntersTapped
 import com.wingedsheep.engine.state.components.player.MayCastCreaturesFromGraveyardWithForageComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
@@ -215,6 +216,24 @@ class CastZoneResolver(
             action.alternativeCostType == AlternativeCostType.BLITZ
         Keyword.MUTATE -> action != null && com.wingedsheep.engine.mechanics.MutateCasts.selected(action)
         else -> false
+    }
+
+    /**
+     * True when casting [cardId] goes through a may-play permission whose `entersTapped` rider
+     * covers it (see [mayPlayEntersTapped]) — Kaldring, the Rimestaff's "if you do, it enters
+     * tapped". A card in hand is cast from hand, never through a grant on it, and a permanent
+     * spell Muldrotha could cast from the graveyard instead owes no rider. Read before the cast
+     * moves the card.
+     */
+    fun castEntersTappedByMayPlay(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId,
+        cardComponent: CardComponent
+    ): Boolean {
+        if (cardId in state.getHand(playerId)) return false
+        if (!state.mayPlayEntersTapped(cardId, playerId, conditionEvaluator, cardRegistry, landPlay = false)) return false
+        return !hasMayPlayPermanentFromGraveyardPermission(state, playerId, cardId, cardComponent)
     }
 
     /**

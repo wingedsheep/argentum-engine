@@ -1780,12 +1780,14 @@ data class GrantMayPlayFromExileEffect(
      */
     val condition: Condition? = null,
     /**
-     * When true, a land card played via this permission enters the battlefield tapped.
-     * Used by Lightstall Inquisitor-style "each land played this way enters tapped"
-     * clauses, where the tapped-on-entry rule is imposed by the granting effect rather
-     * than the played card's own script.
+     * Which cards played through this permission enter the battlefield tapped — a land played
+     * or a permanent spell cast this way, when the card matches. [GameObjectFilter.Land] for
+     * "each land played this way enters tapped" (Lightstall Inquisitor), [GameObjectFilter.Any]
+     * for "you may play target snow permanent card … If you do, it enters tapped" (Kaldring, the
+     * Rimestaff). The rule is imposed by the grant, not the played card's own script, so it only
+     * binds a play that has to go through a rider-bearing permission. `null` for no such rider.
      */
-    val landEntersTapped: Boolean = false,
+    val entersTapped: GameObjectFilter? = null,
     /**
      * Optional "When you play a card this way, …" rider. When set, playing (casting or
      * playing as a land) any card granted by this permission puts this effect on the stack
@@ -1969,7 +1971,9 @@ data class GrantMayPlayFromExileEffect(
         if (withAnyManaType) append(", and mana of any type can be spent to cast them")
         if (withAnyManaColor) append(", and you may spend mana as though it were mana of any color to cast them")
         spendAsAnyColor?.let { append(", and you may spend ${it.description} as though it were mana of any color to cast them") }
-        if (landEntersTapped) append(". Each land played this way enters tapped")
+        entersTapped?.let {
+            append(if (it == GameObjectFilter.Land) ". Each land played this way enters tapped" else ". If you do, it enters tapped")
+        }
         insteadOfGraveyard?.let { append(it.riderText) }
     }
 }

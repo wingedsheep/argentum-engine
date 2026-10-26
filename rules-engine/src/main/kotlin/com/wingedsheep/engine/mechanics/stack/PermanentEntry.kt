@@ -73,10 +73,11 @@ internal class PermanentEntry(
         cardDef: com.wingedsheep.sdk.model.CardDefinition?
     ): Pair<GameState, List<GameEvent>> {
         val controllerId = spellComponent.casterId
-        // The Tomb of Aclazotz: a graveyard-cast entry rider frozen on this spell at cast time.
+        // A cast-this-way entry rider frozen on this spell at cast time (The Tomb of Aclazotz,
+        // Kaldring, the Rimestaff).
         // Captured before the `updateEntity` block below strips it; applied on entry further down.
-        val graveyardCastRider =
-            state.getEntity(spellId)?.get<com.wingedsheep.engine.state.components.stack.GraveyardCastRiderComponent>()
+        val castRider =
+            state.getEntity(spellId)?.get<com.wingedsheep.engine.state.components.stack.CastThisWayEntryRiderComponent>()
 
         // For Auras: get the target before removing TargetsComponent. The target is usually a
         // permanent, but "enchant player" Auras (Grievous Wound) attach to a player — both are
@@ -128,7 +129,7 @@ internal class PermanentEntry(
         }
 
         newState = applyEntryCounterReplacements(
-            newState, spellId, spellComponent, cardComponent, cardDef, controllerId, graveyardCastRider, counterEvents
+            newState, spellId, spellComponent, cardComponent, cardDef, controllerId, castRider, counterEvents
         )
         // The spell-copy riders have done their job (keywords, sacrifice, starting loyalty); strip
         // them so they don't linger on the permanent.
@@ -186,7 +187,7 @@ internal class PermanentEntry(
             }
         }
 
-        newState = applyGlobalEntersTapped(newState, spellId, spellComponent, cardDef, controllerId)
+        newState = applyGlobalEntersTapped(newState, spellId, spellComponent, cardDef, controllerId, castRider)
         newState = enterSneakAttacking(newState, spellId, spellComponent, controllerId)
         addCastFaceDoorUnlockedEvents(newState, spellId, cardComponent, controllerId, counterEvents)
         newState = scheduleWarpExile(newState, spellId, spellComponent, cardComponent, controllerId)
@@ -253,7 +254,7 @@ internal class PermanentEntry(
             // A keyword stamped on the spell lasts only while it's a spell; one meant to outlast the
             // stack was frozen into entryKeywordGrants and is granted to the permanent instead.
             .without<com.wingedsheep.engine.state.components.stack.SpellGrantedKeywordsComponent>()
-            .without<com.wingedsheep.engine.state.components.stack.GraveyardCastRiderComponent>()
+            .without<com.wingedsheep.engine.state.components.stack.CastThisWayEntryRiderComponent>()
             // The crew/saddle record outlives the permanent as last-known information; a recast
             // card is a new object nothing has crewed (CR 400.7).
             .without<CrewSaddleContributorsComponent>()
@@ -714,7 +715,7 @@ internal class PermanentEntry(
         cardComponent: CardComponent?,
         cardDef: com.wingedsheep.sdk.model.CardDefinition?,
         controllerId: EntityId,
-        graveyardCastRider: com.wingedsheep.engine.state.components.stack.GraveyardCastRiderComponent?,
+        castRider: com.wingedsheep.engine.state.components.stack.CastThisWayEntryRiderComponent?,
         counterEvents: MutableList<GameEvent>
     ): GameState {
         var newState = state
@@ -732,12 +733,12 @@ internal class PermanentEntry(
         // The Tomb of Aclazotz cast-this-way entry rider: a creature cast from the graveyard under
         // its grant enters with a finality counter and gains "Vampire" in addition to its other
         // types. Applied after the printed enters-with replacements so both stack cleanly (CR 614).
-        if (graveyardCastRider != null && !spellComponent.castFaceDown) {
+        if (castRider != null && !spellComponent.castFaceDown) {
             val (riderState, riderEvents) =
                 com.wingedsheep.engine.handlers.effects.EntersWithReplacements.applyCastFromGraveyardRider(
                     newState, spellId, controllerId,
-                    graveyardCastRider.entersWithCounter, graveyardCastRider.addedSubtype,
-                    graveyardCastRider.grantedAbility,
+                    castRider.entersWithCounter, castRider.addedSubtype,
+                    castRider.grantedAbility,
                     predicateEvaluator = conditionEvaluator.predicates
                 )
             newState = riderState
@@ -880,9 +881,19 @@ internal class PermanentEntry(
         spellId: EntityId,
         spellComponent: SpellOnStackComponent,
         cardDef: com.wingedsheep.sdk.model.CardDefinition?,
-        controllerId: EntityId
+        controllerId: EntityId,
+        castRider: com.wingedsheep.engine.state.components.stack.CastThisWayEntryRiderComponent?
     ): GameState {
         var newState = state
+        // A permission's "if you do, it enters tapped" rider (Kaldring, the Rimestaff), frozen on
+        // the spell at cast. An applicable "enters untapped" replacement still wins (CR 614).
+        if (castRider?.entersTapped == true && !spellComponent.wasSneaked &&
+            newState.getEntity(spellId)?.has<TappedComponent>() != true &&
+            !com.wingedsheep.engine.handlers.effects.EnterUntappedReplacements
+                .entersUntapped(newState, spellId, controllerId, predicateEvaluator = conditionEvaluator.predicates)
+        ) {
+            newState = newState.updateEntity(spellId) { c -> c.with(TappedComponent) }
+        }
         // Global "[filter] enter tapped" replacements sourced from OTHER battlefield permanents
         // (Authority of the Consuls — "Creatures your opponents control enter tapped"). The
         // self-only EntersTapped handled earlier covers a permanent's own printed clause; a

@@ -4546,6 +4546,146 @@
     ]
 }
 
+// Jorn, God of Winter
+{
+    "name": "Jorn, God of Winter",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Snow Creature — God",
+    "oracleText": "Whenever Jorn attacks, untap each snow permanent you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jorn, God of Winter:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsPermanent",
+                                    "IsSnow"
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "TapUntap",
+                        "target": "IterationEntity",
+                        "tap": false
+                    }
+                },
+                "descriptionOverride": "Whenever Jorn attacks, untap each snow permanent you control."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Kaldring, the Rimestaff",
+        "manaCost": "{1}{U}{B}",
+        "typeLine": "Legendary Snow Artifact",
+        "oracleText": "{T}: You may play target snow permanent card from your graveyard this turn. If you do, it enters tapped.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Kaldring, the Rimestaff:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": "ChosenTargets",
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "GrantMayPlayFromExile",
+                                "from": "gathered0",
+                                "entersTapped": {}
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsPermanent",
+                                        "IsSnow"
+                                    ],
+                                    "controllerPredicate": "OwnedByYou"
+                                },
+                                "zone": "Graveyard"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "You may play target snow permanent card from your graveyard this turn. If you do, it enters tapped."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "179",
+            "rarity": "RARE",
+            "artist": "Magali Villeneuve",
+            "flavorText": "As the sagas tell it, Jorn collects a sliver of ice from every realm he visits.",
+            "imageUri": "https://cards.scryfall.io/normal/back/c/6/c697548f-925b-405e-970a-4e78067d5c8e.jpg?1783928216",
+            "rulings": [
+                {
+                    "date": "2021-02-05",
+                    "text": "A snow permanent card is any artifact, creature, enchantment, land, or planeswalker card with the supertype snow."
+                },
+                {
+                    "date": "2021-02-05",
+                    "text": "You don't play the card as Kaldring's activated ability is resolving; rather, that ability gives you permission to play that card that turn. You must follow the normal timing permissions and restrictions for the card when you play it. To play a land this way, you must have a land play available. Notably, if you activate Kaldring's ability during an opponent's turn, you won't be able to cast a spell that way unless it has flash and you won't be able to play a land that way at all."
+                },
+                {
+                    "date": "2021-02-05",
+                    "text": "You'll still pay all costs to cast a spell this way, including any additional costs. You may also pay alternative costs if any are available."
+                },
+                {
+                    "date": "2021-02-05",
+                    "text": "Even though you may play the card, it isn't in your hand, so you can't, for example, discard it or foretell it."
+                },
+                {
+                    "date": "2021-02-05",
+                    "text": "If you don't end up playing the card, it remains in your graveyard. You can't play it on future turns unless you target it again with Kaldring's ability (or something else lets you play it)."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "BLACK",
+            "GREEN",
+            "BLUE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "rarity": "RARE",
+        "artist": "Magali Villeneuve",
+        "flavorText": "\"Wherever snow falls, I am home.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c697548f-925b-405e-970a-4e78067d5c8e.jpg?1783928216",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Jorn's triggered ability will untap Jorn itself."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN",
+        "BLUE"
+    ],
+    "layout": "MODAL_DFC"
+}
+
 // Karfell Harbinger
 {
     "name": "Karfell Harbinger",

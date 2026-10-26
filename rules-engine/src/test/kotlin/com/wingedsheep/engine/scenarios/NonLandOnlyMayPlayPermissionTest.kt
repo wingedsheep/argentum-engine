@@ -169,7 +169,7 @@ class NonLandOnlyMayPlayPermissionTest : ScenarioTestBase() {
                     id = EntityId.generate(),
                     cardIds = setOf(exiledLandId),
                     controllerId = game.player1Id,
-                    landEntersTapped = true,
+                    entersTapped = com.wingedsheep.sdk.scripting.GameObjectFilter.Land,
                     nonLandOnly = true,
                     timestamp = game.state.timestamp
                 )

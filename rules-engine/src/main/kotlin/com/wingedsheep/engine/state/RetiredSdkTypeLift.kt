@@ -143,8 +143,10 @@ internal object RetiredSdkTypeLift {
      * a stored grant. A true flag is a cap of one; a false one is the uncapped default.
      */
     private fun withoutRetiredFields(element: JsonObject, type: String?): JsonObject =
-        withoutCreaturesOnly(
-            withoutSingleEntryCounter(withoutCastTimeFlags(withoutColorlessAsAnyColor(withoutSingleUse(element, type))), type)
+        withoutLandEntersTapped(
+            withoutCreaturesOnly(
+                withoutSingleEntryCounter(withoutCastTimeFlags(withoutColorlessAsAnyColor(withoutSingleUse(element, type))), type)
+            )
         )
 
     /**
@@ -168,6 +170,20 @@ internal object RetiredSdkTypeLift {
         val rest = element - "creaturesOnly"
         return JsonObject(
             if (flag.content == "true") rest + ("protectedFilter" to encode(GameObjectFilter.serializer(), GameObjectFilter.Creature))
+            else rest
+        )
+    }
+
+    /**
+     * The may-play `landEntersTapped` flag became `entersTapped`, a filter naming which played cards
+     * enter tapped — on `GrantMayPlayFromExileEffect` in a card script and `MayPlayPermission` on a
+     * stored grant. A true flag is the land filter; a false one is the unset default.
+     */
+    private fun withoutLandEntersTapped(element: JsonObject): JsonObject {
+        val flag = element["landEntersTapped"] as? JsonPrimitive ?: return element
+        val rest = element - "landEntersTapped"
+        return JsonObject(
+            if (flag.content == "true") rest + ("entersTapped" to encode(GameObjectFilter.serializer(), GameObjectFilter.Land))
             else rest
         )
     }

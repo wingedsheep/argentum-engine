@@ -179,7 +179,7 @@ class GrantMayPlayFromExileExecutor : EffectExecutor<GrantMayPlayFromExileEffect
                     withAnyManaColor = effect.withAnyManaColor,
                     spendAsAnyColor = effect.spendAsAnyColor,
                     asThoughFlash = effect.asThoughFlash,
-                    landEntersTapped = effect.landEntersTapped,
+                    entersTapped = effect.entersTapped,
                     permanent = isPermanent,
                     expiresAfterTurn = expiresAfterTurn,
                     expiresAtStep = expiresAtStepFor(effect.expiry),

@@ -1646,8 +1646,9 @@ object Effects {
      * across the whole group: `1` for "you may cast **a** spell from among them" (Chandra, Hope's
      * Beacon), `2` for "you may play up to two of those cards" (March of Reckless Joy).
      *
-     * Set [landEntersTapped] for "each land played this way enters tapped" clauses
-     * (Lightstall Inquisitor). Pair with [GrantPlayWithCostIncrease] to also tax
+     * Set [entersTapped] for "each land played this way enters tapped" clauses
+     * ([GameObjectFilter.Land], Lightstall Inquisitor) or "if you do, it enters tapped"
+     * ([GameObjectFilter.Any], Kaldring, the Rimestaff). Pair with [GrantPlayWithCostIncrease] to also tax
      * spells cast via the permission.
      *
      * The grant also covers cards left in a **graveyard** — set [castFaceIndex] for
@@ -1666,7 +1667,7 @@ object Effects {
             com.wingedsheep.sdk.scripting.effects.MayPlayExpiry.EndOfTurn,
         withAnyManaType: Boolean = false,
         condition: com.wingedsheep.sdk.scripting.conditions.Condition? = null,
-        landEntersTapped: Boolean = false,
+        entersTapped: GameObjectFilter? = null,
         onPlayRider: Effect? = null,
         insteadOfGraveyard: AfterResolveDestination? = null,
         nonLandOnly: Boolean = false,
@@ -1684,7 +1685,7 @@ object Effects {
         withAnyManaColor = withAnyManaColor,
         spendAsAnyColor = spendAsAnyColor,
         condition = condition,
-        landEntersTapped = landEntersTapped,
+        entersTapped = entersTapped,
         onPlayRider = onPlayRider,
         insteadOfGraveyard = insteadOfGraveyard,
         nonLandOnly = nonLandOnly,
@@ -4930,7 +4931,7 @@ object Effects {
             com.wingedsheep.sdk.scripting.effects.MayPlayExpiry.EndOfTurn,
         withAnyManaType: Boolean = false,
         condition: com.wingedsheep.sdk.scripting.conditions.Condition? = null,
-        landEntersTapped: Boolean = false,
+        entersTapped: GameObjectFilter? = null,
         onPlayRider: Effect? = null,
         insteadOfGraveyard: AfterResolveDestination? = null,
         nonLandOnly: Boolean = false,
@@ -4950,7 +4951,7 @@ object Effects {
         withAnyManaColor = withAnyManaColor,
         spendAsAnyColor = spendAsAnyColor,
         condition = condition,
-        landEntersTapped = landEntersTapped,
+        entersTapped = entersTapped,
         onPlayRider = onPlayRider,
         ownerControls = ownerControls,
         recipient = recipient,

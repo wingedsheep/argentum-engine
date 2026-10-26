@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
@@ -25,7 +26,7 @@ import com.wingedsheep.sdk.scripting.references.Player
  * iterated opponent. Inside, the opponent's hand is gathered, that opponent (as
  * Chooser.Controller within the iteration) selects one card, the card moves to their
  * exile, then GrantMayPlayFromExile + GrantPlayWithCostIncrease apply the permanent
- * cast-from-exile permission and the {1} surcharge. landEntersTapped=true on the
+ * cast-from-exile permission and the {1} surcharge. entersTapped = Land on the
  * permission propagates the tapped-on-entry clause to PlayLandHandler.
  */
 val LightstallInquisitor = card("Lightstall Inquisitor") {
@@ -52,7 +53,7 @@ val LightstallInquisitor = card("Lightstall Inquisitor") {
                 run(Effects.GrantMayPlayFromExile(
                     from = chosenCard,
                     expiry = MayPlayExpiry.Permanent,
-                    landEntersTapped = true
+                    entersTapped = GameObjectFilter.Land
                 ))
                 run(Effects.GrantPlayWithCostIncrease(from = chosenCard, amount = 1))
             }
