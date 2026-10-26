@@ -30,6 +30,10 @@ import kotlinx.serialization.Serializable
  * @property spent True once a [Duration.NextUse] grant has modified an event. It keeps applying to
  *   the rest of that same event (every object entering simultaneously gets the counters), and is
  *   removed at the next event boundary.
+ * @property referenceSnapshot The copiable values (and battlefield visit) of the object a granted
+ *   [com.wingedsheep.sdk.scripting.EntersAsCopy.copyOf] names, captured when the grant was made — the
+ *   last-known information an entrant copies if that object has left the battlefield by then and no
+ *   later departure snapshot of the same visit survives (a token that ceased to exist).
  */
 @Serializable
 data class GrantedReplacementEffect(
@@ -37,7 +41,8 @@ data class GrantedReplacementEffect(
     val controllerId: EntityId,
     val replacement: ReplacementEffect,
     val duration: Duration,
-    val spent: Boolean = false
+    val spent: Boolean = false,
+    val referenceSnapshot: com.wingedsheep.engine.state.components.stack.EntitySnapshot? = null,
 ) {
     /**
      * True when this grant is an ability [holder] itself gained rather than a floating rider: a

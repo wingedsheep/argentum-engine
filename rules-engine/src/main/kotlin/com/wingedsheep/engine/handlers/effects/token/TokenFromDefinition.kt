@@ -150,6 +150,7 @@ object TokenFromDefinition {
         }
 
         var newState = stateWithId.withEntity(tokenId, container)
+        newState = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.applyBeforeEntry(newState, tokenId, cardRegistry, predicateEvaluator)
         newState = BattlefieldEntry.place(newState, controllerId, tokenId)
 
         // As-enters: enters tapped (CR 614). The payLifeCost (shock-land) form is land-only.

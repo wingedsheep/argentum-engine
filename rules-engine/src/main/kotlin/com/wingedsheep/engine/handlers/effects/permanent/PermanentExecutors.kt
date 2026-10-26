@@ -237,7 +237,7 @@ class PermanentExecutors(
         GrantHarmonizeExecutor(),
         GrantKeywordExecutor(),
         GrantStaticAbilityExecutor(),
-        GrantReplacementEffectExecutor(),
+        GrantReplacementEffectExecutor(cardRegistry),
         RemoveKeywordExecutor(),
         GrantToEnchantedCreatureTypeGroupExecutor(),
         GrantStateTriggeredAbilityExecutor(),

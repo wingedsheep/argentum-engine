@@ -304,6 +304,10 @@ class PlayLandHandler(
         if (fromZone == Zone.EXILE || fromZone == Zone.GRAVEYARD || fromZone == Zone.SIDEBOARD) {
             newState = newState.spendCappedMayPlayFor(action.cardId, action.playerId)
         }
+        // A land creature (Dryad Arbor) is a creature entering: a granted "enters as a copy"
+        // applies before it is placed, and everything below reads the copied identity.
+        newState = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy
+            .applyBeforeEntry(newState, action.cardId, cardRegistry, predicateEvaluator)
         newState = com.wingedsheep.engine.handlers.effects.BattlefieldEntry
             .place(newState, action.playerId, action.cardId)
         val enteredObject = newState.objectRef(action.cardId)
@@ -525,7 +529,7 @@ class PlayLandHandler(
         if (cardDef != null) {
             val entersAsCopy = cardDef.script.replacementEffects
                 .filterIsInstance<EntersAsCopy>()
-                .firstOrNull()
+                .firstOrNull { it.copyOf == null }
             if (entersAsCopy != null &&
                 com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
                     .entersAsCopyCandidates(newState, action.cardId, action.playerId, entersAsCopy, predicateEvaluator = predicateEvaluator)

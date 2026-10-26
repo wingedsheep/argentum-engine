@@ -49,6 +49,17 @@ internal class PermanentSpellResolver(
         val ownerId = cardComponent?.ownerId ?: controllerId
 
         val cardDef = cardComponent?.cardDefinitionId?.let { cardRegistry.getCard(it) }
+        // A granted "they enter as copies of the chosen creature" (Mystic Reflection) is a copy
+        // effect too, with nothing to choose: install it and skip the spell's own copy choice — in
+        // either order the permanent would end up a copy of the bound object.
+        if (cardComponent != null && !spellComponent.castFaceDown) {
+            val granted = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.find(state, spellId, predicateEvaluator)
+            if (granted != null) {
+                val copied = com.wingedsheep.engine.handlers.effects.copy.EffectCopyEntry.apply(state, spellId, granted.choice)
+                return resolveAfterEntryCopy(
+                    com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.spend(copied, granted), spellId)
+            }
+        }
         if (cardDef != null && !spellComponent.castFaceDown) {
             pauseForEntersAsCopy(state, spellId, spellComponent, cardComponent, cardDef, controllerId, ownerId)
                 ?.let { return it }
@@ -114,7 +125,8 @@ internal class PermanentSpellResolver(
         controllerId: EntityId,
         ownerId: EntityId
     ): ExecutionResult? {
-        val entersAsCopy = cardDef.script.replacementEffects.filterIsInstance<EntersAsCopy>().firstOrNull()
+        val entersAsCopy = cardDef.script.replacementEffects.filterIsInstance<EntersAsCopy>()
+            .firstOrNull { it.copyOf == null }
         if (entersAsCopy != null) {
             // Find candidates to copy. Battlefield copies (Clone) read permanents in play;
             // graveyard copies (Superior Spider-Man) read creature cards across every graveyard.

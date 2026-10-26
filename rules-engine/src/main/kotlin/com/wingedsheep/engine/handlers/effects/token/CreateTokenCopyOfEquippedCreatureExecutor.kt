@@ -109,6 +109,7 @@ class CreateTokenCopyOfEquippedCreatureExecutor(
         newState = newState.withEntity(tokenId, container)
 
         // Add to battlefield
+        newState = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.applyBeforeEntry(newState, tokenId, cardRegistry, predicateEvaluator)
         newState = com.wingedsheep.engine.handlers.effects.BattlefieldEntry
             .place(newState, controllerId, tokenId)
 

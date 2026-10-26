@@ -5240,6 +5240,68 @@
     ]
 }
 
+// Mystic Reflection
+{
+    "name": "Mystic Reflection",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Choose target nonlegendary creature. The next time one or more creatures or planeswalkers enter this turn, they enter as copies of the chosen creature.\nForetell {U} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "keywords": [
+        "FORETELL"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Foretell",
+            "cost": "{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "GrantReplacementEffect",
+            "replacement": {
+                "type": "EntersAsCopy",
+                "optional": false,
+                "copyOf": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature|planeswalker",
+                    "to": "Battlefield"
+                }
+            },
+            "duration": {
+                "type": "NextUse",
+                "sourceDescription": "one or more creatures or planeswalkers enter"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsNonlegendary"
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "RARE",
+        "artist": "YW Tang",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7b877e2-60eb-46cd-acd7-8555b9e7e993.jpg?1783928260"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Niko Defies Destiny
 {
     "name": "Niko Defies Destiny",

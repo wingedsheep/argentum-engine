@@ -444,6 +444,7 @@ class CreateTokenCopyOfTargetExecutor(
             }
 
             newState = newState.withEntity(tokenId, container)
+            if (cardRegistry != null) newState = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.applyBeforeEntry(newState, tokenId, cardRegistry, amountEvaluator.predicates)
             newState = com.wingedsheep.engine.handlers.effects.BattlefieldEntry
                 .place(newState, controllerId, tokenId)
             // A token copy honors global "[filter] enter tapped" replacements (Authority of the

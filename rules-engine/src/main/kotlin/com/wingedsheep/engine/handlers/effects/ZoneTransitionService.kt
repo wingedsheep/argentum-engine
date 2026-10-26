@@ -945,8 +945,16 @@ class ZoneTransitionService(
                 // event. By the time we reach this point those triggers are already queued on
                 // the stack with their own captured ability data, so it is safe to wipe.
                 newState = newState.withoutObjectGrants(entityId)
+                // A granted "enters as a copy of the chosen creature" (Mystic Reflection) is the
+                // last copy effect applied, so it wins over the entrant's own as-enters choice.
+                val grantedCopy = if (options.faceDown) null else com.wingedsheep.engine.handlers.effects.copy
+                    .GrantedEntryCopy.find(newState, entityId, predicateEvaluator)
+                if (grantedCopy != null) {
+                    newState = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.spend(newState, grantedCopy)
+                }
+                val entryCopyChoice = grantedCopy?.choice ?: options.entryCopy
                 if (!options.faceDown) {
-                    options.entryCopy?.let { choice ->
+                    entryCopyChoice?.let { choice ->
                         // Face tracking belongs to the physical entrant, not the copied definition.
                         newState = stampDoubleFacedFrontFace(newState, cardRegistry, entityId)
                         newState = com.wingedsheep.engine.handlers.effects.copy.EffectCopyEntry.apply(newState, entityId, choice)
@@ -955,8 +963,8 @@ class ZoneTransitionService(
                 newState = newState.addToZone(destZoneKey, entityId)
                 newState = applyBattlefieldEntry(
                     newState, entityId, cardComponent, destControllerId,
-                    options.copy(tapped = options.tapped ||
-                        (options.entryCopy?.copiedCard != null && options.entryCopy.replacement.tappedIfCopied)), fromZone
+                    options.copy(entryCopy = entryCopyChoice, tapped = options.tapped ||
+                        (entryCopyChoice?.copiedCard != null && entryCopyChoice.replacement.tappedIfCopied)), fromZone
                 )
                 if (!options.faceDown) options.asAura?.let { newState = it.apply(newState, entityId, destControllerId) }
                 if (!options.faceDown) options.asNonAura?.let { newState = it.apply(newState, entityId, destControllerId) }
@@ -1032,7 +1040,7 @@ class ZoneTransitionService(
                         if (matches) entryCounterTotals!![entry.counterType] = (entryCounterTotals[entry.counterType] ?: 0) + entry.count
                     }
                 }
-                val entryCopy = options.entryCopy?.takeIf { it.copiedCard != null && !options.faceDown }
+                val entryCopy = entryCopyChoice?.takeIf { it.copiedCard != null && !options.faceDown }
                 entryCopy?.replacement?.entersWithCounters?.let { rider ->
                     val count = EntersWithReplacements.copyEntryCounterCount(
                         newState, rider, entityId, entryCopy.copiedEntity, destControllerId, xValue = null,

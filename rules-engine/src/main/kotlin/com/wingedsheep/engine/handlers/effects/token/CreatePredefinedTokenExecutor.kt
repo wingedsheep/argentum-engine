@@ -192,6 +192,7 @@ class CreatePredefinedTokenExecutor(
 
             newState = newState.withEntity(tokenId, container)
 
+            newState = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.applyBeforeEntry(newState, tokenId, cardRegistry, amountEvaluator.predicates)
             newState = com.wingedsheep.engine.handlers.effects.BattlefieldEntry
                 .place(newState, tokenControllerId, tokenId)
 

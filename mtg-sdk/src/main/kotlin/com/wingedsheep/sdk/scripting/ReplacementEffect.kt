@@ -2429,6 +2429,19 @@ data class ReplaceLifePaymentWithLibraryExile(
  *                   battlefield until end of turn" (Cursed Mirror) — at cleanup the permanent reverts
  *                   to its printed self, riders (the granted haste) included. No other duration is
  *                   supported.
+ * @param copyOf When non-null, the entrant copies **this one object** instead of a candidate its
+ *                   controller chooses as it enters — "the next time one or more creatures or
+ *                   planeswalkers enter this turn, they enter as copies of the chosen creature"
+ *                   (Mystic Reflection). Such a replacement applies to *other* objects entering, so it
+ *                   is never a permanent's own printed self-copy: it is granted with
+ *                   [com.wingedsheep.sdk.scripting.effects.GrantReplacementEffectEffect] (usually with
+ *                   [Duration.NextUse]), which binds the reference to the resolving ability's object
+ *                   — a [EffectTarget.ContextTarget] becomes the [EffectTarget.SpecificEntity] it named.
+ *                   [appliesTo] then says which entrants it modifies, and [copyFilter] / [copyFromZone]
+ *                   / [filterByTotalManaSpent] (the as-enters choice) are unused. The copied values
+ *                   are the object's as the entrant enters, or as it last existed on the battlefield
+ *                   if it has left. Null (default) is the classic Clone: the entrant's own as-enters
+ *                   choice.
  */
 @SerialName("EntersAsCopy")
 @Serializable
@@ -2449,6 +2462,7 @@ data class EntersAsCopy(
     val exceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions =
         com.wingedsheep.sdk.scripting.effects.CopyExceptions.None,
     val duration: Duration = Duration.Permanent,
+    val copyOf: EffectTarget? = null,
     override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
         filter = GameObjectFilter.Any,
         to = Zone.BATTLEFIELD
@@ -2468,7 +2482,10 @@ data class EntersAsCopy(
         val where = if (copyFromZone == Zone.GRAVEYARD) "$filterDesc card in a graveyard" else "$filterDesc on the battlefield"
         val subject = if (copyFilter == GameObjectFilter.Land) "this land" else "this creature"
         val tappedWord = if (tappedIfCopied) "tapped " else ""
-        val lead = if (duration == Duration.EndOfTurn) {
+        val entrants = (appliesTo as? EventPattern.ZoneChangeEvent)?.filter?.description
+        val lead = if (copyOf != null) {
+            "${entrants ?: "they"} enter ${tappedWord}as copies of ${copyOf.description}"
+        } else if (duration == Duration.EndOfTurn) {
             val who = if (optional) "you may have it" else "it"
             // "Becomes a copy … until end of turn" is printed on non-creatures (Cursed Mirror).
             "As this permanent enters, $who become${if (optional) "" else "s"} a copy of any $where until end of turn"

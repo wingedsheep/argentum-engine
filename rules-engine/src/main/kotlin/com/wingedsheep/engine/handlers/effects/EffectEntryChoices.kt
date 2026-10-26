@@ -63,7 +63,8 @@ object EffectEntryChoices {
         val playerOrder = state.apnapOrder.withIndex().associate { it.value to it.index }
         for ((id, controller) in entrants.entries.sortedBy { playerOrder[it.value] ?: Int.MAX_VALUE }) {
             if (id in state.getBattlefield()) continue
-            val entering = context.entryCopies[id]
+            val entering = (com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy
+                .find(state, id, predicateEvaluator)?.choice ?: context.entryCopies[id])
                 ?.let { EffectCopyEntry.apply(state, id, it).getEntity(id)?.get<CardComponent>() }
                 ?: state.getEntity(id)?.get<CardComponent>()
                 ?: continue

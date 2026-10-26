@@ -4,9 +4,13 @@ import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.event.GrantedReplacementEffect
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.captureCopiableSnapshot
+import com.wingedsheep.sdk.scripting.EntersAsCopy
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.GrantReplacementEffectEffect
 import kotlin.reflect.KClass
 
@@ -19,8 +23,15 @@ import kotlin.reflect.KClass
  * ([com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.checkZoneChangeRedirect]) consults
  * granted [com.wingedsheep.sdk.scripting.RedirectZoneChange] entries alongside permanents'
  * printed replacement effects. Mirrors [GrantStaticAbilityExecutor].
+ *
+ * A granted [EntersAsCopy] whose [EntersAsCopy.copyOf] names this resolution's object (Mystic
+ * Reflection's "the chosen creature") is bound here: the reference becomes the
+ * [EffectTarget.SpecificEntity] it resolved to, and that object's copiable values are captured on the
+ * grant as its last-known information (see [GrantedReplacementEffect.referenceSnapshot]).
  */
-class GrantReplacementEffectExecutor : EffectExecutor<GrantReplacementEffectEffect> {
+class GrantReplacementEffectExecutor(
+    private val cardRegistry: CardRegistry,
+) : EffectExecutor<GrantReplacementEffectEffect> {
 
     override val effectType: KClass<GrantReplacementEffectEffect> =
         GrantReplacementEffectEffect::class
@@ -58,11 +69,22 @@ class GrantReplacementEffectExecutor : EffectExecutor<GrantReplacementEffectEffe
             context.controllerId
         }
 
+        var replacement = effect.replacement
+        var referenceSnapshot: com.wingedsheep.engine.state.components.stack.EntitySnapshot? = null
+        val copyOf = (replacement as? EntersAsCopy)?.copyOf
+        if (copyOf != null && copyOf !is EffectTarget.SpecificEntity) {
+            val referenceId = context.resolveTarget(copyOf)
+                ?: return EffectResult.error(state, "No object for the granted copy effect to copy")
+            replacement = (replacement as EntersAsCopy).copy(copyOf = EffectTarget.SpecificEntity(referenceId))
+            referenceSnapshot = captureCopiableSnapshot(state, referenceId, cardRegistry)
+        }
+
         val grant = GrantedReplacementEffect(
             entityId = targetId,
             controllerId = controllerId,
-            replacement = effect.replacement,
-            duration = effect.duration
+            replacement = replacement,
+            duration = effect.duration,
+            referenceSnapshot = referenceSnapshot,
         )
 
         val newState = state.copy(
