@@ -404,7 +404,7 @@ class GatherCardsExecutor(
             val libraries = state.turnOrder.flatMap { state.getZone(ZoneKey(it, Zone.LIBRARY)) }.toSet()
             gathered.filter { it !in libraries }
         } else {
-            gathered
+            limitSearchDepth(state, searcher, gathered)
         }
         // Published for the pipeline's EmitLibrarySearchedEventEffect tail, so the searched
         // event names this searcher.
@@ -543,6 +543,22 @@ class GatherCardsExecutor(
      * can gather "each player's graveyard/hand/library" at once. Single-player references
      * collapse to a one-element list.
      */
+    /**
+     * "That player searches the top four cards of that library instead" (Aven Mindcensor, CR
+     * 701.23f): when a [com.wingedsheep.sdk.scripting.LimitLibrarySearch] covers [searcher], a
+     * library card is findable only if it is among the top N of its library. Non-library cards
+     * (the graveyard half of "search your graveyard and library") are untouched.
+     */
+    private fun limitSearchDepth(state: GameState, searcher: EntityId?, gathered: List<EntityId>): List<EntityId> {
+        if (searcher == null || gathered.isEmpty()) return gathered
+        val depth = KeywordActionAmountModifier.librarySearchDepth(state, searcher, predicateEvaluator)
+            ?: return gathered
+        val libraries = state.turnOrder.map { state.getZone(ZoneKey(it, Zone.LIBRARY)) }
+        val allLibraryCards = libraries.flatMapTo(HashSet()) { it }
+        val searchable = libraries.flatMapTo(HashSet()) { it.take(depth) }
+        return gathered.filter { it !in allLibraryCards || it in searchable }
+    }
+
     private fun resolvePlayers(
         player: Player,
         context: EffectContext,

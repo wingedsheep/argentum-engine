@@ -8,7 +8,9 @@ import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSour
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.LimitLibrarySearch
 import com.wingedsheep.sdk.scripting.ModifyKeywordActionAmount
+import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.references.Player
 
 /**
@@ -66,6 +68,60 @@ object KeywordActionAmountModifier {
                 }
                 ?.player
         }
+
+    /**
+     * How deep [searcherId] may search each library — the smallest `topCount` of every
+     * battlefield [LimitLibrarySearch] whose searcher scope covers them ("If an opponent would
+     * search a library, that player searches the top four cards of that library instead", CR
+     * 701.23f) — or null when no limit applies. Read once per search, at its gather, so the top
+     * N are fixed for the whole search.
+     */
+    fun librarySearchDepth(state: GameState, searcherId: EntityId, predicateEvaluator: PredicateEvaluator): Int? {
+        var depth: Int? = null
+        forEachApplicable<LimitLibrarySearch>(state, searcherId, predicateEvaluator, { it.appliesTo.player }) {
+            depth = minOf(depth ?: it.topCount, it.topCount)
+        }
+        return depth
+    }
+}
+
+/**
+ * Run [action] on every battlefield replacement of type [T] that applies to [playerId]: [playerOf]
+ * names the replacement's `player` scope (null skips it), matched relative to the source's
+ * projected controller, and every `restriction` must hold with [playerId] as controller.
+ */
+private inline fun <reified T : ReplacementEffect> forEachApplicable(
+    state: GameState,
+    playerId: EntityId,
+    predicateEvaluator: PredicateEvaluator,
+    playerOf: (T) -> Player?,
+    action: (T) -> Unit
+) {
+    val conditionEvaluator = predicateEvaluator.conditions
+    for (entityId in state.getBattlefield()) {
+        val replacementSource = state.getEntity(entityId)?.get<ReplacementEffectSourceComponent>() ?: continue
+        val sourceControllerId = state.projectedState.getController(entityId)
+
+        for (effect in replacementSource.replacementEffects) {
+            if (effect !is T) continue
+            val player = playerOf(effect) ?: continue
+
+            val matchesPlayer = when (player) {
+                Player.Each -> true
+                Player.You -> sourceControllerId != null && playerId == sourceControllerId
+                Player.EachOpponent ->
+                    sourceControllerId != null && state.isOpponentOf(playerId, sourceControllerId)
+                else -> false
+            }
+            if (!matchesPlayer) continue
+
+            val effectContext = EffectContext(
+                sourceId = entityId,
+                controllerId = playerId,
+            )
+            if (effect.restrictions.all { conditionEvaluator.evaluate(state, it, effectContext) }) action(effect)
+        }
+    }
 }
 
 /**
@@ -82,36 +138,9 @@ private fun applyAmountModifiers(
     playerOf: (EventPattern) -> Player?
 ): Int {
     if (originalCount <= 0) return originalCount
-    val conditionEvaluator = predicateEvaluator.conditions
     var adjusted = originalCount
-    for (entityId in state.getBattlefield()) {
-        val replacementSource = state.getEntity(entityId)?.get<ReplacementEffectSourceComponent>() ?: continue
-        val sourceControllerId = state.projectedState.getController(entityId)
-
-        for (effect in replacementSource.replacementEffects) {
-            if (effect !is ModifyKeywordActionAmount) continue
-            val player = playerOf(effect.appliesTo) ?: continue
-
-            val matchesPlayer = when (player) {
-                Player.Each -> true
-                Player.You -> sourceControllerId != null && playerId == sourceControllerId
-                Player.EachOpponent ->
-                    sourceControllerId != null && state.isOpponentOf(playerId, sourceControllerId)
-                else -> false
-            }
-            if (!matchesPlayer) continue
-
-            val effectContext = EffectContext(
-                sourceId = entityId,
-                controllerId = playerId,
-            )
-            val restrictionsHold = effect.restrictions.all { restriction ->
-                conditionEvaluator.evaluate(state, restriction, effectContext)
-            }
-            if (!restrictionsHold) continue
-
-            adjusted += effect.modifier
-        }
+    forEachApplicable<ModifyKeywordActionAmount>(state, playerId, predicateEvaluator, { playerOf(it.appliesTo) }) {
+        adjusted += it.modifier
     }
     return adjusted.coerceAtLeast(0)
 }

@@ -18341,6 +18341,18 @@ not update an existing copy.
     retargeted. Zero copies ("copy it for each …" over nothing) is no copy and is never resized; a
     card copied and then cast (CR 707.12, `CopyCardIntoCollection`) is not a spell copy and is
     untouched; copies of abilities are untouched. Multiple instances sum (two Staffs: two extra).
+- `LimitLibrarySearch(appliesTo, topCount, restrictions)` — a library search sees only the top
+  `topCount` cards of each library it looks through (CR 701.23f). `appliesTo` is
+  `EventPattern.SearchLibraryEvent(player)`, whose `player` is the **searcher** relative to the source's
+  (projected) controller (`Player.You` / `Player.EachOpponent` / `Player.Each`); the limit covers every
+  library that player searches, theirs or another player's. Applied at the search's own gather (the
+  `search = true` gather every `Patterns.Library.search*` recipe emits), so the top N are fixed for the
+  whole search — finding a card doesn't bring the next one in. Only library cards shrink: the graveyard
+  and hand halves of a multi-zone search are untouched. It is still a search: its "then shuffle"
+  shuffles the whole library and `SearchLibraryEvent` triggers fire. A look at the top N is not a
+  search and is never limited. Several instances don't stack — the smallest `topCount` wins.
+  - Aven Mindcensor: "If an opponent would search a library, that player searches the top four cards
+    of that library instead" → `LimitLibrarySearch(EventPattern.SearchLibraryEvent(Player.EachOpponent), topCount = 4)`.
 - `ModifyKeywordAction(prefixEffect, appliesTo)` — insert an extra effect *in front of* a keyword
   action (CR 614): replaces "[a matching permanent] <acts>" with "[prefixEffect], then that permanent
   <acts>". One type across keyword actions rather than one per action — `appliesTo` carries which

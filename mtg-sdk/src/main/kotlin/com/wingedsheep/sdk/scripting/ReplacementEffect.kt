@@ -1710,6 +1710,60 @@ data class ModifyKeywordAction(
 }
 
 /**
+ * Shrink a library search to the top [topCount] cards of the library (CR 701.23f) — "If an opponent
+ * would search a library, that player searches the top four cards of that library instead."
+ *
+ *  - Aven Mindcensor — `LimitLibrarySearch(EventPattern.SearchLibraryEvent(Player.EachOpponent), topCount = 4)`
+ *
+ * [appliesTo]'s `player` is the *searcher*, matched relative to the source's (projected) controller
+ * (`Player.You` / `Player.EachOpponent` / `Player.Each`), and the limit applies to every library that
+ * player searches — their own or another player's (Cranial Extraction cast by an opponent). Only the
+ * library portion of the search shrinks: "search your graveyard, hand, and library" still sees the
+ * whole graveyard and hand. The search is still a search (CR 701.23f): its "then shuffle" shuffles
+ * the whole library and "whenever a player searches their library" triggers fire. The top N are
+ * fixed once, when the search starts — finding one card doesn't bring the next card into it. A
+ * "look at the top N" is not a search and is never limited. Several instances don't stack: the
+ * smallest [topCount] wins.
+ *
+ * Why not [ModifyKeywordActionAmount]: it resizes a count the action announces, and a search
+ * announces none — it looks through the whole zone. Why not [ReplaceKeywordAction]: that replaces
+ * the action outright with another effect, while the search still happens here, over less of the
+ * library.
+ */
+@SerialName("LimitLibrarySearch")
+@Serializable
+data class LimitLibrarySearch(
+    override val appliesTo: EventPattern.SearchLibraryEvent,
+    val topCount: Int,
+    override val restrictions: List<Condition> = emptyList()
+) : ReplacementEffect {
+    init {
+        require(topCount >= 0) { "LimitLibrarySearch.topCount must be non-negative, was $topCount" }
+    }
+
+    override val description: String = buildString {
+        val who = when (appliesTo.player) {
+            Player.EachOpponent -> "an opponent"
+            Player.You -> "you"
+            else -> "a player"
+        }
+        val verb = if (who == "you") "search" else "searches"
+        val subject = if (who == "you") "you" else "that player"
+        append("If $who would search a library, $subject $verb the top ${numberWord(topCount)} cards of that library instead")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val newRestrictions = restrictions.map { it.applyTextReplacement(replacer) }
+        return if (newRestrictions.zip(restrictions).any { (n, o) -> n !== o }) copy(restrictions = newRestrictions) else this
+    }
+
+    private fun numberWord(n: Int): String = when (n) {
+        1 -> "one"; 2 -> "two"; 3 -> "three"; 4 -> "four"; 5 -> "five"; 6 -> "six"; 7 -> "seven"
+        else -> n.toString()
+    }
+}
+
+/**
  * Perform a keyword action (CR 701) [times] times instead of once (CR 614.1a) — "If you would
  * proliferate, proliferate twice instead." The sibling of [ModifyKeywordAction]: that one puts an
  * extra effect in front of the action, this one repeats the action itself.

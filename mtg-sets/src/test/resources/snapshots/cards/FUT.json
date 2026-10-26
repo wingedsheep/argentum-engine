@@ -1,3 +1,39 @@
+// Aven Mindcensor
+{
+    "name": "Aven Mindcensor",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Bird Wizard",
+    "oracleText": "Flash\nFlying\nIf an opponent would search a library, that player searches the top four cards of that library instead.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "LimitLibrarySearch",
+                "appliesTo": {
+                    "player": "EachOpponent"
+                },
+                "topCount": 4
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "rarity": "UNCOMMON",
+        "artist": "Rebecca Guay",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5b8ede8a-5317-4662-b964-a9bd202a4aab.jpg?1783943127"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Blade of the Sixth Pride
 {
     "name": "Blade of the Sixth Pride",
