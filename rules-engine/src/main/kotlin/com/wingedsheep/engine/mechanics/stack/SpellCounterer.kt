@@ -648,6 +648,7 @@ class SpellCounterer(
                 val countererMatches = when (pattern.counterer) {
                     Player.You -> countererId == controller
                     Player.EachOpponent -> countererId != controller
+                    Player.EachOtherPlayer -> countererId != controller
                     else -> true
                 }
                 if (countererMatches) return Triple(entityId, controller, effect)

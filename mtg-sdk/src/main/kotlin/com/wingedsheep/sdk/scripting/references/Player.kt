@@ -82,8 +82,7 @@ sealed interface Player {
     }
 
     /**
-     * Every player other than you, in turn order — "each other player" (Grave Pact, Zenith
-     * Chronicler's "each other player draws a card").
+     * Every player other than you, in turn order — "each other player" (Grave Pact).
      *
      * Not [EachOpponent]: CR 102.3 makes a player's opponents everyone *not on their team*, so in a
      * team game (Two-Headed Giant, CR 810) "each opponent" skips your teammate while "each other

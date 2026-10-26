@@ -1380,8 +1380,9 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
      * to one target creature that player controls" (Kaya, Spirits' Justice), where the scope names
      * how many players may be hit and the other two flags cap it at one each.
      *
-     * [Player.EachOpponent] (the default) is the "each other player" reading in every free-for-all
-     * game; [Player.Each] counts the whole table including you.
+     * [Player.EachOpponent] (the default) counts your opponents; [Player.EachOtherPlayer] counts every
+     * other player, teammates included (the two differ only in team games, CR 102.3); [Player.Each]
+     * counts the whole table including you.
      */
     @SerialName("PlayerCount")
     @Serializable
@@ -1389,6 +1390,7 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
         override val description: String = when (scope) {
             Player.EachOpponent -> "the number of opponents"
             Player.Each -> "the number of players"
+            Player.EachOtherPlayer -> "the number of other players"
             else -> "the number of ${scope.description}"
         }
     }
