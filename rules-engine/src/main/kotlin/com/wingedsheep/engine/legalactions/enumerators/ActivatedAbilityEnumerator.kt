@@ -1628,11 +1628,6 @@ class ActivatedAbilityEnumerator(
     }
 
     /**
-     * Is [granterId] a permanent that is on the battlefield and untapped? The payability gate for
-     * [AbilityCost.TapGrantingPermanent]; an unresolved granter (null) is treated as unpayable,
-     * since the cost names a specific permanent that must still be there to tap (CR 201.5a).
-     */
-    /**
      * The Unattach cost's payability gate (Sunforger's ruling): the permanent it detaches — the
      * source, or with [CostAtom.Unattach.ofGrantingPermanent] the granter — must be attached to
      * something. An unresolvable granter can't be unattached.
@@ -1649,6 +1644,11 @@ class ActivatedAbilityEnumerator(
             ?.targetId != null
     }
 
+    /**
+     * Is [granterId] a permanent that is on the battlefield and untapped? The payability gate for
+     * [AbilityCost.TapGrantingPermanent]; an unresolved granter (null) is treated as unpayable,
+     * since the cost names a specific permanent that must still be there to tap (CR 201.5a).
+     */
     private fun granterIsUntapped(state: com.wingedsheep.engine.state.GameState, granterId: EntityId?): Boolean {
         if (granterId == null) return false
         val granter = state.getEntity(granterId) ?: return false

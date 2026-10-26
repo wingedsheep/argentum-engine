@@ -838,13 +838,13 @@ class CostHandler(private val zones: ZoneTransitionService) {
         }
     }
 
-    /** Perform payment for a single [CostAtom] paid as an activated-ability cost. */
     /** Is [entityId] attached to something? The Unattach cost's payability gate. */
     private fun isAttached(state: GameState, entityId: EntityId): Boolean =
         state.getEntity(entityId)
             ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
             ?.targetId != null
 
+    /** Perform payment for a single [CostAtom] paid as an activated-ability cost. */
     private fun payAtom(
         state: GameState,
         atom: CostAtom,

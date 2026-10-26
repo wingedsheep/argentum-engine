@@ -35,6 +35,14 @@ class ToralfGodOfFuryScenarioTest : ScenarioTestBase() {
         toughness = 2
     }
 
+    private val indestructibleBear = card("Toralf Test Indestructible Bear") {
+        manaCost = "{1}{G}"
+        typeLine = "Creature — Bear"
+        power = 2
+        toughness = 2
+        keywords(com.wingedsheep.sdk.core.Keyword.INDESTRUCTIBLE)
+    }
+
     private val hammerAbilityId by lazy {
         ToralfGodOfFury.backFace!!.script.staticAbilities
             .filterIsInstance<GrantActivatedAbility>().single().ability.id
@@ -42,7 +50,7 @@ class ToralfGodOfFuryScenarioTest : ScenarioTestBase() {
 
     init {
         cardRegistry.register(ToralfGodOfFury)
-        cardRegistry.register(listOf(legend))
+        cardRegistry.register(listOf(legend, indestructibleBear))
 
         fun toralfBoard(): TestGame = scenario()
             .withPlayers("Player", "Opponent")
@@ -50,6 +58,7 @@ class ToralfGodOfFuryScenarioTest : ScenarioTestBase() {
             .withCardOnBattlefield(1, "Grizzly Bears")
             .withCardOnBattlefield(2, "Grizzly Bears")
             .withCardOnBattlefield(2, "Hill Giant")
+            .withCardOnBattlefield(2, "Toralf Test Indestructible Bear")
             .withCardInHand(1, "Lightning Bolt")
             .withLandsOnBattlefield(1, "Mountain", 1)
             .withActivePlayer(1)
@@ -65,7 +74,9 @@ class ToralfGodOfFuryScenarioTest : ScenarioTestBase() {
         context("Toralf, God of Fury") {
             test("excess noncombat damage to an opponent's creature is dealt again, never to that creature") {
                 val game = toralfBoard()
-                val theirBears = game.opponentsPermanent("Grizzly Bears")
+                // Indestructible, so the damaged creature is still on the battlefield when the trigger
+                // picks its target — only the exclusion keeps it out.
+                val theirBears = game.opponentsPermanent("Toralf Test Indestructible Bear")
                 val hillGiant = game.opponentsPermanent("Hill Giant")
 
                 game.castSpell(1, "Lightning Bolt", theirBears).error shouldBe null
@@ -73,7 +84,10 @@ class ToralfGodOfFuryScenarioTest : ScenarioTestBase() {
 
                 val decision = game.state.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
                 val legal = decision.legalTargets.getValue(0)
-                withClue("any target other than that permanent: the damaged Bears is excluded") {
+                withClue("the damaged creature survived, so it would be a candidate without the exclusion") {
+                    game.state.getBattlefield() shouldContain theirBears
+                }
+                withClue("any target other than that permanent: the damaged Bear is excluded") {
                     legal shouldNotContain theirBears
                     legal shouldContain hillGiant
                     legal shouldContain game.player2Id

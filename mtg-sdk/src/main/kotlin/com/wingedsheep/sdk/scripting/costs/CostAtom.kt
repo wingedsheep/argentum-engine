@@ -846,8 +846,8 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
     }
 
     /**
-     * Unattach the ability's source from the permanent it is attached to (CR 701.3d) — "Unattach
-     * this Equipment" (Sunforger). The cost twin of
+     * Unattach the ability's source — or, with [ofGrantingPermanent], the permanent that granted the
+     * ability — from what it is attached to (CR 701.3d) — "Unattach this Equipment" (Sunforger). The cost twin of
      * [com.wingedsheep.sdk.scripting.effects.UnattachEquipmentEffect]: the *effect* has existed for
      * a while (Stolen Uniform's rider), the *cost* had not.
      *
