@@ -2535,12 +2535,12 @@ class PredicateEvaluator(
 
             // Source-relative: the candidate card was exiled by the effect's source permanent, i.e.
             // its id is recorded in the source's LinkedExileComponent. Backs "target card exiled
-            // with ~" reanimation (The Darkness Crystal). Inert with no source context.
+            // with ~" reanimation (The Darkness Crystal). From an emblem, "~" is the object that
+            // created it (Tibalt, Cosmic Impostor's emblem), even after that object has left.
+            // Inert with no source context.
             StatePredicate.ExiledWithSource -> {
                 val sourceId = context?.sourceId ?: return false
-                state.getEntity(sourceId)
-                    ?.get<com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent>()
-                    ?.exiledIds?.contains(entityId) == true
+                entityId in com.wingedsheep.engine.handlers.effects.linkedexile.LinkedExileLookup.exiledWith(state, sourceId)
             }
 
             // Player-relative: the card sits in exile and the effect that put it there was

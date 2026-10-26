@@ -74,7 +74,19 @@ class CreatePermanentEmblemExecutor : EffectExecutor<CreatePermanentEmblemEffect
         val (emblemId, stateWithId) = state.newEntity()
         var emblemContainer: ComponentContainer = ComponentContainer.EMPTY
             .with(ControllerComponent(controllerId))
-            .with(EmblemSourceComponent(sourceName = sourceName, description = resolvedDescription))
+            .with(
+                EmblemSourceComponent(
+                    sourceName = sourceName,
+                    description = resolvedDescription,
+                    // The creating object's battlefield visit, so the emblem's "cards exiled with
+                    // <creator>" reads that visit's pile.
+                    creatorId = context.sourceId,
+                    creatorEntryTimestamp = context.sourceBattlefieldTimestamp
+                        ?: context.sourceId?.let {
+                            state.getEntity(it)?.get<com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent>()?.timestamp
+                        },
+                )
+            )
         if (chosenType != null) {
             emblemContainer = emblemContainer.withCastChoice(
                 ChoiceSlot.CREATURE_TYPE, ChoiceValue.TextChoice(chosenType)

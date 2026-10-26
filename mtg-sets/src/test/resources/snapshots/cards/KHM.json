@@ -8992,6 +8992,320 @@
     ]
 }
 
+// Valki, God of Lies
+{
+    "name": "Valki, God of Lies",
+    "manaCost": "{1}{B}",
+    "typeLine": "Legendary Creature — God",
+    "oracleText": "When Valki enters, each opponent reveals their hand. For each opponent, exile a creature card they revealed this way until Valki leaves the battlefield.\n{X}: Choose a creature card exiled with Valki with mana value X. Valki becomes a copy of that card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Valki, God of Lies:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "RevealHand",
+                                "target": "Controller"
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "gathered1"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered1",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "chooser": "SourceController",
+                                "filter": "creature",
+                                "storeSelected": "selected2",
+                                "prompt": "Choose a creature card to exile until Valki leaves the battlefield",
+                                "selectedLabel": "Exile",
+                                "showAllCards": true
+                            },
+                            {
+                                "type": "MoveUntilSourceLeaves",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "selected2"
+                                },
+                                "destination": "Exile"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "When Valki enters, each opponent reveals their hand. For each opponent, exile a creature card they revealed this way until Valki leaves the battlefield."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Valki, God of Lies:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{X}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "CompareNumericProperty",
+                                        "property": "MANA_VALUE",
+                                        "operator": "EQ",
+                                        "amount": "XValue"
+                                    }
+                                ]
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Choose a creature card exiled with Valki for Valki to copy",
+                            "selectedLabel": "Copy"
+                        },
+                        {
+                            "type": "EachPermanentBecomesCopyOfTarget",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "selected1"
+                            },
+                            "affected": "Self",
+                            "sourceFromAnyZone": true
+                        }
+                    ]
+                },
+                "descriptionOverride": "{X}: Choose a creature card exiled with Valki with mana value X. Valki becomes a copy of that card."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Tibalt, Cosmic Impostor",
+        "manaCost": "{5}{B}{R}",
+        "typeLine": "Legendary Planeswalker — Tibalt",
+        "oracleText": "As Tibalt enters, you get an emblem with \"You may play cards exiled with Tibalt, Cosmic Impostor, and you may spend mana as though it were mana of any color to cast those spells.\"\n+2: Exile the top card of each player's library.\n−3: Exile target artifact or creature.\n−8: Exile all graveyards. Add {R}{R}{R}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Tibalt, Cosmic Impostor:1",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": 2
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "player": "Each"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                },
+                                "linkToSource": true
+                            }
+                        ]
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Exile the top card of each player's library."
+                },
+                {
+                    "id": "Tibalt, Cosmic Impostor:2",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -3
+                    },
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Exile",
+                        "linkToSource": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature|artifact"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true
+                },
+                {
+                    "id": "Tibalt, Cosmic Impostor:3",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -8
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Graveyard",
+                                    "player": "Each"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                },
+                                "linkToSource": true
+                            },
+                            {
+                                "type": "AddMana",
+                                "color": "RED",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        ]
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true,
+                    "descriptionOverride": "Exile all graveyards. Add {R}{R}{R}."
+                }
+            ],
+            "replacementEffects": [
+                {
+                    "type": "OnEnterRunEffect",
+                    "effect": {
+                        "type": "CreatePermanentEmblem",
+                        "ownedStaticAbilities": [
+                            {
+                                "type": "MayPlayCardsFromExile",
+                                "filter": {
+                                    "statePredicates": [
+                                        "ExiledWithSource"
+                                    ]
+                                },
+                                "withAnyManaColor": true
+                            }
+                        ],
+                        "emblemDescription": "You may play cards exiled with Tibalt, Cosmic Impostor, and you may spend mana as though it were mana of any color to cast those spells."
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "114",
+            "rarity": "MYTHIC",
+            "artist": "Yongjae Choi",
+            "imageUri": "https://cards.scryfall.io/normal/back/e/a/ea7e4c65-b4c4-4795-9475-3cba71c50ea5.jpg?1783928244",
+            "rulings": [
+                {
+                    "date": "2021-02-05",
+                    "text": "The emblem given to you by Tibalt allows you to play cards exiled with that specific Tibalt, Cosmic Impostor, even after that Tibalt leaves the battlefield. If a different Tibalt, Cosmic Impostor comes under your control, it's a new object (even if it's represented by the same card). Of course, the new Tibalt will also give you an emblem so you can play the cards he exiles."
+                },
+                {
+                    "date": "2021-02-05",
+                    "text": "The cards exiled by Tibalt's loyalty abilities are all exiled face up."
+                },
+                {
+                    "date": "2021-02-05",
+                    "text": "While resolving Tibalt's last ability, you'll add {R}{R}{R} even if you don't exile any cards."
+                }
+            ]
+        },
+        "startingLoyalty": 5,
+        "colorIdentityOverride": [
+            "BLACK",
+            "RED"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "MYTHIC",
+        "artist": "Yongjae Choi",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea7e4c65-b4c4-4795-9475-3cba71c50ea5.jpg?1783928244",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "If Valki leaves the battlefield before its enters-the-battlefield ability resolves, each opponent will reveal their hand, but no cards will be exiled."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If there are no creature cards exiled with Valki with mana value equal to the value of X as Valki's activated ability resolves, nothing happens. God of Lies, indeed."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Valki copies the printed values of the exiled creature card. Notably, once Valki becomes a copy of another creature card, he won't have his own printed activated ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ],
+    "layout": "MODAL_DFC"
+}
+
 // Valkyrie Harbinger
 {
     "name": "Valkyrie Harbinger",

@@ -8,12 +8,13 @@ import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.state.components.battlefield.MayCastFromLinkedExileUsedThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.emblemStaticAbilitiesOf
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.MayPlayCardsFromExile
 
 /**
  * Live [MayPlayPermission]s derived from [MayPlayCardsFromExile] static abilities on the
- * battlefield — "During your turn, you may play cards you don't own with stash counters on them
+ * battlefield and on emblems — "During your turn, you may play cards you don't own with stash counters on them
  * from exile" (Tinybones, Bauble Burglar).
  *
  * These permissions are *not* stored on [GameState]: a filter-defined static grant has to be
@@ -91,8 +92,8 @@ internal object StaticMayPlayGrants {
 
     /**
      * The [MayPlayCardsFromExile] abilities [playerId] controls, paired with the permanent that
-     * grants them. Empty unless [playerId] controls such a permanent — their conditions are gated
-     * later, by the shared permission read path.
+     * grants them (or the emblem that has them). Empty unless [playerId] controls such a permanent
+     * or has such an emblem — their conditions are gated later, by the shared permission read path.
      */
     private fun grantsFor(
         state: GameState,
@@ -113,6 +114,11 @@ internal object StaticMayPlayGrants {
                 if (ability !is MayPlayCardsFromExile) continue
                 grants.add(granterId to ability)
             }
+        }
+        // An emblem the player has (Tibalt, Cosmic Impostor's "You may play cards exiled with
+        // Tibalt") grants from outside every zone; the emblem entity stands in for the granter.
+        for ((emblemId, ability) in state.emblemStaticAbilitiesOf(playerId)) {
+            if (ability is MayPlayCardsFromExile) grants.add(emblemId to ability)
         }
         return grants
     }

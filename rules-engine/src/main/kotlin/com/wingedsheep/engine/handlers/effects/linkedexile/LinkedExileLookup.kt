@@ -5,6 +5,7 @@ import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimes
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.EmblemSourceComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
 import com.wingedsheep.sdk.core.Zone
@@ -59,6 +60,30 @@ object LinkedExileLookup {
      */
     fun exiledCard(state: GameState, sourceId: EntityId?, index: Int = 0): EntityId? =
         exiledCards(state, sourceId).getOrNull(index)
+
+    /**
+     * The pile an ability of [sourceId] means by "cards exiled with ~". For a permanent that is its
+     * own pile. For an emblem whose text names the object that created it — "You may play cards
+     * exiled with Tibalt, Cosmic Impostor" — it is that creator's battlefield visit
+     * ([EmblemSourceComponent.creatorEntryTimestamp]): the live pile while that visit lasts, then the
+     * retained pile of the departed visit, so the cards stay covered after Tibalt leaves (and the
+     * cards a −8 that killed him exiled are added there) while a later Tibalt — a new object, CR
+     * 400.7 — is a different visit.
+     */
+    fun exiledWith(state: GameState, sourceId: EntityId): List<EntityId> {
+        val container = state.getEntity(sourceId) ?: return emptyList()
+        val own = container.get<LinkedExileComponent>()?.exiledIds.orEmpty()
+        val emblem = container.get<EmblemSourceComponent>() ?: return own
+        val creatorId = emblem.creatorId ?: return own
+        val visit = emblem.creatorEntryTimestamp ?: return own
+        val creator = state.getEntity(creatorId)
+        val creatorPile = if (creator?.get<BattlefieldEntryTimestampComponent>()?.timestamp == visit) {
+            creator.get<LinkedExileComponent>()?.exiledIds.orEmpty()
+        } else {
+            state.departedLinkedExile[visit].orEmpty()
+        }
+        return own + creatorPile
+    }
 
     /**
      * Whether [entityId] is currently in its owner's exile zone. Uses the owner-keyed zone directly

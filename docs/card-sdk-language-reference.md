@@ -7769,6 +7769,15 @@ work for abilities-on-stack (which carry no `CardComponent`).
   Darkness Crystal: `TargetObject(filter = TargetFilter(GameObjectFilter.Creature.exiledWithSource(),
   zone = Zone.EXILE))`. Resolves against `PredicateContext.sourceId`; inert with no source, and never
   matches in group-static projection or trigger-gating contexts.
+  **On an emblem**, the source is the object that created the emblem: Tibalt, Cosmic Impostor's "As
+  Tibalt enters, you get an emblem with 'You may play cards exiled with Tibalt, Cosmic Impostor, and you
+  may spend mana as though it were mana of any color to cast those spells'" is
+  `OnEnterRun(Effects.CreatePermanentEmblem(ownedStaticAbilities = listOf(MayPlayCardsFromExile(GameObjectFilter.Any.exiledWithSource(), withAnyManaColor = true)), …))`,
+  with Tibalt's loyalty abilities exiling via `linkToSource = true` / `ExileLinkedToSource`. The emblem
+  records its creator's battlefield visit and reads that visit's pile — live while Tibalt is on the
+  battlefield, the retained departed-visit pile after he leaves (including what a −8 that cost his last
+  loyalty exiled) — so his cards stay playable after he dies, while a later Tibalt (a new object,
+  CR 400.7) is a different visit with its own emblem.
 - `ExiledByYou` (filter builder `exiledByYou()`) — player-relative: the candidate card is in exile and
   the spell or ability that exiled it was controlled by the evaluating player
   (`PredicateContext.controllerId`) — "if it was exiled by an ability you controlled" (Evelyn, the
@@ -12351,7 +12360,8 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   spells cast **through this permission only** (CR 118.14 / 609.4b) — the reason it rides here instead of
   being a blanket `SpendAnyManaTypeForSpells`. Nothing else is waived: normal timing and all costs still
   apply, so a stash-countered land is playable only during your main phase with an empty stack.
-  Engine-side, `StaticMayPlayGrants` derives a live `MayPlayPermission` per matching exiled card, which
+  An emblem may carry it too (`CreatePermanentEmblem(ownedStaticAbilities = …)`; Tibalt, Cosmic
+  Impostor). Engine-side, `StaticMayPlayGrants` derives a live `MayPlayPermission` per matching exiled card, which
   is unioned into `GameState.activeMayPlayFor`, so the existing exile play/cast machinery (enumeration,
   cast handler, land handler, cost paths, and the client's `playableFromExile` ghost-card affordance)
   covers it with no separate code path.

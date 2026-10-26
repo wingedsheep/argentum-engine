@@ -1665,6 +1665,12 @@ sealed interface StatePredicate {
      *
      * Backs "target creature card exiled with ~" reanimation abilities (The Darkness Crystal), where
      * the ability retrieves a specific card from among those its own permanent banished.
+     *
+     * On an emblem's ability, the source is **the object that created the emblem** — "You may play
+     * cards exiled with Tibalt, Cosmic Impostor" (Tibalt's emblem) — and that keeps meaning the
+     * same object after it leaves the battlefield: the cards it exiled (even by an ability that
+     * resolved after it died) stay covered, and a new object made from the same card (CR 400.7) is
+     * a different Tibalt whose exiles are not.
      */
     @SerialName("ExiledWithSource")
     @Serializable
