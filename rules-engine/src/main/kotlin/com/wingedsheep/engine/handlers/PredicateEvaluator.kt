@@ -580,8 +580,12 @@ class PredicateEvaluator(
                 triggeringPlayer != null && controllerId == triggeringPlayer
             }
             is ControllerPredicate.ControlledByReferencedPlayer -> {
-                if ((predicate.target as? EffectTarget.PlayerRef)?.player == Player.EachDefendingPlayer) {
-                    return controllerId in com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state)
+                when ((predicate.target as? EffectTarget.PlayerRef)?.player) {
+                    Player.EachDefendingPlayer ->
+                        return controllerId in com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state)
+                    Player.EachAttackedPlayer ->
+                        return controllerId in com.wingedsheep.engine.mechanics.combat.CombatDefenders.attackedPlayersInApnapOrder(state)
+                    else -> {}
                 }
                 val referenced = context.resolvePlayerTarget(predicate.target)
                     ?: resolveReferencedPlayerFromState(state, state.projectedState, predicate.target, context)
@@ -1658,12 +1662,16 @@ class PredicateEvaluator(
             triggeringPlayer != null && playerId == triggeringPlayer
         }
         is ControllerPredicate.ControlledByReferencedPlayer -> {
-            if ((predicate.target as? EffectTarget.PlayerRef)?.player == Player.EachDefendingPlayer) {
-                playerId in com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state)
-            } else {
-                val referenced = context.resolvePlayerTarget(predicate.target)
-                    ?: resolveReferencedPlayerFromState(state, projected, predicate.target, context)
-                referenced?.let { playerId == it } ?: false
+            when ((predicate.target as? EffectTarget.PlayerRef)?.player) {
+                Player.EachDefendingPlayer ->
+                    playerId in com.wingedsheep.engine.mechanics.combat.CombatDefenders.allDefendingPlayersInApnapOrder(state)
+                Player.EachAttackedPlayer ->
+                    playerId in com.wingedsheep.engine.mechanics.combat.CombatDefenders.attackedPlayersInApnapOrder(state)
+                else -> {
+                    val referenced = context.resolvePlayerTarget(predicate.target)
+                        ?: resolveReferencedPlayerFromState(state, projected, predicate.target, context)
+                    referenced?.let { playerId == it } ?: false
+                }
             }
         }
         ControllerPredicate.OwnedByYou, ControllerPredicate.OwnedByOpponent,

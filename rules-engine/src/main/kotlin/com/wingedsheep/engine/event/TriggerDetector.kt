@@ -3837,16 +3837,6 @@ class TriggerDetector(
                 )
             }
 
-            // "deal combat damage to a player" batches per damaged player: the ability
-            // triggers once for each player dealt combat damage by one or more matching
-            // creatures (multiple matching creatures hitting the same player still fire a
-            // single trigger). `triggeringPlayerId` is set to the damaged player so effects
-            // can reference "that player" (Vaan, Street Thief); `triggeringEntityId` is an
-            // arbitrary matching source for that player — batch triggers don't dispatch
-            // per source, so cards needing per-source dispatch use a singular trigger event.
-            // The "or battle" variant also fires once per battle hit (no triggering player).
-            // Either way the matching sources that hit that recipient are captured, so a
-            // payoff can act on "those creatures" (Zurgo and Ojutai).
             // "… to one or more players": a single trigger for the whole batch, whoever was hit,
             // capturing every matching source. There is no single damaged player to bind.
             if (trigger.toOneOrMorePlayers) {
@@ -3866,6 +3856,16 @@ class TriggerDetector(
                 return
             }
 
+            // "deal combat damage to a player" batches per damaged player: the ability
+            // triggers once for each player dealt combat damage by one or more matching
+            // creatures (multiple matching creatures hitting the same player still fire a
+            // single trigger). `triggeringPlayerId` is set to the damaged player so effects
+            // can reference "that player" (Vaan, Street Thief); `triggeringEntityId` is an
+            // arbitrary matching source for that player — batch triggers don't dispatch
+            // per source, so cards needing per-source dispatch use a singular trigger event.
+            // The "or battle" variant also fires once per battle hit (no triggering player).
+            // Either way the matching sources that hit that recipient are captured, so a
+            // payoff can act on "those creatures" (Zurgo and Ojutai).
             for ((recipientId, infos) in matchingInfos.groupBy { it.targetPlayerId }) {
                 triggers.add(
                     PendingTrigger(

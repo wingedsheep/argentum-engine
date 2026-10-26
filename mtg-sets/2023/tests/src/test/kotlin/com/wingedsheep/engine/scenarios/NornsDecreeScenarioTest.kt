@@ -6,6 +6,7 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.onc.cards.NornsDecree
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.assertions.withClue
@@ -22,9 +23,16 @@ import io.kotest.matchers.shouldBe
  */
 class NornsDecreeScenarioTest : FunSpec({
 
+    val walker = card("Test Decree Walker") {
+        manaCost = "{3}"
+        typeLine = "Legendary Planeswalker — Test"
+        startingLoyalty = 3
+        oracleText = ""
+    }
+
     fun threePlayer(): Pair<GameTestDriver, List<EntityId>> {
         val d = GameTestDriver()
-        d.registerCards(TestCards.all + listOf(NornsDecree))
+        d.registerCards(TestCards.all + listOf(NornsDecree, walker))
         val players = d.initMultiplayer(List(3) { Deck.of("Plains" to 40) })
         d.passPriorityUntil(Step.PRECOMBAT_MAIN)
         d.activePlayer shouldBe players[0]
@@ -87,6 +95,22 @@ class NornsDecreeScenarioTest : FunSpec({
 
         d.passPriorityUntil(Step.DECLARE_ATTACKERS)
         d.declareAttackers(p[0], mapOf(bears to p[2])).error shouldBe null
+
+        d.stackSize shouldBe 0
+        d.getHandSize(p[0]) shouldBe hand
+    }
+
+    test("attacking only a poisoned player's planeswalker doesn't count that player as being attacked") {
+        val (d, p) = threePlayer()
+        d.putPermanentOnBattlefield(p[1], "Norn's Decree")
+        d.poison(p[1], 3)
+        val pw = d.putPermanentOnBattlefield(p[1], "Test Decree Walker")
+        d.replaceState(d.state.updateEntity(pw) { it.with(CountersComponent().withAdded(CounterType.LOYALTY, 3)) })
+        val bears = d.ready(p[0], "Grizzly Bears")
+        val hand = d.getHandSize(p[0])
+
+        d.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        d.declareAttackers(p[0], mapOf(bears to pw)).error shouldBe null
 
         d.stackSize shouldBe 0
         d.getHandSize(p[0]) shouldBe hand
