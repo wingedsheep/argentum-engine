@@ -111,6 +111,10 @@ internal object AuraTokenHostChooser {
         val originalId = context.resolveTarget(effect.target, state) ?: return emptyList()
         val original = state.getEntity(originalId)?.copiableCardComponent() ?: return emptyList()
         val prospective = CopyExceptionApplier.apply(original, effect.copyExceptions).copy(ownerId = controllerId)
+        // An Aura that's also a creature can't enchant anything (CR 303.4d), so a copy whose
+        // exceptions make it a creature ("except they're 3/3 Dragon creatures" — Astral Dragon)
+        // has no legal host and isn't created at all (CR 303.4g).
+        if (prospective.typeLine.isCreature) return emptyList()
         // A copy is a different object: it never inherits the original Aura's source exception.
         val (previewId, allocated) = state.newEntity()
         val preview = allocated.withEntity(previewId, ComponentContainer.of(prospective, ControllerComponent(controllerId)))

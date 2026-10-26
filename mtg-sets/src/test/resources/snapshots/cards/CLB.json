@@ -37,6 +37,101 @@
     ]
 }
 
+// Astral Dragon
+{
+    "name": "Astral Dragon",
+    "manaCost": "{6}{U}{U}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nProject Image — When this creature enters, create two tokens that are copies of target noncreature permanent, except they're 3/3 Dragon creatures in addition to their other types, and they have flying.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Astral Dragon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "overridePower": 3,
+                    "overrideToughness": 3,
+                    "addedKeywords": [
+                        "FLYING"
+                    ],
+                    "addedSubtypes": [
+                        "Dragon"
+                    ],
+                    "addCardTypes": [
+                        "CREATURE"
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "noncreature permanent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Project Image — Create two tokens that are copies of target noncreature permanent, except they're 3/3 Dragon creatures with flying."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "613",
+        "rarity": "RARE",
+        "artist": "Anastasia Ovchinnikova",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5bf8b03-1f5c-46c5-a684-ae5c04630286.jpg?1783922540",
+        "rulings": [
+            {
+                "date": "2022-06-10",
+                "text": "Except for power, toughness, types, and the flying ability, the token copies exactly what was printed on the original permanent and nothing else (unless that permanent is copying something else or is a token; see below). It doesn't copy whether that permanent is tapped or untapped, whether it has any counters on it or Auras and Equipment attached to it, and so on."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "If the copied permanent has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "If the copied permanent is a token, the new token that's created copies the original characteristics of that token, with the exceptions noted above."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "If the copied permanent is copying something else, then the token enters the battlefield as whatever that permanent copied, with the exceptions noted above."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "Any enters-the-battlefield abilities of the copied permanent will trigger when the token enters the battlefield. Any “as [this permanent] enters the battlefield” or “[this permanent] enters the battlefield with” abilities of the chosen permanent will also work."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "If you target an Aura with Astral Dragon's ability, no tokens will be created."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "Since the tokens are creatures, they can't attack or {T} until your next turn if they don't have haste."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Avenging Hunter
 {
     "name": "Avenging Hunter",
@@ -960,6 +1055,97 @@
     ]
 }
 
+// Earthquake Dragon
+{
+    "name": "Earthquake Dragon",
+    "manaCost": "{14}{G}",
+    "typeLine": "Creature — Elemental Dragon",
+    "oracleText": "This spell costs {X} less to cast, where X is the total mana value of Dragons you control.\nFlying, trample\n{2}{G}, Sacrifice a land: Return this card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 10,
+        "toughness": 10
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Earthquake Dragon:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{G}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "land"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
+                },
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Return this card from your graveyard to your hand"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "TotalPropertyAmongPermanentsYouControl",
+                        "property": "ManaValue",
+                        "filter": "permanent Dragon"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "RARE",
+        "artist": "Johan Grenier",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bfedfd30-8075-429e-a0fa-4919920c8632.jpg?1783922715",
+        "rulings": [
+            {
+                "date": "2022-06-10",
+                "text": "If a permanent has {X} in its mana cost, X is 0 when calculating its mana value."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "The total cost to cast Earthquake Dragon is locked in before you pay that cost. For example, if you control three Dragons, each with mana value 4, including one you can sacrifice to add {C}, the total cost of Earthquake Dragon is {2}{G}. Then you can sacrifice the Dragon as you activate mana abilities just before paying the cost."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "If the total mana value of Dragons you control is 14 or greater, Earthquake Dragon costs {G} to cast."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "Earthquake Dragon's last ability can be activated only if it is in your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Feywild Caretaker
 {
     "name": "Feywild Caretaker",
@@ -1021,6 +1207,54 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Ganax, Astral Hunter
+{
+    "name": "Ganax, Astral Hunter",
+    "manaCost": "{4}{R}",
+    "typeLine": "Legendary Creature — Dragon",
+    "oracleText": "Flying\nWhenever Ganax or another Dragon you control enters, create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")\nChoose a Background (You can have a Background as a second commander.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Partner",
+            "kind": "ChooseABackground"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ganax, Astral Hunter:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Dragon ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                },
+                "descriptionOverride": "Whenever Ganax or another Dragon you control enters, create a Treasure token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "rarity": "UNCOMMON",
+        "artist": "Aaron Miller",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f5bb319-29b2-4a7c-82e9-f8b5e47909a1.jpg?1783922742"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1291,6 +1525,60 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Korlessa, Scale Singer
+{
+    "name": "Korlessa, Scale Singer",
+    "manaCost": "{G}{U}",
+    "typeLine": "Legendary Creature — Dragon Bard",
+    "oracleText": "You may look at the top card of your library any time.\nYou may cast Dragon spells from the top of your library.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            "LookAtTopOfLibrary",
+            {
+                "type": "CastSpellTypesFromTopOfLibrary",
+                "filter": "Dragon"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "280",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Ejsing",
+        "flavorText": "\"Would you like a song of wing-wind and fire, or one of gentle heartbeats atop a golden hoard?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fe2d08ac-6c24-4158-87a1-c59d1cd447a8.jpg?1783922690",
+        "rulings": [
+            {
+                "date": "2022-06-10",
+                "text": "You can look at the top card of your library whenever you want (with one restriction; see below), even if you don't have priority. This action doesn't use the stack. Knowing what that card is becomes part of the information you have access to, just like you can look at the cards in your hand."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "If the top card of your library changes while you're casting a spell, playing a land, or activating an ability, you can't look at the new top card until you finish doing so. This means that if you cast a spell from the top of your library, you can't look at the next one until you're done paying for that spell."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "Korlessa doesn't change when you can cast Dragon spells. Normally, this means during your main phase when the stack is empty, although flash may change this."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "You'll still pay all costs for the spell, including additional costs. You may also pay alternative costs if any are available."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "The top card of your library isn't in your hand, so you can't take other actions that would normally be allowed from your hand, such as discarding it due to an effect or activating a cycling ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
     ]
 }
 
@@ -1739,6 +2027,69 @@
     ]
 }
 
+// Thrakkus the Butcher
+{
+    "name": "Thrakkus the Butcher",
+    "manaCost": "{3}{R}{G}",
+    "typeLine": "Legendary Creature — Dragon Peasant",
+    "oracleText": "Trample\nWhenever Thrakkus attacks, double the power of each Dragon you control until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thrakkus the Butcher:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature Dragon ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "EntityProperty",
+                            "entity": "IterationEntity",
+                            "numericProperty": "Power"
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever Thrakkus attacks, double the power of each Dragon you control until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "295",
+        "rarity": "UNCOMMON",
+        "artist": "Néstor Ossandón Leal",
+        "flavorText": "Somehow, he never seems to run out of fresh meat.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/2255d1e4-f387-4187-8c10-7d0009f6ec79.jpg?1783922685",
+        "rulings": [
+            {
+                "date": "2022-06-10",
+                "text": "To double a creature's power, that creature gets +X/+0, where X is the power of that creature as the triggered ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // White Plume Adventurer
 {
     "name": "White Plume Adventurer",
@@ -1857,5 +2208,80 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Wrathful Red Dragon
+{
+    "name": "Wrathful Red Dragon",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhenever a Dragon you control is dealt damage, it deals that much damage to any target that isn't a Dragon.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Wrathful Red Dragon:1",
+                "trigger": {
+                    "type": "DamageReceivedEvent",
+                    "recipient": {
+                        "cardPredicates": [
+                            "IsPermanent",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Dragon"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "damageSource": "TriggeringEntity"
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0",
+                    "descriptionOverride": "any target that isn't a Dragon",
+                    "filter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Not",
+                                "predicate": {
+                                    "type": "HasSubtype",
+                                    "subtype": "Dragon"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever a Dragon you control is dealt damage, it deals that much damage to any target that isn't a Dragon."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"We'll put it all back! The gems, the gold, the chalice that would've looked great on my mantle; we'll put everythi—\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/acd207de-eec3-4d82-b8b9-b1e60a7bad12.jpg?1783922724"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }

@@ -2419,6 +2419,85 @@
     ]
 }
 
+// Return of the Wildspeaker
+{
+    "name": "Return of the Wildspeaker",
+    "manaCost": "{4}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Draw cards equal to the greatest power among non-Human creatures you control.\n• Non-Human creatures you control get +3/+3 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotSubtype",
+                                        "subtype": "Human"
+                                    }
+                                ]
+                            },
+                            "aggregation": "MAX",
+                            "property": "POWER"
+                        }
+                    },
+                    "description": "Draw cards equal to the greatest power among non-Human creatures you control"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "NotSubtype",
+                                            "subtype": "Human"
+                                        }
+                                    ],
+                                    "controllerPredicate": "ControlledByYou"
+                                }
+                            }
+                        },
+                        "body": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "description": "Non-Human creatures you control get +3/+3 until end of turn"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "rarity": "RARE",
+        "artist": "Chris Rallis",
+        "flavorText": "\"The curse is broken.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/8/b88a4943-bd1b-4d10-9cd3-b2ab91b25c10.jpg?1783932604"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Rosethorn Halberd
 {
     "name": "Rosethorn Halberd",

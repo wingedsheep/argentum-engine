@@ -3845,6 +3845,62 @@
     ]
 }
 
+// Thunderbreak Regent
+{
+    "name": "Thunderbreak Regent",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhenever a Dragon you control becomes the target of a spell or ability an opponent controls, this creature deals 3 damage to that player.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thunderbreak Regent:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "targetFilter": "permanent Dragon ctrl:you",
+                    "byOpponent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "ControllerOfCause"
+                    }
+                },
+                "descriptionOverride": "Whenever a Dragon you control becomes the target of a spell or ability an opponent controls, this creature deals 3 damage to that player."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "flavorText": "Attracting a dragon's attention may be the last mistake you make.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2b9cf2b-efe3-4815-be18-c3b69ee762f2.jpg?1783938585",
+        "rulings": [
+            {
+                "date": "2015-02-25",
+                "text": "Thunderbreak Regent's ability will resolve before the spell or ability that caused it to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Tread Upon
 {
     "name": "Tread Upon",
