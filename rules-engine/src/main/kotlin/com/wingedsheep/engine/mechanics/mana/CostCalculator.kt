@@ -1678,8 +1678,42 @@ class CostCalculator(
     }
 
     /** Match announced colored payments, including hybrid halves, without spilling into generic. */
-    private fun reduceOptionalColored(cost: ManaCost, reductions: List<ManaSymbol>, lifePips: List<Color>): ManaCost {
-        if (reductions.isEmpty()) return cost
+    private fun reduceOptionalColored(cost: ManaCost, reductions: List<ManaSymbol>, lifePips: List<Color>): ManaCost =
+        matchColoredReductions(cost, reductions, lifePips).first
+
+    /**
+     * Remove colored mana symbols from a cost. Each reduction removes at most one pip it can pay
+     * for: an exact pip, or a hybrid or Phyrexian pip with that color as an option (Morophon's
+     * ruling: "{2}{W/U}{W/U}" may be reduced as "{2}{W}{U}"; CR 601.2b, 107.4e-f). Unmatched
+     * reductions are dropped — they never touch generic mana.
+     */
+    private fun reduceColoredCost(cost: ManaCost, symbolsToRemove: List<ManaSymbol>): ManaCost =
+        matchColoredReductions(cost, symbolsToRemove, emptyList()).first
+
+    /**
+     * Remove colored mana symbols from a cost, with overflow to generic reduction (CR 118.7b-c).
+     * Pips are matched as in [reduceColoredCost]; excess that can't match reduces generic mana.
+     * Used for Eluge: "{U} less for each flood-counter land" — if more {U} reductions
+     * than blue pips, excess reduces generic cost.
+     */
+    private fun reduceColoredCostWithOverflow(cost: ManaCost, symbolsToRemove: List<ManaSymbol>): ManaCost {
+        val (result, unmatched) = matchColoredReductions(cost, symbolsToRemove, emptyList())
+        return if (unmatched > 0) reduceGenericCost(result, unmatched) else result
+    }
+
+    /**
+     * Assign each colored reduction to a distinct pip of [cost] it can pay for — an exact pip first,
+     * else a hybrid or Phyrexian pip offering its color (the payer announces paying that half,
+     * CR 601.2b, 107.4e-f) — maximising how many reductions land. Among non-exact pips the first
+     * in cost order wins, and the overflow path takes such a pip before spilling into generic:
+     * a fixed tie-break where CR 601.2b would let the payer choose. Pips in [lifePips] are reserved: the
+     * caster pays those Phyrexian symbols with life. Returns the reduced cost and how many
+     * reductions found no pip.
+     */
+    private fun matchColoredReductions(
+        cost: ManaCost, reductions: List<ManaSymbol>, lifePips: List<Color>,
+    ): Pair<ManaCost, Int> {
+        if (reductions.isEmpty()) return cost to 0
         val reserved = mutableSetOf<Int>()
         for (color in lifePips) {
             val index = cost.symbols.indices.firstOrNull { it !in reserved && cost.symbols[it] == ManaSymbol.Phyrexian(color) }
@@ -1714,48 +1748,8 @@ class CostCalculator(
             return false
         }
         reductions.indices.forEach { assign(it, mutableSetOf()) }
-        return ManaCost(cost.symbols.filterIndexed { index, _ -> index !in assignments })
-    }
-
-    /**
-     * Remove specific colored mana symbols from a mana cost.
-     * Each symbol in symbolsToRemove removes at most one matching colored symbol from the cost.
-     * Does not affect generic mana.
-     */
-    private fun reduceColoredCost(cost: ManaCost, symbolsToRemove: List<ManaSymbol>): ManaCost {
-        val remainingSymbols = cost.symbols.toMutableList()
-
-        for (symbolToRemove in symbolsToRemove) {
-            val index = remainingSymbols.indexOfFirst { it == symbolToRemove }
-            if (index >= 0) {
-                remainingSymbols.removeAt(index)
-            }
-        }
-
-        return ManaCost(remainingSymbols)
-    }
-
-    /**
-     * Remove colored mana symbols from a cost, with overflow to generic reduction.
-     * First removes matching colored symbols; excess that can't match reduces generic mana.
-     * Used for Eluge: "{U} less for each flood-counter land" — if more {U} reductions
-     * than blue pips, excess reduces generic cost.
-     */
-    private fun reduceColoredCostWithOverflow(cost: ManaCost, symbolsToRemove: List<ManaSymbol>): ManaCost {
-        val remainingSymbols = cost.symbols.toMutableList()
-        var overflowReduction = 0
-
-        for (symbolToRemove in symbolsToRemove) {
-            val index = remainingSymbols.indexOfFirst { it == symbolToRemove }
-            if (index >= 0) {
-                remainingSymbols.removeAt(index)
-            } else {
-                overflowReduction++
-            }
-        }
-
-        val result = ManaCost(remainingSymbols)
-        return if (overflowReduction > 0) reduceGenericCost(result, overflowReduction) else result
+        return ManaCost(cost.symbols.filterIndexed { index, _ -> index !in assignments }) to
+            (reductions.size - assignments.size)
     }
 
     /**

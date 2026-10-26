@@ -11150,7 +11150,11 @@ staticAbility {
   and the hand-cast enumerator's `maxAffordableX` counts it. Applies to the printed and escape
   costs; face casts and other alternative bases still price X symbolically, and `xManaRestriction`
   keeps X apart),
-  `ReduceColored(symbols)`, `ReduceColoredPerUnit(symbols, source)`,
+  `ReduceColored(symbols)` (each pip removes one cost pip it could pay for — an exact pip first,
+  else a hybrid, monocolor-hybrid or Phyrexian pip offering that color, matched to reduce as many
+  as possible; never spills into generic, so Morophon's `ReduceColored("{W}{U}{B}{R}{G}")` takes
+  `{2}{W/U}{W/U}` to `{2}`), `ReduceColoredPerUnit(symbols, source)` (same pip matching; the excess
+  reduces generic, CR 118.7c),
   `ReduceColoredIfAnyTargetMatches(symbols, filter)` (target-gated **colored** reduction — the
   colored analogue of the `FixedIfAnyTargetMatches` reduction source, which only reduces generic;
   removes the given colored pips if the spell targets a matching object. Brush Off's "costs
