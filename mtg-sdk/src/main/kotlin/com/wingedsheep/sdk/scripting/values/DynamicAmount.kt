@@ -908,7 +908,7 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
      * [sourceFilter] narrows the sum to damage from sources matching it, each judged as it stood
      * when it dealt the damage (the same frozen record and reading as
      * [com.wingedsheep.sdk.scripting.predicates.StatePredicate.WasDealtDamageThisTurnBy]: controller,
-     * creature-ness, creature subtypes and name). [excludeSelf] drops damage the source dealt to
+     * creature-ness, instant/sorcery-ness, subtypes and name). [excludeSelf] drops damage the source dealt to
      * itself — the "other" of "damage dealt to this creature this turn by other sources named
      * Blazing Effigy". With neither set it is the plain total (Tangled Colony).
      */

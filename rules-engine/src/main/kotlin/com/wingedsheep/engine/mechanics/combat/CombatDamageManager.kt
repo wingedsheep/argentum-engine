@@ -17,6 +17,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.stack.attachmentIdsOf
 import com.wingedsheep.engine.state.components.stack.captureLastKnown
+import com.wingedsheep.engine.state.components.stack.damagedBySourcesOf
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageUnpreventableThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
@@ -1482,6 +1483,7 @@ internal class CombatDamageManager(
         // player half of which is recorded in DamageUtils.trackDamageReceivedByPlayer (The Fallen).
         if (counterType == com.wingedsheep.sdk.core.CounterType.LOYALTY) {
             newState = DamageUtils.markDealtDamageToThisGame(newState, sourceId, targetId, amount)
+            newState = DamageUtils.trackDamageSourceLki(newState, sourceId, targetId, amount)
         }
 
         val sourceName = newState.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Creature"
@@ -1489,7 +1491,9 @@ internal class CombatDamageManager(
         val targetName = newState.getEntity(targetId)?.get<CardComponent>()?.name ?: defaultName
         events.add(DamageDealtEvent(sourceId, targetId, amount, true,
             sourceName = sourceName, targetName = targetName, targetIsPlayer = false,
-            targetLastKnown = captureLastKnown(state, targetId), excessAmount = excess,
+            targetLastKnown = captureLastKnown(state, targetId)
+                .copy(damageSources = damagedBySourcesOf(newState, targetId)),
+            excessAmount = excess,
             sourceAttachmentIds = attachmentIdsOf(state, sourceId),
             sourceLastKnown = captureLastKnown(state, sourceId)))
         if (counterType == com.wingedsheep.sdk.core.CounterType.LOYALTY) {

@@ -270,7 +270,7 @@ class PredicateEvaluator(
         filter.controllerPredicate?.let { controllerPred ->
             if (!matchesSnapshotController(state, snapshot, controllerPred, context)) return false
         }
-        if (!filter.statePredicates.all { matchesSnapshotState(state, snapshot, it) == true }) return false
+        if (!filter.statePredicates.all { matchesSnapshotState(state, snapshot, it, context) == true }) return false
         if (!filter.cardPredicates.all { matchesSnapshotPredicate(snapshot, it) == true }) return false
         if (filter.anyOf.isNotEmpty()) {
             return filter.anyOf.any { matchesSnapshot(state, snapshot, it, context) }
@@ -349,9 +349,15 @@ class PredicateEvaluator(
      * discipline. Only the status [EntitySnapshot] freezes is answered: attacking
      * ([EntitySnapshot.wasAttacking]), blocking ([EntitySnapshot.wasBlocking]), modified
      * ([EntitySnapshot.wasModified]), face-down ([EntitySnapshot.wasFaceDown]), tapped
-     * ([EntitySnapshot.wasTapped]) and entered this turn ([EntitySnapshot.enteredOnTurn], compared against the current turn).
+     * ([EntitySnapshot.wasTapped]), entered this turn ([EntitySnapshot.enteredOnTurn], compared against the current turn)
+     * and its damage sources this turn ([EntitySnapshot.damageSources]).
      */
-    private fun matchesSnapshotState(state: GameState, snapshot: EntitySnapshot, predicate: StatePredicate): Boolean? =
+    private fun matchesSnapshotState(
+        state: GameState,
+        snapshot: EntitySnapshot,
+        predicate: StatePredicate,
+        context: PredicateContext,
+    ): Boolean? =
         when (predicate) {
             StatePredicate.IsAttacking -> snapshot.wasAttacking
             StatePredicate.IsBlocking -> snapshot.wasBlocking
@@ -363,13 +369,18 @@ class PredicateEvaluator(
             // The under-your-control form reads the live entry log; the snapshot doesn't freeze it.
             is StatePredicate.EnteredThisTurn ->
                 if (predicate.underYourControl) null else snapshot.enteredOnTurn == state.turnNumber
-            is StatePredicate.Not -> matchesSnapshotState(state, snapshot, predicate.predicate)?.not()
+            // The recipient's record of its damage sources, frozen with the rest of the snapshot —
+            // "if a Giant, Wizard, or spell you controlled dealt damage to it this turn" read off a
+            // permanent this very damage destroyed (Aegar, the Freezing Flame).
+            is StatePredicate.WasDealtDamageThisTurnBy ->
+                snapshot.damageSources.any { it.matches(predicate.sourceFilter, context.controllerId) }
+            is StatePredicate.Not -> matchesSnapshotState(state, snapshot, predicate.predicate, context)?.not()
             is StatePredicate.And -> {
-                val results = predicate.predicates.map { matchesSnapshotState(state, snapshot, it) }
+                val results = predicate.predicates.map { matchesSnapshotState(state, snapshot, it, context) }
                 if (false in results) false else if (null in results) null else true
             }
             is StatePredicate.Or -> {
-                val results = predicate.predicates.map { matchesSnapshotState(state, snapshot, it) }
+                val results = predicate.predicates.map { matchesSnapshotState(state, snapshot, it, context) }
                 if (true in results) true else if (null in results) null else false
             }
             else -> null

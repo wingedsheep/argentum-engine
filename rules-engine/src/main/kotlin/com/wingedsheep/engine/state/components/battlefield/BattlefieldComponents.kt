@@ -1036,6 +1036,14 @@ data class DamageSourceLki(
     val sourceId: EntityId? = null,
     val sourceSubtypes: Set<com.wingedsheep.sdk.core.Subtype> = emptySet(),
     val sourceWasCreature: Boolean = true,
+    /**
+     * The source's card types when it dealt the damage — for a resolving spell, the types it has on
+     * the stack, so "a spell you controlled" (`InstantOrSorcery.youControl()`, the house reading of a
+     * spell that deals damage) can be asked of the record (Aegar, the Freezing Flame).
+     */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val sourceCardTypes: Set<com.wingedsheep.sdk.core.CardType> = emptySet(),
     /** The source's name when it dealt the damage; null for a nameless (face-down) source. */
     val sourceName: String? = null,
     /**
@@ -1046,27 +1054,31 @@ data class DamageSourceLki(
 ) {
     /**
      * Does this source, as it stood when it dealt the damage, match [filter]? "You" is [youId]. The
-     * snapshot holds only controller, creature-ness and creature subtypes, so a filter asking for
-     * anything else fails closed rather than matching every source.
+     * snapshot holds only controller, creature-ness, instant/sorcery-ness, subtypes and name, so a
+     * filter asking for anything else fails closed rather than matching every source.
      */
     fun matches(filter: com.wingedsheep.sdk.scripting.GameObjectFilter, youId: EntityId): Boolean {
         if (filter.statePredicates.isNotEmpty()) return false
         if (filter.anyOf.isNotEmpty() && filter.anyOf.none { matches(it, youId) }) return false
-        for (predicate in filter.cardPredicates) {
-            val ok = when (predicate) {
-                com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> sourceWasCreature
-                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype -> predicate.subtype in sourceSubtypes
-                is com.wingedsheep.sdk.scripting.predicates.CardPredicate.NameEquals -> predicate.name == sourceName
-                else -> false
-            }
-            if (!ok) return false
-        }
+        if (!filter.cardPredicates.all(::matchesCard)) return false
         return when (filter.controllerPredicate) {
             null -> true
             com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByYou -> sourceControllerId == youId
             com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByOpponent -> sourceControllerId != youId
             else -> false
         }
+    }
+
+    private fun matchesCard(predicate: com.wingedsheep.sdk.scripting.predicates.CardPredicate): Boolean = when (predicate) {
+        com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> sourceWasCreature
+        com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsInstant ->
+            com.wingedsheep.sdk.core.CardType.INSTANT in sourceCardTypes
+        com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsSorcery ->
+            com.wingedsheep.sdk.core.CardType.SORCERY in sourceCardTypes
+        is com.wingedsheep.sdk.scripting.predicates.CardPredicate.Or -> predicate.predicates.any(::matchesCard)
+        is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype -> predicate.subtype in sourceSubtypes
+        is com.wingedsheep.sdk.scripting.predicates.CardPredicate.NameEquals -> predicate.name == sourceName
+        else -> false
     }
 }
 

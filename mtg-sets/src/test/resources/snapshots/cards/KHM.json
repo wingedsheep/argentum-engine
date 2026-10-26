@@ -1,3 +1,92 @@
+// Aegar, the Freezing Flame
+{
+    "name": "Aegar, the Freezing Flame",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Legendary Creature — Giant Wizard",
+    "oracleText": "Whenever a creature or planeswalker an opponent controls is dealt excess damage, if a Giant, Wizard, or spell you controlled dealt damage to it this turn, draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Aegar, the Freezing Flame:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        "IsCreature",
+                                        "IsPlaneswalker"
+                                    ]
+                                }
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "WasDealtDamageThisTurnBy",
+                                    "sourceFilter": "Giant|Wizard|instant|sorcery ctrl:you"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByOpponent"
+                        }
+                    },
+                    "requireExcess": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever a creature or planeswalker an opponent controls is dealt excess damage, if a Giant, Wizard, or spell you controlled dealt damage to it this turn, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "UNCOMMON",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/68011f60-6202-48f4-8255-fb94764e2951.jpg?1783928202",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "A creature has been dealt excess damage if one or more sources deal more damage to it than the minimum amount of damage required to be lethal damage. In most cases, this means damage greater than its toughness, but consider the damage already dealt to it that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "A planeswalker is dealt excess damage if it's dealt damage greater than its current loyalty."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Even 1 damage dealt to a creature from a source with deathtouch is considered lethal damage, so any amount greater than that will cause excess damage to be dealt, even if the total amount of damage isn't greater than the creature's toughness. Note that a source of damage having deathtouch has no effect on damage dealt to planeswalkers."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "It doesn't matter whether a Giant, Wizard, or spell you control deals the excess damage, only that excess damage was dealt and that one of those three things dealt damage to the creature or planeswalker at some point during the turn. For example, if a 4/4 creature an opponent controls is dealt 2 damage by a spell you control and later that turn is dealt 3 damage by a spell another player controls, Aegar's ability will trigger."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a permanent is both a creature and a planeswalker, the minimum amount of damage to be considered lethal damage is used to determine if excess damage has been dealt. For example, if a 5/5 creature that's also a planeswalker with three loyalty counters on it is dealt 4 damage, it's been dealt 1 excess damage and Aegar's ability may trigger."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "Aegar's ability won't trigger when a battle is dealt excess damage. It's not his fault. They didn't exist yet."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Alpine Meadow
 {
     "name": "Alpine Meadow",

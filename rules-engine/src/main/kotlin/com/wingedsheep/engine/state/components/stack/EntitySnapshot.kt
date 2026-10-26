@@ -247,7 +247,15 @@ data class EntitySnapshot(
     val wasSuspected: Boolean = false,
     /** Per-player damage dealt to this entity this turn, keyed by source-controller (Grothama). */
     val damageDealtByPlayers: Map<EntityId, Int> = emptyMap(),
-    /** Snapshots of the sources that dealt damage to this entity this turn (Shelob, Child of Ungoliant). */
+    /**
+     * Snapshots of the sources that dealt damage to this entity this turn, each frozen as it dealt
+     * the damage (Shelob, Child of Ungoliant) — the last-known leg of
+     * [com.wingedsheep.sdk.scripting.predicates.StatePredicate.WasDealtDamageThisTurnBy]. A damage
+     * event's recipient snapshot carries the record *including* that hit, so "is dealt excess
+     * damage, if a spell you controlled dealt damage to it this turn" (Aegar, the Freezing Flame)
+     * still reads it when the damage destroyed the permanent. Only meaningful during the turn it
+     * was captured.
+     */
     val damageSources: Set<DamageSourceLki> = emptySet(),
     /** The cast-time {X} carried by `CastChoicesComponent`, so dies/leaves triggers read `DynamicAmount.CastX`. */
     val castX: Int? = null,
@@ -531,6 +539,7 @@ fun captureLastKnown(state: GameState, entityId: EntityId): EntitySnapshot {
         wasModified = com.wingedsheep.engine.handlers.predicates.isModified(state, entityId) {
             state.projectedState.getController(it)
         },
+        damageSources = damagedBySourcesOf(state, entityId),
         wasCast = container?.has<com.wingedsheep.engine.state.components.battlefield.WasCastComponent>() == true,
         castFromZone = container?.let(::castFromZoneOf),
         attachmentIds = attachmentIdsOf(state, entityId),
@@ -618,3 +627,9 @@ fun castFromZoneOf(container: com.wingedsheep.engine.state.ComponentContainer): 
     container.has<com.wingedsheep.engine.state.components.battlefield.CastFromExileComponent>() -> com.wingedsheep.sdk.core.Zone.EXILE
     else -> null
 }
+
+/** [targetId]'s record of the sources that dealt damage to it this turn, as [EntitySnapshot.damageSources] freezes it. */
+fun damagedBySourcesOf(state: GameState, targetId: EntityId): Set<DamageSourceLki> =
+    state.getEntity(targetId)
+        ?.get<com.wingedsheep.engine.state.components.battlefield.DamagedBySourcesThisTurnComponent>()
+        ?.sources ?: emptySet()

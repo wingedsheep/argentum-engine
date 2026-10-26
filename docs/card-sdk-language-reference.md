@@ -7131,9 +7131,17 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   damaged it this turn (the `DamageSourceLki` snapshots Shelob's observer death trigger reads, through
   the same matcher), so a source that has since left the battlefield or changed control still counts as
   it was then — unlike `.wasDealtDamageBySourceThisTurn()`, which needs its one source to still be around.
-  The snapshot holds the source's controller, whether it was a creature, its creature subtypes and its
-  name, so `sourceFilter` may use `youControl()` / `opponentControls()` ("you" = the effect source's
-  controller), `Creature`, `withSubtype(...)` and `named(...)`; any other predicate fails closed. Honoured by the zone-change
+  The snapshot holds the source's controller, whether it was a creature, an instant or a sorcery, its
+  subtypes and its name, so `sourceFilter` may use `youControl()` / `opponentControls()` ("you" = the
+  effect source's controller), `Creature`, `InstantOrSorcery` ("a spell" that dealt damage),
+  `withSubtype(...)`, `named(...)` and `or` unions of them; any other predicate fails closed. Creatures
+  and planeswalkers both keep the record. In a damage trigger's recipient filter it is read as of that
+  damage, the hit included, even when the damage destroyed the permanent — Aegar, the Freezing Flame's
+  "whenever a creature or planeswalker an opponent controls is dealt excess damage, if a Giant, Wizard,
+  or spell you controlled dealt damage to it this turn" is `Triggers.a().dealsDamage(to =
+  Recipient.Object(CreatureOrPlaneswalker.opponentControls().wasDealtDamageThisTurnBy(
+  (withSubtype(GIANT) or withSubtype(WIZARD) or InstantOrSorcery).youControl())), requireExcess = true)`
+  (the record only grows during the turn, so the trigger-time check is the resolution-time answer too). Honoured by the zone-change
   redirect path (printed and granted replacements alike), so Etching of Kumano's "if a creature dealt
   damage this turn by a source you controlled would die, exile it instead" is
   `replacementEffect(RedirectZoneChange(newDestination = Zone.EXILE, appliesTo =

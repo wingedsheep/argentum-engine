@@ -712,10 +712,15 @@ sealed interface StatePredicate {
      * left the battlefield or changed control still counts as it was then. "You" in the filter is
      * the effect source's controller.
      *
-     * The record holds each source's controller, whether it was a creature, its creature subtypes
-     * and its name, so [sourceFilter] may use `youControl()` / `opponentControls()`, `Creature`,
-     * `withSubtype(...)` and `named(...)` — the same reading Shelob's "dealt damage this turn by a Spider you
-     * controlled" trigger gives its source filter. Anything else fails closed.
+     * The record holds each source's controller, whether it was a creature, an instant or a
+     * sorcery, its subtypes and its name, so [sourceFilter] may use `youControl()` /
+     * `opponentControls()`, `Creature`, `InstantOrSorcery` (the house reading of "a spell" that
+     * deals damage), `withSubtype(...)`, `named(...)` and `or` unions of them — the same reading
+     * Shelob's "dealt damage this turn by a Spider you controlled" trigger gives its source filter.
+     * Anything else fails closed. Creatures and planeswalkers both keep the record, and a damage
+     * trigger's recipient filter reads it as of that damage, the hit included — "is dealt excess
+     * damage, if a Giant, Wizard, or spell you controlled dealt damage to it this turn" (Aegar, the
+     * Freezing Flame) still matches a permanent that damage destroyed.
      *
      * Closest types: [WasDealtDamageBySourceThisTurn] names one specific source and reads that
      * source's record, which is dropped when it leaves the battlefield (its cards' rulings need

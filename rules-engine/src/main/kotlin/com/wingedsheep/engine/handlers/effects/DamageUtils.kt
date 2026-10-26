@@ -36,6 +36,7 @@ import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentComponent
 import com.wingedsheep.engine.state.components.stack.attachmentIdsOf
 import com.wingedsheep.engine.state.components.stack.captureLastKnown
+import com.wingedsheep.engine.state.components.stack.damagedBySourcesOf
 import com.wingedsheep.engine.state.components.battlefield.DealtDamageToThisGameComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageDealtByPlayersThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent
@@ -68,6 +69,7 @@ import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.sdk.scripting.NoncombatDamageBonus
+import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
@@ -489,7 +491,10 @@ object DamageUtils {
             events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
         } else if (projected.isPlaneswalker(targetId)) {
             // It's a planeswalker - remove loyalty counters equal to damage dealt
-            if (sourceId != null) newState = markDealtDamageToThisGame(newState, sourceId, targetId, effectiveAmount)
+            if (sourceId != null) {
+                newState = markDealtDamageToThisGame(newState, sourceId, targetId, effectiveAmount)
+                newState = trackDamageSourceLki(newState, sourceId, targetId, effectiveAmount)
+            }
             val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
             val currentLoyalty = counters.getCount(CounterType.LOYALTY)
             // CR 120.4a — excess damage to a planeswalker is the amount above its loyalty,
@@ -646,7 +651,10 @@ object DamageUtils {
         val targetIsFaceDown = targetContainer?.has<FaceDownComponent>() == true
         // Capture the recipient as it is now, while it's still on the battlefield, so
         // recipient-based triggers match even if it dies to this damage (CR 603.10).
-        val targetLastKnown = if (targetIsPlayer) null else captureLastKnown(state, targetId)
+        // Its record of damage sources is read after this hit, so "if a spell you controlled dealt
+        // damage to it this turn" counts the very spell that destroyed it (Aegar, the Freezing Flame).
+        val targetLastKnown = if (targetIsPlayer) null
+        else captureLastKnown(state, targetId).copy(damageSources = damagedBySourcesOf(newState, targetId))
         val targetControllerId = projected.getController(targetId)
         val targetWasCreature = projected.isCreature(targetId)
         // Capture the recipient creature's toughness as it last existed (CR 603.10) — read from the
@@ -1388,16 +1396,17 @@ object DamageUtils {
     }
 
     /**
-     * Record a last-known snapshot of [sourceId] (its controller and creature-subtypes as projected
-     * right now) on [targetCreatureId]'s [DamagedBySourcesThisTurnComponent]. Read at death time by
+     * Record a last-known snapshot of [sourceId] (its controller, card types and subtypes as
+     * projected right now) on [targetId]'s [DamagedBySourcesThisTurnComponent]. Read at death time by
      * observer triggers of the form "whenever another creature dealt damage this turn by [a source
-     * matching a filter] dies" (Shelob). Snapshotting on the *damaged* creature means a source that
-     * died in the same combat is still evaluated against its damage-time state (CR 608.2h).
-     * [amount] accumulates per source, so a dies trigger can sum the damage from matching sources
-     * ("by other sources named Blazing Effigy").
+     * matching a filter] dies" (Shelob), and by "if a Giant, Wizard, or spell you controlled dealt
+     * damage to it this turn" on a creature or planeswalker (Aegar, the Freezing Flame).
+     * Snapshotting on the *damaged* permanent means a source that died in the same combat is still
+     * evaluated against its damage-time state (CR 608.2h). [amount] accumulates per source, so a
+     * dies trigger can sum the damage from matching sources ("by other sources named Blazing Effigy").
      */
-    fun trackDamageSourceLki(state: GameState, sourceId: EntityId, targetCreatureId: EntityId, amount: Int): GameState {
-        if (targetCreatureId !in state.getBattlefield()) return state
+    fun trackDamageSourceLki(state: GameState, sourceId: EntityId, targetId: EntityId, amount: Int): GameState {
+        if (targetId !in state.getBattlefield()) return state
         val projected = state.projectedState
         val controllerId = projected.getController(sourceId)
             ?: state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
@@ -1411,12 +1420,17 @@ object DamageUtils {
             sourceId = sourceId,
             sourceSubtypes = subtypes,
             sourceWasCreature = projected.isCreature(sourceId),
+            // A resolving spell has no projection entry; its types are the card's own.
+            sourceCardTypes = projected.getTypes(sourceId)
+                .mapNotNull { type -> CardType.entries.firstOrNull { it.name == type } }
+                .toSet()
+                .ifEmpty { state.getEntity(sourceId)?.get<CardComponent>()?.typeLine?.cardTypes ?: emptySet() },
             sourceName = state.getEntity(sourceId)
                 ?.takeUnless { it.has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>() }
                 ?.let { projected.getName(sourceId) ?: it.get<CardComponent>()?.name },
             amount = amount,
         )
-        return state.updateEntity(targetCreatureId) { container ->
+        return state.updateEntity(targetId) { container ->
             val existing = container.get<DamagedBySourcesThisTurnComponent>()
                 ?: DamagedBySourcesThisTurnComponent()
             container.with(existing.adding(snapshot))
