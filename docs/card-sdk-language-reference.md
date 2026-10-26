@@ -2371,7 +2371,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `-1/-1` annihilate each other as a state-based action (CR 122.3); the asymmetric counters never cancel.
 - `DoubleCounters(type?, target?)` — one-shot doubling of the `type` counters (default `+1/+1`) already on the
   target: reads the current count and places that many more (so the total doubles). Distinct from the
-  `DoubleCounterPlacement` replacement (which doubles *future* placements); the added counters still trigger
+  `ScaleCounterPlacement` replacement (which doubles *future* placements); the added counters still trigger
   placement replacements like Hardened Scales. No-op with zero counters. Sage of the Fang.
 - `DoubleAllCounters(target?)` — the every-kind twin of `DoubleCounters`: "double the number of each kind of
   counter on target permanent" (`DoubleCountersEffect` with `counterType = null`). Every kind currently on the
@@ -18064,17 +18064,24 @@ The priority groups are (CR 616.1a–f):
   for each card that actually reached exile. `maxCards = DynamicAmount.XValue` models X-bounded entry
   choices; a zero maximum or no matching cards skips the prompt. **Mimeoplasm, Revered One** uses this
   with creature cards, three +1/+1 counters per card, and later targets the linked exile pile.
-- `ModifyCounterPlacement(modifier, appliesTo, placedByYou?)` / `DoubleCounterPlacement(placedByYou?, appliesTo, effectsOnly?)` —
+- `ModifyCounterPlacement(modifier, appliesTo, placer?)` / `ScaleCounterPlacement(scale?, placer?, appliesTo, effectsOnly?)` —
   **static** counter-placement modifiers living on a battlefield permanent for as long as it remains
-  (Hardened Scales `+1`, Winding Constrictor `+1`, Doubling Season doubles). `appliesTo` is an
+  (Hardened Scales `+1`, Winding Constrictor `+1`, Doubling Season doubles). `ScaleCounterPlacement`'s
+  **`scale`** is `CounterPlacementScale.DOUBLE` (default, "twice that many") or `HALF_ROUNDED_DOWN`
+  ("half that many … rounded down" — one counter becomes none, which ends the placement). `appliesTo` is an
   `EventPattern.CounterPlacementEvent(counterType, recipient)`; `recipient = CreatureYouControl` is
-  resolved relative to the *source permanent's* controller. **`placedByYou`** (both types, default
-  `false`) is the *placer* axis, and it is what separates the two printed wordings: leave it `false`
+  resolved relative to the *source permanent's* controller. **`placer`** (both types, default
+  `Player.Any`) is the *placer* axis, and it is what separates the printed wordings: leave it `Player.Any`
   for "**if counters would be put** on …" (Hardened Scales, Winding Constrictor, Doubling Season),
   where an opponent's proliferate feeds the effect too and the recipient filter is the only
-  "you control" gate; set it `true` for "**if you would put** one or more counters on …" (Doc
+  "you control" gate; `Player.You` for "**if you would put** one or more counters on …" (Doc
   Samson, Super Psychiatrist; Innkeeper's Talent), which applies only when the effect's own
-  controller is the one placing them. For the **activated/spell-granted,
+  controller is the one placing them; `Player.EachOpponent` for "**if an opponent would put** …".
+  **Vorinclex, Monstrous Raider** is both: `ScaleCounterPlacement(placer = Player.You, …)` and
+  `ScaleCounterPlacement(HALF_ROUNDED_DOWN, placer = Player.EachOpponent, …)` over
+  `CounterPlacementEvent(null, Recipient.Any)`. The placer of entry counters is the entering
+  object's controller (the Vorinclex ruling), of proliferate the proliferating player.
+  For the **activated/spell-granted,
   duration-scoped** version of this (Prairie Dog), use the effect
   `Effects.GrantCounterPlacementModifier(...)` (§4 Counters) instead — it records a controller-scoped
   modifier in a turn-scoped game-state store consulted from the same counter-placement chokepoint,
@@ -18088,14 +18095,16 @@ The priority groups are (CR 616.1a–f):
   **costs** (`Costs.PutCounterOnSelf`, `PutCountersOnPermanent` — including as a pay-or-suffer cost — blight, a [+N] loyalty cost) and the
   Saga's precombat-main **turn-based** lore counter. Counters put on a card in a non-battlefield zone
   (suspend's time counters, exile-with-counters) are not on a permanent, so these never touch them.
-  **`effectsOnly`** (`DoubleCounterPlacement`, default `false`) is Doubling Season's "if **an effect**
+  **`effectsOnly`** (`ScaleCounterPlacement`, default `false`) is Doubling Season's "if **an effect**
   would put": set it `true` and costs and the Saga turn-based lore counter pass through undoubled
   (Corpsejack Menace's "would be put" and Innkeeper's Talent's "if you would put" leave it `false`).
   **Ordering (CR 616.1):** when several apply to one placement, the affected object's controller (or
   affected player) picks the order; the engine applies the order they would pick, never battlefield
-  order — for a counter kind the recipient wants, positive additions, then doublings, then negative
-  additions (Winding Constrictor + Corpsejack Menace: 1 → (1 + 1) × 2 = 4); for a harmful kind (minus
-  stat counters such as -1/-1, poison, stun, rad) the reverse (1 → 1 × 2 + 1 = 3). A step that empties the
+  order — for a counter kind the recipient wants, the largest result (positive additions, then doublings,
+  then negative additions: Winding Constrictor + Corpsejack Menace: 1 → (1 + 1) × 2 = 4); for a harmful
+  kind (minus stat counters such as -1/-1, poison, stun, rad) the smallest (1 → 1 × 2 + 1 = 3). A halving's
+  best slot depends on parity (Hardened Scales after Vorinclex's halving: 4 → 2 + 1 = 3, before it 5 → 2),
+  so with a halving in play the engine searches the orders. A step that empties the
   placement ends it; caps (`CapCounterPlacementThisTurn`) apply last.
 - `CapCounterPlacementThisTurn(amount = 1, appliesTo = CounterPlacementEvent(POISON, Recipient.You))` —
   **static** cap-and-lock: "If you would get one or more poison counters, instead you get one poison

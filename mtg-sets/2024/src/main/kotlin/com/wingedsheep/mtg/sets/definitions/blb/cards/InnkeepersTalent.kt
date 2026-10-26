@@ -1,11 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DoubleCounterPlacement
+import com.wingedsheep.sdk.scripting.ScaleCounterPlacement
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantWard
@@ -60,8 +61,8 @@ val InnkeepersTalent = card("Innkeeper's Talent") {
     // Level 3: Double counter placement on permanents or players
     classLevel(3, "{3}{G}") {
         replacementEffect(
-            DoubleCounterPlacement(
-                placedByYou = true,
+            ScaleCounterPlacement(
+                placer = Player.You,
                 appliesTo = EventPattern.CounterPlacementEvent(
                     counterType = null,
                     recipient = Recipient.Any

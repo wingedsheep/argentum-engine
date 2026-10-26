@@ -206,7 +206,7 @@ data class MoveAllLastKnownCountersEffect(
  * Double the number of counters already on a target (one-shot).
  * "Double the number of +1/+1 counters on that creature."
  *
- * Distinct from the `DoubleCounterPlacement` replacement effect, which doubles
+ * Distinct from the `ScaleCounterPlacement` replacement effect, which doubles
  * counters as they are *placed* in the future. This is an immediate doubling of
  * the counters present at resolution: the executor reads the current count of
  * [counterType] on the target and puts that many more on it (so the total

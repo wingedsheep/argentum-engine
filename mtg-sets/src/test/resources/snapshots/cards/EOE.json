@@ -8790,7 +8790,7 @@
     "script": {
         "replacementEffects": [
             {
-                "type": "DoubleCounterPlacement",
+                "type": "ScaleCounterPlacement",
                 "appliesTo": {
                     "type": "CounterPlacementEvent",
                     "recipient": {

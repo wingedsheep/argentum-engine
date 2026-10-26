@@ -2422,7 +2422,7 @@ object Effects {
     /**
      * Double the number of counters of [counterType] already on a target (one-shot).
      * Reads the current count and puts that many more on the target, so the total
-     * doubles. Distinct from the [DoubleCounterPlacement] replacement, which doubles
+     * doubles. Distinct from the [ScaleCounterPlacement] replacement, which doubles
      * counters as they are placed in the future. Used by Sage of the Fang.
      */
     fun DoubleCounters(

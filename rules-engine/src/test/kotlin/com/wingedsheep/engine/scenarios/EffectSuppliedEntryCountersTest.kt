@@ -29,8 +29,8 @@ class EffectSuppliedEntryCountersTest : FunSpec({
     val kind = CounterType.PLUS_ONE_PLUS_ONE
     val doubler = card("Entry Counter Doubler") {
         typeLine = "Enchantment"
-        replacementEffect(DoubleCounterPlacement(
-            appliesTo = EventPattern.CounterPlacementEvent(recipient = Recipient.AnyPermanent), placedByYou = true))
+        replacementEffect(ScaleCounterPlacement(
+            appliesTo = EventPattern.CounterPlacementEvent(recipient = Recipient.AnyPermanent), placer = Player.You))
     }
     val blocker = card("Entry Counter Prevention") {
         typeLine = "Enchantment"

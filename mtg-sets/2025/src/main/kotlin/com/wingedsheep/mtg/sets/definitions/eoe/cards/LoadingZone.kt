@@ -2,7 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.eoe.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DoubleCounterPlacement
+import com.wingedsheep.sdk.scripting.ScaleCounterPlacement
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.events.Recipient
@@ -18,7 +18,7 @@ import com.wingedsheep.sdk.scripting.events.Recipient
  *
  * Functions like a Doubling Season restricted to creature/Spacecraft/Planet permanents
  * you control, for any counter kind. Recipient filter is the "you control" gate, so
- * placedByYou = false (effect applies regardless of who is placing the counters).
+ * placer = Player.Any (effect applies regardless of who is placing the counters).
  */
 val LoadingZone = card("Loading Zone") {
     manaCost = "{3}{G}"
@@ -28,8 +28,7 @@ val LoadingZone = card("Loading Zone") {
         "Warp {G} (You may cast this card from your hand for its warp cost. Exile this enchantment at the beginning of the next end step, then you may cast it from exile on a later turn.)"
 
     replacementEffect(
-        DoubleCounterPlacement(
-            placedByYou = false,
+        ScaleCounterPlacement(
             appliesTo = EventPattern.CounterPlacementEvent(
                 counterType = null,
                 recipient = Recipient.Object(

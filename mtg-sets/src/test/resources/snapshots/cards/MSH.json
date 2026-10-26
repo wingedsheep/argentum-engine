@@ -5109,7 +5109,7 @@
                         "filter": "permanent ctrl:you"
                     }
                 },
-                "placedByYou": true
+                "placer": "You"
             }
         ]
     },

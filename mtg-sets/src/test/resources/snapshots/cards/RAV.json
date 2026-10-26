@@ -4954,7 +4954,7 @@
         "replacementEffects": [
             "MultiplyTokenCreation",
             {
-                "type": "DoubleCounterPlacement",
+                "type": "ScaleCounterPlacement",
                 "appliesTo": {
                     "type": "CounterPlacementEvent",
                     "recipient": {

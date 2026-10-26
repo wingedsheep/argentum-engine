@@ -21940,7 +21940,7 @@
             }
         ],
         "replacementEffects": [
-            "DoubleCounterPlacement"
+            "ScaleCounterPlacement"
         ]
     },
     "metadata": {

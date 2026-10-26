@@ -378,16 +378,20 @@ data class ReplaceTokenCreationWithToken(
 // =============================================================================
 
 /**
- * Double the number of counters placed.
- * Example: Doubling Season (counters), Corpsejack Menace, Innkeeper's Talent Level 3
+ * Scale the number of counters placed — "twice that many" ([CounterPlacementScale.DOUBLE]) or
+ * "half that many … rounded down" ([CounterPlacementScale.HALF_ROUNDED_DOWN]).
+ * Example: Doubling Season (counters), Corpsejack Menace, Innkeeper's Talent Level 3 (double);
+ * Vorinclex, Monstrous Raider (double for you, halve for an opponent).
  *
- * @param placedByYou When true, only applies when the controller of this effect is the
- *                    player putting the counters (e.g., Innkeeper's Talent: "If YOU would
- *                    put one or more counters..."). When false, applies regardless of who
- *                    is placing the counters — the recipient filter on [appliesTo] is the
- *                    sole "you control" gate (e.g., Doubling Season: "on a permanent you
- *                    control").
- * @param effectsOnly When true, only placements made by an *effect* are doubled — "If **an effect**
+ * @param scale       How the placement's count is scaled. Doubling and halving are one axis: both
+ *                    multiply the count, and the affected player orders them among the other
+ *                    placement replacements (CR 616.1) — see `ReplacementEffectUtils`.
+ * @param placer      Who must be putting the counters, relative to this effect's controller:
+ *                    [Player.Any] (the default) for "if counters **would be put** on …" (Doubling
+ *                    Season: the recipient filter on [appliesTo] is the sole "you control" gate),
+ *                    [Player.You] for "if **you** would put …" (Innkeeper's Talent), and
+ *                    [Player.EachOpponent] for "if **an opponent** would put …" (Vorinclex).
+ * @param effectsOnly When true, only placements made by an *effect* are scaled — "If **an effect**
  *                    would put one or more counters…" (Doubling Season). Counters put on as a
  *                    cost (a [+1] loyalty cost, blight, "put a counter on this: …") and by a
  *                    turn-based action (a Saga's precombat-main lore counter) are not effects, so
@@ -395,18 +399,22 @@ data class ReplaceTokenCreationWithToken(
  *                    — "If one or more counters **would be put**" (Corpsejack Menace) and "If **you**
  *                    would put" (Innkeeper's Talent) both see costs too.
  */
-@SerialName("DoubleCounterPlacement")
+@SerialName("ScaleCounterPlacement")
 @Serializable
-data class DoubleCounterPlacement(
-    val placedByYou: Boolean = false,
+data class ScaleCounterPlacement(
+    val scale: CounterPlacementScale = CounterPlacementScale.DOUBLE,
+    val placer: Player = Player.Any,
     override val appliesTo: EventPattern = EventPattern.CounterPlacementEvent(
         counterType = CounterType.PLUS_ONE_PLUS_ONE,
         recipient = Recipient.CreatureYouControl
     ),
     val effectsOnly: Boolean = false
 ) : ReplacementEffect {
-    override val description: String =
-        "If ${appliesTo.description}, place twice that many counters instead"
+    override val description: String = when (scale) {
+        CounterPlacementScale.DOUBLE -> "If ${appliesTo.description}, place twice that many counters instead"
+        CounterPlacementScale.HALF_ROUNDED_DOWN ->
+            "If ${appliesTo.description}, place half that many counters instead, rounded down"
+    }
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
         val newAppliesTo = appliesTo.applyTextReplacement(replacer)
@@ -414,17 +422,26 @@ data class DoubleCounterPlacement(
     }
 }
 
+/** How a [ScaleCounterPlacement] scales a placement's count. */
+@Serializable
+enum class CounterPlacementScale {
+    /** "twice that many" (Doubling Season). */
+    DOUBLE,
+
+    /** "half that many …, rounded down" (Vorinclex, Monstrous Raider) — one counter becomes none. */
+    HALF_ROUNDED_DOWN
+}
+
 /**
  * Add additional counters when counters are placed.
  * Example: Hardened Scales (+1), Winding Constrictor (+1), Branching Evolution (double)
  *
- * @param placedByYou When true, only applies when the controller of this effect is the player
- *                    putting the counters — "**If you** would put one or more counters on a
- *                    permanent you control" (Doc Samson, Super-Psychiatrist). When false (the
- *                    default), applies regardless of who is placing them, so the recipient filter
- *                    on [appliesTo] is the sole "you control" gate — the Hardened Scales /
- *                    Winding Constrictor reading, where an opponent's proliferate also feeds it.
- *                    Same axis as [DoubleCounterPlacement.placedByYou].
+ * @param placer Who must be putting the counters, relative to this effect's controller —
+ *               [Player.You] for "**If you** would put one or more counters on a permanent you
+ *               control" (Doc Samson, Super-Psychiatrist); [Player.Any] (the default) applies
+ *               regardless of who is placing them, so the recipient filter on [appliesTo] is the
+ *               sole "you control" gate — the Hardened Scales / Winding Constrictor reading, where
+ *               an opponent's proliferate also feeds it. Same axis as [ScaleCounterPlacement.placer].
  */
 @SerialName("ModifyCounterPlacement")
 @Serializable
@@ -434,7 +451,7 @@ data class ModifyCounterPlacement(
         counterType = CounterType.PLUS_ONE_PLUS_ONE,
         recipient = Recipient.CreatureYouControl
     ),
-    val placedByYou: Boolean = false
+    val placer: Player = Player.Any
 ) : ReplacementEffect {
     override val description: String = buildString {
         append("If ${appliesTo.description}, ")

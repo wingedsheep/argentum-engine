@@ -13,7 +13,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.DoubleCounterPlacement
+import com.wingedsheep.sdk.scripting.ScaleCounterPlacement
 import com.wingedsheep.sdk.scripting.EntersWithDevour
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -24,7 +24,7 @@ import io.kotest.assertions.withClue
 import io.kotest.matchers.shouldBe
 
 /**
- * Counter-placement replacements ([ModifyCounterPlacement], [DoubleCounterPlacement]) apply on every
+ * Counter-placement replacements ([ModifyCounterPlacement], [ScaleCounterPlacement]) apply on every
  * path that *puts* counters (CR 122.6), in the order the affected player would choose (CR 616.1).
  *
  * | Rule / path | Covered by |
@@ -59,7 +59,7 @@ class CounterPlacementReplacementPathsTest : ScenarioTestBase() {
         manaCost = "{G}"
         typeLine = "Enchantment"
         replacementEffect(
-            DoubleCounterPlacement(
+            ScaleCounterPlacement(
                 appliesTo = EventPattern.CounterPlacementEvent(null, Recipient.PermanentYouControl)
             )
         )
@@ -70,7 +70,7 @@ class CounterPlacementReplacementPathsTest : ScenarioTestBase() {
         manaCost = "{G}"
         typeLine = "Enchantment"
         replacementEffect(
-            DoubleCounterPlacement(
+            ScaleCounterPlacement(
                 appliesTo = EventPattern.CounterPlacementEvent(null, Recipient.PermanentYouControl),
                 effectsOnly = true
             )
@@ -225,6 +225,20 @@ class CounterPlacementReplacementPathsTest : ScenarioTestBase() {
             ReplacementEffectUtils.orderedForAffectedPlayer(1, listOf(-1, 1), 1, CounterType.MINUS_ONE_MINUS_ONE) shouldBe 0
             // A wanted kind takes its reduction last, after the doubling.
             ReplacementEffectUtils.orderedForAffectedPlayer(1, listOf(-1), 1, CounterType.PLUS_ONE_PLUS_ONE) shouldBe 1
+        }
+
+        test("the ordering helper places a halving where the affected player would") {
+            // Half of one, rounded down, is none: the placement ends.
+            ReplacementEffectUtils.orderedForAffectedPlayer(1, emptyList(), 0, CounterType.PLUS_ONE_PLUS_ONE, halvings = 1) shouldBe 0
+            ReplacementEffectUtils.orderedForAffectedPlayer(5, emptyList(), 0, CounterType.PLUS_ONE_PLUS_ONE, halvings = 1) shouldBe 2
+            // +1 before or after the halving depends on parity — the wanted kind takes the larger.
+            ReplacementEffectUtils.orderedForAffectedPlayer(4, listOf(1), 0, CounterType.PLUS_ONE_PLUS_ONE, halvings = 1) shouldBe 3
+            ReplacementEffectUtils.orderedForAffectedPlayer(5, listOf(1), 0, CounterType.PLUS_ONE_PLUS_ONE, halvings = 1) shouldBe 3
+            // Double before halving for a wanted kind (1 → 2 → 1), halve first for a harmful one (1 → 0).
+            ReplacementEffectUtils.orderedForAffectedPlayer(1, emptyList(), 1, CounterType.PLUS_ONE_PLUS_ONE, halvings = 1) shouldBe 1
+            ReplacementEffectUtils.orderedForAffectedPlayer(1, emptyList(), 1, CounterType.MINUS_ONE_MINUS_ONE, halvings = 1) shouldBe 0
+            // A harmful kind takes the smaller: (4 + 1) / 2 = 2 over 4 / 2 + 1 = 3.
+            ReplacementEffectUtils.orderedForAffectedPlayer(4, listOf(1), 0, CounterType.MINUS_ONE_MINUS_ONE, halvings = 1) shouldBe 2
         }
 
         test("a token entering with counters") {

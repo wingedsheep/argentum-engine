@@ -13,7 +13,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.CantReceiveCounters
-import com.wingedsheep.sdk.scripting.DoubleCounterPlacement
+import com.wingedsheep.sdk.scripting.ScaleCounterPlacement
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.events.Recipient
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -37,7 +37,7 @@ class CounterPlacementSuccessCriterionTest : FunSpec({
     }
     val doubler = card("Test Placement Doubler") {
         typeLine = "Enchantment"
-        replacementEffect(DoubleCounterPlacement(appliesTo = EventPattern.CounterPlacementEvent(kind, Recipient.AnyPermanent)))
+        replacementEffect(ScaleCounterPlacement(appliesTo = EventPattern.CounterPlacementEvent(kind, Recipient.AnyPermanent)))
     }
     fun driver() = GameTestDriver().also {
         it.registerCards(TestCards.all + listOf(warded, doubler))

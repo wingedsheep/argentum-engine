@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CostModification
-import com.wingedsheep.sdk.scripting.DoubleCounterPlacement
+import com.wingedsheep.sdk.scripting.ScaleCounterPlacement
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ModifySpellCost
@@ -26,7 +26,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * {4}{G}{G}, {T}: Distribute two +1/+1 counters among one or two target creatures you control.
  *
  * The cost reduction is a [ModifySpellCost] static over green spells the controller casts
- * ([CostModification.ReduceGeneric]). The +1/+1 doubling is a [DoubleCounterPlacement]
+ * ([CostModification.ReduceGeneric]). The +1/+1 doubling is a [ScaleCounterPlacement]
  * replacement scoped to +1/+1 counters on creatures the controller controls (a
  * Doubling-Season-style "place twice that many" effect, regardless of who places them).
  */
@@ -47,8 +47,7 @@ val TheEarthCrystal = card("The Earth Crystal") {
     }
 
     replacementEffect(
-        DoubleCounterPlacement(
-            placedByYou = false,
+        ScaleCounterPlacement(
             appliesTo = EventPattern.CounterPlacementEvent(
                 counterType = CounterType.PLUS_ONE_PLUS_ONE,
                 recipient = Recipient.Object(GameObjectFilter.Creature.youControl())

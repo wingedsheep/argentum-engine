@@ -19,7 +19,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 class BattleOfHooverDamScenarioTest : FunSpec({
     val doubler = card("Hoover Counter Doubler") {
         typeLine = "Enchantment"
-        replacementEffect(DoubleCounterPlacement(appliesTo = EventPattern.CounterPlacementEvent(
+        replacementEffect(ScaleCounterPlacement(appliesTo = EventPattern.CounterPlacementEvent(
             recipient = Recipient.AnyPermanent)))
     }
     val blocker = card("Hoover Counter Prevention") {

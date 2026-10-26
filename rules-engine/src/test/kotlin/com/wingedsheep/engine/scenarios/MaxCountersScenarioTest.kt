@@ -8,7 +8,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.DoubleCounterPlacement
+import com.wingedsheep.sdk.scripting.ScaleCounterPlacement
 import com.wingedsheep.sdk.scripting.EntersWithCounters
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GrantStaticAbility
@@ -55,7 +55,7 @@ class MaxCountersScenarioTest : ScenarioTestBase() {
         manaCost = "{G}"
         typeLine = "Enchantment"
         replacementEffect(
-            DoubleCounterPlacement(
+            ScaleCounterPlacement(
                 appliesTo = EventPattern.CounterPlacementEvent(CounterType.CHARGE, Recipient.CreatureYouControl)
             )
         )

@@ -1213,7 +1213,6 @@ CapCounterPlacementThisTurn — ReplacementEffect
 CapDamage — ReplacementEffect
 CreateAdditionalToken — ReplacementEffect
 DamageCantBePrevented — ReplacementEffect
-DoubleCounterPlacement — ReplacementEffect
 DoubleDamage — ReplacementEffect
 EntersAsCopy — ReplacementEffect
 EntersTapped — ReplacementEffect
@@ -1749,6 +1748,7 @@ RestrictVenturesPerTurn — StaticAbility — Keen-Eared Sentry — RestrictCard
 RevealCardInHandEffect — Effect — Firestorm Phoenix — RevealHandEffect, RevealCollectionEffect — both are one-shot reveals (a player's whole hand, a pipeline collection) with no duration; this is a continuous "plays with that card revealed" state on one hand object that must outlast the same-name forgetting a one-shot reveal is subject to
 RollAdditionalDice — StaticAbility — Pixie Guide — FlipAdditionalCoins, WinCoinFlips — FlipAdditionalCoins replaces each coin and lets the flipper choose which to keep; a die replacement adds dice to the whole instruction and the kept rolls are fixed by result. WinCoinFlips dictates a coin result, not how many dice are rolled
 RollDiceEffect — Effect — Luck Bobblehead — FlipCoinsEffect, StoreNumberEffect — coin flips have binary win events rather than numerical dice outcomes; StoreNumber reads existing state and cannot produce random events
+ScaleCounterPlacement — ReplacementEffect — Vorinclex, Monstrous Raider — ModifyCounterPlacement, CapCounterPlacementThisTurn — renames and replaces DoubleCounterPlacement (no net new type) with a scale axis (double / half rounded down) so a halving placement replacement is the same type as the doubling one; ModifyCounterPlacement adds a fixed number rather than multiplying, and CapCounterPlacementThisTurn caps a placement and locks the recipient for the turn
 Scope.ChosenCreature — Scope — Tyrannical Pitlord — Scope.Specific, Scope.SoulbondPair — Specific holds a literal entity fixed at authoring time, so it can't name an object chosen as the source entered; SoulbondPair is the other source-relative scope but reads the pairing, not the entry choice
 SecretChoice.Entity — SecretChoice — Vault 11: Voter's Dilemma — SecretChoice.Number, SelectFromCollectionEffect — the entity-valued axis of the widened secret-choice interaction; Number carries bounded integers rather than collection members and SelectFromCollection has one chooser without private ballot aggregation
 SecretChoice.Number — SecretChoice — Expert-Level Safe — SecretChoice.Entity, ChooseNumberThenEffect — the numeric axis of widened SecretBidEffect; Entity selects collection members without numeric ranking and ChooseNumberThen chooses a single public value

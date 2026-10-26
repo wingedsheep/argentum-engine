@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.jmp.cards
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DoubleCounterPlacement
+import com.wingedsheep.sdk.scripting.ScaleCounterPlacement
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.events.Recipient
 
@@ -24,8 +24,7 @@ val BranchingEvolution = card("Branching Evolution") {
     oracleText = "If one or more +1/+1 counters would be put on a creature you control, twice that many +1/+1 counters are put on that creature instead."
 
     replacementEffect(
-        DoubleCounterPlacement(
-            placedByYou = false,
+        ScaleCounterPlacement(
             appliesTo = EventPattern.CounterPlacementEvent(
                 counterType = CounterType.PLUS_ONE_PLUS_ONE,
                 recipient = Recipient.CreatureYouControl,

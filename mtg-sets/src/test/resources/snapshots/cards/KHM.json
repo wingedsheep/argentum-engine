@@ -7354,6 +7354,46 @@
     ]
 }
 
+// Vorinclex, Monstrous Raider
+{
+    "name": "Vorinclex, Monstrous Raider",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Legendary Creature — Phyrexian Praetor",
+    "oracleText": "Trample, haste\nIf you would put one or more counters on a permanent or player, put twice that many of each of those kinds of counters on that permanent or player instead.\nIf an opponent would put one or more counters on a permanent or player, they put half that many of each of those kinds of counters on that permanent or player instead, rounded down.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "TRAMPLE",
+        "HASTE"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "ScaleCounterPlacement",
+                "placer": "You",
+                "appliesTo": "CounterPlacementEvent"
+            },
+            {
+                "type": "ScaleCounterPlacement",
+                "scale": "HALF_ROUNDED_DOWN",
+                "placer": "EachOpponent",
+                "appliesTo": "CounterPlacementEvent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "rarity": "MYTHIC",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/92613468-205e-488b-930d-11908477e9f8.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Warhorn Blast
 {
     "name": "Warhorn Blast",

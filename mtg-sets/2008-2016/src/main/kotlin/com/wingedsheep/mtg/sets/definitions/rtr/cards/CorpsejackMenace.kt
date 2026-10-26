@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.rtr.cards
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DoubleCounterPlacement
+import com.wingedsheep.sdk.scripting.ScaleCounterPlacement
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.events.Recipient
 
@@ -17,7 +17,7 @@ import com.wingedsheep.sdk.scripting.events.Recipient
  * counters are put on it instead.
  *
  * Doubling Season's counter half narrowed to +1/+1 counters on creatures you control. It gates
- * only on the recipient ("would be put on"), not the placer, so `placedByYou = false`.
+ * only on the recipient ("would be put on"), not the placer, so the default `placer = Player.Any`.
  */
 val CorpsejackMenace = card("Corpsejack Menace") {
     manaCost = "{2}{B}{G}"
@@ -29,8 +29,7 @@ val CorpsejackMenace = card("Corpsejack Menace") {
         "many +1/+1 counters are put on it instead."
 
     replacementEffect(
-        DoubleCounterPlacement(
-            placedByYou = false,
+        ScaleCounterPlacement(
             appliesTo = EventPattern.CounterPlacementEvent(
                 counterType = CounterType.PLUS_ONE_PLUS_ONE,
                 recipient = Recipient.CreatureYouControl,

@@ -21,7 +21,7 @@ import com.wingedsheep.sdk.scripting.events.Recipient
  * Two static [ModifyCounterPlacement] replacements with `counterType = null` (any kind). The engine
  * applies the modifier once per kind being placed, which is the "plus one of each of those kinds"
  * reading. Both lines gate only on the recipient ("would be put on" / "would get"), not on who
- * places the counters, so `placedByYou` stays `false`. The permanent half reads the recipient's
+ * places the counters, so `placer` stays `Player.Any`. The permanent half reads the recipient's
  * *projected* types, so a permanent made an artifact or creature on arrival is covered; neither
  * half is `Recipient.Self`, so the Constrictor never modifies its own entry counters.
  */

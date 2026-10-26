@@ -10,7 +10,7 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.DoubleCounterPlacement
+import com.wingedsheep.sdk.scripting.ScaleCounterPlacement
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.events.Recipient
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
@@ -25,7 +25,7 @@ class CounterTotalLimitTest : FunSpec({
     val kind = CounterType.PLUS_ONE_PLUS_ZERO
     val doubler = card("Test Counter Doubler") {
         typeLine = "Enchantment"
-        replacementEffect(DoubleCounterPlacement(appliesTo = EventPattern.CounterPlacementEvent(kind, Recipient.AnyPermanent)))
+        replacementEffect(ScaleCounterPlacement(appliesTo = EventPattern.CounterPlacementEvent(kind, Recipient.AnyPermanent)))
     }
     fun driver(): GameTestDriver = GameTestDriver().also {
         it.registerCards(TestCards.all + doubler)

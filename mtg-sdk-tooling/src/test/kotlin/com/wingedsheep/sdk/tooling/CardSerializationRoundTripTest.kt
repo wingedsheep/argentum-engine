@@ -371,12 +371,12 @@ class CardSerializationRoundTripTest : DescribeSpec({
                 manaCost = "{4}{G}"
                 typeLine = "Enchantment"
                 replacementEffect(MultiplyTokenCreation())
-                replacementEffect(DoubleCounterPlacement())
+                replacementEffect(ScaleCounterPlacement())
             }
 
             val serialized = CardLoader.toJson(card)
             serialized shouldContain "MultiplyTokenCreation"
-            serialized shouldContain "DoubleCounterPlacement"
+            serialized shouldContain "ScaleCounterPlacement"
 
             val deserialized = CardLoader.fromJson(serialized)
             deserialized.script.replacementEffects.size shouldBe 2

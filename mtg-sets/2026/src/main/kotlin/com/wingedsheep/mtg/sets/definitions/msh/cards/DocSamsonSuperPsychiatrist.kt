@@ -1,6 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.msh.cards
 
 import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
@@ -56,7 +57,7 @@ val DocSamsonSuperPsychiatrist = card("Doc Samson, Super Psychiatrist") {
             // this the card reads like Winding Constrictor ("if counters would be put"), and an
             // opponent proliferating or otherwise adding counters to your permanent would feed
             // Doc Samson too.
-            placedByYou = true
+            placer = Player.You
         )
     )
 
