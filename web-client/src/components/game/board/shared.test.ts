@@ -156,7 +156,7 @@ describe('shouldShowCastModal', () => {
   })
 
   // A foretell card offers Cast and Foretell side by side — clicking it must show both, not
-  // silently cast it (CR 702.143a: foretelling is its own special action).
+  // silently cast it (CR 702.143b: foretelling is a special action).
   it('offers the foretell special action beside the cast', () => {
     expect(shouldShowCastModal([castSpell(), foretell()])).toBe(true)
     expect(shouldShowCastModal([foretell()])).toBe(true)

@@ -673,6 +673,17 @@ class ZoneTransitionService(
                     c.without<com.wingedsheep.engine.state.components.battlefield.ParadigmComponent>()
                 }
             }
+            // A foretold card that leaves exile by any non-cast path is no longer foretold
+            // (CR 702.143c, CR 400.7): drop the marker and the foretell cost it published, so a later
+            // exile-and-cast of the new object neither reads "was foretold" nor pays the foretell cost.
+            if (entityContainer != null &&
+                entityContainer.has<com.wingedsheep.engine.state.components.identity.ForetoldComponent>()
+            ) {
+                newState = newState.updateEntity(entityId) { c ->
+                    c.without<com.wingedsheep.engine.state.components.identity.ForetoldComponent>()
+                        .without<PlayWithFixedAlternativeManaCostComponent>()
+                }
+            }
             // A madness card leaving exile — cast, put into the graveyard by its own trigger, or
             // moved by anything else — is done with madness (CR 702.35a offers the cast once). Drop
             // the marker *and* the fixed madness cost it published: a lingering fixed alternative

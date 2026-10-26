@@ -3,7 +3,11 @@ package com.wingedsheep.engine.mechanics
 import com.wingedsheep.engine.core.ForetellCard
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.engine.state.components.identity.ForetoldComponent
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.state.components.identity.PlayWithFixedAlternativeManaCostComponent
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.DynamicAmounts
@@ -11,6 +15,8 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import io.kotest.core.spec.style.FunSpec
@@ -63,8 +69,18 @@ class ForetoldSpellConditionTest : FunSpec({
         keywordAbility(KeywordAbility.foretell("{W}"))
     }
 
+    val recall = card("Test Recall From Exile") {
+        manaCost = "{U}"
+        typeLine = "Instant"
+        oracleText = "Return target card you own in exile to your hand."
+        spell {
+            val c = target(TargetFilter(GameObjectFilter.Any.ownedByYou(), zone = Zone.EXILE))
+            effect = Effects.ReturnToHand(c)
+        }
+    }
+
     fun driver() = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(foretoldGain, foretoldX, foretoldCreature))
+        registerCards(TestCards.all + listOf(foretoldGain, foretoldX, foretoldCreature, recall))
         initMirrorMatch(deck = Deck.of("Plains" to 40), startingLife = 20)
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -147,5 +163,34 @@ class ForetoldSpellConditionTest : FunSpec({
         d.resolve()
         d.resolve()
         d.getLifeTotal(p) shouldBe 20
+    }
+
+    // CR 400.7 / 702.143c: a foretold card that leaves exile is a new object, no longer foretold —
+    // if it is exiled again by some other route, casting it must not read "was foretold".
+    test("a foretold card that leaves exile stops being foretold") {
+        val d = driver()
+        val p = d.activePlayer!!
+        val card = d.putCardInHand(p, "Test Foretold Gain")
+        d.giveMana(p, Color.WHITE, 2)
+        d.submitSuccess(ForetellCard(p, card))
+        val recall = d.putCardInHand(p, "Test Recall From Exile")
+        d.giveMana(p, Color.BLUE, 1)
+        d.castSpellWithTargets(p, recall, listOf(ChosenTarget.Card(card, p, Zone.EXILE))).error shouldBe null
+        d.resolve()
+        d.state.getHand(p).contains(card) shouldBe true
+        d.state.getEntity(card)!!.has<ForetoldComponent>() shouldBe false
+        d.state.getEntity(card)!!.has<PlayWithFixedAlternativeManaCostComponent>() shouldBe false
+    }
+
+    test("a foretold spell does not carry the foretold marker past its cast") {
+        val d = driver()
+        val p = d.activePlayer!!
+        val card = d.foretellAndPassTurn(p, "Test Foretold Gain")
+        d.passPriority(d.getOpponent(p))
+        d.giveMana(p, Color.WHITE, 1)
+        d.castSpell(p, card).error shouldBe null
+        d.resolve()
+        d.state.getGraveyard(p).contains(card) shouldBe true
+        d.state.getEntity(card)!!.has<ForetoldComponent>() shouldBe false
     }
 })
