@@ -137,6 +137,17 @@ fun GameObjectFilter.withoutSubtypeInStoredList(slot: StringListSlot): GameObjec
 /** Match cards whose name equals the name captured in [slot] (cross-namespace handle overload). */
 fun GameObjectFilter.namedFromVariable(slot: ChosenSlot): GameObjectFilter = namedFromVariable(slot.key)
 
+/**
+ * Match cards whose name is **not** the name captured in [slot] — "a nonland card with a different
+ * name than that spell" (Tibalt's Trickery). Nothing captured matches every card.
+ */
+fun GameObjectFilter.notNamedFromVariable(slot: ChosenSlot): GameObjectFilter =
+    withCardPredicate(
+        com.wingedsheep.sdk.scripting.predicates.CardPredicate.Not(
+            com.wingedsheep.sdk.scripting.predicates.CardPredicate.NameEqualsChosen(slot.key)
+        )
+    )
+
 /** All creatures of the creature type chosen into [slot] ([GroupFilter.ChosenSubtypeCreatures]). */
 fun GroupFilter.Companion.ChosenSubtypeCreatures(slot: ChosenSlot, excludeSelf: Boolean = false): GroupFilter =
     ChosenSubtypeCreatures(slot.key, excludeSelf)

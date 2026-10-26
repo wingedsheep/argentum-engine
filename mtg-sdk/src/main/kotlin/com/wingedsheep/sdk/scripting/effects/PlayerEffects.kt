@@ -1450,6 +1450,12 @@ data class TheRingTemptsYouEffect(
  * combinator works for any "choose a number, act on objects with that mana value" card (Void).
  *
  * Compose [then] with [CompositeEffect] when several effects key off the chosen number.
+ *
+ * [random] is *who* picks: `false` prompts the controller, `true` is Oracle's "choose N, M, or K
+ * at random" — the engine draws uniformly from the same bounds off the game's seeded RNG, with
+ * no prompt. A random choice is not a die roll (CR 706), so it fires no die-roll triggers and no
+ * die-roll replacement modifies it. Tibalt's Trickery: "Choose 1, 2, or 3 at random. Its
+ * controller mills that many cards…" — `ChooseNumberThen(then, 1, 3, random = true)`.
  */
 @SerialName("ChooseNumberThen")
 @Serializable
@@ -1457,9 +1463,11 @@ data class ChooseNumberThenEffect(
     val then: Effect,
     val minValue: Int = 0,
     val maxValue: DynamicAmount = DynamicAmount.Fixed(16),
-    val prompt: String = "Choose a number"
+    val prompt: String = "Choose a number",
+    val random: Boolean = false
 ) : Effect {
-    override val description: String = "Choose a number. ${then.description}"
+    override val description: String =
+        if (random) "Choose a number at random. ${then.description}" else "Choose a number. ${then.description}"
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newThen = then.applyTextReplacement(replacer)

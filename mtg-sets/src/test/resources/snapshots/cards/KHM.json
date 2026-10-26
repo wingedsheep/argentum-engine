@@ -7125,6 +7125,174 @@
     ]
 }
 
+// Tibalt's Trickery
+{
+    "name": "Tibalt's Trickery",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell. Choose 1, 2, or 3 at random. Its controller mills that many cards, then exiles cards from the top of their library until they exile a nonland card with a different name than that spell. They may cast that card without paying its mana cost. Then they put the exiled cards on the bottom of their library in a random order.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "StoreCardName",
+                    "from": "gathered0",
+                    "storeAs": "cardName1"
+                },
+                {
+                    "type": "StorePlayer",
+                    "storeAs": "players2",
+                    "player": {
+                        "type": "ControllerOf",
+                        "targetDescription": "target spell"
+                    }
+                },
+                "Counter",
+                {
+                    "type": "ChooseNumberThen",
+                    "then": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Players",
+                            "players": {
+                                "type": "InCollection",
+                                "collection": "players2"
+                            }
+                        },
+                        "body": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": "XValue",
+                                        "isMill": true
+                                    },
+                                    "storeAs": "gathered4"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "gathered4",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                },
+                                {
+                                    "type": "GatherUntilMatch",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsNonland",
+                                            {
+                                                "type": "Not",
+                                                "predicate": {
+                                                    "type": "NameEqualsChosen",
+                                                    "variableName": "cardName1"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    "storeMatch": "matched6",
+                                    "storeRevealed": "revealed6"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "revealed6",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Exile"
+                                    }
+                                },
+                                {
+                                    "type": "ConditionalOnCollection",
+                                    "collection": "matched6",
+                                    "ifNotEmpty": {
+                                        "type": "Gated",
+                                        "gate": "Gate.MayDecide",
+                                        "then": {
+                                            "type": "CastFromCollectionWithoutPayingCost",
+                                            "from": "matched6"
+                                        }
+                                    }
+                                },
+                                {
+                                    "type": "FilterCollection",
+                                    "from": "revealed6",
+                                    "filter": {
+                                        "statePredicates": [
+                                            {
+                                                "type": "InZone",
+                                                "zone": "Exile"
+                                            }
+                                        ]
+                                    },
+                                    "storeMatching": "matching10"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "matching10",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Library",
+                                        "placement": "Bottom"
+                                    },
+                                    "order": "Random"
+                                }
+                            ]
+                        }
+                    },
+                    "minValue": 1,
+                    "maxValue": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "random": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "rarity": "RARE",
+        "artist": "Anna Podedworna",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd921e27-3e08-438c-bec2-723226d35175.jpg?1783928223",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "If there aren't any nonland cards in that library with a different name than the countered spell, the player will exile all cards from their library, revealing all of them, and then they'll put those cards on the bottom of their library in a random order."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If the spell has {X} in its mana cost, they must choose 0 as the value of X."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Tibalt's Trickery can target a spell that can't be countered. If Tibalt's Trickery resolves, the target spell won't be countered, but all of the other effects will still happen."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Toski, Bearer of Secrets
 {
     "name": "Toski, Bearer of Secrets",

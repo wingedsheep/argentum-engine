@@ -87,7 +87,7 @@ class CounterTotalLimitTest : FunSpec({
         val d = driver()
         val executor = com.wingedsheep.engine.handlers.effects.composite.ChooseNumberThenExecutor(
             com.wingedsheep.engine.handlers.DecisionHandler(), d.services.dynamicAmountEvaluator
-        )
+        ) { state, _, _ -> com.wingedsheep.engine.core.EffectResult.success(state) }
         val choice = com.wingedsheep.sdk.scripting.effects.ChooseNumberThenEffect(
             then = effect(1, 7), maxValue = DynamicAmount.XValue
         )
@@ -98,7 +98,7 @@ class CounterTotalLimitTest : FunSpec({
         val d = driver()
         val executor = com.wingedsheep.engine.handlers.effects.composite.ChooseNumberThenExecutor(
             com.wingedsheep.engine.handlers.DecisionHandler(), d.services.dynamicAmountEvaluator
-        )
+        ) { state, _, _ -> com.wingedsheep.engine.core.EffectResult.success(state) }
         val choice = com.wingedsheep.sdk.scripting.effects.ChooseNumberThenEffect(
             then = effect(1, 7), minValue = 1, maxValue = DynamicAmount.Fixed(0)
         )

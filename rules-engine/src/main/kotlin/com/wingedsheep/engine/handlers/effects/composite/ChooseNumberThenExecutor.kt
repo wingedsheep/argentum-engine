@@ -9,6 +9,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.scripting.effects.ChooseNumberThenEffect
+import com.wingedsheep.sdk.scripting.effects.Effect
 import kotlin.reflect.KClass
 
 /**
@@ -18,10 +19,15 @@ import kotlin.reflect.KClass
  * inner effect plus a snapshot of the current [EffectContext]. The resumer stamps the
  * chosen number onto the context as the X value and dispatches the inner effect, so atomic
  * effects/filters read the chosen number uniformly (e.g. `manaValueEqualsX()`). Used by Void.
+ *
+ * A [ChooseNumberThenEffect.random] choice never pauses: the number is drawn from the game's
+ * seeded RNG ([GameState.nextRandom]) and [ChooseNumberThenEffect.then] runs inline with it
+ * stamped as X — the same context the resumer would build (Tibalt's Trickery).
  */
 class ChooseNumberThenExecutor(
     private val decisionHandler: DecisionHandler,
-    private val amountEvaluator: com.wingedsheep.engine.handlers.DynamicAmountEvaluator
+    private val amountEvaluator: com.wingedsheep.engine.handlers.DynamicAmountEvaluator,
+    private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult
 ) : EffectExecutor<ChooseNumberThenEffect> {
 
     override val effectType: KClass<ChooseNumberThenEffect> = ChooseNumberThenEffect::class
@@ -33,6 +39,12 @@ class ChooseNumberThenExecutor(
     ): EffectResult {
         val max = amountEvaluator.evaluate(state, effect.maxValue, context)
         if (max < effect.minValue) return EffectResult.success(state, emptyList())
+
+        if (effect.random) {
+            val (offset, advanced) = state.nextRandom { nextInt(max - effect.minValue + 1) }
+            val number = effect.minValue + offset
+            return effectExecutor(advanced, effect.then, context.copy(xValue = number))
+        }
 
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name } ?: "Unknown"
 

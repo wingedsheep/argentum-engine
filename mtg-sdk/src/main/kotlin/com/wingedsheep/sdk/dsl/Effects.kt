@@ -4066,14 +4066,16 @@ object Effects {
      * `manaValueEqualsX()` (via
      * `GameObjectFilter`/`GroupFilter` `manaValueEqualsX()`). Compose with [Composite]
      * for multi-step cards (Void: destroy all, then reveal & discard). [minValue]/[maxValue]
-     * bound the legal choice.
+     * bound the legal choice; [random] picks it uniformly at random instead of prompting
+     * ("choose 1, 2, or 3 at random" — Tibalt's Trickery).
      */
     fun ChooseNumberThen(
         then: Effect,
         minValue: Int = 0,
         maxValue: Int = 16,
-        prompt: String = "Choose a number"
-    ): Effect = ChooseNumberThenEffect(then, minValue, DynamicAmount.Fixed(maxValue), prompt)
+        prompt: String = "Choose a number",
+        random: Boolean = false
+    ): Effect = ChooseNumberThenEffect(then, minValue, DynamicAmount.Fixed(maxValue), prompt, random)
 
     /** Choose a number with a ceiling evaluated before the choice replaces X. */
     fun ChooseNumberThen(

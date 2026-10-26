@@ -4621,13 +4621,17 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   answered in one `ChooseColorDecision` (`maxColors`) with `ColorChosenResponse.colors`. `then` sees the set as
   `EffectContext.chosenColors` (and one of them as `chosenColor`). Quickchange:
   `ChooseColorsThen(ChangeColorToChosen(creature)) then DrawCards(1)`.
-- `Effects.ChooseNumberThen(then, minValue=0, maxValue=16, prompt)` — pick a number in `[minValue, maxValue]`,
+- `Effects.ChooseNumberThen(then, minValue=0, maxValue=16, prompt, random=false)` — pick a number in `[minValue, maxValue]`,
   then run `then` once with the chosen number exposed via the effect context as **X**. Atomic effects and filters
   under `then` read it through `.manaValueEqualsX()`. Compose with `CompositeEffect` for
   multi-step cards (Void: destroy all artifacts/creatures with that mana value, then a target player reveals their
   hand and discards all nonland cards with that mana value).
   The `maxValue` overload accepts a `DynamicAmount`, evaluated once before the chosen
   number replaces X. An empty range skips both the choice and the inner effect.
+  `random = true` is Oracle's "choose 1, 2, or 3 at random": the engine draws uniformly from the same bounds off
+  the game's seeded RNG and runs `then` inline — no prompt, and not a die roll (no die-roll triggers or
+  replacements). Tibalt's Trickery: `ChooseNumberThen(then = ForEachPlayer(…, Pipeline { mill(XValue) … }),
+  minValue = 1, maxValue = 3, random = true)`.
 - `Effects.AddCountersWithLimit(type, amount, totalLimit, target)` — put a computed number
   of counters on a permanent or player without this instruction raising that kind's total
   above `totalLimit`. The limit applies **after** placement replacements (including doubling);
