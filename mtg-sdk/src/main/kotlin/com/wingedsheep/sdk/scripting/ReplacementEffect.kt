@@ -410,16 +410,33 @@ data class ScaleCounterPlacement(
     ),
     val effectsOnly: Boolean = false
 ) : ReplacementEffect {
-    override val description: String = when (scale) {
-        CounterPlacementScale.DOUBLE -> "If ${appliesTo.description}, place twice that many counters instead"
-        CounterPlacementScale.HALF_ROUNDED_DOWN ->
-            "If ${appliesTo.description}, place half that many counters instead, rounded down"
+    init {
+        require(placer == Player.Any || placer == Player.You || placer == Player.EachOpponent) {
+            "ScaleCounterPlacement.placer is a relation to this source's controller: Any, You or EachOpponent"
+        }
+    }
+
+    override val description: String = buildString {
+        append("If ${appliesTo.description}${placerClause(placer)}, ")
+        append(
+            when (scale) {
+                CounterPlacementScale.DOUBLE -> "place twice that many counters instead"
+                CounterPlacementScale.HALF_ROUNDED_DOWN -> "place half that many counters instead, rounded down"
+            }
+        )
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
         val newAppliesTo = appliesTo.applyTextReplacement(replacer)
         return if (newAppliesTo !== appliesTo) copy(appliesTo = newAppliesTo) else this
     }
+}
+
+/** The placer qualifier a counter-placement replacement's description appends. */
+private fun placerClause(placer: Player): String = when (placer) {
+    Player.You -> " and you are putting them"
+    Player.EachOpponent -> " and an opponent is putting them"
+    else -> ""
 }
 
 /** How a [ScaleCounterPlacement] scales a placement's count. */
@@ -453,8 +470,14 @@ data class ModifyCounterPlacement(
     ),
     val placer: Player = Player.Any
 ) : ReplacementEffect {
+    init {
+        require(placer == Player.Any || placer == Player.You || placer == Player.EachOpponent) {
+            "ModifyCounterPlacement.placer is a relation to this source's controller: Any, You or EachOpponent"
+        }
+    }
+
     override val description: String = buildString {
-        append("If ${appliesTo.description}, ")
+        append("If ${appliesTo.description}${placerClause(placer)}, ")
         if (modifier > 0) {
             append("$modifier additional counter")
             if (modifier > 1) append("s")

@@ -109,7 +109,9 @@ object ReplacementEffectUtils {
             val selfEntry = entityId == entrantSelfSource
             val container = (if (selfEntry) state else sources).getEntity(entityId) ?: continue
             val replacementComponent = container.get<ReplacementEffectSourceComponent>() ?: continue
-            val sourceControllerId = container.get<ControllerComponent>()?.playerId ?: continue
+            // A stolen source works for its new controller (layer 2): read the projected controller.
+            val sourceControllerId = (if (selfEntry) null else sources.projectedState.getController(entityId))
+                ?: container.get<ControllerComponent>()?.playerId ?: continue
 
             for (effect in replacementComponent.replacementEffects) {
                 val counterEvent = when (effect) {
@@ -267,7 +269,7 @@ object ReplacementEffectUtils {
      */
     private fun placerMatches(state: GameState, placer: Player, placerId: EntityId?, sourceControllerId: EntityId): Boolean =
         when (placer) {
-            Player.Any, Player.Each -> true
+            Player.Any -> true
             Player.You -> placerId == sourceControllerId
             Player.EachOpponent -> placerId != null && state.isOpponentOf(placerId, sourceControllerId)
             // Not a relation the placer can stand in (the SDK documents the three above).
