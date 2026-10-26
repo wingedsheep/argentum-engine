@@ -3141,8 +3141,9 @@ object Effects {
     fun AddManaInAnyCombination(
         amount: Int,
         allowedColors: Set<Color> = Color.entries.toSet(),
-        restriction: ManaRestriction? = null
-    ): Effect = AddDynamicManaEffect(DynamicAmount.Fixed(amount), allowedColors, restriction)
+        restriction: ManaRestriction? = null,
+        expiry: com.wingedsheep.sdk.scripting.effects.ManaExpiry = com.wingedsheep.sdk.scripting.effects.ManaExpiry.END_OF_TURN
+    ): Effect = AddDynamicManaEffect(DynamicAmount.Fixed(amount), allowedColors, restriction, expiry)
 
     /**
      * [expiry] covers "Until end of turn, you don't lose this mana as steps and phases end"
