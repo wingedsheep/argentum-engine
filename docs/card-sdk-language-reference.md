@@ -16965,7 +16965,8 @@ the rider twice (Pyromancer's Goggles: "That many copies will be created").
   [filter] spell, [effect]": the delayed triggered ability a mana ability sets up. If the cast spell
   matches `spellFilter` (at payment time, against its cast characteristics), queues a triggered
   ability running `effect` **above** the spell, so it resolves first; `EffectTarget.TriggeringEntity`
-  names the spell ("that spell", "it"). A non-matching spell is a silent no-op, and each rider-carrying
+  names the spell ("that spell", "it"); the trigger chooses no targets, so `effect` must be
+  untargeted (no `ContextTarget`). A non-matching spell is a silent no-op, and each rider-carrying
   mana spent fires its own trigger. Because the queued trigger's source is the *spell*, it still fires
   if the mana's producer has already left the battlefield, and it still resolves if the spell has left
   the stack. Pyromancer's Goggles: `TriggersWhenSpent(GameObjectFilter.InstantOrSorcery.withColor(Color.RED),

@@ -144,6 +144,7 @@ class ScaledNurturerScenarioTest : FunSpec({
 
         driver.getLifeTotal(you) shouldBe 22
     }
+
     test("auto-pay tapping the Nurturer for a Dragon carries the rider too") {
         val driver = createDriver()
         val you = driver.activePlayer!!

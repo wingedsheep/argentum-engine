@@ -10458,7 +10458,7 @@
                         "amount": 4
                     }
                 },
-                "descriptionOverride": "Max speed — you casts a artifact spell, you may pay {1}. If you do, copy target spell."
+                "descriptionOverride": "Max speed — you casts a artifact spell, you may pay {1}. If you do, copy that spell."
             }
         ]
     },

@@ -82,6 +82,9 @@ sealed interface ManaSpellRider {
      * The rider is a no-op when the spell doesn't match (the {G} paid for a non-Dragon spell).
      * Consuming two riders fires [effect] twice, one trigger per rider.
      *
+     * The trigger chooses no targets of its own, so [effect] must be untargeted: it may name the
+     * spell ([EffectTarget.TriggeringEntity]) and the controller, never a `ContextTarget`.
+     *
      * @property spellFilter Which cast spells set the trigger off.
      * @property effect What the trigger does when it resolves.
      */

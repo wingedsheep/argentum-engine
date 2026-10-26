@@ -998,8 +998,10 @@ data class CopyTargetSpellEffect(
     val tokenStartingLoyalty: DynamicAmount? = null
 ) : Effect {
     override val description: String = run {
-        val main = if (copies == DynamicAmount.Fixed(1)) "Copy target spell"
-            else "Copy target spell ${copies.description} times"
+        // "that spell" when the copied spell is the trigger's own ("copy it"), not a chosen target.
+        val spell = if (target == EffectTarget.TriggeringEntity) "that spell" else "target spell"
+        val main = if (copies == DynamicAmount.Fixed(1)) "Copy $spell"
+            else "Copy $spell ${copies.description} times"
         val clauses = exceptions.clauses()
         if (clauses.isEmpty()) main else "$main except ${clauses.joinToString(" and ")}"
     }
