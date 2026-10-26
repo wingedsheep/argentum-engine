@@ -897,6 +897,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.REFINE,
   // Cosima's tally of lands entered while she voyages in exile.
   CounterType.VOYAGE,
+  // Kaya's reminder that the creature returns to hand when it dies or is exiled.
+  CounterType.GHOSTFORM,
   CounterType.PLUS_ONE_PLUS_TWO,
   CounterType.PLUS_TWO_PLUS_TWO,
   CounterType.MINUS_TWO_MINUS_TWO,

@@ -13,17 +13,19 @@ interface ZoneGroup {
   cards: { id: EntityId; card: ClientCard | undefined }[]
 }
 
-const ZONE_ORDER: ZoneType[] = [ZoneType.BATTLEFIELD, ZoneType.HAND, ZoneType.GRAVEYARD]
+const ZONE_ORDER: ZoneType[] = [ZoneType.BATTLEFIELD, ZoneType.HAND, ZoneType.GRAVEYARD, ZoneType.EXILE]
 
 const ZONE_LABELS: Partial<Record<ZoneType, string>> = {
   [ZoneType.BATTLEFIELD]: 'Battlefield',
   [ZoneType.HAND]: 'Hand',
   [ZoneType.GRAVEYARD]: 'Graveyard',
+  [ZoneType.EXILE]: 'Exile',
 }
 
 /**
  * Multi-zone selection UI for SelectCardsDecision where options span multiple zones
- * (e.g., Lich's Mastery - exile from battlefield, hand, or graveyard).
+ * (e.g., Lich's Mastery - exile from battlefield, hand, or graveyard; Kaya the Inexorable's emblem -
+ * cast from hand, graveyard, or exile).
  *
  * Shows cards grouped by zone with clear section headers so the player
  * knows exactly where each card is.

@@ -4890,6 +4890,257 @@
     ]
 }
 
+// Kaya the Inexorable
+{
+    "name": "Kaya the Inexorable",
+    "manaCost": "{3}{W}{B}",
+    "typeLine": "Legendary Planeswalker — Kaya",
+    "oracleText": "+1: Put a ghostform counter on up to one target nontoken creature. It gains \"When this creature dies or is put into exile, return it to its owner's hand and create a 1/1 white Spirit creature token with flying.\"\n−3: Exile target nonland permanent.\n−7: You get an emblem with \"At the beginning of your upkeep, you may cast a legendary spell from your hand, from your graveyard, or from among cards you own in exile without paying its mana cost.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kaya the Inexorable:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "GHOSTFORM",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantTriggeredAbility",
+                            "ability": {
+                                "id": "Kaya the Inexorable:1",
+                                "trigger": {
+                                    "type": "ZoneChangeEvent",
+                                    "from": "Battlefield",
+                                    "to": "Graveyard"
+                                },
+                                "effect": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "MoveToZone",
+                                            "target": "Self",
+                                            "destination": "Hand",
+                                            "fromZone": "Graveyard"
+                                        },
+                                        {
+                                            "type": "CreateToken",
+                                            "power": 1,
+                                            "toughness": 1,
+                                            "colors": [
+                                                "WHITE"
+                                            ],
+                                            "creatureTypes": [
+                                                "Spirit"
+                                            ],
+                                            "keywords": [
+                                                "FLYING"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "descriptionOverride": "When this creature dies or is put into exile, return it to its owner's hand and create a 1/1 white Spirit creature token with flying."
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "Permanent"
+                        },
+                        {
+                            "type": "GrantTriggeredAbility",
+                            "ability": {
+                                "id": "Kaya the Inexorable:2",
+                                "trigger": {
+                                    "type": "ZoneChangeEvent",
+                                    "from": "Battlefield",
+                                    "to": "Exile"
+                                },
+                                "effect": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "MoveToZone",
+                                            "target": "Self",
+                                            "destination": "Hand",
+                                            "fromZone": "Exile"
+                                        },
+                                        {
+                                            "type": "CreateToken",
+                                            "power": 1,
+                                            "toughness": 1,
+                                            "colors": [
+                                                "WHITE"
+                                            ],
+                                            "creatureTypes": [
+                                                "Spirit"
+                                            ],
+                                            "keywords": [
+                                                "FLYING"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "descriptionOverride": "When this creature dies or is put into exile, return it to its owner's hand and create a 1/1 white Spirit creature token with flying."
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "Permanent"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature nontoken"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Kaya the Inexorable:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "nonland permanent"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Kaya the Inexorable:6",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "Kaya the Inexorable:5",
+                        "trigger": {
+                            "type": "StepEvent",
+                            "step": "UPKEEP"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromMultipleZones",
+                                        "zones": [
+                                            "Hand",
+                                            "Graveyard",
+                                            "Exile"
+                                        ],
+                                        "filter": {
+                                            "cardPredicates": [
+                                                "IsNonland",
+                                                "IsLegendary"
+                                            ]
+                                        }
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "gathered0",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected1",
+                                    "prompt": "You may cast a legendary spell without paying its mana cost",
+                                    "selectedLabel": "Cast for free"
+                                },
+                                {
+                                    "type": "CastFromCollectionWithoutPayingCost",
+                                    "from": "selected1"
+                                }
+                            ]
+                        },
+                        "descriptionOverride": "At the beginning of your upkeep, you may cast a legendary spell from your hand, from your graveyard, or from among cards you own in exile without paying its mana cost."
+                    },
+                    "descriptionOverride": "At the beginning of your upkeep, you may cast a legendary spell from your hand, from your graveyard, or from among cards you own in exile without paying its mana cost."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "MYTHIC",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/166c0bd1-b59d-4644-832f-888a4ca3a0aa.jpg?1783928194",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The ghostform counter added by the first ability doesn't have any functional importance. It's there to remind you of the ability the creature gains. Even if that counter is removed from the creature, the triggered ability it gains will still work."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a nontoken creature gains more than one instance of that triggered ability, each of them will trigger separately. You can return the card to its owner's hand only once, but you'll create a Spirit creature token for each of those abilities."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If you own a face-down card in exile, Kaya's emblem will let you cast it only if you can look at the card (and only if it's legendary). If you aren't allowed to look at the card, you can't cast it, even if you know it's legendary."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If you cast a spell \"without paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs, such as kicker costs. If the card has any mandatory additional costs, those must be paid to cast the spell."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If the spell has {X} in its mana cost, you must choose 0 as the value of X."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Kaya's Onslaught
 {
     "name": "Kaya's Onslaught",

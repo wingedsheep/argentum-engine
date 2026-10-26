@@ -229,4 +229,5 @@ export const counterManaClass: Record<string, string> = {
   STUDY: 'counter-verse',
   REFINE: 'counter-time',
   VOYAGE: 'counter-lore',
+  GHOSTFORM: 'counter-lore',
 }

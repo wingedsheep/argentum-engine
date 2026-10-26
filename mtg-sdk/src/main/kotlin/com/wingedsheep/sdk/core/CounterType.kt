@@ -868,6 +868,12 @@ value class CounterType(val name: String) {
          */
         val VOYAGE = CounterType("VOYAGE")
 
+        /**
+         * Ghostform counter (KHM — Kaya the Inexorable). A reminder with no rule of its own: the
+         * returning trigger Kaya's +1 grants keeps working even if the counter is removed.
+         */
+        val GHOSTFORM = CounterType("GHOSTFORM")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -1022,6 +1028,7 @@ value class CounterType(val name: String) {
             STUDY,
             REFINE,
             VOYAGE,
+            GHOSTFORM,
         )
 
         /**
