@@ -771,7 +771,8 @@ data class MayCastFromGraveyard(
 }
 
 /**
- * Where an instant or sorcery cast through a [MayCastFromGraveyard] grant goes instead of where it
+ * Where an instant or sorcery cast through a [MayCastFromGraveyard] grant (or a card's own
+ * [MayCastSelfFromZones] permission) goes instead of where it
  * would otherwise go as it leaves the stack.
  */
 @Serializable

@@ -2896,6 +2896,90 @@
     ]
 }
 
+// Glimpse the Cosmos
+{
+    "name": "Glimpse the Cosmos",
+    "manaCost": "{1}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top three cards of your library. Put one of them into your hand and the rest on the bottom of your library in any order.\nAs long as you control a Giant, you may cast this card from your graveyard by paying {U} rather than paying its mana cost. If you cast this card this way and it would be put into your graveyard, exile it instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    "storeAs": "looked"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "looked",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "kept",
+                    "storeRemainder": "rest",
+                    "selectedLabel": "Put in hand",
+                    "remainderLabel": "Put on bottom"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "kept",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "ControllerChooses"
+                }
+            ]
+        },
+        "staticAbilities": [
+            {
+                "type": "MayCastSelfFromZones",
+                "zones": [
+                    "Graveyard"
+                ],
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Giant"
+                },
+                "alternativeManaCost": "{U}",
+                "exileCastThisWay": "INSTEAD_OF_GRAVEYARD"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "rarity": "UNCOMMON",
+        "artist": "Lorenzo Mastroianni",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dc96ebe8-f4b3-4788-a6f5-2a50b6c0d935.jpg?1783928262"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Gnottvold Recluse
 {
     "name": "Gnottvold Recluse",

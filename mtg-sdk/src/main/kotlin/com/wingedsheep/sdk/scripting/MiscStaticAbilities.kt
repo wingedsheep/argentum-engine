@@ -874,6 +874,12 @@ data object PlayersPlayWithHandsRevealed : StaticAbility {
  * [additionalCost]. Unlike escape (CR 702.138) the cast confers no "escaped" designation and the
  * card isn't exiled on resolution. Exclusive with [castUsing], whose ability names its own price.
  *
+ * [exileCastThisWay] is the instant/sorcery exile rider [MayCastFromGraveyard] carries, scoped to
+ * this permission: "If you cast this card this way and it would be put into your graveyard, exile
+ * it instead" (Glimpse the Cosmos) is `exileCastThisWay = CastThisWayExile.INSTEAD_OF_GRAVEYARD`.
+ * It is armed only when the cast goes through this permission, and catches a countered or
+ * fizzled spell as well as a resolved one.
+ *
  * @property zones The zones from which this card may be cast.
  * @property condition Optional gate; null = always available.
  * @property additionalCost Optional additional cost required alongside the card's mana cost (or
@@ -882,6 +888,8 @@ data object PlayersPlayWithHandsRevealed : StaticAbility {
  *   cast (and any alternative cost the card offers).
  * @property alternativeManaCost The mana paid instead of the card's mana cost when cast through
  *   this permission; null = the card's own mana cost.
+ * @property exileCastThisWay Where an instant or sorcery cast through this permission goes instead
+ *   of its owner's graveyard; [CastThisWayExile.NONE] = no rider.
  */
 @SerialName("MayCastSelfFromZones")
 @Serializable
@@ -890,7 +898,8 @@ data class MayCastSelfFromZones(
     val condition: Condition? = null,
     val additionalCost: AdditionalCost? = null,
     val castUsing: Keyword? = null,
-    val alternativeManaCost: ManaCost? = null
+    val alternativeManaCost: ManaCost? = null,
+    val exileCastThisWay: CastThisWayExile = CastThisWayExile.NONE
 ) : StaticAbility {
     init {
         require(castUsing == null || alternativeManaCost == null) {
@@ -909,6 +918,13 @@ data class MayCastSelfFromZones(
         } else if (additionalCost != null) append(" by ${additionalCost.description.lowercase()} in addition to paying its other costs")
         if (condition != null && alternativeManaCost == null) append(" ${condition.description}")
         append(".")
+        when (exileCastThisWay) {
+            CastThisWayExile.NONE -> {}
+            CastThisWayExile.INSTEAD_OF_GRAVEYARD ->
+                append(" If you cast this card this way and it would be put into your graveyard, exile it instead.")
+            CastThisWayExile.ON_ANY_STACK_EXIT ->
+                append(" If you cast this card this way, exile it instead of putting it anywhere else any time it would leave the stack.")
+        }
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {

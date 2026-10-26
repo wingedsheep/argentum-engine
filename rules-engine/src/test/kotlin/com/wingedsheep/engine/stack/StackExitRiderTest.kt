@@ -10,6 +10,7 @@ import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
@@ -20,6 +21,7 @@ import com.wingedsheep.sdk.scripting.CastThisWayExile
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.MayCastFromGraveyard
+import com.wingedsheep.sdk.scripting.MayCastSelfFromZones
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
@@ -79,6 +81,18 @@ class StackExitRiderTest : FunSpec({
             )
         }
     }
+    val selfInsight = card("Self-Zone Insight") {
+        manaCost = "{1}{U}"
+        typeLine = "Sorcery"
+        spell { effect = Effects.DrawCards(1) }
+        staticAbility {
+            ability = MayCastSelfFromZones(
+                listOf(Zone.GRAVEYARD),
+                alternativeManaCost = ManaCost.parse("{U}"),
+                exileCastThisWay = CastThisWayExile.INSTEAD_OF_GRAVEYARD
+            )
+        }
+    }
     val remand = card("Stack Test Remand") {
         manaCost = "{0}"
         typeLine = "Instant"
@@ -112,7 +126,7 @@ class StackExitRiderTest : FunSpec({
     fun newDriver(): GameTestDriver {
         val driver = GameTestDriver()
         driver.registerCards(
-            TestCards.all + listOf(insight, monoInsight, flashInsight, jumpStartBench, graveyardOnlyBench, remand, counter, tuck)
+            TestCards.all + listOf(insight, monoInsight, flashInsight, jumpStartBench, graveyardOnlyBench, selfInsight, remand, counter, tuck)
         )
         driver.initMirrorMatch(deck = Deck.of("Island" to 40), skipMulligans = true, startingPlayer = 0)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -244,5 +258,39 @@ class StackExitRiderTest : FunSpec({
 
         d.getHand(player) shouldContain insightId
         d.getExile(player) shouldNotContain insightId
+    }
+
+    fun GameTestDriver.castSelfInsightFromGraveyard(player: EntityId): EntityId {
+        val id = putCardInGraveyard(player, "Self-Zone Insight")
+        giveMana(player, Color.BLUE, 1)
+        submit(
+            CastSpell(player, id, useAlternativeCost = true, alternativeCostType = AlternativeCostType.SELF_ZONE)
+        ).outcome shouldBe Outcome.Done
+        return id
+    }
+
+    test("a card's own self-zone permission exiles the spell it cast instead of returning it to the graveyard") {
+        val d = newDriver()
+        val player = d.activePlayer!!
+        val id = d.castSelfInsightFromGraveyard(player)
+        d.resolveAll()
+
+        d.getExile(player) shouldContain id
+        d.getGraveyard(player) shouldNotContain id
+    }
+
+    test("the self-zone rider is graveyard-only: a bounced spell returns to hand, and a hand cast goes to the graveyard") {
+        val d = newDriver()
+        val player = d.activePlayer!!
+        val id = d.castSelfInsightFromGraveyard(player)
+        d.respondWith(player, "Stack Test Remand", id)
+        d.resolveAll()
+        d.getHand(player) shouldContain id
+
+        d.giveMana(player, Color.BLUE, 2)
+        d.submit(CastSpell(player, id)).outcome shouldBe Outcome.Done
+        d.resolveAll()
+        d.getGraveyard(player) shouldContain id
+        d.getExile(player) shouldNotContain id
     }
 })

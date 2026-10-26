@@ -41,6 +41,8 @@ internal class CastAuthorization(
     val graveyardCastRiderGrant: com.wingedsheep.sdk.scripting.MayCastFromGraveyard?,
     /** A `MayPlayCardsFromExile(oncePerTurn)` granter (Evelyn, the Covetous) whose allowance this cast spends. */
     val oncePerTurnExileGranter: EntityId?,
+    /** Glimpse the Cosmos: the exile rider of the card's own `MayCastSelfFromZones` permission this cast went through. */
+    val selfZoneExileRider: CastThisWayExile = CastThisWayExile.NONE,
 )
 
 /**
@@ -83,6 +85,8 @@ internal class CastRecords(
             state, action.playerId, action.cardId, cardComponent, action.graveyardCastRider
         ),
         oncePerTurnExileGranter = zoneResolver.findOncePerTurnExileGranter(state, action.playerId, action.cardId),
+        selfZoneExileRider = zoneResolver.findMayCastSelfFromZoneAbility(state, action.playerId, action.cardId, action)
+            ?.exileCastThisWay ?: CastThisWayExile.NONE,
     )
 
     /**
@@ -216,7 +220,8 @@ internal class CastRecords(
      * *specific* grant that authorized this cast, so a simultaneous graveyard-cast permission from
      * another source is unaffected. `onlyIfResolved = false` because the replacement catches the
      * countered/fizzled spell too (printed ruling: an Adventure spell that fails to resolve is still
-     * exiled by this effect).
+     * exiled by this effect). A card's own `MayCastSelfFromZones(exileCastThisWay)` permission
+     * (Glimpse the Cosmos) arms the same rider when it is the permission the cast goes through.
      */
     fun applyCastThisWayRiders(
         state: GameState,
@@ -243,7 +248,8 @@ internal class CastRecords(
                 ))
             }
         }
-        val exileRider = grant?.exileCastThisWay ?: CastThisWayExile.NONE
+        val exileRider = grant?.exileCastThisWay?.takeIf { it != CastThisWayExile.NONE }
+            ?: authorization.selfZoneExileRider
         if (exileRider != CastThisWayExile.NONE && cardComponent.typeLine.let { it.isInstant || it.isSorcery }) {
             newState = newState.updateEntity(action.cardId) { c ->
                 c.with(AfterResolveDestinationComponent(

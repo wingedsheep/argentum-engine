@@ -12312,7 +12312,7 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   names *which* mana stands in for a color (`COLORLESS`, `SNOW`) without rewriting the cost — the same
   field and semantics as `GrantMayPlayFromExile`'s `spendAsAnyColor`. Its ice counters come from a
   `RedirectZoneChangeWith(EXILE, AddCounters(ICE, 1, TriggeringEntity))` death shield.
-- `MayCastSelfFromZones(zones, condition = null, additionalCost = null, castUsing = null, alternativeManaCost = null)` — intrinsic *self*
+- `MayCastSelfFromZones(zones, condition = null, additionalCost = null, castUsing = null, alternativeManaCost = null, exileCastThisWay = CastThisWayExile.NONE)` — intrinsic *self*
   permission: this card may be cast from any of `zones` (graveyard/exile) following normal timing
   and for its normal mana cost. Squee, the Immortal = `MayCastSelfFromZones(listOf(GRAVEYARD,
   EXILE))`. When `condition` is non-null the permission is **gated**: it is available only while the
@@ -12345,6 +12345,14 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   Costs.additional.ExileOtherCards(4)`. Exclusive with `castUsing`. The cast is announced as
   `AlternativeCostType.SELF_ZONE` (the enumerator offers it that way), so a plain cast from the
   same zone still goes through any other permission (Muldrotha, Lurrus) at the printed cost.
+  `exileCastThisWay` is the instant/sorcery exile rider of `MayCastFromGraveyard`, scoped to this
+  permission: armed (as an `AfterResolveDestinationComponent`, `CastRecords.applyCastThisWayRiders`)
+  only when the cast goes through it, and it catches a countered or fizzled spell too. Glimpse the
+  Cosmos (KHM) = `MayCastSelfFromZones(listOf(GRAVEYARD), condition = Conditions.ControlPermanentOfType(Subtype.GIANT),
+  alternativeManaCost = ManaCost.parse("{U}"), exileCastThisWay = CastThisWayExile.INSTEAD_OF_GRAVEYARD)` for
+  "As long as you control a Giant, you may cast this card from your graveyard by paying {U} rather than
+  paying its mana cost. If you cast this card this way and it would be put into your graveyard, exile it
+  instead." — a hand cast of the same card goes to the graveyard as usual.
   Wired through `CastZoneResolver.findMayCastSelfFromZoneAbility` (returns the applicable
   ability so callers can read its `additionalCost`), validated/collected in `CastSpellHandler`
   alongside the other additional-cost sources, and surfaced to legal-action enumeration in
