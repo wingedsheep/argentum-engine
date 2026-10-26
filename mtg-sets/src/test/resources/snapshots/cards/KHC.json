@@ -1,3 +1,68 @@
+// Elderfang Venom
+{
+    "name": "Elderfang Venom",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Attacking Elves you control have deathtouch.\nWhenever an Elf you control dies, each opponent loses 1 life and you gain 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Elderfang Venom:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Elf ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DEATHTOUCH",
+                "filter": {
+                    "baseFilter": "creature Elf attacking ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "RARE",
+        "artist": "Alessandra Pisano",
+        "flavorText": "\"The Cosmos Serpent favored us with his venom. As thanks, we sink fangs into those who dishonor the old ways.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7d5bbb02-a04e-4add-ae9a-67819cffdb3a.jpg?1783928335"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Lathril, Blade of the Elves
 {
     "name": "Lathril, Blade of the Elves",
@@ -103,6 +168,145 @@
     "colorIdentityOverride": [
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Pact of the Serpent
+{
+    "name": "Pact of the Serpent",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose a creature type. Target player draws X cards and loses X life, where X is the number of creatures they control of the chosen type.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ChooseOption",
+                    "optionType": "CREATURE_TYPE",
+                    "storeAs": "chosen0"
+                },
+                {
+                    "type": "StoreNumber",
+                    "name": "number1",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "HasSubtypeFromVariable",
+                                    "variableName": "chosen0"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "VariableReference",
+                        "variableName": "number1"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "VariableReference",
+                        "variableName": "number1"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "rarity": "RARE",
+        "artist": "Donato Giancola",
+        "flavorText": "\"Our quarrels behind us. Our foes before us. Death or triumph for us all!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c5b3d118-ba4b-4a93-92a2-cd763de49d29.jpg?1783928337",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "You choose the target player as you cast Pact of the Serpent, but you don't choose the creature type until the spell resolves."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The value of X is based on the number of creatures the player controls of the chosen type as Pact of the Serpent resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Ruthless Winnower
+{
+    "name": "Ruthless Winnower",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Elf Rogue",
+    "oracleText": "At the beginning of each player's upkeep, that player sacrifices a non-Elf creature of their choice.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ruthless Winnower:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Elf"
+                            }
+                        ]
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"I count the usurpers with my dagger, one death blow at a time.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/886ef13a-4f9d-425b-a071-6366cdb637c8.jpg?1783928337"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

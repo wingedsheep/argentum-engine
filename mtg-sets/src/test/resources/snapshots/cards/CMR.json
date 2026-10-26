@@ -1,3 +1,72 @@
+// Abomination of Llanowar
+{
+    "name": "Abomination of Llanowar",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Legendary Creature — Elf Horror",
+    "oracleText": "Vigilance; menace (This creature can't be blocked except by two or more creatures.)\nAbomination of Llanowar's power and toughness are each equal to the number of Elves you control plus the number of Elf cards in your graveyard.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "Add",
+                "left": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "permanent Elf"
+                },
+                "right": {
+                    "type": "AggregateZone",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "Elf"
+                }
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "Add",
+                "left": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "permanent Elf"
+                },
+                "right": {
+                    "type": "AggregateZone",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "Elf"
+                }
+            }
+        }
+    },
+    "keywords": [
+        "VIGILANCE",
+        "MENACE"
+    ],
+    "metadata": {
+        "collectorNumber": "265",
+        "rarity": "UNCOMMON",
+        "artist": "Vincent Proce",
+        "flavorText": "\"Run!\" screamed its living mouths. \"Come!\" cried its dead ones.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/567dbc64-4d59-4bab-a551-08fc66c085fa.jpg?1783928779",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "The ability that defines Abomination of Llanowar's power and toughness applies in all zones, not just the battlefield."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "As long as Abomination of Llanowar is on the battlefield (and still an Elf) or in your graveyard, its ability will count itself."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Aesi, Tyrant of Gyre Strait
 {
     "name": "Aesi, Tyrant of Gyre Strait",

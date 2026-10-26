@@ -2345,6 +2345,67 @@
     ]
 }
 
+// Harvest Season
+{
+    "name": "Harvest Season",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for up to X basic land cards, where X is the number of tapped creatures you control, put those cards onto the battlefield tapped, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "basicland"
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "creature tapped"
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for basic land cards (up to the number of tapped creatures you control) to put onto the battlefield tapped",
+                    "selectedLabel": "Put onto the battlefield tapped"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield",
+                        "placement": "Tapped"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "rarity": "RARE",
+        "artist": "Shreya Shetty",
+        "flavorText": "A true reflection of nature: death fostering life.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bb18e745-a925-477f-a50f-3ec7fba22d88.jpg?1783936475"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Haze of Pollen
 {
     "name": "Haze of Pollen",

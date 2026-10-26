@@ -2164,6 +2164,56 @@
     ]
 }
 
+// Maraleaf Pixie
+{
+    "name": "Maraleaf Pixie",
+    "manaCost": "{G}{U}",
+    "typeLine": "Creature — Faerie",
+    "oracleText": "Flying\n{T}: Add {G} or {U}.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Maraleaf Pixie:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Maraleaf Pixie:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Cavotta",
+        "flavorText": "Neither hostile nor friendly, pixies flit through the forest seeking the treasures of the wilds.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e6d7f9c9-dd83-4684-a949-1c22f316138a.jpg?1783932595"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Oko, Thief of Crowns
 {
     "name": "Oko, Thief of Crowns",

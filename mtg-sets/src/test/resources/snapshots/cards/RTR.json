@@ -1982,6 +1982,93 @@
     ]
 }
 
+// Golgari Charm
+{
+    "name": "Golgari Charm",
+    "manaCost": "{B}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• All creatures get -1/-1 until end of turn.\n• Destroy target enchantment.\n• Regenerate each creature you control.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        },
+                        "body": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": -1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": -1
+                            },
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "description": "All creatures get -1/-1 until end of turn"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "enchantment"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Destroy target enchantment"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "Regenerate",
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "description": "Regenerate each creature you control"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "164",
+        "rarity": "UNCOMMON",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"Let the rest of Ravnica sneer. One way or another, they all end up in the undercity.\"\n—Jarad",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/8/48fce388-eefc-4234-8dd9-1260c1ba97eb.jpg?1783940339"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Golgari Guildgate
 {
     "name": "Golgari Guildgate",

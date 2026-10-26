@@ -1694,6 +1694,112 @@
     ]
 }
 
+// Ezuri, Renegade Leader
+{
+    "name": "Ezuri, Renegade Leader",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Legendary Creature — Elf Warrior",
+    "oracleText": "{G}: Regenerate another target Elf.\n{2}{G}{G}{G}: Elf creatures you control get +3/+3 and gain trample until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ezuri, Renegade Leader:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent Elf",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{G}: Regenerate another target Elf."
+            },
+            {
+                "id": "Ezuri, Renegade Leader:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}{G}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature Elf ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "{2}{G}{G}{G}: Elf creatures you control get +3/+3 and gain trample until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "rarity": "RARE",
+        "artist": "Karl Kopinski",
+        "flavorText": "The infamous Ezuri commands the highest bounty the vedalken have ever placed upon an outlaw.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/9/e9544132-bbb5-4ec4-af82-dad56e5091af.jpg?1783941719",
+        "rulings": [
+            {
+                "date": "2011-01-01",
+                "text": "Ezuri's first ability can't affect itself, but its second ability does."
+            },
+            {
+                "date": "2011-01-01",
+                "text": "Only Elf creatures you control when the last ability resolves will get +3/+3 and gain trample until end of turn. Non-Elf creatures that become Elves or Elf creatures that enter under your control later in the turn won't get the bonuses."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ferrovore
 {
     "name": "Ferrovore",

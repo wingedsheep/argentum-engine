@@ -7540,6 +7540,72 @@
     ]
 }
 
+// Skemfar Shadowsage
+{
+    "name": "Skemfar Shadowsage",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Elf Cleric",
+    "oracleText": "When this creature enters, choose one —\n• Each opponent loses X life, where X is the greatest number of creatures you control that have a creature type in common.\n• You gain X life, where X is the greatest number of creatures you control that have a creature type in common.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skemfar Shadowsage:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "LoseLife",
+                                "amount": "LargestSharedCreatureTypeCount",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "EachOpponent"
+                                }
+                            },
+                            "description": "Each opponent loses X life, where X is the greatest number of creatures you control that have a creature type in common"
+                        },
+                        {
+                            "effect": {
+                                "type": "GainLife",
+                                "amount": "LargestSharedCreatureTypeCount"
+                            },
+                            "description": "You gain X life, where X is the greatest number of creatures you control that have a creature type in common"
+                        }
+                    ],
+                    "countsAsModalSpell": false
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c204130f-0483-49ed-8512-03a74894702e.jpg?1783928240",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "You choose which mode the triggered ability has as you put that ability on the stack. You can't change modes later."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The amount of life lost or gained is calculated as the triggered ability resolves based on the creatures you control at that time, including Skemfar Shadowsage itself if it's still under your control. You'll always use the greatest number possible. You don't need to choose any creature types. For example, if you control a Giant Wizard, a Giant Warrior, an Elf Warrior, and a Kor Warrior at that time, each opponent will lose 3 life or you'll gain 3 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Snakeskin Veil
 {
     "name": "Snakeskin Veil",
