@@ -4,7 +4,7 @@
 import type { MessageHandlers } from '@/network/messageHandlers.ts'
 import { ErrorCode, ZoneType } from '@/types'
 import type { EntityId } from '@/types'
-import type { ClientGameState, ClientEvent, LegalActionInfo, PendingDecision, OpponentDecisionStatus, PriorityModeValue, Step, CardFlippedOntoBattlefieldEvent } from '@/types'
+import type { ClientGameState, ClientEvent, DecisionResponse, LegalActionInfo, PendingDecision, OpponentDecisionStatus, PriorityModeValue, Step, CardFlippedOntoBattlefieldEvent } from '@/types'
 import type { FlipShow } from '../types'
 import { trackEvent, setInGame } from '@/utils/analytics.ts'
 import { applyStateDelta } from '@/network/deltaApplicator.ts'
@@ -14,6 +14,7 @@ import { CLEARED_PIPELINE_SELECTIONS, isActionStillOffered } from '../ui/pipelin
 import type { SetState, GetState } from './types'
 import { useTableTalkStore } from '@/store/tableTalkStore'
 import { getPreferences } from '@/store/preferencesStore'
+import { autoAnswerFor, scheduleAutoAnswer } from './autoAnswer'
 import { createSetPriorityModeMessage, createSetStopOverridesMessage, createSetTriggerOrderingMessage } from '@/types'
 import type {
   LogEntry,
@@ -219,6 +220,7 @@ interface StateUpdateEnvelope {
   readonly stopOverrides?: { readonly myTurnStops: readonly string[]; readonly opponentTurnStops: readonly string[] } | null
   readonly undoAvailable?: boolean
   readonly priorityMode?: PriorityModeValue | null
+  readonly autoAnswer?: DecisionResponse | null
 }
 
 /** A replaced timeline invalidates every partially built action in the same store update. */
@@ -728,11 +730,16 @@ function processStateUpdate(
     })
   }
 
+  // A question with one legal answer, which the server answered for us: never put it in front of
+  // the player — not even for a frame — and send that answer after a short delay instead.
+  const autoAnswer = autoAnswerFor(msg.pendingDecision, msg.autoAnswer, getPreferences().gameplay.autoAnswerForced)
+
   set((state) => ({
     gameState: resolvedState,
     interactionEpoch: msg.interactionEpoch ?? null,
     legalActions: msg.legalActions.map((action) => ({ ...action, interactionEpoch: msg.interactionEpoch ?? null })),
-    pendingDecision: msg.pendingDecision ?? null,
+    pendingDecision: autoAnswer ? null : msg.pendingDecision ?? null,
+    autoAnswerPending: autoAnswer != null,
     opponentDecisionStatus: msg.opponentDecisionStatus ?? null,
     nextStopPoint: msg.nextStopPoint ?? null,
     undoAvailable: msg.undoAvailable ?? false,
@@ -811,8 +818,10 @@ function processStateUpdate(
       : isPipelineOutpaced(state, msg.legalActions) ? CLEARED_PIPELINE_SELECTIONS : {}),
   }))
 
+  scheduleAutoAnswer(autoAnswer, set, get)
+
   // Auto-initialize inline distribute state for DistributeDecision
-  const decision = msg.pendingDecision
+  const decision = autoAnswer ? undefined : msg.pendingDecision
   if (decision?.type === 'DistributeDecision') {
     const initial: Record<string, number> = {}
     for (const targetId of decision.targets) {

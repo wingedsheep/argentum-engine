@@ -184,6 +184,12 @@ export function PreferencesPanel({ compact = false }: { compact?: boolean }) {
           onChange={(autoOrderTriggers) => update('gameplay', { autoOrderTriggers })}
         />
         <Toggle
+          label="Answer forced choices for me"
+          hint="When a question has only one legal answer — “you may reveal a Dragon card” with none in hand, a search with nothing to find, a trigger whose only legal target is itself — answer it after a moment and show a short notice instead of a dialog. Off: every question waits for you."
+          checked={gameplay.autoAnswerForced}
+          onChange={(autoAnswerForced) => update('gameplay', { autoAnswerForced })}
+        />
+        <Toggle
           label="Follow the action"
           hint="In games with three or more players, move the camera to the board where something is happening."
           checked={gameplay.followAction}

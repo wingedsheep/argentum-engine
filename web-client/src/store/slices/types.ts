@@ -1067,6 +1067,11 @@ export type GameStore = {
   spectatorCount: number
   /** Names of currently-active spectators (for hover display on the badge). */
   spectatorNames: readonly string[]
+  /** The last forced question this client answered for the player, shown as a brief notice. */
+  autoAnswerNotice: import('./handlers/autoAnswer').AutoAnswerNotice | null
+  dismissAutoAnswerNotice: () => void
+  /** A forced question is waiting to be answered for the player (see `autoAnswer.ts`). */
+  autoAnswerPending: boolean
   createGame: (deckList: Record<string, number>, setCode?: string) => void
   createAiGame: (deckList: Record<string, number>, setCode?: string) => void
   joinGame: (sessionId: string, deckList: Record<string, number>) => void

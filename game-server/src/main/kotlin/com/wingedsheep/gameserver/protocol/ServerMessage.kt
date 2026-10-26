@@ -160,6 +160,12 @@ sealed interface ServerMessage {
         val stateVersion: Long = 0,
         /** Originating live timeline for browser and asynchronous AI action submissions. */
         val interactionEpoch: String? = null,
+        /**
+         * The only legal answer to [pendingDecision], when it has exactly one (see
+         * `ForcedDecisionAutoAnswer`). The client may submit it unchanged instead of asking the
+         * player. Browser seats only; null whenever the question is a real choice.
+         */
+        val autoAnswer: com.wingedsheep.engine.core.DecisionResponse? = null,
     ) : ServerMessage
 
     /**
@@ -188,6 +194,12 @@ sealed interface ServerMessage {
         val stateVersion: Long = 0,
         /** Originating live timeline for browser and asynchronous AI action submissions. */
         val interactionEpoch: String? = null,
+        /**
+         * The only legal answer to [pendingDecision], when it has exactly one (see
+         * `ForcedDecisionAutoAnswer`). The client may submit it unchanged instead of asking the
+         * player. Browser seats only; null whenever the question is a real choice.
+         */
+        val autoAnswer: com.wingedsheep.engine.core.DecisionResponse? = null,
     ) : ServerMessage
 
     /**

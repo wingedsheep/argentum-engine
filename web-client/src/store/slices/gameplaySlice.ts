@@ -27,6 +27,7 @@ import type { Step, PriorityModeValue, YieldKind } from '@/types'
 import { trackEvent } from '@/utils/analytics.ts'
 import { getWebSocket } from './shared'
 import { getPreferences, usePreferences } from '@/store/preferencesStore'
+import type { AutoAnswerNotice } from './handlers/autoAnswer'
 
 /** How long an error toast stays up before auto-dismissing. */
 const ERROR_AUTO_DISMISS_MS = 5000
@@ -56,6 +57,13 @@ export interface GameplaySliceState {
   spectatorCount: number
   /** Names of currently-active spectators (for hover display on the badge). */
   spectatorNames: readonly string[]
+  /** The last forced question this client answered for the player, shown as a brief notice. */
+  autoAnswerNotice: AutoAnswerNotice | null
+  /**
+   * A forced question is waiting to be answered for the player. It is off screen, so nothing else
+   * may look actionable meanwhile — the Pass button above all.
+   */
+  autoAnswerPending: boolean
 }
 
 export interface GameplaySliceActions {
@@ -110,6 +118,7 @@ export interface GameplaySliceActions {
    */
   setError: (error: ErrorState) => void
   clearError: () => void
+  dismissAutoAnswerNotice: () => void
 }
 
 export type GameplaySlice = GameplaySliceState & GameplaySliceActions
@@ -136,6 +145,8 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
   autoTapEnabled: getPreferences().gameplay.autoTap,
   spectatorCount: 0,
   spectatorNames: [],
+  autoAnswerNotice: null,
+  autoAnswerPending: false,
 
   // Actions
   createGame: (deckList, setCode) => {
@@ -703,4 +714,6 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
     }
     set({ lastError: null })
   },
+
+  dismissAutoAnswerNotice: () => set({ autoAnswerNotice: null }),
 })

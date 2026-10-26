@@ -39,7 +39,7 @@ import { usePooledBattlefieldLayout } from './board/usePooledBattlefieldLayout'
 import { CardPreview } from './card'
 import { EmotePicker } from '../tableTalk/EmotePicker'
 import { ChatButton } from '@/components/messages/ChatButton'
-import { TargetingOverlay, ManaColorSelectionOverlay, LifeDisplay, ActiveEffectsBadges, SpeedGauge, DayNightBadge, SubgameBadge, SubgameFrame, ConcedeButton, FullscreenButton, GamePreferencesButton, SpectatorCountBadge, TeamLifeBanner, EliminationNotice } from './overlay'
+import { TargetingOverlay, ManaColorSelectionOverlay, LifeDisplay, ActiveEffectsBadges, SpeedGauge, DayNightBadge, SubgameBadge, SubgameFrame, ConcedeButton, FullscreenButton, GamePreferencesButton, SpectatorCountBadge, TeamLifeBanner, EliminationNotice, AutoAnswerNotice } from './overlay'
 import { HelpDrawer, HelpDrawerButton } from '../help/HelpDrawer'
 import { markLearnSignal } from '@/learn/signals'
 import { styles } from './board/styles'
@@ -705,7 +705,9 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
         // Mindslaver-style hijack: this client drives the controlled opponent, so it holds
         // priority whenever that opponent does (enables Pass, casting, ability activation).
         (youAreHijacking != null && gameState.priorityPlayerId === youAreHijacking))
-  const canAct = hasPriority && !opponentDecisionStatus
+  // A question answered for us is still a question: nothing else is ours to do until it is.
+  const autoAnswerPending = useGameStore((state) => state.autoAnswerPending)
+  const canAct = hasPriority && !opponentDecisionStatus && !autoAnswerPending
   /**
    * Two-Headed Giant: pair your hand with your ally's in one centered row at the bottom of the
    * screen. Outside a team game (and while spectating) this hands the fan straight back and the
@@ -1830,6 +1832,8 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
       })()}
 
       {isMulti && <EliminationNotice topOffset={effectiveTopOffset} />}
+      {/* Below the elimination notice in a pod, so the two never overlap. */}
+      <AutoAnswerNotice topOffset={effectiveTopOffset + (isMulti ? 36 : 0)} />
 
       {/* Attack-restriction explainer — "attack left/right" (CR 803.1) and similar
           restrictions are invisible on the board itself, so say exactly who can be

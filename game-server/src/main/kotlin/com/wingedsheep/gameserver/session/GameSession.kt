@@ -1233,6 +1233,11 @@ class GameSession(
         val legalActions = renaming?.toSeat(engineLegalActions, legalActionsSerializer) ?: engineLegalActions
         val clientEvents = renaming?.toSeat(engineClientEvents, clientEventsSerializer) ?: engineClientEvents
         val pendingDecision = enginePendingDecision?.let { renaming?.toSeat(it, PendingDecision.serializer()) ?: it }
+        // A question with one legal answer: hand the browser that answer so it needn't stop the
+        // player for it. The in-process AI answers these itself through the same TrivialDecisions.
+        val autoAnswer = if (useEngineDecisionIds) null else pendingDecision?.let { seatDecision ->
+            state.pendingDecision?.let { ForcedDecisionAutoAnswer.responseFor(it, seatDecision) }
+        }
 
         // Accumulate into persistent game log (filter noisy events). An ability's resolution is a
         // per-update signal for clients, not a log line: the trigger/activation line and the
@@ -1295,11 +1300,11 @@ class GameSession(
         if (previous != null) {
             // Compute delta and send smaller message
             val delta = StateDiffCalculator.computeDelta(previous, stateWithLog)
-            return ServerMessage.StateDeltaUpdate(delta, clientEvents, legalActions, pendingDecision, nextStopPoint, opponentDecisionStatus, stopOverrideInfo, isUndoAvailable(playerId), priorityModeStr, version, interactionEpoch)
+            return ServerMessage.StateDeltaUpdate(delta, clientEvents, legalActions, pendingDecision, nextStopPoint, opponentDecisionStatus, stopOverrideInfo, isUndoAvailable(playerId), priorityModeStr, version, interactionEpoch, autoAnswer)
         }
 
         // First update — send full state
-        return ServerMessage.StateUpdate(stateWithLog, clientEvents, legalActions, pendingDecision, nextStopPoint, opponentDecisionStatus, stopOverrideInfo, isUndoAvailable(playerId), priorityModeStr, version, interactionEpoch)
+        return ServerMessage.StateUpdate(stateWithLog, clientEvents, legalActions, pendingDecision, nextStopPoint, opponentDecisionStatus, stopOverrideInfo, isUndoAvailable(playerId), priorityModeStr, version, interactionEpoch, autoAnswer)
     }
 
     /** [value] with every card id in [playerId]'s own names; unchanged for a seat that has none. */

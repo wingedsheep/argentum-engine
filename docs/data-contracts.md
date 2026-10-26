@@ -740,6 +740,15 @@ use the same live acceptance operation. Missing or obsolete AI deliveries are di
 fallbacks, rejection accounting, or broadcasts. Rejection accounting and any resulting concession
 also check the originating epoch atomically. Replay records only canonical engine actions.
 
+A browser update whose `pendingDecision` has exactly one legal answer also carries that answer as
+`autoAnswer` (a `DecisionResponse` already keyed to the routed decision ID). The server decides it
+from the engine's own decision with `ForcedDecisionAutoAnswer`, which applies the AI's
+`TrivialDecisions` and still asks when the question is how the player looks at cards. The client
+never derives one: unless the player turned *Answer forced choices for me* off, it keeps the
+question off screen and submits `autoAnswer` unchanged after a one-second delay, as an ordinary
+`SubmitDecision`. The engine still always asks (#3340), and other seats still see the decision
+status for that second. AI seats get no `autoAnswer`; they answer through `TrivialDecisions` directly.
+
 #### One store
 
 Every replay — finished or still being recorded — is a row in `game_replays`, written by

@@ -16,6 +16,7 @@ import com.wingedsheep.engine.core.OrderObjectsDecision
 import com.wingedsheep.engine.core.OrderedResponse
 import com.wingedsheep.engine.core.PendingDecision
 import com.wingedsheep.engine.core.ReorderLibraryDecision
+import com.wingedsheep.engine.core.SearchLibraryDecision
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.core.TargetsResponse
@@ -32,6 +33,11 @@ import com.wingedsheep.engine.core.TargetsResponse
  * This helper is deliberately conservative. Defaults, solver suggestions, and decisions whose
  * uniqueness depends on state stay with the caller's policy; surfacing a forced decision is cheaper
  * than silently making a strategic choice here.
+ *
+ * It is also the one definition of "forced" for human seats: the game server answers a decision
+ * this returns a response for on the player's behalf (`ForcedDecisionAutoAnswer`), so the engine can
+ * always ask — whether a question exists must never depend on hidden cards (#3340) — without
+ * making people click through questions that have only one answer.
  */
 object TrivialDecisions {
 
@@ -63,6 +69,10 @@ object TrivialDecisions {
         // The shared response contract intentionally permits repeated IDs for distributed counter
         // removal. Without metadata distinguishing that use, only zero/one-option selections can
         // prove uniqueness here; larger all-options selections stay policy-owned.
+        //
+        // Nothing to pick from with nothing required ("you may reveal a Dragon card" and there is
+        // none, a search that finds nothing) has the empty selection as its only answer, however
+        // high the maximum: no response can name an option that isn't there.
         is SelectCardsDecision -> {
             val hasStateDependentConstraints = decision.onePerCardType ||
                 decision.onePerColor ||
@@ -73,12 +83,23 @@ object TrivialDecisions {
                 decision.minTotalManaValue != null ||
                 decision.maxTotalPower != null ||
                 decision.conditionalMinimums.isNotEmpty() || decision.selectionLimits != null
-            if (decision.options.size <= 1 &&
+            if (decision.options.isEmpty() && decision.minSelections <= 0 &&
+                decision.selectionLimits == null && decision.conditionalMinimums.isEmpty()
+            ) {
+                CardsSelectedResponse(decision.id, emptyList())
+            } else if (decision.options.size <= 1 &&
                 !hasStateDependentConstraints &&
                 decision.minSelections == decision.options.size &&
                 decision.maxSelections == decision.options.size
             ) {
                 CardsSelectedResponse(decision.id, decision.options)
+            } else null
+        }
+
+        // A search with no matching card can only fail to find (CR 701.23b).
+        is SearchLibraryDecision -> {
+            if (decision.options.isEmpty() && decision.minSelections <= 0) {
+                CardsSelectedResponse(decision.id, emptyList())
             } else null
         }
 

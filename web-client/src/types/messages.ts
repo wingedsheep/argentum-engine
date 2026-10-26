@@ -1,6 +1,6 @@
 import { ErrorCode, GameOverReason } from './enums'
 import { EntityId } from './entities'
-import { GameAction } from './actions'
+import { DecisionResponse, GameAction } from './actions'
 import { ClientEvent } from './events'
 import { ClientGameState, ClientCard, ClientZone, ClientPlayer, ClientCombatState, ClientCommanderDamage, ClientDeckCard, ClientRestrictedManaEntry } from './gameState'
 
@@ -234,6 +234,11 @@ export interface StateUpdateMessage {
   readonly stateVersion?: number
   /** Live timeline on which actions in this snapshot originate. */
   readonly interactionEpoch?: string | null
+  /**
+   * The only legal answer to `pendingDecision`, when it has exactly one. The server classifies the
+   * decision; the client may submit this unchanged instead of asking the player (#3340).
+   */
+  readonly autoAnswer?: DecisionResponse | null
 }
 
 /**
@@ -315,6 +320,11 @@ export interface StateDeltaUpdateMessage {
   readonly stateVersion?: number
   /** Live timeline on which actions in this snapshot originate. */
   readonly interactionEpoch?: string | null
+  /**
+   * The only legal answer to `pendingDecision`, when it has exactly one. The server classifies the
+   * decision; the client may submit this unchanged instead of asking the player (#3340).
+   */
+  readonly autoAnswer?: DecisionResponse | null
 }
 
 // ============================================================================

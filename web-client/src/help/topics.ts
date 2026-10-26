@@ -1165,7 +1165,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
         'Starting priority mode — Auto, Stops or Full Control. Every game begins in it; the mode button still switches it for the game you are in.',
         'Always stop at — your standing stops, for your turn and your opponents’. The phase-bar dots edit the same list.',
         'Hold priority over my own — triggered abilities, activated abilities, spells: get priority back while one of yours waits on the stack, whenever you can respond to it.',
-        'Auto-tap mana, Order my triggers automatically, and Follow the action for games with three or more players.',
+        'Auto-tap mana, Order my triggers automatically, Answer forced choices for me, and Follow the action for games with three or more players.',
       ] },
       { kind: 'h', text: 'Battlefield' },
       { kind: 'p', text: 'Identical permanents — same name, tapped state, counters, damage and so on — collapse into one stack with a count. Lands, creatures and other permanents each have their own rule:' },
@@ -1180,7 +1180,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { kind: 'p', text: 'Signed in, Message alerts away from home decides whether new messages put an unread count on the chat button and show a preview while you’re in a game, a draft or on another page. The home screen always shows them.' },
       { kind: 'tip', text: 'Changes save as you make them. As a guest they live in this browser; signed in, they follow you to every device.' },
     ],
-    related: ['stops', 'priority-modes', 'own-stack-stops', 'auto-tap', 'trigger-order', 'card-preview', 'messages', 'guest-vs-account'],
+    related: ['stops', 'priority-modes', 'own-stack-stops', 'auto-tap', 'trigger-order', 'forced-choices', 'card-preview', 'messages', 'guest-vs-account'],
   },
   {
     id: 'phase-bar',
@@ -1235,7 +1235,20 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { kind: 'p', text: 'A strip above each prompt names the cards involved — the source, its target, what triggered it — so a long chain of triggers stays readable.' },
       { kind: 'p', text: 'Secret choices stay private until everyone has confirmed. Pick a number in the prompt, or click a highlighted creature to vote for it; Select None submits an optional ballot without a vote. The game log reveals everyone’s choices together after the last answer.' },
     ],
-    related: ['targeting-and-combat', 'yields', 'mana-payment', 'dexterity-flips', 'trigger-order'],
+    related: ['targeting-and-combat', 'yields', 'mana-payment', 'dexterity-flips', 'trigger-order', 'forced-choices'],
+  },
+  {
+    id: 'forced-choices',
+    section: 'playing',
+    title: 'Choices with only one answer',
+    summary:
+      'Some questions have only one legal answer — “you may reveal a Dragon card from your hand” with none in hand, a search with nothing left to find, a mandatory trigger whose only legal target is the creature itself. The game answers those for you after a moment, and a short notice at the top of the board says what it answered.',
+    body: [
+      { kind: 'p', text: 'You are still asked every one of these questions, and your opponent sees you deciding for about as long as a quick answer takes. That is on purpose: if the game skipped the question whenever you had no answer but “no”, the pause it leaves would tell your opponent what is in your hand or library.' },
+      { kind: 'p', text: 'Only questions the server marks as having a single legal answer are answered for you. Anything with a real choice — including which order cards go in — still waits for you, and so does a question that is how you look at cards (“look at the top three…”), so you always get to see them.' },
+      { kind: 'tip', text: 'Turn off Answer forced choices for me (Preferences → Gameplay) to answer every question yourself. Click the notice to dismiss it early.' },
+    ],
+    related: ['decisions', 'preferences', 'trigger-order'],
   },
   {
     id: 'trigger-order',

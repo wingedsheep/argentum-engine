@@ -19,6 +19,7 @@ import com.wingedsheep.engine.core.ModesChosenResponse
 import com.wingedsheep.engine.core.OrderObjectsDecision
 import com.wingedsheep.engine.core.ReorderLibraryDecision
 import com.wingedsheep.engine.core.SearchCardInfo
+import com.wingedsheep.engine.core.SearchLibraryDecision
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.core.TargetRequirementInfo
@@ -117,6 +118,40 @@ class TrivialDecisionsTest : FunSpec({
             response.shouldNotBeNull()
             DecisionValidators.validate(decision, response, GameState()) shouldBe null
         }
+    }
+
+    test("an optional pick with nothing to pick from is forced to select nothing") {
+        val reveal = SelectCardsDecision(
+            id = "reveal",
+            playerId = player,
+            prompt = "You may reveal a Dragon card from your hand",
+            context = context,
+            options = emptyList(),
+            minSelections = 0,
+            maxSelections = 1,
+        )
+        val search = SearchLibraryDecision(
+            id = "search",
+            playerId = player,
+            prompt = "Search for a basic land",
+            context = context,
+            options = emptyList(),
+            minSelections = 0,
+            maxSelections = 1,
+            cards = emptyMap(),
+            filterDescription = "basic land",
+        )
+
+        for (decision in listOf(reveal, search)) {
+            val response = TrivialDecisions.responseFor(decision)
+            response.shouldBeInstanceOf<CardsSelectedResponse>()
+            response.selectedCards shouldBe emptyList()
+            DecisionValidators.validate(decision, response, GameState()) shouldBe null
+        }
+
+        // One eligible card under an "up to one" is a real choice: take it or not.
+        TrivialDecisions.responseFor(reveal.copy(options = listOf(first))).shouldBeNull()
+        TrivialDecisions.responseFor(search.copy(options = listOf(first))).shouldBeNull()
     }
 
     test("a lone target is not forced when cancellation or declining is legal") {
