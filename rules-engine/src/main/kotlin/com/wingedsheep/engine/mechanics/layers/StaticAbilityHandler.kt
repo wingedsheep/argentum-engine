@@ -227,27 +227,34 @@ class StaticAbilityHandler(
 
         /**
          * Lower a card's [ZoneScopedStaticAbility]s — the statics that function from a zone other
-         * than the battlefield (CR 113.6b) — keyed by the zone they function from. Empty when the
-         * card has none (the common case). Each zone's abilities are grouped exactly as battlefield
-         * statics are (CR 613.6, [lowerToContinuousEffectData]).
+         * than the battlefield (CR 113.6b) — into the card-intrinsic [ZoneStaticEffectsComponent],
+         * keyed by the zone they function from. Null when the card has none (the common case).
          *
-         * Fails loudly on a wrapped ability that lowers to no continuous effect: the projector is
-         * the only reader of these, so such an ability would otherwise sit silently inert.
+         * A wrapped ability is one of the two kinds the zone readers understand: a spell-cost
+         * modifier ([ModifySpellCost], read by the cost calculator) or a layer-projected static
+         * (read by the projector; each zone's are grouped exactly as battlefield statics are,
+         * CR 613.6, [lowerToContinuousEffectData]). Fails loudly on anything else: those are the
+         * only readers, so such an ability would otherwise sit silently inert.
          */
-        fun lowerZoneScoped(staticAbilities: List<StaticAbility>): Map<com.wingedsheep.sdk.core.Zone, List<ContinuousEffectData>> {
+        fun lowerZoneScoped(staticAbilities: List<StaticAbility>): ZoneStaticEffectsComponent? {
             val scoped = staticAbilities.filterIsInstance<ZoneScopedStaticAbility>()
-            if (scoped.isEmpty()) return emptyMap()
+            if (scoped.isEmpty()) return null
             val zones = scoped.flatMapTo(LinkedHashSet()) { it.activeZones }
-            return zones.associateWith { zone ->
-                val inZone = scoped.filter { zone in it.activeZones }.map { it.ability }
-                inZone.forEach { ability ->
+            val effects = LinkedHashMap<com.wingedsheep.sdk.core.Zone, List<ContinuousEffectData>>()
+            val costModifiers = LinkedHashMap<com.wingedsheep.sdk.core.Zone, List<ModifySpellCost>>()
+            for (zone in zones) {
+                val (cost, layered) = scoped.filter { zone in it.activeZones }.map { it.ability }
+                    .partition { it is ModifySpellCost }
+                layered.forEach { ability ->
                     check(lowering.lowerToContinuousEffectData(listOf(ability)).isNotEmpty()) {
-                        "ZoneScopedStaticAbility wraps '${ability.description}', which lowers to no " +
-                            "continuous effect; only layer-projected statics can function from $zone"
+                        "ZoneScopedStaticAbility wraps '${ability.description}', which is neither a " +
+                            "spell-cost modifier nor lowers to a continuous effect; nothing reads it from $zone"
                     }
                 }
-                lowering.lowerToContinuousEffectData(inZone)
+                if (layered.isNotEmpty()) effects[zone] = lowering.lowerToContinuousEffectData(layered)
+                if (cost.isNotEmpty()) costModifiers[zone] = cost.map { it as ModifySpellCost }
             }
+            return ZoneStaticEffectsComponent(effects, costModifiers)
         }
     }
 
@@ -559,7 +566,7 @@ class StaticAbilityHandler(
                 convertStaticAbilities(ability.ability).map { it.copy(sourceCondition = ability.condition) }
             // Functions only outside the battlefield (CR 113.6b) — never part of a permanent's
             // battlefield statics. Lowered separately by [lowerZoneScoped] into a card-intrinsic
-            // ZoneStaticEffectsComponent that the projector reads from the graveyard.
+            // ZoneStaticEffectsComponent that the projector and cost calculator read off the zone.
             is ZoneScopedStaticAbility -> emptyList()
             else -> listOfNotNull(convertStaticAbility(ability))
         }

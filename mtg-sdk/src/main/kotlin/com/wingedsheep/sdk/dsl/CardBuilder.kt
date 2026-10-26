@@ -580,7 +580,7 @@ class CardBuilder(private val name: String) {
     fun staticAbility(init: StaticAbilityBuilder.() -> Unit) {
         val builder = StaticAbilityBuilder()
         builder.init()
-        staticAbilities.add(builder.build())
+        staticAbilities.addAll(builder.build())
     }
 
     // =========================================================================
@@ -1942,10 +1942,20 @@ class StaticAbilityBuilder {
      * permanent's ordinary static. "As long as this card is in your graveyard, …" (Anger, Wonder)
      * is `setOf(Zone.GRAVEYARD)`, which wraps the ability in a [ZoneScopedStaticAbility]: on in
      * the graveyard, off on the battlefield. The twin of [TriggeredAbility.activeZones].
+     *
+     * A set naming the battlefield *and* other zones — eminence, "as long as The Ur-Dragon is in
+     * the command zone or on the battlefield" is `setOf(Zone.BATTLEFIELD, Zone.COMMAND)` — builds
+     * two abilities: the bare one, read by every battlefield scanner, and a
+     * [ZoneScopedStaticAbility] over the remaining zones. A card is in one zone at a time, so the
+     * two never function together.
      */
     var activeZones: Set<Zone> = setOf(Zone.BATTLEFIELD)
 
-    fun build(): StaticAbility {
+    /**
+     * The static abilities this block defines — one, or two when [activeZones] names the
+     * battlefield and another zone (see [activeZones]).
+     */
+    fun build(): List<StaticAbility> {
         val baseAbility = requireNotNull(ability) {
             "staticAbility { } requires `ability = <StaticAbility>`"
         }
@@ -1956,8 +1966,12 @@ class StaticAbilityBuilder {
         } else {
             baseAbility
         }
-        return if (activeZones == setOf(Zone.BATTLEFIELD)) gated
-        else ZoneScopedStaticAbility(gated, activeZones)
+        require(activeZones.isNotEmpty()) { "staticAbility { } activeZones must name at least one zone" }
+        val elsewhere = activeZones - Zone.BATTLEFIELD
+        return buildList {
+            if (Zone.BATTLEFIELD in activeZones) add(gated)
+            if (elsewhere.isNotEmpty()) add(ZoneScopedStaticAbility(gated, elsewhere))
+        }
     }
 }
 
@@ -2072,7 +2086,7 @@ class ClassLevelBuilder(private val level: Int, private val costString: String) 
     fun staticAbility(init: StaticAbilityBuilder.() -> Unit) {
         val builder = StaticAbilityBuilder()
         builder.init()
-        staticAbilities.add(builder.build())
+        staticAbilities.addAll(builder.build())
     }
 
     /**
@@ -2241,7 +2255,7 @@ class CardFaceBuilder(private val name: String) {
     fun staticAbility(init: StaticAbilityBuilder.() -> Unit) {
         val builder = StaticAbilityBuilder()
         builder.init()
-        staticAbilities.add(builder.build())
+        staticAbilities.addAll(builder.build())
     }
 
     /**

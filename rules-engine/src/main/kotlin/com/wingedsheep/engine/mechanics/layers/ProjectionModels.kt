@@ -23,19 +23,24 @@ data class ContinuousEffectSourceComponent(
 ) : Component
 
 /**
- * Card-intrinsic: the continuous effects a card's static abilities generate while it sits in a
- * zone *other than the battlefield* — [com.wingedsheep.sdk.scripting.ZoneScopedStaticAbility]
- * (CR 113.6b), e.g. Anger's "As long as Anger is in your graveyard and you control a Mountain,
- * creatures you control have haste".
+ * Card-intrinsic: what a card's static abilities do while it sits in a zone *other than the
+ * battlefield* — [com.wingedsheep.sdk.scripting.ZoneScopedStaticAbility] (CR 113.6b), e.g. Anger's
+ * "As long as Anger is in your graveyard and you control a Mountain, creatures you control have
+ * haste", or The Ur-Dragon's eminence "other Dragon spells you cast cost {1} less" from the command
+ * zone.
  *
  * Stamped once at entity creation by [com.wingedsheep.engine.core.CardEntityFactory] (like
  * [com.wingedsheep.engine.state.components.identity.MadnessComponent]) so it rides the card through
- * every zone, and the registry-free [StateProjector] can read it straight off a graveyard card
- * without a definition lookup per projection. The battlefield never reads it.
+ * every zone, and its readers get it straight off the card without a definition lookup: the
+ * registry-free [StateProjector] collects [effectsByZone] (layer effects), and
+ * [com.wingedsheep.engine.mechanics.mana.CostCalculator] collects [costModifiersByZone]. Both scan
+ * exactly [com.wingedsheep.sdk.scripting.ZoneScopedStaticAbility.SUPPORTED_ZONES], reading only the
+ * entry for the zone the card is in. The battlefield never reads it.
  */
 @Serializable
 data class ZoneStaticEffectsComponent(
-    val effectsByZone: Map<com.wingedsheep.sdk.core.Zone, List<ContinuousEffectData>>
+    val effectsByZone: Map<com.wingedsheep.sdk.core.Zone, List<ContinuousEffectData>> = emptyMap(),
+    val costModifiersByZone: Map<com.wingedsheep.sdk.core.Zone, List<com.wingedsheep.sdk.scripting.ModifySpellCost>> = emptyMap(),
 ) : Component
 
 /**

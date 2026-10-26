@@ -55,7 +55,7 @@ internal object SplitFaceCastOffers {
             fromZone = if (sourceZone == "GRAVEYARD") com.wingedsheep.sdk.core.Zone.GRAVEYARD else null, card = cardDef,
         )
         val effectiveCost = pricing?.min ?: context.costCalculator.calculateFreeCastCost(state,
-            faceDef, playerId, fromZone = com.wingedsheep.sdk.core.Zone.HAND, card = cardDef)
+            faceDef, playerId, fromZone = com.wingedsheep.sdk.core.Zone.HAND, card = cardDef, spellId = cardId)
         val costByTargetCount = pricing?.byCountStrings()
         if (!context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = cachedSources)) return
 

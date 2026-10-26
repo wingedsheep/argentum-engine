@@ -21,6 +21,7 @@ import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.ZoneScopedStaticAbility
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.scripting.Duration
@@ -909,26 +910,27 @@ class StateProjector {
             }
         }
 
-        // 1a. Static abilities that function from a graveyard (CR 113.6b — Anger's "As long as
-        // Anger is in your graveyard and you control a Mountain, creatures you control have
-        // haste"). Lowered once per card at entity creation ([ZoneStaticEffectsComponent]), so the
-        // per-projection cost is one component read per graveyard card.
+        // 1a. Static abilities that function from a graveyard or the command zone (CR 113.6b —
+        // Anger's "As long as Anger is in your graveyard and you control a Mountain, creatures you
+        // control have haste"). Lowered once per card at entity creation
+        // ([ZoneStaticEffectsComponent]), so the per-projection cost is one component read per card
+        // in those zones.
         //
         // "You" is the card's owner (CR 108.4a / 109.5: an object with no controller is read
         // through its owner) — passed as `youId` for the affected set and as the effect's
         // [ContinuousEffect.controllerId] fallback, which the later re-resolves and the
-        // [EffectApplicator]'s condition check both read, since a graveyard card has no projected
-        // controller of its own.
+        // [EffectApplicator]'s condition check both read, since a card outside the battlefield has
+        // no projected controller of its own.
         //
         // Timestamp: CR 613.7a gives the effect its object's timestamp, and CR 613.7d stamps an
         // object as it enters a zone. The engine doesn't record graveyard entry, so the current
         // state timestamp stands in — every printed graveyard static is a keyword or stat grant,
         // whose order among same-layer effects doesn't change the result.
-        for (playerId in state.turnOrder) {
-            for (entityId in state.getZone(playerId, Zone.GRAVEYARD)) {
+        for (zone in ZoneScopedStaticAbility.SUPPORTED_ZONES) for (playerId in state.turnOrder) {
+            for (entityId in state.getZone(playerId, zone)) {
                 val container = state.getEntity(entityId) ?: continue
                 val zoneEffects = container.get<ZoneStaticEffectsComponent>()
-                    ?.effectsByZone?.get(Zone.GRAVEYARD) ?: continue
+                    ?.effectsByZone?.get(zone) ?: continue
                 val ownerId = container.get<CardComponent>()?.ownerId ?: playerId
                 for (effect in zoneEffects) {
                     effects.add(

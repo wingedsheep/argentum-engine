@@ -532,7 +532,7 @@ class CastSpellEnumerator(
             // don't continue out before reaching it.
             // A free cast still owes the cost increases (CR 601.2f), so price it before offering it.
             val freeCastCost = if (context.freeCastPermissionFor(cardId)) {
-                context.freeCastCost(cardDef, com.wingedsheep.sdk.core.Zone.HAND)
+                context.freeCastCost(cardDef, com.wingedsheep.sdk.core.Zone.HAND, cardId)
             } else null
             val canAffordFreeCast = freeCastCost != null && context.canPayMana(freeCastCost, spellContext)
             if (!canAfford && !canAffordAlternative && !canAffordSelfAlternative && !canAffordEvoke && !canAffordImpending && !canAffordCleave && !canAffordOverload && !canAffordBlightPath && !canAffordOrPayPath && !canAffordFreeCast) {

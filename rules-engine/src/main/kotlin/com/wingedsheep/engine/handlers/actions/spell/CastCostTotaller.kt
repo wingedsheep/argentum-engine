@@ -318,6 +318,7 @@ internal class CastCostTotaller(
                 fromZone = if (castingFromCommandZone) Zone.COMMAND else castSourceZone(state, action.cardId),
                 declaredCostSlot = action.declaredCostSlot,
                 card = cardDef,
+                spellId = action.cardId,
             )
             playForFree -> ManaCost.ZERO
             // A fixed alternative mana cost — airbend's {2}, foretell, madness, Jadzi's {1} — is paid
@@ -336,6 +337,7 @@ internal class CastCostTotaller(
                 // announced X, as a printed {X} does.
                 baseCost = withAnnouncedX(checkNotNull(fixedAlternativeManaCost(state, action)), action, cardDef),
                 card = cardDef,
+                spellId = action.cardId,
                 announcedX = action.xValue,
             )
             action.useAlternativeCost && action.alternativeCostType == AlternativeCostType.ESCAPE && cardDef != null -> {
@@ -347,7 +349,7 @@ internal class CastCostTotaller(
                     state, spell, action.playerId, action.targets.map { it.toEntityId() },
                     fromZone = Zone.GRAVEYARD, declaredCostSlot = action.declaredCostSlot,
                     baseCost = withAnnouncedX(escape.cost, action, cardDef), card = cardDef,
-                    announcedX = action.xValue,
+                    spellId = action.cardId, announcedX = action.xValue,
                 )
             }
             castFace != null && cardDef != null ->
@@ -360,6 +362,7 @@ internal class CastCostTotaller(
                     fromZone = if (castingFromCommandZone) Zone.COMMAND else castSourceZone(state, action.cardId),
                     declaredCostSlot = action.declaredCostSlot,
                     announcedX = action.xValue,
+                    spellId = action.cardId,
                 )
             action.useAlternativeCost && cardDef != null ->
                 alternativeBases.firstNotNullOfOrNull { (type, base) ->
@@ -385,6 +388,7 @@ internal class CastCostTotaller(
                     // it's bargained" reduction is gated on the declaration (CR 702.166).
                     declaredCostSlot = action.declaredCostSlot,
                     baseCost = withAnnouncedX(cardDef.manaCost, action, cardDef),
+                    spellId = action.cardId,
                     // CR 202.3e: the spell is on the stack as its cost is determined, so a filter on
                     // its mana value ("mana value 5 or greater", Spectacle Mage) counts the X.
                     announcedX = action.xValue,
@@ -436,6 +440,7 @@ internal class CastCostTotaller(
             fromZone = if (zoneResolver.hasCommanderCastPermission(state, playerId, cardId)) Zone.COMMAND
                 else castSourceZone(state, cardId),
             announcedX = action.xValue,
+            spellId = cardId,
         )
 
     /**
@@ -493,7 +498,8 @@ internal class CastCostTotaller(
             zoneResolver.modalBackCastFace(state, playerId, cardId)?.let { back ->
                 costCalculator.calculateEffectiveCost(
                     state, back, playerId, action.targets.map { it.toEntityId() },
-                    declaredCostSlot = action.declaredCostSlot, card = cardDef, announcedX = action.xValue,
+                    declaredCostSlot = action.declaredCostSlot, card = cardDef, spellId = cardId,
+                    announcedX = action.xValue,
                 )
             }
         },
@@ -523,6 +529,7 @@ internal class CastCostTotaller(
                         fromZone = if (zoneResolver.hasCommanderCastPermission(state, playerId, cardId)) Zone.COMMAND else castSourceZone(state, cardId),
                         declaredCostSlot = action.declaredCostSlot,
                         baseCost = action.xValue?.let { x -> it.cost.withXAs(x) } ?: it.cost,
+                        spellId = cardId,
                         announcedX = action.xValue)
                 }
             } else null

@@ -42,6 +42,8 @@ import com.wingedsheep.sdk.scripting.GrantAlternativeCastingCost
 import com.wingedsheep.sdk.scripting.MayCastWithoutPayingManaCost
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.ModifySpellCost
+import com.wingedsheep.sdk.scripting.ZoneScopedStaticAbility
+import com.wingedsheep.engine.mechanics.layers.ZoneStaticEffectsComponent
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.SpellCostTarget
@@ -141,8 +143,12 @@ class CostCalculator(
         declaredCostSlot: ChoiceSlot? = null,
         baseCost: ManaCost = cardDef.manaCost,
         card: CardDefinition = cardDef,
-        // Pre-scanned battlefield/emblem modifiers, so a caller that already scanned doesn't twice.
-        modifiers: List<Pair<EntityId, ModifySpellCost>> = scanModifySpellCost(state),
+        // The card being cast, when known. It is on the stack as its cost is determined
+        // (CR 601.2a, 601.2f), so its own command-zone static ("other Dragon spells you cast cost
+        // {1} less", The Ur-Dragon) never discounts it — see [scanModifySpellCost].
+        spellId: EntityId? = null,
+        // Pre-scanned modifiers, so a caller that already scanned doesn't twice.
+        modifiers: List<Pair<EntityId, ModifySpellCost>> = scanModifySpellCost(state, spellId),
         announcedX: Int? = null,
     ): ManaCost {
         val manaValue = spellManaValue(cardDef, announcedX)
@@ -202,7 +208,8 @@ class CostCalculator(
             if (modifier.increase) totalIncrease += modifier.amount else totalReduction += modifier.amount
         }
 
-        // ModifySpellCost abilities on battlefield permanents and emblems.
+        // ModifySpellCost abilities on battlefield permanents, emblems, and cards whose statics
+        // function from their zone (eminence).
         for ((sourceId, ability) in modifiers) {
             if (ability.optionalLifePayment != null) continue
             if (!targetMatchesSpell(ability.target, cardDef, casterId, sourceId, state, chosenTargets, fromZone, manaValue, spellColors)) continue
@@ -305,9 +312,10 @@ class CostCalculator(
         fromZone: Zone? = null,
         declaredCostSlot: ChoiceSlot? = null,
         announcedX: Int? = null,
+        spellId: EntityId? = null,
     ): ManaCost = calculateEffectiveCost(
         state, faceCharacteristics(cardDef, face), casterId, chosenTargets, fromZone, declaredCostSlot,
-        card = cardDef, announcedX = announcedX,
+        card = cardDef, spellId = spellId, announcedX = announcedX,
     )
 
     /** [cardDef] seen with only [face]'s characteristics, as the spell is while on the stack. */
@@ -355,11 +363,16 @@ class CostCalculator(
     }
 
     /**
-     * Scan battlefield permanents and emblems for [ModifySpellCost] static abilities, returning each
-     * (sourceEntityId, ability) pair. Class-level filtering via [ClassLevelComponent]
-     * is honored.
+     * Scan battlefield permanents, emblems, and the zones zone-scoped statics function from for
+     * [ModifySpellCost] static abilities, returning each (sourceEntityId, ability) pair.
+     * Class-level filtering via [ClassLevelComponent] is honored.
+     *
+     * [castCardId] is the card being cast, excluded as a source: by the time its cost is determined
+     * it has moved to the stack (CR 601.2a, 601.2f), where none of its statics function — so The
+     * Ur-Dragon cast from the command zone doesn't discount itself. (A battlefield source can never
+     * be the spell, so this only ever drops a command-zone or graveyard source.)
      */
-    private fun scanModifySpellCost(state: GameState): List<Pair<EntityId, ModifySpellCost>> {
+    private fun scanModifySpellCost(state: GameState, castCardId: EntityId? = null): List<Pair<EntityId, ModifySpellCost>> {
         val results = mutableListOf<Pair<EntityId, ModifySpellCost>>()
         for (playerId in state.turnOrder) {
             for (entityId in state.getBattlefield(playerId)) {
@@ -382,16 +395,33 @@ class CostCalculator(
                 if (ability is ModifySpellCost) results += entityId to ability
             }
         }
+        // Statics that function from outside the battlefield (CR 113.6b — eminence: "as long as
+        // The Ur-Dragon is in the command zone or on the battlefield, …"), pre-lowered onto the card
+        // at creation, so this is one component read per card in those zones — the command zone
+        // holds a commander or two. Only the entry for the zone the card is actually in counts.
+        for (zone in ZoneScopedStaticAbility.SUPPORTED_ZONES) for (playerId in state.turnOrder) {
+            for (entityId in state.getZone(playerId, zone)) {
+                if (entityId == castCardId) continue
+                val zoneStatics = state.getEntity(entityId)?.get<ZoneStaticEffectsComponent>() ?: continue
+                zoneStatics.costModifiersByZone[zone]?.forEach { results += entityId to it }
+            }
+        }
         return results
     }
 
-    /** Permanents use projected control; only emblems read their fixed controller directly. */
+    /**
+     * Permanents use projected control; emblems read their fixed controller directly. A card whose
+     * static functions from a graveyard or the command zone has no controller there, so "you" is
+     * its owner (CR 108.4a / 109.5) — the player whose zone holds it.
+     */
     private fun modifierController(state: GameState, sourceId: EntityId): EntityId? {
         state.projectedState.getController(sourceId)?.let { return it }
         val source = state.getEntity(sourceId) ?: return null
-        return if (source.has<EmblemStaticAbilityComponent>()) {
-            source.get<ControllerComponent>()?.playerId
-        } else null
+        return when {
+            source.has<EmblemStaticAbilityComponent>() -> source.get<ControllerComponent>()?.playerId
+            source.has<ZoneStaticEffectsComponent>() -> source.get<CardComponent>()?.ownerId
+            else -> null
+        }
     }
 
     /**
@@ -1106,7 +1136,7 @@ class CostCalculator(
         declaredCostSlot: ChoiceSlot? = null,
         announcedX: Int? = null,
     ): TargetPricedCost {
-        val modifiers = scanModifySpellCost(state)
+        val modifiers = scanModifySpellCost(state, spellId)
         val countsTargets = targetCountDirections(
             state, cardDef, casterId, modifiers, fromZone, spellManaValue(cardDef, announcedX),
         ).isNotEmpty()
@@ -1225,7 +1255,7 @@ class CostCalculator(
         fun priced(targets: List<EntityId>): ManaCost =
             calculateEffectiveCost(
                 state, cardDef, casterId, targets, fromZone, declaredCostSlot, baseCost = baseCost, card = card,
-                modifiers = modifiers, announcedX = announcedX,
+                spellId = spellId, modifiers = modifiers, announcedX = announcedX,
             )
 
         /** Priced with [count] different targets, the discount-earning ones first. */
@@ -2430,8 +2460,10 @@ class CostCalculator(
         chosenTargets: List<EntityId> = emptyList(),
         fromZone: Zone? = null,
         announcedX: Int? = null,
+        spellId: EntityId? = null,
     ): ManaCost = calculateEffectiveCost(
-        state, cardDef, casterId, chosenTargets, fromZone, baseCost = alternativeCost, announcedX = announcedX,
+        state, cardDef, casterId, chosenTargets, fromZone, baseCost = alternativeCost, spellId = spellId,
+        announcedX = announcedX,
     )
 
     /**
@@ -2450,8 +2482,10 @@ class CostCalculator(
         fromZone: Zone? = null,
         declaredCostSlot: ChoiceSlot? = null,
         card: CardDefinition = cardDef,
+        spellId: EntityId? = null,
     ): ManaCost = calculateEffectiveCost(
         state, cardDef, casterId, chosenTargets, fromZone, declaredCostSlot, baseCost = ManaCost.ZERO, card = card,
+        spellId = spellId,
     )
 
     /**

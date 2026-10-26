@@ -131,13 +131,23 @@ data class ConditionalStaticAbility(
  * [TriggeredAbility.activeZones] (the same axis, on triggers). Write it through
  * `staticAbility { activeZones = setOf(Zone.GRAVEYARD) }`.
  *
- * **Scope.** Only [SUPPORTED_ZONES] are accepted — the zones the state projector scans for
- * these abilities — and only abilities that project through the layer system (keyword grants,
- * stat changes, …) function from them; the engine refuses a wrapped ability that lowers to no
- * continuous effect rather than letting it sit inert. Widen both together when a card needs it.
+ * **Command zone (eminence).** The Ur-Dragon's "As long as The Ur-Dragon is in the command zone
+ * or on the battlefield, other Dragon spells you cast cost {1} less to cast" is
+ * `staticAbility { activeZones = setOf(Zone.BATTLEFIELD, Zone.COMMAND) }`: the builder emits the
+ * bare ability for the battlefield plus this wrapper over `{COMMAND}`, so the battlefield half
+ * stays an ordinary static every battlefield scanner already reads. In the command zone "you" is
+ * again the card's owner.
+ *
+ * **Scope.** Only [SUPPORTED_ZONES] are accepted — the zones the engine scans for these
+ * abilities — and only two kinds of wrapped ability function from them: abilities that project
+ * through the layer system (keyword grants, stat changes, …), read by the state projector, and
+ * spell-cost modifiers ([ModifySpellCost]), read by the cost calculator. The engine refuses any
+ * other wrapped ability rather than letting it sit inert. Widen the readers and this list
+ * together when a card needs it.
  *
  * @property ability The static ability that functions while the card is in one of [activeZones].
- * @property activeZones The zones it functions from; never the battlefield.
+ * @property activeZones The zones it functions from; never the battlefield (a static that also
+ *   functions on the battlefield is written as the bare ability alongside this wrapper).
  */
 @SerialName("ZoneScopedStaticAbility")
 @Serializable
@@ -161,7 +171,7 @@ data class ZoneScopedStaticAbility(
 
     companion object {
         /** The non-battlefield zones the engine scans for zone-scoped static abilities. */
-        val SUPPORTED_ZONES: Set<Zone> = setOf(Zone.GRAVEYARD)
+        val SUPPORTED_ZONES: Set<Zone> = setOf(Zone.GRAVEYARD, Zone.COMMAND)
     }
 }
 

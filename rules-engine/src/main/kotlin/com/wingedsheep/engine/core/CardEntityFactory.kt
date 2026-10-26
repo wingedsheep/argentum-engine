@@ -149,13 +149,12 @@ object CardEntityFactory {
             ?.let { result = result.with(MadnessComponent(it.cost)) }
 
         // Statics that function from outside the battlefield (CR 113.6b — Anger's "as long as this
-        // is in your graveyard"). Lowered once here so the registry-free projector can read them
-        // off the card in its graveyard — see [ZoneStaticEffectsComponent].
-        val zoneStatics = com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
+        // is in your graveyard", eminence's "as long as this is in the command zone"). Lowered once
+        // here so the projector and the cost calculator read them straight off the card in that
+        // zone — see [ZoneStaticEffectsComponent].
+        com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
             .lowerZoneScoped(cardDef.script.staticAbilities)
-        if (zoneStatics.isNotEmpty()) {
-            result = result.with(com.wingedsheep.engine.mechanics.layers.ZoneStaticEffectsComponent(zoneStatics))
-        }
+            ?.let { result = result.with(it) }
 
         val dredgeAmounts = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Dredge>().map { it.amount }
         if (dredgeAmounts.isNotEmpty()) result = result.with(DredgeComponent(dredgeAmounts))

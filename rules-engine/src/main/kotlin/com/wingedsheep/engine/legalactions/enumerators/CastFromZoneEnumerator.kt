@@ -394,7 +394,7 @@ class CastFromZoneEnumerator(
                         .let { if (topAltCost?.withAnyManaColor == true) it.relaxColoredRequirements() else it }
                     val cachedSources = context.availableManaSources
                     // A free cast still owes the cost increases (CR 601.2f).
-                    val topFreeCost by lazy { context.freeCastCost(topCardDef, Zone.LIBRARY) }
+                    val topFreeCost by lazy { context.freeCastCost(topCardDef, Zone.LIBRARY, topCardId) }
                     val canAfford = (if (freeCastFromTop) context.canPayMana(topFreeCost) else
                         context.manaSolver.canPay(state, playerId, topPayableCost, precomputedSources = cachedSources)) &&
                         lifeAffordable && canPayGrantCost
@@ -649,6 +649,7 @@ class CastFromZoneEnumerator(
                         context.freeCastCost(
                             if (cardDef != null && prepareFace != null) context.costCalculator.faceCharacteristics(cardDef, prepareFace) else cardDef,
                             castZone,
+                            cardId,
                         )
                     } else if (paidPricing != null) {
                         paidPricing.min
@@ -666,6 +667,7 @@ class CastFromZoneEnumerator(
                             fromZone = castZone,
                             baseCost = runtimeFixedAltCost.fixedCost,
                             card = cardDef,
+                            spellId = cardId,
                         )
                     } else if (!playForFree && runtimeFixedAltCost != null) {
                         runtimeFixedAltCost.fixedCost
@@ -778,7 +780,7 @@ class CastFromZoneEnumerator(
                     // (Warped Space) lets this exile spell be cast for {0}. Offered as its own
                     // variant (CR 118.9a) alongside the pay path; X is treated as 0 (CR 107.3b).
                     // Excludes prepare-spell copies and cards already granted a free play.
-                    val freeFromExileCost by lazy { context.freeCastCost(cardDef, Zone.EXILE) }
+                    val freeFromExileCost by lazy { context.freeCastCost(cardDef, Zone.EXILE, cardId) }
                     val freeCastFromExile = !playForFree &&
                         prepareCopyFaceIndex == null &&
                         hasCorrectTiming && meetsRestrictions && canPayAdditionalCost &&

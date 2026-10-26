@@ -10347,11 +10347,21 @@ staticAbility {
   way: on in the owner's graveyard, **off on the battlefield**. "You" (for the condition and for "creatures you
   control") is the card's **owner** (CR 108.4a, 109.5). Anger: `staticAbility { ability = GrantKeyword(HASTE,
   GroupFilter(Creature.youControl())); condition = Conditions.YouControl(Filters.MountainCard); activeZones =
-  setOf(Zone.GRAVEYARD) }`; Wonder is the flying/Island twin. Scope today: `activeZones` must be a non-empty subset of
-  `ZoneScopedStaticAbility.SUPPORTED_ZONES` (`{GRAVEYARD}`), and only layer-projected abilities (keyword grants, stat
-  changes, type changes, …) are accepted — the engine refuses one that lowers to no continuous effect rather than let
-  it sit inert. Engine: lowered once per card at entity creation into a card-intrinsic `ZoneStaticEffectsComponent`,
-  which `StateProjector` collects from every graveyard on each projection.
+  setOf(Zone.GRAVEYARD) }`; Wonder is the flying/Island twin. **Eminence / "in the command zone or on the
+  battlefield"** names the battlefield too: `activeZones = setOf(Zone.BATTLEFIELD, Zone.COMMAND)` makes the builder
+  emit **two** statics — the bare ability (an ordinary battlefield static every battlefield scanner already reads) plus
+  `ZoneScopedStaticAbility(ability, {COMMAND})`. A card is in one zone at a time, so they never both function. The
+  Ur-Dragon: `staticAbility { ability = ModifySpellCost(YouCast(Any.withSubtype(DRAGON)), ReduceGeneric(1));
+  activeZones = setOf(Zone.BATTLEFIELD, Zone.COMMAND) }`. "Other … spells" needs no filter: the spell is on the stack
+  as its cost is determined (CR 601.2a, 601.2f), and the cost calculator excludes the card being cast as a source, so
+  casting it from the command zone isn't self-discounted (another commander still is). Scope today: the zone part of
+  `activeZones` must be a non-empty subset of `ZoneScopedStaticAbility.SUPPORTED_ZONES` (`{GRAVEYARD, COMMAND}`), and
+  the wrapped ability must be one the zone readers understand — a layer-projected ability (keyword grants, stat
+  changes, type changes, …), collected by `StateProjector`, or a spell-cost modifier (`ModifySpellCost`), collected by
+  `CostCalculator`; the engine refuses anything else rather than let it sit inert. Engine: lowered once per card at
+  entity creation into a card-intrinsic `ZoneStaticEffectsComponent` (`effectsByZone` + `costModifiersByZone`), which
+  both readers collect from the supported zones of every player — one component read per card there, and only the
+  entry for the zone the card is in.
 - `ConditionalStaticAbility` — static gated by a runtime `Condition`. A conditional wrapping a *multi-effect* ability
   (e.g. `TransformPermanent`) lowers through the plural converter and gates every resulting effect on the condition.
   The gate is honored for **non-projection** grants too, not just layer-projected effects: a conditional wrapping a

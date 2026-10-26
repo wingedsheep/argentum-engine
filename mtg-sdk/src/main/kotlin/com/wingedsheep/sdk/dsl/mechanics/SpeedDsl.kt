@@ -156,7 +156,7 @@ class MaxSpeedBuilder {
     fun staticAbility(init: StaticAbilityBuilder.() -> Unit) {
         val builder = StaticAbilityBuilder()
         builder.init()
-        statics.add(builder.build())
+        statics.addAll(builder.build())
     }
 
     /** A max-speed activated ability, e.g. "Max speed — {T}: Add {R}{R}." */

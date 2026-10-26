@@ -223,8 +223,9 @@ class EnumerationContext(
     fun freeCastCost(
         cardDef: com.wingedsheep.sdk.model.CardDefinition?,
         fromZone: com.wingedsheep.sdk.core.Zone,
+        spellId: EntityId? = null,
     ): com.wingedsheep.sdk.core.ManaCost =
-        cardDef?.let { costCalculator.calculateFreeCastCost(state, it, playerId, fromZone = fromZone) }
+        cardDef?.let { costCalculator.calculateFreeCastCost(state, it, playerId, fromZone = fromZone, spellId = spellId) }
             ?: com.wingedsheep.sdk.core.ManaCost.ZERO
 
     /** Whether the player can pay [cost] from their available sources — trivially true for {0}. */
