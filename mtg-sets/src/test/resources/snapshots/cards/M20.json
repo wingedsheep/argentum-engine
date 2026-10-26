@@ -1831,6 +1831,104 @@
     ]
 }
 
+// Kethis, the Hidden Hand
+{
+    "name": "Kethis, the Hidden Hand",
+    "manaCost": "{W}{B}{G}",
+    "typeLine": "Legendary Creature — Elf Advisor",
+    "oracleText": "Legendary spells you cast cost {1} less to cast.\nExile two legendary cards from your graveyard: Until end of turn, each legendary card in your graveyard gains \"You may play this card from your graveyard.\"",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kethis, the Hidden Hand:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomExileFrom",
+                        "zone": "Graveyard",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsLegendary"
+                            ]
+                        },
+                        "count": 2
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsLegendary"
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "gathered0"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Until end of turn, each legendary card in your graveyard gains \"You may play this card from your graveyard.\""
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsLegendary"
+                        ]
+                    }
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "211",
+        "rarity": "MYTHIC",
+        "artist": "Yongjae Choi",
+        "flavorText": "\"The pen is mightier than the crown.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fe28de73-76f3-4a9e-a020-dbe5921b9be5.jpg?1783932951",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "Kethis's last ability affects only legendary cards that are in your graveyard at the time it resolves. Legendary cards put into your graveyard later in the turn won't gain the ability. If you play a legendary card and it returns to your graveyard, it won't have the ability anymore."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Kethis's last ability doesn't change when you can play the legendary cards. For example, if you have a legendary creature card in your graveyard, you can cast it only during your main phase when the stack is empty. If you have a legendary land card in your graveyard, you can play it only during your main phase and only if you have an available land play remaining."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "You'll still pay all costs for a legendary spell you cast this way, including additional costs. You may also pay alternative costs."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Kykar, Wind's Fury
 {
     "name": "Kykar, Wind's Fury",

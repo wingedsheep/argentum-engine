@@ -30,6 +30,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.model.GameRng
 import com.wingedsheep.sdk.scripting.AbilityIdentity
 import kotlinx.serialization.Serializable
+import com.wingedsheep.engine.state.permissions.removeMayPlayPermissionsForCard
 import kotlinx.serialization.KeepGeneratedSerializer
 import kotlinx.serialization.ExperimentalSerializationApi
 
@@ -763,6 +764,9 @@ data class GameState(
         if (entityId in current) return this
         requireDetachedForInsertion(entityId)
         var newState = enterObjectZone(key, entityId).copy(zones = zones + (key to current + entityId))
+        if (newState.nextObjectGeneration != nextObjectGeneration) {
+            newState = newState.forgetMayPlayGrants(entityId)
+        }
         if (key.zoneType != Zone.BATTLEFIELD && key.zoneType != Zone.STACK) {
             val container = newState.getEntity(entityId)
             if (container != null && container.get<TappedComponent>() != null) {
@@ -861,6 +865,20 @@ data class GameState(
     }
 
     /** A card leaving exile loses every old link, even if the same entity later returns to exile. */
+    /**
+     * A card that arrives in a new zone is a new object (CR 400.7), so no "you may play this card"
+     * permission granted to its previous object follows it — "If you play a legendary card and it
+     * returns to your graveyard, it won't have the ability anymore" (Kethis, the Hidden Hand). Grants
+     * are always registered after their card reaches its zone, so a fresh grant is never caught here.
+     *
+     * Not applied on the way onto the stack ([pushToStack]): the cast still reads and spends the
+     * permission it was authorised by (capped groups, riders), and grants that survive the cast are
+     * dropped wherever the spell lands next — a countered or fizzled spell included.
+     */
+    private fun forgetMayPlayGrants(cardId: EntityId): GameState =
+        if (mayPlayPermissions.none { cardId in it.cardIds }) this
+        else removeMayPlayPermissionsForCard(cardId)
+
     private fun forgetExileLinks(cardId: EntityId): GameState {
         val state = this
         var result = state
