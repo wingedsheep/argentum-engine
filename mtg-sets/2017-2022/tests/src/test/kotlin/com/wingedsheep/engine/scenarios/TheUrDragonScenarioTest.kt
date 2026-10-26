@@ -82,6 +82,34 @@ class TheUrDragonScenarioTest : ScenarioTestBase() {
             game.handSize(1) shouldBe 2
         }
 
+        test("ruling: an attacking Dragon that leaves before resolution still counts toward the draw") {
+            val game = scenario()
+                .withPlayers()
+                .withCardOnBattlefield(1, "The Ur-Dragon")
+                .withCardOnBattlefield(1, "Dragon Whelp")
+                .withCardInHand(1, "Murder")
+                .withLandsOnBattlefield(1, "Swamp", 3)
+                .withCardInLibrary(1, "Forest")
+                .withCardInLibrary(1, "Forest")
+                .withCardInLibrary(1, "Forest")
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.advanceToPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+            game.declareAttackers(mapOf("The Ur-Dragon" to 2, "Dragon Whelp" to 2)).error shouldBe null
+            // The trigger is on the stack; Murder the attacking Whelp in response.
+            game.castSpell(1, "Murder", game.findPermanent("Dragon Whelp")!!).error shouldBe null
+
+            var guard = 0
+            while (game.state.pendingDecision !is SelectCardsDecision && guard < 10) {
+                game.resolveStack()
+                guard++
+            }
+            withClue("the Whelp is gone") { game.isOnBattlefield("Dragon Whelp") shouldBe false }
+            withClue("both declared Dragons still count: two cards drawn") { game.handSize(1) shouldBe 2 }
+            game.skipSelection().error shouldBe null
+        }
+
         test("the put is optional") {
             val game = scenario()
                 .withPlayers()

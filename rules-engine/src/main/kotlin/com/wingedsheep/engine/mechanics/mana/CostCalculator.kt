@@ -412,16 +412,21 @@ class CostCalculator(
     /**
      * Permanents use projected control; emblems read their fixed controller directly. A card whose
      * static functions from a graveyard or the command zone has no controller there, so "you" is
-     * its owner (CR 108.4a / 109.5) — the player whose zone holds it.
+     * its owner (CR 108.4a / 109.5) — but only while it actually sits in one of those zones of its
+     * owner's. A phased-out permanent is still in the battlefield list with no projected
+     * controller; it must stay controller-less (so its statics don't apply), not fall back to its
+     * owner.
      */
     private fun modifierController(state: GameState, sourceId: EntityId): EntityId? {
         state.projectedState.getController(sourceId)?.let { return it }
         val source = state.getEntity(sourceId) ?: return null
-        return when {
-            source.has<EmblemStaticAbilityComponent>() -> source.get<ControllerComponent>()?.playerId
-            source.has<ZoneStaticEffectsComponent>() -> source.get<CardComponent>()?.ownerId
-            else -> null
+        if (source.has<EmblemStaticAbilityComponent>()) return source.get<ControllerComponent>()?.playerId
+        if (!source.has<ZoneStaticEffectsComponent>()) return null
+        val ownerId = source.get<CardComponent>()?.ownerId ?: return null
+        val inScopedZone = ZoneScopedStaticAbility.SUPPORTED_ZONES.any { zone ->
+            sourceId in state.getZone(com.wingedsheep.engine.state.ZoneKey(ownerId, zone))
         }
+        return if (inScopedZone) ownerId else null
     }
 
     /**

@@ -2,6 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.PhasedOutComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.CommanderComponent
@@ -160,6 +161,20 @@ class EminenceStaticAbilityTest : ScenarioTestBase() {
             game.offeredCost(1, "Test Dragon Whelp") shouldBe "{1}{R}"
             game.castSpell(1, "Test Dragon Whelp").error shouldBe null
             withClue("only two of the three Mountains were needed") { game.tappedLands() shouldBe 2 }
+        }
+
+        test("a phased-out source on the battlefield doesn't discount — it doesn't fall back to its owner") {
+            val game = scenario()
+                .withPlayers()
+                .withCardOnBattlefield(1, "Test Eminence Wyrm")
+                .withCardInHand(1, "Test Dragon Whelp")
+                .withLandsOnBattlefield(1, "Mountain", 3)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val wyrm = game.findPermanent("Test Eminence Wyrm")!!
+            game.state = game.state.updateEntity(wyrm) { it.with(PhasedOutComponent(game.player1Id)) }
+
+            game.offeredCost(1, "Test Dragon Whelp") shouldBe "{2}{R}"
         }
 
         test("a non-Dragon spell is not discounted") {

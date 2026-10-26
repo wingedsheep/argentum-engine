@@ -923,9 +923,10 @@ class StateProjector {
         // no projected controller of its own.
         //
         // Timestamp: CR 613.7a gives the effect its object's timestamp, and CR 613.7d stamps an
-        // object as it enters a zone. The engine doesn't record graveyard entry, so the current
-        // state timestamp stands in — every printed graveyard static is a keyword or stat grant,
-        // whose order among same-layer effects doesn't change the result.
+        // object as it enters a zone. The engine doesn't record graveyard or command-zone entry, so
+        // the current state timestamp stands in — every printed graveyard or command-zone layer
+        // static is a keyword or stat grant, whose order among same-layer effects doesn't change
+        // the result.
         for (zone in ZoneScopedStaticAbility.SUPPORTED_ZONES) for (playerId in state.turnOrder) {
             for (entityId in state.getZone(playerId, zone)) {
                 val container = state.getEntity(entityId) ?: continue

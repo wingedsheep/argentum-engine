@@ -243,8 +243,17 @@ class StaticAbilityHandler(
             val effects = LinkedHashMap<com.wingedsheep.sdk.core.Zone, List<ContinuousEffectData>>()
             val costModifiers = LinkedHashMap<com.wingedsheep.sdk.core.Zone, List<ModifySpellCost>>()
             for (zone in zones) {
-                val (cost, layered) = scoped.filter { zone in it.activeZones }.map { it.ability }
-                    .partition { it is ModifySpellCost }
+                val inZone = scoped.filter { zone in it.activeZones }.map { it.ability }
+                val cost = inZone.filterIsInstance<ModifySpellCost>()
+                val layered = inZone.filterNot { it is ModifySpellCost }
+                cost.forEach { ability ->
+                    // The optional-life-payment variant (K'rrik-style "you may pay life") is offered
+                    // and charged only from battlefield sources; from another zone it would sit inert.
+                    check(ability.optionalLifePayment == null) {
+                        "ZoneScopedStaticAbility wraps '${ability.description}', a cost modifier with an " +
+                            "optional life payment; that variant is only read from the battlefield, not $zone"
+                    }
+                }
                 layered.forEach { ability ->
                     check(lowering.lowerToContinuousEffectData(listOf(ability)).isNotEmpty()) {
                         "ZoneScopedStaticAbility wraps '${ability.description}', which is neither a " +
@@ -252,7 +261,7 @@ class StaticAbilityHandler(
                     }
                 }
                 if (layered.isNotEmpty()) effects[zone] = lowering.lowerToContinuousEffectData(layered)
-                if (cost.isNotEmpty()) costModifiers[zone] = cost.map { it as ModifySpellCost }
+                if (cost.isNotEmpty()) costModifiers[zone] = cost
             }
             return ZoneStaticEffectsComponent(effects, costModifiers)
         }
