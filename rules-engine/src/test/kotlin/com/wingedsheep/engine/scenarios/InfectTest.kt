@@ -19,6 +19,9 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.GrantKeywordToOwnSpells
+import com.wingedsheep.sdk.scripting.KeywordAbility
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -76,6 +79,39 @@ class InfectTest : FunSpec({
         }
     }
 
+    val infectFanatic = card("Infect Fanatic") {
+        manaCost = "{B}"
+        typeLine = "Creature — Phyrexian Goblin"
+        power = 1
+        toughness = 1
+        oracleText = "Infect\nSacrifice this creature: It deals 2 damage to any target."
+        keywords(Keyword.INFECT)
+        activatedAbility {
+            cost = Costs.SacrificeSelf
+            val t = target(Targets.Any)
+            effect = Effects.DealDamage(2, t)
+        }
+    }
+
+    val toxicInfector = card("Toxic Infector") {
+        manaCost = "{1}{B}"
+        typeLine = "Creature — Phyrexian Horror"
+        power = 1
+        toughness = 1
+        oracleText = "Infect\nToxic 2"
+        keywords(Keyword.INFECT)
+        keywordAbility(KeywordAbility.toxic(2))
+    }
+
+    val infectSpellAnthem = card("Infect Spell Anthem") {
+        manaCost = "{2}{B}"
+        typeLine = "Enchantment"
+        oracleText = "Instant and sorcery spells you control have infect."
+        staticAbility {
+            ability = GrantKeywordToOwnSpells(Keyword.INFECT, spellFilter = GameObjectFilter.InstantOrSorcery)
+        }
+    }
+
     val bigBlocker = CardDefinition.creature(
         name = "Big Blocker",
         manaCost = ManaCost.parse("{3}{G}"),
@@ -87,7 +123,7 @@ class InfectTest : FunSpec({
 
     fun newGame(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(infectBear, infectLifelinker, infectTitan, infectPinger, bigBlocker))
+        driver.registerCards(TestCards.all + listOf(infectBear, infectLifelinker, infectTitan, infectPinger, infectFanatic, toxicInfector, infectSpellAnthem, bigBlocker))
         driver.initMirrorMatch(deck = Deck.of("Swamp" to 20, "Forest" to 20), startingLife = 20)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return driver
@@ -190,5 +226,48 @@ class InfectTest : FunSpec({
         driver.bothPass()
         driver.counters(blocker, CounterType.MINUS_ONE_MINUS_ONE) shouldBe 2
         (driver.state.getEntity(blocker)?.get<DamageComponent>()?.amount ?: 0) shouldBe 0
+    }
+
+    test("a source that left the battlefield uses its last-known infect (CR 702.90d)") {
+        val driver = newGame()
+        val me = driver.activePlayer!!
+        val opponent = driver.getOpponent(me)
+        val fanatic = driver.putCreatureOnBattlefield(me, "Infect Fanatic")
+        val abilityId = infectFanatic.script.activatedAbilities.single().id
+
+        driver.submit(ActivateAbility(me, fanatic, abilityId, targets = listOf(ChosenTarget.Player(opponent))))
+        driver.bothPass()
+
+        driver.counters(opponent, CounterType.POISON) shouldBe 2
+        driver.assertLifeTotal(opponent, 20)
+    }
+
+    test("a spell granted infect deals its damage as poison (CR 702.90e)") {
+        val driver = newGame()
+        val me = driver.activePlayer!!
+        val opponent = driver.getOpponent(me)
+        driver.putPermanentOnBattlefield(me, "Infect Spell Anthem")
+        val bolt = driver.putCardInHand(me, "Lightning Bolt")
+        driver.giveMana(me, com.wingedsheep.sdk.core.Color.RED, 1)
+
+        driver.castSpellWithTargets(me, bolt, listOf(ChosenTarget.Player(opponent)))
+        driver.bothPass()
+
+        driver.counters(opponent, CounterType.POISON) shouldBe 3
+        driver.assertLifeTotal(opponent, 20)
+    }
+
+    test("infect and toxic on one creature give their poison together") {
+        val driver = newGame()
+        val me = driver.activePlayer!!
+        val opponent = driver.getOpponent(me)
+        val infector = driver.putCreatureOnBattlefield(me, "Toxic Infector")
+        driver.removeSummoningSickness(infector)
+
+        driver.attackUnblocked(infector, me, opponent)
+
+        // 1 from infect's damage (CR 120.3b) + 2 from toxic (CR 120.3g).
+        driver.counters(opponent, CounterType.POISON) shouldBe 3
+        driver.assertLifeTotal(opponent, 20)
     }
 })

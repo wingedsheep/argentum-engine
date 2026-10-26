@@ -1826,11 +1826,16 @@ internal class CombatDamageManager(
         if (state.getEntity(attackerController)?.get<LifeTotalComponent>() == null) return state
         // CR 810.9 — applies to the attacking player's team's shared total.
         val attackerControllerLife = state.lifeTotal(attackerController)
+        // The reflected damage is still dealt by the attacker, so its infect turns it into poison
+        // for its own controller (CR 702.90b).
+        val hasInfect = DamageUtils.sourceHasInfect(state, projected, sourceId)
         // CR 119.8 — a player who can't lose life takes the reflected damage without losing life.
-        val (written, newLife) = if (state.isLifeLossLocked(attackerController)) state to attackerControllerLife
+        val (written, newLife) = if (hasInfect || state.isLifeLossLocked(attackerController)) state to attackerControllerLife
             else DamageUtils.writeLifeReduction(state, attackerController, attackerControllerLife, attackerControllerLife - originalAmount, predicateEvaluator)
         var newState = written
-        newState = DamageUtils.trackDamageReceivedByPlayer(newState, attackerController, originalAmount, sourceId)
+        newState = DamageUtils.trackDamageReceivedByPlayer(
+            newState, attackerController, originalAmount, sourceId, causedLifeLoss = !hasInfect
+        )
         // Reflection is an additional damage event from the attacking creature, so it adds
         // its full amount to the same source's damage history.
         newState = DamageUtils.trackDamageDealt(newState, sourceId, originalAmount, isCombatDamage = true)
@@ -1839,7 +1844,13 @@ internal class CombatDamageManager(
             sourceName = sourceName, targetName = "Player", targetIsPlayer = true,
             sourceAttachmentIds = attachmentIdsOf(state, sourceId),
             sourceLastKnown = captureLastKnown(state, sourceId)))
-        events.add(LifeChangedEvent(attackerController, attackerControllerLife, newLife, LifeChangeReason.DAMAGE))
+        if (hasInfect) {
+            newState = DamageUtils.givePoisonCounters(
+                newState, attackerController, originalAmount, attackerController, events, predicateEvaluator
+            )
+        } else {
+            events.add(LifeChangedEvent(attackerController, attackerControllerLife, newLife, LifeChangeReason.DAMAGE))
+        }
 
         // Commander damage (CR 903.10a) — reflection still counts as combat damage from the commander
         newState = accumulateCommanderDamage(newState, sourceId, attackerController, originalAmount)

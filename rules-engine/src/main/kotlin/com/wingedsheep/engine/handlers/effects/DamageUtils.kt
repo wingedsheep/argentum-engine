@@ -476,7 +476,13 @@ object DamageUtils {
         // Check if target is a player, planeswalker, or creature
         val lifeComponent = newState.getEntity(targetId)?.get<LifeTotalComponent>()
         val projected = newState.projectedState
-        if (lifeComponent != null && sourceId != null && sourceHasInfect(state, projected, sourceId)) {
+        // Infect works from any zone (CR 702.90e): a spell reaches it through the spell-grant
+        // channels as well, the same split lifelink and deathtouch make.
+        val hasInfect = sourceId != null && (
+            sourceHasInfect(state, projected, sourceId) ||
+                sourceHasGrantedDamageKeyword(zones.cardRegistry, state, sourceId, Keyword.INFECT)
+        )
+        if (lifeComponent != null && sourceId != null && hasInfect) {
             // CR 120.3b / 702.90b: damage to a player by a source with infect doesn't cause life
             // loss; its controller gives the player that many poison counters instead. It is
             // still damage dealt to the player, so the damage tallies (and lifelink below) apply.
@@ -554,7 +560,7 @@ object DamageUtils {
             val hasWither = sourceId != null && (
                 sourceHasKeyword(state, projected, sourceId, Keyword.WITHER) ||
                 state.getEntity(sourceId)?.get<SpellGrantedKeywordsComponent>()?.keywords?.contains(Keyword.WITHER.name) == true ||
-                sourceHasInfect(state, projected, sourceId)
+                hasInfect
             )
             if (hasWither) {
                 // Wither (CR 702.80) and infect (CR 702.90c): damage to creatures is dealt in the
