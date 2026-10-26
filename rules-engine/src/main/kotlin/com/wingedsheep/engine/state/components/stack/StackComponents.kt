@@ -45,12 +45,14 @@ data class SpellOnStackComponent(
      */
     val additionalEntryCounters: AdditionalEntryCounters? = null,
     /**
-     * Keywords the permanent this spell becomes gains with no end date, frozen at payment time by a
-     * `ManaSpellRider.GrantsKeywordWhenSpent` with `Duration.Permanent` (Hall of the Bandit Lord's
-     * "it gains haste"). Granted as the permanent enters; kept here on the stack object rather than
-     * as a floating effect so a spell that never resolves carries nothing into its next zone.
+     * Keywords the permanent this spell becomes gains, each for its own duration: frozen at payment
+     * time by a `ManaSpellRider.GrantsKeywordWhenSpent` (Hall of the Bandit Lord's "it gains haste",
+     * Carnelian Orb of Dragonkind's "until end of turn"), or while on the stack by a
+     * `GrantKeywordToSpellEffect` with a `permanentDuration` (Tyvar Kell's emblem). Granted as the
+     * permanent enters; kept here on the stack object rather than as a floating effect so a spell
+     * that never resolves carries nothing into its next zone (CR 400.7).
      */
-    val entryKeywordGrants: List<String> = emptyList(),
+    val entryKeywordGrants: List<EntryKeywordGrant> = emptyList(),
     /**
      * The opponent promised this spell's gift additional cost (CR 702.174a), or null when the gift
      * wasn't promised. A resolving permanent carries the fact onward in its cast-choices bag
@@ -696,6 +698,19 @@ sealed interface ChosenTarget {
 data class SpellContextComponent(
     val additionalData: Map<String, String> = emptyMap()
 ) : Component
+
+/**
+ * One keyword a permanent spell hands to the permanent it becomes ([SpellOnStackComponent.entryKeywordGrants]),
+ * lasting [duration] from the moment it enters. [sourceId] is what granted it (Tyvar Kell's emblem
+ * trigger's source), shown as the grant's origin; null credits the spell itself (a mana rider,
+ * whose producer may be long gone).
+ */
+@Serializable
+data class EntryKeywordGrant(
+    val keyword: String,
+    val duration: com.wingedsheep.sdk.scripting.Duration,
+    val sourceId: EntityId? = null,
+)
 
 /**
  * Marks a spell or ability on the stack as having been granted extra keywords (by enum name)

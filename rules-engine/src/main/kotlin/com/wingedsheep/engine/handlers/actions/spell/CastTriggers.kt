@@ -6,13 +6,9 @@ import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.event.PendingTrigger
 import com.wingedsheep.engine.event.TriggerContext
-import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.ObjectReferenceEnvironment
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
-import com.wingedsheep.engine.mechanics.layers.Layer
-import com.wingedsheep.engine.mechanics.layers.SerializableModification
-import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.mechanics.mana.GrantedKeywordResolver
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.state.GameState
@@ -20,6 +16,7 @@ import com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.CommanderRegistryComponent
 import com.wingedsheep.engine.state.components.player.GrantedSpellKeywordsComponent
+import com.wingedsheep.engine.state.components.stack.EntryKeywordGrant
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.core.Keyword
@@ -227,27 +224,21 @@ internal class CastTriggers(
     }
 
     /**
-     * Carnelian Orb of Dragonkind's rider: if the cast spell matches [spellFilter], float an
-     * end-of-turn grant of [keyword] keyed to the spell. Otherwise no-op (the mana paid for
-     * something else).
+     * Carnelian Orb of Dragonkind's / Hall of the Bandit Lord's rider: if the cast spell matches
+     * [spellFilter], freeze [keyword] onto the spell's [SpellOnStackComponent.entryKeywordGrants]
+     * for [duration]; `PermanentEntry` grants it as the spell becomes a permanent, so haste is live
+     * the instant the permanent exists. Otherwise no-op (the mana paid for something else).
      *
-     * Unlike the copy / scry riders this queues nothing onto the stack — "it gains haste until end
-     * of turn" is a continuous effect the printed card applies without a triggered ability. The
-     * grant is keyed to the spell's entity id, which a permanent spell keeps as it resolves onto the
-     * battlefield, so the keyword is live the instant the permanent exists — exactly what haste
-     * needs.
+     * Unlike the copy / scry riders this queues nothing onto the stack — "it gains haste" is a
+     * continuous effect the printed card applies without a triggered ability.
      *
      * The spell is matched against its stack characteristics at payment time rather than at
      * resolution. That's what the printed rulings require: mana spent on a non-Dragon spell that
      * *becomes* a Dragon later in the turn grants nothing.
      *
-     * The floating effect's source is the spell itself, not the mana's producer — the producer may
-     * already have left the battlefield, and the source is only read for the effect's display name.
-     *
-     * A [Duration.Permanent] grant (Hall of the Bandit Lord) is frozen onto the spell's
-     * [SpellOnStackComponent.entryKeywordGrants] instead; `PermanentEntry` grants it as the spell
-     * becomes a permanent. A floating effect keyed to the stack object would outlive a countered
-     * spell and reach the same card if it were later put onto the battlefield.
+     * Freezing the grant on the stack object rather than floating it at the spell's entity id keeps
+     * a countered spell from carrying the keyword onto the same card if it's put onto the
+     * battlefield later that turn (CR 400.7).
      */
     private fun grantKeywordWhenSpent(
         state: GameState,
@@ -258,19 +249,10 @@ internal class CastTriggers(
     ): GameState {
         val action = spell.action
         if (!spellMatches(state, action, spellFilter)) return state
-        if (duration == Duration.Permanent) {
-            return state.updateEntity(action.cardId) { c ->
-                val onStack = c.get<SpellOnStackComponent>() ?: return@updateEntity c
-                c.with(onStack.copy(entryKeywordGrants = onStack.entryKeywordGrants + keyword))
-            }
+        return state.updateEntity(action.cardId) { c ->
+            val onStack = c.get<SpellOnStackComponent>() ?: return@updateEntity c
+            c.with(onStack.copy(entryKeywordGrants = onStack.entryKeywordGrants + EntryKeywordGrant(keyword, duration)))
         }
-        return state.addFloatingEffect(
-            layer = Layer.ABILITY,
-            modification = SerializableModification.GrantKeyword(keyword),
-            affectedEntities = setOf(action.cardId),
-            duration = Duration.EndOfTurn,
-            context = EffectContext(sourceId = action.cardId, controllerId = action.playerId)
-        )
     }
 
     /**

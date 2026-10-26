@@ -210,22 +210,22 @@ internal class PermanentEntry(
     }
 
     /**
-     * Hall of the Bandit Lord's "if that mana is spent on a creature spell, it gains haste": the
-     * keywords a permanent-duration mana rider froze onto the spell become grants on the permanent,
-     * lasting until it leaves the battlefield (CR 400.7 ends them there).
+     * The keywords frozen onto the spell (Hall of the Bandit Lord's mana rider "it gains haste",
+     * Tyvar Kell's emblem "it gains haste until end of turn") become grants on the permanent, each
+     * for its own duration; leaving the battlefield ends them (CR 400.7).
      */
     private fun grantEntryKeywords(
         state: GameState,
         spellId: EntityId,
         spellComponent: SpellOnStackComponent,
         controllerId: EntityId,
-    ): GameState = spellComponent.entryKeywordGrants.fold(state) { acc, keyword ->
+    ): GameState = spellComponent.entryKeywordGrants.fold(state) { acc, grant ->
         acc.addFloatingEffect(
             layer = Layer.ABILITY,
-            modification = SerializableModification.GrantKeyword(keyword),
+            modification = SerializableModification.GrantKeyword(grant.keyword),
             affectedEntities = setOf(spellId),
-            duration = Duration.Permanent,
-            context = EffectContext(sourceId = spellId, controllerId = controllerId)
+            duration = grant.duration,
+            context = EffectContext(sourceId = grant.sourceId ?: spellId, controllerId = controllerId)
         )
     }
 
@@ -250,6 +250,9 @@ internal class PermanentEntry(
     ): ComponentContainer {
         var updated = c.without<SpellOnStackComponent>()
             .without<TargetsComponent>()
+            // A keyword stamped on the spell lasts only while it's a spell; one meant to outlast the
+            // stack was frozen into entryKeywordGrants and is granted to the permanent instead.
+            .without<com.wingedsheep.engine.state.components.stack.SpellGrantedKeywordsComponent>()
             .without<com.wingedsheep.engine.state.components.stack.GraveyardCastRiderComponent>()
             // The crew/saddle record outlives the permanent as last-known information; a recast
             // card is a new object nothing has crewed (CR 400.7).

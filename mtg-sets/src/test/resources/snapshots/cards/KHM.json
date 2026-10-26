@@ -6898,6 +6898,179 @@
     ]
 }
 
+// Tyvar Kell
+{
+    "name": "Tyvar Kell",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Legendary Planeswalker — Tyvar",
+    "oracleText": "Elves you control have \"{T}: Add {B}.\"\n+1: Put a +1/+1 counter on up to one target Elf. Untap it. It gains deathtouch until end of turn.\n0: Create a 1/1 green Elf Warrior creature token.\n−6: You get an emblem with \"Whenever you cast an Elf spell, it gains haste until end of turn and you draw two cards.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tyvar Kell:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "tap": false
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DEATHTOUCH",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature Elf"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Tyvar Kell:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 0
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Elf",
+                        "Warrior"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Tyvar Kell:5",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -6
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "Tyvar Kell:4",
+                        "trigger": {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Elf"
+                                    }
+                                ]
+                            }
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GrantKeywordToSpell",
+                                    "keyword": "HASTE",
+                                    "permanentDuration": "EndOfTurn"
+                                },
+                                {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                }
+                            ]
+                        },
+                        "descriptionOverride": "Whenever you cast an Elf spell, it gains haste until end of turn and you draw two cards."
+                    },
+                    "descriptionOverride": "Whenever you cast an Elf spell, it gains haste until end of turn and you draw two cards."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "You get an emblem with \"Whenever you cast an Elf spell, it gains haste until end of turn and you draw two cards.\""
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Tyvar Kell:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "BLACK"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true,
+                    "descriptionOverride": "{T}: Add {B}."
+                },
+                "filter": {
+                    "baseFilter": "creature Elf ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d18008f-10d2-4cdf-b4b5-7675782a8b0d.jpg?1783928203",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Tyvar may look like an Elf, but he's not a creature with the creature type Elf, so he doesn't give himself the mana ability he gives Elves you control and he can't be the target of the first loyalty ability."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The first loyalty ability can target an Elf that's already untapped."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The emblem will cause the Elf spell to gain haste. That change carries through to the permanent that the spell becomes."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Undersea Invader
 {
     "name": "Undersea Invader",

@@ -1,8 +1,11 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.clb.cards.CarnelianOrbOfDragonkind
@@ -26,7 +29,7 @@ import io.kotest.matchers.shouldBe
  *
  * Covers the new [com.wingedsheep.sdk.scripting.effects.ManaSpellRider.GrantsKeywordWhenSpent]
  * rider — the first rider that applies a continuous effect instead of queuing a trigger. The
- * grant is keyed to the *spell's* entity id while it is still on the stack, so the interesting
+ * grant is frozen onto the spell while it is still on the stack, so the interesting
  * question these tests answer is whether it survives the stack → battlefield transition and lands
  * on the permanent in time to matter. Haste makes that observable: the assertion is an actual
  * attack the turn the Dragon enters, not just a projected keyword.
@@ -100,8 +103,8 @@ class CarnelianOrbOfDragonkindScenarioTest : FunSpec({
         driver.castSpell(you, wyrm).error shouldBe null
         driver.bothPass()
 
-        // The grant was floated onto the spell on the stack; a permanent spell keeps its entity id
-        // as it resolves, so it is already live on the permanent.
+        // The grant was frozen onto the spell on the stack and handed to the permanent as it
+        // entered, so it is already live.
         projector.project(driver.state).hasKeyword(wyrm, Keyword.HASTE) shouldBe true
         driver.state.getEntity(wyrm)?.has<SummoningSicknessComponent>() shouldBe true
 
@@ -162,5 +165,34 @@ class CarnelianOrbOfDragonkindScenarioTest : FunSpec({
         driver.bothPass()
 
         driver.getLifeTotal(you) shouldBe 22
+    }
+
+    test("a countered Dragon spell leaves no haste grant on the card in the graveyard") {
+        val driver = createDriver()
+        val you = driver.activePlayer!!
+        val opponent = driver.getOpponent(you)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val orb = driver.putPermanentOnBattlefield(you, "Carnelian Orb of Dragonkind")
+        val wyrm = driver.putCardInHand(you, "Test Ember Wyrm")
+        val counter = driver.putCardInHand(opponent, "Counterspell")
+        driver.giveMana(opponent, Color.BLUE, 2)
+        tapOrb(driver, you, orb)
+
+        driver.castSpell(you, wyrm).error shouldBe null
+        driver.passPriority(you)
+        driver.submit(
+            CastSpell(
+                opponent, counter,
+                targets = listOf(ChosenTarget.Spell(wyrm)),
+                paymentStrategy = PaymentStrategy.FromPool,
+            )
+        ).error shouldBe null
+        driver.bothPass()
+
+        driver.getGraveyardCardNames(you).contains("Test Ember Wyrm") shouldBe true
+        // The card keeps its entity id in the graveyard, so a grant floating on it would reach it
+        // if it were put onto the battlefield later this turn (CR 400.7 says it must not).
+        driver.state.floatingEffects.none { wyrm in it.effect.affectedEntities } shouldBe true
     }
 })
