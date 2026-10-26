@@ -63,6 +63,7 @@ class ReidaneGodOfTheWorthyScenarioTest : ScenarioTestBase() {
                 withClue("the opponent pays, and the prompt names Valkmira rather than ward") {
                     window.playerId shouldBe game.player2Id
                     window.context.sourceName shouldBe "Valkmira, Protector's Shield"
+                    window.prompt shouldBe "Pay {1} or your spell will be countered"
                 }
                 game.submitDecision(ManaSourcesSelectedResponse(window.id, declined = true)).error shouldBe null
                 game.resolveStack()
