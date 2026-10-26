@@ -962,6 +962,8 @@ object DamageUtils {
      * the battlefield; once it has left (a creature that died before its "it deals damage" trigger
      * resolved — Wrathful Red Dragon, Warstorm Surge), its keywords as it last existed there
      * (CR 608.2h), so its lifelink, deathtouch and wither still apply to the damage it deals.
+     * Read off the battlefield-exit snapshot the card carries; a token already deleted as a
+     * state-based action has none, so its keywords are not seen.
      */
     private fun sourceHasKeyword(
         state: GameState,

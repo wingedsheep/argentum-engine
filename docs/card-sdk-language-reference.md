@@ -1549,7 +1549,8 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   resolving source, `cantBePrevented` is "this damage can't be prevented". A non-targeted
   `damageSource` (`TriggeringEntity`, `Self`, `IterationEntity`) that has left the battlefield still
   deals the damage by last-known information (CR 608.2h), with its last-known lifelink, deathtouch
-  and wither — Wrathful Red Dragon's Dragon killed by the damage it's reflecting; a *targeted*
+  and wither (read off the card's battlefield-exit snapshot; a token deleted by CR 704.5d keeps no
+  snapshot, so its keywords are not seen) — Wrathful Red Dragon's Dragon killed by the damage it's reflecting; a *targeted*
   source that became illegal still skips the damage (CR 608.2b). `excessDamageVariable`
   stores the excess damage (CR 120.4a) dealt to the single permanent target — above lethal for a
   creature (marked damage and deathtouch aware), above loyalty for a planeswalker, above defense for a
