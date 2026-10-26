@@ -1768,6 +1768,99 @@
     ]
 }
 
+// Lozhan, Dragons' Legacy
+{
+    "name": "Lozhan, Dragons' Legacy",
+    "manaCost": "{3}{U}{R}",
+    "typeLine": "Legendary Creature — Dragon Shaman",
+    "oracleText": "Flying\nWhenever you cast an Adventure or Dragon spell, Lozhan deals damage equal to that spell's mana value to any target that isn't a commander.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lozhan, Dragons' Legacy:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Adventure"
+                                    },
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Dragon"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGERING_SPELL_MANA_VALUE"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0",
+                    "descriptionOverride": "any target that isn't a commander",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": "IsCommander"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever you cast an Adventure or Dragon spell, Lozhan deals damage equal to that spell's mana value to any target that isn't a commander."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "281",
+        "rarity": "UNCOMMON",
+        "artist": "Rudy Siswanto",
+        "flavorText": "She channels myth and memory into waves of deadly arcane force.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fe604232-19da-4331-a6f2-ddb004f1dd90.jpg?1783922690",
+        "rulings": [
+            {
+                "date": "2022-06-10",
+                "text": "If you cast a non-Dragon permanent spell that has an Adventure (rather than the Adventure itself) Lozhan's triggered ability will not trigger."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "The mana value of an Adventure spell is the based on the mana cost of the Adventure, not the mana cost of the permanent card that has the Adventure."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "\"Any target that isn't a commander\" includes any player, as well as any creature or planeswalker that isn't a commander."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Miirym, Sentinel Wyrm
 {
     "name": "Miirym, Sentinel Wyrm",

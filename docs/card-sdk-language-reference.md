@@ -19103,6 +19103,14 @@ Card authors rarely reference these directly; they are created/updated by the ma
   is `CastSpellEnumerator` — it now enumerates the Adventure spell face for a land-primary card (the land itself is
   played via `PlayLandEnumerator`). First land users: Ishgard, the Holy See; Jidoor, Aristocratic Capital; Lindblum,
   Industrial Regency; Midgar, City of Mako; Zanarkand, Ancient Metropolis.
+  **On the stack an Adventure has only the Adventure's characteristics** (CR 715.3b): `SplitSpellCasts.announce`
+  swaps the stack object's mana cost, type line, colors and keywords for the face's — exactly as for a split half —
+  and restores the card when it leaves the stack (CR 715.4). So the `SpellCastEvent` mana value
+  (`DynamicAmounts.triggeringSpellManaValue()`), cast-trigger filters ("an instant spell", "a creature spell",
+  `withSubtype("Adventure")`) and "spell with mana value N" checks all read the Adventure, never the creature. The
+  card keeps its name. Omens (CR 720.3b) and modal DFC spell backs cast with `faceIndex` (CR 712.8f) get the same
+  swap. "an Adventure or Dragon spell" is therefore one filter, `GameObjectFilter.Any.withAnySubtype("Adventure",
+  "Dragon")` (Lozhan, Dragons' Legacy).
 - **Omen (Tarkir: Dragonstorm)** — `layout = OMEN` + `cardFaces[0]` Omen spell; DSL:
   `card { omen("Name") { spell { … } } }`. Reuses the Adventure cast/enumeration path (`enumerateSecondaryFace`,
   cast via `CastSpell.faceIndex = 0`), but `StackResolver` routes the resolving Omen to `Zone.LIBRARY` and shuffles

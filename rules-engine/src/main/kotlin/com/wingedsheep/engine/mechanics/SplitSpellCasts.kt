@@ -8,10 +8,11 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.sdk.model.CardLayout
 import com.wingedsheep.sdk.model.EntityId
 import kotlinx.serialization.Serializable
 
-/** The off-stack characteristics restored when a split spell leaves the stack. */
+/** The off-stack characteristics restored when a split half, Adventure or Omen spell leaves the stack. */
 @Serializable
 data class SplitSpellCharacteristicsComponent(val original: CardComponent) : Component
 
@@ -64,8 +65,8 @@ object SplitSpellCasts {
         if (container.has<SplitSpellCharacteristicsComponent>()) return state
         val original = container.get<CardComponent>() ?: return state
         val printed = registry.getCard(original.cardDefinitionId) ?: return state
-        val spell = definitionForCast(printed, action) ?: return state
-        if (spell === printed) return state
+        val spell = definitionForCast(printed, action)?.takeIf { it !== printed }
+            ?: alternativeFaceDefinition(printed, action) ?: return state
         return state.updateEntity(action.cardId) {
             it.with(SplitSpellCharacteristicsComponent(original)).with(original.copy(
                 manaCost = spell.manaCost, typeLine = spell.typeLine, colors = spell.colors,
@@ -74,6 +75,24 @@ object SplitSpellCasts {
             ))
         }
     }
+
+    /**
+     * An Adventure (CR 715.3b), an Omen (CR 720.3b) or a modal double-faced card's spell back
+     * (CR 712.8f) is on the stack with only that face's characteristics — the face's mana cost, so
+     * its mana value, plus its type line, colors and keywords. The cast rails already evaluate the face on their own (CR 715.3a / 720.3a), so
+     * this only reshapes the stack object, the way a split half is reshaped; [end] restores the
+     * creature card when it leaves the stack. The card keeps its name, which name-keyed trackers
+     * read. Null for any other cast.
+     */
+    private fun alternativeFaceDefinition(printed: CardDefinition, action: CastSpell): CardDefinition? {
+        if (printed.layout !in ALTERNATIVE_FACE_LAYOUTS) return null
+        val face = action.faceIndex?.let { printed.cardFaces.getOrNull(it) } ?: return null
+        if (face.typeLine.isPermanent) return null
+        return printed.copy(manaCost = face.manaCost, typeLine = face.typeLine, keywords = face.keywords,
+            oracleText = face.oracleText, script = face.script, colorIndicator = null, hasNoManaCost = false)
+    }
+
+    private val ALTERNATIVE_FACE_LAYOUTS = setOf(CardLayout.ADVENTURE, CardLayout.OMEN, CardLayout.MODAL_DFC)
 
     fun end(state: GameState, id: EntityId): GameState {
         val original = state.getEntity(id)?.get<SplitSpellCharacteristicsComponent>()?.original ?: return state
