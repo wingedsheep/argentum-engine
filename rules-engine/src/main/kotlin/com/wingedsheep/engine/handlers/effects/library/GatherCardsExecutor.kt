@@ -29,6 +29,9 @@ import com.wingedsheep.engine.state.components.battlefield.entitiesChoice
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.entityIds
+import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.faceDownDisplayName
+import com.wingedsheep.engine.view.Visibility
 import kotlin.reflect.KClass
 
 /**
@@ -40,8 +43,15 @@ import kotlin.reflect.KClass
  * pipeline steps (SelectFromCollection, MoveCollection).
  */
 class GatherCardsExecutor(
-    private val predicateEvaluator: PredicateEvaluator
+    private val predicateEvaluator: PredicateEvaluator,
+    /**
+     * Who may look under a face-down card in exile — see [matchesVisibleExileCard]. Without a
+     * registry (pure-data test wiring) a face-down exiled card never matches a filter.
+     */
+    cardRegistry: CardRegistry? = null,
 ) : EffectExecutor<GatherCardsEffect> {
+
+    private val visibility = cardRegistry?.let { Visibility(it, conditionEvaluator = predicateEvaluator.conditions) }
 
     override val effectType: KClass<GatherCardsEffect> = GatherCardsEffect::class
 
@@ -91,7 +101,8 @@ class GatherCardsExecutor(
                 val filtered = if (source.filter != GameObjectFilter.Any) {
                     val predicateContext = PredicateContext.fromEffectContext(context)
                     allCards.filter { cardId ->
-                        predicateEvaluator.matches(state, state.projectedState, cardId, source.filter, predicateContext)
+                        matchesVisibleExileCard(state, cardId, source.zone, context) &&
+                            predicateEvaluator.matches(state, state.projectedState, cardId, source.filter, predicateContext)
                     }
                 } else {
                     allCards
@@ -113,16 +124,17 @@ class GatherCardsExecutor(
                 val allCards = playerIds.flatMap { playerId ->
                     source.zones.flatMap { zone ->
                         if (zone == Zone.SIDEBOARD && state.isPlayerControlledByEffect(playerId)) emptyList()
-                        else state.getZone(ZoneKey(playerId, zone))
+                        else state.getZone(ZoneKey(playerId, zone)).map { it to zone }
                     }
                 }
                 if (source.filter != GameObjectFilter.Any) {
                     val predicateContext = PredicateContext.fromEffectContext(context)
-                    allCards.filter { cardId ->
-                        predicateEvaluator.matches(state, state.projectedState, cardId, source.filter, predicateContext)
-                    }
+                    allCards.filter { (cardId, zone) ->
+                        matchesVisibleExileCard(state, cardId, zone, context) &&
+                            predicateEvaluator.matches(state, state.projectedState, cardId, source.filter, predicateContext)
+                    }.map { it.first }
                 } else {
-                    allCards
+                    allCards.map { it.first }
                 }
             }
 
@@ -571,4 +583,18 @@ class GatherCardsExecutor(
         is Player.EachOtherPlayer -> state.getOtherPlayers(context.controllerId)
         else -> resolvePlayer(player, context, state)?.let { listOf(it) }
     }
+
+    /**
+     * A filter reads a card's characteristics, and nobody can read those under a card exiled face
+     * down unless an effect lets them look (foretell, "you may look at", a may-play permission —
+     * the [Visibility] rules). So a face-down exiled card only matches a filtered gather when the
+     * effect's controller may look at it: Kaya the Inexorable's emblem offers a foretold legendary
+     * you own, never one an opponent's Gonti exiled face down. Every other card matches as before.
+     */
+    private fun matchesVisibleExileCard(state: GameState, cardId: EntityId, zone: Zone, context: EffectContext): Boolean {
+        if (zone != Zone.EXILE || faceDownDisplayName(state, cardId) == null) return true
+        val viewer = context.controllerId
+        return visibility?.isCardIdentityVisibleTo(state, Zone.EXILE, cardId, viewer) ?: false
+    }
+
 }

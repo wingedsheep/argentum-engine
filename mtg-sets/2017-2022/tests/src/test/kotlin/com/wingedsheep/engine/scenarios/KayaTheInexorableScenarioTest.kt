@@ -3,6 +3,8 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.ForetoldComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.mtg.sets.definitions.khm.cards.KayaTheInexorable
@@ -115,6 +117,76 @@ class KayaTheInexorableScenarioTest : ScenarioTestBase() {
 
             game.isOnBattlefield("Isamaru, Hound of Konda") shouldBe true
             game.isInExile(1, "Isamaru, Hound of Konda") shouldBe false
+        }
+
+        test("+1 twice: the card returns once, but each granted trigger makes a Spirit") {
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(1, kaya)
+                .withCardOnBattlefield(1, "Grizzly Bears")
+                .withCardInHand(1, "Lightning Bolt")
+                .withLandsOnBattlefield(1, "Mountain", 1)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .apply { repeat(6) { withCardInLibrary(1, "Island"); withCardInLibrary(2, "Island") } }
+                .build()
+            val kayaId = game.findPermanent(kaya)!!
+            val bears = game.findPermanent("Grizzly Bears")!!
+            val plusOneOnBears = ActivateAbility(
+                game.player1Id, kayaId, plusOne, targets = listOf(ChosenTarget.Permanent(bears))
+            )
+
+            game.execute(plusOneOnBears).error shouldBe null
+            game.resolveStack()
+            // One loyalty ability per turn: come back on your next turn for the second.
+            game.passUntilPhase(Phase.ENDING, Step.END)
+            game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
+            game.passUntilPhase(Phase.ENDING, Step.END)
+            game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+            game.state.activePlayerId shouldBe game.player1Id
+            game.execute(plusOneOnBears).error shouldBe null
+            game.resolveStack()
+            game.state.getEntity(bears)?.get<CountersComponent>()?.getCount(CounterType.GHOSTFORM) shouldBe 2
+
+            game.castSpell(1, "Lightning Bolt", bears).error shouldBe null
+            game.resolveStack()
+
+            game.isInHand(1, "Grizzly Bears") shouldBe true
+            game.findPermanents("Spirit Token").size shouldBe 2
+        }
+
+        test("−7 emblem: a face-down legendary you own in exile is offered only if you may look at it") {
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(1, kaya)
+                .withCardInExile(1, "Isamaru, Hound of Konda")
+                .withCardInExile(1, "Squee, Goblin Nabob")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .apply { repeat(6) { withCardInLibrary(1, "Island"); withCardInLibrary(2, "Island") } }
+                .build()
+            val kayaId = game.findPermanent(kaya)!!
+            game.state = game.state.updateEntity(kayaId) { c ->
+                c.with(CountersComponent().withAdded(CounterType.LOYALTY, 7))
+            }
+            val (hidden, foretold) = game.state.getExile(game.player1Id)
+            // Isamaru: exiled face down by a plain rider — nobody may look. Squee: foretold by you.
+            game.state = game.state
+                .updateEntity(hidden) { it.with(FaceDownComponent) }
+                .updateEntity(foretold) { it.with(FaceDownComponent).with(ForetoldComponent(game.player1Id, 1)) }
+
+            game.execute(ActivateAbility(game.player1Id, kayaId, minusSeven)).error shouldBe null
+            game.resolveStack()
+            game.passUntilPhase(Phase.ENDING, Step.END)
+            game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
+            game.passUntilPhase(Phase.ENDING, Step.END)
+            game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
+            game.resolveStack()
+
+            val decision = game.getPendingDecision().shouldBeInstanceOf<SelectCardsDecision>()
+            withClue("the foretold card is offered; the hidden face-down card is not") {
+                decision.options shouldContainExactlyInAnyOrder listOf(foretold, kayaId)
+            }
         }
     }
 }
