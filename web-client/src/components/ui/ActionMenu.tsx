@@ -268,6 +268,8 @@ function getActionStyleClass(actionType: ActionOption['actionType'], isAvailable
       return styles.actionCycle ?? ''
     case 'plot':
       return styles.actionCycle ?? ''
+    case 'foretell':
+      return styles.actionCycle ?? ''
     case 'suspend':
       return styles.actionCycle ?? ''
     case 'playLand':
@@ -432,6 +434,8 @@ function ActionButton({
       case 'CycleCard':
         return styles.fallbackCycle
       case 'PlotCard':
+        return styles.fallbackCycle
+      case 'ForetellCard':
         return styles.fallbackCycle
       case 'PutCompanionIntoHand':
         return styles.fallbackCast

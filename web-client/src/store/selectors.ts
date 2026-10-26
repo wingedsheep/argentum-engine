@@ -551,6 +551,7 @@ export function cardIdForAction(info: LegalActionInfo): EntityId | undefined {
     case 'CycleCard':
     case 'TypecycleCard':
     case 'PlotCard':
+    case 'ForetellCard':
     case 'PutCompanionIntoHand':
     case 'SuspendCardFromHand':
       return a.cardId

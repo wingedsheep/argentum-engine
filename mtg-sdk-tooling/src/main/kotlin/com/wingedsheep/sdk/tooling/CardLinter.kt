@@ -915,6 +915,9 @@ object CardLinter {
         "Mayhem" to listOf("MAYHEM_CAST"),
         // Escape (CR 702.138b): an escape-cast permanent is stamped "escaped" (see PermanentEntry).
         "Escape" to listOf("ESCAPED"),
+        // Foretell (CR 702.143c): a spell cast from exile as a foretold card is stamped "foretold"
+        // (see CastSpellHandler.foretoldChoice), read back by Conditions.WasForetold.
+        "Foretell" to listOf("FORETOLD"),
         "BlightVariable" to listOf("BLIGHT_AMOUNT"),
         "BlightOrPay" to listOf("BLIGHT_AMOUNT"),
         // Resolution-time color choices: ChooseColorThen sets EffectContext.chosenColor for its

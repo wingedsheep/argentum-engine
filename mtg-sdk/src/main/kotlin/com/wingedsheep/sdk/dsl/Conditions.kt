@@ -1135,6 +1135,19 @@ object Conditions {
         CastChoiceMadeCondition(com.wingedsheep.sdk.scripting.ChoiceSlot.SELF_ALTERNATIVE_COST_PAID)
 
     /**
+     * "If this spell was foretold" (CR 702.143c, Kaldheim) — the spell was a foretold card in exile
+     * before it was cast, *even if it was cast for a cost other than its foretell cost* (a free cast
+     * of a foretold card still counts). False for a cast from hand or from any other zone.
+     *
+     * A facade over the durable choice-slot read ([com.wingedsheep.sdk.scripting.ChoiceSlot.FORETOLD]),
+     * stamped by the engine as the spell is cast: read from the spell while it resolves (Poison the
+     * Cup's "scry 2", Starnheim Unleashed's "create X of those tokens instead" — the X coming from an
+     * `{X}` in the foretell cost) and from the permanent a permanent spell becomes.
+     */
+    val WasForetold: ConditionInterface =
+        CastChoiceMadeCondition(com.wingedsheep.sdk.scripting.ChoiceSlot.FORETOLD)
+
+    /**
      * If **evidence was collected** for this spell (CR 701.59c, Murders at Karlov Manor) — its
      * optional "you may collect evidence N" additional cost was declared as it was cast.
      *

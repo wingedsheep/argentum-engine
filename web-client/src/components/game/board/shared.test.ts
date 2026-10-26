@@ -44,6 +44,14 @@ function plot(): LegalActionInfo {
   }
 }
 
+function foretell(): LegalActionInfo {
+  return {
+    actionType: 'ForetellCard',
+    description: 'Foretell',
+    action: { type: 'ForetellCard', playerId: PLAYER, cardId: CARD },
+  }
+}
+
 function suspend(): LegalActionInfo {
   return {
     actionType: 'SuspendCardFromHand',
@@ -145,6 +153,13 @@ describe('shouldShowCastModal', () => {
 
   it('opens the menu for a card with only a plot action', () => {
     expect(shouldShowCastModal([plot()])).toBe(true)
+  })
+
+  // A foretell card offers Cast and Foretell side by side — clicking it must show both, not
+  // silently cast it (CR 702.143a: foretelling is its own special action).
+  it('offers the foretell special action beside the cast', () => {
+    expect(shouldShowCastModal([castSpell(), foretell()])).toBe(true)
+    expect(shouldShowCastModal([foretell()])).toBe(true)
   })
 
   // Ancestral Vision has no printed mana cost, so its only legal action is ever

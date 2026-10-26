@@ -4263,6 +4263,72 @@
     ]
 }
 
+// Poison the Cup
+{
+    "name": "Poison the Cup",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature. If this spell was foretold, scry 2.\nForetell {1}{B} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "keywords": [
+        "FORETELL"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Foretell",
+            "cost": "{1}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "CastChoiceMade",
+                            "slot": "FORETOLD"
+                        }
+                    },
+                    "then": {
+                        "type": "Scry",
+                        "count": 2
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "rarity": "UNCOMMON",
+        "artist": "Colin Boyer",
+        "flavorText": "Dark schemes cut down what armies cannot.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7fb94456-5266-47db-b514-a0e17e34b771.jpg?1783928243"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Raiders' Karve
 {
     "name": "Raiders' Karve",
@@ -5516,6 +5582,77 @@
                 "text": "An Angel spell is a creature spell with the creature type Angel. Instant, sorcery, and enchantment cards that may create Angel tokens are not Angel spells."
             }
         ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Starnheim Unleashed
+{
+    "name": "Starnheim Unleashed",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create a 4/4 white Angel Warrior creature token with flying and vigilance. If this spell was foretold, create X of those tokens instead.\nForetell {X}{X}{W} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "keywords": [
+        "FORETELL"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Foretell",
+            "cost": "{X}{X}{W}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "CastChoiceMade",
+                    "slot": "FORETOLD"
+                }
+            },
+            "then": {
+                "type": "CreateToken",
+                "count": "XValue",
+                "power": 4,
+                "toughness": 4,
+                "colors": [
+                    "WHITE"
+                ],
+                "creatureTypes": [
+                    "Angel",
+                    "Warrior"
+                ],
+                "keywords": [
+                    "FLYING",
+                    "VIGILANCE"
+                ]
+            },
+            "otherwise": {
+                "type": "CreateToken",
+                "power": 4,
+                "toughness": 4,
+                "colors": [
+                    "WHITE"
+                ],
+                "creatureTypes": [
+                    "Angel",
+                    "Warrior"
+                ],
+                "keywords": [
+                    "FLYING",
+                    "VIGILANCE"
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "MYTHIC",
+        "artist": "Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea660d42-a441-48d8-98c1-00933cde94a4.jpg?1783928275"
     },
     "colorIdentityOverride": [
         "WHITE"

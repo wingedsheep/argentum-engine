@@ -326,6 +326,7 @@ export function hasMultipleCastingOptions(cardLegalActions: LegalActionInfo[]): 
   const hasDisturbCast = cardLegalActions.some((a) => a.actionType === 'CastWithDisturb')
   const hasCycling = cardLegalActions.some((a) => a.action.type === 'CycleCard')
   const hasPlot = cardLegalActions.some((a) => a.action.type === 'PlotCard')
+  const hasForetell = cardLegalActions.some((a) => a.action.type === 'ForetellCard')
   const hasSuspend = cardLegalActions.some((a) => a.action.type === 'SuspendCardFromHand')
   // Counted rather than flagged: a modal double-faced land offers one PlayLand per land face
   // (CR 712.12), and two faces are two options even though there is no cast among them.
@@ -343,6 +344,7 @@ export function hasMultipleCastingOptions(cardLegalActions: LegalActionInfo[]): 
   if (hasDisturbCast) options++
   if (hasCycling) options++
   if (hasPlot) options++
+  if (hasForetell) options++
   if (hasSuspend) options++
   options += playLandCount
 
@@ -401,6 +403,7 @@ export function shouldShowCastModal(
       a.action.type === 'CycleCard' ||
       a.action.type === 'TypecycleCard' ||
       a.action.type === 'PlotCard' ||
+      a.action.type === 'ForetellCard' ||
       a.action.type === 'SuspendCardFromHand'
   )
 }

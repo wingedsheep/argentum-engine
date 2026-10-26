@@ -15,6 +15,7 @@ export type GameAction =
   | CycleCardAction
   | TypecycleCardAction
   | PlotCardAction
+  | ForetellCardAction
   | PutCompanionIntoHandAction
   | SuspendCardFromHandAction
   | CrewVehicleAction
@@ -284,6 +285,18 @@ export interface PlotCardAction {
 }
 
 /**
+ * Foretell a card from hand (CR 702.143, Kaldheim).
+ * Special action during your turn — pays {2} and exiles the card face down. The foretold card
+ * becomes castable from exile for its foretell cost on a later turn.
+ */
+export interface ForetellCardAction {
+  readonly type: 'ForetellCard'
+  readonly playerId: EntityId
+  readonly cardId: EntityId
+  readonly paymentStrategy?: PaymentStrategy
+}
+
+/**
  * Pay {3} to put your revealed companion from outside the game into your hand (CR 702.139a).
  * Special action at sorcery timing, once per game; the server offers it while the companion waits.
  */
@@ -489,6 +502,8 @@ export function getActionSubject(action: GameAction): EntityId | null {
     case 'TypecycleCard':
       return action.cardId
     case 'PlotCard':
+      return action.cardId
+    case 'ForetellCard':
       return action.cardId
     case 'PutCompanionIntoHand':
       return action.cardId

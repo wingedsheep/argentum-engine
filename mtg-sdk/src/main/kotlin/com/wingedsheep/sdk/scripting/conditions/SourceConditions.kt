@@ -490,6 +490,7 @@ data class CastChoiceMade(val slot: com.wingedsheep.sdk.scripting.ChoiceSlot) : 
         com.wingedsheep.sdk.scripting.ChoiceSlot.MAYHEM_CAST -> "if this spell's mayhem cost was paid"
         com.wingedsheep.sdk.scripting.ChoiceSlot.WATERBEND_PAID -> "if its waterbend cost was paid"
         com.wingedsheep.sdk.scripting.ChoiceSlot.GIFT_PROMISED -> "if the gift was promised"
+        com.wingedsheep.sdk.scripting.ChoiceSlot.FORETOLD -> "if this spell was foretold"
         else -> "if a ${slot.name.lowercase().replace('_', ' ')} was chosen"
     }
 }

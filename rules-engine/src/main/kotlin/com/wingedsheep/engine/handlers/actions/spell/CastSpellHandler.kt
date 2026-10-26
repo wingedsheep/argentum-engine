@@ -81,6 +81,7 @@ import com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.ForetoldComponent
 import com.wingedsheep.engine.state.permissions.activeMayPlayFor
 import com.wingedsheep.engine.state.components.identity.PlayWithAdditionalCostComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithCostIncreaseComponent
@@ -656,6 +657,16 @@ class CastSpellHandler(
         return SpellTargeting(requirements, perMode, modalEffect, action.chosenModes.takeIf { perMode.isNotEmpty() }.orEmpty())
     }
 
+    /**
+     * CR 702.143c: a spell "was foretold" when it was a foretold card in exile before it was cast —
+     * whatever cost then paid for it. Recorded on the same cast-choice rail as kicker, so
+     * `Conditions.WasForetold` reads it from the resolving spell and from the permanent it becomes.
+     */
+    private fun foretoldChoice(originState: GameState, action: CastSpell): Map<ChoiceSlot, Int> =
+        if (originState.getEntity(action.cardId)?.get<ForetoldComponent>() != null &&
+            castCostTotaller.castSourceZone(originState, action.cardId) == Zone.EXILE
+        ) mapOf(ChoiceSlot.FORETOLD to 1) else emptyMap()
+
     /** Puts the paid-for spell on the stack with everything its resolution will read. */
     private fun putSpellOnStack(
         state: GameState,
@@ -720,7 +731,7 @@ class CastSpellHandler(
                         ?.filterIsInstance<KeywordAbility.OptionalAdditionalCost>().orEmpty()).any { it.multi }
                 }?.let { it to action.declaredCostTimes }).toMap() + linkedKickerChoices(
                 action, cardDef?.keywordAbilities?.filterIsInstance<KeywordAbility.OptionalAdditionalCost>().orEmpty()
-            ),
+            ) + foretoldChoice(originState, action),
             wasBlightPaid = (action.additionalCostPayment?.blightTargets?.isNotEmpty() == true),
             // True when the spell's waterbend additional cost was paid (Avatar) — mandatory costs
             // always, optional "you may waterbend {N}" only when the player elected it.

@@ -332,7 +332,9 @@ internal class CastCostTotaller(
                 action.targets.map { it.toEntityId() },
                 fromZone = if (castingFromCommandZone) Zone.COMMAND else castSourceZone(state, action.cardId),
                 declaredCostSlot = action.declaredCostSlot,
-                baseCost = checkNotNull(fixedAlternativeManaCost(state, action)),
+                // An {X} in the fixed cost (Starnheim Unleashed's foretell {X}{X}{W}) takes the
+                // announced X, as a printed {X} does.
+                baseCost = withAnnouncedX(checkNotNull(fixedAlternativeManaCost(state, action)), action, cardDef),
                 card = cardDef,
                 announcedX = action.xValue,
             )

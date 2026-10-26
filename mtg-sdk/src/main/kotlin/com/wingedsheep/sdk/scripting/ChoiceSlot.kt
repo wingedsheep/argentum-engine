@@ -206,6 +206,15 @@ enum class ChoiceSlot {
      */
     SELF_ALTERNATIVE_COST_PAID,
 
+    /**
+     * Whether the spell **was foretold** (CR 702.143c) — it was a foretold card in exile before it
+     * was cast, whatever cost it was then cast for. Stamped by the engine as the spell is cast, never
+     * declared by the player. Read back through [com.wingedsheep.sdk.dsl.Conditions.WasForetold] for
+     * the Kaldheim "If this spell was foretold, …" riders (Poison the Cup, Starnheim Unleashed), from
+     * the spell while it resolves and from the permanent a permanent spell becomes.
+     */
+    FORETOLD,
+
     /** The X declared for a `blight X` additional cost when cast (e.g. Soul Immolation). */
     BLIGHT_AMOUNT,
 
