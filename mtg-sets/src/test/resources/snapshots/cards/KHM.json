@@ -9623,7 +9623,8 @@
                     "keywords": [
                         "FLYING",
                         "VIGILANCE"
-                    ]
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/3/b/3bd871a3-3802-4bdc-8033-3ecfd01c0449.jpg?1783928084"
                 },
                 "timing": "SorcerySpeed"
             }
@@ -17795,47 +17796,54 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromMultipleZones",
-                                "zones": [
-                                    "Library",
-                                    "Hand",
-                                    "Graveyard"
-                                ],
-                                "filter": "Rune"
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Search your library, hand, and/or graveyard for a Rune card?"
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromMultipleZones",
+                                    "zones": [
+                                        "Library",
+                                        "Hand",
+                                        "Graveyard"
+                                    ],
+                                    "filter": "Rune"
+                                },
+                                "storeAs": "gathered0",
+                                "search": true
                             },
-                            "storeAs": "gathered0",
-                            "search": true
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "gathered0",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected1",
+                                "prompt": "Search your library, hand, and/or graveyard for a Rune card to put onto the battlefield attached to Runed Crown"
                             },
-                            "storeSelected": "selected1",
-                            "prompt": "Search your library, hand, and/or graveyard for a Rune card to put onto the battlefield attached to Runed Crown"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "selected1",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Battlefield"
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                },
+                                "attachTo": "Self"
                             },
-                            "attachTo": "Self"
-                        },
-                        "ShuffleLibrary",
-                        "EmitLibrarySearchedEvent"
-                    ]
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
                 },
                 "descriptionOverride": "When this Equipment enters, you may search your library, hand, and/or graveyard for a Rune card and put it onto the battlefield attached to this Equipment. If you search your library this way, shuffle."
             }

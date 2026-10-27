@@ -24,8 +24,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Equip {2}
  *
  * - The enters trigger is the hand-rolled multi-zone search (Vision Quest's shape) over one combined
- *   LIBRARY + HAND + GRAVEYARD pool: `search = true` marks it a library search, `chooseUpTo(1)`
- *   is the "you may" (and failing to find, CR 701.23b), and the move to the battlefield carries
+ *   LIBRARY + HAND + GRAVEYARD pool: `search = true` marks it a library search, the "you may" is
+ *   [Effects.May] — declining searches nothing, so nothing is shuffled — and `chooseUpTo(1)` is
+ *   failing to find, and the move to the battlefield carries
  *   `attachTo = Self` — Danitha, Benalia's Hope's put-an-Aura-onto-the-battlefield-attached shape.
  *   Every Rune is an "Enchant permanent" Aura, so it can legally enchant the Crown; should the Crown
  *   be gone by resolution, the Aura stays in its previous zone (the attach-to-host move handles it).
@@ -42,25 +43,28 @@ val RunedCrown = card("Runed Crown") {
 
     triggeredAbility {
         trigger = Triggers.self.enters()
-        effect = Effects.Pipeline {
-            val runes = gather(
-                CardSource.FromMultipleZones(
-                    zones = listOf(Zone.LIBRARY, Zone.HAND, Zone.GRAVEYARD),
-                    player = Player.You,
-                    filter = GameObjectFilter.Any.withSubtype("Rune"),
-                ),
-                search = true,
-            )
-            val rune = chooseUpTo(
-                1,
-                from = runes,
-                prompt = "Search your library, hand, and/or graveyard for a Rune card to put onto the " +
-                    "battlefield attached to Runed Crown",
-            )
-            move(rune, CardDestination.ToZone(Zone.BATTLEFIELD, Player.You), attachTo = EffectTarget.Self)
-            run(Effects.ShuffleLibrary())
-            run(EmitLibrarySearchedEventEffect)
-        }
+        effect = Effects.May(
+            Effects.Pipeline {
+                val runes = gather(
+                    CardSource.FromMultipleZones(
+                        zones = listOf(Zone.LIBRARY, Zone.HAND, Zone.GRAVEYARD),
+                        player = Player.You,
+                        filter = GameObjectFilter.Any.withSubtype("Rune"),
+                    ),
+                    search = true,
+                )
+                val rune = chooseUpTo(
+                    1,
+                    from = runes,
+                    prompt = "Search your library, hand, and/or graveyard for a Rune card to put onto the " +
+                        "battlefield attached to Runed Crown",
+                )
+                move(rune, CardDestination.ToZone(Zone.BATTLEFIELD, Player.You), attachTo = EffectTarget.Self)
+                run(Effects.ShuffleLibrary())
+                run(EmitLibrarySearchedEventEffect)
+            },
+            prompt = "Search your library, hand, and/or graveyard for a Rune card?",
+        )
         description = "When this Equipment enters, you may search your library, hand, and/or graveyard " +
             "for a Rune card and put it onto the battlefield attached to this Equipment. If you search " +
             "your library this way, shuffle."

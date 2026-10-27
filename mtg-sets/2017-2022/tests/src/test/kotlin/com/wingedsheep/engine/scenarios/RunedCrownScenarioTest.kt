@@ -50,6 +50,7 @@ class RunedCrownScenarioTest : ScenarioTestBase() {
 
                 game.castSpell(1, "Runed Crown").error shouldBe null
                 game.resolveStack()
+                game.answerYesNo(true).error shouldBe null
 
                 val decision = game.getPendingDecision()
                 decision as SelectCardsDecision
@@ -82,12 +83,25 @@ class RunedCrownScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("finding nothing still puts nothing onto the battlefield") {
+                val game = board().build()
+                game.castSpell(1, "Runed Crown").error shouldBe null
+                game.resolveStack()
+                game.answerYesNo(true).error shouldBe null
+                game.skipSelection().error shouldBe null
+                game.resolveStack()
+
+                game.isOnBattlefield("Rune of Might") shouldBe false
+                game.findCardsInLibrary(1, "Rune of Might").size shouldBe 1
+            }
+
             test("a Rune from the graveyard enters attached to the Crown") {
                 val game = board().build()
                 val flight = game.findCardsInGraveyard(1, "Rune of Flight").single()
 
                 game.castSpell(1, "Runed Crown").error shouldBe null
                 game.resolveStack()
+                game.answerYesNo(true).error shouldBe null
                 game.selectCards(listOf(flight)).error shouldBe null
                 game.resolveStack()
 
@@ -97,12 +111,17 @@ class RunedCrownScenarioTest : ScenarioTestBase() {
                 game.isInGraveyard(1, "Rune of Flight") shouldBe false
             }
 
-            test("declining puts nothing onto the battlefield") {
+            test("declining searches nothing: no Rune enters and the library isn't shuffled") {
                 val game = board().build()
+                val libraryBefore = game.state.getLibrary(game.player1Id)
                 game.castSpell(1, "Runed Crown").error shouldBe null
                 game.resolveStack()
-                game.skipSelection().error shouldBe null
+                game.answerYesNo(false).error shouldBe null
                 game.resolveStack()
+
+                withClue("the library keeps its order") {
+                    game.state.getLibrary(game.player1Id) shouldBe libraryBefore
+                }
 
                 game.isOnBattlefield("Rune of Speed") shouldBe false
                 game.isOnBattlefield("Rune of Might") shouldBe false

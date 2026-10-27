@@ -53,6 +53,7 @@ val GreatHallOfStarnheim = card("Great Hall of Starnheim") {
             colors = setOf(Color.WHITE),
             creatureTypes = setOf("Angel", "Warrior"),
             keywords = setOf(Keyword.FLYING, Keyword.VIGILANCE),
+            imageUri = "https://cards.scryfall.io/normal/front/3/b/3bd871a3-3802-4bdc-8033-3ecfd01c0449.jpg?1783928084",
         )
         timing = TimingRule.SorcerySpeed
     }
