@@ -450,6 +450,43 @@
     "layout": "MODAL_DFC"
 }
 
+// Arachnoform
+{
+    "name": "Arachnoform",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+2, has reach, and is every creature type.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "REACH"
+            },
+            "IsAllCreatureTypes"
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "artist": "Ilse Gort",
+        "flavorText": "Deep within endless webs of clinging silk, the weaver awaits.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/acbe560b-f7b5-4614-91f1-b669a39abc16.jpg?1783928219"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Arctic Treeline
 {
     "name": "Arctic Treeline",
@@ -1559,6 +1596,76 @@
     ]
 }
 
+// Battle Mammoth
+{
+    "name": "Battle Mammoth",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Elephant",
+    "oracleText": "Trample\nWhenever a permanent you control becomes the target of a spell or ability an opponent controls, you may draw a card.\nForetell {2}{G}{G} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE",
+        "FORETELL"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Foretell",
+            "cost": "{2}{G}{G}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Battle Mammoth:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "targetFilter": "permanent ctrl:you",
+                    "byOpponent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "descriptionOverride": "Whenever a permanent you control becomes the target of a spell or ability an opponent controls, you may draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "MYTHIC",
+        "artist": "Jesper Ejsing",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cb3377d9-eec3-49b9-a3a7-e540d2038f51.jpg?1783928221",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Battle Mammoth's triggered ability resolves before the spell or ability that caused it to trigger. It will resolve even if that spell or ability is countered."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a spell or ability an opponent controls targets a single permanent you control more than once, Battle Mammoth's triggered ability will trigger only once. However, if a spell or ability an opponent controls targets multiple permanents you control, Battle Mammoth's triggered ability will trigger once for each of those permanents."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "You choose whether to draw a card as Battle Mammoth's triggered ability is resolving."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Battle of Frost and Fire
 {
     "name": "Battle of Frost and Fire",
@@ -2277,6 +2384,66 @@
     "layout": "MODAL_DFC"
 }
 
+// Blessing of Frost
+{
+    "name": "Blessing of Frost",
+    "manaCost": "{3}{G}",
+    "typeLine": "Snow Sorcery",
+    "oracleText": "Distribute X +1/+1 counters among any number of creatures you control, where X is the amount of {S} spent to cast this spell. Then draw a card for each creature you control with power 4 or greater.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DistributeCountersAmongFiltered",
+                    "totalCounters": "SnowManaSpent",
+                    "filter": "creature ctrl:you"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature pow>=4"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "rarity": "RARE",
+        "artist": "Mila Pesic",
+        "flavorText": "A friend of Jorn is never cold.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/42f01f4d-491e-4f25-a017-a0d9c437ac8c.jpg?1783928219",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Because Blessing of Frost doesn't target any creatures, you determine how the +1/+1 counters will be distributed as Blessing of Frost resolves."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Because none of the creatures are targeted, you can choose to put +1/+1 counters on a creature with protection from green, for example."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "You determine how many creatures you control with power 4 or greater as Blessing of Frost is resolving, after +1/+1 counters have been put on creatures."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If you cast Blessing of Frost without spending snow mana, no +1/+1 counters will be distributed. You may still draw cards if your creatures are large enough."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If Blessing of Frost is copied, no mana was spent to cast the copy, so no +1/+1 counters will be distributed. You may still draw cards if your creatures are large enough."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Blightstep Pathway
 {
     "name": "Blightstep Pathway",
@@ -2336,6 +2503,135 @@
         "BLACK"
     ],
     "layout": "MODAL_DFC"
+}
+
+// Blizzard Brawl
+{
+    "name": "Blizzard Brawl",
+    "manaCost": "{G}",
+    "typeLine": "Snow Sorcery",
+    "oracleText": "Choose target creature you control and target creature you don't control. If you control three or more snow permanents, the creature you control gets +1/+0 and gains indestructible until end of turn. Then those creatures fight each other. (Each deals damage equal to its power to the other.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsPermanent",
+                                        "IsSnow"
+                                    ]
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "INDESTRUCTIBLE",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "Fight",
+                    "target1": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "UNCOMMON",
+        "artist": "Manuel Castañón",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/6318918f-34e4-4bbf-9816-8e88f21ae324.jpg?1783928218",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "You can't cast Blizzard Brawl unless you choose both a creature you control and one you don't control as targets."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Check whether you control three or more snow permanents as Blizzard Brawl is resolving to see if the target creature you control gets +1/+0 and gains indestructible. That creature will still fight even if it doesn't get those bonuses."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If either target is an illegal target as Blizzard Brawl tries to resolve, neither creature will fight and no damage will be dealt."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If the creature you control is still a legal target as Blizzard Brawl tries to resolve but the target creature you don't control isn't, the creature you control will still get the bonuses until end of turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Blood on the Snow
@@ -7747,6 +8043,57 @@
     ]
 }
 
+// Gladewalker Ritualist
+{
+    "name": "Gladewalker Ritualist",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Shapeshifter",
+    "oracleText": "Changeling (This card is every creature type.)\nWhenever another creature you control named Gladewalker Ritualist enters, draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "CHANGELING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gladewalker Ritualist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature name:Gladewalker Ritualist ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "392",
+        "rarity": "UNCOMMON",
+        "artist": "Irina Nordsol",
+        "flavorText": "\"We are all.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/8053b888-a680-4318-88c3-0924e596e780.jpg?1783928116",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "If multiple creatures named Gladewalker Ritualist all enter the battlefield under your control at the same time, each of their abilities will trigger once for each of the others."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Glimpse the Cosmos
 {
     "name": "Glimpse the Cosmos",
@@ -9000,6 +9347,115 @@
     ]
 }
 
+// Horizon Seeker
+{
+    "name": "Horizon Seeker",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Boast — {1}{G}: Search your library for a basic land card, reveal it, put it into your hand, then shuffle. (Activate only if this creature attacked this turn and only once each turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Horizon Seeker:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a basic land card to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "restrictions": [
+                    "OncePerTurn",
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "AttackedThisTurn"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "isBoast": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "artist": "Matt Stewart",
+        "flavorText": "\"A five-day climb? Ha! I'll do it in two.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a17f4b21-6478-407d-b567-2888349f3b66.jpg?1783928213",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "A boast ability can be activated at any point after the creature with that ability has been declared as an attacker. This can be before blockers are declared, after blockers are declared but before combat damage is dealt, during combat after combat damage is dealt, during the postcombat main phase, during the end step, or, in some unusual cases, during the cleanup step."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If it's not your turn and you gain control of a creature with a boast ability after that creature attacked, you can activate that creature's boast ability if it hasn't been activated yet that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a creature with a boast ability is put onto the battlefield attacking, it was never declared as an attacker. Its boast ability can't be activated that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If an effect adds additional combat phases to a turn and a creature with a boast ability attacks more than once during that turn, its boast ability can still be activated only once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ice Tunnel
 {
     "name": "Ice Tunnel",
@@ -9173,6 +9629,74 @@
     ]
 }
 
+// Icehide Troll
+{
+    "name": "Icehide Troll",
+    "manaCost": "{2}{G}",
+    "typeLine": "Snow Creature — Troll Warrior",
+    "oracleText": "{S}{S}: This creature gets +2/+0 and gains indestructible until end of turn. Tap it. (Damage and effects that say \"destroy\" don't destroy it. {S} can be paid with one mana from a snow source.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Icehide Troll:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{S}{S}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "INDESTRUCTIBLE",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{S}{S}: This creature gets +2/+0 and gains indestructible until end of turn. Tap it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "artist": "Andrey Kuzinskiy",
+        "flavorText": "A troll's greatest weapon is its ability to emerge unexpectedly from the landscape.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/02f3aaed-a01f-4c6a-b9bb-cd70b0f6ceb1.jpg?1783928212",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "You can activate Icehide Troll's last ability even if it's already tapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Immersturm Predator
 {
     "name": "Immersturm Predator",
@@ -9340,6 +9864,135 @@
         "flavorText": "The demons took no captives and claimed no spoils; they sought only to destroy.",
         "imageUri": "https://cards.scryfall.io/normal/front/7/7/77da4de2-4d34-40e5-8fc0-850aef05356b.jpg?1783928227"
     }
+}
+
+// In Search of Greatness
+{
+    "name": "In Search of Greatness",
+    "manaCost": "{G}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, you may cast a permanent spell from your hand with mana value equal to 1 plus the greatest mana value among other permanents you control without paying its mana cost. If you don't, scry 1.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "In Search of Greatness:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "FilterCollection",
+                                    "from": "gathered0",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsNonland",
+                                            "IsPermanent",
+                                            {
+                                                "type": "ManaValueEqualsDynamic",
+                                                "amount": {
+                                                    "type": "Add",
+                                                    "left": {
+                                                        "type": "AggregateBattlefield",
+                                                        "player": "You",
+                                                        "aggregation": "MAX",
+                                                        "property": "MANA_VALUE",
+                                                        "excludeSelf": true
+                                                    },
+                                                    "right": {
+                                                        "type": "Fixed",
+                                                        "amount": 1
+                                                    }
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    "storeMatching": "matching1"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "matching1",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected2",
+                                    "selectedLabel": "Cast without paying its mana cost"
+                                },
+                                {
+                                    "type": "CastFromCollectionWithoutPayingCost",
+                                    "from": "selected2",
+                                    "storeCastTo": "greatnessCast"
+                                }
+                            ]
+                        },
+                        "successCriterion": {
+                            "type": "SuccessCriterion.CollectionNonEmpty",
+                            "name": "greatnessCast"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": []
+                    },
+                    "otherwise": {
+                        "type": "Scry",
+                        "count": 1
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, you may cast a permanent spell from your hand with mana value equal to 1 plus the greatest mana value among other permanents you control without paying its mana cost. If you don't, scry 1."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "rarity": "RARE",
+        "artist": "Ilse Gort",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/ac0e50fa-5114-4f96-89f4-000906da7c76.jpg?1783928212",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "A permanent spell is an artifact spell, a creature spell, an enchantment spell, or a planeswalker spell."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Consider the other permanents you control as the triggered ability resolves to determine which spell you can cast. If the only other permanents you control are lands, or in the unlikely event you don't control any other permanents, you may cast a permanent spell with mana value 1 from your hand."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If you cast a spell \"without paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs, such as kicker costs. If the card has any mandatory additional costs, those must be paid to cast the spell."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a permanent has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If the spell you cast has {X} in its mana cost, you must choose 0 as the value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Infernal Pet
@@ -10448,6 +11101,79 @@
     ]
 }
 
+// King Harald's Revenge
+{
+    "name": "King Harald's Revenge",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Until end of turn, target creature gets +1/+1 for each creature you control and gains trample. It must be blocked this turn if able.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    },
+                    "toughnessModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "MustBeBlocked",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "allCreatures": false
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "artist": "Lorenzo Mastroianni",
+        "flavorText": "\"We will destroy the pretenders and reclaim the divinity of the Einir.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/71a659b6-c4a8-4c0a-8b2a-07b6c9e27dfc.jpg?1783928210",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Use the number of creatures you control as King Harald's Revenge resolves to determine how big the power and toughness boost is."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If the creature attacks, the defending player must assign at least one blocker to it if that player controls any creatures that could block it. Other creatures may also block it, block other creatures, or not block at all."
+            }
+        ]
+    }
+}
+
 // Koll, the Forgemaster
 {
     "name": "Koll, the Forgemaster",
@@ -11329,6 +12055,111 @@
     ]
 }
 
+// Masked Vandal
+{
+    "name": "Masked Vandal",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Shapeshifter",
+    "oracleText": "Changeling (This card is every creature type.)\nWhen this creature enters, you may exile a creature card from your graveyard. If you do, exile target artifact or enchantment an opponent controls.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "CHANGELING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Masked Vandal:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Graveyard",
+                                            "filter": "creature"
+                                        },
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered0",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "toExile",
+                                        "selectedLabel": "Exile"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "toExile",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Exile"
+                                        }
+                                    }
+                                ]
+                            },
+                            "successCriterion": {
+                                "type": "SuccessCriterion.CollectionNonEmpty",
+                                "name": "toExile"
+                            }
+                        },
+                        "then": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact|enchantment ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, you may exile a creature card from your graveyard. If you do, exile target artifact or enchantment an opponent controls."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "184",
+        "artist": "Jason A. Engle",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0a9c72a-e450-41e3-80e5-06f2f1171245.jpg?1783928209",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "You choose the target artifact or enchantment an opponent controls as you put the triggered ability on the stack. Once the ability starts resolving, you choose which creature card to exile from your graveyard, if any. At that point, no one can respond to your choice or take any actions until the ability is finished resolving."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Maskwood Nexus
 {
     "name": "Maskwood Nexus",
@@ -12011,6 +12842,169 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Path to the World Tree
+{
+    "name": "Path to the World Tree",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, search your library for a basic land card, reveal it, put it into your hand, then shuffle.\n{2}{W}{U}{B}{R}{G}, Sacrifice this enchantment: You gain 2 life and draw two cards. Target opponent loses 2 life. This enchantment deals 2 damage to up to one target creature. You create a 2/2 green Bear creature token.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Path to the World Tree:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a basic land card to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Path to the World Tree:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{W}{U}{B}{R}{G}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "GREEN"
+                            ],
+                            "creatureTypes": [
+                                "Bear"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/e/c/ec53abaa-b316-496d-9351-318a9dd9de4d.jpg?1783928079"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    },
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/606da75d-382a-47a8-9739-644438594700.jpg?1783928208",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The last ability of Path to the World Tree always targets an opponent and may target a creature. As the ability tries to resolve, if all its targets are illegal, the ability won't resolve and none of its effects will happen. You won't do any of the cool stuff that ability tells you to do."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
     ]
 }
 
@@ -13647,6 +14641,88 @@
     ]
 }
 
+// Rootless Yew
+{
+    "name": "Rootless Yew",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Treefolk",
+    "oracleText": "When this creature dies, search your library for a creature card with power or toughness 6 or greater, reveal it, put it into your hand, then shuffle.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rootless Yew:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "PowerOrToughnessAtLeast",
+                                            "min": 6
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a creature card with power or toughness 6 or greater to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "rarity": "UNCOMMON",
+        "artist": "Nicholas Gregory",
+        "flavorText": "\"We are bound to wander this forest forever. Sometimes I think it wanders with us.\"\n—Ogni, Kannah scout",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/9/992aba3f-e1cb-4f5a-8b6f-328a069102a4.jpg?1783928206"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Roots of Wisdom
 {
     "name": "Roots of Wisdom",
@@ -14439,6 +15515,63 @@
         "imageUri": "https://cards.scryfall.io/normal/front/4/f/4fa13084-3e68-49f4-8cc9-6d02286fd150.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Sculptor of Winter
+{
+    "name": "Sculptor of Winter",
+    "manaCost": "{1}{G}",
+    "typeLine": "Snow Creature — Elf Rogue",
+    "oracleText": "{T}: Untap target snow land.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sculptor of Winter:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsLand",
+                                    "IsSnow"
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "193",
+        "artist": "PINDURSKI",
+        "flavorText": "\"I and my kin remember the old ways. The frost whispers to me in a language too ancient for the Skoti usurpers to comprehend.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9dab2ca2-0039-4eac-a7dc-68756362737d.jpg?1783928205",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Sculptor of Winter's activated ability is not a mana ability. It can't be activated while casting a spell or activating an ability. It uses the stack and can be responded to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Search for Glory
@@ -15536,6 +16669,107 @@
     ]
 }
 
+// Spirit of the Aldergard
+{
+    "name": "Spirit of the Aldergard",
+    "manaCost": "{3}{G}",
+    "typeLine": "Snow Creature — Bear Spirit",
+    "oracleText": "When this creature enters, search your library for a snow land card, reveal it, put it into your hand, then shuffle.\nThis creature gets +1/+0 for each other snow permanent you control.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Spirit of the Aldergard:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsLand",
+                                        "IsSnow"
+                                    ]
+                                }
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a land snow card to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsPermanent",
+                            "IsSnow"
+                        ]
+                    },
+                    "excludeSelf": true
+                },
+                "toughnessBonus": {
+                    "type": "Fixed",
+                    "amount": 0
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "195",
+        "rarity": "UNCOMMON",
+        "artist": "Lars Grant-West",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/220df551-3820-4910-a206-14501ba02e69.jpg?1783928204"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Squash
 {
     "name": "Squash",
@@ -15829,6 +17063,97 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Struggle for Skemfar
+{
+    "name": "Struggle for Skemfar",
+    "manaCost": "{3}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put a +1/+1 counter on target creature you control. Then that creature fights up to one target creature you don't control. (Each deals damage equal to its power to the other.)\nForetell {G} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "keywords": [
+        "FORETELL"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Foretell",
+            "cost": "{G}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Fight",
+                    "target1": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "artist": "Bram Sels",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a67747a9-3299-4b4a-a4e0-e8a269c4f927.jpg?1783928203",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "You can cast Struggle for Skemfar targeting only a creature you control."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If you choose two target creatures and either target is an illegal target as Struggle for Skemfar tries to resolve, neither creature will deal or be dealt damage."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If the creature you control is an illegal target as Struggle for Skemfar tries to resolve, you won't put a +1/+1 counter on it. If that creature is a legal target but the other creature isn't, you'll still put the +1/+1 counter on the creature you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
