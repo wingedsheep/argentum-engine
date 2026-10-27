@@ -104,7 +104,7 @@ export function DecisionUI() {
   // Handle YesNoDecision (e.g., "You may shuffle your library")
   if (pendingDecision.type === 'YesNoDecision') {
     // Cards like Dragon Shadow set inlineOnTrigger to render yes/no on the triggering creature
-    if (pendingDecision.context.inlineOnTrigger && pendingDecision.context.triggeringEntityId) {
+    if (pendingDecision.context.inlineOnTrigger && pendingDecision.context.triggeringEntityId && pendingDecision.yesAvailable !== false) {
       const triggeringCard = gameState?.cards[pendingDecision.context.triggeringEntityId]
       if (triggeringCard?.zone?.zoneType === ZoneType.BATTLEFIELD) {
         return null

@@ -20,6 +20,8 @@ import com.wingedsheep.engine.core.SearchLibraryDecision
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.core.TargetsResponse
+import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.core.YesNoResponse
 
 /**
  * Decisions with exactly one legal answer.
@@ -154,6 +156,10 @@ object TrivialDecisions {
                 OrderedResponse(decision.id, decision.cards)
             } else null
         }
+
+        // "You may discard a creature card" with none in hand: asked anyway (#3340), but "no" is
+        // the only legal answer.
+        is YesNoDecision -> if (!decision.yesAvailable) YesNoResponse(decision.id, false) else null
 
         else -> null
     }

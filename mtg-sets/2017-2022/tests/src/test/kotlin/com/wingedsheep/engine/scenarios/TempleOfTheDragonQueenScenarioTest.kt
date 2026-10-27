@@ -99,7 +99,10 @@ class TempleOfTheDragonQueenScenarioTest : FunSpec({
 
         val temple = driver.putCardInHand(player, "Temple of the Dragon Queen")
 
+        // The reveal is asked even with no Dragon in hand (#3340), offering nothing to pick.
         (driver.playLand(player, temple).outcome is Outcome.Paused) shouldBe true
+        driver.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>().options shouldBe emptyList()
+        (driver.submitCardSelection(player, emptyList()).outcome is Outcome.Paused) shouldBe true
         driver.chooseColor(Color.BLACK)
 
         driver.isTapped(temple) shouldBe true

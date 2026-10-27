@@ -1247,6 +1247,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { kind: 'p', text: 'You are still asked every one of these questions, and your opponent sees you deciding for a moment. That is on purpose: if the game skipped the question whenever you had no answer but “no”, the missing pause would tell your opponent what is in your hand or library. The pause changes every time — usually a second or so, now and then two — so it looks like a person clicking rather than a timer.' },
       { kind: 'p', text: 'Only questions the server marks as having a single legal answer are answered for you. Anything with a real choice — including which order cards go in — still waits for you, and so does a question that is how you look at cards (“look at the top three…”), so you always get to see them.' },
       { kind: 'p', text: 'Preferences → Gameplay → Choices with only one answer has two settings. Answer for me (the default) is faster, but the game picks the timing, and an opponent who watches closely may still read something into it. Ask me every time shows each of these questions like any other, so you click through them yourself and your timing gives nothing away.' },
+      { kind: 'p', text: 'With Ask me every time, a “you may…” you can’t actually do (“you may discard a creature card” with no creature card in hand) shows its Yes button greyed out, so No is the only answer.' },
       { kind: 'tip', text: 'Click the notice to dismiss it early.' },
     ],
     related: ['decisions', 'preferences', 'trigger-order'],

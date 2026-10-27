@@ -266,6 +266,11 @@ internal class ActivationChoicePauses(
     // alongside it fixes the count instead. Skipped when the discards are pre-filled
     // (engine-direct path, or the resume after this pause), when X is a bound zero, or when there
     // is no real choice (X equals the candidates, which CostHandler pays as-is).
+    //
+    // "No real choice" is judged by the hand's size, never by which of its cards match a filter
+    // ("discard X creature cards"): a skip there would tell the opponent the hand held no other
+    // eligible card (#3340). With a filtered pool that leaves no choice, the question is still
+    // asked, offering exactly the eligible cards.
     // -------------------------------------------------------------------
     private fun discardXChoice(state: GameState, activation: Activation): ExecutionResult? {
         val action = activation.action
@@ -277,7 +282,9 @@ internal class ActivationChoicePauses(
         val fixedCount = action.xValue
         val minSelections = fixedCount ?: 0
         val maxSelections = fixedCount ?: candidates.size
-        if (candidates.size <= minSelections) return null
+        if (candidates.size < minSelections) return null
+        val hand = state.getZone(com.wingedsheep.engine.state.ZoneKey(action.playerId, Zone.HAND))
+        if (hand.count { it != action.sourceId } <= minSelections) return null
         val prompt = if (fixedCount != null) {
             "Select $fixedCount card${if (fixedCount > 1) "s" else ""} to discard for $sourceName"
         } else {
@@ -428,16 +435,19 @@ internal class ActivationChoicePauses(
         val action = activation.action
         val putOnLibraryCost = activation.effectiveCost.extractPutOnLibraryCost() ?: return null
         if (!action.costPayment?.cardsPutOnLibrary.isNullOrEmpty()) return null
+        val hand = state.getZone(com.wingedsheep.engine.state.ZoneKey(action.playerId, Zone.HAND))
         val candidates = costHandler.findMatchingCardsUnified(
             state,
-            state.getZone(com.wingedsheep.engine.state.ZoneKey(action.playerId, Zone.HAND)),
+            hand,
             putOnLibraryCost.filter,
             action.playerId
         )
         if (candidates.size < putOnLibraryCost.count) {
             return ExecutionResult.error(state, "Not enough cards in hand to pay ${putOnLibraryCost.description}")
         }
-        if (candidates.size == putOnLibraryCost.count) return null
+        // Forced only when the hand's size says so; a filter that leaves exactly enough matches is
+        // still asked, so the skip doesn't reveal the rest of the hand (#3340).
+        if (hand.size == putOnLibraryCost.count) return null
         val n = putOnLibraryCost.count
         val prompt = "Choose ${if (n == 1) "a card" else "$n cards"} to put on top of your library for ${activation.sourceName}"
         return state.suspendForDecision(

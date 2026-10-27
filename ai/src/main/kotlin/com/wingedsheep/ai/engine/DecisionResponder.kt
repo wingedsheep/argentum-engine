@@ -184,7 +184,8 @@ class DecisionResponder(
             is ChooseTargetsDecision ->
                 respondTargets(state, decision, playerId, budgetPolicy.budgetForDecision(state, playerId))
             is SelectCardsDecision -> respondSelectCards(state, decision, playerId)
-            is YesNoDecision -> respondYesNo(state, decision, playerId)
+            is YesNoDecision -> if (!decision.yesAvailable) YesNoResponse(decision.id, false)
+                else respondYesNo(state, decision, playerId)
             is BatchYesNoDecision -> respondBatchYesNo(state, decision, playerId)
             is ChooseModeDecision -> respondModes(state, decision, playerId)
             is ChooseColorDecision -> respondColor(state, decision, playerId)

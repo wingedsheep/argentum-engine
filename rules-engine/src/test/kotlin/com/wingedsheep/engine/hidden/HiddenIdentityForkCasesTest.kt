@@ -11,6 +11,7 @@ import com.wingedsheep.engine.core.ReorderLibraryDecision
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.SubmitDecision
 import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.core.YesNoResponse
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -32,6 +33,8 @@ import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.EffectChoice
+import com.wingedsheep.sdk.scripting.effects.FeasibilityCheck
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
@@ -118,8 +121,43 @@ class HiddenIdentityForkCasesTest : ScenarioTestBase() {
         }
     }
 
+    /** "You may discard a creature card. When you do, you gain 3 life." */
+    private val offering = card("Hidden Test Offering") {
+        manaCost = "{U}"
+        typeLine = "Sorcery"
+        spell {
+            effect = Effects.ReflexiveTrigger(
+                action = Patterns.Hand.discardCards(1, filter = GameObjectFilter.Creature),
+                optional = true,
+                descriptionOverride = "You may discard a creature card. When you do, you gain 3 life.",
+            ) { effect = Effects.GainLife(3) }
+        }
+    }
+
+    /** "Sacrifice an artifact or discard a nonland card." */
+    private val ultimatum = card("Hidden Test Ultimatum") {
+        manaCost = "{U}"
+        typeLine = "Sorcery"
+        spell {
+            effect = Effects.ChooseAction(
+                listOf(
+                    EffectChoice(
+                        "Sacrifice an artifact",
+                        Effects.SacrificeOwn(filter = GameObjectFilter.Artifact),
+                        FeasibilityCheck.ControlsPermanentMatching(GameObjectFilter.Artifact),
+                    ),
+                    EffectChoice(
+                        "Discard a nonland card",
+                        Patterns.Hand.discardCards(1, filter = GameObjectFilter.Nonland),
+                        FeasibilityCheck.HasCardsInZone(Zone.HAND, GameObjectFilter.Nonland),
+                    ),
+                )
+            )
+        }
+    }
+
     init {
-        cardRegistry.register(listOf(herald, signal, glimpse, tell, peekCard))
+        cardRegistry.register(listOf(herald, signal, glimpse, tell, peekCard, offering, ultimatum))
     }
 
     private fun cardIn(state: GameState, owner: EntityId, name: String, inHand: Boolean = true): EntityId =
@@ -354,6 +392,81 @@ class HiddenIdentityForkCasesTest : ScenarioTestBase() {
             outcome.leak.shouldBeNull()
             outcome.end shouldBe End.Completed
             outcome.checked shouldBe actions.size
+        }
+
+        // #3340 group B: an optional action or cost that needs a matching card in hand is asked
+        // whether or not the hand holds one. Each case forks the one matching card into a card
+        // that doesn't match, and expects the same question in both worlds.
+        fun groupB(
+            name: String,
+            hand: List<String>,
+            lands: Pair<String, Int>,
+            forked: String,
+            into: String,
+            setUp: ScenarioBuilder.() -> ScenarioBuilder = { this },
+            script: MutableList<GameAction>.(TestGame, GameState) -> Unit,
+        ) = test(name) {
+            var builder = scenario().withPlayers()
+            hand.forEach { builder = builder.withCardInHand(2, it) }
+            val game = builder.withLandsOnBattlefield(2, lands.first, lands.second).setUp()
+                .withActivePlayer(2).inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN).build()
+            val start = game.state
+            val actions = mutableListOf<GameAction>().apply { script(game, start) }
+            game.state.pendingDecision.shouldNotBeNull().playerId shouldBe game.player2Id
+
+            val outcome = checker.checkZoneFork(start, cardIn(start, game.player2Id, forked), cardRegistry.requireCard(into), game.player1Id, actions)
+
+            outcome.leak.shouldBeNull()
+            outcome.end shouldBe End.Completed
+            outcome.checked shouldBe actions.size
+        }
+
+        groupB("a may-reveal from hand asks whether or not the hand holds a match",
+            hand = listOf("Auntie's Hovel", "Boggart Mob"), lands = "Swamp" to 1, forked = "Boggart Mob", into = "Mountain",
+        ) { game, start -> play(game, PlayLand(game.player2Id, cardIn(start, game.player2Id, "Auntie's Hovel"))) }
+
+        groupB("behold asks whether or not the hand holds a match",
+            hand = listOf("Sarkhan, Dragon Ascendant", "Shivan Dragon"), lands = "Mountain" to 2, forked = "Shivan Dragon", into = "Mountain",
+        ) { game, start -> play(game, CastSpell(game.player2Id, cardIn(start, game.player2Id, "Sarkhan, Dragon Ascendant"))) }
+
+        groupB("unless-you-discard a filtered card asks whether or not the hand holds a match",
+            hand = listOf("Mercenary Knight", "Grizzly Bears"), lands = "Swamp" to 3, forked = "Grizzly Bears", into = "Swamp",
+        ) { game, start -> play(game, CastSpell(game.player2Id, cardIn(start, game.player2Id, "Mercenary Knight"))) }
+
+        groupB("amplify asks whether or not the hand holds a match",
+            hand = listOf("Feral Throwback", "Krosan Tusker"), lands = "Forest" to 6, forked = "Krosan Tusker", into = "Forest",
+        ) { game, start -> play(game, CastSpell(game.player2Id, cardIn(start, game.player2Id, "Feral Throwback"))) }
+
+        groupB("a ward that discards a filtered card asks whether or not the hand holds a match",
+            hand = listOf("Shock", "Divination"), lands = "Mountain" to 1, forked = "Divination", into = "Mountain",
+            setUp = { withCardOnBattlefield(1, "Saruman of Many Colors") },
+        ) { game, start ->
+            val saruman = game.findPermanent("Saruman of Many Colors")!!
+            play(game, CastSpell(game.player2Id, cardIn(start, game.player2Id, "Shock"), targets = listOf(ChosenTarget.Permanent(saruman))))
+        }
+
+        groupB("a may-discard with a reflexive payoff asks whether or not the hand holds a match",
+            hand = listOf("Hidden Test Offering", "Grizzly Bears"), lands = "Island" to 1, forked = "Grizzly Bears", into = "Forest",
+        ) { game, start -> play(game, CastSpell(game.player2Id, cardIn(start, game.player2Id, "Hidden Test Offering"))) }
+
+        groupB("a may-discard with an if-you-do payoff asks whether or not the hand holds a match",
+            hand = listOf("Pack Guardian", "Forest"), lands = "Forest" to 4, forked = "Forest", into = "Grizzly Bears",
+        ) { game, start -> play(game, CastSpell(game.player2Id, cardIn(start, game.player2Id, "Pack Guardian"))) }
+
+        groupB("a choose-one asks whether or not hidden cards rule an option out",
+            hand = listOf("Hidden Test Ultimatum", "Grizzly Bears"), lands = "Island" to 1, forked = "Grizzly Bears", into = "Forest",
+            setUp = { withCardOnBattlefield(2, "Ornithopter") },
+        ) { game, start -> play(game, CastSpell(game.player2Id, cardIn(start, game.player2Id, "Hidden Test Ultimatum"))) }
+
+        test("a may-discard with no match in hand offers only no, and a yes is refused") {
+            val game = scenario().withPlayers()
+                .withCardInHand(2, "Hidden Test Offering").withCardInHand(2, "Forest")
+                .withLandsOnBattlefield(2, "Island", 1)
+                .withActivePlayer(2).inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN).build()
+            mutableListOf<GameAction>().play(game, CastSpell(game.player2Id, cardIn(game.state, game.player2Id, "Hidden Test Offering")))
+            val decision = game.state.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+            decision.yesAvailable shouldBe false
+            game.execute(SubmitDecision(game.player2Id, YesNoResponse(decision.id, true))).error.shouldNotBeNull()
         }
     }
 }

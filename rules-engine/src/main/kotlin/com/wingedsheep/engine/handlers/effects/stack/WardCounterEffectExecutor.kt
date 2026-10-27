@@ -15,6 +15,7 @@ import com.wingedsheep.engine.core.WardCostChoiceContinuation
 import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.ManaSourceOption
+import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.core.WaterbendPermanentChoice
 import com.wingedsheep.engine.core.YesNoDecision
@@ -350,11 +351,14 @@ class WardCounterEffectExecutor(
         ): EffectResult {
             require(options.isNotEmpty()) { "WardCost.Choice must have at least one option" }
 
+            // Counter without a question only when every player can see that no option can be
+            // paid. When only hidden cards rule the options out, "Counter spell" is the one answer
+            // offered, a forced pick answered without a prompt (#3340).
+            if (options.all { publiclyUnpayable(state, zones, it, payingPlayerId, controllerId) }) {
+                return counterSpellOrAbility(state, counterer, spellEntityId, controllerId)
+            }
             val payable = options.filter {
                 canPayWardCost(state, zones, it, payingPlayerId, controllerId)
-            }
-            if (payable.isEmpty()) {
-                return counterSpellOrAbility(state, counterer, spellEntityId, controllerId)
             }
 
             val labels = payable.map { it.clause.replaceFirstChar { ch -> ch.uppercase() } } +
@@ -601,13 +605,14 @@ class WardCounterEffectExecutor(
             wardSourceId: EntityId?,
             controllerId: EntityId?
         ): EffectResult {
-            // Not enough eligible cards in hand → counter immediately.
-            if (!canPayWardCost(
-                    state, zones, WardCost.Discard(count, random, filter), payingPlayerId, controllerId
-                )
-            ) {
+            // Too few cards in hand → counter immediately. That's public. Which cards match a
+            // filter isn't, so a hand without enough matches is still asked, and "counter" is
+            // its only answer (#3340).
+            val cost = WardCost.Discard(count, random, filter)
+            if (publiclyUnpayable(state, zones, cost, payingPlayerId, controllerId)) {
                 return counterSpellOrAbility(state, counterer, spellEntityId, controllerId)
             }
+            val payable = canPayWardCost(state, zones, cost, payingPlayerId, controllerId)
 
             val cardsLabel = if (filter != null) {
                 if (count == 1) "a ${filter.description}" else "$count ${filter.description} cards"
@@ -615,19 +620,6 @@ class WardCounterEffectExecutor(
                 if (count == 1) "a card" else "$count cards"
             }
             val randomSuffix = if (random) " at random" else ""
-
-            val decision = { decisionId: String -> YesNoDecision(
-                id = decisionId,
-                playerId = payingPlayerId,
-                prompt = "Discard $cardsLabel$randomSuffix or ${countered(state, spellEntityId)} will be countered",
-                context = DecisionContext(
-                    sourceId = wardSourceId,
-                    sourceName = promptSourceName(state, wardSourceId),
-                    phase = DecisionPhase.RESOLUTION
-                ),
-                yesText = "Discard $cardsLabel$randomSuffix",
-                noText = "Counter spell"
-            ) }
 
             val continuation = CounterUnlessDiscardContinuation(
                 payingPlayerId = payingPlayerId,
@@ -640,7 +632,76 @@ class WardCounterEffectExecutor(
                 wardSourceId = wardSourceId
             )
 
+            // A chosen discard of filtered cards is one question: pick the cards, or pick nothing
+            // and let the spell be countered. With no match there is nothing to pick, which is
+            // forced and answered without a prompt.
+            if (filter != null && !random) {
+                val options = if (payable) eligibleDiscards(state, zones, payingPlayerId, filter) else emptyList()
+                val selection = { decisionId: String -> SelectCardsDecision(
+                    id = decisionId,
+                    playerId = payingPlayerId,
+                    prompt = "Discard $cardsLabel or ${countered(state, spellEntityId)} will be countered",
+                    context = DecisionContext(
+                        sourceId = wardSourceId,
+                        sourceName = promptSourceName(state, wardSourceId),
+                        phase = DecisionPhase.RESOLUTION
+                    ),
+                    options = options,
+                    minSelections = 0,
+                    maxSelections = count,
+                    selectedLabel = "Discard",
+                ) }
+                return EffectResult.from(state.suspendForDecision(selection, continuation))
+            }
+
+            val decision = { decisionId: String -> YesNoDecision(
+                id = decisionId,
+                playerId = payingPlayerId,
+                prompt = "Discard $cardsLabel$randomSuffix or ${countered(state, spellEntityId)} will be countered",
+                context = DecisionContext(
+                    sourceId = wardSourceId,
+                    sourceName = promptSourceName(state, wardSourceId),
+                    phase = DecisionPhase.RESOLUTION
+                ),
+                yesText = "Discard $cardsLabel$randomSuffix",
+                noText = "Counter spell",
+                yesAvailable = payable
+            ) }
+
             return EffectResult.from(state.suspendForDecision(decision, continuation))
+        }
+
+        /** The cards in [payingPlayerId]'s hand that can pay a Ward—Discard [filter] cost. */
+        private fun eligibleDiscards(
+            state: GameState,
+            zones: ZoneTransitionService,
+            payingPlayerId: EntityId,
+            filter: GameObjectFilter
+        ): List<EntityId> {
+            val predicateContext = PredicateContext(controllerId = payingPlayerId)
+            return state.getHand(payingPlayerId).filter { cardId ->
+                zones.predicateEvaluator.matches(state, state.projectedState, cardId, filter, predicateContext)
+            }
+        }
+
+        /**
+         * Whether every player can see that [payingPlayerId] can't pay [cost]. Only this may
+         * counter without a question (#3340). A discard of filtered cards can be ruled out publicly
+         * only by the hand's size, since which cards match is hidden. Everything else is read as
+         * [canPayWardCost] reads it. Its mana check still counts mana abilities usable from the
+         * hand, which is #3340's group C, fixed separately.
+         */
+        fun publiclyUnpayable(
+            state: GameState,
+            zones: ZoneTransitionService,
+            cost: WardCost,
+            payingPlayerId: EntityId,
+            controllerId: EntityId?
+        ): Boolean = when (cost) {
+            is WardCost.Discard -> state.getHand(payingPlayerId).size < cost.count
+            is WardCost.Composite -> cost.parts.any { publiclyUnpayable(state, zones, it, payingPlayerId, controllerId) }
+            is WardCost.Choice -> cost.options.all { publiclyUnpayable(state, zones, it, payingPlayerId, controllerId) }
+            else -> !canPayWardCost(state, zones, cost, payingPlayerId, controllerId)
         }
 
         private fun handleManaCost(

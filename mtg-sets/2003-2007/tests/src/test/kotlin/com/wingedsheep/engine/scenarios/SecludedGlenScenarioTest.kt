@@ -100,16 +100,18 @@ class SecludedGlenScenarioTest : FunSpec({
         driver.isTapped(glen) shouldBe true
     }
 
-    test("no Faerie in hand skips the prompt and the land enters tapped") {
+    test("no Faerie in hand still asks, offering nothing, and the land enters tapped") {
         val driver = createDriver()
         setup(driver)
         val player = driver.activePlayer!!
 
         val glen = driver.putCardInHand(player, "Secluded Glen")
 
-        driver.playLand(player, glen).outcome shouldBe Outcome.Done
+        // Asked anyway, so the question doesn't reveal the hand (#3340); nothing can be picked.
+        (driver.playLand(player, glen).outcome is Outcome.Paused) shouldBe true
+        driver.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>().options shouldBe emptyList()
+        driver.submitCardSelection(player, emptyList()).outcome shouldBe Outcome.Done
 
-        driver.pendingDecision shouldBe null
         driver.isTapped(glen) shouldBe true
     }
 })

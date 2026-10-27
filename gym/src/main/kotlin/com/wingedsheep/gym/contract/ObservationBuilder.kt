@@ -551,8 +551,9 @@ class ObservationBuilder(
 
         return when (decision) {
             is YesNoDecision -> {
-                val responses = listOf(
-                    YesNoResponse(decision.id, true),
+                // "No" alone when "yes" is impossible (#3340): asked anyway, forced.
+                val responses = listOfNotNull(
+                    YesNoResponse(decision.id, true).takeIf { decision.yesAvailable },
                     YesNoResponse(decision.id, false)
                 )
                 val view = baseView(decision, PendingDecisionKind.YES_NO, baseShape, structured = false)

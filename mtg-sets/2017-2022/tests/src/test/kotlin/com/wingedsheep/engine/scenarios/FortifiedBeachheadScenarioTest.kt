@@ -76,9 +76,12 @@ class FortifiedBeachheadScenarioTest : FunSpec({
 
         val beachhead = driver.putCardInHand(player, "Fortified Beachhead")
 
-        driver.playLand(player, beachhead).outcome shouldBe Outcome.Done
+        // The reveal is still asked, so it doesn't tell the opponent what the hand holds (#3340),
+        // but with no Soldier in hand there is nothing to pick.
+        (driver.playLand(player, beachhead).outcome is Outcome.Paused) shouldBe true
+        driver.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>().options shouldBe emptyList()
+        driver.submitCardSelection(player, emptyList()).outcome shouldBe Outcome.Done
 
-        driver.pendingDecision shouldBe null
         driver.isTapped(beachhead) shouldBe true
     }
 })

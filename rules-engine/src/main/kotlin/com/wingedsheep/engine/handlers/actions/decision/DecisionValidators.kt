@@ -71,7 +71,7 @@ object DecisionValidators {
                 if (response is com.wingedsheep.engine.core.PlayCardResponse) null else "Play the instructed card"
             is ChooseTargetsDecision -> validateTargets(decision, response, state)
             is SelectCardsDecision -> validateSelectCards(decision, response, state)
-            is YesNoDecision -> validateYesNo(response)
+            is YesNoDecision -> validateYesNo(decision, response)
             is ChooseModeDecision -> validateModes(decision, response)
             is ChooseColorDecision -> validateColor(decision, response)
             is ChooseNumberDecision -> validateNumber(decision, response)
@@ -345,9 +345,12 @@ object DecisionValidators {
         return null
     }
 
-    private fun validateYesNo(response: DecisionResponse): String? {
+    private fun validateYesNo(decision: YesNoDecision, response: DecisionResponse): String? {
         if (response !is YesNoResponse) {
             return "Expected yes/no response"
+        }
+        if (response.choice && !decision.yesAvailable) {
+            return "\"${decision.yesText}\" isn't possible here"
         }
         return null
     }

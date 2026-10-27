@@ -29,6 +29,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardDestination
+import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.CollectEvidenceEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
@@ -134,6 +135,10 @@ class GatedEffectExecutor(
             return executeMayPayAnyAmountOfLife(state, effect, context)
         }
 
+        // False when the may-action is impossible but only hidden cards show it: the question is
+        // still asked, offering "no" alone (#3340).
+        var yesAvailable = true
+
         // Gate.MayDecide: two cases where the former Effects.May skipped the prompt entirely.
         if (gate is Gate.MayDecide) {
             // Source must still be in its required zone (e.g. a dies-trigger "may" whose source
@@ -148,11 +153,16 @@ class GatedEffectExecutor(
                 if (!inRequiredZone) return EffectResult.success(state)
             }
             // A ChooseActionEffect payoff with no feasible choice — don't ask the may question at all.
+            // Only what every player can tell may skip it (#3340): when only hidden cards rule
+            // every choice out, the question is asked with "no" as its only answer.
             val then = effect.then
-            if (then is ChooseActionEffect &&
-                then.choices.none { checkFeasibility(state, context.controllerId, it.feasibilityCheck, predicateEvaluator = predicateEvaluator, manaSolver = manaSolver) }
-            ) {
-                return EffectResult.success(state)
+            if (then is ChooseActionEffect) {
+                if (then.choices.none { checkFeasibility(state, context.controllerId, it.feasibilityCheck, predicateEvaluator, manaSolver, publicOnly = true) }) {
+                    return EffectResult.success(state)
+                }
+                if (then.choices.none { checkFeasibility(state, context.controllerId, it.feasibilityCheck, predicateEvaluator = predicateEvaluator, manaSolver = manaSolver) }) {
+                    yesAvailable = false
+                }
             }
             // CR 701.59b — "if a player is given the choice to collect evidence but is unable to
             // exile cards with total mana value N or greater … they can't choose to collect
@@ -190,11 +200,16 @@ class GatedEffectExecutor(
             // "doesn't", so skip the prompt and run `otherwise` directly. This is the no-target
             // analogue of a targeted "may" with no legal targets falling to its else branch (e.g.
             // "you may sacrifice an artifact. If you don't, …" with no artifact taps you out).
+            // A check that only hidden cards fail ("a creature card in your hand") still asks, with
+            // "no" as the only answer (#3340).
             gate.feasibility?.let { check ->
-                if (!checkFeasibility(state, context.controllerId, check, predicateEvaluator = predicateEvaluator, manaSolver = manaSolver)) {
+                if (!checkFeasibility(state, context.controllerId, check, predicateEvaluator, manaSolver, publicOnly = true)) {
                     return effect.otherwise
                         ?.let { effectExecutor(state, it, context) }
                         ?: EffectResult.success(state)
+                }
+                if (!checkFeasibility(state, context.controllerId, check, predicateEvaluator = predicateEvaluator, manaSolver = manaSolver)) {
+                    yesAvailable = false
                 }
             }
             // CR 608.2d — a player can't choose an option that's impossible. "You may exile eight
@@ -203,10 +218,15 @@ class GatedEffectExecutor(
             // CollectionNonEmpty bar. Offering the prompt anyway lets a "yes" partially perform the
             // exile — CR 609.3's do-as-much-as-possible, which governs *mandatory* instructions,
             // not an option that was never available — and spends those cards for nothing.
-            if (!optionalActionCanClearItsBar(state, effect.then, context)) {
+            // As above, only what every player can tell may skip the question (#3340): "you may
+            // discard a land card. If you do, …" with a hand of no lands is asked, offering "no".
+            if (!optionalActionCanClearItsBar(state, effect.then, context, publicOnly = true)) {
                 return effect.otherwise
                     ?.let { effectExecutor(state, it, context) }
                     ?: EffectResult.success(state)
+            }
+            if (!optionalActionCanClearItsBar(state, effect.then, context)) {
+                yesAvailable = false
             }
         }
 
@@ -241,8 +261,10 @@ class GatedEffectExecutor(
             if (auto != null) {
                 val sourceName = context.sourceId
                     ?.let { state.getEntity(it)?.get<CardComponent>()?.name } ?: "ability"
-                val note = AbilityAutoAnsweredEvent(context.sourceId ?: playerId, sourceName, playerId, auto)
-                val branch = if (auto) effect.then else effect.otherwise
+                // A remembered "yes" can't choose an impossible action; it answers "no".
+                val answer = auto && yesAvailable
+                val note = AbilityAutoAnsweredEvent(context.sourceId ?: playerId, sourceName, playerId, answer)
+                val branch = if (answer) effect.then else effect.otherwise
                 val result = branch?.let { effectExecutor(state, it, context) } ?: EffectResult.success(state)
                 return result.copy(events = listOf(note) + result.events)
             }
@@ -307,7 +329,8 @@ class GatedEffectExecutor(
             hint = hint,
             peerOptions = labels != null,
             yesDetail = labels?.yesDetail,
-            noDetail = labels?.noDetail
+            noDetail = labels?.noDetail,
+            yesAvailable = yesAvailable
         ) }
 
         val continuation = GatedEffectContinuation(
@@ -824,7 +847,8 @@ class GatedEffectExecutor(
     private fun optionalActionCanClearItsBar(
         state: GameState,
         then: Effect,
-        context: EffectContext
+        context: EffectContext,
+        publicOnly: Boolean = false
     ): Boolean {
         var inner = then
         while (true) {
@@ -832,16 +856,23 @@ class GatedEffectExecutor(
             when (val gate = gated.gate) {
                 // The `effectOncePerTurn` lowering sits between the consent gate and the action.
                 is Gate.OnceEachTurn -> inner = gated.then
-                is Gate.DoAction -> return actionCanClearItsBar(state, gate, context)
+                is Gate.DoAction -> return actionCanClearItsBar(state, gate, context, publicOnly)
                 else -> return true
             }
         }
     }
 
+    /**
+     * With [publicOnly], whether the bar *might* be cleared as far as every player can tell
+     * (#3340). A pool gathered from anything but a public zone (a hand, a library, its top cards)
+     * is then counted unfiltered, without the selection's filter or name restriction, because
+     * which of its cards would qualify is hidden.
+     */
     private fun actionCanClearItsBar(
         state: GameState,
         gate: Gate.DoAction,
-        context: EffectContext
+        context: EffectContext,
+        publicOnly: Boolean
     ): Boolean {
         val criterion = gate.successCriterion as? SuccessCriterion.CollectionNonEmpty ?: return true
         val steps = (gate.action as? CompositeEffect)?.effects ?: listOf(gate.action)
@@ -850,7 +881,15 @@ class GatedEffectExecutor(
         if (select.selection !is SelectionMode.ChooseExactly) return true
         val gather = steps.filterIsInstance<GatherCardsEffect>()
             .firstOrNull { it.storeAs == select.from } ?: return true
-        val pool = effectExecutor(state, gather, context).updatedCollections[select.from] ?: return true
+        val source = gather.source
+        val hiddenPool = publicOnly && !(source is CardSource.FromZone && source.zone.isPublic)
+        val probe = if (hiddenPool && source is CardSource.FromZone) {
+            gather.copy(source = source.copy(filter = GameObjectFilter.Any))
+        } else {
+            gather
+        }
+        val pool = effectExecutor(state, probe, context).updatedCollections[select.from] ?: return true
+        if (hiddenPool) return pool.size >= criterion.min
         val eligible = if (select.filter == GameObjectFilter.Any) {
             pool
         } else {

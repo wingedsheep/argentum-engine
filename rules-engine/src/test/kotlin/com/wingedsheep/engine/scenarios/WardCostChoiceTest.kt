@@ -245,7 +245,7 @@ class WardCostChoiceTest : FunSpec({
         driver.findPermanent(opponent, "Choice-Warded Bear") shouldNotBe null
     }
 
-    test("no payable option counters the spell with no prompt") {
+    test("no payable option still asks when only the hand rules the options out, offering only the decline") {
         val driver = createDriver()
         driver.initMirrorMatch(deck = Deck.of("Mountain" to 40), startingLife = 20)
         val activePlayer = driver.activePlayer!!
@@ -254,7 +254,33 @@ class WardCostChoiceTest : FunSpec({
 
         val bear = driver.putCreatureOnBattlefield(opponent, "Grim-Warded Bear")
 
-        // Only Mountains in hand and no creatures on board — neither leg is payable.
+        // Only Mountains in hand and no creatures on board — neither leg is payable. Which cards
+        // are in hand is hidden, so the question is asked anyway (#3340), offering only the decline.
+        driver.giveMana(activePlayer, Color.RED, 1)
+        val bolt = driver.putCardInHand(activePlayer, "Lightning Bolt")
+        driver.castSpellWithTargets(activePlayer, bolt, listOf(ChosenTarget.Permanent(bear)))
+        driver.bothPass()
+
+        val decision = driver.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>()
+        decision.options shouldContainExactly listOf("Counter spell")
+        driver.submitDecision(activePlayer, OptionChosenResponse(decision.id, 0))
+        repeat(2) { if (driver.state.priorityPlayerId != null) driver.bothPass() }
+
+        driver.findPermanent(opponent, "Grim-Warded Bear") shouldNotBe null
+    }
+
+    test("no payable option counters the spell with no prompt when the hand is empty") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Mountain" to 40), startingLife = 20)
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.getOpponent(activePlayer)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val bear = driver.putCreatureOnBattlefield(opponent, "Grim-Warded Bear")
+        val handKey = com.wingedsheep.engine.state.ZoneKey(activePlayer, com.wingedsheep.sdk.core.Zone.HAND)
+        driver.replaceState(driver.state.copy(zones = driver.state.zones + (handKey to emptyList())))
+
+        // An empty hand and no creatures: every player can see neither leg is payable.
         driver.giveMana(activePlayer, Color.RED, 1)
         val bolt = driver.putCardInHand(activePlayer, "Lightning Bolt")
         driver.castSpellWithTargets(activePlayer, bolt, listOf(ChosenTarget.Permanent(bear)))

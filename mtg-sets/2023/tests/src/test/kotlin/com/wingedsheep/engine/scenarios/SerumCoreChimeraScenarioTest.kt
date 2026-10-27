@@ -130,7 +130,7 @@ class SerumCoreChimeraScenarioTest : FunSpec({
         driver.findPermanent(driver.player2, "Centaur Courser") shouldBe courser
     }
 
-    test("with only lands in hand the discard is never offered and nothing is dealt damage") {
+    test("with only lands in hand the may offers only no and nothing is dealt damage") {
         val driver = newDriver()
         val p1 = driver.player1
         val chimera = driver.putCreatureOnBattlefield(p1, "Serum-Core Chimera")
@@ -139,12 +139,21 @@ class SerumCoreChimeraScenarioTest : FunSpec({
         driver.putCardOnTopOfLibrary(p1, "Island")
 
         driver.submitSuccess(ActivateAbility(playerId = p1, sourceId = chimera, abilityId = abilityId))
+        // The may is still asked, so it doesn't reveal the hand (#3340), but "yes" isn't possible.
+        var asked = 0
         var guard = 0
         while (guard++ < 20) {
-            val dec = driver.pendingDecision
-            if (dec != null) error("No decision expected when the hand holds only lands, got: $dec")
-            if (driver.state.stack.isNotEmpty()) driver.bothPass() else break
+            when (val dec = driver.pendingDecision) {
+                is YesNoDecision -> {
+                    asked++
+                    dec.yesAvailable shouldBe false
+                    driver.submitYesNo(p1, false)
+                }
+                null -> if (driver.state.stack.isNotEmpty()) driver.bothPass() else break
+                else -> error("Only the may question is expected when the hand holds only lands, got: $dec")
+            }
         }
+        asked shouldBe 1
         driver.getGraveyardCardNames(p1) shouldBe emptyList()
         driver.findPermanent(driver.player2, "Centaur Courser") shouldBe courser
     }

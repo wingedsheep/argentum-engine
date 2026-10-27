@@ -476,6 +476,11 @@ export interface YesNoDecision extends PendingDecisionBase {
   readonly yesDetail?: string | null
   /** Second line under the no option when `peerOptions` is set. */
   readonly noDetail?: string | null
+  /**
+   * False when "yes" is impossible ("you may discard a creature card" with none in hand), so "no"
+   * is the only answer. Absent means true.
+   */
+  readonly yesAvailable?: boolean
 }
 
 /**

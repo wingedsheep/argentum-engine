@@ -24,10 +24,12 @@ import kotlin.reflect.KClass
  *
  * Flow:
  *  1. Compute eligible cards in the controller's hand matching `effect.filter`.
- *  2. If none, skip the prompt entirely and run `effect.otherwise`.
+ *  2. If the hand is empty, skip the prompt and run `effect.otherwise`.
  *  3. Otherwise, present a `SelectCardsDecision` with `minSelections = 0,
- *     maxSelections = 1` listing the eligible cards. The player either picks
- *     one (reveals it) or submits an empty selection (declines).
+ *     maxSelections = 1` listing the eligible cards, possibly none. The player
+ *     either picks one (reveals it) or submits an empty selection (declines).
+ *     Whether the question is asked never depends on which cards the hand
+ *     holds (#3340).
  *  4. On reveal: emit `CardsRevealedEvent`; the inner choice has no further
  *     payoff.
  *  5. On decline: run `effect.otherwise`.
@@ -60,7 +62,10 @@ class MayRevealCardFromHandEffectExecutor(
             predicateEvaluator.matches(state, state.projectedState, cardId, effect.filter, predicateContext)
         }
 
-        if (eligible.isEmpty()) {
+        // Skip only on what every player knows: an empty hand. A hand with no matching card is
+        // still asked, with nothing to pick, so the question doesn't reveal what the hand holds
+        // (#3340). That empty selection is forced, so it's answered without a prompt.
+        if (handCards.isEmpty()) {
             return runOtherwise(state, effect.otherwise, context)
         }
 

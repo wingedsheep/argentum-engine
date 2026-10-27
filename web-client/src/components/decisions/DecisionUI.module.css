@@ -1321,3 +1321,11 @@
     font-size: var(--font-md);
   }
 }
+
+/* A "yes" the server marked impossible: "no" is the only answer (#3340). */
+.yesButton:disabled,
+.peerOption:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(0.6);
+}

@@ -134,7 +134,7 @@ class FastDecisionResponder(private val intents: IntentCatalog = IntentCatalog.N
             )
 
             // "You may" is on the card because doing it is usually good.
-            is YesNoDecision -> YesNoResponse(decision.id, choice = true)
+            is YesNoDecision -> YesNoResponse(decision.id, choice = decision.yesAvailable)
             is BatchYesNoDecision -> BatchYesNoResponse(decision.id, choice = true, applyToAll = true)
 
             is ChooseModeDecision -> {

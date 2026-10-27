@@ -1163,7 +1163,17 @@ class CastSpellHandler(
 
             // No real choice (exactly enough legal options) — auto-pay and re-enter, so a forced
             // single sacrifice doesn't prompt. The re-entry sees this cost satisfied and moves on.
-            if (options.size == count) {
+            // A pool drawn from a hidden zone ("discard a creature card") is forced only when the
+            // zone's size says so: which of its cards match is hidden, and skipping the question
+            // would tell the opponent the zone held no other eligible card (#3340).
+            val hiddenPoolSize = when {
+                kind == AdditionalCostSelectionKind.DISCARD ->
+                    state.getHand(action.playerId).count { it != action.cardId }
+                atom is CostAtom.ExileFrom && atom.zone.isHidden ->
+                    state.getZone(com.wingedsheep.engine.state.ZoneKey(action.playerId, atom.zone)).count { it != action.cardId }
+                else -> null
+            }
+            if (options.size == count && (hiddenPoolSize == null || hiddenPoolSize == count)) {
                 return execute(state, withAdditionalCostSelection(action, kind, options))
             }
 

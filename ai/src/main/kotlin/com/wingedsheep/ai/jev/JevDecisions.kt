@@ -10,7 +10,7 @@ internal class JevDecisions(private val q: JevChoices, private val label: (Entit
 
     fun answer(d: PendingDecision): DecisionResponse = when (d) {
         is PlayCardDecision -> PlayCardResponse(d.id, requireNotNull(playCard)(d))
-        is YesNoDecision -> YesNoResponse(d.id, q.pick(d.prompt, listOf(true, false)) { if (it) d.yesText else d.noText })
+        is YesNoDecision -> YesNoResponse(d.id, q.pick(d.prompt, listOfNotNull(true.takeIf { d.yesAvailable }, false)) { if (it) d.yesText else d.noText })
         is BatchYesNoDecision -> BatchYesNoResponse(d.id,
             q.pick(d.prompt, listOf(true, false)) { if (it) d.yesText else d.noText }, applyToAll = false)
         is ChooseOptionDecision -> OptionChosenResponse(d.id, q.pick(d.prompt, d.options.indices.toList()) { d.options[it] })

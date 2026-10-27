@@ -4,6 +4,9 @@ import { AbilityText } from '../ui/ManaSymbols'
 import { DecisionContextCards, hasDecisionContextCards, resolveDecisionCards } from './DecisionContextCards'
 import styles from './DecisionUI.module.css'
 
+/** Tooltip on a "yes" the server marked impossible. */
+const NOT_POSSIBLE = 'Not possible right now'
+
 /**
  * Yes/No decision - make a binary choice.
  *
@@ -23,9 +26,12 @@ export function YesNoDecisionUI({
   onMinimize?: () => void
 }) {
   const submitYesNoDecision = useGameStore((s) => s.submitYesNoDecision)
+  // The server asks even when "yes" is impossible, so the question doesn't reveal hidden cards;
+  // then "no" is the only answer and "yes" is shown disabled.
+  const yesAvailable = decision.yesAvailable !== false
 
   const handleYes = () => {
-    submitYesNoDecision(decision.id, true)
+    if (yesAvailable) submitYesNoDecision(decision.id, true)
   }
 
   const handleNo = () => {
@@ -61,7 +67,7 @@ export function YesNoDecisionUI({
         <>
           {/* Two outcomes of equal standing (endure: counters or a Spirit) — neither is "decline". */}
           <div className={styles.peerOptions}>
-            <PeerOption label={decision.yesText} detail={decision.yesDetail} onClick={handleYes} />
+            <PeerOption label={decision.yesText} detail={decision.yesDetail} onClick={handleYes} disabled={!yesAvailable} />
             <span className={styles.peerOptionsOr} aria-hidden="true">or</span>
             <PeerOption label={decision.noText} detail={decision.noDetail} onClick={handleNo} />
           </div>
@@ -81,7 +87,7 @@ export function YesNoDecisionUI({
               View Battlefield
             </button>
           )}
-          <button onClick={handleYes} className={styles.yesButton}>
+          <button onClick={handleYes} className={styles.yesButton} disabled={!yesAvailable} title={yesAvailable ? undefined : NOT_POSSIBLE}>
             <AbilityText text={decision.yesText} size={16} />
           </button>
           <button onClick={handleNo} className={styles.noButton}>
@@ -93,9 +99,9 @@ export function YesNoDecisionUI({
   )
 }
 
-function PeerOption({ label, detail, onClick }: { label: string; detail?: string | null | undefined; onClick: () => void }) {
+function PeerOption({ label, detail, onClick, disabled = false }: { label: string; detail?: string | null | undefined; onClick: () => void; disabled?: boolean }) {
   return (
-    <button onClick={onClick} className={styles.peerOption}>
+    <button onClick={onClick} className={styles.peerOption} disabled={disabled} title={disabled ? NOT_POSSIBLE : undefined}>
       <span className={styles.peerOptionLabel}>
         <AbilityText text={label} size={18} />
       </span>

@@ -289,7 +289,12 @@ internal class PermanentSpellResolver(
                 predicateEvaluator.matches(state, state.projectedState, cardId, revealCountersEffect.filter, predicateContext)
             }
 
-            if (validCards.isNotEmpty()) {
+            // Amplify reveals from the hand: which of its cards share a type is hidden, so a
+            // non-empty hand is asked even with nothing to reveal (#3340). That empty selection is
+            // forced and is answered without a prompt. Only an empty zone skips the question.
+            val ask = validCards.isNotEmpty() ||
+                (revealCountersEffect.revealSource.isHidden && state.getZone(revealZone).isNotEmpty())
+            if (ask) {
                 val continuation = RevealCountersContinuation(
                     spellId = spellId,
                     controllerId = controllerId,

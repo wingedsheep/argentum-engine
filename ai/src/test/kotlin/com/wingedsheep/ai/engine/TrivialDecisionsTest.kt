@@ -24,6 +24,8 @@ import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.core.TargetRequirementInfo
 import com.wingedsheep.engine.core.TargetsResponse
+import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.core.YesNoResponse
 import com.wingedsheep.engine.handlers.actions.decision.DecisionValidators
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.core.Color
@@ -68,6 +70,14 @@ class TrivialDecisionsTest : FunSpec({
                 prompt = "Choose",
                 context = context,
                 options = listOf("Only option"),
+            ),
+            // "You may discard a creature card" with none in hand: asked, but only "no" is legal.
+            YesNoDecision(
+                id = "yesno",
+                playerId = player,
+                prompt = "You may discard a creature card",
+                context = context,
+                yesAvailable = false,
             ),
             ChooseColorDecision(
                 id = "color",
@@ -217,6 +227,13 @@ class TrivialDecisionsTest : FunSpec({
         // The original TargetRequirement objects may impose cross-slot distinctness (for example,
         // TargetOther), but ChooseTargetsDecision exposes no such field to this state-free helper.
         TrivialDecisions.responseFor(decision).shouldBeNull()
+    }
+
+    test("a yes/no is forced only when yes is impossible, and then the answer is no") {
+        val may = YesNoDecision(id = "may", playerId = player, prompt = "You may discard a creature card", context = context)
+        TrivialDecisions.responseFor(may).shouldBeNull()
+        TrivialDecisions.responseFor(may.copy(yesAvailable = false)) shouldBe YesNoResponse("may", false)
+        DecisionValidators.validate(may.copy(yesAvailable = false), YesNoResponse("may", true), GameState()).shouldNotBeNull()
     }
 
     test("a lone option is not forced when the decision can be cancelled") {

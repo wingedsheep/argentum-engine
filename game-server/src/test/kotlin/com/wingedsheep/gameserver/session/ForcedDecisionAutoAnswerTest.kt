@@ -9,6 +9,8 @@ import com.wingedsheep.engine.core.SearchCardInfo
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.SubmitDecision
 import com.wingedsheep.engine.core.TargetsResponse
+import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.core.YesNoResponse
 import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.gameserver.protocol.ServerMessage
 import com.wingedsheep.mtg.sets.definitions.pls.cards.FlametongueKavu
@@ -95,6 +97,14 @@ class ForcedDecisionAutoAnswerTest : ScenarioTestBase() {
             val search = look.copy(librarySearch = true)
             ForcedDecisionAutoAnswer.responseFor(search, search)
                 .shouldBeInstanceOf<CardsSelectedResponse>().selectedCards shouldBe emptyList()
+        }
+
+        test("a may whose yes is impossible is answered no; an open may is asked") {
+            // "You may discard a creature card" with none in hand: asked, with "no" alone (#3340).
+            val may = YesNoDecision(id = "may", playerId = player, prompt = "You may discard a creature card", context = context)
+            ForcedDecisionAutoAnswer.responseFor(may, may).shouldBeNull()
+            val forced = may.copy(yesAvailable = false)
+            ForcedDecisionAutoAnswer.responseFor(forced, forced) shouldBe YesNoResponse("may", false)
         }
 
         test("the engine's own decision decides forcedness, not the seat's transformed copy") {

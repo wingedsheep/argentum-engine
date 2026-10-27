@@ -199,6 +199,7 @@ export function selectCardInteraction(state: GameStore, input: CardInteractionIn
   const isTriggerYesNo = decision?.type === 'YesNoDecision'
     && !!decision.context.inlineOnTrigger
     && decision.context.triggeringEntityId === cardId
+    && decision.yesAvailable !== false
   const isDecisionSubject = decision?.context.subjectEntityId === cardId
 
   // Decision selection

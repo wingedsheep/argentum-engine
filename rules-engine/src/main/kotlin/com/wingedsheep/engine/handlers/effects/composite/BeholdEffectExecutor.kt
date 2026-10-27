@@ -22,8 +22,9 @@ import kotlin.reflect.KClass
  *  1. Compute the beholder's eligible objects: matching permanents they control (projected
  *     state) and matching cards in their hand (base state, matching the cast-time Behold
  *     convention in [com.wingedsheep.engine.handlers.CostHandler]).
- *  2. If none are eligible, the player can't behold — skip the prompt, don't run `ifBeheld`,
- *     and run `otherwise` instead.
+ *  2. If no permanent matches and the hand is empty, the player can't behold — skip the prompt,
+ *     don't run `ifBeheld`, and run `otherwise` instead. A non-empty hand is always asked, even
+ *     with nothing eligible, so the question doesn't depend on hidden cards (#3340).
  *  3. Otherwise present a [SelectCardsDecision] with `minSelections = 0, maxSelections = 1` over
  *     the union. The player either beholds one object or submits an empty selection (declines).
  *  4. On behold: if the chosen object is a hand card, emit the public reveal; either way, run
@@ -63,7 +64,11 @@ class BeholdEffectExecutor(
         }
 
         val options = (battlefieldMatches + handMatches).distinct()
-        if (options.isEmpty()) {
+        // Skip only when every player can see there's nothing to behold: no match on the
+        // battlefield and an empty hand. A hand without a match is still asked, with nothing in
+        // hand to pick, so the question doesn't reveal the hand (#3340); with no options at all
+        // the empty selection is forced and is answered without a prompt.
+        if (battlefieldMatches.isEmpty() && state.getHand(beholder).isEmpty()) {
             // Can't behold — the "if you do" payoff doesn't run, the "if you don't" rider does.
             val otherwise = effect.otherwise ?: return EffectResult.success(state)
             return effectExecutor(state, otherwise, context)

@@ -150,19 +150,21 @@ class BullseyeDeathDealerScenarioTest : FunSpec({
         driver.getLifeTotal(opponent) shouldBe 18
     }
 
-    test("no artifact and a hand of only lands: the may prompt is never presented at all") {
+    test("no artifact and a hand of only lands: the may offers only no") {
         val driver = newDriver()
         val me = driver.player1
         val opponent = driver.getOpponent(me)
         driver.giveMana(me, Color.BLACK, 3)
 
-        // Nothing to sacrifice, nothing legal to discard: both FeasibilityChecks fail, so
-        // isActionFeasible's `choices.any { … }` is false and the whole "may" is suppressed.
+        // Nothing to sacrifice, nothing legal to discard. Which cards are in hand is hidden, so
+        // the may is still asked (#3340), with "no" as its only answer.
         val bullseye = driver.putCardInHand(me, "Bullseye, Death Dealer")
         driver.castSpell(me, bullseye)
 
-        driver.advanceToMayPrompt() shouldBe false
-        // The absence of the decision is the assertion — not merely that nothing was damaged.
+        driver.advanceToMayPrompt() shouldBe true
+        (driver.pendingDecision as YesNoDecision).yesAvailable shouldBe false
+        driver.submitYesNo(me, true).error shouldNotBe null
+        driver.submitYesNo(me, false)
         driver.pendingDecision shouldBe null
         driver.state.stack.isEmpty() shouldBe true
         driver.getLifeTotal(opponent) shouldBe 20

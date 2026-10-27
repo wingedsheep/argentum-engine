@@ -12,9 +12,11 @@ import kotlin.reflect.KClass
 class YesNoHandler : AiDecisionHandler<YesNoDecision> {
     override val decisionType: KClass<YesNoDecision> = YesNoDecision::class
 
-    override fun autoResolve(decision: YesNoDecision): DecisionResponse {
-        throw UnsupportedOperationException()
-    }
+    /** "Yes" is impossible, so "no" is the only answer: nothing to ask the model. */
+    override fun canAutoResolve(decision: YesNoDecision): Boolean = !decision.yesAvailable
+
+    override fun autoResolve(decision: YesNoDecision): DecisionResponse =
+        YesNoResponse(decisionId = decision.id, choice = false)
 
     override fun format(
         sb: StringBuilder,

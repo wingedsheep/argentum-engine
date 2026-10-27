@@ -183,15 +183,16 @@ class PayOrSufferExecutor(
             return handleRandomDiscard(state, effect, context, cost, sourceId, sourceName, controllerId)
         }
 
-        // Find all valid cards in hand that match the filter
-        val validCards = findValidCardsInHand(state, controllerId, cost.filter, sourceId)
-
-        // If the player doesn't have enough matching cards, automatically execute suffer effect
-        if (validCards.size < cost.count) {
+        // Suffer without asking only when every player can see the cost can't be paid: too few
+        // cards in hand. Which cards match the filter is hidden, so a hand without enough of them
+        // is still asked, with nothing to pick (#3340). That empty selection is forced, so it's
+        // answered without a prompt, and choosing nothing suffers.
+        if (state.getHand(controllerId).size < cost.count) {
             return executeSufferEffect(state, effect.suffer, context)
         }
+        val validCards = findValidCardsInHand(state, controllerId, cost.filter, sourceId)
+            .takeIf { it.size >= cost.count }.orEmpty()
 
-        // Player has at least enough valid cards - present the decision
         val prompt = buildDiscardPrompt(cost, sourceName, effect)
 
         val continuation = PayOrSufferContinuation(
@@ -250,12 +251,12 @@ class PayOrSufferExecutor(
         sourceName: String,
         controllerId: EntityId
     ): EffectResult {
-        val validCards = findValidCardsInHand(state, controllerId, cost.filter, sourceId)
-
-        // If no valid cards, execute suffer effect automatically
-        if (validCards.size < cost.count) {
+        // As for a chosen discard, only the hand's size may skip the question (#3340). A filter
+        // the hand can't meet leaves "no" as the only answer.
+        if (state.getHand(controllerId).size < cost.count) {
             return executeSufferEffect(state, effect.suffer, context)
         }
+        val payable = findValidCardsInHand(state, controllerId, cost.filter, sourceId).size >= cost.count
 
         // Create a yes/no decision
         val prompt = "Discard ${if (cost.count == 1) "a card" else "${cost.count} cards"} at random to keep $sourceName?"
@@ -270,7 +271,8 @@ class PayOrSufferExecutor(
                 phase = DecisionPhase.RESOLUTION
             ),
             yesText = "Discard",
-            noText = "Accept consequence"
+            noText = "Accept consequence",
+            yesAvailable = payable
         ) }
 
         val continuation = PayOrSufferContinuation(
@@ -802,11 +804,13 @@ class PayOrSufferExecutor(
         sourceName: String,
         controllerId: EntityId
     ): EffectResult {
-        val validCards = findValidCardsInZone(state, controllerId, cost.filter, cost.zone, sourceId)
-
-        if (validCards.size < cost.count) {
+        // From a hidden zone, only its size may skip the question; which of its cards match is
+        // hidden, so too few matches leave only the empty selection (#3340).
+        if (publiclyUnpayable(state, controllerId, PayCost.Atom(cost), sourceId)) {
             return executeSufferEffect(state, effect.suffer, context)
         }
+        val validCards = findValidCardsInZone(state, controllerId, cost.filter, cost.zone, sourceId)
+            .takeIf { it.size >= cost.count }.orEmpty()
 
         val prompt = buildExilePrompt(cost, sourceName, effect)
 
@@ -935,8 +939,11 @@ class PayOrSufferExecutor(
 
         val optionLabels = availableOptions.map { it.second } + sufferDescription
 
-        // If no avoidance options are available, automatically suffer
-        if (availableOptions.isEmpty()) {
+        // Suffer without asking only when every player can see that no option can be paid. An
+        // option that only hidden cards rule out ("discard a creature card") still gets the
+        // question; with nothing payable its only answer is the consequence, a forced pick
+        // answered without a prompt (#3340).
+        if (cost.options.all { publiclyUnpayable(state, payingPlayerId, it, sourceId) }) {
             return executeSufferEffect(state, effect.suffer, context)
         }
 
@@ -1015,6 +1022,33 @@ class PayOrSufferExecutor(
             is PaymentResult.Declined ->
                 executeSufferEffect(state, effect.suffer, context)
         }
+    }
+
+    /**
+     * Whether every player can see that [playerId] can't pay [cost]. Only this may skip a
+     * pay-or-suffer question (#3340). A cost that picks filtered cards from a hidden zone (the
+     * hand, or the library) can be ruled out publicly only by that zone's size. Which of its cards
+     * match the filter is hidden, so a "maybe" there is asked, and [canPayCost] then decides what
+     * the question offers.
+     *
+     * Mana costs still go through [canPayCost], whose solver also counts mana abilities usable
+     * from the hand. That is #3340's group C, fixed separately.
+     */
+    private fun publiclyUnpayable(
+        state: GameState,
+        playerId: EntityId,
+        cost: PayCost,
+        sourceId: EntityId
+    ): Boolean = when (cost) {
+        is PayCost.Choice -> cost.options.all { publiclyUnpayable(state, playerId, it, sourceId) }
+        is PayCost.Atom -> when (val atom = cost.atom) {
+            is CostAtom.Discard -> state.getHand(playerId).size < atom.count
+            is CostAtom.ExileFrom ->
+                if (atom.zone.isHidden) state.getZone(ZoneKey(playerId, atom.zone)).size < atom.count
+                else !canPayCost(state, playerId, cost, sourceId)
+            else -> !canPayCost(state, playerId, cost, sourceId)
+        }
+        else -> !canPayCost(state, playerId, cost, sourceId)
     }
 
     /**

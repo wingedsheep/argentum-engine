@@ -39,14 +39,19 @@ class DokuchiSilencerScenarioTest : FunSpec({
         d.declareNoBlockers(d.player2)
     }
 
-    /** Resolve combat, answering the may with yes; returns how many yes/no prompts appeared. */
-    fun settle(d: GameTestDriver, discard: EntityId? = null, target: EntityId? = null, mustNotTarget: EntityId? = null): Int {
+    /** Resolve combat, answering the may with yes where yes is possible; returns how many yes/no prompts appeared and how many offered yes. */
+    fun settle(d: GameTestDriver, discard: EntityId? = null, target: EntityId? = null, mustNotTarget: EntityId? = null): Pair<Int, Int> {
         var prompts = 0
+        var yesOffered = 0
         var guard = 0
         while (guard++ < 30 && (d.state.stack.isNotEmpty() || d.pendingDecision != null ||
                 d.state.step != Step.POSTCOMBAT_MAIN)) {
             when (val pd = d.pendingDecision) {
-                is YesNoDecision -> { prompts++; d.submitYesNo(pd.playerId, true).error shouldBe null }
+                is YesNoDecision -> {
+                    prompts++
+                    if (pd.yesAvailable) yesOffered++
+                    d.submitYesNo(pd.playerId, pd.yesAvailable).error shouldBe null
+                }
                 is SelectCardsDecision -> {
                     pd.options shouldContain discard!!
                     d.submitCardSelection(pd.playerId, listOf(discard)).error shouldBe null
@@ -61,7 +66,7 @@ class DokuchiSilencerScenarioTest : FunSpec({
                 else -> error("unexpected decision $pd")
             }
         }
-        return prompts
+        return prompts to yesOffered
     }
 
     test("discarding a creature card destroys a creature the damaged player controls") {
@@ -72,7 +77,7 @@ class DokuchiSilencerScenarioTest : FunSpec({
         val ninja = d.putCreatureOnBattlefield(d.player1, DokuchiSilencer.name).also(d::removeSummoningSickness)
         attackUnblocked(d, ninja)
 
-        settle(d, discard = toDiscard, target = theirBears, mustNotTarget = ownBears) shouldBe 1
+        settle(d, discard = toDiscard, target = theirBears, mustNotTarget = ownBears) shouldBe (1 to 1)
 
         d.getGraveyardCardNames(d.player1) shouldContain "Grizzly Bears"
         d.getGraveyardCardNames(d.player2) shouldContain "Grizzly Bears"
@@ -80,14 +85,15 @@ class DokuchiSilencerScenarioTest : FunSpec({
         d.getLifeTotal(d.player2) shouldBe 18
     }
 
-    test("with no creature card in hand there is no prompt and nothing is destroyed") {
+    test("with no creature card in hand the may offers only no, and nothing is destroyed") {
         val d = driver()
         val swamp = d.putCardInHand(d.player1, "Swamp")
         val theirBears = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
         val ninja = d.putCreatureOnBattlefield(d.player1, DokuchiSilencer.name).also(d::removeSummoningSickness)
         attackUnblocked(d, ninja)
 
-        settle(d) shouldBe 0
+        // Still asked, so the question doesn't reveal the hand (#3340), but only "no" is possible.
+        settle(d) shouldBe (1 to 0)
 
         d.findPermanent(d.player2, "Grizzly Bears") shouldBe theirBears
         d.getHand(d.player1) shouldContain swamp

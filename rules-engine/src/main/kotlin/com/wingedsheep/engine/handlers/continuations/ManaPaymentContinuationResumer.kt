@@ -322,6 +322,9 @@ class ManaPaymentContinuationResumer(
      *
      * If the hand has fewer than `count` cards by the time we resume, treat that as
      * an inability to pay and counter the spell.
+     *
+     * A chosen discard of filtered cards asks once, as a card selection: the picked cards
+     * pay, and picking fewer than `count` counters the spell.
      */
     fun resumeCounterUnlessDiscard(
         state: GameState,
@@ -329,6 +332,9 @@ class ManaPaymentContinuationResumer(
         response: DecisionResponse,
         checkForMore: CheckForMore
     ): ExecutionResult {
+        if (response is CardsSelectedResponse) {
+            return resumeCounterUnlessDiscardSelection(state, continuation, response, checkForMore)
+        }
         if (response !is YesNoResponse) {
             return ExecutionResult.error(state, "Expected yes/no response for counter unless discard")
         }
@@ -394,6 +400,42 @@ class ManaPaymentContinuationResumer(
             checkForMore
         )?.let { return it }
         return checkForMore(discardResult.newState, discardResult.events.toList())
+    }
+
+    /**
+     * The one-question form of a ward—discard of filtered cards: [response] names the cards to
+     * discard. Exactly `count` distinct cards from the payer's hand that still match the filter
+     * pay the cost. Anything else, including the empty selection, counters the spell.
+     */
+    private fun resumeCounterUnlessDiscardSelection(
+        state: GameState,
+        continuation: CounterUnlessDiscardContinuation,
+        response: CardsSelectedResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        val payer = continuation.payingPlayerId
+        val hand = state.getHand(payer).toSet()
+        val predicateContext = PredicateContext(controllerId = payer)
+        val selected = response.selectedCards.distinct().filter { cardId ->
+            cardId in hand && (continuation.filter == null ||
+                predicateEvaluator.matches(state, state.projectedState, cardId, continuation.filter, predicateContext))
+        }
+        if (selected.size < continuation.count) {
+            return counterForUnpaidCost(
+                state, continuation.spellEntityId, exileOrGraveyard(continuation.exileOnCounter),
+                continuation.controllerId ?: payer, checkForMore
+            )
+        }
+        // A cost, not an effect: no discard cause, so "if an opponent causes you to discard"
+        // replacements don't apply, as on the yes/no path.
+        val discarded = services.zones.discardCards(state, payer, selected.take(continuation.count))
+        chargeNextWardPartOrNull(
+            discarded.state, discarded.events,
+            continuation.remainingWardParts, continuation.spellEntityId,
+            payer, continuation.wardSourceId, continuation.controllerId,
+            checkForMore
+        )?.let { return it }
+        return checkForMore(discarded.state, discarded.events)
     }
 
     /**

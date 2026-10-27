@@ -396,7 +396,15 @@ data class YesNoDecision(
     /** Optional second line under [yesText] when [peerOptions] is set ("on this creature"). */
     val yesDetail: String? = null,
     /** Optional second line under [noText] when [peerOptions] is set. */
-    val noDetail: String? = null
+    val noDetail: String? = null,
+    /**
+     * False when "yes" is impossible, so "no" is the only legal answer (CR 608.2d): "you may
+     * discard a creature card" with none in hand. The question is still asked, because whether
+     * it is asked may depend only on what every player knows (#3340). The hidden cards decide
+     * only which answers it offers. A decision with this false is forced, so the AI and the human
+     * auto-answer both say "no" without a prompt.
+     */
+    val yesAvailable: Boolean = true
 ) : PendingDecision
 
 /**
