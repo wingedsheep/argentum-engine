@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.cost
 
+import com.wingedsheep.engine.mechanics.mana.withReservedSnowBonus
 import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
 import com.wingedsheep.engine.state.LifePaymentPurpose
 
@@ -585,6 +586,7 @@ class CostPaymentService(private val services: EngineServices) {
             for (source in solution.sources) {
                 for ((color, amount) in source.fixedBonusMana) combined = combined.add(color, amount)
             }
+            combined = combined.withReservedSnowBonus(solution)
         }
 
         val newPool = combined.pay(manaCost) ?: return CostPaymentExecution(state, emptyList(), false)

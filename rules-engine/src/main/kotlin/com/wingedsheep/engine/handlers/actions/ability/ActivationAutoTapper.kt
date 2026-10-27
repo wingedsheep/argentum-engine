@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
+import com.wingedsheep.engine.mechanics.mana.withReservedSnowBonus
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor
 import com.wingedsheep.engine.mechanics.mana.ManaPool
@@ -165,6 +166,7 @@ internal class ActivationAutoTapper(
         for (source in solution.sources) {
             for ((color, amount) in source.fixedBonusMana) currentPool = currentPool.add(color, amount)
         }
+        currentPool = currentPool.withReservedSnowBonus(solution)
 
         // Update state with enriched pool — carry restrictedMana and mana-source provenance through
         // so the ability-payment context can spend (and the leftover can stay) restricted, and so the

@@ -12,7 +12,11 @@ import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.sdk.scripting.AdditionalManaOnSourceTap
 import com.wingedsheep.sdk.scripting.AdditionalManaOnTap
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.engine.core.ManaAbilityResolvedEvent
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.sdk.scripting.GrantSupertype
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import io.kotest.assertions.withClue
@@ -29,7 +33,7 @@ import io.kotest.matchers.shouldNotBe
 class SnowTapBonusManaTest : ScenarioTestBase() {
 
     init {
-        cardRegistry.register(listOf(Glade, SnowGlade, FrostBloom, WarmBloom, FrostDrift, RimeBolt, RimeSpark))
+        cardRegistry.register(listOf(Glade, SnowGlade, FrostBloom, WarmBloom, FrostDrift, RimeBolt, RimeSpark, RimeSurge, RimeEngine))
 
         fun board(land: String, aura: String, spell: String? = null) = scenario()
             .withPlayers("Player", "Opponent")
@@ -103,6 +107,46 @@ class SnowTapBonusManaTest : ScenarioTestBase() {
             }
         }
 
+        test("auto-pay pays {S}{S}{1}: one aura-enchanted land covers both pips, another the generic") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Glade")
+                .withCardAttachedTo(1, "Frost Drift", "Glade")
+                .withCardOnBattlefield(1, "Snow Glade")
+                .withCardInHand(1, "Rime Surge")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val result = game.castSpell(1, "Rime Surge")
+            result.error shouldBe null
+            withClue("both lands tapped, nothing floats") {
+                game.state.getEntity(game.findPermanent("Glade")!!)?.has<TappedComponent>() shouldBe true
+                game.state.getEntity(game.findPermanent("Snow Glade")!!)?.has<TappedComponent>() shouldBe true
+                game.pool().total shouldBe 0
+            }
+            withClue("the land reports only its own {G}; the aura's mana isn't booked as the land's") {
+                result.events.filterIsInstance<ManaAbilityResolvedEvent>()
+                    .filter { it.sourceId == game.findPermanent("Glade") }
+                    .map { it.amount } shouldBe listOf(1)
+            }
+        }
+
+        test("a snow permanent's 'whenever a land is tapped for mana' bonus is snow mana") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Glade")
+                .withCardOnBattlefield(1, "Rime Engine")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            game.tap("Glade", Glade)
+            val pool = game.pool()
+            withClue("the land's {G} is not snow, the snow engine's {G} is; pool was $pool") {
+                pool.green shouldBe 2
+                pool.snowTotal shouldBe 1
+            }
+        }
+
         test("an unspent snow bonus floats as snow mana after auto-pay") {
             val game = board("Glade", "Frost Drift", spell = "Rime Spark")
             game.castSpell(1, "Rime Spark").error shouldBe null
@@ -156,6 +200,18 @@ class SnowTapBonusManaTest : ScenarioTestBase() {
             manaCost = "{S}{S}"
             typeLine = "Sorcery"
             spell { effect = Effects.GainLife(2) }
+        }
+
+        private val RimeSurge = card("Rime Surge") {
+            manaCost = "{1}{S}{S}"
+            typeLine = "Sorcery"
+            spell { effect = Effects.GainLife(3) }
+        }
+
+        /** A snow permanent with a global "whenever a land is tapped for mana, add {G}". */
+        private val RimeEngine = card("Rime Engine") {
+            typeLine = "Snow Enchantment"
+            staticAbility { ability = AdditionalManaOnSourceTap(sourceFilter = GameObjectFilter.Land, color = Color.GREEN) }
         }
 
         private val RimeSpark = card("Rime Spark") {

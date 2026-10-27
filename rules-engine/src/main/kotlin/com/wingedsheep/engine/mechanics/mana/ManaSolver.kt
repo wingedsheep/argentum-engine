@@ -314,7 +314,17 @@ data class ManaSolution(
      */
     val bonusSnowManaSpent: Int = 0,
     val bonusSnowColorsSpent: Set<Color> = emptySet(),
+    /**
+     * Aura bonus mana a reserved snow source's tap paid `{S}` pips with ([ManaSolver] `solveWithSnow`):
+     * spent, and — like all bonus mana — not in [manaProduced], which holds only what each source's
+     * own ability made. Payment paths that route every unit through the pool add these first.
+     */
+    val reservedSnowBonus: List<BonusManaEntry> = emptyList(),
 )
+
+/** [solution]'s [ManaSolution.reservedSnowBonus], added to this pool as snow mana. */
+fun ManaPool.withReservedSnowBonus(solution: ManaSolution): ManaPool =
+    solution.reservedSnowBonus.fold(this) { pool, entry -> pool.add(entry.color, entry.amount).markSnow(entry.color, entry.amount) }
 
 /**
  * A unit of bonus mana that wasn't consumed by the current solve. Carries the source's
@@ -1266,6 +1276,10 @@ class ManaSolver private constructor(
         val produced = rest.manaProduced.toMutableMap()
         val leftovers = rest.remainingBonusMana.toMutableList()
         val riders = rest.consumedRiders.toMutableList()
+        val reservedBonus = rest.reservedSnowBonus.toMutableList()
+        val bonusSpent = rest.bonusManaSpentByColor.toMutableMap()
+        var bonusSnowSpent = rest.bonusSnowManaSpent
+        val bonusSnowColors = rest.bonusSnowColorsSpent.toMutableSet()
         var unpaid = pips
         for (source in reserved) {
             val kind = kindFor(source)
@@ -1273,9 +1287,16 @@ class ManaSolver private constructor(
             val fromOwn = minOf(unpaid, amount)
             val fromBonus = minOf(unpaid - fromOwn, snowBonusFor(source, kind))
             unpaid -= fromOwn + fromBonus
-            // The bonus units that pay a pip take the tapped kind's color and are recorded with it.
             produced[source.entityId] = if (kind == null) ManaProduction(colorless = amount, snow = true)
-                else ManaProduction(color = kind, amount = amount + fromBonus, snow = true)
+                else ManaProduction(color = kind, amount = amount, snow = true)
+            // The aura's bonus units that pay a pip take the tapped kind's color; they are spent aura
+            // mana (CR 106.3), not the source's own production.
+            if (kind != null && fromBonus > 0) {
+                reservedBonus += BonusManaEntry(kind, fromBonus, countsTowardSpent = true, sourceId = source.entityId, snow = true)
+                bonusSpent[kind] = (bonusSpent[kind] ?: 0) + fromBonus
+                bonusSnowSpent += fromBonus
+                bonusSnowColors += kind
+            }
             // What the tap makes beyond the pips it pays floats.
             if (amount > fromOwn) {
                 leftovers += BonusManaEntry(kind ?: Color.WHITE, amount - fromOwn, colorless = kind == null,
@@ -1294,6 +1315,10 @@ class ManaSolver private constructor(
             manaProduced = produced,
             remainingBonusMana = leftovers,
             consumedRiders = riders,
+            bonusManaSpentByColor = bonusSpent,
+            bonusSnowManaSpent = bonusSnowSpent,
+            bonusSnowColorsSpent = bonusSnowColors,
+            reservedSnowBonus = reservedBonus,
         )
     }
 

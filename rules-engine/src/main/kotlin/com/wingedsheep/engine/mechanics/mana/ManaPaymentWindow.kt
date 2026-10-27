@@ -205,6 +205,7 @@ object ManaPaymentWindow {
             for (source in solution.sources) {
                 for ((color, amount) in source.fixedBonusMana) produced = produced.add(color, amount)
             }
+            produced = produced.withReservedSnowBonus(solution)
         } else {
             val byId = availableSources.filter { it.entityId !in excludeSources }.associateBy { it.entityId }
             val actualSources = services.manaSolver.findAvailableManaSources(state, playerId, spellContext).associateBy { it.entityId }
