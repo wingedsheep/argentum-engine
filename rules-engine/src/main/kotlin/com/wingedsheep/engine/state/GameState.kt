@@ -1525,6 +1525,21 @@ data class GameState(
         result
     }
 
+    /**
+     * Emblems carrying replacement effects of their own (Serra the Benevolent's life-floor emblem),
+     * memoized like [emblemStaticHolders]. Emblems are never registered in a zone, so replacement
+     * read sites that walk the battlefield consult this list beside it.
+     */
+    val emblemReplacementHolders: List<EntityId> by lazy {
+        val result = ArrayList<EntityId>()
+        for ((id, container) in entities) {
+            if (container.has<com.wingedsheep.engine.state.components.identity.EmblemSourceComponent>() &&
+                container.has<com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent>()
+            ) result.add(id)
+        }
+        result
+    }
+
     private val cachedBattlefield: List<EntityId> by lazy {
         val result = ArrayList<EntityId>()
         for ((key, ids) in zones) {

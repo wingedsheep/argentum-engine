@@ -1410,6 +1410,7 @@ object Effects {
         grantedActivatedAbilities: List<com.wingedsheep.sdk.scripting.ActivatedAbility> = emptyList(),
         ownedStaticAbilities: List<com.wingedsheep.sdk.scripting.StaticAbility> = emptyList(),
         ownedActivatedAbilities: List<com.wingedsheep.sdk.scripting.ActivatedAbility> = emptyList(),
+        ownedReplacementEffects: List<com.wingedsheep.sdk.scripting.ReplacementEffect> = emptyList(),
         emblemDescription: String
     ): Effect = com.wingedsheep.sdk.scripting.effects.CreatePermanentEmblemEffect(
         groupFilter = groupFilter,
@@ -1419,6 +1420,7 @@ object Effects {
         grantedActivatedAbilities = grantedActivatedAbilities,
         ownedStaticAbilities = ownedStaticAbilities,
         ownedActivatedAbilities = ownedActivatedAbilities,
+        ownedReplacementEffects = ownedReplacementEffects,
         emblemDescription = emblemDescription
     )
 

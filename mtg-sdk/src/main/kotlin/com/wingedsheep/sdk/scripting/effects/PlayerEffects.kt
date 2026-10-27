@@ -1199,6 +1199,13 @@ data class GrantSpellsCantBeCounteredEffect(
  * emblem hands to each permanent in [groupFilter] (Arlinn Kord's "Creatures you control have
  * '{T}: …'") — the permanent is that ability's source.
  *
+ * An emblem whose text is a replacement effect ("If you control a creature, damage that would reduce
+ * your life total to less than 1 reduces it to 1 instead." — Serra the Benevolent's −6) carries it in
+ * [ownedReplacementEffects]. The emblem is its source and its controller is "you", read by the same
+ * scans that read a permanent printing the replacement (the life-loss family today:
+ * `LifeLossFloor`, `ModifyLifeLoss`, `ReplaceLifeReductionToZero`, plus every other read site that
+ * goes through the engine's active-replacement enumeration).
+ *
  * @property groupFilter Which permanents the emblem affects. Unused — and so left at its default —
  *   by an emblem that carries no group modification at all, only [ownedStaticAbilities].
  * @property powerBonus Power modification applied to each affected creature.
@@ -1208,6 +1215,7 @@ data class GrantSpellsCantBeCounteredEffect(
  * @property ownedStaticAbilities Static abilities the *emblem itself* has, as though printed on it.
  * @property ownedActivatedAbilities Activated abilities the *emblem itself* has; the emblem is their
  *   source and its controller activates them.
+ * @property ownedReplacementEffects Replacement effects the *emblem itself* has, as though printed on it.
  * @property emblemDescription Human-readable description of the emblem (without the "You get an emblem with" prefix).
  */
 @SerialName("CreatePermanentEmblem")
@@ -1220,6 +1228,7 @@ data class CreatePermanentEmblemEffect(
     val grantedActivatedAbilities: List<com.wingedsheep.sdk.scripting.ActivatedAbility> = emptyList(),
     val ownedStaticAbilities: List<com.wingedsheep.sdk.scripting.StaticAbility> = emptyList(),
     val ownedActivatedAbilities: List<com.wingedsheep.sdk.scripting.ActivatedAbility> = emptyList(),
+    val ownedReplacementEffects: List<com.wingedsheep.sdk.scripting.ReplacementEffect> = emptyList(),
     val emblemDescription: String
 ) : Effect {
     override val description: String = "You get an emblem with \"$emblemDescription\""

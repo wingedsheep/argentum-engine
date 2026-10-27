@@ -31,7 +31,7 @@ data class ActiveReplacement(
  * *at the point of use* rather than through [ReplacementEffectProcessor]'s
  * `PendingGameEvent` pipeline — today the token-creation helpers.
  *
- * Two sources, and **both matter**:
+ * Three sources, and **all matter**:
  *
  *  1. **Printed** — battlefield permanents carrying a [ReplacementEffectSourceComponent]
  *     (Anointed Procession, Worldwalker Helm). Their controller is read from *projected*
@@ -40,6 +40,9 @@ data class ActiveReplacement(
  *  2. **Granted** — the durational riders in [GameState.grantedReplacementEffects] recorded
  *     by `GrantReplacementEffectExecutor` (Kaya, Geist Hunter's "until end of turn, if one
  *     or more tokens would be created under your control, twice that many … instead").
+ *  3. **Emblems** — replacement effects an emblem has itself
+ *     ([com.wingedsheep.sdk.scripting.effects.CreatePermanentEmblemEffect.ownedReplacementEffects]),
+ *     listed by [GameState.emblemReplacementHolders]; controlled by the player who got the emblem.
  *
  * A grant deliberately survives its anchor leaving the battlefield — the one-shot ability
  * that created it is done, and the resulting continuous effect stands on its own until its
@@ -52,7 +55,7 @@ data class ActiveReplacement(
  */
 object ActiveReplacements {
 
-    /** Every printed-on-the-battlefield and granted replacement effect currently in force. */
+    /** Every printed-on-the-battlefield, emblem-held and granted replacement effect currently in force. */
     fun all(state: GameState): List<ActiveReplacement> {
         val results = mutableListOf<ActiveReplacement>()
 
@@ -68,6 +71,24 @@ object ActiveReplacements {
                         effect = effect,
                         controllerId = controllerId,
                         sourceId = entityId,
+                        granted = false
+                    )
+                )
+            }
+        }
+
+        // Emblems (CR 114) aren't in any zone scan; their controller is the player who got them
+        // and never changes.
+        for (emblemId in state.emblemReplacementHolders) {
+            val container = state.getEntity(emblemId) ?: continue
+            val replacementSource = container.get<ReplacementEffectSourceComponent>() ?: continue
+            val controllerId = container.get<ControllerComponent>()?.playerId ?: continue
+            for (effect in replacementSource.replacementEffects) {
+                results.add(
+                    ActiveReplacement(
+                        effect = effect,
+                        controllerId = controllerId,
+                        sourceId = emblemId,
                         granted = false
                     )
                 )

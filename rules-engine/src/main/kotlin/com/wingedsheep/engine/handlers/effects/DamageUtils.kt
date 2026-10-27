@@ -3135,6 +3135,12 @@ object DamageUtils {
      * not apply to effects which reduce your life without doing damage."
      *
      * Multiple matching floors pick the strictest (highest resulting life total).
+     *
+     * A floor only stops a life total from *dropping below* it: a player already under the floor
+     * who somehow hasn't lost takes the damage as normal (Serra the Benevolent ruling, "damage dealt
+     * to you reduces your life total further below 0"). Under a shared team life total
+     * (Two-Headed Giant) a "your life total" floor guards the team's total, whichever teammate is
+     * dealt the damage (same card's ruling).
      */
     fun applyLifeLossFloors(
         state: GameState,
@@ -3146,8 +3152,11 @@ object DamageUtils {
         if (amount <= 0) return amount
 
         var modifiedAmount = amount
-        forEachLifeLossReplacement<LifeLossFloor>(state, losingPlayerId, predicateEvaluator, { it.restrictions }) { effect ->
-            val maxLossAllowed = (currentLife - effect.floor).coerceAtLeast(0)
+        forEachLifeLossReplacement<LifeLossFloor>(
+            state, losingPlayerId, predicateEvaluator, { it.restrictions }, youIncludesSharedLife = true
+        ) { effect ->
+            if (currentLife < effect.floor) return@forEachLifeLossReplacement
+            val maxLossAllowed = currentLife - effect.floor
             if (modifiedAmount > maxLossAllowed) modifiedAmount = maxLossAllowed
         }
         return modifiedAmount
@@ -3250,22 +3259,25 @@ object DamageUtils {
     }
 
     /**
-     * Visit every battlefield replacement effect of type [T] whose `appliesTo`
+     * Visit every battlefield or emblem replacement effect of type [T] whose `appliesTo`
      * is a [EventPattern.LifeLossEvent] matching [losingPlayerId] and whose
      * [restrictionsOf]-extracted conditions all hold against the source's controller.
      *
      * Shared scaffold for [applyStaticLifeLossModification] (`ModifyLifeLoss`)
      * and [applyLifeLossFloors] (`LifeLossFloor`); each function keeps the actual
-     * arithmetic in its callback.
+     * arithmetic in its callback. [youIncludesSharedLife] widens `Player.You` to a teammate
+     * whose life total is shared with the source's controller (a floor on "your life total").
      */
     private inline fun <reified T : ReplacementEffect> forEachLifeLossReplacement(
         state: GameState,
         losingPlayerId: EntityId,
         predicateEvaluator: PredicateEvaluator,
         restrictionsOf: (T) -> List<Condition>,
+        youIncludesSharedLife: Boolean = false,
         action: (T) -> Unit
     ) {
-        for (entityId in state.getBattlefield()) {
+        // Battlefield permanents, then emblems (which sit in no zone the battlefield scan sees).
+        for (entityId in state.getBattlefield().asSequence() + state.emblemReplacementHolders.asSequence()) {
             val container = state.getEntity(entityId) ?: continue
             val replacementComponent = container.get<ReplacementEffectSourceComponent>() ?: continue
             val sourceControllerId = replacementHostController(state, entityId) ?: continue
@@ -3278,7 +3290,8 @@ object DamageUtils {
 
                 val playerMatches = when (pattern.player) {
                     Player.Each, Player.Any -> true
-                    Player.You -> losingPlayerId == sourceControllerId
+                    Player.You -> losingPlayerId == sourceControllerId ||
+                        (youIncludesSharedLife && state.teamLifeOwnerOf(losingPlayerId) == state.teamLifeOwnerOf(sourceControllerId))
                     // Not `!= sourceControllerId`: a teammate is not an opponent (CR 102.3).
                     Player.EachOpponent -> state.isOpponentOf(losingPlayerId, sourceControllerId)
                     else -> false

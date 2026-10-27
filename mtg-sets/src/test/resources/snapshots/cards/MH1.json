@@ -3492,6 +3492,135 @@
     ]
 }
 
+// Serra the Benevolent
+{
+    "name": "Serra the Benevolent",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Legendary Planeswalker — Serra",
+    "oracleText": "+2: Creatures you control with flying get +1/+1 until end of turn.\n−3: Create a 4/4 white Angel creature token with flying and vigilance.\n−6: You get an emblem with \"If you control a creature, damage that would reduce your life total to less than 1 reduces it to 1 instead.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Serra the Benevolent:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature kw:flying ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Serra the Benevolent:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Angel"
+                    ],
+                    "keywords": [
+                        "FLYING",
+                        "VIGILANCE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/1/91808554-23ab-44f9-92a1-87ee7d58cd9a.jpg?1783933235"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Serra the Benevolent:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -6
+                },
+                "effect": {
+                    "type": "CreatePermanentEmblem",
+                    "ownedReplacementEffects": [
+                        {
+                            "type": "LifeLossFloor",
+                            "restrictions": [
+                                {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature"
+                                }
+                            ]
+                        }
+                    ],
+                    "emblemDescription": "If you control a creature, damage that would reduce your life total to less than 1 reduces it to 1 instead."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "MYTHIC",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/88bf4af9-4b14-43e7-9d50-0e6a895cece1.jpg?1783933156",
+        "rulings": [
+            {
+                "date": "2019-06-14",
+                "text": "Serra's first ability affects only creatures you control with flying at the time it resolves. Creatures you begin to control later in the turn or that gain flying later in the turn won't get +1/+1."
+            },
+            {
+                "date": "2019-06-14",
+                "text": "Serra's emblem doesn't prevent damage. It only changes the result of damage dealt to you. For example, a creature with lifelink that deals damage to you will still cause its controller to gain life, even if that damage would reduce your life total to less than 1."
+            },
+            {
+                "date": "2019-06-14",
+                "text": "Serra's emblem doesn't stop loss of life from effects that say that you lose life."
+            },
+            {
+                "date": "2019-06-14",
+                "text": "If you have less than 1 life and somehow haven't lost the game, damage dealt to you reduces your life total further below 0 (as normal)."
+            },
+            {
+                "date": "2019-06-14",
+                "text": "In a Two-Headed Giant game, damage dealt to you and/or your teammate that would reduce your team's life total to less than 1 reduces it to 1 instead, as long as you control a creature. It doesn't matter whether your teammate controls a creature, even if they're the player being dealt damage."
+            },
+            {
+                "date": "2019-06-14",
+                "text": "In the Commander variant, combat damage you're dealt by a commander is still tracked, even if it doesn't change your life total."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Settle Beyond Reality
 {
     "name": "Settle Beyond Reality",
