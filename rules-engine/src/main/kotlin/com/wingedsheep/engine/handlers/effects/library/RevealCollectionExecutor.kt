@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.effects.library
 import com.wingedsheep.engine.core.CardsRevealedEvent
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PipelineState
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -52,6 +53,9 @@ class RevealCollectionExecutor : EffectExecutor<RevealCollectionEffect> {
             toZone = effect.toZone
         )
 
+        // Everyone has now seen these cards, so later steps may skip on them (#3340).
+        val revealed = (context.pipeline.storedCollections[PipelineState.REVEALED_KEY].orEmpty() + cards).distinct()
         return EffectResult.success(state, listOf(event))
+            .copy(updatedCollections = mapOf(PipelineState.REVEALED_KEY to revealed))
     }
 }

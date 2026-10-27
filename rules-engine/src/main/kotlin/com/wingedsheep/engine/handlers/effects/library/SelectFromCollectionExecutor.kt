@@ -107,7 +107,7 @@ class SelectFromCollectionExecutor(
                 state, context, effect, faces.keys.toList(), 0, minOf(1, faces.size), decidingPlayerId = chooser,
                 allCards = cards, nonSelectableCards = if (effect.showAllCards) cards - faces.keys else emptyList(),
                 spellFaces = faces,
-                hiddenDeciders = (poolDeciders + HiddenPools.hiddenOwners(state, cards, visibility)).distinct()
+                hiddenDeciders = (poolDeciders + HiddenPools.hiddenOwners(state, cards, visibility, context.pipeline.storedCollections)).distinct()
             )
         }
 
@@ -194,7 +194,7 @@ class SelectFromCollectionExecutor(
         val readsCards = effect.filter != GameObjectFilter.Any || effect.matchChosenCreatureType ||
             readsCharacteristics || controllerPermanentColors != null
         val hiddenDeciders = if (readsCards) {
-            (poolDeciders + HiddenPools.hiddenOwners(state, cards, visibility)).distinct()
+            (poolDeciders + HiddenPools.hiddenOwners(state, cards, visibility, context.pipeline.storedCollections)).distinct()
         } else {
             poolDeciders
         }
@@ -259,15 +259,15 @@ class SelectFromCollectionExecutor(
             is SelectionMode.ChooseUpTo -> {
                 val requested = amountEvaluator.evaluate(state, selection.count, context)
                 val count = minOf(requested, restrictionCeiling)
+                if (count <= 0 && !effect.showAllCards) {
+                    // "Up to zero" is no choice at all — a dynamic count that came out 0 (Hurkyl,
+                    // Master Wizard's per-type pick for a type you didn't cast) selects nothing.
+                    return selectedWithoutAsking(emptyList())
+                }
                 if (eligibleCards.isEmpty()) {
                     // Show all cards even though none are selectable (e.g., "look at top 3, you may
                     // reveal a creature or land"); over a hidden pool, ask with nothing to pick.
                     if ((effect.showAllCards && cards.isNotEmpty()) || eligibilityHidden) return askWithNothingEligible()
-                    return selectedWithoutAsking(emptyList())
-                }
-                if (count <= 0 && !effect.showAllCards) {
-                    // "Up to zero" is no choice at all — a dynamic count that came out 0 (Hurkyl,
-                    // Master Wizard's per-type pick for a type you didn't cast) selects nothing.
                     return selectedWithoutAsking(emptyList())
                 }
                 val nonSelectable = if (effect.showAllCards) cards.filter { it !in eligibleCards } else emptyList()

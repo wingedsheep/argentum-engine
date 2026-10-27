@@ -55,13 +55,20 @@ object HiddenPools {
     /**
      * The owners of the cards in [cards] whose identity some player may not know, in first-seen
      * order: a hand or library card not revealed to everyone, a card outside the game, a face-down
-     * object. Empty when every player can see every card. Without [visibility] (pure-data test
+     * object. Empty when every player can see every card, counting the cards this pipeline has
+     * revealed ([PipelineState.REVEALED_KEY] in [stored]). Without [visibility] (pure-data test
      * wiring) the zone alone decides.
      */
-    fun hiddenOwners(state: GameState, cards: Iterable<EntityId>, visibility: Visibility?): List<EntityId> {
+    fun hiddenOwners(
+        state: GameState,
+        cards: Iterable<EntityId>,
+        visibility: Visibility?,
+        stored: Map<String, List<EntityId>>,
+    ): List<EntityId> {
+        val revealed = stored[PipelineState.REVEALED_KEY].orEmpty().toSet()
         val owners = LinkedHashSet<EntityId>()
         for (id in cards) {
-            if (!hiddenToSomeSeat(state, id, visibility)) continue
+            if (id in revealed || !hiddenToSomeSeat(state, id, visibility)) continue
             owners += state.logicalZone(id)?.ownerId ?: continue
         }
         return owners.toList()

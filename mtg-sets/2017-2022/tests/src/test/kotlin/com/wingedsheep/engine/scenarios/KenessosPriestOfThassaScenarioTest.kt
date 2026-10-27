@@ -156,6 +156,10 @@ class KenessosPriestOfThassaScenarioTest : FunSpec({
         val bear = d.putCardOnTopOfLibrary(you, "Centaur Courser")
 
         d.activateLook(you, kenessos)
+        // The battlefield pick is asked even with no Serpent on top (#3340), with nothing to pick.
+        val battlefieldPick = d.pendingDecision as SelectCardsDecision
+        battlefieldPick.options shouldBe emptyList()
+        d.submitCardSelection(you, emptyList())
         val decision = d.pendingDecision as SelectCardsDecision
         decision.options shouldBe listOf(bear)
         d.submitCardSelection(you, listOf(bear)) // the "put on bottom" choice

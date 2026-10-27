@@ -427,7 +427,7 @@ class GatherCardsExecutor(
         }
         // A library nobody may search is publicly out of the pool, so its cards decide nothing.
         val poolDeciders = (inheritedDeciders +
-            HiddenPools.hiddenOwners(state, filterRead.filter { it !in libraries }, visibility)).distinct()
+            HiddenPools.hiddenOwners(state, filterRead.filter { it !in libraries }, visibility, context.pipeline.storedCollections)).distinct()
         // Published for the pipeline's EmitLibrarySearchedEventEffect tail, so the searched
         // event names this searcher.
         val searcherCollection = searcher

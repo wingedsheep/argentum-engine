@@ -37,6 +37,8 @@ class WhitePlumeAdventurerScenarioTest : ScenarioTestBase() {
                 when (val d = game.state.pendingDecision) {
                     null -> game.passPriority()
                     is SearchLibraryDecision -> game.submitDecision(CardsSelectedResponse(d.id, emptyList()))
+                    // Undercity's search is asked even when it can find nothing (#3340).
+                    is com.wingedsheep.engine.core.SelectCardsDecision -> game.submitDecision(CardsSelectedResponse(d.id, emptyList()))
                     else -> error("Unexpected decision $d")
                 }
             }

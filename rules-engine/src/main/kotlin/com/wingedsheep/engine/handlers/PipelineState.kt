@@ -76,6 +76,13 @@ data class PipelineState(
         fun hiddenPoolKey(collection: String): String = "__hiddenPool:$collection"
 
         /**
+         * Reserved metadata collection: every card this pipeline has revealed to all players
+         * (`RevealCollectionEffect`). A reveal is only an event, so [com.wingedsheep.engine.view.Visibility]
+         * still calls those cards hidden; steps after it read this to know every player has seen them.
+         */
+        const val REVEALED_KEY = "__revealed"
+
+        /**
          * Reserved metadata collection published by a library-searching gather
          * (`GatherCardsEffect.search`): a single entry, the player who searched
          * (`GatherCardsEffect.searcher`, resolved). The pipeline's `EmitLibrarySearchedEventEffect`
