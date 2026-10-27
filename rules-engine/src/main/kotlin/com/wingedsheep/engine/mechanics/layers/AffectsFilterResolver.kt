@@ -837,10 +837,10 @@ internal class AffectsFilterResolver(
         // resolve that "you", so this predicate is only meaningful in target/condition contexts via
         // PredicateEvaluator (where the controllerId is supplied). Never match in projection.
         is StatePredicate.AttachedTo -> false
-        // "whose controller controls <filter>" needs a battlefield scan bound to the
-        // candidate's controller, which the group-static projection pass cannot do here.
+        // "whose controller <condition>" needs a condition evaluated for the candidate's
+        // controller, which the group-static projection pass cannot do here.
         // Only meaningful in target/condition contexts via PredicateEvaluator.
-        is StatePredicate.ControllerControls -> false
+        is StatePredicate.ControllerMeets -> false
         is StatePredicate.AttachedToCardType -> {
             val attached = container.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
             attached != null &&

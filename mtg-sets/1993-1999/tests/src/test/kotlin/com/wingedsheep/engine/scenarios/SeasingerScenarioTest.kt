@@ -28,7 +28,7 @@ import io.kotest.matchers.shouldNotBe
  * control this creature and this creature remains tapped.
  *
  * Two pieces of SDK vocabulary are exercised here rather than the card's plumbing:
- *  - `StatePredicate.ControllerControls`, which binds the nested filter's "you" to the *candidate's*
+ *  - `StatePredicate.ControllerMeets`, which binds the condition's "you" to the *candidate's*
  *    controller, so "whose controller controls an Island" is about the creature's side of the table.
  *  - `Duration.WhileYouControlSourceAndSourceTapped`, whose two halves must each end the steal on
  *    their own, permanently (CR 611.2b).

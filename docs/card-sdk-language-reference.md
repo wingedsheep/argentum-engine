@@ -7603,13 +7603,16 @@ work for abilities-on-stack (which carry no `CardComponent`).
   Choose target creature that's blocking equipped creature…" =
   `target(TargetFilter(Creature.blockingEntity(EffectTarget.EquippedCreature)))`. The same pin applies
   to every host-relative predicate in a target filter; retargets keep it.
-- `ControllerControls(filter)` (filter builder `controllerControls(subfilter)`) — the candidate's
-  **controller** controls something matching `subfilter`: "target creature whose controller controls
-  an Island" (Seasinger, FEM). The load-bearing detail is that the subfilter's `youControl()` is
-  rebound to the *candidate's* controller, not the ability's — `PredicateEvaluator` swaps
-  `PredicateContext.controllerId` for the candidate's before evaluating the nested filter. That is the
-  whole point: the constraint is about whose creature it is right now, not about who is casting. The
-  nested filter reads projected battlefield state.
+- `ControllerMeets(condition)` (filter builder `controllerMeets(condition)`) — the candidate's
+  **controller** satisfies `condition`: "target creature whose controller controls an Island"
+  (Seasinger, FEM: `Creature.controllerMeets(Conditions.YouControl(Land.withSubtype(ISLAND)))`), "a
+  creature whose controller has eight or more cards in their graveyard" (Lullmage's Domination, ZNR:
+  `Creature.controllerMeets(Conditions.CardsInGraveyardAtLeast(8))`, fed to
+  `CostReductionSource.FixedIfAnyTargetMatches`). The load-bearing detail is that every "you" in the
+  condition is rebound to the *candidate's* controller, not the ability's — `PredicateEvaluator`
+  evaluates it with an `EffectContext` whose `controllerId` is the candidate's (projected) controller.
+  That is the whole point: the constraint is about whose creature it is right now, not about who is
+  casting. Not usable in a group-static projection filter (it reads as no match there).
 - `IsCombatPairedWithSource` (filter builder `blockingOrBlockedBySource()`) — the same CR 509
   pairing read **live in both directions**: the candidate blocks the source, or the source blocks
   the candidate. "Each creature blocking or blocked by this creature" (Spitting Slug =

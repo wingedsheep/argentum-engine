@@ -24,7 +24,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *
  * Old Man of the Sea's engine, with two clauses of its own:
  *  - the targeting restriction is about the *creature's* side of the table, not Seasinger's, so
- *    it uses `controllerControls` — a state predicate whose nested filter binds "you" to the
+ *    it uses `controllerMeets` — a state predicate whose condition binds "you" to the
  *    candidate's controller.
  *  - the duration prints both halves, which is [Duration.WhileYouControlSourceAndSourceTapped]:
  *    untapping Seasinger hands the creature back, and so does an opponent stealing Seasinger.
@@ -59,8 +59,8 @@ val Seasinger = card("Seasinger") {
         cost = Costs.Tap
         val t = target(
             TargetFilter(
-                GameObjectFilter.Creature.controllerControls(
-                    GameObjectFilter.Land.withSubtype(Subtype.ISLAND).youControl()
+                GameObjectFilter.Creature.controllerMeets(
+                    Conditions.YouControl(GameObjectFilter.Land.withSubtype(Subtype.ISLAND))
                 )
             ),
         )

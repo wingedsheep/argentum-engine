@@ -2500,23 +2500,21 @@ class PredicateEvaluator(
                 matches(state, projected, attached.targetId, predicate.filter, ctx)
             }
 
-            // "whose controller controls an Island" (Seasinger). The nested filter is scanned
-            // over the candidate's controller's battlefield, and its "you" is rebound to that
-            // controller — not to the ability's controller — because the clause describes the
-            // creature's own side of the table.
-            is StatePredicate.ControllerControls -> {
-                val ownerId = projected.getController(entityId)
+            // "whose controller controls an Island" (Seasinger), "whose controller has eight or
+            // more cards in their graveyard" (Lullmage's Domination). The condition is evaluated
+            // with its "you" rebound to the candidate's controller — not to the ability's
+            // controller — because the clause describes the creature's own side of the table.
+            is StatePredicate.ControllerMeets -> {
+                val candidateController = projected.getController(entityId)
                     ?: container.get<ControllerComponent>()?.playerId
                     ?: return false
-                val ctx = PredicateContext(
-                    controllerId = ownerId,
+                val effectContext = EffectContext(
                     sourceId = context?.sourceId,
+                    controllerId = candidateController,
                     sourceBattlefieldTimestamp = context?.sourceBattlefieldTimestamp,
                     objectReferences = context?.objectReferences ?: ObjectReferenceEnvironment(),
                 )
-                state.getBattlefield().any { candidate ->
-                    matches(state, projected, candidate, predicate.filter, ctx)
-                }
+                conditions.evaluate(state, predicate.condition, effectContext, projected)
             }
 
             // Source-relative — the candidate IS the effect's source permanent itself

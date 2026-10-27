@@ -2772,6 +2772,88 @@
     ]
 }
 
+// Lullmage's Domination
+{
+    "name": "Lullmage's Domination",
+    "manaCost": "{X}{U}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "This spell costs {3} less to cast if it targets a creature whose controller has eight or more cards in their graveyard.\nGain control of target creature with mana value X.",
+    "script": {
+        "spellEffect": {
+            "type": "GainControl",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "CompareNumericProperty",
+                                "property": "MANA_VALUE",
+                                "operator": "EQ",
+                                "amount": "XValue"
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfAnyTargetMatches",
+                        "amount": 3,
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "ControllerMeets",
+                                    "condition": {
+                                        "type": "Compare",
+                                        "left": {
+                                            "type": "Count",
+                                            "player": "You",
+                                            "zone": "Graveyard"
+                                        },
+                                        "operator": "GTE",
+                                        "right": {
+                                            "type": "Fixed",
+                                            "amount": 8
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "rarity": "UNCOMMON",
+        "artist": "Zezhou Chen",
+        "flavorText": "\"One spell to quiet the Roil, one to quash the will. The principle is the same.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c9944393-348f-4f0e-a0c7-9adcc5a30749.jpg?1783929393"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Luminarch Aspirant
 {
     "name": "Luminarch Aspirant",

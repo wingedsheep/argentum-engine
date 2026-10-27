@@ -825,12 +825,12 @@ interface ObjectFilterBuilder<out Self> {
         withStatePredicate(StatePredicate.WasDealtDamageThisTurnBy(sourceFilter))
 
     /**
-     * The candidate's controller controls at least one permanent matching [subfilter] — Seasinger's
-     * "target creature whose controller controls an Island". The subfilter's "you" is the
-     * *candidate's* controller, not the ability's.
+     * The candidate's controller satisfies [condition], with the condition's "you" bound to that
+     * controller rather than to the ability's — Seasinger's "target creature whose controller
+     * controls an Island" is `controllerMeets(Conditions.YouControl(Island))`.
      */
-    fun controllerControls(subfilter: GameObjectFilter) =
-        withStatePredicate(StatePredicate.ControllerControls(subfilter))
+    fun controllerMeets(condition: com.wingedsheep.sdk.scripting.conditions.Condition) =
+        withStatePredicate(StatePredicate.ControllerMeets(condition))
 
     /** Must be blocking */
     fun blocking() = withStatePredicate(StatePredicate.IsBlocking)

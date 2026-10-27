@@ -1328,18 +1328,22 @@ sealed interface StatePredicate {
     }
 
     /**
-     * The candidate's *controller* controls at least one permanent matching [filter] — "target
-     * creature whose controller controls an Island" (Seasinger). The nested filter is evaluated
-     * against projected battlefield state, and its "you" is bound to the candidate's controller
-     * rather than to the ability's controller, which is the whole point: the constraint is about
-     * the creature's owner-of-the-moment, not about who is casting.
+     * The candidate's *controller* satisfies [condition] — "target creature whose controller controls
+     * an Island" (Seasinger: `Conditions.YouControl(Island)`), "a creature whose controller has eight
+     * or more cards in their graveyard" (Lullmage's Domination). Every "you" inside [condition] is
+     * bound to the candidate's controller rather than to the ability's controller, which is the whole
+     * point: the clause describes the creature's side of the table, not who is casting.
+     *
+     * Closest neighbours: `Conditions.EntityMatches` asks whether an *object* matches a filter (the
+     * inverse direction), and the `Controlled…` [ControllerPredicate]s only name *which* player
+     * controls the candidate, never a fact about that player.
      */
-    @SerialName("ControllerControls")
+    @SerialName("ControllerMeets")
     @Serializable
-    data class ControllerControls(
-        val filter: com.wingedsheep.sdk.scripting.GameObjectFilter
+    data class ControllerMeets(
+        val condition: com.wingedsheep.sdk.scripting.conditions.Condition
     ) : Entity {
-        override val description: String = "whose controller controls ${filter.indefiniteArticle} ${filter.description}"
+        override val description: String = "whose controller meets: ${condition.description}"
     }
 
     // =============================================================================

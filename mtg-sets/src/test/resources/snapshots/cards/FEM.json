@@ -4954,8 +4954,13 @@
                                 ],
                                 "statePredicates": [
                                     {
-                                        "type": "ControllerControls",
-                                        "filter": "land Island ctrl:you"
+                                        "type": "ControllerMeets",
+                                        "condition": {
+                                            "type": "Exists",
+                                            "player": "You",
+                                            "zone": "Battlefield",
+                                            "filter": "land Island"
+                                        }
                                     }
                                 ]
                             }
