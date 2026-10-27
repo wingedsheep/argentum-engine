@@ -12255,6 +12255,12 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   grant has no `Self`, so source-relative predicates fail closed). A source-relative cap therefore reads
   the granting object live, when the cast is offered and when it is made — Arcade Gannon =
   `MayCastFromGraveyard((Artifact or Any.withSubtype("Human")).manaValueAtMostDynamic(DynamicAmounts.countersOnSelf(CounterType.QUEST)), duringYourTurnOnly = true, oncePerTurn = true)`.
+  **A printed grant may sit behind a condition** (`staticAbility { condition = …; ability = MayCastFromGraveyard(…) }`):
+  both graveyard-cast scans read battlefield statics through `controlledActiveStaticAbilities`, so the
+  grant applies only while its condition holds against the granting permanent — a Spacecraft's station
+  threshold block, Exploration Broodship = `condition = Conditions.SourceCounterCountAtLeast(CounterType.CHARGE, 8)`
+  over `MayCastFromGraveyard(NonlandPermanent, duringYourTurnOnly = true, oncePerTurn = true,
+  additionalCost = Costs.additional.SacrificePermanent(GameObjectFilter.Land))`.
   The spent-grant gate lives in two places that must stay in step — `CastFromZoneEnumerator`
   (which offers the action) and `CastZoneResolver.mayCastFromGraveyardGrantApplies` (which authorizes
   it) — with `CastSpellHandler` marking the source via

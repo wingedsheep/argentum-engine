@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.actions.spell
 
 import com.wingedsheep.engine.state.permissions.oncePerTurnGranterToSpend
+import com.wingedsheep.engine.state.components.battlefield.controlledActiveStaticAbilities
 import com.wingedsheep.engine.state.components.battlefield.liveStaticAbilities
 import com.wingedsheep.engine.legalactions.utils.LibraryTopGrants
 import com.wingedsheep.engine.legality.LegalityKernel
@@ -361,12 +362,12 @@ class CastZoneResolver(
     ): List<Pair<EntityId, MayCastFromGraveyard>> {
         val matches = mutableListOf<Pair<EntityId, MayCastFromGraveyard>>()
         val battlefield = state.getBattlefield()
-        for (permId in state.getBattlefield(playerId)) {
-            val permDef = state.getEntity(permId)?.faceUpCardDefinition(cardRegistry) ?: continue
-            for (sa in permDef.liveStaticAbilities(state, permId)) {
-                if (sa is MayCastFromGraveyard && mayCastFromGraveyardGrantApplies(state, playerId, cardId, sa, permId)) {
-                    matches.add(permId to sa)
-                }
+        // Resolved through `controlledActiveStaticAbilities`, so a grant behind a condition
+        // (Exploration Broodship's station 8+ threshold) counts only while it holds. Kept in step
+        // with `enumerateGraveyardCast`.
+        for ((permId, sa) in state.controlledActiveStaticAbilities(playerId, cardRegistry, conditionEvaluator)) {
+            if (sa is MayCastFromGraveyard && mayCastFromGraveyardGrantApplies(state, playerId, cardId, sa, permId)) {
+                matches.add(permId to sa)
             }
         }
         // An emblem the player has (Wrenn and Realmbreaker's −7) holds the grant from outside every

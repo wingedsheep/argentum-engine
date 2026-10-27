@@ -3,7 +3,7 @@ package com.wingedsheep.engine.legalactions.enumerators
 import com.wingedsheep.engine.mechanics.BeamMeUp
 import com.wingedsheep.engine.state.LifePaymentPurpose
 
-import com.wingedsheep.engine.state.components.battlefield.liveStaticAbilities
+import com.wingedsheep.engine.state.components.battlefield.controlledActiveStaticAbilities
 import com.wingedsheep.engine.handlers.actions.spell.chosenKickersLabel
 import com.wingedsheep.engine.handlers.actions.spell.MAX_OPTIONAL_COST_REPEATS
 import com.wingedsheep.engine.handlers.actions.spell.optionalCostDeclarations
@@ -72,7 +72,6 @@ import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.mechanics.mana.spellPaymentContextFor
 import com.wingedsheep.engine.mechanics.mana.TapForGeneric
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
-import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
 
 /**
  * Enumerates spells and lands castable/playable from non-hand zones:
@@ -2868,15 +2867,11 @@ class CastFromZoneEnumerator(
         // where the set of cards is fixed when the ability resolves (CR 611.2c) rather than being a
         // standing player-wide permission that later arrivals would also enjoy.
         val permissions = mutableListOf<GraveyardCastPermission>()
-        for (permId in state.getBattlefield()) {
-            val container = state.getEntity(permId) ?: continue
-            val controller = container.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()?.playerId
-            if (controller != playerId) continue
-            val cardDef = container.faceUpCardDefinition(context.cardRegistry) ?: continue
-            for (sa in cardDef.liveStaticAbilities(state, permId)) {
-                if (sa is MayCastFromGraveyard && !grantIsSpent(permId, sa)) {
-                    permissions.add(GraveyardCastPermission(sa, permId, scopedCardId = null))
-                }
+        // A grant behind a condition (Exploration Broodship's station 8+ threshold) counts only while
+        // it holds. Kept in step with `CastZoneResolver.mayCastFromGraveyardGrantsWithSources`.
+        for ((permId, sa) in state.controlledActiveStaticAbilities(playerId, context.cardRegistry, context.conditionEvaluator)) {
+            if (sa is MayCastFromGraveyard && !grantIsSpent(permId, sa)) {
+                permissions.add(GraveyardCastPermission(sa, permId, scopedCardId = null))
             }
         }
         // An emblem the player has (Wrenn and Realmbreaker's −7): a player-wide permission held from
