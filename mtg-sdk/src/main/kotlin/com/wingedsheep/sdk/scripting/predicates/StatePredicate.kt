@@ -1343,7 +1343,18 @@ sealed interface StatePredicate {
     data class ControllerMeets(
         val condition: com.wingedsheep.sdk.scripting.conditions.Condition
     ) : Entity {
-        override val description: String = "whose controller meets: ${condition.description}"
+        /**
+         * The condition's own text re-voiced for the candidate's controller: "if you control an
+         * Island" reads "whose controller controls an Island", "your graveyard" reads "their".
+         */
+        override val description: String = condition.description.removePrefix("if ")
+            .replace("your ", "their ").let { text ->
+                when {
+                    text.startsWith("you control ") -> "whose controller controls ${text.removePrefix("you control ")}"
+                    text.startsWith("you have ") -> "whose controller has ${text.removePrefix("you have ")}"
+                    else -> "whose controller satisfies: $text"
+                }
+            }
     }
 
     // =============================================================================
