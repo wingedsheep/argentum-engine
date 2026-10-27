@@ -673,9 +673,8 @@ data class ProliferateEffect(
  * Distribute a number of counters among the targets from context.
  * "Distribute N counters among one or more target creatures you control."
  *
- * Distribution is deterministic when totalCounters equals number of targets * minPerTarget.
- * With 1 target, all counters go on it. With multiple targets, counters are divided evenly
- * (remainder goes to the first target).
+ * The controller chooses the division, each target getting at least [minPerTarget]; a lone
+ * target takes the whole pool (unless the pool is [upTo]).
  *
  * [totalCounters] is a [DynamicAmount] so the pool can come from the spell's X
  * ("Distribute X +1/+1 counters among any number of target creatures you control" —
@@ -685,8 +684,6 @@ data class ProliferateEffect(
  * `TargetObject(unlimited = true, dynamicMaxCount = DynamicAmount.XValue)` so the caster
  * can't declare more targets than there are counters to go around (CR 601.2d).
  *
- * @property totalCounters Total number of counters to distribute
- * @property counterType The type of counter (e.g., "+1/+1")
  * [upTo] is "distribute **up to** N counters" (Lathiel, the Bounteous Dawn): the controller may
  * place fewer than [totalCounters] in all, each target still getting at least [minPerTarget]. The
  * division is announced the same way, as a partial one — even with a single target, which then

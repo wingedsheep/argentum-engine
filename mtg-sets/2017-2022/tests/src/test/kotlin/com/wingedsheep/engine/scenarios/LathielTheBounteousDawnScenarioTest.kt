@@ -101,6 +101,40 @@ class LathielTheBounteousDawnScenarioTest : FunSpec({
         result.error shouldNotBe null
     }
 
+    test("triggers on an opponent's end step too") {
+        val driver = newDriver()
+        driver.putCreatureOnBattlefield(driver.player1, "Lathiel, the Bounteous Dawn")
+        val bear = driver.putCreatureOnBattlefield(driver.player1, "Grizzly Bears")
+
+        driver.passPriorityUntil(Step.UPKEEP, driver.player2)
+        driver.gainLife(2)
+        driver.passPriorityUntil(Step.END)
+        driver.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+        driver.submitMultiTargetSelection(driver.player1, mapOf(0 to listOf(bear)))
+        val division = driver.pendingDecision.shouldBeInstanceOf<DistributeDecision>()
+        division.totalAmount shouldBe 2
+        driver.submitDecision(driver.player1, DistributionResponse(division.id, mapOf(bear to 2)))
+
+        driver.bothPass()
+        driver.plusOnes(bear) shouldBe 2
+    }
+
+    test("gaining more life in response changes neither the pool nor the division") {
+        val driver = newDriver()
+        driver.putCreatureOnBattlefield(driver.player1, "Lathiel, the Bounteous Dawn")
+        val bear = driver.putCreatureOnBattlefield(driver.player1, "Grizzly Bears")
+        driver.gainLife(2)
+
+        driver.toEndStepTargets()
+        driver.submitMultiTargetSelection(driver.player1, mapOf(0 to listOf(bear)))
+        val division = driver.pendingDecision.shouldBeInstanceOf<DistributeDecision>()
+        driver.submitDecision(driver.player1, DistributionResponse(division.id, mapOf(bear to 2)))
+
+        driver.gainLife(5)
+        driver.bothPass()
+        driver.plusOnes(bear) shouldBe 2
+    }
+
     test("doesn't trigger when you gained no life this turn") {
         val driver = newDriver()
         driver.putCreatureOnBattlefield(driver.player1, "Lathiel, the Bounteous Dawn")
