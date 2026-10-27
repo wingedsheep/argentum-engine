@@ -187,6 +187,75 @@
     ]
 }
 
+// Mazirek, Kraul Death Priest
+{
+    "name": "Mazirek, Kraul Death Priest",
+    "manaCost": "{3}{B}{G}",
+    "typeLine": "Legendary Creature — Insect Shaman",
+    "oracleText": "Flying\nWhenever a player sacrifices another permanent, put a +1/+1 counter on each creature you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mazirek, Kraul Death Priest:1",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "permanent",
+                    "sacrificedBy": "Each",
+                    "perPermanent": true
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "MYTHIC",
+        "artist": "Mathias Kollros",
+        "flavorText": "The clicks and buzz of the undercity proclaim him the incarnation of decay.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c3ac233-29f7-4ed7-9363-85022d72f633.jpg?1783938107",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "A legendary permanent that is put into a graveyard because of the \"legend rule\" isn't sacrificed."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "If you sacrifice Mazirek and other permanents at the same time, Mazirek's last ability triggers for the other permanents."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "If you sacrifice a permanent as part of casting a spell or activating an ability, Mazirek's last ability will resolve before that spell or ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Meren of Clan Nel Toth
 {
     "name": "Meren of Clan Nel Toth",

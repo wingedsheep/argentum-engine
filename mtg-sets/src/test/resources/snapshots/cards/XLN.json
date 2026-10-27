@@ -3554,6 +3554,81 @@
     ]
 }
 
+// Revel in Riches
+{
+    "name": "Revel in Riches",
+    "manaCost": "{4}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature an opponent controls dies, create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")\nAt the beginning of your upkeep, if you control ten or more Treasures, you win the game.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Revel in Riches:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:opponent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            },
+            {
+                "id": "Revel in Riches:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "WinGame",
+                    "message": "Revel in Riches: ten or more Treasures."
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "artifact Treasure"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 10
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, if you control ten or more Treasures, you win the game."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/79b0e035-8716-469d-99ae-a530cd96ef09.jpg?1783935756",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "If you don't control ten Treasures as your upkeep begins, the second ability of Revel in Riches won't trigger. You can't take any actions during your turn before your upkeep begins."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If you don't control ten Treasures as the second ability of Revel in Riches resolves, you won't win the game."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "If an opponent's creature dies at the same time that Revel in Riches is destroyed, you'll get a Treasure."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Rigging Runner
 {
     "name": "Rigging Runner",

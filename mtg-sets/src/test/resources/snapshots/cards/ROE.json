@@ -258,6 +258,47 @@
     "colorIdentityOverride": []
 }
 
+// Awakening Zone
+{
+    "name": "Awakening Zone",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, you may create a 0/1 colorless Eldrazi Spawn creature token. It has \"Sacrifice this token: Add {C}.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Awakening Zone:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "CreatePredefinedToken",
+                        "tokenType": "Eldrazi Spawn",
+                        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0e3826c-3c85-4910-bd6c-04894ea328d0.jpg?1783941948"
+                    },
+                    "descriptionOverride": "At the beginning of your upkeep, you may create a 0/1 colorless Eldrazi Spawn creature token. It has \"Sacrifice this token: Add {C}.\""
+                },
+                "descriptionOverride": "At the beginning of your upkeep, you may create a 0/1 colorless Eldrazi Spawn creature token. It has \"Sacrifice this token: Add {C}.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "rarity": "RARE",
+        "artist": "Johann Bodin",
+        "flavorText": "The ground erupted in time with the hedron's thrum, a dirge of the last days.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/080dbd69-95a8-4fed-bbaf-875a8a34a2c9.jpg?1783941967"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Bala Ged Scorpion
 {
     "name": "Bala Ged Scorpion",
@@ -1826,6 +1867,49 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Linvala, Keeper of Silence
+{
+    "name": "Linvala, Keeper of Silence",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Legendary Creature — Angel",
+    "oracleText": "Flying\nActivated abilities of creatures your opponents control can't be activated.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": "creature ctrl:opponent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "MYTHIC",
+        "artist": "Igor Kieryluk",
+        "flavorText": "Those who seek to disturb the harmony of life will see their instruments taken from them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/82b80a09-7e75-4091-a60e-04aff79339a3.jpg?1783942005",
+        "rulings": [
+            {
+                "date": "2017-03-14",
+                "text": "No abilities of creatures your opponents control can be activated, including mana abilities."
+            },
+            {
+                "date": "2017-03-14",
+                "text": "Linvala's last ability affects only creatures on the battlefield. Activated abilities that work in other zones (such as bloodrush or unearth) can still be activated. Triggered abilities (starting with \"when,\" \"whenever,\" or \"at\") are unaffected."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

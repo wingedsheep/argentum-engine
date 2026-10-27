@@ -3908,6 +3908,77 @@
     "colorIdentityOverride": []
 }
 
+// Mayhem Devil
+{
+    "name": "Mayhem Devil",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Creature — Devil",
+    "oracleText": "Whenever a player sacrifices a permanent, this creature deals 1 damage to any target.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mayhem Devil:1",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "permanent",
+                    "sacrificedBy": "Each",
+                    "perPermanent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever a player sacrifices a permanent, this creature deals 1 damage to any target."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "rarity": "UNCOMMON",
+        "artist": "Dmitry Burmak",
+        "flavorText": "Despite their stake in the city's survival, Rakdos cultists are loath to pass up any opportunity to sow chaos.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/17416926-168b-49b3-9231-acbb8f8a1d13.jpg?1783933394",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "A legendary permanent that is put into a graveyard because of the \"legend rule\" isn't sacrificed."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "You control Mayhem Devil's triggered ability and choose the target, no matter who sacrificed the permanent."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If a permanent is sacrificed to pay a cost of a spell or ability, Mayhem Devil's ability will resolve before that spell or ability. Conversely, if a permanent is sacrificed during the resolution of a spell or ability, that spell or ability will finish resolving before Mayhem Devil's ability is put onto the stack."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If you sacrifice Mayhem Devil, its ability triggers."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Naga Eternal
 {
     "name": "Naga Eternal",

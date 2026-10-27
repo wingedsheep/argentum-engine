@@ -1396,6 +1396,73 @@
     ]
 }
 
+// Folk Hero
+{
+    "name": "Folk Hero",
+    "manaCost": "{1}{W}",
+    "typeLine": "Legendary Enchantment — Background",
+    "oracleText": "Commander creatures you own have \"Whenever you cast a spell that shares a creature type with this creature, draw a card. This ability triggers only once each turn.\"",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "Folk Hero:1",
+                    "trigger": {
+                        "type": "SpellCastEvent",
+                        "spellFilter": {
+                            "cardPredicates": [
+                                "SharesCreatureTypeWithSource"
+                            ]
+                        }
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "oncePerTurn": true,
+                    "descriptionOverride": "Whenever you cast a spell that shares a creature type with this creature, draw a card. This ability triggers only once each turn."
+                },
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsCommander"
+                        ],
+                        "controllerPredicate": "OwnedByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "650",
+        "rarity": "MYTHIC",
+        "artist": "Kai Carpenter",
+        "flavorText": "Tales of your great deeds follow you no matter how far you travel from your hometown.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a8b3aae8-fc36-45ed-84ed-efb8f543cada.jpg?1783922517",
+        "rulings": [
+            {
+                "date": "2022-06-10",
+                "text": "If a card refers to a commander creature you own, a Background won't usually be counted or included for that effect. If another spell or ability causes your Background to become a creature, however, it will be included."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "If you control a Background that grants an ability to commander creatures you own, and you own more than one commander creature, each of them will have that ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ganax, Astral Hunter
 {
     "name": "Ganax, Astral Hunter",
@@ -2013,6 +2080,50 @@
     },
     "colorIdentityOverride": [
         "BLUE",
+        "RED"
+    ]
+}
+
+// Mahadi, Emporium Master
+{
+    "name": "Mahadi, Emporium Master",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Legendary Creature — Devil",
+    "oracleText": "At the beginning of your end step, create a Treasure token for each creature that died this turn. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mahadi, Emporium Master:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure",
+                    "dynamicCount": {
+                        "type": "TurnTracking",
+                        "player": "Each",
+                        "tracker": "CREATURES_DIED"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "282",
+        "rarity": "UNCOMMON",
+        "artist": "Ilse Gort",
+        "flavorText": "\"Welcome to the Wandering Emporium. Feel free to browse the bazaar. We have everything a lost soul could want, need, or afford.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c3da2b1a-76c5-4d36-bdf8-025b86f61eb5.jpg?1783922689"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
         "RED"
     ]
 }

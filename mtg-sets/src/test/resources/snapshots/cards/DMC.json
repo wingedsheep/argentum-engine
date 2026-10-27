@@ -327,3 +327,96 @@
         "BLACK"
     ]
 }
+
+// The Reaver Cleaver
+{
+    "name": "The Reaver Cleaver",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+1 and has trample and \"Whenever this creature deals combat damage to a player or planeswalker, create that many Treasure tokens.\"\nEquip {3}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "The Reaver Cleaver:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE"
+            },
+            {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "The Reaver Cleaver:1",
+                    "trigger": {
+                        "type": "DealsDamageEvent",
+                        "damageType": "DamageCombat",
+                        "recipient": {
+                            "type": "RecipientAnyOf",
+                            "options": [
+                                {
+                                    "type": "RecipientPlayer",
+                                    "player": "Any"
+                                },
+                                {
+                                    "type": "RecipientObject",
+                                    "filter": "planeswalker"
+                                }
+                            ]
+                        }
+                    },
+                    "effect": {
+                        "type": "CreatePredefinedToken",
+                        "tokenType": "Treasure",
+                        "dynamicCount": {
+                            "type": "ContextProperty",
+                            "key": "TRIGGER_DAMAGE_AMOUNT"
+                        }
+                    },
+                    "descriptionOverride": "Whenever this creature deals combat damage to a player or planeswalker, create that many Treasure tokens."
+                }
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "RARE",
+        "artist": "Yigit Koroglu",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5bcd1591-b5b9-49fc-9f2a-45f31ed1871e.jpg?1783921476"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}

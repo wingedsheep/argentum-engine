@@ -1088,6 +1088,78 @@
     ]
 }
 
+// Juri, Master of the Revue
+{
+    "name": "Juri, Master of the Revue",
+    "manaCost": "{B}{R}",
+    "typeLine": "Legendary Creature — Human Shaman",
+    "oracleText": "Whenever you sacrifice a permanent, put a +1/+1 counter on Juri.\nWhen Juri dies, it deals damage equal to its power to any target.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Juri, Master of the Revue:1",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "permanent",
+                    "perPermanent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Juri, Master of the Revue:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "282",
+        "rarity": "UNCOMMON",
+        "artist": "Dmitry Burmak",
+        "flavorText": "\"What a show! We're going to make a killing tonight.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/aec6b2b7-625a-451d-bc0b-4456f5bf2719.jpg?1783928771",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "For Juri's second ability, use its power from when it was last on the battlefield to determine how much damage is dealt. If that power was 0 or less, Juri deals no damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Kangee, Sky Warden
 {
     "name": "Kangee, Sky Warden",

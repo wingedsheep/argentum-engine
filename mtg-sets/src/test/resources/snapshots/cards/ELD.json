@@ -1904,6 +1904,102 @@
     ]
 }
 
+// Korvold, Fae-Cursed King
+{
+    "name": "Korvold, Fae-Cursed King",
+    "manaCost": "{2}{B}{R}{G}",
+    "typeLine": "Legendary Creature — Dragon Noble",
+    "oracleText": "Flying\nWhenever Korvold enters or attacks, sacrifice another permanent.\nWhenever you sacrifice a permanent, put a +1/+1 counter on Korvold and draw a card.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Korvold, Fae-Cursed King:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "ZoneChangeEvent",
+                            "to": "Battlefield"
+                        },
+                        "AttackEvent"
+                    ]
+                },
+                "effect": {
+                    "type": "Sacrifice",
+                    "filter": "permanent",
+                    "excludeSource": true
+                },
+                "descriptionOverride": "Whenever Korvold enters or attacks, sacrifice another permanent."
+            },
+            {
+                "id": "Korvold, Fae-Cursed King:2",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "permanent",
+                    "perPermanent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you sacrifice a permanent, put a +1/+1 counter on Korvold and draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "329",
+        "rarity": "MYTHIC",
+        "artist": "Wisnu Tan",
+        "flavorText": "Transformed at his own wedding, he promptly ate the banquet, the gifts, and the guests.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/92ea1575-eb64-43b5-b604-c6e23054f228.jpg?1783932546",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "If you somehow control no other permanents, you can attack with Korvold. You won't sacrifice anything, and there's no penalty for being unable to do so."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "A legendary permanent that is put into a graveyard because of the \"legend rule\" isn't sacrificed."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If you sacrifice a permanent as part of a spell or activated ability's cost, Korvold's last ability will resolve before that spell or ability."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "If you sacrifice Korvold, its last ability triggers. You won't put a +1/+1 counter on anything, but you'll draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Linden, the Steadfast Queen
 {
     "name": "Linden, the Steadfast Queen",
