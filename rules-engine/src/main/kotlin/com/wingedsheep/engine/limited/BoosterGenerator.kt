@@ -443,6 +443,10 @@ class BoosterGenerator(
      * booster pool only. Banned names are matched case-insensitively so a host typo in casing
      * still excludes the card.
      *
+     * Basic *snow* lands stay: Limited players can't add them freely the way they add basics (the
+     * Kaldheim snow-basic ruling), so a pack is the only way to get one, and a land-slot strategy
+     * opens them from here.
+     *
      * Meld results ([CardDefinition.meldResult]) are dropped here rather than left to
      * `metadata.inBooster`: Scryfall reports them as `booster: true` — the physical card *is* in
      * the pack, as the meld parts' back halves — so the product-level flag can't tell a drafter
@@ -460,5 +464,5 @@ class BoosterGenerator(
     }
 
     private val CardDefinition.isBoosterEligible: Boolean
-        get() = !typeLine.isBasicLand && !meldResult && metadata.inBooster
+        get() = (!typeLine.isBasicLand || typeLine.isSnow) && !meldResult && metadata.inBooster
 }

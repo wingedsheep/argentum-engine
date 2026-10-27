@@ -86,6 +86,60 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         (mythics.toDouble() / packs) shouldBe (0.125 plusOrMinus 0.03)
     }
 
+    test("Kaldheim draft pack opens 10 commons, 3 uncommons, a rare or mythic and one snow land") {
+        // WotC "Kaldheim Product Overview": 1 rare/mythic, 3 uncommons, 10 commons, 1 snow land (basic
+        // or dual). MTGJSON's land sheet weights each snow dual 5 and each snow-basic art 7 (50/120
+        // duals); the foil replacing a common in a third of packs is cosmetic and not modelled.
+        val khm = boosterGenerator.availableSets["KHM"].shouldNotBeNull()
+        khm.fullyImplemented shouldBe true
+        val strategy = khm.boosterStrategy.shouldBeInstanceOf<LandSlotBooster>()
+        strategy.base shouldBe StandardBooster(commons = 10, mythicChance = 20.0 / 148)
+        strategy.basicLands shouldBe emptyList()
+        val duals = strategy.nonbasicLandNames
+        duals.size shouldBe 10
+        val snowBasics = khm.cards.filter { it.typeLine.isBasicLand }
+        snowBasics.map { it.name }.toSet() shouldBe setOf(
+            "Snow-Covered Plains", "Snow-Covered Island", "Snow-Covered Swamp",
+            "Snow-Covered Mountain", "Snow-Covered Forest",
+        )
+        snowBasics.all { it.typeLine.isSnow && it.metadata.inBooster && it.setCode == "KHM" } shouldBe true
+        val eligible = khm.cards.filter {
+            it.metadata.inBooster && !it.typeLine.isBasicLand && !it.meldResult && it.name !in duals
+        }
+        // MTGJSON `booster.draft` sheets: the non-land commons, uncommons and rares/mythics by name.
+        eligible.groupingBy { it.metadata.rarity }.eachCount() shouldBe mapOf(
+            Rarity.COMMON to 101, Rarity.UNCOMMON to 80, Rarity.RARE to 64, Rarity.MYTHIC to 20,
+        )
+        val eligibleNames = eligible.map { it.name }.toSet()
+        val snowBasicNames = snowBasics.map { it.name }.toSet()
+        var mythics = 0
+        var dualLands = 0
+        val packs = 3000
+        repeat(packs) {
+            val pack = boosterGenerator.generateBooster("KHM")
+            pack.size shouldBe 15
+            pack.map { it.name }.toSet().size shouldBe 15
+            withClue("pack ${pack.map { it.name }} holds an off-sheet card outside the land slot") {
+                pack.dropLast(1).all { it.name in eligibleNames } shouldBe true
+            }
+            pack.dropLast(1).count { it.metadata.rarity == Rarity.COMMON } shouldBe 10
+            pack.count { it.metadata.rarity == Rarity.UNCOMMON } shouldBe 3
+            val land = pack.last()
+            (land.name in duals || land.name in snowBasicNames) shouldBe true
+            if (land.name in duals) dualLands++
+            mythics += pack.count { it.metadata.rarity == Rarity.MYTHIC }
+        }
+        (dualLands.toDouble() / packs) shouldBe (50.0 / 120 plusOrMinus 0.035)
+        (mythics.toDouble() / packs) shouldBe (20.0 / 148 plusOrMinus 0.025)
+        repeat(20) {
+            val pack = boosterGenerator.generateBooster("KHM", bannedCardNames = duals)
+            pack.size shouldBe 15
+            (pack.last().name in snowBasicNames) shouldBe true
+        }
+        // Snow basics are pack cards only: deck building still offers just the nonsnow basics.
+        boosterGenerator.getBasicLands("KHM").keys shouldBe setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
+    }
+
     test("Adventures in the Forgotten Realms draft pack is 10 commons, 3 uncommons and one rare or mythic from its booster pool") {
         // Draft Booster: 1 rare/mythic, 3 uncommons, 10 commons, 1 basic land (the generator supplies
         // basics at deck building), a token/ad card, and a foil of any rarity replacing a common in a
@@ -404,7 +458,7 @@ class GameBeansConfigBoosterPoolTest : FunSpec({
         // foil/List/Special Guest/bonus-sheet cards).
         val expected = mapOf(
             "ARN" to 8, "ATQ" to 8, "DRK" to 8, "FEM" to 8, "LEG" to 15, "PTK" to 8,
-            "POR" to 13, "P02" to 13, "S99" to 13, "VOW" to 14, "LCI" to 15, "MOM" to 14,
+            "POR" to 13, "P02" to 13, "S99" to 13, "VOW" to 14, "KHM" to 15, "LCI" to 15, "MOM" to 14,
             "MKM" to 13, "OTJ" to 13, "MH3" to 13, "BLB" to 13, "DSK" to 14, "FDN" to 14, "INR" to 13,
             "DFT" to 14, "TDM" to 14, "FIN" to 14, "EOE" to 13, "SPM" to 14, "TLA" to 14, "ECL" to 13,
             "TMT" to 14, "SOS" to 13, "MSH" to 14, "HOB" to 14,

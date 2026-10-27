@@ -70,6 +70,20 @@ class LandSlotBoosterTest : DescribeSpec({
             (pack.last().name in dualNames) shouldBe true
         }
 
+        it("opens basic snow lands left in the pool as the basic group") {
+            val snowBasics = (0..4).map { land("Snow Basic $it", "s$it", basic = true, snow = true) }
+            val snowSlot = strategy.copy(basicLands = emptyList(), nonbasicChance = 50.0 / 120)
+            val random = Random(7)
+            var dualCount = 0
+            repeat(6000) {
+                val pack = snowSlot.generate(ordinary + duals + snowBasics, random)
+                pack shouldHaveSize 14
+                pack.dropLast(1).none { it.typeLine.isLand } shouldBe true
+                if (pack.last().name in dualNames) dualCount++ else pack.last().typeLine.isSnow shouldBe true
+            }
+            (dualCount in 2300..2700) shouldBe true
+        }
+
         it("does not repeat a land name already selected by the base strategy") {
             val base = BoosterStrategy { _, _ -> listOf(basics.first()) }
             val pack = strategy.copy(base = base).generate(ordinary + duals, Random(1))
@@ -79,10 +93,13 @@ class LandSlotBoosterTest : DescribeSpec({
     }
 })
 
-private fun land(name: String, number: String, basic: Boolean): CardDefinition = CardDefinition(
+private fun land(name: String, number: String, basic: Boolean, snow: Boolean = false): CardDefinition = CardDefinition(
     name = name,
     manaCost = ManaCost.ZERO,
     typeLine = TypeLine(cardTypes = setOf(CardType.LAND),
-        supertypes = if (basic) setOf(Supertype.BASIC) else emptySet()),
+        supertypes = buildSet {
+            if (basic) add(Supertype.BASIC)
+            if (snow) add(Supertype.SNOW)
+        }),
     metadata = ScryfallMetadata(collectorNumber = number),
 )

@@ -244,6 +244,30 @@ class SetArchetypesTest : StringSpec({
         )
         synergies.archetypes.all { it.creatureTypes.isEmpty() } shouldBe true
     }
+    "Kaldheim exposes its ten signpost color-pair archetypes" {
+        val synergies = requireNotNull(SetArchetypes.getForSet("khm"))
+
+        synergies.setName shouldBe "Kaldheim"
+        synergies.archetypes.associate { it.name to it.colors.toSet() } shouldBe mapOf(
+            "Foretell" to setOf(Color.WHITE, Color.BLUE),
+            "Snow Zombies" to setOf(Color.BLUE, Color.BLACK),
+            "Berserkers" to setOf(Color.BLACK, Color.RED),
+            "Big Spells Ramp" to setOf(Color.RED, Color.GREEN),
+            "Go Wide" to setOf(Color.GREEN, Color.WHITE),
+            "Double Spells" to setOf(Color.WHITE, Color.BLACK),
+            "Giants & Wizards" to setOf(Color.BLUE, Color.RED),
+            "Elves" to setOf(Color.BLACK, Color.GREEN),
+            "Equipment & Auras" to setOf(Color.RED, Color.WHITE),
+            "Snow" to setOf(Color.GREEN, Color.BLUE),
+        )
+        synergies.archetypes.map { it.colors.toSet() }.toSet() shouldBe ALL_COLOR_PAIRS
+        synergies.archetypes.filter { it.creatureTypes.isNotEmpty() }.associate { it.name to it.creatureTypes } shouldBe mapOf(
+            "Snow Zombies" to listOf("Zombie"),
+            "Berserkers" to listOf("Berserker"),
+            "Giants & Wizards" to listOf("Giant", "Wizard"),
+            "Elves" to listOf("Elf"),
+        )
+    }
     "Adventures in the Forgotten Realms exposes its ten signpost color-pair archetypes" {
         val synergies = requireNotNull(SetArchetypes.getForSet("afr"))
 

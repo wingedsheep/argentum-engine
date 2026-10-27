@@ -7,8 +7,10 @@ import kotlin.random.Random
  * Reserves named nonbasic lands for one dedicated land slot, then delegates the other slots to [base].
  * The land slot opens one of the available nonbasics with [nonbasicChance] — the set's published
  * odds, e.g. "a common dual land (50%) or a basic land (50%)" — and otherwise one of the
- * [basicLands] arts, which the generator removes from its ordinary pool. Either group falls back to
- * the other when it is empty. Host-banned nonbasics are absent from [pool] and cannot enter the land
+ * [basicLands] arts, which the generator removes from its ordinary pool. Basic lands still in [pool] —
+ * basic *snow* lands, which are pack cards rather than freely added basics — join the basic group, so a
+ * set whose land slot opens reprinted snow basics (Kaldheim) can pass an empty [basicLands]. Either
+ * group falls back to the other when it is empty. Host-banned nonbasics are absent from [pool] and cannot enter the land
  * slot; basic lands remain available independently of the host ban list, as in limited deck building.
  */
 data class LandSlotBooster(
@@ -28,7 +30,7 @@ data class LandSlotBooster(
         val booster = base.generate(regular, random)
         val used = booster.mapTo(hashSetOf()) { it.name }
         val availableNonbasics = nonbasics.filter { it.name !in used }
-        val availableBasics = basicLands.filter { it.name !in used }
+        val availableBasics = (basicLands + pool.filter { it.typeLine.isBasicLand }).filter { it.name !in used }
         val (first, second) = if (random.nextDouble() < nonbasicChance) {
             availableNonbasics to availableBasics
         } else {

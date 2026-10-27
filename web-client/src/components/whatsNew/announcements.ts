@@ -30,6 +30,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: readonly Announcement[] = [
   {
+    id: 'set-khm',
+    date: '2026-10-27',
+    kind: 'set',
+    setCode: 'KHM',
+    title: 'Kaldheim is complete',
+    body:
+      'Raid the Norse-inspired realms of Kaldheim: foretell spells into exile to cast them cheaply later, boast with creatures that attacked, and play snow lands to power snow payoffs. Double-faced Gods double as lands, Sagas tell stories over three turns, and tribes of Elves, Giants, Berserkers and Zombies give each colour pair its own clan.',
+    tryIf: 'tribal clans, snow mana and planning turns ahead with foretell',
+  },
+  {
     id: 'set-afr',
     date: '2026-10-25',
     kind: 'set',
