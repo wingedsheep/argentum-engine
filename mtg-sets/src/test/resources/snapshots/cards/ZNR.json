@@ -6195,6 +6195,65 @@
     ]
 }
 
+// Vine Gecko
+{
+    "name": "Vine Gecko",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Elemental Lizard",
+    "oracleText": "The first kicked spell you cast each turn costs {1} less to cast.\nWhenever you cast a kicked spell, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vine Gecko:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellWasKicked"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": {}
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                },
+                "gating": {
+                    "type": "NthOfTypePerTurn",
+                    "n": 1,
+                    "declaredCost": "KICKED"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "UNCOMMON",
+        "artist": "Uriah Voth",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7a6f9984-dec7-4a1f-91d6-1e85b5df5e4c.jpg?1783929326"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Wayward Guide-Beast
 {
     "name": "Wayward Guide-Beast",

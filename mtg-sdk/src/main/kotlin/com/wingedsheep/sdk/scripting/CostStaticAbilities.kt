@@ -40,7 +40,8 @@ data class ModifySpellCost(
         // Only the Nth-of-type gate rephrases the subject as a single spell ("The second spell ...").
         // A conditional (OnlyIf) gate leaves the subject plural and tacks the condition on at the end.
         val nthGating = gating as? CostGating.NthOfTypePerTurn
-        val gate = if (nthGating != null) "The ${ordinal(nthGating.n)} " else ""
+        val declared = nthGating?.declaredCost?.let { "${it.name.lowercase().replace('_', ' ')} " } ?: ""
+        val gate = if (nthGating != null) "The ${ordinal(nthGating.n)} $declared" else ""
         // A gated description ("The Nth ...") refers to a single spell, so phrase it in the singular.
         val noun = if (nthGating != null) "spell" else "spells"
         val subject = when (target) {
@@ -498,10 +499,16 @@ sealed interface CostGating {
      * player has cast this turn (1-indexed; counts itself). Use `n = 1` for "the first ... each
      * turn" (e.g. Eluge) and `n = 2` for Uthros Psionicist's "the second spell you cast each turn
      * costs {2} less to cast".
+     *
+     * [declaredCost] narrows "such spell" to casts that declared that optional additional cost
+     * (CR 601.2b) — `ChoiceSlot.KICKED` is Vine Gecko's "the first **kicked** spell you cast each
+     * turn costs {1} less to cast". The spell being priced must declare it, and only earlier casts
+     * this turn that declared it count toward N — including ones cast before the modifier's source
+     * was on the battlefield. `null` (default) ignores optional costs entirely.
      */
     @SerialName("NthOfTypePerTurn")
     @Serializable
-    data class NthOfTypePerTurn(val n: Int) : CostGating
+    data class NthOfTypePerTurn(val n: Int, val declaredCost: ChoiceSlot? = null) : CostGating
 
     /**
      * Modifier applies only while [condition] holds at cast time. "You" in the condition is the

@@ -1937,6 +1937,12 @@ data class CastSpellRecord(
      * this turn" — Backdraft).
      */
     val damageDealt: Int = 0,
+    /**
+     * The optional additional cost this cast declared (CR 601.2b) — `ChoiceSlot.KICKED` for a
+     * kicked spell, `BARGAINED` for a bargained one, null when it declared none. Lets
+     * `CostGating.NthOfTypePerTurn.declaredCost` count "the first kicked spell you cast each turn".
+     */
+    val declaredCostSlot: com.wingedsheep.sdk.scripting.ChoiceSlot? = null,
 )
 
 /**

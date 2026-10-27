@@ -11557,6 +11557,11 @@ staticAbility {
     `NthOfTypePerTurn(2)` with `target = YouCast(GameObjectFilter.Any)` for Uthros Psionicist's "the
     second spell you cast each turn costs {2} less". Requires a filter-bearing target
     (`YouCast` / `AnyCaster`) — it needs a notion of "type" to count.
+    `NthOfTypePerTurn(n, declaredCost = slot)` narrows "such spell" to casts that declared that
+    optional additional cost: the priced cast must declare it, and only earlier casts this turn that
+    declared it count (including ones cast before the modifier's source arrived). Vine Gecko's "the
+    first kicked spell you cast each turn costs {1} less" is
+    `NthOfTypePerTurn(1, declaredCost = ChoiceSlot.KICKED)` over `YouCast(GameObjectFilter.Any)`.
   - `OnlyIf(condition)` — applies only while `condition` holds at cast time. "You" in the condition
     is the modifier's controller (the caster only for a `SelfCast` modifier), so a tax on other
     players' spells reads its own controller's state: Paladin Class's "spells your opponents cast

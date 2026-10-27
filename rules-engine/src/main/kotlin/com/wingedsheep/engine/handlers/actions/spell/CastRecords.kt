@@ -194,6 +194,8 @@ internal class CastRecords(
                 action.faceIndex?.let { cardDef?.cardFaces?.getOrNull(it)?.name }
                     ?: transformedFace?.name ?: cardComponent.name
             ),
+            // "The first kicked spell you cast each turn" (Vine Gecko) counts history by this.
+            declaredCostSlot = action.declaredCostSlot,
         )
         val existing = newState.spellsCastThisTurnByPlayer[action.playerId] ?: emptyList()
         newState = newState.copy(

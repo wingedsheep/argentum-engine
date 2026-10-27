@@ -509,7 +509,7 @@ Families:
 ## CostGating
 
 - `CostGating.None` — No extra restriction — the modifier applies to every matching cast.
-- `CostGating.NthOfTypePerTurn(n: Int)` — Modifier applies only when the matching spell being cast is the Nth such spell the casting player has cast this turn (1-indexed; counts itself).
+- `CostGating.NthOfTypePerTurn(n: Int, declaredCost: ChoiceSlot?)` — Modifier applies only when the matching spell being cast is the Nth such spell the casting player has cast this turn (1-indexed; counts itself).
 - `CostGating.OnlyIf(condition: Condition)` — Modifier applies only while condition holds at cast time.
 
 ## CostModification

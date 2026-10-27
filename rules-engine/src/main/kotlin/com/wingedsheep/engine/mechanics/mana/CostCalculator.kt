@@ -572,8 +572,14 @@ class CostCalculator(
             CostGating.None -> true
             is CostGating.NthOfTypePerTurn -> {
                 val filter = filterForGating(ability.target) ?: return false
+                // "The first kicked spell ..." — the priced cast must declare the optional cost,
+                // and only earlier casts that declared it count (CR 601.2b announces it).
+                val declared = gating.declaredCost
+                if (declared != null && declaredCostSlot != declared) return false
                 val records = state.spellsCastThisTurnByPlayer[casterId] ?: emptyList()
-                val priorMatching = records.count { predicateEvaluator.matchesFilter(it, filter) }
+                val priorMatching = records.count {
+                    (declared == null || it.declaredCostSlot == declared) && predicateEvaluator.matchesFilter(it, filter)
+                }
                 priorMatching == gating.n - 1
             }
             is CostGating.OnlyIf -> {
