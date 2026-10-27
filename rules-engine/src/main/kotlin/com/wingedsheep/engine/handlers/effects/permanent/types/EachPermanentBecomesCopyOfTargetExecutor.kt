@@ -71,11 +71,13 @@ class EachPermanentBecomesCopyOfTargetExecutor(
             ?: return EffectResult.success(state)
 
         // "Becomes a copy of the exiled creature" (Curie, Emergent Intelligence) names a permanent
-        // a cost already moved off the battlefield: it is copied as it last existed there
-        // (CR 608.2h, CR 707.2) — what it was copying, not the card now in exile — from the
-        // snapshot the departure captured, which also outlives a token that ceased to exist.
+        // a cost already moved off the battlefield, and "become copies of that creature" (Absorb
+        // Identity) a target an earlier instruction of this resolution bounced: either is copied as
+        // it last existed there (CR 608.2h, CR 707.2) — what it was copying, not the card now in
+        // exile or hand — from the snapshot the departure captured, which also outlives a token
+        // that ceased to exist.
         val departedCopiable = (effect.target as? EffectTarget.SingleEntity)
-            ?.takeIf { targetId !in state.getBattlefield() && lkiPolicyFor(it) == LkiPolicy.LIVE_THEN_LKI }
+            ?.takeIf { targetId !in state.getBattlefield() && lkiPolicyFor(it) != LkiPolicy.LIVE_ONLY }
             ?.let { context.lkiSnapshotFor(it, targetId)?.copiableCard }
 
         val targetCard = departedCopiable

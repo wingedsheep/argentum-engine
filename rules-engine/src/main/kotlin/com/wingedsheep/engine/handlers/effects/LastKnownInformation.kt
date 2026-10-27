@@ -34,7 +34,8 @@ enum class LkiPolicy {
      * snapshot the card itself carries: a loop over graveyard cards that died last turn visits new
      * objects (CR 400.7) whose current characteristics are the answer. This is what lets "for each
      * permanent exiled this way, … a card that shares a card type with it" (Chaotic Transformation)
-     * see an exiled token's types and an animated land's Creature type.
+     * see an exiled token's types and an animated land's Creature type, and what lets a chosen
+     * target bounced by an earlier instruction be copied as it last existed (Absorb Identity).
      */
     LIVE_THEN_OWN_MOVE_LKI,
 }
@@ -64,6 +65,13 @@ fun lkiPolicyFor(reference: EffectTarget.SingleEntity): LkiPolicy = when (refere
     // A loop's current object is read live — unless this very resolution moved it off the
     // battlefield ("for each permanent exiled this way"), when it is read as it last existed there.
     EffectTarget.IterationEntity -> LkiPolicy.LIVE_THEN_OWN_MOVE_LKI
+    // A chosen target is read live — a target that left before resolution is simply gone
+    // (CR 608.2b) — unless an earlier instruction of this resolution moved it: "Return target
+    // creature to its owner's hand. You may have Shapeshifters you control become copies of that
+    // creature" (Absorb Identity) copies it as it last existed on the battlefield (CR 608.2h).
+    is EffectTarget.ContextTarget,
+    is EffectTarget.BoundVariable,
+    -> LkiPolicy.LIVE_THEN_OWN_MOVE_LKI
 
     // Targets are re-validated at resolution (a departed target fizzles, CR 608.2b); Amass
     // references only ever name a live permanent; Ring-bearer must be on the battlefield; a
@@ -75,8 +83,6 @@ fun lkiPolicyFor(reference: EffectTarget.SingleEntity): LkiPolicy = when (refere
     // The attacked player or planeswalker is read where it is now; the attacker's own departure
     // is already handled by the resolver's snapshot fallback.
     is EffectTarget.AttackedBy,
-    is EffectTarget.ContextTarget,
-    is EffectTarget.BoundVariable,
     is EffectTarget.SpecificEntity,
     is EffectTarget.RingBearer,
     // A library card, an Imprint pile's card and a discarded card are *never* on the battlefield —
@@ -110,6 +116,7 @@ fun EffectContext.lkiSnapshotFor(reference: EffectTarget.SingleEntity, entityId:
         EffectTarget.TriggeringEntity -> triggerContext?.triggeringLastKnownSnapshot?.takeIf { it.entityId == entityId }
         EffectTarget.Self -> lastKnownSourceSnapshot?.takeIf { it.entityId == entityId }
         // The latest departure wins: an object this resolution blinked and then moved again.
-        EffectTarget.IterationEntity -> departedPermanents.lastOrNull { it.entityId == entityId }
+        EffectTarget.IterationEntity, is EffectTarget.ContextTarget, is EffectTarget.BoundVariable ->
+            departedPermanents.lastOrNull { it.entityId == entityId }
         else -> null
     }

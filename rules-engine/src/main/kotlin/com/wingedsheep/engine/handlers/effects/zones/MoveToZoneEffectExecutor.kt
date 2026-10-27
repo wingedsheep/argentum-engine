@@ -61,6 +61,35 @@ class MoveToZoneEffectExecutor(
         effect: MoveToZoneEffect,
         context: EffectContext
     ): EffectResult {
+        val result = move(state, effect, context)
+        return withDepartedPermanent(state, result, context.resolveTarget(effect.target, state))
+    }
+
+    /**
+     * Report the moved permanent's battlefield-exit snapshot as
+     * [EffectResult.updatedDepartedPermanents] when this move took it off the battlefield, so a
+     * later instruction of the same resolution reads "that creature" as it last existed there
+     * (CR 608.2h) — "Return target creature to its owner's hand. You may have Shapeshifters you
+     * control become copies of that creature" (Absorb Identity). The single-target twin of
+     * [com.wingedsheep.engine.handlers.effects.library.MoveCollectionExecutor]'s capture.
+     */
+    private fun withDepartedPermanent(before: GameState, result: EffectResult, targetId: EntityId?): EffectResult {
+        if (targetId == null || targetId !in before.getBattlefield() || targetId in result.state.getBattlefield()) {
+            return result
+        }
+        val snapshot = result.state.getEntity(targetId)
+            ?.get<com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentComponent>()
+            ?.snapshot
+            ?: return result
+        if (result.updatedDepartedPermanents.any { it.entityId == targetId }) return result
+        return result.copy(updatedDepartedPermanents = result.updatedDepartedPermanents + snapshot)
+    }
+
+    private fun move(
+        state: GameState,
+        effect: MoveToZoneEffect,
+        context: EffectContext
+    ): EffectResult {
         var context = context
         val targetReference = effect.target
         val targetId = context.resolveTarget(targetReference, state)

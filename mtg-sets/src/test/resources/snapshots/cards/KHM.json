@@ -1,3 +1,81 @@
+// Absorb Identity
+{
+    "name": "Absorb Identity",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Return target creature to its owner's hand. You may have Shapeshifters you control become copies of that creature until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Have Shapeshifters you control become copies of that creature until end of turn?"
+                    },
+                    "then": {
+                        "type": "EachPermanentBecomesCopyOfTarget",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "filter": {
+                            "baseFilter": "permanent Shapeshifter ctrl:you"
+                        },
+                        "duration": "EndOfTurn"
+                    },
+                    "descriptionOverride": "You may have Shapeshifters you control become copies of that creature until end of turn"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "383",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aa1c6bcc-2d43-4ea9-a93f-019793616869.jpg?1783928120",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "If the target creature is an illegal target as Absorb Identity tries to resolve, it won't resolve and none of its effects will happen. Shapeshifters you control won't become copies of the creature."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Either all Shapeshifters you control will become copies of the creature or none of them will."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If Shapeshifters you control do become copies of the creature, they'll use the copiable values of the creature as it last existed on the battlefield. They don't copy whether that creature was tapped or untapped, whether it had any counters on it, whether it had any Auras and/or Equipment attached to it, or any non-copy effects that changed its power, toughness, types, color, and so on."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If the creature that was returned was copying something else, the Shapeshifters that become copies of that creature will use the copiable values of that creature. In most cases, they will be copies of whatever that creature was copying. If it was copying a permanent or card with {X} in its mana cost, X is 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Aegar, the Freezing Flame
 {
     "name": "Aegar, the Freezing Flame",
