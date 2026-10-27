@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.player
 
+import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.engine.core.suspendForDecision
 import com.wingedsheep.engine.core.ChooseCardTypeForSourceContinuation
 import com.wingedsheep.engine.core.ChooseOptionDecision
@@ -35,9 +36,7 @@ class ChooseCardTypeForSourceExecutor : EffectExecutor<ChooseCardTypeForSourceEf
     override val effectType: KClass<ChooseCardTypeForSourceEffect> = ChooseCardTypeForSourceEffect::class
 
     /** The card types (CR 205.2a) offered when the effect doesn't restrict the set. */
-    private val allCardTypes = listOf(
-        "Artifact", "Battle", "Creature", "Enchantment", "Instant", "Land", "Planeswalker", "Sorcery"
-    )
+    private val allCardTypes = CardType.CHOOSABLE_TYPE_NAMES
 
     override fun execute(
         state: GameState,

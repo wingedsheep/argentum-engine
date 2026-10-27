@@ -135,6 +135,10 @@ fun GameObjectFilter.withSubtypeInStoredList(slot: StringListSlot): GameObjectFi
 fun GameObjectFilter.withoutSubtypeInStoredList(slot: StringListSlot): GameObjectFilter =
     withoutSubtypeInStoredList(slot.key)
 
+/** Match cards with the card type chosen into [slot] (`chooseOption(OptionType.CARD_TYPE)`). */
+fun GameObjectFilter.ofChosenCardTypeFromVariable(slot: ChosenSlot): GameObjectFilter =
+    ofChosenCardTypeFromVariable(slot.key)
+
 /** Match cards whose name equals the name captured in [slot] (cross-namespace handle overload). */
 fun GameObjectFilter.namedFromVariable(slot: ChosenSlot): GameObjectFilter = namedFromVariable(slot.key)
 

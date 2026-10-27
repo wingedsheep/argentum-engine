@@ -84,6 +84,7 @@ CardPredicate.AbilitySourceMatches — CardPredicate
 CardPredicate.And — CardPredicate
 CardPredicate.BasePowerEquals — CardPredicate
 CardPredicate.BaseToughnessEquals — CardPredicate
+CardPredicate.CardTypeEqualsChosen — CardPredicate
 CardPredicate.CardTypeEqualsChosenComponent — CardPredicate
 CardPredicate.ColoredManaSymbolsAtLeast — CardPredicate
 CardPredicate.CompareNumericProperty — CardPredicate

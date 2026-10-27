@@ -170,6 +170,208 @@
     ]
 }
 
+// Alrund, God of the Cosmos
+{
+    "name": "Alrund, God of the Cosmos",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Legendary Creature — God",
+    "oracleText": "Alrund gets +1/+1 for each card in your hand and each foretold card you own in exile.\nAt the beginning of your end step, choose a card type, then reveal the top two cards of your library. Put all cards of the chosen type revealed this way into your hand and the rest on the bottom of your library in any order.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Alrund, God of the Cosmos:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ChooseOption",
+                            "optionType": "CARD_TYPE",
+                            "storeAs": "chosen0"
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "storeAs": "looked"
+                                },
+                                {
+                                    "type": "RevealCollection",
+                                    "from": "looked"
+                                },
+                                {
+                                    "type": "FilterCollection",
+                                    "from": "looked",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            {
+                                                "type": "CardTypeEqualsChosen",
+                                                "variableName": "chosen0"
+                                            }
+                                        ]
+                                    },
+                                    "storeMatching": "kept",
+                                    "storeNonMatching": "rest"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "kept",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Hand"
+                                    }
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "rest",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Library",
+                                        "placement": "Bottom"
+                                    },
+                                    "order": "ControllerChooses"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "Add",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    },
+                    "right": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Exile",
+                        "filter": {
+                            "statePredicates": [
+                                "IsForetold"
+                            ]
+                        }
+                    }
+                },
+                "toughnessBonus": {
+                    "type": "Add",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Hand"
+                    },
+                    "right": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Exile",
+                        "filter": {
+                            "statePredicates": [
+                                "IsForetold"
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Hakka, Whispering Raven",
+        "manaCost": "{1}{U}",
+        "typeLine": "Legendary Creature — Bird",
+        "oracleText": "Flying\nWhenever Hakka deals combat damage to a player, return it to its owner's hand, then scry 2.",
+        "creatureStats": {
+            "power": 2,
+            "toughness": 3
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Hakka, Whispering Raven:1",
+                    "trigger": {
+                        "type": "DealsDamageEvent",
+                        "damageType": "DamageCombat",
+                        "recipient": {
+                            "type": "RecipientPlayer",
+                            "player": "Any"
+                        }
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": "Self",
+                                "destination": "Hand"
+                            },
+                            {
+                                "type": "Scry",
+                                "count": 2
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "40",
+            "rarity": "MYTHIC",
+            "artist": "Kieran Yanner",
+            "imageUri": "https://cards.scryfall.io/normal/back/5/d/5d131784-c1a3-463e-a37b-b720af67ab62.jpg?1783928276"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "rarity": "MYTHIC",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5d131784-c1a3-463e-a37b-b720af67ab62.jpg?1783928276",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Alrund's first ability applies only while Alrund is on the battlefield. In every other zone, Alrund is 1/1."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "You may choose any card type, but the ones that may appear in your library are artifact, battle, creature, enchantment, instant, kindred, land, planeswalker, and sorcery. Supertypes such as snow and basic may not be chosen. Subtypes such as God, Aura, and Forest also may not be chosen."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ],
+    "layout": "MODAL_DFC"
+}
+
 // Arctic Treeline
 {
     "name": "Arctic Treeline",

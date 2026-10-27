@@ -379,6 +379,21 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     }
 
     /**
+     * Matches cards with a **card type** equal to a card type chosen earlier in the pipeline and
+     * stored in `chosenValues[variableName]` (via
+     * [com.wingedsheep.sdk.scripting.effects.OptionType.CARD_TYPE]). The pipeline-variable sibling of
+     * [CardTypeEqualsChosenComponent], as [NameEqualsChosen] is of [NameEqualsChosenComponent].
+     * Case-insensitive; fails closed when nothing has been stored, or in static/projection contexts
+     * that have no pipeline. Used by "choose a card type, then … cards of the chosen type" effects
+     * (Alrund, God of the Cosmos).
+     */
+    @SerialName("CardTypeEqualsChosen")
+    @Serializable
+    data class CardTypeEqualsChosen(val variableName: String) : CardPredicate {
+        override val description: String = "of the chosen type"
+    }
+
+    /**
      * Matches cards whose **card type** equals a card type **durably chosen by the source
      * permanent** as it entered — read from that permanent's
      * [com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent] under [slot] (a

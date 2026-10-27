@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Supertype
 import com.wingedsheep.sdk.core.TypeLine
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -293,6 +294,15 @@ class PredicateEvaluatorRecordTest : FunSpec({
             evaluator.matchesFilter(rec, filter(CardPredicate.HasSubtypeFromVariable("x"))) shouldBe false
             evaluator.matchesFilter(rec, filter(CardPredicate.HasSubtypeInStoredList("x"))) shouldBe false
             evaluator.matchesFilter(rec, filter(CardPredicate.HasSubtypeInEachStoredGroup("x"))) shouldBe false
+        }
+
+        test("CardTypeEqualsChosen reads the card type chosen into the pipeline") {
+            val ctx = PredicateContext(controllerId = EntityId.generate(), chosenValues = mapOf("t" to "Creature"))
+            val pred = filter(CardPredicate.CardTypeEqualsChosen("t"))
+            evaluator.matchesFilter(rec, pred, ctx) shouldBe true
+            evaluator.matchesFilter(record(TypeLine.instant()), pred, ctx) shouldBe false
+            // Nothing chosen (no pipeline) fails closed.
+            evaluator.matchesFilter(rec, pred) shouldBe false
         }
     }
 

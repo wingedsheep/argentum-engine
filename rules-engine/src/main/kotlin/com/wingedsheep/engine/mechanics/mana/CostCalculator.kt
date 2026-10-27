@@ -2042,6 +2042,7 @@ class CostCalculator(
             is CardPredicate.HasSubtypeInStoredList -> true
             is CardPredicate.HasSubtypeInEachStoredGroup -> true
             is CardPredicate.NameEqualsChosen -> true
+            is CardPredicate.CardTypeEqualsChosen -> true
             is CardPredicate.NameEqualsChosenComponent -> {
                 if (sourceEntityId == null || state == null) return false
                 val chosenName = (state.getEntity(sourceEntityId)

@@ -197,6 +197,13 @@ interface ObjectFilterBuilder<out Self> {
     fun ofChosenCardTypeComponent(slot: ChoiceSlot = ChoiceSlot.CARD_TYPE) =
         withCardPredicate(CardPredicate.CardTypeEqualsChosenComponent(slot))
 
+    /**
+     * Match cards with the card type stored in chosenValues[variableName] by an earlier
+     * `ChooseOption(OptionType.CARD_TYPE)` step — `CardPredicate.CardTypeEqualsChosen`.
+     */
+    fun ofChosenCardTypeFromVariable(variableName: String) =
+        withCardPredicate(CardPredicate.CardTypeEqualsChosen(variableName))
+
     /** Mana value equals */
     fun manaValue(value: Int) = withCardPredicate(CardPredicate.ManaValueEquals(value))
 

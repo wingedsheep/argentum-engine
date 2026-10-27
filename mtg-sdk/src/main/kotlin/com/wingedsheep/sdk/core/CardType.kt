@@ -25,6 +25,15 @@ enum class CardType(val displayName: String) {
          */
         val PERMANENT_TYPE_NAMES: Set<String> = entries.filter { it.isPermanent }.map { it.name }.toSet()
 
+        /**
+         * The card types a "choose a card type" effect offers (CR 205.2a), as display names: every
+         * type a card in a library can have. Vanguard lives only in the command zone, so it's left
+         * out — Alrund, God of the Cosmos's ruling lists exactly these.
+         */
+        val CHOOSABLE_TYPE_NAMES: List<String> = listOf(
+            ARTIFACT, BATTLE, CREATURE, ENCHANTMENT, INSTANT, KINDRED, LAND, PLANESWALKER, SORCERY
+        ).map { it.displayName }
+
         fun fromString(value: String): CardType? =
             entries.find { it.displayName.equals(value, ignoreCase = true) }
     }
