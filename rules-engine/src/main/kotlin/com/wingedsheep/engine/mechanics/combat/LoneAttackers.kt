@@ -7,21 +7,21 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CanOnlyAttackAlone
+import com.wingedsheep.sdk.scripting.filters.unified.Scope
 
 /**
  * "This creature can only attack alone" ([CanOnlyAttackAlone], Master of Cruelties) — the
  * restriction (CR 508.1c) and how it trades off against attack requirements (CR 508.1d).
  *
  * One place for the rule so the declaration check, the requirement checks and the
- * `mandatoryAttackers` the client pre-selects cannot drift apart. Requirements are counted one per
- * creature that must attack — every requirement source the engine enforces names a creature, and
- * a creature that obeys one obeys them all by attacking.
+ * `mandatoryAttackers` the client pre-selects cannot drift apart. Requirements are weighed per
+ * creature — how many it carries (a creature goaded by two players carries two, CR 701.15c) — and a
+ * creature that attacks obeys all of its own.
  *
- * With L the lone-only creatures and R the creatures required to attack, the declarations that
- * obey the most requirements are:
- *  - every creature of R \ L, when there are at least two of them;
- *  - with exactly one, either it or any one creature of R ∩ L alone (a tie, both are legal);
- *  - with none, any one creature of R ∩ L alone.
+ * With L the lone-only creatures and R the required ones, only two shapes of declaration can be
+ * best: every creature of R \ L attacking (obeying their summed weight), or one creature of L
+ * attacking alone (obeying its own weight). Whichever obeys more wins; equal weights tie, and then
+ * either is legal.
  */
 object LoneAttackers {
 
@@ -34,10 +34,9 @@ object LoneAttackers {
         val container = state.getEntity(entityId) ?: return false
         if (container.has<FaceDownComponent>() || projected.hasLostAllAbilities(entityId)) return false
         val card = container.get<CardComponent>() ?: return false
-        if (cardRegistry.getCard(card.cardDefinitionId)?.staticAbilities.orEmpty().any { it is CanOnlyAttackAlone }) {
-            return true
-        }
-        return state.grantedStaticAbilities.any { it.entityId == entityId && it.ability is CanOnlyAttackAlone }
+        val printed = cardRegistry.getCard(card.cardDefinitionId)?.staticAbilities.orEmpty()
+        val granted = state.grantedStaticAbilities.filter { it.entityId == entityId }.map { it.ability }
+        return (printed + granted).any { it is CanOnlyAttackAlone && it.filter.scope is Scope.Self }
     }
 
     /** The creatures of [candidates] that can only attack alone, in their order. */
@@ -53,36 +52,43 @@ object LoneAttackers {
         if (declared.size > 1) declared.firstOrNull { it in loneOnly } else null
 
     /**
-     * The required creatures ([required]) whose requirement a declaration of [declared] may leave
-     * unobeyed because of the restriction — the rest are still checked as usual. Assumes the
-     * declaration already obeys the restriction.
+     * The required creatures whose requirements a declaration of [declared] may leave unobeyed
+     * because of the restriction — the rest are still checked as usual. [required] maps each
+     * required creature to its requirement count. Assumes the declaration obeys the restriction.
      */
     fun excusedRequirements(
         declared: Set<EntityId>,
-        required: Set<EntityId>,
+        required: Map<EntityId, Int>,
         loneOnly: Set<EntityId>,
     ): Set<EntityId> {
         if (loneOnly.isEmpty() || required.isEmpty()) return emptySet()
-        val others = required - loneOnly
+        val best = Best(required, loneOnly)
         val alone = declared.singleOrNull()
         if (alone != null && alone in loneOnly) {
-            return if (alone in required && others.size <= 1) required - alone else emptySet()
+            return if ((required[alone] ?: 0) == best.weight) required.keys - alone else emptySet()
         }
-        return if (others.isNotEmpty()) required intersect loneOnly else emptySet()
+        return if (best.othersWin) required.keys intersect loneOnly else emptySet()
     }
 
     /**
-     * The creatures every best declaration attacks with — what the client may lock in. Ties (one
-     * other required creature, or several lone-only ones) leave the choice to the player.
+     * The creatures every best declaration attacks with — what the client may lock in. A tie
+     * between the shapes leaves the choice to the player.
      */
-    fun mandatory(required: List<EntityId>, loneOnly: Set<EntityId>): List<EntityId> {
-        val lone = required.filter { it in loneOnly }
-        if (lone.isEmpty()) return required
-        val others = required.filter { it !in loneOnly }
+    fun mandatory(required: Map<EntityId, Int>, loneOnly: Set<EntityId>): List<EntityId> {
+        if (required.keys.none { it in loneOnly }) return required.keys.toList()
+        val best = Best(required, loneOnly)
+        val loneWinners = required.filter { (id, weight) -> id in loneOnly && weight == best.weight }.keys
         return when {
-            others.size >= 2 -> others
-            others.isEmpty() && lone.size == 1 -> lone
+            best.othersWin && loneWinners.isEmpty() -> required.keys.filter { it !in loneOnly }
+            !best.othersWin && loneWinners.size == 1 -> loneWinners.toList()
             else -> emptyList()
         }
+    }
+
+    /** The most requirements any declaration can obey, and whether the others attacking does. */
+    private class Best(required: Map<EntityId, Int>, loneOnly: Set<EntityId>) {
+        private val others = required.filterKeys { it !in loneOnly }.values.sum()
+        val weight = maxOf(others, required.filterKeys { it in loneOnly }.values.maxOrNull() ?: 0)
+        val othersWin = others > 0 && others == weight
     }
 }

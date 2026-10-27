@@ -2,6 +2,7 @@ package com.wingedsheep.engine.mechanics.combat
 
 import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.legalactions.LegalActionEnumerator
+import com.wingedsheep.engine.state.components.combat.MustAttackThisTurnComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Step
@@ -30,7 +31,7 @@ class CanOnlyAttackAloneTest : FunSpec({
         power = 1
         toughness = 4
         oracleText = "This creature can only attack alone."
-        staticAbility { ability = CanOnlyAttackAlone }
+        staticAbility { ability = CanOnlyAttackAlone() }
     }
 
     val eager = card("Test Eager") {
@@ -60,6 +61,10 @@ class CanOnlyAttackAloneTest : FunSpec({
 
     fun GameTestDriver.creature(name: String): EntityId =
         putCreatureOnBattlefield(player1, name).also { removeSummoningSickness(it) }
+
+    /** A second requirement on [id], resolved onto it ("attacks this turn if able"). */
+    fun GameTestDriver.markMustAttack(id: EntityId) =
+        replaceState(state.updateEntity(id) { it.with(MustAttackThisTurnComponent) })
 
     fun GameTestDriver.attackAction(): LegalAction =
         LegalActionEnumerator.create(cardRegistry).enumerate(state, player1)
@@ -152,5 +157,42 @@ class CanOnlyAttackAloneTest : FunSpec({
         driver.attackAction().mandatoryAttackers shouldBe listOf(master)
         driver.declareAttackers(driver.player1, emptyMap()).error shouldNotBe null
         driver.declareAttackers(driver.player1, mapOf(master to driver.player2)).error shouldBe null
+    }
+
+    test("requirements are counted, not creatures: two of its own outweigh one other creature's (CR 508.1d)") {
+        val driver = newDriver()
+        val master = driver.creature("Test Loner").also { driver.markMustAttack(it) }
+        val bears = driver.creature("Centaur Courser")
+        driver.putPermanentOnBattlefield(driver.player1, "Test Melee")
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+
+        driver.attackAction().mandatoryAttackers shouldBe listOf(master)
+        driver.declareAttackers(driver.player1, mapOf(bears to driver.player2)).error shouldNotBe null
+        driver.declareAttackers(driver.player1, mapOf(master to driver.player2)).error shouldBe null
+    }
+
+    test("two requirements of its own tie two other required creatures — either attack is legal") {
+        val driver = newDriver()
+        val master = driver.creature("Test Loner").also { driver.markMustAttack(it) }
+        val bears = driver.creature("Centaur Courser")
+        driver.creature("Savannah Lions")
+        driver.putPermanentOnBattlefield(driver.player1, "Test Melee")
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+
+        driver.attackAction().mandatoryAttackers shouldBe null
+        driver.declareAttackers(driver.player1, mapOf(bears to driver.player2)).error shouldNotBe null
+        driver.declareAttackers(driver.player1, mapOf(master to driver.player2)).error shouldBe null
+    }
+
+    test("in that tie the two others may attack without it") {
+        val driver = newDriver()
+        driver.creature("Test Loner").also { driver.markMustAttack(it) }
+        val bears = driver.creature("Centaur Courser")
+        val lions = driver.creature("Savannah Lions")
+        driver.putPermanentOnBattlefield(driver.player1, "Test Melee")
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+
+        driver.declareAttackers(driver.player1, mapOf(bears to driver.player2, lions to driver.player2))
+            .error shouldBe null
     }
 })

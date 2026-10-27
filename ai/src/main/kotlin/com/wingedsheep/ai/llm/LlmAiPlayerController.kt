@@ -684,6 +684,13 @@ class LlmAiPlayerController(
                 }
             }
 
+            // A creature that can only attack alone (Master of Cruelties) stays home beside others.
+            val lone = declareAttackers.loneAttackers.orEmpty()
+            if (attackerMap.size > 1 && attackerMap.keys.any { it in lone }) {
+                val keep = attackerMap.keys.filter { it !in lone }.ifEmpty { listOf(attackerMap.keys.first()) }
+                attackerMap.keys.retainAll(keep.toSet())
+            }
+
             val attackerNames = attackerMap.entries.mapNotNull { (eid, targetId) ->
                 val name = state.cards[eid]?.name ?: return@mapNotNull null
                 val targetName = if (targetId == opponentId) "" else state.cards[targetId]?.name?.let { " -> $it" } ?: ""

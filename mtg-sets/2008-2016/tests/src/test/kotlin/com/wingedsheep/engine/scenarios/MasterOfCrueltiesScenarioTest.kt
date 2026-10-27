@@ -1,9 +1,12 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.dgm.cards.MasterOfCruelties
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.core.spec.style.FunSpec
@@ -16,10 +19,18 @@ import io.kotest.matchers.shouldNotBe
  */
 class MasterOfCrueltiesScenarioTest : FunSpec({
 
+    val walker = card("Test Walker") {
+        manaCost = "{3}"
+        typeLine = "Legendary Planeswalker — Test"
+        startingLoyalty = 5
+        oracleText = ""
+    }
+
     fun setup(): Triple<GameTestDriver, EntityId, EntityId> {
         val driver = GameTestDriver().apply {
             registerCards(TestCards.all)
             registerCard(MasterOfCruelties)
+            registerCard(walker)
         }
         driver.initMirrorMatch(deck = Deck.of("Swamp" to 40), skipMulligans = true, startingPlayer = 0)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -60,5 +71,21 @@ class MasterOfCrueltiesScenarioTest : FunSpec({
         driver.passPriorityUntil(Step.END_COMBAT)
 
         driver.getLifeTotal(driver.player2) shouldBe 20
+    }
+
+    test("attacking a planeswalker unblocked doesn't trigger it — the walker takes the damage (ruling)") {
+        val (driver, master, _) = setup()
+        val pw = driver.putPermanentOnBattlefield(driver.player2, "Test Walker")
+        driver.replaceState(
+            driver.state.updateEntity(pw) { it.with(CountersComponent().withAdded(CounterType.LOYALTY, 5)) }
+        )
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(driver.player1, mapOf(master to pw)).error shouldBe null
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        driver.declareNoBlockers(driver.player2)
+        driver.passPriorityUntil(Step.END_COMBAT)
+
+        driver.getLifeTotal(driver.player2) shouldBe 20
+        driver.state.getEntity(pw)!!.get<CountersComponent>()!!.getCount(CounterType.LOYALTY) shouldBe 4
     }
 })

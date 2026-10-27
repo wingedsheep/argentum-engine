@@ -95,7 +95,7 @@ class PlayoutPolicy(
                 walkerEngines = combatAdvisor.walkerEngines,
                 minimalLethalInPods = combatAdvisor.minimalLethalInPods,
             )
-            return DeclareAttackers(playerId, seed.attackers) to rng
+            return DeclareAttackers(playerId, CombatSeed.obeyLoneAttackers(action, seed.attackers)) to rng
         }
         legalActions.firstOrNull { it.actionType == "DeclareBlockers" }?.let { action ->
             return combatAdvisor.chooseBlockers(

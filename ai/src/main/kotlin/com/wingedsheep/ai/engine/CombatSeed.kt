@@ -93,7 +93,11 @@ object CombatSeed {
 
         // ── Lethal check: alpha-strike if damage gets through even with optimal blocking ──
         // Only creatures that can attack the primary seat count toward killing it.
-        val reachPrimary = validAttackers.filter { defenderOf[it] == opponentId }
+        // A creature that can only attack alone (Master of Cruelties) adds nothing to an alpha strike.
+        val reachPrimary = validAttackers.filter { defenderOf[it] == opponentId }.let { reach ->
+            val lone = legalAction.loneAttackers.orEmpty()
+            if (reach.size > 1) reach.filter { it !in lone }.ifEmpty { reach.take(1) } else reach
+        }
         if (CombatMath.isLethalAttack(state, projected, reachPrimary, opponentCreatures, opponentLife)) {
             // In 1v1 the game ends, so everything attacks. In a pod the kill only needs enough to
             // finish the dying seat; the rest stays home for the opponents still at the table.
@@ -431,10 +435,10 @@ object CombatSeed {
         primary: EntityId?,
     ): Map<EntityId, EntityId> {
         if (legalAction.attackTargetsByAttacker.isNullOrEmpty() && plan.values.all { it in legalAction.validAttackTargets.orEmpty() }) {
-            return alone(legalAction, plan)
+            return obeyLoneAttackers(legalAction, plan)
         }
         val valid = legalAction.validAttackers.orEmpty().toSet()
-        return alone(legalAction, plan.mapNotNull { (attacker, defender) ->
+        return obeyLoneAttackers(legalAction, plan.mapNotNull { (attacker, defender) ->
             when {
                 attacker !in valid -> null
                 defender in legalAction.attackTargetsFor(attacker) -> attacker to defender
@@ -444,7 +448,7 @@ object CombatSeed {
     }
 
     /** [plan] obeying "can only attack alone" ([LegalAction.loneAttackers], CR 506.5). */
-    private fun alone(legalAction: LegalAction, plan: Map<EntityId, EntityId>): Map<EntityId, EntityId> {
+    fun obeyLoneAttackers(legalAction: LegalAction, plan: Map<EntityId, EntityId>): Map<EntityId, EntityId> {
         val lone = legalAction.loneAttackers.orEmpty()
         if (plan.size < 2 || plan.keys.none { it in lone }) return plan
         val required = legalAction.mandatoryAttackers.orEmpty().firstOrNull { it in lone && it in plan }

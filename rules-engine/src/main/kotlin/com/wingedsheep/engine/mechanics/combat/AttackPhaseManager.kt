@@ -133,7 +133,7 @@ internal class AttackPhaseManager(
             return ExecutionResult.error(state, "$name can only attack alone")
         }
         val excused = if (loneOnly.isEmpty()) emptySet() else LoneAttackers.excusedRequirements(
-            attackers.keys, requiredAttackers(state, attackingPlayer).toSet(), loneOnly
+            attackers.keys, requiredAttackers(state, attackingPlayer), loneOnly
         )
 
         // Check attacker-count caps — global (Dueling Grounds — "No more than one creature can
@@ -1329,52 +1329,58 @@ internal class AttackPhaseManager(
      */
     fun getMandatoryAttackers(state: GameState, attackingPlayer: EntityId): List<EntityId> {
         val required = requiredAttackers(state, attackingPlayer)
-        if (required.isEmpty()) return required
-        return LoneAttackers.mandatory(required, LoneAttackers.of(state, required, cardRegistry).toSet())
+        if (required.isEmpty()) return emptyList()
+        return LoneAttackers.mandatory(required, LoneAttackers.of(state, required.keys, cardRegistry).toSet())
     }
 
     /**
      * Every creature some attack requirement names, before [LoneAttackers] weighs them against
      * "can only attack alone" (CR 508.1d) — see [getMandatoryAttackers].
      */
-    private fun requiredAttackers(state: GameState, attackingPlayer: EntityId): List<EntityId> {
+    private fun requiredAttackers(state: GameState, attackingPlayer: EntityId): Map<EntityId, Int> {
         val validAttackers = getValidAttackers(state, attackingPlayer)
-        val mandatory = mutableSetOf<EntityId>()
+        // Creature → how many "attacks if able" requirements it carries (CR 508.1d counts
+        // requirements, not creatures).
+        val mandatory = linkedMapOf<EntityId, Int>()
+        fun require(attackerId: EntityId, count: Int = 1) {
+            mandatory[attackerId] = (mandatory[attackerId] ?: 0) + count
+        }
 
         // 1. MustAttackPlayerComponent (Taunt effect) — all valid attackers must attack
         val mustAttackPlayer = state.getEntity(attackingPlayer)?.get<MustAttackPlayerComponent>()
         if (mustAttackPlayer != null && mustAttackPlayer.activeThisTurn) {
-            mandatory.addAll(validAttackers)
+            validAttackers.forEach { require(it) }
         }
 
         // 2. A requirement marked on the creature (Walking Desecration, Sizzling Soloist)
         for (attackerId in validAttackers) {
             val container = state.getEntity(attackerId) ?: continue
             if (hasMarkedAttackRequirement(container)) {
-                mandatory.add(attackerId)
+                require(attackerId)
             }
         }
 
         // 3. Projected mustAttack (static ability like Valley Dasher, Grand Melee) or a granted
         // entity-scoped MustAttack (Carnage's reanimated target), which never reaches projection.
+        // Projection folds every such static into one flag, so they weigh as one requirement.
         for (attackerId in validAttackers) {
             if (mustAttackThisCombat(state, attackerId)) {
-                mandatory.add(attackerId)
+                require(attackerId)
             }
         }
 
-        // 4. Goaded (CR 701.15b) — a resolved goad designation or a Goaded static
+        // 4. Goaded (CR 701.15b) — a resolved goad designation or a Goaded static; each goader
+        // adds its own requirement (CR 701.15c)
         val goadRules = GoadRules(state, cardRegistry, predicateEvaluator)
         for (attackerId in validAttackers) {
-            if (goadRules.isGoaded(attackerId)) {
-                mandatory.add(attackerId)
-            }
+            val goaders = goadRules.goadersOf(attackerId).size
+            if (goaders > 0) require(attackerId, goaders)
         }
 
         // 5. A requirement naming the player to attack (Public Enemy), where it binds
-        mandatory.addAll(boundAttackDefenders(state, attackingPlayer, goadRules = goadRules).keys)
+        boundAttackDefenders(state, attackingPlayer, goadRules = goadRules).keys.forEach { require(it) }
 
-        return mandatory.toList()
+        return mandatory
     }
 
     // =========================================================================

@@ -509,13 +509,22 @@ data class CantAttackUnlessCoAttacker(
  * that obeys more requirements wins — another creature that must attack does, and this one stays
  * home (the card's ruling).
  *
- * Always scoped to the creature carrying it: printed on it, or on a token through its granted
- * static abilities. A face-down creature or one that has lost its abilities is unrestricted.
+ * Like that one, the engine reads it with [filter] scoped to the creature itself — printed on
+ * it, or on a token through its granted static abilities. A face-down creature or one that has
+ * lost its abilities is unrestricted.
+ *
+ * @property filter What this ability applies to.
  */
 @SerialName("CanOnlyAttackAlone")
 @Serializable
-data object CanOnlyAttackAlone : StaticAbility {
+data class CanOnlyAttackAlone(
+    val filter: GroupFilter = GroupFilter.source()
+) : StaticAbility {
     override val description: String = "This creature can only attack alone"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
 }
 
 /**

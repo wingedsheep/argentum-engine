@@ -40,7 +40,7 @@ val MasterOfCruelties = card("Master of Cruelties") {
     keywords(Keyword.FIRST_STRIKE, Keyword.DEATHTOUCH)
 
     staticAbility {
-        ability = CanOnlyAttackAlone
+        ability = CanOnlyAttackAlone()
     }
 
     triggeredAbility {
