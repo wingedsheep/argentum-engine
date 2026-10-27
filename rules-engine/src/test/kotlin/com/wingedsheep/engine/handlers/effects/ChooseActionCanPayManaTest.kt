@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.effects
 
 import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -48,7 +49,7 @@ class ChooseActionCanPayManaTest : FunSpec({
         return driver
     }
 
-    test("with no source of either colour, only 'don't pay' is feasible and nothing is asked") {
+    test("with no source of either colour, only 'don't pay' is feasible") {
         val driver = driver()
         val me = driver.activePlayer!!
         val spell = driver.putCardInHand(me, "Colour Tithe")
@@ -56,6 +57,9 @@ class ChooseActionCanPayManaTest : FunSpec({
         driver.castSpell(me, spell)
         driver.bothPass()
 
+        // A hand that could hold a Spirit Guide keeps the payments possible publicly, so the
+        // question is asked, offering only "Don't pay".
+        driver.answerForcedPayments()
         driver.state.pendingDecision shouldBe null
         driver.getLifeTotal(me) shouldBe 20
     }

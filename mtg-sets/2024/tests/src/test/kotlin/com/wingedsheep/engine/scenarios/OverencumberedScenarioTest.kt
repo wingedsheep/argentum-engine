@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -134,11 +135,12 @@ class OverencumberedScenarioTest : FunSpec({
         t.d.declareAttackers(t.victim, mapOf(bears to t.caster)).error shouldNotBe null
     }
 
-    test("an unaffordable tax isn't offered - creatures can't attack this combat") {
+    test("an unaffordable tax can only be refused - creatures can't attack this combat") {
         val t = table()
         val bears = t.bears(t.victim)
         t.toVictimsCombatTax(floatingColorless = 2)
 
+        t.d.answerForcedPayments()
         t.d.pendingDecision shouldBe null
         t.d.passPriorityUntil(Step.DECLARE_ATTACKERS)
         t.d.declareAttackers(t.victim, mapOf(bears to t.caster)).error shouldNotBe null

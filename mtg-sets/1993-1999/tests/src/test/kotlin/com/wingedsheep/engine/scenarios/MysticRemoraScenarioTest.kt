@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -41,7 +42,9 @@ class MysticRemoraScenarioTest : FunSpec({
         d.stackSize shouldBe 2
         d.bothPass()
 
-        // {4} is unaffordable, so the caster isn't asked; the Remora's controller chooses to draw.
+        // {4} is unaffordable, so the caster can only refuse; the Remora's controller chooses to draw.
+        d.pendingDecision!!.playerId shouldBe caster
+        d.answerForcedPayments()
         d.pendingDecision.shouldBeInstanceOf<YesNoDecision>().playerId shouldBe owner
         d.submitYesNo(owner, true)
         d.getHandSize(owner) shouldBe handBefore + 1

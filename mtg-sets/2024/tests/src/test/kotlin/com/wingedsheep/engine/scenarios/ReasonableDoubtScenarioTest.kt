@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.mechanics.layers.StateProjector
@@ -157,7 +158,7 @@ class ReasonableDoubtScenarioTest : FunSpec({
         }
     }
 
-    test("an unpayable {2} counters without prompting") {
+    test("an unpayable {2} counters: refusing is the only answer") {
         val driver = createDriver()
         val me = driver.activePlayer!!
         val opponent = driver.getOpponent(me)
@@ -182,8 +183,9 @@ class ReasonableDoubtScenarioTest : FunSpec({
         ).outcome shouldBe Outcome.Done
 
         driver.bothPass()
+        driver.answerForcedPayments()
 
-        withClue("the opponent is tapped out, so there is nothing to decide") {
+        withClue("the opponent is tapped out, so refusing was the only answer") {
             driver.getGraveyardCardNames(opponent) shouldContain "Lightning Bolt"
             driver.getGraveyardCardNames(me) shouldNotContain "Lightning Bolt"
         }

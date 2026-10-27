@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.core.YesNoDecision
@@ -93,6 +94,7 @@ class SoratamiSavantScenarioTest : FunSpec({
             )
         )
         d.bothPass()
+        d.answerForcedPayments()
 
         d.getGraveyard(caster) shouldContain bears
     }

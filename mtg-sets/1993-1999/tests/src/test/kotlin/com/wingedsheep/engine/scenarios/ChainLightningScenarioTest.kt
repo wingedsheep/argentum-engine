@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CardsSelectedResponse
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.core.ManaSourcesSelectedResponse
 import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.core.SelectCardsDecision
@@ -72,18 +73,21 @@ class ChainLightningScenarioTest : FunSpec({
 
         // The copy resolves; the caster has no mana to keep the chain going, so it ends.
         driver.bothPass()
+        driver.answerForcedPayments()
         driver.getLifeTotal(active) shouldBe 17
         driver.getLifeTotal(opponent) shouldBe 17
         driver.isPaused shouldBe false
     }
 
-    test("a player who can't produce {R}{R} is not offered the copy") {
+    test("a player who can't produce {R}{R} can only refuse the copy") {
         val (driver, active, opponent) = setup()
         driver.putPermanentOnBattlefield(opponent, "Mountain")
         driver.putPermanentOnBattlefield(opponent, "Forest")
         castAtOpponent(driver, active, opponent)
 
         driver.getLifeTotal(opponent) shouldBe 17
+        driver.pendingDecision!!.playerId shouldBe opponent
+        driver.answerForcedPayments()
         driver.isPaused shouldBe false
     }
 
@@ -123,6 +127,7 @@ class ChainLightningScenarioTest : FunSpec({
         targetChoice.shouldBeInstanceOf<SelectCardsDecision>()
         driver.submitDecision(opponent, CardsSelectedResponse(targetChoice.id, listOf(myBear)))
         driver.bothPass()
+        driver.answerForcedPayments()
 
         driver.assertInGraveyard(opponent, "Grizzly Bears")
         driver.assertInGraveyard(active, "Grizzly Bears")

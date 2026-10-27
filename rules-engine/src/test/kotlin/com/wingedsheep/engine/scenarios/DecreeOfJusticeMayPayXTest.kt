@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseNumberDecision
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -84,9 +85,10 @@ class DecreeOfJusticeMayPayXTest : ScenarioTestBase() {
                 }
             }
 
-            test("no payable mana skips the gate silently — no number chooser, no tokens") {
+            test("no payable mana pins the number chooser to 0 — no tokens") {
                 // Exactly enough Plains for cycling {2}{W} (3) and none left over: the gate is
-                // unaffordable, so executeMayPayX skips without prompting (former executor parity).
+                // unaffordable, but the hand could hold a Spirit Guide, so the chooser is still
+                // shown — pinned to 0.
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
                     .withCardInHand(1, "Decree of Justice")
@@ -99,8 +101,9 @@ class DecreeOfJusticeMayPayXTest : ScenarioTestBase() {
 
                 game.cycleCard(1, "Decree of Justice")
                 game.resolveStack()
+                game.answerForcedPayments()
 
-                withClue("Unaffordable MayPayX must not pause for a number chooser") {
+                withClue("Unaffordable MayPayX leaves nothing pending once its forced 0 is chosen") {
                     game.hasPendingDecision() shouldBe false
                 }
                 withClue("No mana to pay → no Soldier tokens") {

@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
@@ -77,6 +78,7 @@ class CounterAbilityUnlessPaysTest : FunSpec({
         val ping = d.pingThenStifle()
 
         d.bothPass()
+        d.answerForcedPayments()
 
         d.state.stack.contains(ping) shouldBe false
         d.state.pendingDecision shouldBe null

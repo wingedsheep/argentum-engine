@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -97,7 +98,7 @@ class CrystalShardScenarioTest : FunSpec({
         }
     }
 
-    test("a controller with no mana is never prompted — the bounce just happens") {
+    test("a controller with no mana can only refuse — the bounce happens") {
         val d = driver()
         val shard = d.shard()
         val bear = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
@@ -109,9 +110,9 @@ class CrystalShardScenarioTest : FunSpec({
         ).outcome shouldBe Outcome.Done
         d.bothPass()
 
-        withClue("Gate.MayPay skips an unpayable cost instead of offering an impossible yes") {
-            d.pendingDecision shouldBe null
-        }
+        // The hand could hold a Spirit Guide, so Gate.MayPay asks, but never offers an impossible yes.
+        d.answerForcedPayments()
+        d.pendingDecision shouldBe null
         d.state.getBattlefield().contains(bear) shouldBe false
     }
 
@@ -125,6 +126,7 @@ class CrystalShardScenarioTest : FunSpec({
             ActivateAbility(d.player1, shard, blueAbility, targets = listOf(ChosenTarget.Permanent(bear)))
         ).outcome shouldBe Outcome.Done
         d.bothPass()
+        d.answerForcedPayments()
 
         d.state.getBattlefield().contains(bear) shouldBe false
     }

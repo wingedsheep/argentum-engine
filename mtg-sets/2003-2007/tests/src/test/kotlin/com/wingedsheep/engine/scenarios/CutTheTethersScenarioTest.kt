@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.Outcome
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.support.GameTestDriver
@@ -55,8 +56,10 @@ class CutTheTethersScenarioTest : FunSpec({
         driver.giveMana(opponent, Color.BLUE, 3)
         driver.bothPass()
 
-        // The caster's pool is empty, so their own Spirit returns with no prompt; the opponent
-        // can afford {3} and is asked about theirs.
+        // The caster's pool is empty, so they can only refuse and their own Spirit returns; the
+        // opponent can afford {3} and is asked about theirs.
+        driver.pendingDecision!!.playerId shouldBe caster
+        driver.answerForcedPayments()
         driver.pendingDecision.shouldBeInstanceOf<YesNoDecision>().playerId shouldBe opponent
         driver.submitYesNo(opponent, true).error shouldBe null
 

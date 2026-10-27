@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.state.components.battlefield.PhasedOutComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.AdditionalUpkeepStepsComponent
@@ -92,7 +93,7 @@ class EchoTest : FunSpec({
         d.getGraveyard(me) shouldContain bear
     }
 
-    test("an unaffordable echo cost sacrifices it without a prompt") {
+    test("an unaffordable echo cost sacrifices it: refusing is the only answer") {
         val d = driver()
         val me = d.activePlayer!!
         val bear = d.putPermanentOnBattlefield(me, "Test Echo Bear")
@@ -100,6 +101,7 @@ class EchoTest : FunSpec({
         d.toNextUpkeepOf(me)
         d.giveColorlessMana(me, 2)
         d.bothPass()
+        d.answerForcedPayments()
         d.pendingDecision shouldBe null
         d.onBattlefield(bear) shouldBe false
     }
@@ -124,6 +126,7 @@ class EchoTest : FunSpec({
         d.toNextUpkeepOf(me)
         d.stackSize shouldBe 1
         d.bothPass()
+        d.answerForcedPayments()
         d.onBattlefield(bear) shouldBe false
     }
 
@@ -206,6 +209,7 @@ class EchoTest : FunSpec({
         d.passPriorityUntil(Step.UPKEEP)
         d.stackSize shouldBe 1
         d.bothPass()
+        d.answerForcedPayments()
         d.onBattlefield(fresh) shouldBe false
         d.onBattlefield(paid) shouldBe true
     }

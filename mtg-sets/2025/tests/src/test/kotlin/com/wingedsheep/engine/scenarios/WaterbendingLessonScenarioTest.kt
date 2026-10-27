@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ManaSourcesSelectedResponse
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -111,20 +112,22 @@ class WaterbendingLessonScenarioTest : FunSpec({
         setOf(land1, land2).all { driver.state.getEntity(it)!!.has<TappedComponent>() } shouldBe true
     }
 
-    test("being unable to pay the waterbend {2} forces a discard (no prompt)") {
+    test("being unable to pay the waterbend {2} forces a discard") {
         val driver = createDriver()
         driver.initMirrorMatch(deck = Deck.of("Island" to 40), startingLife = 20)
         val caster = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
         // No untapped mana sources and no tappable artifacts/creatures → the waterbend can't be
-        // paid, so the gate goes straight to the discard with no mana-sources prompt.
+        // paid. The hand could hold a Spirit Guide, so the mana window still opens, with refusing
+        // as its only answer, and the gate goes on to the discard.
         driver.giveMana(caster, Color.BLUE, 4)
         val lesson = driver.putCardInHand(caster, "Waterbending Lesson")
         driver.castSpell(caster, lesson)
 
         val handAtCast = driver.getHand(caster).size
         driver.bothPass()
+        driver.answerForcedPayments()
 
         val discard = driver.pendingDecision
         discard.shouldBeInstanceOf<SelectCardsDecision>()

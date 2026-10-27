@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.DeclareAttackers
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -60,11 +61,13 @@ class NafsAspScenarioTest : ScenarioTestBase() {
                 // End Player1's turn, advance through cleanup to Player2's draw step.
                 game.passUntilPhase(Phase.BEGINNING, Step.DRAW)
                 game.resolveStack()
+                game.answerForcedPayments()
+                game.resolveStack()
 
                 withClue("Player1's life must not move — target is the damaged player, not the controller") {
                     game.getLifeTotal(1) shouldBe p1LifeBefore
                 }
-                withClue("Player2 has no mana sources, so the delayed trigger's pay-or-suffer auto-suffers") {
+                withClue("Player2 has no mana sources, so the delayed trigger's pay-or-suffer can only suffer") {
                     game.getLifeTotal(2) shouldBe lifeAfterCombat - 1
                 }
                 withClue("The delayed trigger fires only once") {
@@ -100,8 +103,10 @@ class NafsAspScenarioTest : ScenarioTestBase() {
                     game.state.delayedTriggers.size shouldBe 1
                 }
 
-                // Advance one more step to DRAW — trigger fires and suffer auto-resolves.
+                // Advance one more step to DRAW — trigger fires and the forced refusal suffers.
                 game.passUntilPhase(Phase.BEGINNING, Step.DRAW)
+                game.resolveStack()
+                game.answerForcedPayments()
                 game.resolveStack()
 
                 withClue("Bite lands on P2's DRAW step") {
@@ -195,8 +200,12 @@ class NafsAspScenarioTest : ScenarioTestBase() {
                 }
 
                 // Advance to P2's draw step: both bites fire and, with no mana to pay {1},
-                // both auto-suffer — P2 loses 1 life per bite.
+                // both can only suffer — P2 loses 1 life per bite.
                 game.passUntilPhase(Phase.BEGINNING, Step.DRAW)
+                game.resolveStack()
+                game.answerForcedPayments()
+                game.resolveStack()
+                game.answerForcedPayments()
                 game.resolveStack()
 
                 withClue("Both deferred bites resolve at the draw step → P2 loses 2 more life") {

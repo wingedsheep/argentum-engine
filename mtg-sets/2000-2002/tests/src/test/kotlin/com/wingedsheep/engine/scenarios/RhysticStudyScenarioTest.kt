@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -98,7 +99,7 @@ class RhysticStudyScenarioTest : FunSpec({
         driver.getHandSize(studyOwner) shouldBe handBefore
     }
 
-    test("an opponent who can't pay is not asked - Study's controller goes straight to the draw choice") {
+    test("an opponent who can't pay can only refuse - then Study's controller gets the draw choice") {
         val driver = createDriver()
         val caster = driver.activePlayer!!
         val studyOwner = driver.getOpponent(caster)
@@ -109,6 +110,9 @@ class RhysticStudyScenarioTest : FunSpec({
         driver.giveMana(caster, Color.GREEN, 2)
         driver.castSpell(caster, bears).error shouldBe null
         driver.bothPass()
+        // The caster's hand could hold a Spirit Guide, so they are asked — refusal only.
+        driver.pendingDecision!!.playerId shouldBe caster
+        driver.answerForcedPayments()
 
         val mayDraw = driver.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
         mayDraw.playerId shouldBe studyOwner

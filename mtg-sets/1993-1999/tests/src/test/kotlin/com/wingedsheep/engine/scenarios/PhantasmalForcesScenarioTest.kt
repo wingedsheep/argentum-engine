@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.support.GameTestDriver
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.*
@@ -45,6 +46,7 @@ class PhantasmalForcesScenarioTest : FunSpec({
         val d = driver(); val me = d.activePlayer!!
         val forces = d.putCreatureOnBattlefield(me, "Phantasmal Forces")
         d.myUpkeep(); d.bothPass()
+        d.answerForcedPayments()
         d.pendingDecision shouldBe null
         d.getGraveyard(me).contains(forces) shouldBe true
     }

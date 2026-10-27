@@ -39,7 +39,8 @@ class FlusterstormScenarioTest : FunSpec({
         while (stackSize > 0 && guard++ < 30) {
             when (val d = pendingDecision) {
                 is ChooseTargetsDecision -> submitTargetSelection(retargetPlayer, listOf(retarget))
-                is YesNoDecision -> submitYesNo(d.playerId, pay(taxPrompts++))
+                // A tax the player can't pay is a forced refusal.
+                is YesNoDecision -> submitYesNo(d.playerId, d.yesAvailable && pay(taxPrompts++))
                 null -> bothPass()
                 else -> error("unexpected decision $d")
             }

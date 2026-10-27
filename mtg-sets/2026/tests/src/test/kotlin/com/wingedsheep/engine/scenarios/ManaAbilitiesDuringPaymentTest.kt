@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.core.ManaSourcesSelectedResponse
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
@@ -238,11 +239,12 @@ class ManaAbilitiesDuringPaymentTest : FunSpec({
 
         val bear = driver.putCreatureOnBattlefield(opponent, "Warded Bear")
         // A Blood Chalice with nothing to sacrifice… is fine, it sacrifices itself. Give the
-        // caster nothing instead: the pre-gate must still short-circuit to countered.
+        // caster nothing instead: the question is forced to a refusal, and the spell is countered.
         driver.giveMana(caster, Color.RED, 1)
         val bolt = driver.putCardInHand(caster, "Lightning Bolt")
         driver.castSpellWithTargets(caster, bolt, listOf(ChosenTarget.Permanent(bear)))
         driver.bothPass()
+        driver.answerForcedPayments()
 
         driver.pendingDecision shouldBe null
         driver.findPermanent(opponent, "Warded Bear").shouldNotBeNull()

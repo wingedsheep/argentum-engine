@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
@@ -131,7 +132,7 @@ class GisaTheHellraiserScenarioTest : FunSpec({
         driver.getLifeTotal(activePlayer) shouldBe lifeBefore
     }
 
-    test("ward counters immediately when the caster cannot pay the mana component") {
+    test("ward counters when the caster cannot pay the mana component") {
         val driver = createDriver()
         driver.initMirrorMatch(deck = Deck.of("Mountain" to 40), startingLife = 20)
         val activePlayer = driver.activePlayer!!
@@ -146,6 +147,7 @@ class GisaTheHellraiserScenarioTest : FunSpec({
         driver.castSpellWithTargets(activePlayer, bolt, listOf(ChosenTarget.Permanent(gisa)))
 
         driver.bothPass()
+        driver.answerForcedPayments()
         driver.pendingDecision shouldBe null
         driver.findPermanent(opponent, "Gisa, the Hellraiser") shouldNotBe null
     }

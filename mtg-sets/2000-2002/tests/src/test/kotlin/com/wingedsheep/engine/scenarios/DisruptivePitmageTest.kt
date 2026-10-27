@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
@@ -219,8 +220,8 @@ class DisruptivePitmageTest : FunSpec({
         // Both pass to resolve the ability
         driver.bothPass()
 
-        // Active player has no mana in pool — spell should be auto-countered
-        // No YesNo decision should be presented
+        // Active player has no mana in pool — refusing is the only answer, so the spell is countered
+        driver.answerForcedPayments()
         driver.isPaused shouldBe false
         driver.getGraveyardCardNames(activePlayer) shouldContain "Lightning Bolt"
     }

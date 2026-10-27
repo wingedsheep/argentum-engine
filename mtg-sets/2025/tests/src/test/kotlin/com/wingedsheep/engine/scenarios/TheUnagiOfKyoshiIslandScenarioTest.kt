@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ManaSourcesSelectedResponse
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.support.GameTestDriver
@@ -66,8 +67,9 @@ class TheUnagiOfKyoshiIslandScenarioTest : FunSpec({
         val bolt = driver.putCardInHand(caster, "Lightning Bolt")
         driver.castSpell(caster, bolt, listOf(unagi)).outcome shouldBe Outcome.Done
 
-        // Resolve the ward trigger — caster can't pay, so it counters straight away.
+        // Resolve the ward trigger — caster can't pay, so refusing is the only answer.
         driver.bothPass()
+        driver.answerForcedPayments()
         driver.pendingDecision shouldBe null
 
         // Bolt was countered before dealing damage; The Unagi is unharmed.

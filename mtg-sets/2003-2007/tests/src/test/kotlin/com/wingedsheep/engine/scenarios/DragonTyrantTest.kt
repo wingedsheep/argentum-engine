@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.scg.cards.DragonTyrant
@@ -122,8 +123,9 @@ class DragonTyrantTest : FunSpec({
         // Trigger goes on the stack
         driver.stackSize shouldBe 1
 
-        // Resolve the trigger — should auto-sacrifice since player can't pay
+        // Resolve the trigger — refusing is the only answer, so it's sacrificed
         driver.bothPass()
+        driver.answerForcedPayments()
 
         // Dragon Tyrant should be gone
         driver.findPermanent(activePlayer, "Dragon Tyrant") shouldBe null

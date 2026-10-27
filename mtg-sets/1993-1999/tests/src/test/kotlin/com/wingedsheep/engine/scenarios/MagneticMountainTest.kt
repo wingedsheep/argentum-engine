@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.SelectCardsDecision
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -204,7 +205,7 @@ class MagneticMountainTest : FunSpec({
         lands.count { driver.isTapped(it) } shouldBe 0    // no mana spent
     }
 
-    test("a player who cannot afford even one untap is never prompted at all") {
+    test("a player who cannot afford even one untap can only choose nothing") {
         val driver = createDriver()
         driver.initMirrorMatch(deck = Deck.of("Mountain" to 40), startingLife = 20)
 
@@ -221,8 +222,9 @@ class MagneticMountainTest : FunSpec({
         driver.passPriorityUntil(Step.UPKEEP, maxPasses = 200)
         resolveUpkeepTriggerDecision(driver)
 
-        // The affordability cap is zero, so the trigger resolves without ever prompting —
-        // neither a selection nor a payment question.
+        // The affordability cap is zero. The hand could hold a Spirit Guide, so the selection is
+        // still asked, capped at nothing.
+        driver.answerForcedPayments()
         driver.pendingDecision shouldBe null
         driver.isTapped(blue) shouldBe true
         lands.count { driver.isTapped(it) } shouldBe 0

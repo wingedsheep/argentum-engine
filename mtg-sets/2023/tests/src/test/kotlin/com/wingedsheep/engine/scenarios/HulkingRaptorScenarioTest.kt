@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
@@ -111,10 +112,9 @@ class HulkingRaptorScenarioTest : FunSpec({
         val bolt = driver.putCardInHand(activePlayer, "Lightning Bolt")
         driver.castSpellWithTargets(activePlayer, bolt, listOf(ChosenTarget.Permanent(raptor)))
 
-        // Ward trigger fires; the caster cannot pay {2} — spell is countered immediately.
+        // Ward trigger fires; the caster cannot pay {2} — refusing is the only answer.
         driver.bothPass()
-
-        // No pending decision — executor went straight to counter.
+        driver.answerForcedPayments()
         driver.pendingDecision shouldBe null
 
         // Resolve any remaining items.

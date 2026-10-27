@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -238,7 +239,8 @@ class IxidorsWillTest : FunSpec({
         // Resolve Ixidor's Will - 3 wizards, cost is {6}, player 2 has no mana
         driver.bothPass()
 
-        // Should auto-counter (no decision)
+        // Refusing is the only answer, so the spell is countered
+        driver.answerForcedPayments()
         driver.isPaused shouldBe false
         driver.getGraveyardCardNames(player2) shouldContain "Lightning Bolt"
     }
@@ -280,7 +282,8 @@ class IxidorsWillTest : FunSpec({
         // Resolve - player 2 has 3 mana but needs 4
         driver.bothPass()
 
-        // Should auto-counter (can't pay {4})
+        // Can't pay {4}: refusing is the only answer
+        driver.answerForcedPayments()
         driver.isPaused shouldBe false
         driver.getGraveyardCardNames(player2) shouldContain "Lightning Bolt"
     }

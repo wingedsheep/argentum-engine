@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.YesNoDecision
@@ -49,6 +50,8 @@ class CondescendScenarioTest : FunSpec({
             if (mode != "cannot pay") {
                 d.pendingDecision.shouldBeInstanceOf<YesNoDecision>().playerId shouldBe d.player1
                 d.submitYesNo(d.player1, mode == "pay").error shouldBe null
+            } else {
+                d.answerForcedPayments()
             }
 
             // Scry 2: Condescend's controller sees the top two cards and bottoms one.

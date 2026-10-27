@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseNumberDecision
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.core.NumberChosenResponse
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
@@ -131,9 +132,10 @@ class PowerLeakScenarioTest : FunSpec({
         }
     }
 
-    test("with no mana to pay, there is no prompt and the full 2 damage is dealt") {
+    test("with no mana to pay, refusing is the only answer and the full 2 damage is dealt") {
         val board = setUp(islands = 0)
         board.driver.bothPass()
+        board.driver.answerForcedPayments()
         board.driver.pendingDecision shouldBe null
         board.driver.getLifeTotal(board.victim) shouldBe 18
     }

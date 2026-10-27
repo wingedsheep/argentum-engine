@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
@@ -134,9 +135,10 @@ class MausoleumWandererScenarioTest : FunSpec({
             )
         )
 
-        // Only {1} available but X is 2 — the tax can't be paid, so the Bolt is countered outright.
+        // Only {1} available but X is 2 — the tax can't be paid, so the Bolt is countered.
         driver.giveColorlessMana(opponent, 1)
         driver.bothPass()
+        driver.answerForcedPayments()
         driver.isPaused shouldBe false
         driver.getGraveyardCardNames(opponent) shouldContain "Lightning Bolt"
         driver.getLifeTotal(me) shouldBe 20

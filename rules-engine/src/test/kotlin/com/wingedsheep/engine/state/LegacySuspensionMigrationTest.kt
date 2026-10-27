@@ -138,9 +138,13 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
             reopen.getValue("type") shouldBe JsonPrimitive(CORE + "ReopenManaPaymentDecisionContinuation")
             val saved = reopen.getValue("suspension").jsonObject
             val original = fixtureStack("suspended-mana-window")
-            saved.getValue("question") shouldBe JsonObject(
+            // Fields added to the question since the capture (SelectManaSourcesDecision.payAvailable)
+            // decode to their defaults, so compare the captured shape.
+            val capturedSavedQuestion = JsonObject(
                 original[1].jsonObject.getValue("decision").jsonObject + ("type" to JsonPrimitive("SelectManaSourcesDecision"))
             )
+            restrictTo(saved.getValue("question"), capturedSavedQuestion) shouldBe capturedSavedQuestion
+            saved.getValue("question").jsonObject["payAvailable"]?.let { it shouldBe JsonPrimitive(true) }
             // Every field the legacy frame carried survives untouched. Fields added since the
             // capture (object identity's, and anything later) decode to their defaults and are
             // not the reader's doing, so the comparison is restricted to the captured shape. The

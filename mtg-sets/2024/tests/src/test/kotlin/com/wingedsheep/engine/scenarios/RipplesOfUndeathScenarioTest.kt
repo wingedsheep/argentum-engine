@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.SelectCardsDecision
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.support.GameTestDriver
@@ -86,9 +87,10 @@ class RipplesOfUndeathScenarioTest : FunSpec({
         driver.getGraveyard(me) shouldContainAll milled
     }
 
-    test("without {1} available the payment is not offered") {
+    test("without {1} available the payment can only be refused") {
         val (driver, me, milled) = setup()
-        driver.resolveTrigger(me, pay = true)
+        driver.bothPass()
+        driver.answerForcedPayments()
 
         driver.pendingDecision shouldBe null
         driver.getLifeTotal(me) shouldBe 20

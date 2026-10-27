@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseTargetsDecision
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.engine.support.GameTestDriver
@@ -232,8 +233,9 @@ class HinderingTouchTest : FunSpec({
         driver.submitTargetSelection(player1, listOf(spellOnStack))
 
         // Now resolve the storm copy (counter unless pays {2})
-        // Player 2 has no mana, auto-counter
+        // Player 2 has no mana: refusing is the only answer
         driver.bothPass()
+        driver.answerForcedPayments()
 
         // Bolt was countered by the storm copy
         driver.getGraveyardCardNames(player2) shouldContain "Lightning Bolt"

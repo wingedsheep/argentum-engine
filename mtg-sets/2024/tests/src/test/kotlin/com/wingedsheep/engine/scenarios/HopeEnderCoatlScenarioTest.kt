@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseTargetsDecision
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.support.GameTestDriver
@@ -65,8 +66,9 @@ class HopeEnderCoatlScenarioTest : FunSpec({
     test("counters the opponent's spell when they can't pay, then the Coatl resolves") {
         val d = driver()
         val (bears, _) = d.flashCoatlOverBears(casterForests = 0)
+        d.answerForcedPayments()
 
-        withClue("no way to pay {1}, so the Bears are countered outright") {
+        withClue("no way to pay {1}, so the Bears are countered") {
             d.getGraveyard(d.player1) shouldContain bears
         }
         d.getStackSpellNames() shouldContainExactly listOf("Hope-Ender Coatl")

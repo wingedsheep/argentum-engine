@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.SpellCounteredEvent
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -60,7 +61,9 @@ class HarmoniousGrovestriderScenarioTest : FunSpec({
         }
 
         driver.bothPass() // resolve the ward trigger — caster can't pay, so Bolt is countered
-        withClue("no payment prompt: the caster has no mana sources left") {
+        // The caster's hand could hold a Spirit Guide, so the ward still asks — refusal only.
+        driver.answerForcedPayments()
+        withClue("nothing left to decide once the forced refusal is in") {
             driver.pendingDecision shouldBe null
         }
         driver.bothPass()

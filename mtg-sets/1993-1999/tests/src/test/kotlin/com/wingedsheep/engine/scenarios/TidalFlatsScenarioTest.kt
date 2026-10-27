@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -55,8 +56,9 @@ class TidalFlatsScenarioTest : FunSpec({
         driver.submitSuccess(
             ActivateAbility(playerId = bob, sourceId = flats, abilityId = abilityId)
         )
-        // Alice has no mana floating, so the {1} is unpayable and the rider lands unprompted.
+        // Alice has no mana floating, so the {1} is unpayable: refusing is her only answer.
         driver.bothPass()
+        driver.answerForcedPayments()
 
         withClue("Bob's blocker picked up first strike") {
             projector.project(driver.state).hasKeyword(blocker, Keyword.FIRST_STRIKE) shouldBe true

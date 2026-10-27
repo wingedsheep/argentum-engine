@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.state.components.player.SkipNextUntapStepComponent
@@ -76,6 +77,7 @@ class StasisScenarioTest : FunSpec({
         val stasis = d.putPermanentOnBattlefield(me, "Stasis")
         val land = d.putPermanentOnBattlefield(me, "Island").also(d::tapPermanent)
         d.myUpkeep(); d.bothPass()
+        d.answerForcedPayments()
         d.pendingDecision shouldBe null
         d.getGraveyard(me).contains(stasis) shouldBe true
         d.state.getEntity(land)!!.has<TappedComponent>() shouldBe true

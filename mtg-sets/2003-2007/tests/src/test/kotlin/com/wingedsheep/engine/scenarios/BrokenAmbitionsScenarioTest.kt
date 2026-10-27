@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.PaymentStrategy
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.core.SubmitDecision
@@ -61,6 +62,9 @@ class BrokenAmbitionsScenarioTest : FunSpec({
                 if (mode == "pay" || mode == "decline") {
                     d.pendingDecision.shouldBeInstanceOf<YesNoDecision>().playerId shouldBe d.player1
                     d.submitYesNo(d.player1, mode == "pay").error shouldBe null
+                } else if (mode == "cannot pay" || mode == "uncounterable") {
+                    // Nothing to pay with, so refusing is the only answer.
+                    d.answerForcedPayments()
                 }
                 repeat(2) {
                     val choice = d.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
@@ -119,6 +123,7 @@ class BrokenAmbitionsScenarioTest : FunSpec({
         d.putCardOnTopOfLibrary(c, "Plains")
         val libraries = listOf(a, b, c).associateWith { d.state.getZone(ZoneKey(it, Zone.LIBRARY)) }
         repeat(3) { d.passPriority(d.priorityPlayer!!).error shouldBe null }
+        d.answerForcedPayments()
         val opponent = d.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>()
         opponent.playerId shouldBe a
         val cIndex = d.state.getOpponents(a).indexOf(c)

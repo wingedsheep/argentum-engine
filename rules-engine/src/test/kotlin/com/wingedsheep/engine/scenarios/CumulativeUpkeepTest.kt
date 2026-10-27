@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -82,7 +83,8 @@ class CumulativeUpkeepTest : FunSpec({
         d.toMyNextUpkeep(me)
         d.giveColorlessMana(me, 1)
         d.bothPass()
-        // Two age counters cost {2}: one floating mana can't pay, so there is no prompt and it goes.
+        // Two age counters cost {2}: one floating mana can't pay, so refusing is the only answer.
+        d.answerForcedPayments()
         d.ageCounters(permanent) shouldBe 0
         d.onBattlefield(permanent) shouldBe false
         d.getGraveyard(me) shouldContain permanent
@@ -127,6 +129,7 @@ class CumulativeUpkeepTest : FunSpec({
         d.giveMana(me, Color.GREEN, 1)
         d.giveColorlessMana(me, 1)
         d.bothPass()
+        d.answerForcedPayments()
         d.onBattlefield(permanent) shouldBe false
     }
 

@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.leg.cards.InvokePrejudice
@@ -42,7 +43,8 @@ class InvokePrejudiceScenarioTest : FunSpec({
         d.stackSize shouldBe 2
         d.bothPass()
 
-        // {2} is unaffordable with an empty pool and no lands, so the caster isn't asked.
+        // {2} is unaffordable with an empty pool and no lands, so the caster can only refuse.
+        d.answerForcedPayments()
         d.pendingDecision shouldBe null
         d.stackSize shouldBe 0
         d.getGraveyardCardNames(caster) shouldContain "Grizzly Bears"
@@ -107,6 +109,7 @@ class InvokePrejudiceScenarioTest : FunSpec({
         d.castSpell(caster, golem).error shouldBe null
         d.stackSize shouldBe 2
         d.bothPass()
+        d.answerForcedPayments()
         d.getGraveyardCardNames(caster) shouldContain "Artifact Creature"
     }
 
