@@ -28,6 +28,7 @@ Format — newest first, one bullet each:
 
 ## Changes
 
+- #3805 Makes a combat declaration handed to it from another seat (Master Warcraft, Brutal Hordechief) for that seat, honouring its must-block requirements, instead of submitting it as its own and conceding after the rejections
 - #3678 Sees a blocker whose block trigger destroys the attacker (Alaborn Zealot) as a killer, the way it sees deathtouch: it no longer attacks a big creature into one, and as the defender it blocks with one to trade up
 - #3674 No longer casts an end-of-combat sweep over what a creature blocked (Glyph of Doom) when that creature can't block before it fires, or a spells-only mana grant (Piracy) when nothing it could then cast would spend the mana
 - #3662 In a multiplayer game, makes a lethal attack with only the creatures the kill needs (two fliers past a ground-only board, say) and keeps the rest home to block the opponents still in the game, instead of tapping out for an overkill alpha strike; in 1v1 it still sends everything
