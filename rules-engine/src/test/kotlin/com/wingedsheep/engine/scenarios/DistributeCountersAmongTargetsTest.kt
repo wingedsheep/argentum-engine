@@ -20,6 +20,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -65,6 +66,16 @@ class DistributeCountersAmongTargetsTest : FunSpec({
         }
     }
 
+    // "Distribute up to three" — only triggers print it (Lathiel); on a spell it divides at resolution.
+    val upToSpray = card("Counter Up-To Spray Probe") {
+        manaCost = "{G}"
+        typeLine = "Sorcery"
+        spell {
+            targets(TargetFilter.Creature, count = 2, minCount = 1)
+            effect = Effects.DistributeCountersAmongTargets(DynamicAmount.Fixed(3), upTo = true)
+        }
+    }
+
     // Ajani, Sleeper Agent's −3 shape: a divided step followed by a per-target rider.
     val totem = card("Counter Totem Probe") {
         manaCost = "{2}"
@@ -78,7 +89,7 @@ class DistributeCountersAmongTargetsTest : FunSpec({
 
     fun newGame(): GameTestDriver {
         val d = GameTestDriver()
-        d.registerCards(TestCards.all + listOf(seeder, chainSeeder, spray, totem))
+        d.registerCards(TestCards.all + listOf(seeder, chainSeeder, spray, upToSpray, totem))
         d.initMirrorMatch(Deck.of("Forest" to 40), startingPlayer = 0)
         d.passPriorityUntil(Step.PRECOMBAT_MAIN)
         return d
@@ -195,6 +206,25 @@ class DistributeCountersAmongTargetsTest : FunSpec({
 
         d.plusOnes(courser) shouldBe 1
         d.plusOnes(lions) shouldBe 2
+    }
+
+    test("an up-to pool lets even a lone target take less than the whole pool") {
+        val d = newGame()
+        val courser = d.putCreatureOnBattlefield(d.player1, "Centaur Courser")
+
+        val sorcery = d.putCardInHand(d.player1, "Counter Up-To Spray Probe")
+        d.giveMana(d.player1, Color.GREEN, 1)
+        d.castSpell(d.player1, sorcery, listOf(courser)).error shouldBe null
+        d.bothPass().error shouldBe null
+
+        val decision = d.pendingDecision.shouldBeInstanceOf<DistributeDecision>()
+        decision.totalAmount shouldBe 3
+        decision.allowPartial shouldBe true
+        decision.context.phase shouldBe DecisionPhase.RESOLUTION
+        d.submitDecision(d.player1, DistributionResponse(decision.id, mapOf(courser to 4))).error shouldNotBe null
+        d.submitDecision(d.player1, DistributionResponse(decision.id, mapOf(courser to 1))).error shouldBe null
+
+        d.plusOnes(courser) shouldBe 1
     }
 
     fun GameTestDriver.activateTotem(totemId: EntityId, targets: List<EntityId>, division: Map<EntityId, Int>?) =

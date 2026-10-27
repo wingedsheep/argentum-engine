@@ -2574,7 +2574,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   card to or from a library; an unlock counter is none of those, so the counter lands at a moment nobody
   can respond to).
 - `DistributeCountersFromSelf(type?, count?)` — split source's counters among creatures you control.
-- `DistributeCountersAmongTargets(total, type?, minPerTarget?)` — divvy N counters among chosen
+- `DistributeCountersAmongTargets(total, type?, minPerTarget?, upTo?)` — divvy N counters among chosen
   targets. `total` is a `DynamicAmount` (an `Int` overload wraps it in `Fixed`), evaluated when the
   division is announced (or at resolution when it isn't), so the pool can be the spell's X or a
   cast-time capture. For "distribute X counters among **any number** of
@@ -2603,6 +2603,15 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `DistributeDecision`. "Any number of target creatures" with a fixed pool is a
   `count = N, minCount = 0` range — Jugan, the Rising Star: `targets(TargetFilter.Creature, count = 5,
   minCount = 0)`, where choosing no targets is the "may" declined.
+  `upTo = true` is "distribute **up to** N counters" (Lathiel, the Bounteous Dawn): the pool is a
+  cap, not an exact total. The triggered-ability announcement becomes a partial division
+  (`DistributeDecision.allowPartial`) — made even for a single target, since how many it gets is
+  still a choice — totalling at most N with each target getting at least `minPerTarget`. Only
+  triggered abilities print it, so a spell or activated ability with an up-to pool is not offered
+  a cast/activation-time division and divides at resolution, partially. Lathiel:
+  `TargetObject(optional = true, filter = TargetFilter.OtherCreature, dynamicMaxCount =
+  DynamicAmounts.lifeGainedThisTurn(Player.You))` with
+  `DistributeCountersAmongTargets(DynamicAmounts.lifeGainedThisTurn(Player.You), upTo = true)`.
 - `DistributeCountersAmongFiltered(total, type?, filter, minPerTarget?)` — distribute N **new** counters among permanents matching `filter`, chosen at resolution (not the spell's targets); `minPerTarget = 0` models "among any number of". `total` is an `Int` or a `DynamicAmount` evaluated once at resolution — Feast of the Victorious Dead's "distribute that many +1/+1 counters" passes `DynamicAmounts.creaturesDiedThisTurn(Player.Each)`. Unlike `DistributeCountersFromSelf` nothing is removed from a source. Crashing Wave: `DistributeCountersAmongFiltered(3, CounterType.STUN, Filters.Creature.tapped().opponentControls())` — "distribute three stun counters among any number of tapped creatures your opponents control."
 - `Proliferate(target?)` — give one more counter of each kind already there. With no argument it is
   proliferate proper (CR 701.34): the controller chooses any number of permanents and/or players with

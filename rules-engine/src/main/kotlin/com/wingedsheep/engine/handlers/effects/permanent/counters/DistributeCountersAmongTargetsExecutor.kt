@@ -33,8 +33,8 @@ import kotlin.reflect.KClass
  * that became illegal loses its share (CR 608.2b) and the survivors keep exactly what they were
  * assigned.
  *
- * With no announced division, a single target takes the whole pool and two or more targets are
- * asked for the division now, through the same [DistributeCountersContinuation] the resolution-time
+ * With no announced division, a single target takes the whole pool (any number of it, for an
+ * "up to" pool) and two or more targets are asked for the division now, through the same [DistributeCountersContinuation] the resolution-time
  * distribute effects use.
  */
 class DistributeCountersAmongTargetsExecutor(
@@ -69,7 +69,8 @@ class DistributeCountersAmongTargetsExecutor(
             return EffectResult.success(state)
         }
 
-        if (targetIds.size == 1) {
+        // An "up to" pool leaves even a lone target's share to the controller.
+        if (targetIds.size == 1 && !effect.upTo) {
             return placeCounters(state, effect, context, mapOf(targetIds.single() to totalCounters))
         }
 
@@ -78,8 +79,9 @@ class DistributeCountersAmongTargetsExecutor(
         val decision = { decisionId: String -> DistributeDecision(
             id = decisionId,
             playerId = context.controllerId,
-            prompt = "Distribute $totalCounters ${effect.counterType.printed} " +
-                "counter${if (totalCounters != 1) "s" else ""} among ${targetIds.size} targets",
+            prompt = "Distribute ${if (effect.upTo) "up to " else ""}$totalCounters ${effect.counterType.printed} " +
+                "counter${if (totalCounters != 1) "s" else ""} among " +
+                if (targetIds.size == 1) "1 target" else "${targetIds.size} targets",
             context = DecisionContext(
                 sourceId = sourceId,
                 sourceName = sourceName,
@@ -88,7 +90,7 @@ class DistributeCountersAmongTargetsExecutor(
             totalAmount = totalCounters,
             targets = targetIds,
             minPerTarget = effect.minPerTarget,
-            allowPartial = false
+            allowPartial = effect.upTo
         ) }
         val continuation = DistributeCountersContinuation(
             sourceId = sourceId,

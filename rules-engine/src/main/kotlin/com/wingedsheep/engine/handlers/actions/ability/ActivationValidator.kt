@@ -656,7 +656,7 @@ internal class ActivationValidator(
      */
     private fun checkDamageDistribution(state: GameState, action: ActivateAbility, ability: ActivatedAbility): String? {
         val distribution = action.damageDistribution ?: return null
-        val division = AnnouncedDivision.of(ability.effect)
+        val division = AnnouncedDivision.ofActivation(ability.effect)
             ?: return "This ability does not divide anything among its targets"
         val chosenTargetIds = action.targets.map { it.toEntityId() }.toSet()
         if (distribution.keys != chosenTargetIds) {

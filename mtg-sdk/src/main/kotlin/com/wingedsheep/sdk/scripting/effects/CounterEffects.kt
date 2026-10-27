@@ -687,17 +687,26 @@ data class ProliferateEffect(
  *
  * @property totalCounters Total number of counters to distribute
  * @property counterType The type of counter (e.g., "+1/+1")
+ * [upTo] is "distribute **up to** N counters" (Lathiel, the Bounteous Dawn): the controller may
+ * place fewer than [totalCounters] in all, each target still getting at least [minPerTarget]. The
+ * division is announced the same way, as a partial one — even with a single target, which then
+ * takes any number from [minPerTarget] up to the pool.
+ *
+ * @property totalCounters Total number of counters to distribute
+ * @property counterType The type of counter (e.g., "+1/+1")
  * @property minPerTarget Minimum counters each target must receive (per MTG rules, typically 1)
+ * @property upTo When true the pool is a cap ("up to N"), not an exact total
  */
 @SerialName("DistributeCountersAmongTargets")
 @Serializable
 data class DistributeCountersAmongTargetsEffect(
     val totalCounters: DynamicAmount,
     val counterType: CounterType = CounterType.PLUS_ONE_PLUS_ONE,
-    val minPerTarget: Int = 1
+    val minPerTarget: Int = 1,
+    val upTo: Boolean = false
 ) : Effect {
     override val description: String =
-        "Distribute ${totalCounters.description} ${counterType.printed} counters among targets"
+        "Distribute ${if (upTo) "up to " else ""}${totalCounters.description} ${counterType.printed} counters among targets"
 }
 
 /**

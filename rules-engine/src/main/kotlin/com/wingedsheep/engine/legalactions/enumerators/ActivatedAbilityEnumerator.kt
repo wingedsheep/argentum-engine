@@ -1164,7 +1164,7 @@ class ActivatedAbilityEnumerator(
                         // — the division is part of activating the ability (CR 601.2d), so flag it
                         // here and let the client collect it after targeting, exactly as the cast
                         // path does for spells (Chandra, Flameshaper's −4; Ajani, Sleeper Agent's −3).
-                        val division = AnnouncedDivision.of(ability.effect)
+                        val division = AnnouncedDivision.ofActivation(ability.effect)
                         result.add(LegalAction(
                             actionType = "ActivateAbility",
                             description = displayDescription,

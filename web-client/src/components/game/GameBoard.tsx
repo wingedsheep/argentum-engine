@@ -1677,7 +1677,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
           (bottom-right) — always present, the pass disabled when unavailable. One column so the
           pass button and the icon row above it end up exactly the same width; the row's intrinsic
           width wins whenever the priority-mode label ("Full Control") makes it the wider of the two. */}
-      {!spectatorMode && !isEliminatedSpectator && viewingPlayer && !isInManaSelectionMode && !isInCounterDistMode && (() => {
+      {!spectatorMode && !isEliminatedSpectator && viewingPlayer && !isInManaSelectionMode && !isInCounterDistMode && !isInDistributeMode && (() => {
         const passEnabled = canAct && !isHijacked && !isInCombatMode && !isInDistributeMode && !isInCounterDistMode && !isInManaSelectionMode && !delveSelectionState && !tapForPowerSelectionState && !targetingState && !pipelineState
         return (
           <div style={{
@@ -2116,7 +2116,7 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
                   }}>
                     {isComplete
                       ? `All ${noun} allocated`
-                      : `${distributeRemaining} ${noun} remaining`}
+                      : `${distributeRemaining} ${isCounters && distributeRemaining === 1 ? 'counter' : noun} remaining`}
                   </div>
                   <div style={{
                     color: 'rgba(255, 255, 255, 0.7)',
@@ -2130,8 +2130,9 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
                   onClick={() => confirmDistribute(distributeState.decisionId)}
                   disabled={!canConfirm}
                   style={{
-                    ...styles.combatButton,
-                    ...(canConfirm ? styles.combatButtonPrimary : {}),
+                    ...styles.combatActionButton,
+                    borderRadius: 6,
+                    border: '1px solid',
                     backgroundColor: canConfirm ? '#16a34a' : '#333',
                     color: canConfirm ? 'white' : '#666',
                     cursor: canConfirm ? 'pointer' : 'not-allowed',

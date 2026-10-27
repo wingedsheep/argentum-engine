@@ -816,7 +816,7 @@ Families:
 - `DestroySourceOfTargetedAbilityEffect` — Destroys the source permanent of the targeted activated or triggered ability on the stack, if its source is currently a permanent on the battlefield.
 - `DiscoverEffect(amount: DynamicAmount, storeDiscoveredAs: String?, thenEffect: Effect?)` — Discover N (CR 701.57).
 - `DistributeCountersAmongFilteredEffect(totalCounters: DynamicAmount, counterType: CounterType, filter: GameObjectFilter, minPerTarget: Int)` — Distribute a resolution-evaluated number of *new* counters among permanents matching filter, chosen at resolution (NOT the spell's declared targets).
-- `DistributeCountersAmongTargetsEffect(totalCounters: DynamicAmount, counterType: CounterType, minPerTarget: Int)` — Distribute a number of counters among the targets from context.
+- `DistributeCountersAmongTargetsEffect(totalCounters: DynamicAmount, counterType: CounterType, minPerTarget: Int, upTo: Boolean)` — Distribute a number of counters among the targets from context.
 - `DistributeCountersFromSelfEffect(counterType: CounterType)` — Distribute any number of counters from this creature onto other creatures.
 - `DistributeDamageAmongCollectionEffect(amount: DynamicAmount, collectionName: String, damageSource: EffectTarget, chooser: Chooser)` — damageSource deals amount damage divided among the permanents in pipeline collection collectionName — **not targets** — with the division made at resolution by chooser.
 - `DividedDamageEffect(totalDamage: Int, minTargets: Int, maxTargets: Int, dynamicTotal: DynamicAmount?, among: String?)` — Deal damage to multiple targets, dividing the total as you choose.

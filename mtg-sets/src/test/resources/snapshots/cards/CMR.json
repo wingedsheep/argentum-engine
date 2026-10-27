@@ -1399,6 +1399,82 @@
     ]
 }
 
+// Lathiel, the Bounteous Dawn
+{
+    "name": "Lathiel, the Bounteous Dawn",
+    "manaCost": "{2}{G}{W}",
+    "typeLine": "Legendary Creature — Unicorn",
+    "oracleText": "Lifelink\nAt the beginning of each end step, if you gained life this turn, distribute up to that many +1/+1 counters among any number of other target creatures.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lathiel, the Bounteous Dawn:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DistributeCountersAmongTargets",
+                    "totalCounters": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_GAINED"
+                    },
+                    "upTo": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "other target creatures",
+                    "dynamicMaxCount": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_GAINED"
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "LIFE_GAINED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "At the beginning of each end step, if you gained life this turn, distribute up to that many +1/+1 counters among any number of other target creatures."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "285",
+        "rarity": "RARE",
+        "artist": "Lucas Graciano",
+        "flavorText": "Weeping, the hunter cast aside her bow, struck by the majesty of the creature before her.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/29d3484f-abd1-43fe-99f8-e0fa0a7b6692.jpg?1783928769"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Maelstrom Colossus
 {
     "name": "Maelstrom Colossus",

@@ -41,13 +41,30 @@ object AnnouncedDivision {
     }
 
     /**
+     * The division an *activated ability* announces with its activation (CR 601.2d). An "up to"
+     * division ([isPartial]) is not one of them: only triggered abilities print it (Lathiel, the
+     * Bounteous Dawn), so the activation flow collects exact divisions only and an up-to one on an
+     * activation divides at resolution, as a partial [com.wingedsheep.engine.core.DistributeDecision].
+     */
+    fun ofActivation(effect: Effect): Effect? = of(effect)?.takeUnless(::isPartial)
+
+    /**
+     * Whether [division] is "up to" its total (Lathiel, the Bounteous Dawn: "distribute up to that
+     * many +1/+1 counters") — the controller may assign less than the whole pool, and announces a
+     * division even for a single target, since how many it gets is still a choice.
+     */
+    fun isPartial(division: Effect): Boolean =
+        (division as? DistributeCountersAmongTargetsEffect)?.upTo == true
+
+    /**
      * The division a *spell* announces as it is cast (CR 601.2d): a top-level divided-damage effect,
      * or a counter division anywhere in the spell's sequence (Undercity Upheaval: "distribute X +1/+1
      * counters among any number of target creatures you control … creatures you control gain
      * vigilance"), or a divided-damage step scoped to one of the spell's target requirements (Magma
      * Opus). A split that lets a target get nothing (`minPerTarget = 0` — Wicked Slumber's
      * "put a stun counter on either of them" twice) isn't a division: it is made at resolution among
-     * the targets still legal then. Null when the spell divides nothing at cast.
+     * the targets still legal then; neither is an "up to" division ([isPartial]), which only triggered
+     * abilities print. Null when the spell divides nothing at cast.
      */
     fun ofSpell(spellEffect: Effect?): Effect? = when {
         spellEffect == null -> null
@@ -57,7 +74,7 @@ object AnnouncedDivision {
             // spell's target requirements (Magma Opus: "… divided as you choose among any number of
             // targets. Tap two target permanents. …"); an unscoped one keeps dividing at resolution.
             (it is DividedDamageEffect && it.among != null) ||
-                (it is DistributeCountersAmongTargetsEffect && it.minPerTarget >= 1)
+                (it is DistributeCountersAmongTargetsEffect && it.minPerTarget >= 1 && !it.upTo)
         }
     }
 
