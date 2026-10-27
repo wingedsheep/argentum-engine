@@ -26,7 +26,7 @@ class LookAtTargetHandExecutor : EffectExecutor<LookAtTargetHandEffect> {
         effect: LookAtTargetHandEffect,
         context: EffectContext
     ): EffectResult {
-        val targetPlayerId = context.resolveTarget(effect.target)
+        val targetPlayerId = context.resolveTarget(effect.target, state)
             ?: return EffectResult.error(state, "No valid target player for look at hand")
 
         val viewingPlayerId = context.controllerId

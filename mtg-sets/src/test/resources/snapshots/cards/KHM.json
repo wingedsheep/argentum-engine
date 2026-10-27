@@ -1666,6 +1666,110 @@
     ]
 }
 
+// Battle for Bretagard
+{
+    "name": "Battle for Bretagard",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Create a 1/1 white Human Warrior creature token.\nII — Create a 1/1 green Elf Warrior creature token.\nIII — Choose any number of artifact tokens and/or creature tokens you control with different names. For each of them, create a token that's a copy of it.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Human",
+                        "Warrior"
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Elf",
+                        "Warrior"
+                    ]
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "filter": "creature|artifact token"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "Choose any number of artifact and/or creature tokens you control with different names to copy",
+                            "useTargetingUI": true,
+                            "restrictions": [
+                                "OnePerCardName"
+                            ]
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "selected1"
+                            },
+                            "body": {
+                                "type": "CreateTokenCopyOfTarget",
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "rarity": "RARE",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd31ec15-2fe0-40ab-b320-bc4333db4787.jpg?1783928201",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The chapter III ability doesn't target any of the tokens. You choose which ones you're copying as the ability resolves."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Unless the effect that creates a token specifies a different name, the name of a token is the same as its creature types plus the word \"Token\". In particular, a Human Warrior creature token has a different name than an Elf Warrior creature token, and you may create a copy of each using the chapter III ability."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Each token you create copies the original characteristics of the token it's copying as stated by the effect that created that token. The newly created token doesn't copy whether the original token is tapped or untapped, whether it has any counters on it, whether it has any Auras and/or Equipment attached to it, or any non-copy effects that changed its power, toughness, types, color, and so on."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Battle of Frost and Fire
 {
     "name": "Battle of Frost and Fire",
@@ -6716,6 +6820,131 @@
     "layout": "MODAL_DFC"
 }
 
+// Fall of the Impostor
+{
+    "name": "Fall of the Impostor",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI, II — Put a +1/+1 counter on up to one target creature.\nIII — Exile a creature with the greatest power among creatures target opponent controls.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t1"
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "player": "TargetOpponent",
+                                "filter": "creature"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "collectionFilter": "GreatestPower",
+                            "storeMatching": "matching1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching1",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "prompt": "Choose a creature with the greatest power to exile",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t2"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "rarity": "UNCOMMON",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d7de696a-49c2-421d-a86c-bcffd68870c6.jpg?1783928198",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "If the target player controls more than one creature tied for the greatest power among creatures that player controls, you choose which one of them is exiled."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The greatest power among creatures target opponent controls is determined solely by evaluating the creatures that player controls at that time. You won't consider creatures controlled by any other player."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The chapter III ability doesn't target any creatures. For example, a creature with protection from white could be exiled this way."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Fearless Liberator
 {
     "name": "Fearless Liberator",
@@ -7029,6 +7258,114 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Firja's Retribution
+{
+    "name": "Firja's Retribution",
+    "manaCost": "{1}{W}{W}{B}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Create a 4/4 white Angel Warrior creature token with flying and vigilance.\nII — Until end of turn, Angels you control gain \"{T}: Destroy target creature with power less than this creature's power.\"\nIII — Angels you control gain double strike until end of turn.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Angel",
+                        "Warrior"
+                    ],
+                    "keywords": [
+                        "FLYING",
+                        "VIGILANCE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/3/b/3bd871a3-3802-4bdc-8033-3ecfd01c0449.jpg?1783928084"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "GrantActivatedAbilityToGroup",
+                    "ability": {
+                        "id": "Firja's Retribution:1",
+                        "cost": "CostTap",
+                        "effect": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        },
+                        "targetRequirements": [
+                            {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": {
+                                        "cardPredicates": [
+                                            "IsCreature",
+                                            {
+                                                "type": "PowerLessThanEntity",
+                                                "reference": "Self"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "id": "t0"
+                            }
+                        ]
+                    },
+                    "filter": {
+                        "baseFilter": "permanent Angel ctrl:you"
+                    }
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent Angel ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "DOUBLE_STRIKE",
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "210",
+        "rarity": "RARE",
+        "artist": "Anna Steinbauer",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/03dff23e-d7e3-4d75-a9dc-fdf4a42f31e0.jpg?1783928197",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Only Angels you control as the chapter II ability resolves will gain the activated ability. Similarly, only Angels you control as the chapter III ability resolves will gain double strike. In both cases, Angels that come under your control later in the turn won't gain the ability."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The power of the target creature must be less than the power of the Angel as you activate the ability. As the ability tries to resolve, the powers are compared again. If the power of the target creature is no longer less than the power of the Angel, the ability won't resolve. If the Angel is no longer on the battlefield at that time, use its power as it last existed on the battlefield to determine if the ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 
@@ -9301,6 +9638,385 @@
     "layout": "MODAL_DFC"
 }
 
+// Harald Unites the Elves
+{
+    "name": "Harald Unites the Elves",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Mill three cards. You may put an Elf or Tyvar card from your graveyard onto the battlefield.\nII — Put a +1/+1 counter on each Elf you control.\nIII — Whenever an Elf you control attacks this turn, target creature an opponent controls gets -1/-1 until end of turn.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 3
+                                        },
+                                        "isMill": true
+                                    },
+                                    "storeAs": "milled"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "milled",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                {
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsPermanent",
+                                                        {
+                                                            "type": "HasSubtype",
+                                                            "subtype": "Elf"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsPermanent",
+                                                        {
+                                                            "type": "HasSubtype",
+                                                            "subtype": "Tyvar"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "prompt": "You may put an Elf or Tyvar card from your graveyard onto the battlefield",
+                            "selectedLabel": "Put onto the battlefield",
+                            "remainderLabel": "Leave in graveyard",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature Elf ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -1
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "AttackEvent",
+                            "filter": "creature Elf ctrl:you"
+                        },
+                        "binding": "ANY"
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        },
+                        "id": "t0"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "213",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e7c5f681-0145-45e9-b943-ca9784cfdea0.jpg?1783928196",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "For the chapter I ability, the Elf or Tyvar card you put onto the battlefield can be one of the cards you just milled, or it may be one that was already in your graveyard."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Only Elves you control as the chapter II ability resolves will get a +1/+1 counter. Elves that come under your control later in the turn will not."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Conversely, the triggered ability created by the chapter III ability will trigger whenever any Elf you control attacks that turn, even if you didn't control that Elf as the chapter III ability resolved."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The triggered ability created by the chapter III ability resolves before blockers are declared. It may remove opposing creatures before they have the chance to block."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Harald, King of Skemfar
+{
+    "name": "Harald, King of Skemfar",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Legendary Creature — Elf Warrior",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nWhen Harald enters, look at the top five cards of your library. You may reveal an Elf, Warrior, or Tyvar card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Harald, King of Skemfar:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "Elf|Warrior|Tyvar",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal an Elf, Warrior, or Tyvar card from among them and put it into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "UNCOMMON",
+        "artist": "Grzegorz Rutkowski",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9eac78a2-599f-4dba-aec7-982c5ae3f75a.jpg?1783928197"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Haunting Voyage
+{
+    "name": "Haunting Voyage",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose a creature type. Return up to two creature cards of that type from your graveyard to the battlefield. If this spell was foretold, return all creature cards of that type from your graveyard to the battlefield instead.\nForetell {5}{B}{B} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "keywords": [
+        "FORETELL"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Foretell",
+            "cost": "{5}{B}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "CastChoiceMade",
+                    "slot": "FORETOLD"
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    "ChooseCreatureType",
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Graveyard",
+                            "filter": "creature"
+                        },
+                        "storeAs": "gathered1"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "gathered1",
+                        "selection": "SelectAll",
+                        "storeSelected": "selected2",
+                        "matchChosenCreatureType": true
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "selected2",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Battlefield"
+                        }
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "Composite",
+                "effects": [
+                    "ChooseCreatureType",
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Graveyard",
+                            "filter": "creature"
+                        },
+                        "storeAs": "gathered1"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "gathered1",
+                        "selection": {
+                            "type": "ChooseUpTo",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        "storeSelected": "selected2",
+                        "matchChosenCreatureType": true,
+                        "prompt": "Choose up to two creature cards of the chosen type to return to the battlefield"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "selected2",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Battlefield"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "rarity": "MYTHIC",
+        "artist": "Ryan Yee",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2ac5bca0-35fe-47be-a78c-d5eac68a3bfa.jpg?1783928246"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Hengegate Pathway
 {
     "name": "Hengegate Pathway",
@@ -10617,6 +11333,174 @@
     "layout": "MODAL_DFC"
 }
 
+// Kardur's Vicious Return
+{
+    "name": "Kardur's Vicious Return",
+    "manaCost": "{2}{B}{R}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — You may sacrifice a creature. When you do, this Saga deals 3 damage to any target.\nII — Each player discards a card.\nIII — Return target creature card from your graveyard to the battlefield. Put a +1/+1 counter on it. It gains haste until your next turn.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectTarget",
+                                "requirement": {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "storeAs": "target0",
+                                "nonTargeting": true,
+                                "prompt": "Choose a creature to sacrifice"
+                            },
+                            {
+                                "type": "SacrificeTarget",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "target0"
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveEffect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "AnyTarget",
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "You may sacrifice a creature. When you do, this Saga deals 3 damage to any target."
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "ActivePlayerFirst"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "discarded",
+                                "prompt": "Choose a card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "destination": "Battlefield",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t1"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "rarity": "UNCOMMON",
+        "artist": "Joseph Meehan",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/233e4774-e701-42d9-aa25-e7e06c14e43d.jpg?1783928196",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The chapter I ability goes on the stack without a target. While that ability is resolving, you may sacrifice a creature. When you do, the reflexive triggered ability triggers and you pick a target to be dealt damage. This is different than effects that say \"If you do\" in that players may take actions after you've sacrificed the creature but before damage is dealt."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "As the chapter II ability resolves, first the player whose turn it is chooses a card in hand and sets it aside without revealing it, then each other player in turn order does the same. Then all the chosen cards are discarded at the same time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Kardur, Doomscourge
 {
     "name": "Kardur, Doomscourge",
@@ -11210,6 +12094,162 @@
             }
         ]
     }
+}
+
+// King Narfi's Betrayal
+{
+    "name": "King Narfi's Betrayal",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Each player mills four cards. Then you may exile a creature or planeswalker card from each graveyard.\nII, III — Until end of turn, you may cast spells from among cards exiled with this Saga, and you may spend mana as though it were mana of any color to cast those spells.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "player": "Each",
+                                "isMill": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "Each"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "Each"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Graveyard",
+                                            "filter": "creature|planeswalker"
+                                        },
+                                        "storeAs": "gathered3"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered3",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "chooser": "SourceController",
+                                        "storeSelected": "selected4",
+                                        "prompt": "You may exile a creature or planeswalker card from this graveyard",
+                                        "selectedLabel": "Exile"
+                                    }
+                                ]
+                            },
+                            "collectCollections": {
+                                "selected4": "collected5"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "collected5",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "gathered0",
+                            "withAnyManaColor": true,
+                            "nonLandOnly": true
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "gathered0",
+                            "withAnyManaColor": true,
+                            "nonLandOnly": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "RARE",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c30ff1fa-6639-492a-b257-934e5818c98f.jpg?1783928194",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The chapter I ability doesn't target any cards in graveyards. For each graveyard, you may exile a creature or planeswalker card that was just milled or one that was already there. You choose which cards are exiled."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The chapter II/III ability doesn't change when you can cast the exiled cards. In most cases, this means during your main phase while the stack is empty, although flash may change this."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If you cast a spell with the chapter II/III ability, it becomes a new object. If it returns to exile, it's no longer exiled with King Narfi's Betrayal, and you won't be able to cast it again this way."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The \"cards exiled with King Narfi's Betrayal\" are only the cards exiled by that particular King Narfi's Betrayal, not any other Betrayals that you previously controlled."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
 }
 
 // Koll, the Forgemaster
@@ -12537,6 +13577,229 @@
         "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7b877e2-60eb-46cd-acd7-8555b9e7e993.jpg?1783928260"
     },
     "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Narfi, Betrayer King
+{
+    "name": "Narfi, Betrayer King",
+    "manaCost": "{3}{U}{B}",
+    "typeLine": "Legendary Snow Creature — Zombie Wizard",
+    "oracleText": "Other snow and Zombie creatures you control get +1/+1.\n{S}{S}{S}: Return this card from your graveyard to the battlefield tapped. ({S} can be paid with one mana from a snow source.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Narfi, Betrayer King:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{S}{S}{S}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Battlefield",
+                    "placement": "Tapped",
+                    "fromZone": "Graveyard"
+                },
+                "activateFromZone": "Graveyard"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsSnow",
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Zombie"
+                                    }
+                                ]
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "224",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "flavorText": "To serve the god of death, Narfi forfeited the warmth of life.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/421376e4-a4ad-427c-bc9c-d315308dcf68.jpg?1783928191"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Niko Aris
+{
+    "name": "Niko Aris",
+    "manaCost": "{X}{W}{U}{U}",
+    "typeLine": "Legendary Planeswalker — Niko",
+    "oracleText": "When Niko Aris enters, create X Shard tokens. (They're enchantments with \"{2}, Sacrifice this token: Scry 1, then draw a card.\")\n+1: Up to one target creature you control can't be blocked this turn. Whenever that creature deals damage this turn, return it to its owner's hand.\n−1: Niko Aris deals 2 damage to target tapped creature for each card you've drawn this turn.\n−1: Create a Shard token.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Niko Aris:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Shard",
+                    "dynamicCount": "CastX"
+                },
+                "descriptionOverride": "When Niko Aris enters, create X Shard tokens."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Niko Aris:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "CANT_BE_BLOCKED",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "destination": "Hand"
+                            },
+                            "trigger": {
+                                "event": "DealsDamageEvent"
+                            },
+                            "watchedTarget": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Up to one target creature you control can't be blocked this turn. Whenever that creature deals damage this turn, return it to its owner's hand."
+            },
+            {
+                "id": "Niko Aris:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -1
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "TurnTracking",
+                            "player": "You",
+                            "tracker": "CARDS_DRAWN"
+                        },
+                        "multiplier": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature tapped"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Niko Aris deals 2 damage to target tapped creature for each card you've drawn this turn."
+            },
+            {
+                "id": "Niko Aris:4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -1
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Shard"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Create a Shard token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "225",
+        "rarity": "MYTHIC",
+        "artist": "Winona Nelson",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6c4e9cfe-e72e-46a1-a8d8-9fda5f2bae73.jpg?1783928191",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "If Niko Aris enters the battlefield without being cast, they were cast for a cost other than their mana cost, or if X was chosen to be 0, the enters-the-battlefield ability won't create any Shard tokens."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The delayed triggered ability created by Niko's first loyalty ability will trigger whenever the target creature deals any damage that turn, not just combat damage."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Niko deals all the damage for their second ability at the same time. For example, if you've drawn two cards this turn, Niko will deal 4 damage to the target tapped creature; they won't deal 2 damage, then deal 2 more damage."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "WHITE",
         "BLUE"
     ]
 }
@@ -15613,6 +16876,156 @@
     ]
 }
 
+// Sarulf, Realm Eater
+{
+    "name": "Sarulf, Realm Eater",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Legendary Creature — Wolf",
+    "oracleText": "Whenever a permanent an opponent controls is put into a graveyard from the battlefield, put a +1/+1 counter on Sarulf.\nAt the beginning of your upkeep, if Sarulf has one or more +1/+1 counters on it, you may remove all of them. If you do, exile each other nonland permanent with mana value less than or equal to the number of counters removed this way.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sarulf, Realm Eater:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent ctrl:opponent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever a permanent an opponent controls is put into a graveyard from the battlefield, put a +1/+1 counter on Sarulf."
+            },
+            {
+                "id": "Sarulf, Realm Eater:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "StoreNumber",
+                                "name": "sarulfRemovedCounters",
+                                "amount": {
+                                    "type": "EntityProperty",
+                                    "entity": "Self",
+                                    "numericProperty": {
+                                        "type": "CounterCount",
+                                        "counterType": "PLUS_ONE_PLUS_ONE"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "RemoveAllCountersOfType",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "target": "Self"
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsNonland",
+                                            "IsPermanent",
+                                            {
+                                                "type": "ManaValueAtMostDynamic",
+                                                "amount": {
+                                                    "type": "VariableReference",
+                                                    "variableName": "sarulfRemovedCounters"
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    "excludeSelf": true
+                                },
+                                "storeAs": "gathered2"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "At the beginning of your upkeep, if Sarulf has one or more +1/+1 counters on it, you may remove all of them. If you do, exile each other nonland permanent with mana value less than or equal to the number of counters removed this way."
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, if Sarulf has one or more +1/+1 counters on it, you may remove all of them. If you do, exile each other nonland permanent with mana value less than or equal to the number of counters removed this way."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bcecf9ba-36da-490a-9460-99ff87d99fbd.jpg?1783928191",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "It doesn't matter which graveyard the permanent is put into as long as an opponent controlled it when it last existed on the battlefield."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If Sarulf doesn't have any +1/+1 counters on it as your upkeep begins, its last ability won't trigger at all. If the ability does trigger, it will check again as it tries to resolve. If Sarulf doesn't have any +1/+1 counters on it at that time, the ability won't do anything. No other permanents will be exiled."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If Sarulf isn't on the battlefield as its last ability starts to resolve, you can't remove any +1/+1 counters from it, even if it had +1/+1 counters when it was last on the battlefield. No other permanents will be exiled."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Choosing to remove all the +1/+1 counters on Sarulf won't affect any other counters it may have."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If you do remove +1/+1 counters, you must remove all of them. You can't fine-tune the carnage by only removing some of them."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "You may choose to remove Sarulf's +1/+1 counters even if that would cause lethal damage to be marked on Sarulf. If you do this, Sarulf will die after its last ability is finished resolving."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Saw It Coming
 {
     "name": "Saw It Coming",
@@ -17634,6 +19047,137 @@
     ]
 }
 
+// Svella, Ice Shaper
+{
+    "name": "Svella, Ice Shaper",
+    "manaCost": "{1}{R}{G}",
+    "typeLine": "Legendary Snow Creature — Troll Warrior",
+    "oracleText": "{3}, {T}: Create a colorless snow artifact token named Icy Manalith with \"{T}: Add one mana of any color.\"\n{6}{R}{G}, {T}: Look at the top four cards of your library. You may cast a spell from among them without paying its mana cost. Put the rest on the bottom of your library in a random order.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Svella, Ice Shaper:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Icy Manalith"
+                },
+                "descriptionOverride": "{3}, {T}: Create a colorless snow artifact token named Icy Manalith with \"{T}: Add one mana of any color.\""
+            },
+            {
+                "id": "Svella, Ice Shaper:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{6}{R}{G}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseSpell",
+                            "storeSelected": "selected1",
+                            "prompt": "You may cast a spell from among them without paying its mana cost.",
+                            "selectedLabel": "Cast for free",
+                            "remainderLabel": "Put on bottom",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "selected1"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "InZone",
+                                        "zone": "Library"
+                                    }
+                                ]
+                            },
+                            "storeMatching": "matching3"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{6}{R}{G}, {T}: Look at the top four cards of your library. You may cast a spell from among them without paying its mana cost. Put the rest on the bottom of your library in a random order."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "UNCOMMON",
+        "artist": "Andrew Mar",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a7054d48-5ed3-43a1-85e5-9f306b081b4f.jpg?1783928190",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The spell you cast with Svella's last ability is cast from your library."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If you cast a spell using Svella's ability, you do so as part of the resolution of that ability. You can't wait to cast it later in the turn. Timing permissions based on the card's type are ignored."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "You'll put the cards you didn't cast on the bottom of your library before the spell you cast resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Tergrid's Shadow
 {
     "name": "Tergrid's Shadow",
@@ -17860,6 +19404,343 @@
         "BLACK"
     ],
     "layout": "MODAL_DFC"
+}
+
+// The Bears of Littjara
+{
+    "name": "The Bears of Littjara",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Create a 2/2 blue Shapeshifter creature token with changeling.\nII — Any number of target Shapeshifter creatures you control have base power and toughness 4/4.\nIII — Choose up to one target creature or planeswalker. Each creature with power 4 or greater you control deals damage equal to its power to that permanent.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Shapeshifter"
+                    ],
+                    "keywords": [
+                        "CHANGELING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/e/f/ef775ad0-b1a9-4254-ab6f-304558bb77a1.jpg?1783928082"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "SetBaseStats",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "power": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "toughness": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "unlimited": true,
+                    "filter": {
+                        "baseFilter": "creature Shapeshifter ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature pow>=4 ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "IterationEntity",
+                            "numericProperty": "Power"
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "damageSource": "IterationEntity"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetCreatureOrPlaneswalker",
+                    "optional": true,
+                    "id": "t1"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "RARE",
+        "artist": "Randy Gallegos",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/be43a643-6cb7-4bb6-a28d-8ad30b7fbb6d.jpg?1783928200",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The effect of the chapter II ability lasts indefinitely. It doesn't expire at end of turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The chapter II ability overwrites any previous effects that set any of the Shapeshifters' base power and toughness to specific values. Any effects that set a Shapeshifter's base power and toughness that start to apply after the chapter II ability will override the effect of that ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
+// The Bloodsky Massacre
+{
+    "name": "The Bloodsky Massacre",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Create a 2/3 red Demon Berserker creature token with menace.\nII — Whenever a Berserker attacks this turn, you draw a card and you lose 1 life.\nIII — Add {R} for each Berserker you control. Until end of turn, you don't lose this mana as steps and phases end.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 3,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Demon",
+                        "Berserker"
+                    ],
+                    "keywords": [
+                        "MENACE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/c/5/c58def55-f2ca-4c41-b891-c32e5220fc66.jpg?1783928079"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "Controller"
+                            }
+                        ]
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "AttackEvent",
+                            "filter": "creature Berserker"
+                        },
+                        "binding": "ANY"
+                    }
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "Berserker"
+                    },
+                    "expiry": "KEPT_UNTIL_END_OF_TURN"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "RARE",
+        "artist": "Livia Prima",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/669975ed-0501-4b48-988d-29c1215179a4.jpg?1783928198",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The chapter III ability isn't a mana ability. It uses the stack and can be responded to. Use the number of Berserkers you control as the ability resolves to determine how much {R} to add."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
+// The Raven's Warning
+{
+    "name": "The Raven's Warning",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Create a 1/1 blue Bird creature token with flying. You gain 2 life.\nII — Whenever one or more creatures you control with flying deal combat damage to a player this turn, look at that player's hand and draw a card.\nIII — You may put a card you own from outside the game on top of your library.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "BLUE"
+                            ],
+                            "creatureTypes": [
+                                "Bird"
+                            ],
+                            "keywords": [
+                                "FLYING"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a0cb299-057d-4c39-9d73-3a3512526e4a.jpg?1783928081"
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "The Raven's Warning:1",
+                        "trigger": {
+                            "type": "OneOrMoreDealCombatDamageToPlayerEvent",
+                            "sourceFilter": "creature kw:flying"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "LookAtTargetHand",
+                                    "target": {
+                                        "type": "PlayerRef",
+                                        "player": "TriggeringPlayer"
+                                    }
+                                },
+                                {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "duration": "EndOfTurn",
+                    "descriptionOverride": "Whenever one or more creatures you control with flying deal combat damage to a player this turn, look at that player's hand and draw a card."
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Sideboard"
+                            },
+                            "storeAs": "wishable"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "wishable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "wishableFound"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "wishableFound",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "227",
+        "rarity": "RARE",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d00bd457-e1cc-45e1-8b2e-58f886bd6df8.jpg?1783928191",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "You don't have to reveal the card you bring into the game via the chapter III ability."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "In a casual game, a card from outside the game comes from your personal collection. In a game played under tournament rules, a card from outside the game comes from your sideboard. You may look at your sideboard at any time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
 }
 
 // The World Tree

@@ -1298,6 +1298,25 @@ object PredefinedTokens {
     }
 
     /**
+     * Icy Manalith — the colorless snow artifact token with "{T}: Add one mana of any color."
+     * Created by Svella, Ice Shaper. Being snow, the mana it makes is snow mana.
+     */
+    val IcyManalith = card("Icy Manalith") {
+        typeLine = "Snow Artifact"
+        oracleText = "{T}: Add one mana of any color."
+
+        activatedAbility {
+            cost = Costs.Tap
+            effect = Effects.AddAnyColorMana(1)
+            manaAbility = true
+        }
+
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/3/d/3db39e3b-fad4-4c9b-911f-69883ac7e0e1.jpg?1783928078"
+        }
+    }
+
+    /**
      * Tamiyo's Notebook — a legendary colorless Book artifact token with
      * "Spells you cast cost {2} less to cast" and "{T}: Draw a card."
      * Created by Tamiyo, Compleated Sage's −7.
@@ -1392,6 +1411,7 @@ object PredefinedTokens {
         ForestTentacle,
         ForestDryad,
         Powerstone,
+        IcyManalith,
         TamiyosNotebook,
         Gold
     )
