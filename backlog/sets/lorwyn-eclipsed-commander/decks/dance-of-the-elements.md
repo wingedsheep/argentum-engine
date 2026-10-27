@@ -112,4 +112,4 @@
 - [ ] 1 Thriving Heath
 - [ ] 1 Thriving Isle
 - [ ] 1 Thriving Moor
-- [ ] 1 Unclaimed Territory
+- [x] 1 Unclaimed Territory

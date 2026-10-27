@@ -2,7 +2,7 @@
 
 **Set Size:** 153 cards
 **Release Date:** January 23, 2026
-**Implemented:** 7 / 153
+**Implemented:** 8 / 153
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 4     | 0    |
@@ -160,7 +160,7 @@
 - [ ] Timeless Lotus
 - [ ] Titan of Industry
 - [x] Tree of Perdition
-- [ ] Unclaimed Territory
+- [x] Unclaimed Territory
 - [ ] Vernal Fen
 - [ ] Vernal Sovereign
 - [ ] Village Pillagers

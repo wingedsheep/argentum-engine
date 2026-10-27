@@ -2058,6 +2058,54 @@
     ]
 }
 
+// Exquisite Blood
+{
+    "name": "Exquisite Blood",
+    "manaCost": "{4}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever an opponent loses life, you gain that much life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Exquisite Blood:1",
+                "trigger": {
+                    "type": "LifeLossEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_LIFE_LOST"
+                    }
+                },
+                "descriptionOverride": "Whenever an opponent loses life, you gain that much life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "rarity": "RARE",
+        "artist": "Cynthia Sheppard",
+        "flavorText": "Even as humans regained the upper hand, some still willingly traded their lives for a chance at immortality.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4cd54279-57f5-4cd9-b524-4f094bd2fc36.jpg?1783940698",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "Damage dealt to an opponent usually causes that opponent to lose life. An opponent paying life also causes loss of life."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "If you and an opponent both lose life simultaneously, and this causes your life total to become 0 or less, you'll lose the game before Exquisite Blood's triggered ability can resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Falkenrath Exterminator
 {
     "name": "Falkenrath Exterminator",

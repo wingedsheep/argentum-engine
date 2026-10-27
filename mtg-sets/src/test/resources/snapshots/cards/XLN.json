@@ -5052,6 +5052,63 @@
     ]
 }
 
+// Unclaimed Territory
+{
+    "name": "Unclaimed Territory",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "As this land enters, choose a creature type.\n{T}: Add {C}.\n{T}: Add one mana of any color. Spend this mana only to cast a creature spell of the chosen type.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Unclaimed Territory:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Unclaimed Territory:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "restriction": {
+                        "type": "OfChosenType",
+                        "creatureOnly": true
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CREATURE_TYPE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "258",
+        "rarity": "UNCOMMON",
+        "artist": "Dimitar Marinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff765732-6fe3-4594-bff5-6ce47a79f45a.jpg?1783935697",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "To choose a creature type, you must choose an existing creature type, such as Vampire or Knight. You can't choose multiple creature types, such as \"Vampire Knight.\" Card types such as artifact can't be chosen, nor can subtypes that aren't creature types, such as Jace, Vehicle, or Treasure."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Unfriendly Fire
 {
     "name": "Unfriendly Fire",
@@ -5123,6 +5180,80 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Vanquisher's Banner
+{
+    "name": "Vanquisher's Banner",
+    "manaCost": "{5}",
+    "typeLine": "Artifact",
+    "oracleText": "As this artifact enters, choose a creature type.\nCreatures you control of the chosen type get +1/+1.\nWhenever you cast a creature spell of the chosen type, draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vanquisher's Banner:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "HasChosenSubtype"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature ctrl:you",
+                    "chosenSubtypeKey": "chosenCreatureType"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CREATURE_TYPE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "251",
+        "rarity": "RARE",
+        "artist": "Milivoj Ćeran",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/60b7a85f-3a30-4ece-9bbb-61f3c4b796b8.jpg?1783935699",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "The choice of creature type is made as Vanquisher's Banner enters the battlefield. Players can't respond to this choice. The bonus starts applying immediately."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "The last ability of Vanquisher's Banner resolves before the spell that caused it to trigger. The ability will resolve even if the creature spell is countered."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "To choose a creature type, you must choose an existing creature type, such as Fungus or Sliver. You can't choose multiple creature types, such as Fungus Sliver. Card types such as artifact can't be chosen, nor can subtypes that aren't creature types, such as Jace, Vehicle, or Treasure."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "Because damage remains marked on a creature until the damage is removed as the turn ends, nonlethal damage dealt to a creature you control of the chosen type may become lethal if Vanquisher's Banner leaves the battlefield during that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Vicious Conquistador
