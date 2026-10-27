@@ -110,6 +110,66 @@
     ]
 }
 
+// Alrund's Epiphany
+{
+    "name": "Alrund's Epiphany",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create two 1/1 blue Bird creature tokens with flying. Take an extra turn after this one. Exile Alrund's Epiphany.\nForetell {4}{U}{U} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "keywords": [
+        "FORETELL"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Foretell",
+            "cost": "{4}{U}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Bird"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a0cb299-057d-4c39-9d73-3a3512526e4a.jpg?1783928081"
+                },
+                "TakeExtraTurn"
+            ]
+        },
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "MYTHIC",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c94fcb53-a7bd-4a80-a536-9fb0eb24261a.jpg?1783928270",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Exiling Alrund's Epiphany as it resolves is part of its effect. If Alrund's Epiphany doesn't resolve, it will be put into its owner's graveyard. If it's exiled this way, it's exiled face up and doesn't become foretold."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Arctic Treeline
 {
     "name": "Arctic Treeline",
@@ -130,6 +190,198 @@
     "colorIdentityOverride": [
         "GREEN",
         "WHITE"
+    ]
+}
+
+// Ascendant Spirit
+{
+    "name": "Ascendant Spirit",
+    "manaCost": "{U}",
+    "typeLine": "Snow Creature — Spirit",
+    "oracleText": "{S}{S}: This creature becomes a Spirit Warrior with base power and toughness 2/3.\n{S}{S}{S}: If this creature is a Warrior, put a flying counter on it and it becomes a Spirit Warrior Angel with base power and toughness 4/4.\n{S}{S}{S}{S}: If this creature is an Angel, put two +1/+1 counters on it and it gains \"Whenever this creature deals combat damage to a player, draw a card.\"",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ascendant Spirit:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{S}{S}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "SetCreatureSubtypes",
+                            "subtypes": [
+                                "Spirit",
+                                "Warrior"
+                            ]
+                        },
+                        {
+                            "type": "SetBaseStats",
+                            "target": "Self",
+                            "power": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughness": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "This creature becomes a Spirit Warrior with base power and toughness 2/3."
+            },
+            {
+                "id": "Ascendant Spirit:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{S}{S}{S}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": "Warrior"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddCounters",
+                                "counterType": "FLYING",
+                                "count": 1,
+                                "target": "Self"
+                            },
+                            {
+                                "type": "SetCreatureSubtypes",
+                                "subtypes": [
+                                    "Spirit",
+                                    "Warrior",
+                                    "Angel"
+                                ]
+                            },
+                            {
+                                "type": "SetBaseStats",
+                                "target": "Self",
+                                "power": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "toughness": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "If this creature is a Warrior, put a flying counter on it and it becomes a Spirit Warrior Angel with base power and toughness 4/4."
+            },
+            {
+                "id": "Ascendant Spirit:4",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{S}{S}{S}{S}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": "Angel"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 2,
+                                "target": "Self"
+                            },
+                            {
+                                "type": "GrantTriggeredAbility",
+                                "ability": {
+                                    "id": "Ascendant Spirit:1",
+                                    "trigger": {
+                                        "type": "DealsDamageEvent",
+                                        "damageType": "DamageCombat",
+                                        "recipient": {
+                                            "type": "RecipientPlayer",
+                                            "player": "Any"
+                                        }
+                                    },
+                                    "effect": {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "descriptionOverride": "Whenever this creature deals combat damage to a player, draw a card."
+                                },
+                                "target": "Self",
+                                "duration": "Permanent"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "If this creature is an Angel, put two +1/+1 counters on it and it gains \"Whenever this creature deals combat damage to a player, draw a card.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "rarity": "RARE",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea56de43-c0fd-4627-846d-41a962b95f17.jpg?1783928269",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "None of Ascendant Spirit's abilities has a duration. If one of them resolves, it will remain in effect until Ascendant Spirit leaves the battlefield or a subsequent effect changes its characteristics."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The first and second abilities cause Ascendant Spirit to lose any other creature types it may have. It retains any card types or supertypes it may have."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The first and second abilities overwrite any previous effects that set Ascendant Spirit's base power and toughness to specific values. Any effects that set Ascendant Spirit's base power and toughness that start to apply after one of these abilities will override the effect of that ability."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Activating the second ability after Ascendant Spirit has already been legally blocked by a creature without flying or reach won't change or undo that block."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Any of Ascendant Spirit's abilities may be activated repeatedly. Multiple flying counters on the same permanent provide no additional benefit; however, each time the last ability resolves while Ascendant Spirit is an Angel will give Ascendant Spirit two more +1/+1 counters and cause it to gain another instance of the triggered ability. All of those instances trigger separately."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -846,6 +1098,80 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Bind the Monster
+{
+    "name": "Bind the Monster",
+    "manaCost": "{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, tap enchanted creature. It deals damage to you equal to its power.\nEnchanted creature doesn't untap during its controller's untap step.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bind the Monster:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": "EnchantedCreature"
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "EnchantedCreature",
+                                "numericProperty": "Power"
+                            },
+                            "target": "Controller",
+                            "damageSource": "EnchantedCreature"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this Aura enters, tap enchanted creature. It deals damage to you equal to its power."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "artist": "Tran Nguyen",
+        "flavorText": "Sarulf's snarl of rage shook the World Tree.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/080be8d1-e453-4250-b917-f0eb26644895.jpg?1783928268",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The enters-the-battlefield ability triggers even if the enchanted creature is already tapped. That creature will still deal damage to you."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Use the power of the enchanted creature as the enters-the-battlefield ability resolves to determine how much damage is dealt."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If Bind the Monster is no longer on the battlefield as the enters-the-battlefield ability resolves, use the power of the creature it was last enchanting to determine how much damage is dealt. Damage is dealt even if that creature is also not on the battlefield at that time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -1854,6 +2180,77 @@
     ]
 }
 
+// Cyclone Summoner
+{
+    "name": "Cyclone Summoner",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Creature — Giant Wizard",
+    "oracleText": "When this creature enters, if you cast it from your hand, return all permanents to their owners' hands except for Giants, Wizards, and lands.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cyclone Summoner:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsNonland",
+                                        "IsPermanent",
+                                        {
+                                            "type": "Not",
+                                            "predicate": {
+                                                "type": "HasAnyOfSubtypes",
+                                                "subtypes": [
+                                                    "Giant",
+                                                    "Wizard"
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "returnAllToHand_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "returnAllToHand_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "interveningIf": "WasCastFromHand",
+                "descriptionOverride": "When this creature enters, if you cast it from your hand, return all permanents to their owners' hands except for Giants, Wizards, and lands."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "rarity": "RARE",
+        "artist": "Andrey Kuzinskiy",
+        "flavorText": "Frost giants study for centuries in isolation, honing their ability to harness elemental mayhem.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b2d40071-cadf-48de-a8ed-d55adbfab632.jpg?1783928266"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Darkbore Pathway
 {
     "name": "Darkbore Pathway",
@@ -2576,6 +2973,102 @@
             }
         ]
     }
+}
+
+// Draugr Thought-Thief
+{
+    "name": "Draugr Thought-Thief",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Zombie Rogue",
+    "oracleText": "When this creature enters, look at the top card of target player's library. You may put that card into their graveyard.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Draugr Thought-Thief:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "selectedLabel": "Put into their graveyard",
+                            "remainderLabel": "Leave on top of their library"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "placement": "Top"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "The worst part is that you won't even remember how much he's taken from you.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/31da60a2-d4d3-4954-be59-c7ff61fa2905.jpg?1783928265"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Dread Rider
@@ -3601,6 +4094,99 @@
     ]
 }
 
+// Frost Augur
+{
+    "name": "Frost Augur",
+    "manaCost": "{U}",
+    "typeLine": "Snow Creature — Human Wizard",
+    "oracleText": "{S}, {T}: Look at the top card of your library. If it's a snow card, you may reveal it and put it into your hand. ({S} can be paid with one mana from a snow source.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Frost Augur:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{S}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsSnow"
+                                ]
+                            },
+                            "storeMatching": "matching1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "selectedLabel": "Reveal and put into your hand",
+                            "remainderLabel": "Leave on top of your library"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true,
+                            "revealToSelf": false
+                        }
+                    ]
+                },
+                "descriptionOverride": "{S}, {T}: Look at the top card of your library. If it's a snow card, you may reveal it and put it into your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "UNCOMMON",
+        "artist": "Cristi Balanescu",
+        "flavorText": "From the barest crack in the ice, she teases forth a swirling, living map of the Cosmos.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2ae592f-caf6-445a-970b-f8101998e657.jpg?1783928265"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Frostpeak Yeti
 {
     "name": "Frostpeak Yeti",
@@ -3946,6 +4532,197 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Giant's Amulet
+{
+    "name": "Giant's Amulet",
+    "manaCost": "{U}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "When this Equipment enters, you may pay {3}{U}. If you do, create a 4/4 blue Giant Wizard creature token, then attach this Equipment to it.\nEquipped creature gets +0/+1 and has \"This creature has hexproof as long as it's untapped.\"\nEquip {2}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Giant's Amulet:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{3}{U}"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CreateToken",
+                                "power": 4,
+                                "toughness": 4,
+                                "colors": [
+                                    "BLUE"
+                                ],
+                                "creatureTypes": [
+                                    "Giant",
+                                    "Wizard"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/a/4/a40a0cb8-0caf-4dd1-b7d0-abbc626985d2.jpg?1783928080"
+                            },
+                            {
+                                "type": "AttachEquipment",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "createdTokens"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Giant's Amulet:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 0,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF"
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EquippedCreature",
+                    "filter": "creature untapped"
+                }
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "59",
+        "rarity": "UNCOMMON",
+        "artist": "Joseph Meehan",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/ab8b1ec2-9303-4722-8644-b3bc1a5c387f.jpg?1783928263",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "You decide whether to pay {3}{U} as the enters-the-battlefield ability resolves. If you do, you immediately create the Giant Wizard creature token and attach Giant's Amulet to it. No players may respond to your decision to pay or not, and no player may take actions during this process."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The Giant Wizard creature token enters the battlefield as a 4/4 creature. Any abilities that trigger when a creature with a certain toughness enters the battlefield will see the token enter as a 4/4 creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Giant's Grasp
+{
+    "name": "Giant's Grasp",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant Giant you control\nWhen this Aura enters, gain control of target nonland permanent for as long as this Aura remains on the battlefield.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Giant's Grasp:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": {
+                        "type": "WhileSourceOnBattlefield",
+                        "sourceDescription": "this Aura"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "gain control of target nonland permanent for as long as this Aura remains on the battlefield."
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "permanent Giant ctrl:you"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "384",
+        "rarity": "UNCOMMON",
+        "artist": "Ilse Gort",
+        "flavorText": "\"Behave and you'll be a fine pet. Bite me and you're ammunition.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/74c92d48-504a-4320-b9f4-c1d2d06fa223.jpg?1783928120",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "If Giant's Grasp leaves the battlefield before its triggered ability resolves, you won't gain control of the target nonland permanent at all."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The control-changing effect doesn't expire if another player gains control of Giant's Grasp (although this is likely to cause it to leave the battlefield because it can enchant only a Giant controlled by the controller of Giant's Grasp). The effect expires only once Giant's Grasp is no longer on the battlefield."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Gaining control of a nonland permanent doesn't cause you to gain control of any Auras or Equipment attached to it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4565,6 +5342,101 @@
     "colorIdentityOverride": []
 }
 
+// Graven Lore
+{
+    "name": "Graven Lore",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Snow Instant",
+    "oracleText": "Scry X, where X is the amount of {S} spent to cast this spell, then draw three cards. ({S} is mana from a snow source.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": "SnowManaSpent",
+                        "isScry": true
+                    },
+                    "storeAs": "scried"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "scried",
+                    "selection": "ChooseAnyNumber",
+                    "storeSelected": "toBottom",
+                    "storeRemainder": "toTop",
+                    "prompt": "Scry: choose cards to put on the bottom of your library",
+                    "selectedLabel": "Put on bottom",
+                    "remainderLabel": "Put on top"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "toBottom",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "toTop",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Top"
+                    },
+                    "order": "ControllerChooses"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": "SnowManaSpent",
+                            "operator": "GT",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 0
+                            }
+                        }
+                    },
+                    "then": "EmitScriedEvent"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e4386e5c-32b1-4096-a93f-fedd1a4801fc.jpg?1783928262",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "If you cast Graven Lore without spending snow mana, you'll just draw three cards."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If Graven Lore is copied, no mana was spent to cast the copy, so you'll just draw three cards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Grim Draugr
 {
     "name": "Grim Draugr",
@@ -5075,6 +5947,86 @@
         "artist": "Grzegorz Rutkowski",
         "flavorText": "The demons took no captives and claimed no spoils; they sought only to destroy.",
         "imageUri": "https://cards.scryfall.io/normal/front/7/7/77da4de2-4d34-40e5-8fc0-850aef05356b.jpg?1783928227"
+    }
+}
+
+// Inga Rune-Eyes
+{
+    "name": "Inga Rune-Eyes",
+    "manaCost": "{3}{U}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "When Inga Rune-Eyes enters, scry 3.\nWhen Inga Rune-Eyes dies, draw three cards if three or more creatures died this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Inga Rune-Eyes:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 3
+                },
+                "descriptionOverride": "When Inga Rune-Eyes enters, scry 3."
+            },
+            {
+                "id": "Inga Rune-Eyes:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "TurnTracking",
+                                "player": "Each",
+                                "tracker": "CREATURES_DIED"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    }
+                },
+                "descriptionOverride": "When Inga Rune-Eyes dies, draw three cards if three or more creatures died this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "UNCOMMON",
+        "artist": "Bram Sels",
+        "flavorText": "Every path ever charted by an Omenseeker is etched into her eyes.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/62a6f095-5beb-42a8-af8f-d40eef27150e.jpg?1783928261",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The number of creatures that have died that turn is checked as the last ability resolves. Inga Rune-Eyes will count, as will creatures that die at the same time as Inga Rune-Eyes and creatures that die while that ability is on the stack but has not yet resolved."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The last ability will count any creature that died, no matter who controlled it."
+            }
+        ]
     }
 }
 
@@ -6690,6 +7642,49 @@
     ]
 }
 
+// Mists of Littjara
+{
+    "name": "Mists of Littjara",
+    "manaCost": "{1}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature or Vehicle\nEnchanted creature gets -3/-0.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": -3,
+                    "toughnessBonus": 0
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "creature"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature|Vehicle"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "artist": "Bastien L. Deharme",
+        "flavorText": "The Skelle raiders boasted that nothing could stop them, certainly not a bit of fog.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6cfd4944-790f-4835-a8a1-c23ef7047648.jpg?1783928259"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Mistwalker
 {
     "name": "Mistwalker",
@@ -7015,6 +8010,151 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Orvar, the All-Form
+{
+    "name": "Orvar, the All-Form",
+    "manaCost": "{3}{U}",
+    "typeLine": "Legendary Creature — Shapeshifter",
+    "oracleText": "Changeling\nWhenever you cast an instant or sorcery spell, if it targets one or more other permanents you control, create a token that's a copy of one of those permanents.\nWhen a spell or ability an opponent controls causes you to discard this card, create a token that's a copy of target permanent.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "CHANGELING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Orvar, the All-Form:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    },
+                    "requires": [
+                        {
+                            "type": "SpellTargetsMatching",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsPermanent"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "StateNot",
+                                        "predicate": "IsSource"
+                                    }
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "FilterCollection",
+                            "from": "trigger.captured",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "InZone",
+                                        "zone": "Battlefield"
+                                    }
+                                ]
+                            },
+                            "storeMatching": "matching0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Choose a permanent to copy",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "selected1"
+                            },
+                            "body": {
+                                "type": "CreateTokenCopyOfTarget",
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Orvar, the All-Form:2",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "cause": "DiscardedByOpponentEffect"
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f36775e-9e48-49cc-a771-d58481712edc.jpg?1783928258",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "For the first triggered ability, the instant or sorcery spell can target other things if it also targets one or more permanents you control; however, the token you create can copy only permanents you control that are targets of the spell. If the spell targets more than one permanent you control, you choose which permanent the token is copying as you create the token."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "As the first triggered ability tries to resolve, the spell that caused it to trigger and that spell's targets are checked again. Ignore any target of the spell that has left the battlefield by that point. If all of the permanents you controlled that were targets have left the battlefield by that point, the triggered ability will do nothing and no token will be created. If at least one permanent you control that's a target is still on the battlefield, the triggered ability will resolve, even if that permanent is now an illegal target for the spell."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "For the second triggered ability, you can choose any permanent as the target, regardless of who controls it."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a spell or ability an opponent controls allows or instructs you to choose a card to discard, and you discard Orvar, its last ability will trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -7918,6 +9058,81 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Run Ashore
+{
+    "name": "Run Ashore",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one or both —\n• The owner of target nonland permanent puts it on their choice of the top or bottom of their library.\n• Return target nonland permanent to its owner's hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "PutOnLibraryPositionOfChoice",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "nonland permanent"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Put target nonland permanent on the top or bottom of its owner's library (owner's choice)"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Hand"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "nonland permanent"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Return target nonland permanent to its owner's hand"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1
+        }
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"Which one of you slug-brained milksops forgot to make an offering to Cosima?\"\n—Jolkur, navigator",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7eed5a2d-d7a4-4f64-a96b-04c5d4206c5a.jpg?1783928257",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "For the first mode, the owner of the card chooses whether it goes on the top or bottom of that library."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If you choose both modes, they happen in the listed order and nothing happens in between them. Notably, if the second mode targets an Aura currently enchanting the target of the first mode, that Aura will be returned to its owner's hand. (It wouldn't be put into a graveyard as a state-based action until after Run Ashore is done resolving.)"
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -9236,6 +10451,98 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Surtland Elementalist
+{
+    "name": "Surtland Elementalist",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Creature — Giant Wizard",
+    "oracleText": "As an additional cost to cast this spell, reveal a Giant card from your hand or pay {2}.\nWhenever this creature attacks, you may cast an instant or sorcery spell from your hand without paying its mana cost.",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 8
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Surtland Elementalist:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "instant|sorcery"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "selectedLabel": "Cast without paying its mana cost"
+                        },
+                        {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "selected1"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature attacks, you may cast an instant or sorcery spell from your hand without paying its mana cost."
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "OrPay",
+                "cost": {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomRevealFromHand",
+                        "filter": "creature Giant"
+                    }
+                },
+                "alternativeManaCost": "{2}"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "375",
+        "rarity": "RARE",
+        "artist": "Nicholas Gregory",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1c9e7fdc-676f-4901-83ff-bfea3a96d937.jpg?1783928123",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "A Giant card is a creature card with the creature type Giant."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If you cast a spell using Surtland Elementalist's triggered ability, you do so as part of the resolution of that ability. You can't wait to cast the spell later in the turn. Timing permissions based on the card's type are ignored, and the spell will resolve before blockers are declared."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If you cast a spell \"without paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs, such as kicker costs. If the card has any mandatory additional costs, those must be paid to cast the spell."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If the spell has {X} in its mana cost, you must choose 0 as the value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
