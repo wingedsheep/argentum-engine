@@ -191,7 +191,7 @@ class PlayLandHandler(
         val played = executePlay(state, action)
         // A land creature that owes its controller an entry-copy order (CR 616.1): ask, then replay.
         return com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy
-            .askIfUnasked(state, played.state, com.wingedsheep.engine.core.PlayLandReplay(action)) ?: played
+            .askIfUnasked(state, played.state) { com.wingedsheep.engine.core.PlayLandReplay(action) } ?: played
     }
 
     private fun executePlay(state: GameState, action: PlayLand): ExecutionResult {

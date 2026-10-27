@@ -167,8 +167,7 @@ class EffectExecutorRegistry(
         // An entrant this put onto the battlefield owes its controller an entry-copy order
         // (CR 616.1): ask, then replay this instruction with the answer.
         com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.askIfUnasked(
-            state, executed.state, com.wingedsheep.engine.core.EffectReplay(effect, context)
-        )?.let { return EffectResult.from(it) }
+            state, executed.state) { com.wingedsheep.engine.core.EffectReplay(effect, context) }?.let { return EffectResult.from(it) }
         val result = if (effect is com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect ||
             effect is com.wingedsheep.sdk.scripting.effects.FilterCollectionEffect) {
             executed.copy(updatedCollections = EffectDiscardDestinations.propagateUnknown(

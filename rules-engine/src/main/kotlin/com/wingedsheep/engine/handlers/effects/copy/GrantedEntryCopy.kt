@@ -198,7 +198,12 @@ object GrantedEntryCopy {
      * The replay seam: when running from [input] left an entrant unasked in [result], drop that
      * work and ask its controller from [input]; the answer replays it ([replay]). Null otherwise.
      */
-    fun askIfUnasked(input: GameState, result: GameState, replay: EntryCopyReplay): ExecutionResult? {
+    inline fun askIfUnasked(input: GameState, result: GameState, replay: () -> EntryCopyReplay): ExecutionResult? {
+        if (result.entryCopyOrders?.unasked == null) return null
+        return ask(input, result, replay())
+    }
+
+    fun ask(input: GameState, result: GameState, replay: EntryCopyReplay): ExecutionResult? {
         val unasked = result.entryCopyOrders?.unasked ?: return null
         if (input.entryCopyOrders?.unasked != null) return null
         return input.suspendForDecision(

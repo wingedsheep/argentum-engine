@@ -133,7 +133,7 @@ class ContinuationHandler(
         }
         val resumed = registry.resume(stateAfterPop, answer, suspension.question, response, continueWithin)
         val result = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy.askIfUnasked(
-            stateAfterPop, resumed.state, AnswerReplay(suspension, response)) ?: resumed
+            stateAfterPop, resumed.state) { AnswerReplay(suspension, response) } ?: resumed
         // Casting resumers can finish a local picker without draining enclosing work.
         // A mandatory play must then retry the card or resume the original resolution.
         val completed = if (result.outcome is Outcome.Done &&
