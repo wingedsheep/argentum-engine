@@ -343,8 +343,9 @@ sealed interface Player {
      * each attacking red creature, … unless **its controller** pays {2}{R}" (Heroism, Tidal Flats).
      *
      * Distinct from [ControllerOfSource], which stays the enchantment's controller inside such a
-     * loop, and from [ControllerOf], which reads the effect's first *chosen target*. Null outside a
-     * ForEach-over-entities.
+     * loop, and from [ControllerOf], which reads the effect's first *chosen target*. A
+     * `CantAttackUnless` condition binds the creature being checked, so there it is the player
+     * attacking with it (Angelic Arbiter). Null outside a ForEach-over-entities or that check.
      */
     @SerialName("ControllerOfIterationEntity")
     @Serializable

@@ -6,7 +6,6 @@ import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CantAttackUnless
-import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PlayersCantCastSpells
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -22,11 +21,12 @@ import com.wingedsheep.sdk.scripting.references.Player
  * Each opponent who cast a spell this turn can't attack with creatures.
  * Each opponent who attacked with a creature this turn can't cast spells.
  *
- * Only the active player declares attackers (CR 508.1), so "an opponent who cast a spell this
- * turn can't attack" is a restriction on opponents' creatures that holds unless the active player
- * has cast no spells this turn. The cast half reads "attacked with a creature this turn" from each
- * caster's seat via `conditionFromCaster`. Both read the whole turn's history, so an Arbiter that
- * arrives mid-turn sees what the opponent already did (ruling 2010-08-15).
+ * The attack half restricts opponents' creatures whose controller ("its controller", the player
+ * attacking with it — right for Two-Headed Giant teammates too) has cast a spell this turn. The
+ * cast half reads "you attacked this turn" from each caster's seat via `conditionFromCaster`; it
+ * is the per-player attack record, so an attacking token that has since died still counts. Both
+ * read the whole turn's history, so an Arbiter that arrives mid-turn sees what the opponent
+ * already did (ruling 2010-08-15).
  */
 val AngelicArbiter = card("Angelic Arbiter") {
     manaCost = "{5}{W}{W}"
@@ -43,7 +43,7 @@ val AngelicArbiter = card("Angelic Arbiter") {
     staticAbility {
         ability = CantAttackUnless(
             condition = Conditions.CompareAmounts(
-                DynamicAmounts.spellsCastThisTurn(Player.ActivePlayer),
+                DynamicAmounts.spellsCastThisTurn(Player.ControllerOfIterationEntity),
                 ComparisonOperator.EQ, 0
             ),
             filter = GroupFilter.AllCreaturesOpponentsControl
@@ -53,7 +53,7 @@ val AngelicArbiter = card("Angelic Arbiter") {
     staticAbility {
         ability = PlayersCantCastSpells(
             affected = Player.EachOpponent,
-            condition = Conditions.YouAttackedWithCreaturesThisTurn(GameObjectFilter.Creature, 1),
+            condition = Conditions.YouAttackedThisTurn,
             conditionFromCaster = true
         )
     }

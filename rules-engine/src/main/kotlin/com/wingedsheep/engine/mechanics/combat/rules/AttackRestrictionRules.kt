@@ -1,7 +1,9 @@
 package com.wingedsheep.engine.mechanics.combat.rules
 
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureOf
+import com.wingedsheep.engine.handlers.CapturedObjectBinding
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.ObjectReferenceEnvironment
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
@@ -202,6 +204,8 @@ class NotAlreadyAttackingRule : AttackRestrictionRule {
  * controller), the defending player is bound into the condition's context, and a face-down or
  * ability-stripped holder contributes nothing (CR 708.2). With `coversPlaneswalkers = false` the
  * restriction only speaks about attacking a player — planeswalkers and battles stay attackable.
+ * The creature being checked is bound as the iteration entity, so "its controller"
+ * (`Player.ControllerOfIterationEntity`) is the player attacking with it.
  */
 class CantAttackUnlessDefenderRule(
     private val predicateEvaluator: PredicateEvaluator
@@ -211,6 +215,16 @@ class CantAttackUnlessDefenderRule(
         val projected = ctx.projected
         val attackingAPlayer = state.getEntity(defenderId)?.has<LifeTotalComponent>() == true
         val defendingPlayer = findDefendingPlayer(ctx, defenderId)
+
+        // The attacker is bound as the iteration entity, so `Player.ControllerOfIterationEntity`
+        // names the player attacking with it — "each opponent who cast a spell this turn can't
+        // attack with creatures" (Angelic Arbiter), right even when teammates attack together.
+        fun restrictionContext(holder: EntityId, you: EntityId) = EffectContext(
+            sourceId = holder, controllerId = you, defendingPlayerId = defendingPlayer,
+            objectReferences = ObjectReferenceEnvironment(
+                iteration = CapturedObjectBinding(ctx.attackerId, state.objectRef(ctx.attackerId))
+            )
+        )
 
         fun violated(holder: EntityId, you: EntityId, ability: StaticAbility): CantAttackUnless? = when (ability) {
             is ConditionalStaticAbility ->
@@ -222,8 +236,7 @@ class CantAttackUnlessDefenderRule(
             is CantAttackUnless -> ability.takeIf {
                 (attackingAPlayer || it.coversPlaneswalkers) &&
                     coversAttacker(predicateEvaluator, ctx, holder, you, it.filter) &&
-                    !predicateEvaluator.conditions.evaluate(state, it.condition,
-                        EffectContext(sourceId = holder, controllerId = you, defendingPlayerId = defendingPlayer))
+                    !predicateEvaluator.conditions.evaluate(state, it.condition, restrictionContext(holder, you))
             }
             else -> null
         }

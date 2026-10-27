@@ -198,7 +198,7 @@
                     "type": "Compare",
                     "left": {
                         "type": "SpellsCastThisTurn",
-                        "player": "ActivePlayer"
+                        "player": "ControllerOfIterationEntity"
                     },
                     "operator": "EQ",
                     "right": {
@@ -213,9 +213,17 @@
             {
                 "type": "PlayersCantCastSpells",
                 "condition": {
-                    "type": "PlayerAttackedWithCreaturesThisTurn",
-                    "filter": "creature",
-                    "atLeast": 1
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "PLAYER_ATTACKED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
                 },
                 "conditionFromCaster": true
             }

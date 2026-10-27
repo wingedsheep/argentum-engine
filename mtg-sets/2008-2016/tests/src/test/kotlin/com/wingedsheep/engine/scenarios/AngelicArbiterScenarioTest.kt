@@ -2,10 +2,12 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.legalactions.LegalActionEnumerator
+import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.m11.cards.AngelicArbiter
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Format
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
@@ -125,5 +127,54 @@ class AngelicArbiterScenarioTest : FunSpec({
         d.passPriorityUntil(Step.DECLARE_ATTACKERS)
 
         d.declareAttackers(d.player2, listOf(bear), d.player1).error shouldBe null
+    }
+
+    test("an opponent whose only attacker was a token that has since died still can't cast spells") {
+        val d = driver(startingPlayer = 1)
+        d.putCreatureOnBattlefield(d.player1, "Angelic Arbiter")
+        val token = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+        d.replaceState(d.state.updateEntity(token) { it.with(TokenComponent) })
+        d.removeSummoningSickness(token)
+
+        d.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        d.declareAttackers(d.player2, listOf(token), d.player1).error shouldBe null
+        d.moveToGraveyard(token)
+        d.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+        d.state.getEntity(token) shouldBe null
+
+        val spell = d.putCardInHand(d.player2, "Arbiter Test Glint")
+        d.giveMana(d.player2, Color.GREEN, 1)
+        d.castActionsFor(d.player2, spell).isEmpty() shouldBe true
+    }
+
+    test("Two-Headed Giant: only the teammate who cast a spell is kept from attacking") {
+        val d = GameTestDriver()
+        d.registerCards(TestCards.all + listOf(AngelicArbiter, probe))
+        d.initMultiplayer(
+            List(4) { Deck.of("Forest" to 40) },
+            format = Format.TwoHeadedGiant(),
+            teams = listOf(listOf(0, 1), listOf(2, 3)),
+        )
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val active = d.activePlayer!!
+        val teammate = d.state.sharedTurnTeam(active).single { it != active }
+        val arbiterController = d.state.getOpponents(active).first()
+        d.putCreatureOnBattlefield(arbiterController, "Angelic Arbiter")
+        val activeBear = d.putCreatureOnBattlefield(active, "Grizzly Bears")
+        val teammateBear = d.putCreatureOnBattlefield(teammate, "Grizzly Bears")
+        d.removeSummoningSickness(activeBear)
+        d.removeSummoningSickness(teammateBear)
+
+        // Hand priority round until the teammate holds it, then cast the probe as them.
+        while (d.state.priorityPlayerId != teammate) d.passPriority(d.state.priorityPlayerId!!)
+        val spell = d.putCardInHand(teammate, "Arbiter Test Glint")
+        d.giveMana(teammate, Color.GREEN, 1)
+        d.castSpell(teammate, spell).error shouldBe null
+        while (d.state.stack.isNotEmpty()) d.passPriority(d.state.priorityPlayerId!!)
+        d.passPriorityUntil(Step.DECLARE_ATTACKERS)
+
+        val valid = d.validAttackers(active)
+        valid shouldContain activeBear
+        valid shouldNotContain teammateBear
     }
 })
