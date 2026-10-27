@@ -22,8 +22,9 @@ import io.kotest.matchers.shouldBe
  * counter on each creature you control."
  *
  * Exercises the any-player, per-permanent, OTHER-binding sacrifice trigger: an opponent
- * sacrificing two permanents at once fires it twice, it only grows *your* creatures, and Mazirek
- * sacrificing itself alone doesn't fire it.
+ * sacrificing two permanents at once fires it twice, it only grows *your* creatures, Mazirek
+ * sacrificing itself alone doesn't fire it, and Mazirek sacrificed alongside another permanent
+ * still triggers for that other permanent (ruling; leaves-the-battlefield look-back, CR 603.10a).
  */
 class MazirekKraulDeathPriestScenarioTest : ScenarioTestBase() {
 
@@ -116,6 +117,37 @@ class MazirekKraulDeathPriestScenarioTest : ScenarioTestBase() {
 
             game.findPermanent("Mazirek, Kraul Death Priest") shouldBe null
             game.plusOne(bears) shouldBe 0
+        }
+
+        test("Mazirek sacrificed alongside another creature still triggers for the other one") {
+            val game = scenario()
+                .withPlayers("You", "Opponent")
+                .withCardOnBattlefield(1, "Mazirek, Kraul Death Priest", summoningSickness = false)
+                .withCardOnBattlefield(1, "Grizzly Bears", summoningSickness = false)
+                .withCardOnBattlefield(1, "Grizzly Bears", summoningSickness = false)
+                .withCardInHand(1, "Double Sacrifice")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val mazirek = game.findPermanent("Mazirek, Kraul Death Priest")!!
+            val (sacrificedBears, survivingBears) = game.findPermanents("Grizzly Bears")
+
+            game.castSpell(1, "Double Sacrifice")
+            var guard = 0
+            while ((game.state.stack.isNotEmpty() || game.hasPendingDecision()) && guard++ < 60) {
+                when (val d = game.getPendingDecision()) {
+                    is SelectCardsDecision -> game.selectCards(listOf(mazirek, sacrificedBears))
+                    null -> game.resolveStack()
+                    else -> error("Unexpected decision: ${d::class.simpleName}")
+                }
+            }
+
+            game.findPermanent("Mazirek, Kraul Death Priest") shouldBe null
+            game.findPermanents("Grizzly Bears") shouldBe listOf(survivingBears)
+            withClue("one trigger for the other sacrificed Bears; none for Mazirek itself") {
+                game.plusOne(survivingBears) shouldBe 1
+            }
         }
     }
 }

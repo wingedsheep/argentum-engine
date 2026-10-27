@@ -1251,11 +1251,8 @@ class PredicateEvaluator(
                 // projection only covers the battlefield, so fall back to base CardComponent.
                 val sourceSubtypes = if (projected.getProjectedValues(sourceId) != null) projected.getSubtypes(sourceId)
                     else offBattlefieldSubtypes(state, sourceId)
-                if (sourceSubtypes.isEmpty()) return false
-                val entitySubtypes = effectiveSubtypes(state, projected, entityId, card, projectedValues)
-                entitySubtypes.any { entitySubtype ->
-                    sourceSubtypes.any { it.equals(entitySubtype, ignoreCase = true) }
-                }
+                // A Changeling spell shares every creature type with the source (Folk Hero).
+                sharesCreatureType(state, projected, entityId, card, projectedValues, sourceSubtypes)
             }
 
             CardPredicate.SharesCreatureTypeWithTriggeringEntity -> {
