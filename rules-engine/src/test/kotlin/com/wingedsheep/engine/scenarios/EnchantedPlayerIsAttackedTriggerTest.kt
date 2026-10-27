@@ -1,8 +1,10 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.CollectionSlot
 import com.wingedsheep.sdk.dsl.DynamicAmounts
@@ -41,9 +43,16 @@ class EnchantedPlayerIsAttackedTriggerTest : FunSpec({
         }
     }
 
+    val walker = card("Test Attacked Walker") {
+        manaCost = "{3}"
+        typeLine = "Legendary Planeswalker — Test"
+        startingLoyalty = 3
+        oracleText = ""
+    }
+
     fun setup(): Pair<GameTestDriver, List<EntityId>> {
         val d = GameTestDriver()
-        d.registerCards(TestCards.all + listOf(curse))
+        d.registerCards(TestCards.all + listOf(curse, walker))
         val players = d.initMultiplayer(List(3) { Deck.of("Plains" to 40) })
         d.passPriorityUntil(Step.PRECOMBAT_MAIN)
         d.activePlayer shouldBe players[0]
@@ -84,6 +93,20 @@ class EnchantedPlayerIsAttackedTriggerTest : FunSpec({
 
         d.passPriorityUntil(Step.DECLARE_ATTACKERS)
         d.declareAttackers(p1, mapOf(bears to p2)).error shouldBe null
+        d.stackSize shouldBe 0
+    }
+
+    test("an attack on only a planeswalker the enchanted player controls doesn't count") {
+        val (d, players) = setup()
+        val (p1, p2, p3) = players
+        val aura = d.putPermanentOnBattlefield(p2, curse.name)
+        d.replaceState(d.state.updateEntity(aura) { it.with(AttachedToComponent(p3)) })
+        val planeswalker = d.putPermanentOnBattlefield(p3, walker.name)
+        d.replaceState(d.state.updateEntity(planeswalker) { it.with(CountersComponent().withAdded(CounterType.LOYALTY, 3)) })
+        val bears = d.ready(p1)
+
+        d.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        d.declareAttackers(p1, mapOf(bears to planeswalker)).error shouldBe null
         d.stackSize shouldBe 0
     }
 

@@ -1217,7 +1217,8 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
-     * When one or more creatures attack the trigger's controller (the player).
+     * When one or more creatures attack the trigger's controller — or, with [attackedPlayer] =
+     * EnchantedPlayer, the player the source Aura enchants ("whenever enchanted player is attacked").
      * Defender side of [YouAttackEvent]: fires once per [com.wingedsheep.engine.core.AttackersDeclaredEvent]
      * when at least [minAttackers] declared attackers have the trigger's controller as their defender.
      *
