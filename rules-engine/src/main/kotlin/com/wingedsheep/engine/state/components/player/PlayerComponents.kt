@@ -1713,7 +1713,11 @@ data object SacrificedArtifactThisTurnComponent : Component
  * `TurnTracker.PERMANENTS_SACRIFICED`.
  */
 @Serializable
-data class PermanentsSacrificedThisTurnComponent(val count: Int = 0) : Component
+data class PermanentsSacrificedThisTurnComponent(
+    val count: Int = 0,
+    /** How many of [count] were nontoken permanents — backs `TurnTracker.NONTOKEN_PERMANENTS_SACRIFICED`. */
+    val nontokenCount: Int = 0
+) : Component
 
 /**
  * Tracks the (graveyard-resident) entity ids of this player's cards that were discarded this turn.

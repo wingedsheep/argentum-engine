@@ -807,6 +807,13 @@ object DynamicAmounts {
     fun nonTokenCreaturesDiedThisTurn(player: Player = Player.You): DynamicAmount =
         DynamicAmount.TurnTracking(player, TurnTracker.NONTOKEN_CREATURES_DIED)
 
+    /**
+     * "The number of nontoken creatures [player] had enter the battlefield under their control this
+     * turn" — counted per entry, still counted after they leave (Gyome, Master Chef).
+     */
+    fun nonTokenCreaturesEnteredThisTurn(player: Player = Player.You): DynamicAmount =
+        DynamicAmount.TurnTracking(player, TurnTracker.NONTOKEN_CREATURES_ENTERED_UNDER_CONTROL)
+
     fun creaturesDiedThisTurn(player: Player = Player.You): DynamicAmount =
         DynamicAmount.TurnTracking(player, TurnTracker.CREATURES_DIED)
 

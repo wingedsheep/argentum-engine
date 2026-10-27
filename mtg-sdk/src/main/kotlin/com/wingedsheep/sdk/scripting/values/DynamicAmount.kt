@@ -163,6 +163,14 @@ enum class TurnTracker {
      */
     CREATURES_ENTERED_UNDER_CONTROL,
     /**
+     * The number of **nontoken** creatures that entered the battlefield under the player's control
+     * this turn — the nontoken slice of [CREATURES_ENTERED_UNDER_CONTROL] over the same per-player
+     * entry log, with the same per-entry counting (a creature that entered and later left still
+     * counts). Backs "the number of nontoken creatures you had enter the battlefield under your
+     * control this turn" (Gyome, Master Chef).
+     */
+    NONTOKEN_CREATURES_ENTERED_UNDER_CONTROL,
+    /**
      * The number of tokens the player created this turn — the token slice of the same per-player
      * entry log behind [NONLAND_PERMANENTS_ENTERED]. The player who creates a token is its owner and
      * it enters under that player's control (CR 111.2), so "you created a token" is exactly "a token
@@ -268,6 +276,14 @@ enum class TurnTracker {
      * one or more permanents this turn, ... deals that much damage" (Sawblade Skinripper).
      */
     PERMANENTS_SACRIFICED,
+    /**
+     * Number of **nontoken** permanents the player has sacrificed this turn — the nontoken slice
+     * of [PERMANENTS_SACRIFICED], recorded by the same central sacrifice hook into the same
+     * `PermanentsSacrificedThisTurnComponent`. Whether the permanent was a token is read as it was
+     * sacrificed. Backs "as long as you've sacrificed a nontoken permanent this turn" (Evendo
+     * Brushrazer) via `Conditions.YouSacrificedNontokenPermanentsThisTurn`.
+     */
+    NONTOKEN_PERMANENTS_SACRIFICED,
     /**
      * Total noncombat damage red sources this player controlled have dealt this turn
      * (controller-scoped). Backed by `RedNoncombatDamageDealtThisTurnComponent`, reset to 0 for
@@ -417,6 +433,7 @@ enum class TurnTracker {
         LANDS_ENTERED_UNDER_CONTROL -> "the number of lands that entered the battlefield under ${player.possessive} control this turn"
         NONLAND_PERMANENTS_ENTERED -> "the number of nonland permanents that entered the battlefield under ${player.possessive} control this turn"
         CREATURES_ENTERED_UNDER_CONTROL -> "the number of creatures that entered the battlefield under ${player.possessive} control this turn"
+        NONTOKEN_CREATURES_ENTERED_UNDER_CONTROL -> "the number of nontoken creatures that entered the battlefield under ${player.possessive} control this turn"
         TOKENS_CREATED -> "the number of tokens ${player.description} created this turn"
         FOOD_SACRIFICED -> "whether ${player.description} sacrificed a Food this turn"
         SCRIED_OR_SURVEILED -> "whether ${player.description} scried or surveilled this turn"
@@ -435,6 +452,7 @@ enum class TurnTracker {
         CARDS_DISCARDED -> "the number of cards ${player.description} have discarded this turn"
         CARDS_PUT_INTO_EXILE -> "the number of cards put into exile this turn"
         PERMANENTS_SACRIFICED -> "the number of permanents ${player.description} sacrificed this turn"
+        NONTOKEN_PERMANENTS_SACRIFICED -> "the number of nontoken permanents ${player.description} sacrificed this turn"
         RED_NONCOMBAT_DAMAGE_DEALT -> "the noncombat damage red sources ${player.description} controlled dealt this turn"
         DAMAGE_SOURCES -> "the number of sources ${player.description} controlled that dealt damage this turn"
         DISTINCT_BENDS -> "the number of different ways ${player.description} bent this turn"

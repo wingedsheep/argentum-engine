@@ -2168,7 +2168,8 @@ class ZoneTransitionService(
          *    number of permanents sacrificed (feeds [CostReductionSource.PermanentsSacrificedThisTurn]
          *    on The Balrog, Durin's Bane). Not controller-scoped: it counts every sacrifice this turn.
          *  - Increments the controller's per-player [PermanentsSacrificedThisTurnComponent] by the
-         *    same count (controller-scoped, backs `TurnTracker.PERMANENTS_SACRIFICED` —
+         *    same count, and its nontoken slice by the nontoken ones (controller-scoped, backs
+         *    `TurnTracker.PERMANENTS_SACRIFICED` / `NONTOKEN_PERMANENTS_SACRIFICED` —
          *    Sawblade Skinripper).
          *  - Marks the controller with [SacrificedFoodThisTurnComponent] if any sacrificed permanent
          *    was a Food (Food-sacrifice triggers, e.g. Ygra).
@@ -2188,9 +2189,15 @@ class ZoneTransitionService(
                 // on each ZoneChangeEvent (CR 701.21 — read by Urza's Miter et al.).
                 pendingSacrificeIds = state.pendingSacrificeIds + permanentIds,
             )
+            val nontoken = permanentIds.count { newState.getEntity(it)?.has<TokenComponent>() == false }
             newState = newState.updateEntity(controllerId) { container ->
-                val prior = container.get<PermanentsSacrificedThisTurnComponent>()?.count ?: 0
-                container.with(PermanentsSacrificedThisTurnComponent(prior + permanentIds.size))
+                val prior = container.get<PermanentsSacrificedThisTurnComponent>() ?: PermanentsSacrificedThisTurnComponent()
+                container.with(
+                    PermanentsSacrificedThisTurnComponent(
+                        count = prior.count + permanentIds.size,
+                        nontokenCount = prior.nontokenCount + nontoken,
+                    )
+                )
             }
             val projected = state.projectedState
             val sacrificedCards = permanentIds.filter { newState.getEntity(it)?.has<CardComponent>() == true }

@@ -908,6 +908,11 @@ class DynamicAmountEvaluator(
                             ?.get<com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlThisTurnComponent>()
                             ?.countOfType(com.wingedsheep.sdk.core.CardType.CREATURE) ?: 0
                     }
+                    TurnTracker.NONTOKEN_CREATURES_ENTERED_UNDER_CONTROL -> playerIds.sumOf { playerId ->
+                        state.getEntity(playerId)
+                            ?.get<com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlThisTurnComponent>()
+                            ?.entries?.count { !it.isToken && com.wingedsheep.sdk.core.CardType.CREATURE in it.cardTypes } ?: 0
+                    }
                     TurnTracker.TOKENS_CREATED -> playerIds.sumOf { playerId ->
                         state.getEntity(playerId)
                             ?.get<com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlThisTurnComponent>()
@@ -996,6 +1001,11 @@ class DynamicAmountEvaluator(
                         state.getEntity(playerId)
                             ?.get<com.wingedsheep.engine.state.components.player.PermanentsSacrificedThisTurnComponent>()
                             ?.count ?: 0
+                    }
+                    TurnTracker.NONTOKEN_PERMANENTS_SACRIFICED -> playerIds.sumOf { playerId ->
+                        state.getEntity(playerId)
+                            ?.get<com.wingedsheep.engine.state.components.player.PermanentsSacrificedThisTurnComponent>()
+                            ?.nontokenCount ?: 0
                     }
                     TurnTracker.RED_NONCOMBAT_DAMAGE_DEALT -> playerIds.sumOf { playerId ->
                         state.getEntity(playerId)

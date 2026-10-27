@@ -15832,6 +15832,10 @@ default to "you" so card authors don't need to pass it explicitly.
   `DynamicAmounts.permanentsSacrificedThisTurn()` amount for "that much" damage (Sawblade Skinripper:
   "At the beginning of your end step, if you sacrificed one or more permanents this turn, this creature
   deals that much damage to any target").
+- `YouSacrificedNontokenPermanentsThisTurn(atLeast = 1)` — the nontoken slice of the above, over
+  `TurnTracker.NONTOKEN_PERMANENTS_SACRIFICED` (token-ness read as the permanent was sacrificed). Evendo
+  Brushrazer: "During your turn, as long as you've sacrificed a nontoken permanent this turn, you may play
+  cards exiled with this creature."
 - `SacrificedArtifactThisTurn` — you sacrificed at least one artifact this turn. Composes through
   `Compare(DynamicAmount.TurnTracking(Player.You, TurnTracker.ARTIFACT_SACRIFICED), GTE, Fixed(1))`,
   the card-type sibling of `SacrificedFoodThisTurn`. Backed by the per-player marker
@@ -17373,6 +17377,10 @@ this turn").
   and post-departure persistence as `NONLAND_PERMANENTS_ENTERED`. At a threshold of two it backs
   `Conditions.CreaturesEnteredThisTurn` — Spider-UK's "two or more creatures entered the
   battlefield under your control this turn."
+- `NONTOKEN_CREATURES_ENTERED_UNDER_CONTROL` — the nontoken slice of `CREATURES_ENTERED_UNDER_CONTROL`,
+  same counting. Backs `DynamicAmounts.nonTokenCreaturesEnteredThisTurn(player)` — Gyome, Master Chef's
+  "create a number of Food tokens equal to the number of nontoken creatures you had enter the
+  battlefield under your control this turn."
 - `TOKENS_CREATED` — the tokens the player created this turn: the token slice of the same entry log
   (the player who creates a token is its owner and it enters under their control, CR 111.2). A token
   gained by a control change isn't counted; one given away after creation stays counted. Backs
@@ -17420,6 +17428,8 @@ this turn").
   counter (which sums every player's sacrifices). Backs `Conditions.YouSacrificedPermanentsThisTurn(atLeast)`
   and `DynamicAmounts.permanentsSacrificedThisTurn(player)` — e.g. Sawblade Skinripper's "if you sacrificed
   one or more permanents this turn, ... deals that much damage".
+- `NONTOKEN_PERMANENTS_SACRIFICED` — the nontoken slice of `PERMANENTS_SACRIFICED`, kept on the same
+  component (`nontokenCount`) by the same hook. Backs `Conditions.YouSacrificedNontokenPermanentsThisTurn`.
 - `DAMAGE_SOURCES` — the number of distinct sources a player controlled that dealt damage this turn.
   Backed by the per-player `DamageSourcesThisTurnComponent`, a set of
   `DamageSourceIdentity(entityId, incarnation)` recorded on the source's controller *at damage time*

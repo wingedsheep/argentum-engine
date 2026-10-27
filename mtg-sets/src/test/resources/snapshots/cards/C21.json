@@ -395,6 +395,120 @@
     ]
 }
 
+// Gyome, Master Chef
+{
+    "name": "Gyome, Master Chef",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Legendary Creature — Troll Warlock",
+    "oracleText": "Trample\nAt the beginning of your end step, create a number of Food tokens equal to the number of nontoken creatures you had enter the battlefield under your control this turn.\n{1}, Sacrifice a Food: Target creature gains indestructible until end of turn. Tap it.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gyome, Master Chef:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Food",
+                    "dynamicCount": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "NONTOKEN_CREATURES_ENTERED_UNDER_CONTROL"
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, create a number of Food tokens equal to the number of nontoken creatures you had enter the battlefield under your control this turn."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Gyome, Master Chef:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "Food"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "INDESTRUCTIBLE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "MYTHIC",
+        "artist": "Steve Prescott",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5dd7dd1a-6dd1-43c3-8298-7db703d384a1.jpg?1783927614",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "The second ability will count Gyome itself on the turn it enters the battlefield."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "You can activate the last ability even if the creature is already tapped."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "Gyome, Master Chef's second ability counts all nontoken creatures that entered the battlefield under your control this turn, even if some or all of those creatures are no longer on the battlefield, no longer creatures, or no longer under your control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Laelia, the Blade Reforged
 {
     "name": "Laelia, the Blade Reforged",

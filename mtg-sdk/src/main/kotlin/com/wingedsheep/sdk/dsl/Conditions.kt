@@ -2257,6 +2257,17 @@ object Conditions {
         )
 
     /**
+     * If you've sacrificed [atLeast] or more **nontoken** permanents this turn — the nontoken slice
+     * of [YouSacrificedPermanentsThisTurn], read off the same per-player sacrifice record. Evendo
+     * Brushrazer's "as long as you've sacrificed a nontoken permanent this turn".
+     */
+    fun YouSacrificedNontokenPermanentsThisTurn(atLeast: Int = 1): ConditionInterface =
+        trackerAtLeast(
+            com.wingedsheep.sdk.scripting.values.TurnTracker.NONTOKEN_PERMANENTS_SACRIFICED,
+            atLeast = atLeast,
+        )
+
+    /**
      * If red sources you controlled dealt [atLeast] or more noncombat damage this turn
      * (controller-scoped). Backed by the per-player `RedNoncombatDamageDealtThisTurnComponent`.
      * Gates Temple of Power's transform-back (back of Ojer Axonil, Deepest Might).
