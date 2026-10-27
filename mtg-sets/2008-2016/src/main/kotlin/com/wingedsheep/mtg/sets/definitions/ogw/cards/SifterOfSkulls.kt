@@ -27,7 +27,7 @@ val SifterOfSkulls = card("Sifter of Skulls") {
     toughness = 3
     oracleText = "Devoid (This card has no color.)\n" +
         "Whenever another nontoken creature you control dies, create a 1/1 colorless Eldrazi Scion " +
-        "creature token. It has \"Sacrifice this token: Add {C}.\""
+        "creature token. It has \"Sacrifice this token: Add {C}.\" ({C} represents colorless mana.)"
 
     keywords(Keyword.DEVOID)
 

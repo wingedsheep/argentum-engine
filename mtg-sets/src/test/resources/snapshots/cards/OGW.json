@@ -889,7 +889,7 @@
     "name": "Sifter of Skulls",
     "manaCost": "{3}{B}",
     "typeLine": "Creature — Eldrazi",
-    "oracleText": "Devoid (This card has no color.)\nWhenever another nontoken creature you control dies, create a 1/1 colorless Eldrazi Scion creature token. It has \"Sacrifice this token: Add {C}.\"",
+    "oracleText": "Devoid (This card has no color.)\nWhenever another nontoken creature you control dies, create a 1/1 colorless Eldrazi Scion creature token. It has \"Sacrifice this token: Add {C}.\" ({C} represents colorless mana.)",
     "creatureStats": {
         "power": 4,
         "toughness": 3
