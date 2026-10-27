@@ -705,6 +705,11 @@ internal class CastValidator(
         ) {
             return "This spell's optional cost can only be paid once"
         }
+        // "Kicker {X}. X can't be 0" (Thieving Skydiver): paying the cost floors the spell's X.
+        if (action.declaredCostSlot != null) {
+            val minX = declaredOptionalCosts(action, optionalCosts(state, action, cardDef)).maxOfOrNull { it.minimumXValue } ?: 0
+            if ((action.xValue ?: 0) < minX) return "X can't be less than $minX"
+        }
         // "…rather than pay this spell's mana cost **if** <condition>" (Blasphemous Edict). Mirrors
         // the availability gate in CastSpellEnumerator so an authorization can't outlive the
         // enumeration that offered it.

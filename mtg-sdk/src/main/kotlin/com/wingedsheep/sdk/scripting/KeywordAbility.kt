@@ -472,9 +472,19 @@ sealed interface KeywordAbility {
          * onto the resolving permanent, and the payoff conditions and cast-trigger filters key
          * off it — so two mechanics on the same rail never read each other's declaration.
          */
-        val declaredSlot: ChoiceSlot = ChoiceSlot.KICKED
+        val declaredSlot: ChoiceSlot = ChoiceSlot.KICKED,
+        /**
+         * The floor on the spell's X when this cost is paid — "Kicker {X}. X can't be 0" (Thieving
+         * Skydiver) is `1`. It mirrors [Flashback.minimumXValue]: the X choice offered with the
+         * kicked cast starts there, and a kicked cast announcing less is rejected. It constrains
+         * only casts that pay this cost; an unkicked cast has no X to choose.
+         */
+        val minimumXValue: Int = 0
     ) : KeywordAbility {
         init {
+            require(minimumXValue == 0 || manaCost?.hasX == true) {
+                "A minimum X needs an {X} in the optional cost's mana half; got ${manaCost ?: "no mana cost"}"
+            }
             require(manaCost != null || additionalCost != null) {
                 "OptionalAdditionalCost requires either a manaCost or an additionalCost"
             }
@@ -1715,6 +1725,13 @@ sealed interface KeywordAbility {
          * Create Kicker with a mana cost.
          */
         fun kicker(cost: String): KeywordAbility = OptionalAdditionalCost(manaCost = ManaCost.parse(cost))
+
+        /**
+         * Kicker with an {X} that has a floor — "Kicker {X}. X can't be 0" is
+         * `kicker("{X}", minimumXValue = 1)` (Thieving Skydiver).
+         */
+        fun kicker(cost: String, minimumXValue: Int): KeywordAbility =
+            OptionalAdditionalCost(manaCost = ManaCost.parse(cost), minimumXValue = minimumXValue)
 
         fun kicker(cost: ManaCost): KeywordAbility = OptionalAdditionalCost(manaCost = cost)
 

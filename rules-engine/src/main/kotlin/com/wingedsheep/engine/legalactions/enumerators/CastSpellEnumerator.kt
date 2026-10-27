@@ -2236,6 +2236,9 @@ class CastSpellEnumerator(
                             payable = availableSources - kickedCost.cmc, xCount = kickedCost.xCount,  // X contributes 0 to CMC
                         )
                     } else null
+                    // "Kicker {X}. X can't be 0" (Thieving Skydiver): the kicked cast floors X, so a
+                    // variant whose ceiling is below the floor can't be cast.
+                    val kickedMinX = if (kickedHasXCost) kickers.maxOf { it.minimumXValue } else 0
 
                     // Check additional cost payability (e.g., sacrifice a creature)
                     var kickerCostInfo: AdditionalCostData? = null
@@ -2281,6 +2284,7 @@ class CastSpellEnumerator(
 
                     val canAffordKicked = canAffordKickedMana && canPayKickerAdditionalCost
                     if (times > 1 && !canAffordKicked) break
+                    val canAffordKickedX = canAffordKicked && (!kickedHasXCost || (kickedMaxAffordableX ?: 0) >= kickedMinX)
 
                     // Build target info — use kickerTargetRequirements if available
 
@@ -2371,13 +2375,14 @@ class CastSpellEnumerator(
                             actionType = "CastSpellModal",
                             description = "Cast ${cardComponent.name} ($castLabel)",
                             action = CastSpell(playerId, cardId, declaredCostSlot = declaredSlot, declaredCostTimes = times, declaredCostIndices = declaredIndices),
-                            affordable = canAffordKicked,
+                            affordable = canAffordKickedX,
                             manaCostString = kickedCostString,
                             manaCostByTargetCount = kickedCostByTargetCount,
                             autoTapPreview = kickedAutoTapPreview,
                             additionalCostInfo = kickerCostInfo,
                             hasXCost = kickedHasXCost,
                             maxAffordableX = kickedMaxAffordableX,
+                            minX = kickedMinX,
                             modalEnumeration = ModalLegalEnumeration(
                                 chooseCount = kickerCounts.last,
                                 minChooseCount = kickerCounts.first,
@@ -2416,13 +2421,14 @@ class CastSpellEnumerator(
                                     actionType = "CastWithKicker",
                                     description = "Cast ${cardComponent.name} ($castLabel)",
                                     action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), declaredCostSlot = declaredSlot, declaredCostTimes = times, declaredCostIndices = declaredIndices),
-                                    affordable = canAffordKicked,
+                                    affordable = canAffordKickedX,
                                     manaCostString = kickedCostString,
                                     manaCostByTargetCount = kickedCostByTargetCount,
                                     autoTapPreview = kickedAutoTapPreview,
                                     additionalCostInfo = kickerCostInfo,
                                     hasXCost = kickedHasXCost,
                                     maxAffordableX = kickedMaxAffordableX,
+                                    minX = kickedMinX,
                                     requiresDamageDistribution = kickerRequiresDamageDistribution,
                                     totalDamageToDistribute = kickerTotalDamage,
                                     minDamagePerTarget = kickerMinDamagePerTarget
@@ -2438,13 +2444,14 @@ class CastSpellEnumerator(
                                     minTargets = firstReq.effectiveMinCount,
                                     targetDescription = firstReq.description,
                                     targetRequirements = targetReqInfos.surfacedRequirements(),
-                                    affordable = canAffordKicked,
+                                    affordable = canAffordKickedX,
                                     manaCostString = kickedCostString,
                                     manaCostByTargetCount = kickedCostByTargetCount,
                                     autoTapPreview = kickedAutoTapPreview,
                                     additionalCostInfo = kickerCostInfo,
                                     hasXCost = kickedHasXCost,
                                     maxAffordableX = kickedMaxAffordableX,
+                                    minX = kickedMinX,
                                     requiresDamageDistribution = kickerRequiresDamageDistribution,
                                     totalDamageToDistribute = kickerTotalDamage,
                                     minDamagePerTarget = kickerMinDamagePerTarget
@@ -2456,13 +2463,14 @@ class CastSpellEnumerator(
                             actionType = "CastWithKicker",
                             description = "Cast ${cardComponent.name} ($castLabel)",
                             action = CastSpell(playerId, cardId, declaredCostSlot = declaredSlot, declaredCostTimes = times, declaredCostIndices = declaredIndices),
-                            affordable = canAffordKicked,
+                            affordable = canAffordKickedX,
                             manaCostString = kickedCostString,
                             manaCostByTargetCount = kickedCostByTargetCount,
                             autoTapPreview = kickedAutoTapPreview,
                             additionalCostInfo = kickerCostInfo,
                             hasXCost = kickedHasXCost,
-                            maxAffordableX = kickedMaxAffordableX
+                            maxAffordableX = kickedMaxAffordableX,
+                            minX = kickedMinX
                         ))
                     }
                 }
