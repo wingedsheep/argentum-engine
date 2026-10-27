@@ -630,18 +630,35 @@ object Conditions {
         com.wingedsheep.sdk.scripting.conditions.PlayerIs(subject, player)
 
     /**
-     * [player] has the most life, or is tied for the most life, among all players. The "most life"
-     * check a binary comparison can't express. Preacher of the Schism gates its attack triggers with
-     * `PlayerHasMostLife(Player.DefendingPlayer)` (the attacked player) and
-     * `PlayerHasMostLife(Player.You)`.
+     * [player] has the most of [amount] among the players still in the game. [amount] is measured
+     * once per player with `Player.You` rebound to that player, so write it from the measured
+     * player's side (`DynamicAmount.LifeTotal(Player.You)`, `DynamicAmount.Count(Player.You,
+     * Zone.HAND)`). [includeTies] `true` is "has the most … or is tied for the most"; `false` is
+     * "has more … than each other player" — see [PlayerHasMoreThanEachOtherPlayer].
+     */
+    fun PlayerHasMost(player: Player, amount: DynamicAmount, includeTies: Boolean = true): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.PlayerHasMost(player, amount, includeTies)
+
+    /**
+     * [player] has strictly more of [amount] than each other player still in the game — a tie for
+     * the top fails. Battle Angels of Tyr: "draw a card if that player has more cards in hand than
+     * each other player" is `PlayerHasMoreThanEachOtherPlayer(Player.TriggeringPlayer,
+     * DynamicAmount.Count(Player.You, Zone.HAND))`. Same per-player rebinding as [PlayerHasMost].
+     */
+    fun PlayerHasMoreThanEachOtherPlayer(player: Player, amount: DynamicAmount): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.PlayerHasMost(player, amount, includeTies = false)
+
+    /**
+     * [player] has the most life, or is tied for the most life, among all players. Preacher of the
+     * Schism gates its attack triggers with `PlayerHasMostLife(Player.DefendingPlayer)` (the
+     * attacked player) and `PlayerHasMostLife(Player.You)`. Team games read the shared total.
      */
     fun PlayerHasMostLife(player: Player): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.PlayerHasMostLife(player)
+        PlayerHasMost(player, DynamicAmount.LifeTotal(Player.You))
 
     /**
      * [player] controls the most permanents matching [filter], or is tied for the most, among all
-     * players. The board-count sibling of [PlayerHasMostLife] — same "max over every player" shape
-     * a binary comparison can't express. Counts come from the projected battlefield.
+     * players. Counts come from the projected battlefield.
      *
      * Wrap it in a per-player loop for "each player who controls the most X" (No Witnesses):
      * `ForEachPlayerEffect(Player.Each, Effects.If(PlayerControlsMostPermanents(Player.You,
@@ -651,7 +668,7 @@ object Conditions {
         player: Player,
         filter: GameObjectFilter = GameObjectFilter.Creature,
     ): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.PlayerControlsMostPermanents(player, filter)
+        PlayerHasMost(player, DynamicAmount.Count(Player.You, Zone.BATTLEFIELD, filter))
 
     /**
      * If the context target at [targetIndex] is a tapped battlefield permanent. Branch on a
@@ -2150,7 +2167,7 @@ object Conditions {
      * read, as the ability resolves.
      */
     fun candidateHasMostLife(): ConditionInterface =
-        com.wingedsheep.sdk.scripting.conditions.PlayerHasMostLife(Player.Candidate)
+        PlayerHasMostLife(Player.Candidate)
 
     /**
      * Candidate-target restriction: the player being targeted has [n] or less life.

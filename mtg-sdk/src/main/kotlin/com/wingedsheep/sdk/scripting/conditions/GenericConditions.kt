@@ -225,48 +225,43 @@ data class Compare(
 }
 
 /**
- * True when [player] has the most life, or is tied for the most life, among all players
- * (their life total ≥ every player's). The "most life" comparison that a binary [Compare] can't
- * express (it would need the max over every player). Resolve [player] to the controller
- * (`Player.You`), the attacked player (`Player.DefendingPlayer`), the triggering player, etc.
+ * True when [player] has the most of [amount] among the players still in the game — the
+ * "max over every player" comparison a binary [Compare] can't express.
  *
- * Preacher of the Schism: "Whenever this creature attacks the player with the most life or tied for
- * most life, …" (`triggerRestriction = PlayerHasMostLife(Player.DefendingPlayer)`) and "Whenever this
- * creature attacks while you have the most life or are tied for most life, …"
- * (`PlayerHasMostLife(Player.You)`).
+ * [amount] is measured **once per player**, with [Player.You] inside it rebound to the player
+ * being measured — the same rebinding [com.wingedsheep.sdk.scripting.values.DynamicAmount.GreatestAmongPlayers]
+ * and `ForEachPlayer` do. Write it from that player's own side: `LifeTotal(Player.You)`,
+ * `Count(Player.You, Zone.HAND)`, a battlefield count of `Player.You`'s permanents (read from
+ * projected state, so animated lands and lost types are honoured).
+ *
+ * [includeTies] is the axis between the two printed wordings:
+ * - `true` — "has the most life **or is tied for** most life": no other player has strictly more.
+ *   Preacher of the Schism (`PlayerHasMost(Player.DefendingPlayer, LifeTotal(You))`), No
+ *   Witnesses ("each player who controls the most creatures"), The Black Gate's candidate.
+ * - `false` — "has more cards in hand **than each other player**": strictly more than every
+ *   other player, so a tie for the top fails. Battle Angels of Tyr reads the damaged player's
+ *   hand, lands and life this way. Alone in the game, a player trivially has more than each
+ *   other player.
+ *
+ * Neither [Compare] over [com.wingedsheep.sdk.scripting.values.DynamicAmount.GreatestAmongPlayers]
+ * (it can't exclude the measured player from the maximum, which "strictly more than each other
+ * player" needs) nor a per-player `ForEachPlayer` loop (it can't ask about one named player)
+ * expresses either wording.
  */
-@SerialName("PlayerHasMostLife")
+@SerialName("PlayerHasMost")
 @Serializable
-data class PlayerHasMostLife(val player: Player) : Condition {
-    override val description: String =
-        "if ${player.description} has the most life or is tied for most life"
-}
-
-/**
- * True when [player] controls the most permanents matching [filter], or is tied for the most,
- * among all players (their count ≥ every player's). The board-count sibling of
- * [PlayerHasMostLife] — the same shape a binary [Compare] can't express, since it needs the max
- * over every player rather than a fixed threshold.
- *
- * Counts are read from the projected battlefield, so type-changing continuous effects (an animated
- * land, a creature that lost its types) are honored.
- *
- * No Witnesses: "Each player who controls the most creatures investigates" — a per-player loop
- * whose body is gated on `PlayerControlsMostPermanents(Player.You, GameObjectFilter.Creature)`,
- * which inside the loop asks about the iterated player. Ties are included, exactly as printed.
- */
-@SerialName("PlayerControlsMostPermanents")
-@Serializable
-data class PlayerControlsMostPermanents(
+data class PlayerHasMost(
     val player: Player,
-    val filter: GameObjectFilter = GameObjectFilter.Creature,
+    val amount: DynamicAmount,
+    val includeTies: Boolean = true,
 ) : Condition {
     override val description: String =
-        "if ${player.description} controls the most ${filter.description} or is tied for the most"
+        if (includeTies) "if ${player.description} has the most ${amount.description} or is tied for the most"
+        else "if ${player.description} has more ${amount.description} than each other player"
 
     override fun applyTextReplacement(replacer: TextReplacer): Condition {
-        val newFilter = filter.applyTextReplacement(replacer)
-        return if (newFilter !== filter) copy(filter = newFilter) else this
+        val newAmount = amount.applyTextReplacement(replacer)
+        return if (newAmount !== amount) copy(amount = newAmount) else this
     }
 }
 

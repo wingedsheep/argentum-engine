@@ -402,12 +402,11 @@ Families:
 - `PlayerAttackedWithCreaturesThisTurn(player: Player, filter: GameObjectFilter, atLeast: Int)` — Condition: "If player attacked with atLeast or more creatures matching filter this turn".
 - `PlayerCastSpellsThisTurn(player: Player, filter: GameObjectFilter, atLeast: Int, fromZone: Zone?, fromZoneOtherThan: Zone?)` — Condition: "If player has cast atLeast or more spells matching filter this turn".
 - `PlayerCommittedCrimeThisTurn(player: Player)` — Condition: "If player has committed a crime this turn" (CR Outlaws of Thunder Junction — a player commits a crime as they cast a spell, activate an ability, or put a triggered ability on the stack…
-- `PlayerControlsMostPermanents(player: Player, filter: GameObjectFilter)` — True when player controls the most permanents matching filter, or is tied for the most, among all players (their count ≥ every player's).
 - `PlayerDrewCardsThisTurn(player: Player, atLeast: Int)` — Condition: "as long as player has drawn atLeast or more cards this turn".
 - `PlayerHasCitysBlessing(player: Player)` — Intervening-if / static condition: "if player has the city's blessing".
 - `PlayerHasDesignation(player: Player, designation: PlayerDesignation)` — Intervening-if / static condition: "if player has designation" — "if you're the monarch", "if you have the initiative".
 - `PlayerHasEnduringStory(player: Player)` — Intervening-if / static condition: "if player has an enduring story".
-- `PlayerHasMostLife(player: Player)` — True when player has the most life, or is tied for the most life, among all players (their life total ≥ every player's).
+- `PlayerHasMost(player: Player, amount: DynamicAmount, includeTies: Boolean)` — True when player has the most of amount among the players still in the game — the "max over every player" comparison a binary Compare can't express.
 - `PlayerIs(subject: Player, player: Player)` — Condition: "subject is player" — two resolved player references name the same player.
 - `PlayerPlayedLandThisTurn(player: Player, fromZone: Zone?, fromZoneOtherThan: Zone?)` — Condition: "if player has played a land this turn" (CR 305.1 special land-play action), reading the per-player `LandsPlayedThisTurnComponent` provenance recorded by `PlayLandHandler`.
 - `PlayerTurnedPermanentFaceUpThisTurn(player: Player)` — Resolution condition: "if player turned a permanent face up this turn".

@@ -13826,8 +13826,12 @@
                     "imageUri": "https://cards.scryfall.io/normal/front/0/4/0484390e-1167-4407-84de-7ddc726e8926.jpg?1783913608"
                 },
                 "triggerRestriction": {
-                    "type": "PlayerHasMostLife",
-                    "player": "DefendingPlayer"
+                    "type": "PlayerHasMost",
+                    "player": "DefendingPlayer",
+                    "amount": {
+                        "type": "LifeTotal",
+                        "player": "You"
+                    }
                 }
             },
             {
@@ -13854,8 +13858,12 @@
                     ]
                 },
                 "triggerRestriction": {
-                    "type": "PlayerHasMostLife",
-                    "player": "You"
+                    "type": "PlayerHasMost",
+                    "player": "You",
+                    "amount": {
+                        "type": "LifeTotal",
+                        "player": "You"
+                    }
                 }
             }
         ]

@@ -15773,8 +15773,14 @@
                         "gate": {
                             "type": "Gate.WhenCondition",
                             "condition": {
-                                "type": "PlayerControlsMostPermanents",
-                                "player": "You"
+                                "type": "PlayerHasMost",
+                                "player": "You",
+                                "amount": {
+                                    "type": "Count",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature"
+                                }
                             }
                         },
                         "then": {

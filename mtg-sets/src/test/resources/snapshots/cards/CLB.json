@@ -357,6 +357,119 @@
     ]
 }
 
+// Battle Angels of Tyr
+{
+    "name": "Battle Angels of Tyr",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Angel Knight",
+    "oracleText": "Flying, myriad\nWhenever this creature deals combat damage to a player, draw a card if that player has more cards in hand than each other player. Then you create a Treasure token if that player controls more lands than each other player. Then you gain 3 life if that player has more life than each other player.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "MYRIAD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Simple",
+            "keyword": "MYRIAD"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Battle Angels of Tyr:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "PlayerHasMost",
+                                    "player": "TriggeringPlayer",
+                                    "amount": {
+                                        "type": "Count",
+                                        "player": "You",
+                                        "zone": "Hand"
+                                    },
+                                    "includeTies": false
+                                }
+                            },
+                            "then": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "PlayerHasMost",
+                                    "player": "TriggeringPlayer",
+                                    "amount": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "land"
+                                    },
+                                    "includeTies": false
+                                }
+                            },
+                            "then": {
+                                "type": "CreatePredefinedToken",
+                                "tokenType": "Treasure"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "PlayerHasMost",
+                                    "player": "TriggeringPlayer",
+                                    "amount": "YourLifeTotal",
+                                    "includeTies": false
+                                }
+                            },
+                            "then": {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "rarity": "MYTHIC",
+        "artist": "Fajareka Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4c91dbf4-94fa-45d0-b8ed-a778b11d789b.jpg?1783922818"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Black Market Connections
 {
     "name": "Black Market Connections",

@@ -6474,7 +6474,7 @@ Author the restriction through the `Conditions.candidate*` facade (never hand-wr
 - `Conditions.candidateLostLifeThisTurn()` — the targeted player lost life this turn (Rix Maadi Guildmage).
 - `Conditions.candidateLifeAtMost(n)` — the targeted player has `n` or less life.
 - `Conditions.candidateCastSpellsThisTurn(filter, atLeast = 1)` — the candidate player cast `atLeast` or more spells matching `filter` this turn (`PlayerCastSpellsThisTurn(Player.Candidate, …)`). With a non-targeting `selectTarget` it backs "choose a player who cast one or more sorcery spells this turn" (Backdraft).
-- `Conditions.candidateHasMostLife()` — the candidate player has the most life or is tied for the most (`PlayerHasMostLife(Player.Candidate)`). With a non-targeting `selectTarget` it backs "choose a player with the most life or tied for most life" (The Black Gate); a lone candidate is chosen without a prompt.
+- `Conditions.candidateHasMostLife()` — the candidate player has the most life or is tied for the most (`PlayerHasMost(Player.Candidate, LifeTotal(You))`). With a non-targeting `selectTarget` it backs "choose a player with the most life or tied for most life" (The Black Gate); a lone candidate is chosen without a prompt.
 - `Conditions.candidateWasDealtDamageBySourceThisTurn()` — this ability's **source** dealt damage (combat
   or noncombat) to the targeted player this turn; backed by `SourceDealtDamageToPlayerThisTurn(player)`,
   which reads the source's per-recipient damage memory. "Target player dealt damage by this creature this
@@ -15125,21 +15125,25 @@ answer it and would silently return `false`.
   entry point for any "if amount X (relation) amount Y" intervening-if or static gate. Used by Taii
   Wakeen, Perfect Shot's intervening-if: `CompareAmounts(ContextProperty(TRIGGER_DAMAGE_AMOUNT), EQ,
   ContextProperty(TRIGGER_RECIPIENT_TOUGHNESS))`.
-- `PlayerHasMostLife(player)` — `player` has the most life, or is tied for the most, among all
-  players (their life ≥ every player's). The "most life" check a binary `CompareAmounts` can't express
-  (it needs the max over every player). Resolve `player` to the controller (`Player.You`), the
-  attacked player (`Player.DefendingPlayer` — read from the source's attack assignment, so it works as
-  an attack-trigger intervening-if), etc. Preacher of the Schism gates its two attack triggers with
-  `PlayerHasMostLife(Player.DefendingPlayer)` ("attacks the player with the most life") and
-  `PlayerHasMostLife(Player.You)` ("attacks while you have the most life").
-- `PlayerControlsMostPermanents(player, filter = GameObjectFilter.Creature)` — `player` controls the
-  most permanents matching `filter`, or is tied for the most, among all players. The board-count
-  sibling of `PlayerHasMostLife`: the same "max over every player" shape a binary `CompareAmounts`
-  can't express. Counts are read off the **projected** battlefield, so an animated land counts as a
-  creature. Wrap it in a per-player loop for "each player who controls the most X" —
-  `ForEachPlayerEffect(Player.Each, Effects.If(PlayerControlsMostPermanents(Player.You,
-  GameObjectFilter.Creature), …))`, where `Player.You` inside the loop is the iterated player
-  (No Witnesses: "Each player who controls the most creatures investigates").
+- `PlayerHasMost(player, amount, includeTies = true)` — `player` has the most of `amount` among the
+  players still in the game: the "max over every player" check a binary `CompareAmounts` can't express.
+  `amount` is measured **once per player** with `Player.You` rebound to that player (the
+  `GreatestAmongPlayers` rebinding), so write it from the measured player's side —
+  `DynamicAmount.LifeTotal(Player.You)`, `DynamicAmount.Count(Player.You, Zone.HAND)`,
+  `DynamicAmount.Count(Player.You, Zone.BATTLEFIELD, filter)` (battlefield counts read projected
+  state). `includeTies = true` is "has the most … **or is tied for** the most" (no other player has
+  more); `false` is "has more … **than each other player**" (strictly more than every other player —
+  you and teammates included; alone in the game it holds). Facades:
+  - `PlayerHasMoreThanEachOtherPlayer(player, amount)` — the strict form. Battle Angels of Tyr checks
+    the damaged player (`Player.TriggeringPlayer`) three times: hand, lands, life.
+  - `PlayerHasMostLife(player)` — `PlayerHasMost(player, LifeTotal(You))`. Preacher of the Schism gates
+    its two attack triggers with `PlayerHasMostLife(Player.DefendingPlayer)` ("attacks the player with
+    the most life") and `PlayerHasMostLife(Player.You)`.
+  - `PlayerControlsMostPermanents(player, filter = GameObjectFilter.Creature)` — the battlefield count
+    of `filter`, ties included. Wrap it in a per-player loop for "each player who controls the most X" —
+    `ForEachPlayerEffect(Player.Each, Effects.If(PlayerControlsMostPermanents(Player.You,
+    GameObjectFilter.Creature), …))`, where `Player.You` inside the loop is the iterated player
+    (No Witnesses: "Each player who controls the most creatures investigates").
 - `AmountIsPrime(amount)` / `AmountIsEven(amount)` / `AmountIsOdd(amount)` /
   `AmountIsMultipleOf(amount, divisor)` — the **unary** numeric-predicate family, the counterpart to
   `CompareAmounts` for properties a two-sided threshold can't express (primality, parity,

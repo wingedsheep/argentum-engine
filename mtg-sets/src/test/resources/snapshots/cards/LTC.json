@@ -1232,8 +1232,12 @@
                             "requirement": {
                                 "type": "TargetPlayer",
                                 "restriction": {
-                                    "type": "PlayerHasMostLife",
-                                    "player": "Candidate"
+                                    "type": "PlayerHasMost",
+                                    "player": "Candidate",
+                                    "amount": {
+                                        "type": "LifeTotal",
+                                        "player": "You"
+                                    }
                                 },
                                 "descriptionOverride": "a player with the most life or tied for most life"
                             },

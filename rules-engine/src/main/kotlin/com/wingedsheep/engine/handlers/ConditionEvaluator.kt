@@ -159,8 +159,7 @@ import com.wingedsheep.sdk.scripting.conditions.PlayerCommittedCrimeThisTurn
 import com.wingedsheep.sdk.scripting.conditions.PlayerHasCitysBlessing
 import com.wingedsheep.sdk.scripting.conditions.PlayerHasDesignation
 import com.wingedsheep.sdk.scripting.conditions.PlayerHasEnduringStory
-import com.wingedsheep.sdk.scripting.conditions.PlayerControlsMostPermanents
-import com.wingedsheep.sdk.scripting.conditions.PlayerHasMostLife
+import com.wingedsheep.sdk.scripting.conditions.PlayerHasMost
 import com.wingedsheep.sdk.scripting.conditions.PlayerIs
 import com.wingedsheep.sdk.scripting.conditions.RingHasTemptedPlayerAtLeast
 import com.wingedsheep.sdk.scripting.conditions.CreatureDiedThisTurnCondition
@@ -335,12 +334,11 @@ class ConditionEvaluator(
             is PlayerActivatedExhaustAbilitiesThisTurn,
             is PlayerAttackedPlayerThisTurn,
             is PlayerCommittedCrimeThisTurn,
-            is PlayerControlsMostPermanents,
             is PlayerDrewCardsThisTurn,
             is PlayerHasCitysBlessing,
             is PlayerHasDesignation,
             is PlayerHasEnduringStory,
-            is PlayerHasMostLife,
+            is PlayerHasMost,
             is PlayerPlayedLandThisTurn,
             is PlayerTurnedPermanentFaceUpThisTurn,
             is PutCounterKindOnCreatureThisTurn,
@@ -768,17 +766,7 @@ class ConditionEvaluator(
                 }
             }
 
-            is PlayerHasMostLife -> {
-                val playerId = resolvePlayer(state, condition.player, ctx)
-                if (playerId == null) false else {
-                    val life = state.lifeTotal(playerId)
-                    // Most life or tied for most: no player has strictly more.
-                    state.turnOrder.all { state.lifeTotal(it) <= life }
-                }
-            }
-
-            is PlayerControlsMostPermanents ->
-                evaluatePlayerControlsMostPermanentsCtx(state, condition, ctx)
+            is PlayerHasMost -> evaluatePlayerHasMostCtx(state, condition, ctx)
 
             is RingHasTemptedPlayerAtLeast -> {
                 val playerId = resolvePlayer(state, condition.player, ctx)
@@ -1354,34 +1342,27 @@ class ConditionEvaluator(
     }
 
     /**
-     * "Controls the most [filter], or is tied for the most" — the board-count sibling of
-     * [PlayerHasMostLife]. Counts every player's matching permanents off the *projected*
-     * battlefield (so an animated land counts as a creature) and returns true when nobody has
-     * strictly more than the named player. `state.turnOrder` is the comparison set, matching
-     * [PlayerHasMostLife]; a player with zero matches still qualifies when everyone has zero,
-     * exactly as "the most" reads with an empty board.
+     * [PlayerHasMost]: measures the amount once per player still in the game, rebinding the
+     * context's controller to that player (the [DynamicAmount.GreatestAmongPlayers] rebinding), and
+     * compares the named player's value against every other player's — `>=` each of them for "the
+     * most or tied for the most", `>` each of them for "more than each other player".
      */
-    private fun evaluatePlayerControlsMostPermanentsCtx(
+    private fun evaluatePlayerHasMostCtx(
         state: GameState,
-        condition: PlayerControlsMostPermanents,
+        condition: PlayerHasMost,
         ctx: ConditionEvaluationContext
     ): Boolean {
         val playerId = resolvePlayer(state, condition.player, ctx) ?: return false
-        val projected = ctx.projectedStateFor(state)
-        val predicateContext = when (ctx) {
-            is Resolution -> PredicateContext.fromEffectContext(ctx.effectContext)
-            is Projection -> PredicateContext(controllerId = playerId, sourceId = ctx.sourceId)
+        val effectCtx = when (ctx) {
+            is Resolution -> ctx.effectContext
+            is Projection -> syntheticEffectContext(state, ctx) ?: return false
         }
-
-        val counts = state.getBattlefield()
-            .filter { entityId ->
-                predicates.matches(state, projected, entityId, condition.filter, predicateContext)
-            }
-            .groupingBy { entityId -> projected.getController(entityId) }
-            .eachCount()
-
-        val mine = counts[playerId] ?: 0
-        return state.turnOrder.all { (counts[it] ?: 0) <= mine }
+        val projected = ctx.projectedStateFor(state)
+        fun measure(id: EntityId) = amounts.evaluate(state, condition.amount, effectCtx.copy(controllerId = id), projected)
+        val mine = measure(playerId)
+        return state.activePlayers.all { other ->
+            other == playerId || measure(other).let { if (condition.includeTies) it <= mine else it < mine }
+        }
     }
 
     private fun evaluateSourceIsModifiedCtx(state: GameState, ctx: ConditionEvaluationContext): Boolean {
@@ -1534,7 +1515,13 @@ class ConditionEvaluator(
                 val c = ctx.controllerId ?: return null
                 state.getOpponents(c).firstOrNull()
             }
-            is Player.TriggeringPlayer -> (ctx as? Resolution)?.effectContext?.triggeringPlayerId
+            // A trigger that binds its player as the triggering *entity* ("deals combat damage to a
+            // player" — that player) is read the way effects read it (TargetResolutionUtils), but
+            // only when that entity is a player.
+            is Player.TriggeringPlayer -> (ctx as? Resolution)?.effectContext?.let { ec ->
+                ec.triggeringPlayerId ?: ec.triggeringEntityId?.takeIf { it in state.turnOrder }
+            }
+            is Player.ActivePlayer -> state.activePlayerId
             // The attacked player for the source's attack assignment (read from its
             // AttackingComponent by resolveDefendingPlayer) — Preacher of the Schism's "attacks the
             // player with the most life".
@@ -1551,7 +1538,11 @@ class ConditionEvaluator(
             is Player.EnchantedPlayer -> TargetResolutionUtils.enchantedPlayer(
                 ctx.sourceId, state, (ctx as? Resolution)?.effectContext?.lastKnownSourceSnapshot
             )
-            else -> null
+            // Everything else resolves at resolution exactly as an effect's player reference does
+            // (targets, bound variables, "its controller"); there is no single answer under projection.
+            else -> (ctx as? Resolution)?.effectContext?.let {
+                TargetResolutionUtils.resolvePlayerRef(player, it, state)
+            }
         }
     }
 
