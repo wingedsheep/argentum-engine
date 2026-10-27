@@ -3167,6 +3167,18 @@ class CastFromZoneEnumerator(
                             precomputedSources = context.availableManaSources
                         )?.sources?.map { it.entityId }
                     }
+                    // Kicker {X} cast from another zone: the X range and the "X can't be 0" floor
+                    // ride the kicked variant exactly as they do on a hand cast.
+                    val kickedHasXCost = kickedCost.hasX
+                    val kickedMaxAffordableX: Int? = if (kickedHasXCost) {
+                        val availableSources = context.manaSolver.getAvailableManaCount(state, playerId, precomputedSources = context.availableManaSources, spellContext = kickedSpellContext)
+                        context.costCalculator.maxAffordableX(
+                            state, cardDef, playerId, cardId,
+                            payable = availableSources - kickedCost.cmc, xCount = kickedCost.xCount,
+                            fromZone = sourceZone?.let { zone -> Zone.entries.firstOrNull { it.name == zone } },
+                        )
+                    } else null
+                    val kickedMinX = if (kickedHasXCost) kickers.maxOf { it.minimumXValue } else 0
 
                     // Check additional cost payability
                     var kickerCostInfo: AdditionalCostData? = null
@@ -3271,7 +3283,10 @@ class CastFromZoneEnumerator(
                                     actionType = "CastWithKicker",
                                     description = "Cast ${cardComponent.name} ($castLabel)",
                                     action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), declaredCostSlot = declaredSlot, declaredCostTimes = times, declaredCostIndices = declaredIndices, graveyardLifeCost = originalCast.graveyardLifeCost),
-                                    affordable = canAffordKicked,
+                                    affordable = canAffordKicked && (!kickedHasXCost || (kickedMaxAffordableX ?: 0) >= kickedMinX),
+                                    hasXCost = kickedHasXCost,
+                                    maxAffordableX = kickedMaxAffordableX,
+                                    minX = kickedMinX,
                                     manaCostString = kickedCostString,
                                     manaCostByTargetCount = kickedCostByTargetCount,
                                     autoTapPreview = kickedAutoTapPreview,
@@ -3293,7 +3308,10 @@ class CastFromZoneEnumerator(
                                     minTargets = firstReq.effectiveMinCount,
                                     targetDescription = firstReq.description,
                                     targetRequirements = targetReqInfos.surfacedRequirements(),
-                                    affordable = canAffordKicked,
+                                    affordable = canAffordKicked && (!kickedHasXCost || (kickedMaxAffordableX ?: 0) >= kickedMinX),
+                                    hasXCost = kickedHasXCost,
+                                    maxAffordableX = kickedMaxAffordableX,
+                                    minX = kickedMinX,
                                     manaCostString = kickedCostString,
                                     manaCostByTargetCount = kickedCostByTargetCount,
                                     autoTapPreview = kickedAutoTapPreview,
@@ -3311,7 +3329,10 @@ class CastFromZoneEnumerator(
                             actionType = "CastWithKicker",
                             description = "Cast ${cardComponent.name} ($castLabel)",
                             action = CastSpell(playerId, cardId, declaredCostSlot = declaredSlot, declaredCostTimes = times, declaredCostIndices = declaredIndices, graveyardLifeCost = originalCast.graveyardLifeCost),
-                            affordable = canAffordKicked,
+                            affordable = canAffordKicked && (!kickedHasXCost || (kickedMaxAffordableX ?: 0) >= kickedMinX),
+                                    hasXCost = kickedHasXCost,
+                                    maxAffordableX = kickedMaxAffordableX,
+                                    minX = kickedMinX,
                             manaCostString = kickedCostString,
                             manaCostByTargetCount = kickedCostByTargetCount,
                             autoTapPreview = kickedAutoTapPreview,

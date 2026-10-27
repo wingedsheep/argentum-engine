@@ -25,8 +25,13 @@ class KickerMinimumXTest : FunSpec({
         manaCost = "{U}"; typeLine = "Creature — Merfolk"; power = 1; toughness = 1
         keywordAbility(KeywordAbility.kicker("{X}"))
     }
+    val recurring = card("Recurring Floored Kicker Creature") {
+        manaCost = "{U}"; typeLine = "Creature — Merfolk"; power = 1; toughness = 1
+        keywordAbility(KeywordAbility.kicker("{X}", minimumXValue = 1))
+        staticAbility { ability = MayCastSelfFromZones(zones = listOf(Zone.GRAVEYARD)) }
+    }
     fun setup() = GameTestDriver().apply {
-        registerCards(listOf(land, floored, open))
+        registerCards(listOf(land, floored, open, recurring))
         initMirrorMatch(Deck.of("Island" to 30))
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -67,6 +72,18 @@ class KickerMinimumXTest : FunSpec({
         d.giveMana(p, Color.BLUE, 1)
         d.kickedOffer(p, id).minX shouldBe 0
         d.submit(CastSpell(p, id, xValue = 0, declaredCostSlot = ChoiceSlot.KICKED)).error shouldBe null
+    }
+    test("a kicked cast from the graveyard carries the X range and the floor") {
+        val d = setup(); val p = d.activePlayer!!
+        val id = d.putCardInGraveyard(p, recurring.name)
+        d.giveMana(p, Color.BLUE, 3)
+        val offer = d.kickedOffer(p, id)
+        offer.affordable shouldBe true
+        offer.hasXCost shouldBe true
+        offer.minX shouldBe 1
+        offer.maxAffordableX shouldBe 2
+        d.submit(CastSpell(p, id, xValue = 0, declaredCostSlot = ChoiceSlot.KICKED)).error shouldNotBe null
+        d.submit(CastSpell(p, id, xValue = 2, declaredCostSlot = ChoiceSlot.KICKED)).error shouldBe null
     }
     test("a floor needs an {X} in the kicker's mana cost") {
         shouldThrow<IllegalArgumentException> { KeywordAbility.kicker("{2}", minimumXValue = 1) }
