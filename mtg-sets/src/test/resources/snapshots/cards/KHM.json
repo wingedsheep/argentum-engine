@@ -1751,6 +1751,200 @@
     "layout": "MODAL_DFC"
 }
 
+// Blood on the Snow
+{
+    "name": "Blood on the Snow",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Snow Sorcery",
+    "oracleText": "Choose one —\n• Destroy all creatures.\n• Destroy all planeswalkers.\nThen return a creature or planeswalker card with mana value X or less from your graveyard to the battlefield, where X is the amount of {S} spent to cast this spell. ({S} is mana from a snow source.)",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": "creature"
+                                },
+                                "storeAs": "destroyAll_gathered"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "destroyAll_gathered",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Destroy"
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Graveyard",
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    {
+                                                        "type": "Or",
+                                                        "predicates": [
+                                                            "IsCreature",
+                                                            "IsPlaneswalker"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "ManaValueAtMostDynamic",
+                                                        "amount": "SnowManaSpent"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered0",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected1",
+                                        "prompt": "Return a creature or planeswalker card with mana value X or less to the battlefield"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected1",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "description": "Destroy all creatures"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": "planeswalker"
+                                },
+                                "storeAs": "destroyAll_gathered"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "destroyAll_gathered",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Destroy"
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Graveyard",
+                                            "filter": {
+                                                "cardPredicates": [
+                                                    {
+                                                        "type": "Or",
+                                                        "predicates": [
+                                                            "IsCreature",
+                                                            "IsPlaneswalker"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "ManaValueAtMostDynamic",
+                                                        "amount": "SnowManaSpent"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered0",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected1",
+                                        "prompt": "Return a creature or planeswalker card with mana value X or less to the battlefield"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "selected1",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Battlefield"
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "description": "Destroy all planeswalkers"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "rarity": "RARE",
+        "artist": "Martina Fačková",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d8606f40-0af4-443b-a413-a88dc3e8f32e.jpg?1783928254",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "You choose a mode for Blood on the Snow as you cast it. The last part of the effect (returning a card to the battlefield) happens no matter which mode you choose."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Blood on the Snow doesn't target any creature or planeswalker card in your graveyard. You choose which one to return to the battlefield, if any, as Blood on the Snow resolves. Notably, you could return one of the creatures or planeswalkers that was just destroyed by Blood on the Snow."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a card in a graveyard has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If you cast Blood on the Snow without spending snow mana, you can return only a creature or planeswalker card with mana value 0."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If Blood on the Snow is copied, no mana was spent to cast the copy, so you can return only a creature or planeswalker card with mana value 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Bloodline Pretender
 {
     "name": "Bloodline Pretender",
@@ -1816,6 +2010,67 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Bloodsky Berserker
+{
+    "name": "Bloodsky Berserker",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Berserker",
+    "oracleText": "Whenever you cast your second spell each turn, put two +1/+1 counters on this creature. It gains menace until end of turn. (It can't be blocked except by two or more creatures.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bloodsky Berserker:1",
+                "trigger": {
+                    "type": "NthSpellCastEvent",
+                    "nthSpell": 2,
+                    "player": "You"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 2,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "MENACE",
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "UNCOMMON",
+        "artist": "Gabor Szikszai",
+        "flavorText": "\"Who's next?!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6308a53-de07-4ed9-80a1-3579843466c2.jpg?1783928254",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The triggered ability can trigger only once each turn. The ability will resolve before the second spell does. It doesn't matter if the first spell you cast that turn has resolved, was countered, or is still on the stack."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The triggered ability triggers only if the creature that has it is on the battlefield as you cast your second spell. Spells you cast in a turn before that creature entered the battlefield will count."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Boreal Outrider
@@ -2009,6 +2264,149 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Burning-Rune Demon
+{
+    "name": "Burning-Rune Demon",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Flying\nWhen this creature enters, you may search your library for exactly two cards not named Burning-Rune Demon that have different names. If you do, reveal those cards. An opponent chooses one of them. Put the chosen card into your hand and the other into your graveyard, then shuffle.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Burning-Rune Demon:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Search your library for two cards with different names?"
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            {
+                                                "type": "Not",
+                                                "predicate": {
+                                                    "type": "NameEquals",
+                                                    "name": "Burning-Rune Demon"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "gathered0",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                "storeSelected": "selected1",
+                                "prompt": "Search for exactly two cards not named Burning-Rune Demon with different names (choose none to fail to find)",
+                                "restrictions": [
+                                    "OnePerCardName"
+                                ]
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "selected1",
+                                "ifNotEmpty": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "RevealCollection",
+                                            "from": "selected1"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "selected1",
+                                            "selection": {
+                                                "type": "ChooseExactly",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "chooser": "Opponent",
+                                            "storeSelected": "selected4",
+                                            "storeRemainder": "remainder4",
+                                            "prompt": "Choose one of the revealed cards. It goes into its owner's hand; the other goes into their graveyard.",
+                                            "selectedLabel": "Hand",
+                                            "remainderLabel": "Graveyard"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "selected4",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Hand"
+                                            }
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "remainder4",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Graveyard"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "minSize": 2
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                },
+                "descriptionOverride": "When this creature enters, you may search your library for exactly two cards not named Burning-Rune Demon that have different names. If you do, reveal those cards. An opponent chooses one of them. Put the chosen card into your hand and the other into your graveyard, then shuffle."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "MYTHIC",
+        "artist": "Andrew Mar",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f358a52b-8044-404e-8d04-2ec5903386cc.jpg?1783928253",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "While in your library, a double-faced card has only the name of its front face. It's not possible to reveal two of the same double-faced card this way."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If you choose not to search your library, no cards are revealed or put anywhere else, and you don't shuffle."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -2460,6 +2858,78 @@
     ]
 }
 
+// Crippling Fear
+{
+    "name": "Crippling Fear",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose a creature type. Creatures that aren't of the chosen type get -3/-3 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ChooseOption",
+                    "optionType": "CREATURE_TYPE",
+                    "storeAs": "chosen0"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "Not",
+                                        "predicate": {
+                                            "type": "HasSubtypeFromVariable",
+                                            "variableName": "chosen0"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -3
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -3
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "rarity": "RARE",
+        "artist": "Néstor Ossandón Leal",
+        "flavorText": "Panic spread like wildfire as the demons of Immersturm poured into Bretagard, slaughtering as they came.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/d/7d9bd181-b99f-477e-bcfb-9b78cbf51224.jpg?1783928253",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "You choose the creature type as Crippling Fear resolves, and then creatures not of that type get -3/-3. Once Crippling Fear starts to resolve, players can't respond to the choice or take any actions until Crippling Fear finishes resolving."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Crippling Fear affects only creatures that aren't of the chosen type that are on the battlefield as it resolves. It won't affect creatures that enter the battlefield later in the turn, regardless of creature type. If a creature changes creature types later in the turn, Crippling Fear won't start or stop affecting that creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Cyclone Summoner
 {
     "name": "Cyclone Summoner",
@@ -2590,6 +3060,64 @@
         "BLACK"
     ],
     "layout": "MODAL_DFC"
+}
+
+// Deathknell Berserker
+{
+    "name": "Deathknell Berserker",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Elf Berserker",
+    "oracleText": "When this creature dies, if its power was 3 or greater, create a 2/2 black Zombie Berserker creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Deathknell Berserker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie",
+                        "Berserker"
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "TriggeringEntity",
+                        "numericProperty": "Power"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "artist": "Zoltan Boros",
+        "flavorText": "Sven felled the elf with an arrow through the chest, but moments later, the corpse rose with a sneer to fight again.\n—Longbeard Saga",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9f2029f-ffda-4374-9a78-79866ac23fca.jpg?1783928252"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Demon Bolt
@@ -3255,6 +3783,93 @@
     }
 }
 
+// Draugr Recruiter
+{
+    "name": "Draugr Recruiter",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Zombie Cleric",
+    "oracleText": "Boast — {3}{B}: Return target creature card from your graveyard to your hand. (Activate only if this creature attacked this turn and only once each turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Draugr Recruiter:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    "OncePerTurn",
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "AttackedThisTurn"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "isBoast": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "artist": "Colin Boyer",
+        "flavorText": "\"You cannot stand against us, but when you fall, you will stand with us!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6b0fe66b-0067-4e5c-9b3a-b014b2f0daf2.jpg?1783928250",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "A boast ability can be activated at any point after the creature with that ability has been declared as an attacker. This can be before blockers are declared, after blockers are declared but before combat damage is dealt, during combat after combat damage is dealt, during the postcombat main phase, during the end step, or, in some unusual cases, during the cleanup step."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If it's not your turn and you gain control of a creature with a boast ability after that creature attacked, you can activate that creature's boast ability if it hasn't been activated yet that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a creature with a boast ability is put onto the battlefield attacking, it was never declared as an attacker. Its boast ability can't be activated that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If an effect adds additional combat phases to a turn and a creature with a boast ability attacks more than once during that turn, its boast ability can still be activated only once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Draugr Thought-Thief
 {
     "name": "Draugr Thought-Thief",
@@ -3348,6 +3963,121 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Draugr's Helm
+{
+    "name": "Draugr's Helm",
+    "manaCost": "{1}{B}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "When this Equipment enters, you may pay {2}{B}. If you do, create a 2/2 black Zombie Berserker creature token, then attach this Equipment to it.\nEquipped creature gets +2/+2 and has menace. (It can't be blocked except by two or more creatures.)\nEquip {4}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Draugr's Helm:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{2}{B}"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CreateToken",
+                                "power": 2,
+                                "toughness": 2,
+                                "colors": [
+                                    "BLACK"
+                                ],
+                                "creatureTypes": [
+                                    "Zombie",
+                                    "Berserker"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/e/4/e4bbd379-6728-4c6b-b375-295926fe6b00.jpg?1783928080"
+                            },
+                            {
+                                "type": "AttachEquipment",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "createdTokens"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Draugr's Helm:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "MENACE"
+            }
+        ]
+    },
+    "equipCost": "{4}",
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "UNCOMMON",
+        "artist": "Joe Slucher",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fd4aade3-b1e3-43d1-b4a8-6b55ecdb4327.jpg?1783928251",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "You decide whether to pay {2}{B} as the enters-the-battlefield ability resolves. If you do, you immediately create the Zombie Berserker creature token and attach Draugr's Helm to it. No players may respond to your decision to pay or not, and no player may take actions during this process."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The Zombie Berserker creature token enters the battlefield as a 2/2 creature. Any abilities that trigger when a creature with a certain power or toughness enters the battlefield will see the token enter as a 2/2 creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3466,6 +4196,104 @@
     ]
 }
 
+// Duskwielder
+{
+    "name": "Duskwielder",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Elf Berserker",
+    "oracleText": "Boast — {1}: Target opponent loses 1 life and you gain 1 life. (Activate only if this creature attacked this turn and only once each turn.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Duskwielder:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    "OncePerTurn",
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "AttackedThisTurn"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "isBoast": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "artist": "Daarken",
+        "flavorText": "\"My shadow alone will slay you.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5b5490b8-5652-40f5-8678-e1263ef69b5a.jpg?1783928250",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "A boast ability can be activated at any point after the creature with that ability has been declared as an attacker. This can be before blockers are declared, after blockers are declared but before combat damage is dealt, during combat after combat damage is dealt, during the postcombat main phase, during the end step, or, in some unusual cases, during the cleanup step."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If it's not your turn and you gain control of a creature with a boast ability after that creature attacked, you can activate that creature's boast ability if it hasn't been activated yet that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a creature with a boast ability is put onto the battlefield attacking, it was never declared as an attacker. Its boast ability can't be activated that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If an effect adds additional combat phases to a turn and a creature with a boast ability attacks more than once during that turn, its boast ability can still be activated only once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Dwarven Reinforcements
 {
     "name": "Dwarven Reinforcements",
@@ -3508,6 +4336,222 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Egon, God of Death
+{
+    "name": "Egon, God of Death",
+    "manaCost": "{2}{B}",
+    "typeLine": "Legendary Creature — God",
+    "oracleText": "Deathtouch\nAt the beginning of your upkeep, exile two cards from your graveyard. If you can't, sacrifice Egon and draw a card.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Egon, God of Death:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Graveyard"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Graveyard"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                "storeSelected": "toExile",
+                                "selectedLabel": "Exile"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "toExile",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            }
+                        ]
+                    },
+                    "otherwise": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SacrificeTarget",
+                                "target": "Self"
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, exile two cards from your graveyard. If you can't, sacrifice Egon and draw a card."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Throne of Death",
+        "manaCost": "{B}",
+        "typeLine": "Legendary Artifact",
+        "oracleText": "At the beginning of your upkeep, mill a card.\n{2}{B}, {T}, Exile a creature card from your graveyard: Draw a card.",
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Throne of Death:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "isMill": true
+                                },
+                                "storeAs": "milled"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "milled",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "At the beginning of your upkeep, mill a card."
+                }
+            ],
+            "activatedAbilities": [
+                {
+                    "id": "Throne of Death:2",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{2}{B}"
+                                }
+                            },
+                            "CostTap",
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomExileFrom",
+                                    "zone": "Graveyard",
+                                    "filter": "creature"
+                                }
+                            }
+                        ]
+                    },
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "descriptionOverride": "{2}{B}, {T}, Exile a creature card from your graveyard: Draw a card."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "92",
+            "rarity": "RARE",
+            "artist": "Jason A. Engle",
+            "flavorText": "It offers all the warmth and comfort of the grave.",
+            "imageUri": "https://cards.scryfall.io/normal/back/9/d/9dfdb73d-b001-4a59-b79e-8c8c1baea116.jpg?1783928254",
+            "rulings": [
+                {
+                    "date": "2021-02-05",
+                    "text": "Although players may respond to Throne of Death's activated ability, they can't respond to the paying of its activation cost. The creature card will already be exiled by the time anyone can respond."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "RARE",
+        "artist": "Jason A. Engle",
+        "flavorText": "Egon ages backward, his wisdom soured by youthful spite.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9dfdb73d-b001-4a59-b79e-8c8c1baea116.jpg?1783928254",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "You choose which cards you're exiling as Egon's triggered ability is resolving. If there are two or more cards in your graveyard at that time, you must exile two of them. You can't choose not to exile cards and sacrifice Egon instead to draw a card."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If there's only one card in your graveyard, you won't exile it. Because you can't exile two cards from your graveyard, you'll sacrifice Egon and draw a card."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If Egon leaves the battlefield before its triggered ability resolves, you'll still exile two cards from your graveyard if you can and draw a card if you can't."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ],
+    "layout": "MODAL_DFC"
 }
 
 // Elderfang Disciple
@@ -3862,6 +4906,116 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Eradicator Valkyrie
+{
+    "name": "Eradicator Valkyrie",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Angel Berserker",
+    "oracleText": "Flying, lifelink, hexproof from planeswalkers\nBoast — {1}{B}, Sacrifice a creature: Each opponent sacrifices a creature or planeswalker. (Activate only if this creature attacked this turn and only once each turn.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "LIFELINK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Hexproof",
+            "scope": {
+                "type": "ProtectionScope.CardType",
+                "cardType": "Planeswalker"
+            }
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Eradicator Valkyrie:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "creature|planeswalker",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "restrictions": [
+                    "OncePerTurn",
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "AttackedThisTurn"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "isBoast": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "MYTHIC",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d00edda3-ddbc-44ee-a14b-47a701445bb0.jpg?1783928247",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Eradicator Valkyrie can't be the target of abilities whose source is a planeswalker an opponent controls."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "As the boast ability resolves, first the next opponent in turn order chooses a creature or planeswalker they control. Then each other opponent in turn order chooses a creature or planeswalker they control, knowing the choices made before their choice. Then all chosen creatures and planeswalkers are sacrificed at the same time."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "A boast ability can be activated at any point after the creature with that ability has been declared as an attacker. This can be before blockers are declared, after blockers are declared but before combat damage is dealt, during combat after combat damage is dealt, during the postcombat main phase, during the end step, or, in some unusual cases, during the cleanup step."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If it's not your turn and you gain control of a creature with a boast ability after that creature attacked, you can activate that creature's boast ability if it hasn't been activated yet that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a creature with a boast ability is put onto the battlefield attacking, it was never declared as an attacker. Its boast ability can't be activated that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If an effect adds additional combat phases to a turn and a creature with a boast ability attacks more than once during that turn, its boast ability can still be activated only once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -6325,6 +7479,66 @@
     }
 }
 
+// Infernal Pet
+{
+    "name": "Infernal Pet",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Imp",
+    "oracleText": "Whenever you cast your second spell each turn, put a +1/+1 counter on this creature and it gains flying until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Infernal Pet:1",
+                "trigger": {
+                    "type": "NthSpellCastEvent",
+                    "nthSpell": 2,
+                    "player": "You"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FLYING",
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "artist": "YW Tang",
+        "flavorText": "\"Here, my pet. Another little light for you to snuff out.\"\n—Kzarakh, Immersturm gamekeeper",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/80340582-655b-4bf1-88fb-14bcbe17aa04.jpg?1783928245",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The triggered ability can trigger only once each turn. The ability will resolve before the second spell does. It doesn't matter if the first spell you cast that turn has resolved, was countered, or is still on the stack."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The triggered ability triggers only if the creature that has it is on the battlefield as you cast your second spell. Spells you cast in a turn before that creature entered the battlefield will count. In other words, the ability won't trigger if the creature with the ability is the second spell you cast during a turn or if you have already cast two or more spells by the time that creature enters the battlefield that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Inga Rune-Eyes
 {
     "name": "Inga Rune-Eyes",
@@ -7457,6 +8671,70 @@
         "GREEN"
     ],
     "layout": "MODAL_DFC"
+}
+
+// Koma's Faithful
+{
+    "name": "Koma's Faithful",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Elf Cleric",
+    "oracleText": "Lifelink (Damage dealt by this creature also causes you to gain that much life.)\nWhen this creature dies, each player mills three cards. (They each put the top three cards of their library into their graveyard.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Koma's Faithful:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": "Each",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "Each"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature dies, each player mills three cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "artist": "Caroline Gariba",
+        "flavorText": "\"Great Serpent, hear my song! We wait, our faith unshaken, for your glorious return.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/af0f1a90-af64-4122-9c1a-954edf8fa240.jpg?1783928247"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Koma, Cosmos Serpent
@@ -8691,6 +9969,91 @@
     ]
 }
 
+// Priest of the Haunted Edge
+{
+    "name": "Priest of the Haunted Edge",
+    "manaCost": "{1}{B}",
+    "typeLine": "Snow Creature — Zombie Cleric",
+    "oracleText": "{T}, Sacrifice this creature: Target creature gets -X/-X until end of turn, where X is the number of snow lands you control. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Priest of the Haunted Edge:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsLand",
+                                    "IsSnow"
+                                ]
+                            }
+                        },
+                        "multiplier": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsLand",
+                                    "IsSnow"
+                                ]
+                            }
+                        },
+                        "multiplier": -1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "artist": "Aaron Miller",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0cde0f4d-5acc-4a25-a3d6-c6b9b734360c.jpg?1783928244",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Use the number of snow lands you control as the ability resolves to determine the value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Raiders' Karve
 {
     "name": "Raiders' Karve",
@@ -9334,6 +10697,88 @@
     ]
 }
 
+// Return Upon the Tide
+{
+    "name": "Return Upon the Tide",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target creature card from your graveyard to the battlefield. If it's an Elf, create two 1/1 green Elf Warrior creature tokens.\nForetell {3}{B} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "keywords": [
+        "FORETELL"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Foretell",
+            "cost": "{3}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "creature Elf"
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "GREEN"
+                        ],
+                        "creatureTypes": [
+                            "Elf",
+                            "Warrior"
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "UNCOMMON",
+        "artist": "Martina Fačková",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/470601b0-9598-487f-bb14-4bfec7ca6d61.jpg?1783928244"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Righteous Valkyrie
 {
     "name": "Righteous Valkyrie",
@@ -9441,6 +10886,61 @@
     "colorIdentityOverride": [
         "GREEN",
         "BLUE"
+    ]
+}
+
+// Rise of the Dread Marn
+{
+    "name": "Rise of the Dread Marn",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Create X 2/2 black Zombie Berserker creature tokens, where X is the number of nontoken creatures that died this turn.\nForetell {B} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "keywords": [
+        "FORETELL"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Foretell",
+            "cost": "{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": {
+                "type": "TurnTracking",
+                "player": "Each",
+                "tracker": "NONTOKEN_CREATURES_DIED"
+            },
+            "power": 2,
+            "toughness": 2,
+            "colors": [
+                "BLACK"
+            ],
+            "creatureTypes": [
+                "Zombie",
+                "Berserker"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "rarity": "RARE",
+        "artist": "Titus Lunter",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d3a1ec1-f362-494d-a23b-6a963ce44fdd.jpg?1783928240",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The number of nontoken creatures that died that turn is counted as Rise of the Dread Marn is resolving. In other words, nontoken creatures that die in response to Rise of the Dread Marn will count."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "It doesn't matter if the cards that represented those creatures are still in the graveyard as Rise of the Dread Marn resolves. They'll still count as long as they died that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
