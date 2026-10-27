@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.fdn.cards
+package com.wingedsheep.mtg.sets.definitions.znr.cards
 
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
@@ -8,7 +8,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
- * Feed the Swarm
+ * Feed the Swarm — Zendikar Rising #102 (canonical printing; reprinted in Foundations)
  * {1}{B}
  * Sorcery
  *
@@ -35,9 +35,9 @@ val FeedTheSwarm = card("Feed the Swarm") {
 
     metadata {
         rarity = Rarity.COMMON
-        collectorNumber = "712"
+        collectorNumber = "102"
         artist = "Andrey Kuzinskiy"
         flavorText = "\"On vile wings and bloody wind, the swarm will rise.\"\n—Skyclave inscription"
-        imageUri = "https://cards.scryfall.io/normal/front/e/6/e66d4541-160c-4137-98e7-0eaa692c7d7a.jpg?1742922285"
+        imageUri = "https://cards.scryfall.io/normal/front/f/6/f6b2eba7-862a-4efd-9f65-065fb2070855.jpg"
     }
 }

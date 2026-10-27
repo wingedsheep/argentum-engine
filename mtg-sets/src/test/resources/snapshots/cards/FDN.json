@@ -3302,60 +3302,6 @@
     ]
 }
 
-// Feed the Swarm
-{
-    "name": "Feed the Swarm",
-    "manaCost": "{1}{B}",
-    "typeLine": "Sorcery",
-    "oracleText": "Destroy target creature or enchantment an opponent controls. You lose life equal to that permanent's mana value.",
-    "script": {
-        "spellEffect": {
-            "type": "Composite",
-            "effects": [
-                {
-                    "type": "MoveToZone",
-                    "target": {
-                        "type": "BoundVariable",
-                        "name": "t0"
-                    },
-                    "destination": "Graveyard",
-                    "byDestruction": true
-                },
-                {
-                    "type": "LoseLife",
-                    "amount": {
-                        "type": "EntityProperty",
-                        "entity": {
-                            "type": "BoundVariable",
-                            "name": "t0"
-                        },
-                        "numericProperty": "ManaValue"
-                    },
-                    "target": "Controller"
-                }
-            ]
-        },
-        "targetRequirements": [
-            {
-                "type": "TargetObject",
-                "filter": {
-                    "baseFilter": "creature|enchantment ctrl:opponent"
-                },
-                "id": "t0"
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "712",
-        "artist": "Andrey Kuzinskiy",
-        "flavorText": "\"On vile wings and bloody wind, the swarm will rise.\"\n—Skyclave inscription",
-        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e66d4541-160c-4137-98e7-0eaa692c7d7a.jpg?1742922285"
-    },
-    "colorIdentityOverride": [
-        "BLACK"
-    ]
-}
-
 // Felidar Savior
 {
     "name": "Felidar Savior",
