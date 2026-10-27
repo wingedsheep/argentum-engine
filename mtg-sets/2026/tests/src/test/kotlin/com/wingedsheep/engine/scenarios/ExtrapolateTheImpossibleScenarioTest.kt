@@ -129,7 +129,7 @@ class ExtrapolateTheImpossibleScenarioTest : ScenarioTestBase() {
                 game.isInHand(1, "Grizzly Bears") shouldBe false
             }
 
-            test("a sideboard without two different names offers no choice") {
+            test("a sideboard without two different names offers only no") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
                     .withCardInHand(1, "Extrapolate the Impossible")
@@ -143,9 +143,13 @@ class ExtrapolateTheImpossibleScenarioTest : ScenarioTestBase() {
                 game.castSpell(1, "Extrapolate the Impossible").error shouldBe null
                 game.resolveStack()
 
-                withClue("Two copies of one card can't be \"two cards with different names\" (CR 608.2d)") {
-                    game.hasPendingDecision() shouldBe false
+                // Still asked, because the sideboard is hidden and skipping would reveal it (#3340),
+                // but two copies of one card can't be "two cards with different names" (CR 608.2d).
+                withClue("only no is possible") {
+                    game.getPendingDecision().shouldBeInstanceOf<YesNoDecision>().yesAvailable shouldBe false
                 }
+                game.answerYesNo(false).error shouldBe null
+                game.hasPendingDecision() shouldBe false
                 game.sideboardSize(1) shouldBe 2
                 game.isInHand(1, "Grizzly Bears") shouldBe false
                 game.isInGraveyard(1, "Extrapolate the Impossible") shouldBe true

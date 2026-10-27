@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
-import com.wingedsheep.engine.core.Outcome
+import com.wingedsheep.engine.core.GameEvent
+import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.TappedEvent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -9,9 +10,11 @@ import com.wingedsheep.mtg.sets.definitions.lrw.cards.AuntiesHovel
 import com.wingedsheep.mtg.sets.definitions.stx.cards.FrostboilSnarl
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.model.EntityId
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * The "if you don't, this land enters tapped" rider of an `OnEnterRun` as-enters replacement
@@ -34,16 +37,30 @@ class EnterTappedRiderScenarioTest : FunSpec({
         return driver
     }
 
+    /**
+     * Play [land]. A hand of Forests holds nothing to reveal, but the reveal is still asked, with
+     * nothing to pick (#3340), so answer it with the empty selection; returns every event.
+     */
+    fun playAndDecline(driver: GameTestDriver, player: EntityId, land: EntityId): List<GameEvent> {
+        val played = driver.playLand(player, land)
+        val pending = driver.pendingDecision ?: return played.events
+        val decision = pending.shouldBeInstanceOf<SelectCardsDecision>()
+        decision.options.shouldBeEmpty()
+        val answered = driver.submitCardSelection(player, emptyList())
+        answered.error shouldBe null
+        driver.pendingDecision shouldBe null
+        return played.events + answered.events
+    }
+
     test("without a reveal the land enters tapped, and doesn't become tapped") {
         val driver = createDriver()
         val me = driver.activePlayer!!
         val hovel = driver.putCardInHand(me, "Auntie's Hovel")
 
-        val result = driver.playLand(me, hovel)
+        val events = playAndDecline(driver, me, hovel)
 
-        result.outcome shouldBe Outcome.Done
         driver.isTapped(hovel) shouldBe true
-        result.events.filterIsInstance<TappedEvent>().shouldBeEmpty()
+        events.filterIsInstance<TappedEvent>().shouldBeEmpty()
     }
 
     test("with The Wandering Minstrel out, the land enters untapped") {
@@ -52,7 +69,7 @@ class EnterTappedRiderScenarioTest : FunSpec({
         driver.putPermanentOnBattlefield(me, "The Wandering Minstrel")
         val hovel = driver.putCardInHand(me, "Auntie's Hovel")
 
-        driver.playLand(me, hovel).outcome shouldBe Outcome.Done
+        playAndDecline(driver, me, hovel)
 
         driver.isTapped(hovel) shouldBe false
     }
@@ -63,7 +80,7 @@ class EnterTappedRiderScenarioTest : FunSpec({
         driver.putPermanentOnBattlefield(me, "The Wandering Minstrel")
         val snarl = driver.putCardInHand(me, "Frostboil Snarl")
 
-        driver.playLand(me, snarl).outcome shouldBe Outcome.Done
+        playAndDecline(driver, me, snarl)
 
         driver.isTapped(snarl) shouldBe false
     }
@@ -75,7 +92,7 @@ class EnterTappedRiderScenarioTest : FunSpec({
         driver.putPermanentOnBattlefield(opponent, "The Wandering Minstrel")
         val hovel = driver.putCardInHand(me, "Auntie's Hovel")
 
-        driver.playLand(me, hovel).outcome shouldBe Outcome.Done
+        playAndDecline(driver, me, hovel)
 
         driver.isTapped(hovel) shouldBe true
     }
