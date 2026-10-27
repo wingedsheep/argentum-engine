@@ -9761,7 +9761,7 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   once per recipient — a creature entering with two -1/-1 counters, or two -1/-1 counters from one
   wither hit, trigger it twice. `TriggerDetector.expandPerCounterTriggers` fans each folded
   per-recipient trigger out into `counterCount` copies, each with a count of 1. Not combinable with
-  `batch`. Flourishing Defenses:
+  `batch` or `firstTimeEachTurn` (both fire at most once). Flourishing Defenses:
   `Triggers.a(GameObjectFilter.Creature).getsCounters(CounterType.MINUS_ONE_MINUS_ONE, perCounter = true)`
   + `optional = true` + `Effects.CreateToken(1/1 green Elf Warrior)`.
 - `Triggers.self.getsCounters()` — "whenever you put one or more counters on ~" (any kind, SELF-bound).

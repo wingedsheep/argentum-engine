@@ -104,9 +104,29 @@ class CountersPlacedPerCounterTriggerTest : FunSpec({
         triggersOf(driver, listOf(placed(bearId, CounterType.PLUS_ONE_PLUS_ONE, 2)), observer) shouldHaveSize 0
     }
 
-    test("per-counter and batch multiplicities are exclusive") {
+    test("a mixed placement on one creature fans out only the matching kind") {
+        val driver = createDriver()
+        val observer = driver.putPermanentOnBattlefield(driver.player1, "Per Counter Observer")
+        val bearId = driver.putCreatureOnBattlefield(driver.player1, "Per Counter Test Bear")
+
+        val triggers = triggersOf(
+            driver,
+            listOf(
+                placed(bearId, CounterType.PLUS_ONE_PLUS_ONE, 1),
+                placed(bearId, CounterType.MINUS_ONE_MINUS_ONE, 1),
+            ),
+            observer
+        )
+
+        triggers shouldHaveSize 1
+    }
+
+    test("per-counter is exclusive with the at-most-once multiplicities") {
         shouldThrow<IllegalArgumentException> {
             EventPattern.CountersPlacedEvent(CounterType.MINUS_ONE_MINUS_ONE, batch = true, perCounter = true)
+        }
+        shouldThrow<IllegalArgumentException> {
+            EventPattern.CountersPlacedEvent(CounterType.MINUS_ONE_MINUS_ONE, firstTimeEachTurn = true, perCounter = true)
         }
     }
 })

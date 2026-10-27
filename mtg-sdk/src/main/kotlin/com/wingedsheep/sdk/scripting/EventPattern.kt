@@ -2747,7 +2747,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          * per recipient: a creature entering with two -1/-1 counters triggers it twice. Each
          * firing carries a counter count of 1. Applied after the per-recipient fold
          * (`TriggerDetector.expandPerCounterTriggers`), so a recipient's simultaneous placements
-         * are summed first and then fanned out. Per-permanent only — not combinable with [batch].
+         * are summed first and then fanned out. Not combinable with [batch] or [firstTimeEachTurn].
          */
         val perCounter: Boolean = false
     ) : EventPattern {
@@ -2755,28 +2755,23 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
             require(recipient == null || (filter == GameObjectFilter.Any && !includePlayers)) {
                 "CountersPlacedEvent.recipient names a player recipient; filter and includePlayers describe permanents"
             }
-            require(!(perCounter && batch)) {
-                "CountersPlacedEvent.perCounter fires once per counter; batch fires once per placement batch"
+            require(!(perCounter && (batch || firstTimeEachTurn))) {
+                "CountersPlacedEvent.perCounter fires once per counter; batch and firstTimeEachTurn fire at most once"
             }
         }
 
         override val description: String = buildString {
             val typeLabel = counterType?.let { "${it.printed} " } ?: ""
-            if (perCounter) {
-                append("a ${typeLabel}counter is put on ")
-                append(describeObjectForEvent(filter))
-                if (includePlayers) append(" or player")
-                if (firstTimeEachTurn) append(" for the first time this turn")
-                return@buildString
-            }
+            // "a -1/-1 counter" for the per-counter template, "one or more -1/-1 counters" otherwise.
+            val counters = if (perCounter) "a ${typeLabel}counter" else "one or more ${typeLabel}counters"
             if (recipient != null) {
-                append("${recipient.description} get one or more ${typeLabel}counters")
+                append("${recipient.description} get $counters")
                 return@buildString
             }
             if (placedBy != null) {
-                append("${placedBy.description} put one or more ${typeLabel}counters on ")
+                append("${placedBy.description} put $counters on ")
             } else {
-                append("one or more ${typeLabel}counters are placed on ")
+                append(if (perCounter) "$counters is put on " else "$counters are placed on ")
             }
             // Batch wording names the recipients in the plural ("… on one or more Heroes you
             // control"); the per-permanent wording names a single one ("… on a creature you
