@@ -312,9 +312,9 @@ object Combat {
      *
      * Each is one effect with one target and no variable, so each is a constant rule paired with the
      * requirement its sentence declares. Note that the *filter* in Exhaustion's printed noun phrase
-     * ("Creatures and lands target opponent controls") is not a slot: `SkipUntapEffect` carries
-     * `affectsCreatures` and `affectsLands` as booleans rather than a filter, so the phrase is a
-     * literal here and a card naming any other combination declines.
+     * ("Creatures and lands target opponent controls") is not a slot yet: `SkipUntapEffect` carries
+     * it as a `permanents` filter, but this rule reads only the default creatures-and-lands phrase,
+     * so a card naming any other combination declines.
      */
     private fun playerEffect(
         template: String,

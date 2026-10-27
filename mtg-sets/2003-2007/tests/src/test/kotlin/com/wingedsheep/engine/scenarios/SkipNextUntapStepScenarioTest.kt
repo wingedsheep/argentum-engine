@@ -62,7 +62,8 @@ class SkipNextUntapStepScenarioTest : ScenarioTestBase() {
             test("a 'doesn't untap during the next untap step' marker waits out a skipped step") {
                 val game = bobWithTappedBears()
                 game.state = game.state.updateEntity(game.player2Id) {
-                    it.with(SkipNextUntapStepComponent()).with(SkipUntapComponent())
+                    it.with(SkipNextUntapStepComponent())
+                        .with(SkipUntapComponent(listOf(com.wingedsheep.sdk.scripting.GameObjectFilter.Creature)))
                 }
 
                 game.toBobsNextUpkeep()

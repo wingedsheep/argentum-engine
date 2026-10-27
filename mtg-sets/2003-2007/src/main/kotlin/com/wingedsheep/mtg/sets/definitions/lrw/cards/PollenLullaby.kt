@@ -1,6 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.lrw.cards
 
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -22,7 +23,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * [Patterns.Mechanic.clash] writes the chosen opponent into the source's durable `OPPONENT` slot,
  * which [Player.ChosenOpponent] reads back. Using the chosen slot rather than a fresh
  * `Chooser.Opponent` is what keeps a multiplayer clash from freezing a player who never clashed.
- * `affectsLands = false` because the printed clause names creatures only — the Exhaustion/Blinding
+ * `permanents = Creature` because the printed clause names creatures only — the Exhaustion/Blinding
  * Beam axis on [SkipUntapEffect], not a narrower effect.
  */
 val PollenLullaby = card("Pollen Lullaby") {
@@ -39,8 +40,7 @@ val PollenLullaby = card("Pollen Lullaby") {
             Patterns.Mechanic.clash(
                 Effects.SkipUntap(
                     target = EffectTarget.PlayerRef(Player.ChosenOpponent),
-                    affectsCreatures = true,
-                    affectsLands = false
+                    permanents = GameObjectFilter.Creature
                 )
             )
     }

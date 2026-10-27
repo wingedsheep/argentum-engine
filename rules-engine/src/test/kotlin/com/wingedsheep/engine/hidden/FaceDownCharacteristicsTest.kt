@@ -131,7 +131,7 @@ class FaceDownCharacteristicsTest : ScenarioTestBase() {
                 .build()
             val forest = game.turnFaceDown("Forest")
             game.state = game.state.updateEntity(game.player1Id) {
-                it.with(SkipUntapComponent(affectsCreatures = false, affectsLands = true))
+                it.with(SkipUntapComponent(listOf(com.wingedsheep.sdk.scripting.GameObjectFilter.Land)))
             }
 
             game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)

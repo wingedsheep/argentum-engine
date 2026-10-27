@@ -31,24 +31,34 @@ data class SkipCombatPhasesEffect(
 }
 
 /**
- * Target player's creatures and lands don't untap during their next untap step.
- * Used for cards like Exhaustion.
+ * "[permanents] [target] player controls don't untap during their next untap step" — Exhaustion
+ * (creatures and lands), Mana Vapors (lands), Blinding Beam (creatures), Icebreaker Kraken
+ * (artifacts and creatures).
+ *
+ * [permanents] is matched at that untap step against what the player controls *then*, not against
+ * what they controlled when this resolved (Icebreaker Kraken ruling, 2021-02-05): a creature they
+ * gain control of in between doesn't untap either. The controller gate lives in [target]; the
+ * filter names only the kind of permanent.
  */
 @SerialName("SkipUntap")
 @Serializable
 data class SkipUntapEffect(
     val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent),
-    val affectsCreatures: Boolean = true,
-    val affectsLands: Boolean = true
+    val permanents: GameObjectFilter = GameObjectFilter.Creature or GameObjectFilter.Land
 ) : Effect {
-    override val description: String = buildString {
-        val affectedTypes = listOfNotNull(
-            if (affectsCreatures) "Creatures" else null,
-            if (affectsLands) "lands" else null
-        ).joinToString(" and ")
-        append("$affectedTypes ${target.description} controls don't untap during their next untap step")
-    }
+    override val description: String =
+        "${describeSkippedPermanents(permanents).replaceFirstChar { it.uppercase() }} ${target.description} " +
+            "controls don't untap during their next untap step"
 }
+
+/**
+ * The plural noun phrase for a "don't untap" filter, read as Oracle prints it: every listed type is
+ * held back, so the alternatives join with "and" ("creatures and lands"), not the "or" a selection
+ * filter would use.
+ */
+fun describeSkippedPermanents(permanents: GameObjectFilter): String =
+    com.wingedsheep.sdk.scripting.util.pluralNounPhrase(permanents.description)
+        .replace(", or ", ", and ").replace(" or ", " and ")
 
 /**
  * Target player skips their next draw step.

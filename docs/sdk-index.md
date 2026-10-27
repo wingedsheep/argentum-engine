@@ -1066,7 +1066,7 @@ Families:
 - `SkipCombatPhasesEffect(target: EffectTarget)` — Target player skips their combat phases during their next turn.
 - `SkipNextTurnEffect(target: EffectTarget, count: DynamicAmount)` — Target player skips their next count turns.
 - `SkipStepOrPhaseEffect(part: TurnPart, duration: SkipDuration, target: EffectTarget)` — target skips part for duration: their next one (SkipDuration.NEXT) or every one left this turn (SkipDuration.THIS_TURN).
-- `SkipUntapEffect(target: EffectTarget, affectsCreatures: Boolean, affectsLands: Boolean)` — Target player's creatures and lands don't untap during their next untap step.
+- `SkipUntapEffect(target: EffectTarget, permanents: GameObjectFilter)` — "permanents target player controls don't untap during their next untap step" — Exhaustion (creatures and lands), Mana Vapors (lands), Blinding Beam (creatures), Icebreaker Kraken (artifacts and cre…
 - `StoreCardNameEffect(from: String, storeAs: String)` — Read the name of the first card in a stored collection and store it under storeAs in pipeline `chosenValues`.
 - `StoreNumberEffect(name: String, amount: DynamicAmount)` — Evaluate a DynamicAmount once and store it in pipeline `storedNumbers` under name.
 - `StorePlayerEffect(storeAs: String, player: Player)` — Append the player player resolves to onto the pipeline collection storeAs — the player-side sibling of StoreNumberEffect.

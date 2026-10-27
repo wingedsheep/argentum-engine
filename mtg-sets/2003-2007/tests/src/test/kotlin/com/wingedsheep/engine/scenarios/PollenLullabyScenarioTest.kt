@@ -55,8 +55,7 @@ class PollenLullabyScenarioTest : FunSpec({
             if (win) {
                 // The freeze lands on the clash opponent, whom nothing targeted, and it is the
                 // creatures-only axis — the printed clause never mentions lands.
-                marker?.affectsCreatures shouldBe true
-                marker?.affectsLands shouldBe false
+                marker?.permanents shouldBe listOf(com.wingedsheep.sdk.scripting.GameObjectFilter.Creature)
             } else {
                 marker.shouldBeNull()
             }

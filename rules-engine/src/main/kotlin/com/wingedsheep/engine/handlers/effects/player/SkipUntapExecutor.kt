@@ -11,11 +11,11 @@ import kotlin.reflect.KClass
 
 /**
  * Executor for SkipUntapEffect.
- * "Creatures and lands [that player] controls don't untap during their next untap step."
+ * "[Permanents] [that player] controls don't untap during their next untap step."
  *
- * This adds a SkipUntapComponent to the affected player. When that player's
- * next untap step occurs, the specified permanent types (creatures and/or lands)
- * are skipped and the component is removed.
+ * Adds the effect's filter to the affected player's SkipUntapComponent (alongside any filter an
+ * earlier effect left there). At that player's next untap step every permanent they then control
+ * matching one of the filters stays tapped, and the component is removed.
  *
  * The affected player comes from the effect's own [SkipUntapEffect.target], resolved through the
  * shared player resolver. That matters for the cards whose clause names a player it never
@@ -37,14 +37,9 @@ class SkipUntapExecutor : EffectExecutor<SkipUntapEffect> {
         val targetPlayerId = TargetResolutionUtils.resolvePlayerTarget(effect.target, context, state)
             ?: return EffectResult.error(state, "No valid player target for SkipUntapEffect")
 
-        // Add the SkipUntapComponent to the affected player
         val newState = state.updateEntity(targetPlayerId) { container ->
-            container.with(
-                SkipUntapComponent(
-                    affectsCreatures = effect.affectsCreatures,
-                    affectsLands = effect.affectsLands
-                )
-            )
+            val pending = container.get<SkipUntapComponent>()?.permanents.orEmpty()
+            container.with(SkipUntapComponent(pending + effect.permanents))
         }
 
         return EffectResult.success(newState)

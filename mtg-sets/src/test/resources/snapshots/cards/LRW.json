@@ -13270,7 +13270,11 @@
                             "type": "PlayerRef",
                             "player": "ChosenOpponent"
                         },
-                        "affectsLands": false
+                        "permanents": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ]
+                        }
                     },
                     "descriptionOverride": "Clash with an opponent. If you win, creatures the chosen player controls don't untap during their next untap step"
                 }

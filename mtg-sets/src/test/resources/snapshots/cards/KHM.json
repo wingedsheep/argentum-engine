@@ -5983,6 +5983,101 @@
     ]
 }
 
+// Icebreaker Kraken
+{
+    "name": "Icebreaker Kraken",
+    "manaCost": "{10}{U}{U}",
+    "typeLine": "Snow Creature — Kraken",
+    "oracleText": "Affinity for snow lands (This spell costs {1} less to cast for each snow land you control.)\nWhen this creature enters, artifacts and creatures target opponent controls don't untap during that player's next untap step.\nReturn three snow lands you control to their owner's hand: Return this creature to its owner's hand.",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 8
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Icebreaker Kraken:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "SkipUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "permanents": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsArtifact",
+                                    "IsCreature"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Icebreaker Kraken:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomReturnToHand",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsLand",
+                                "IsSnow"
+                            ]
+                        },
+                        "count": 3
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "PermanentsYouControlMatching",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsLand",
+                                "IsSnow"
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "RARE",
+        "artist": "Chris Cold",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1fdb9bb-09a2-4ff7-bcd4-35ea33c1b752.jpg?1783928261"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Immersturm Predator
 {
     "name": "Immersturm Predator",

@@ -21,6 +21,7 @@ import com.wingedsheep.engine.state.components.player.CardsInHandAtTurnStartComp
 import com.wingedsheep.engine.state.components.player.SkipNextUntapStepComponent
 import com.wingedsheep.engine.state.components.player.UntappedLandsAtTurnStartComponent
 import com.wingedsheep.engine.state.components.player.SkipUntapComponent
+import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.CounterType
@@ -165,19 +166,12 @@ class BeginningPhaseManager(
                 container.has<TappedComponent>()
         }.keys.filter { entityId ->
             // If the controller has a skip untap component, check if this permanent should be skipped
-            val skipUntap = skipUntapByPlayer[projected.getController(entityId)]
-            if (skipUntap != null) {
-                // Current types, not the card's: a face-down permanent is a creature whatever it
-                // is (CR 708.2), and type-changing effects count too.
-                val isCreature = projected.isCreature(entityId)
-                val isLand = projected.hasType(entityId, "LAND")
-
-                // Skip this permanent if it matches the skip criteria
-                val shouldSkip = (skipUntap.affectsCreatures && isCreature) ||
-                    (skipUntap.affectsLands && isLand)
-                !shouldSkip
-            } else {
-                true
+            val controller = projected.getController(entityId)
+            val skipUntap = skipUntapByPlayer[controller]
+            // Current characteristics, not the card's: a face-down permanent is a creature whatever
+            // it is (CR 708.2), and type-changing effects count too.
+            skipUntap == null || controller == null || skipUntap.permanents.none { filter ->
+                predicateEvaluator.matches(newState, projected, entityId, filter, PredicateContext(controllerId = controller))
             }
         }
 

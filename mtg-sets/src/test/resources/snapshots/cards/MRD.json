@@ -864,7 +864,11 @@
                             "type": "BoundVariable",
                             "name": "t0"
                         },
-                        "affectsLands": false
+                        "permanents": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ]
+                        }
                     },
                     "targetRequirements": [
                         {

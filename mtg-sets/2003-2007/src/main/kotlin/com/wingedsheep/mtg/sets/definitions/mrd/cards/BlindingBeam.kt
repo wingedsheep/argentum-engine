@@ -1,6 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.mrd.cards
 
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -40,8 +41,7 @@ val BlindingBeam = card("Blinding Beam") {
                 val player = target(Targets.Player)
                 effect = Effects.SkipUntap(
                     target = player,
-                    affectsCreatures = true,
-                    affectsLands = false
+                    permanents = GameObjectFilter.Creature
                 )
             }
         }

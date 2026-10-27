@@ -239,4 +239,15 @@ class RetiredSdkTypeLiftTest : FunSpec({
         )
         RetiredSdkTypeLift.lift(current) shouldBeSameInstanceAs current
     }
+
+    test("the retired skip-untap flags become a permanents filter, on the effect and the pending marker") {
+        lifted(Effect.serializer(), old("SkipUntap", "affectsCreatures" to JsonPrimitive(true), "affectsLands" to JsonPrimitive(false))) shouldBe
+            com.wingedsheep.sdk.scripting.effects.SkipUntapEffect(permanents = GameObjectFilter.Creature)
+        lifted(Effect.serializer(), old("SkipUntap", "affectsCreatures" to JsonPrimitive(true), "affectsLands" to JsonPrimitive(true))) shouldBe
+            com.wingedsheep.sdk.scripting.effects.SkipUntapEffect()
+        lifted(
+            com.wingedsheep.engine.state.components.player.SkipUntapComponent.serializer(),
+            JsonObject(mapOf("affectsCreatures" to JsonPrimitive(false), "affectsLands" to JsonPrimitive(true)))
+        ) shouldBe com.wingedsheep.engine.state.components.player.SkipUntapComponent(listOf(GameObjectFilter.Land))
+    }
 })

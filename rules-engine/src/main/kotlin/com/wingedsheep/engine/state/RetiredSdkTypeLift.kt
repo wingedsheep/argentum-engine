@@ -143,11 +143,35 @@ internal object RetiredSdkTypeLift {
      * a stored grant. A true flag is a cap of one; a false one is the uncapped default.
      */
     private fun withoutRetiredFields(element: JsonObject, type: String?): JsonObject =
-        withoutLandEntersTapped(
+        withoutSkipUntapFlags(withoutLandEntersTapped(
             withoutCreaturesOnly(
                 withoutSingleEntryCounter(withoutCastTimeFlags(withoutColorlessAsAnyColor(withoutSingleUse(element, type))), type)
             )
-        )
+        ), type)
+
+    /**
+     * "Don't untap during their next untap step" carried `affectsCreatures` / `affectsLands` flags; it
+     * now carries a permanent filter — `permanents` on `SkipUntapEffect` in a card script, a list of
+     * them on a player's pending `SkipUntapComponent`. Both flags default to true, as they did.
+     */
+    private fun withoutSkipUntapFlags(element: JsonObject, type: String?): JsonObject {
+        if ("affectsCreatures" !in element && "affectsLands" !in element) return element
+        val creatures = (element["affectsCreatures"] as? JsonPrimitive)?.content != "false"
+        val lands = (element["affectsLands"] as? JsonPrimitive)?.content != "false"
+        val rest = element - "affectsCreatures" - "affectsLands"
+        val filter = when {
+            creatures && lands -> GameObjectFilter.Creature or GameObjectFilter.Land
+            creatures -> GameObjectFilter.Creature
+            lands -> GameObjectFilter.Land
+            else -> null
+        }
+        val encoded = filter?.let { encode(GameObjectFilter.serializer(), it) }
+        return when {
+            type != "SkipUntap" -> JsonObject(rest + ("permanents" to JsonArray(listOfNotNull(encoded))))
+            encoded != null -> JsonObject(rest + ("permanents" to encoded))
+            else -> JsonObject(rest)
+        }
+    }
 
     /**
      * The may-play `colorlessAsAnyColor` flag became `spendAsAnyColor`, naming *which* mana stands in

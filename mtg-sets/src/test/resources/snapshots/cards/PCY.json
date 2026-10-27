@@ -718,6 +718,11 @@
             "target": {
                 "type": "BoundVariable",
                 "name": "t0"
+            },
+            "permanents": {
+                "cardPredicates": [
+                    "IsLand"
+                ]
             }
         },
         "targetRequirements": [

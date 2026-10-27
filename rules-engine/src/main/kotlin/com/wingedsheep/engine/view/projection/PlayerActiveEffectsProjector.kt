@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.view.projection
 
+import com.wingedsheep.sdk.scripting.effects.describeSkippedPermanents
 import com.wingedsheep.engine.core.engineSerializersModule
 import com.wingedsheep.engine.event.DelayedTriggeredAbility
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -366,15 +367,11 @@ internal class PlayerActiveEffectsProjector(
             )
         }
 
-        // Check for SkipUntapComponent (Exhaustion effect)
+        // Check for SkipUntapComponent (Exhaustion, Icebreaker Kraken)
         val skipUntap = container.get<SkipUntapComponent>()
         if (skipUntap != null) {
-            val affected = when {
-                skipUntap.affectsCreatures && skipUntap.affectsLands -> "Creatures and lands"
-                skipUntap.affectsCreatures -> "Creatures"
-                skipUntap.affectsLands -> "Lands"
-                else -> "Permanents"
-            }
+            val affected = skipUntap.permanents.map(::describeSkippedPermanents).distinct()
+                .joinToString(" and ").ifEmpty { "permanents" }.replaceFirstChar { it.uppercase() }
             effects.add(
                 ClientPlayerEffect(
                     effectId = "skip_untap",
