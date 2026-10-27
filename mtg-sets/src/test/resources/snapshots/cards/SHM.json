@@ -1071,6 +1071,51 @@
     }
 }
 
+// Flourishing Defenses
+{
+    "name": "Flourishing Defenses",
+    "manaCost": "{4}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a -1/-1 counter is put on a creature, you may create a 1/1 green Elf Warrior creature token.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Flourishing Defenses:1",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "MINUS_ONE_MINUS_ONE",
+                    "filter": "creature",
+                    "perCounter": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "GREEN"
+                        ],
+                        "creatureTypes": [
+                            "Elf",
+                            "Warrior"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "Many horrors take the bait of brave elf volunteers walking alone, only to fall to the blades of rescuers lurking nearby.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/6223f5d6-83f1-454e-9cd5-aba157850430.jpg?1783942743"
+    }
+}
+
 // Foxfire Oak
 {
     "name": "Foxfire Oak",

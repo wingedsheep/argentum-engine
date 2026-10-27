@@ -484,7 +484,9 @@ class ObjectTriggerSubject internal constructor(
      * ([Player.You]); [firstTimeEachTurn] is "for the first time this turn" (Stalwart Successor);
      * [batch] is the "on one or more <permanents>" template (CR 603.2c) — see
      * [CountersPlacedEvent.batch]; [orPlayer] widens the recipient to "a permanent **or player**"
-     * (All Will Be One) — see [CountersPlacedEvent.includePlayers].
+     * (All Will Be One) — see [CountersPlacedEvent.includePlayers]; [perCounter] is "whenever **a**
+     * [type] counter is put on" — once per counter (Flourishing Defenses), see
+     * [CountersPlacedEvent.perCounter].
      */
     fun getsCounters(
         type: CounterType? = null,
@@ -492,6 +494,7 @@ class ObjectTriggerSubject internal constructor(
         firstTimeEachTurn: Boolean = false,
         batch: Boolean = false,
         orPlayer: Boolean = false,
+        perCounter: Boolean = false,
     ): TriggerSpec = spec(
         CountersPlacedEvent(
             counterType = type,
@@ -500,6 +503,7 @@ class ObjectTriggerSubject internal constructor(
             placedBy = by,
             batch = batch,
             includePlayers = orPlayer,
+            perCounter = perCounter,
         )
     )
 
