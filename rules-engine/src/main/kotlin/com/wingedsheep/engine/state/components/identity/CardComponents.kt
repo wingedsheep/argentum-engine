@@ -133,6 +133,12 @@ data class CardComponent(
     val copyWardCosts: List<com.wingedsheep.sdk.scripting.effects.WardCost> = emptyList(),
     /** Copiable spending-rule abilities, baked from the active printed statics on entry/unlock. */
     val manaSpendingGrants: List<ManaSpendingGrant> = emptyList(),
+    /**
+     * A copy exception's "its starting loyalty is N" (Jace, Mirror Mage). Copiable, so it rides
+     * along when this component is copied; read in place of the definition's printed loyalty when
+     * the permanent enters (`ZoneMovementUtils.applyIntrinsicEntryCountersIfNeeded`).
+     */
+    val startingLoyaltyOverride: Int? = null,
 ) : Component {
     // Convenience accessors
     val isCreature: Boolean get() = typeLine.isCreature

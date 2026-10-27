@@ -215,7 +215,8 @@ object ZoneMovementUtils {
      * permanent is still on the stack (see
      * [com.wingedsheep.engine.mechanics.stack.StackResolver]), so no entry gets them twice.
      *
-     * The number is read from the *current* [CardComponent]'s definition, so a double-faced card
+     * A copy exception's "its starting loyalty is N" ([CardComponent.startingLoyaltyOverride]) wins
+     * over the printed loyalty. Otherwise the number is read from the *current* [CardComponent]'s definition, so a double-faced card
      * returning transformed onto its planeswalker back face gets the back face's printed loyalty
      * (its `cardDefinitionId` has already been flipped by then).
      *
@@ -243,7 +244,8 @@ object ZoneMovementUtils {
         val cardComponent = container.get<CardComponent>() ?: return state to emptyList()
         val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
         val (counterType, amount) = when {
-            cardComponent.isPlaneswalker -> CounterType.LOYALTY to cardDef?.startingLoyalty
+            cardComponent.isPlaneswalker ->
+                CounterType.LOYALTY to (cardComponent.startingLoyaltyOverride ?: cardDef?.startingLoyalty)
             cardComponent.isBattle ->
                 com.wingedsheep.engine.mechanics.battle.Battles.DEFENSE_COUNTER to cardDef?.startingDefense
             else -> return state to emptyList()

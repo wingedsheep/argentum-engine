@@ -74,6 +74,11 @@ import kotlinx.serialization.Serializable
  *   [powerOverride] / [toughnessOverride].
  * @property noManaCost "except it … has no mana cost" — the copy has no mana cost and so mana
  *   value 0 (Embalm / Eternalize, CR 702.128a).
+ * @property startingLoyalty "except its starting loyalty is N" (Jace, Mirror Mage) — the copy enters
+ *   with N loyalty counters instead of the copied planeswalker's printed loyalty (CR 306.5b). A
+ *   copiable value, so a later copy of the copy starts at N too. Ignored by copies that aren't
+ *   planeswalkers; on a permanent that is already on the battlefield it changes nothing, since
+ *   starting loyalty is only read as the permanent enters.
  * @property addedNumericKeywords Numeric keywords the copy has *in addition* to the ones it copied —
  *   "except it's 1/1 and it has toxic 1" (Kinzu of the Bleak Coven). Kept apart from
  *   [addedKeywords] because the N is part of the ability; instances stack with the copied ones
@@ -102,6 +107,7 @@ data class CopyExceptions(
     val toughnessOverride: Int? = null,
     val retainPowerToughness: Boolean = false,
     val noManaCost: Boolean = false,
+    val startingLoyalty: Int? = null,
     val addedNumericKeywords: List<com.wingedsheep.sdk.scripting.KeywordAbility.Numeric> = emptyList(),
     /** Add the frozen resolving trigger as copiable rules text; no-op outside a triggered ability. */
     val retainResolvingTriggeredAbility: Boolean = false,
@@ -138,6 +144,9 @@ data class CopyExceptions(
         }
         require(!retainPowerToughness || (powerOverride == null && toughnessOverride == null)) {
             "CopyExceptions.retainPowerToughness cannot combine with a power/toughness override"
+        }
+        require(startingLoyalty == null || startingLoyalty >= 0) {
+            "CopyExceptions.startingLoyalty can't be negative"
         }
         require(addedActivatedAbilities.none { it.isManaAbility }) {
             "CopyExceptions.addedActivatedAbilities can't carry a mana ability"
@@ -183,6 +192,7 @@ data class CopyExceptions(
             retainPowerToughness = retainPowerToughness ||
                 (base.retainPowerToughness && powerOverride == null && toughnessOverride == null),
             noManaCost = noManaCost || base.noManaCost,
+            startingLoyalty = startingLoyalty ?: base.startingLoyalty,
             addedNumericKeywords = base.addedNumericKeywords + addedNumericKeywords,
             retainResolvingTriggeredAbility = base.retainResolvingTriggeredAbility || retainResolvingTriggeredAbility,
             addedTriggeredAbilities = base.addedTriggeredAbilities + addedTriggeredAbilities,

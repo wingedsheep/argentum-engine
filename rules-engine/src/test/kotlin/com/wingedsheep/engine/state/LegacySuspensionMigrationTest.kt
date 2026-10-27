@@ -313,7 +313,7 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
     /**
      * Added copiable rules data postdates the capture; old identities must default those lists empty.
      * Likewise a may-play permission's later `spendAsAnyColor` / `withAnyManaColor` / `castColorCount` riders and the card's later
-     * `hasCycling` / `hasKicker` flags must default false.
+     * `hasCycling` / `hasKicker` flags must default false, and its `startingLoyaltyOverride` null.
      */
     private fun withoutPostCaptureCardDefaults(value: JsonElement): JsonElement = when (value) {
         is JsonObject -> {
@@ -329,7 +329,8 @@ class LegacySuspensionMigrationTest : ScenarioTestBase() {
                 value.getValue("manaSpendingGrants") shouldBe JsonArray(emptyList())
                 value.getValue("hasCycling") shouldBe JsonPrimitive(false)
                 value.getValue("hasKicker") shouldBe JsonPrimitive(false)
-                value - "copyStaticAbilities" - "copyNumericKeywords" - "flipSide" - "copyWardCosts" - "copyTriggeredAbilities" - "copyActivatedAbilities" - "manaSpendingGrants" - "hasCycling" - "hasKicker"
+                value.getValue("startingLoyaltyOverride") shouldBe JsonNull
+                value - "startingLoyaltyOverride" - "copyStaticAbilities" - "copyNumericKeywords" - "flipSide" - "copyWardCosts" - "copyTriggeredAbilities" - "copyActivatedAbilities" - "manaSpendingGrants" - "hasCycling" - "hasKicker"
             } else if (value["type"] == JsonPrimitive(
                     "com.wingedsheep.engine.state.components.player.ManaPoolComponent"
                 )) {

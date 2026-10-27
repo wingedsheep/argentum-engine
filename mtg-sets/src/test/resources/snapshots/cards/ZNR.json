@@ -2359,6 +2359,124 @@
     ]
 }
 
+// Jace, Mirror Mage
+{
+    "name": "Jace, Mirror Mage",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Legendary Planeswalker — Jace",
+    "oracleText": "Kicker {2} (You may pay an additional {2} as you cast this spell.)\nWhen Jace enters, if Jace was kicked, create a token that's a copy of Jace, except it's not legendary and its starting loyalty is 1.\n+1: Scry 2.\n0: Draw a card and reveal it. Remove a number of loyalty counters equal to that card's mana value from Jace.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{2}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jace, Mirror Mage:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfSource",
+                    "exceptions": {
+                        "removedSupertypes": [
+                            "LEGENDARY"
+                        ],
+                        "startingLoyalty": 1
+                    }
+                },
+                "interveningIf": "WasKicked"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Jace, Mirror Mage:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 2
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Jace, Mirror Mage:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 0
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "InZone",
+                                        "zone": "Hand"
+                                    }
+                                ]
+                            },
+                            "storeMatching": "matching2"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "matching2"
+                        },
+                        {
+                            "type": "RemoveCounters",
+                            "counterType": "LOYALTY",
+                            "count": {
+                                "type": "StoredCardManaValue",
+                                "collectionName": "matching2"
+                            },
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "MYTHIC",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/e/fe0ed348-e4ed-4b6a-b9d9-03539a6fb42a.jpg?1783929395"
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Joraga Visionary
 {
     "name": "Joraga Visionary",

@@ -132,6 +132,7 @@ object CopyExceptionApplier {
             // "…and it has no mana cost" (Embalm / Eternalize, CR 702.128a) — mana value 0, and
             // that 0 is itself a copiable value.
             manaCost = if (exceptions.noManaCost) ManaCost.ZERO else base.manaCost,
+            startingLoyaltyOverride = exceptions.startingLoyalty ?: base.startingLoyaltyOverride,
         )
     }
 
