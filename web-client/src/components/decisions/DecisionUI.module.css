@@ -1329,3 +1329,167 @@
   cursor: not-allowed;
   filter: grayscale(0.6);
 }
+
+/* =========================================================================
+ * Card Pool Browser — large selections (sideboard, "outside the game")
+ * ========================================================================= */
+.bannerCardImageSmall {
+  composes: bannerCardImage;
+  width: 72px;
+}
+
+/* Unlike the rest of the overlay this block takes the free space and shrinks into it, so the
+   grid scrolls inside the viewport, the title and confirm buttons never leave the screen, and
+   filtering down to a few cards doesn't make the whole modal jump. */
+.overlay > .poolBrowser {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.poolBrowser {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: min(1180px, 100%);
+}
+
+.poolToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.poolSearch {
+  flex: 0 1 260px;
+  min-width: 160px;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-md);
+  color: var(--text-primary);
+  background: var(--chrome-bg);
+  border: 1px solid var(--chrome-border);
+  border-radius: var(--chrome-radius);
+  outline: none;
+}
+
+.poolSearch:focus {
+  border-color: var(--color-target);
+}
+
+.poolChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.poolChip {
+  padding: 5px var(--space-3);
+  font-size: var(--font-sm);
+  color: var(--chrome-text);
+  background: var(--chrome-bg);
+  border: 1px solid var(--chrome-border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.poolChip:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.poolChipActive {
+  composes: poolChip;
+  color: var(--bg-surface-3);
+  background: var(--color-target);
+  border-color: var(--color-target);
+  font-weight: var(--font-weight-semibold);
+}
+
+.poolChipActive:hover {
+  border-color: var(--color-target);
+}
+
+.poolChipCount {
+  opacity: 0.65;
+  margin-left: 2px;
+}
+
+.poolGrid {
+  display: grid;
+  gap: var(--space-3);
+  justify-content: center;
+  align-content: start;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
+  /* Room for the selected card's lift and the hover nudge, which the scroll box would clip. */
+  padding: var(--space-3) var(--space-2);
+  border-radius: var(--radius-xl);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.poolTile {
+  position: relative;
+}
+
+.poolCopies {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  padding: 1px 6px;
+  font-size: var(--font-sm);
+  font-weight: var(--font-weight-bold);
+  color: #fff;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius-md);
+  pointer-events: none;
+}
+
+.poolRemoveOne {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  font-size: 15px;
+  line-height: 1;
+  font-weight: var(--font-weight-bold);
+  color: #fff;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.poolEmpty {
+  grid-column: 1 / -1;
+  margin: var(--space-6) 0;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--font-md);
+}
+
+.poolTray {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.poolTrayLabel {
+  margin-right: var(--space-1);
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+}
+
+.poolTrayChip {
+  padding: 4px var(--space-2);
+  font-size: var(--font-sm);
+  color: var(--color-selected-bg);
+  background: var(--color-selected);
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}

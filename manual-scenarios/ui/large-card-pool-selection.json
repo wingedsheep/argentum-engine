@@ -1,0 +1,100 @@
+{
+  "player1Name": "You",
+  "player2Name": "AI",
+  "mode": "AI",
+  "aiPlayer": 2,
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Grizzly Bears"
+    ],
+    "battlefield": [
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "The Raven's Warning",
+        "counters": {
+          "LORE": 2
+        }
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Craw Wurm",
+      "Grizzly Bears",
+      "Hill Giant",
+      "Island"
+    ],
+    "sideboard": [
+      "Grizzly Bears",
+      "Hill Giant",
+      "Craw Wurm",
+      "Lightning Bolt",
+      "Counterspell",
+      "Giant Growth",
+      "Shock",
+      "Llanowar Elves",
+      "Serra Angel",
+      "Shivan Dragon",
+      "Divination",
+      "Doom Blade",
+      "Murder",
+      "Pacifism",
+      "Air Elemental",
+      "Wrath of God",
+      "Disenchant",
+      "Naturalize",
+      "Duress",
+      "Mind Rot",
+      "Jace Beleren",
+      "Ornithopter",
+      "Juggernaut",
+      "Grizzly Bears",
+      "Hill Giant",
+      "Craw Wurm",
+      "Lightning Bolt",
+      "Counterspell",
+      "Giant Growth",
+      "Shock",
+      "Llanowar Elves",
+      "Serra Angel",
+      "Shivan Dragon",
+      "Lightning Bolt",
+      "Counterspell",
+      "Giant Growth",
+      "Shock",
+      "Llanowar Elves",
+      "Serra Angel",
+      "Shivan Dragon",
+      "Island",
+      "Mountain"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Plains"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Hill Giant",
+      "Grizzly Bears",
+      "Craw Wurm"
+    ]
+  },
+  "phase": "BEGINNING",
+  "step": "UPKEEP",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}
