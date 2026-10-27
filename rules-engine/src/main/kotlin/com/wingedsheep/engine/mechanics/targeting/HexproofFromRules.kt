@@ -51,6 +51,7 @@ object HexproofFromRules {
             setOf(SourceKindProtection.hexproofKeyword(checkNotNull(SourceKind.of(scope))))
         is ProtectionScope.Subtype,
         is ProtectionScope.Supertype,
+        is ProtectionScope.ChosenCardType,
         ProtectionScope.Everything,
         ProtectionScope.EachOpponent -> emptySet()
     }

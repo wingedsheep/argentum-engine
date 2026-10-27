@@ -59,6 +59,24 @@ sealed interface ProtectionScope {
     data class CardType(val cardType: String) : ProtectionScope
 
     /**
+     * Protection from the card type the **granting permanent chose as it entered** — "As Serra's
+     * Emissary enters, choose a card type. You and creatures you control have protection from the
+     * chosen card type." Late-bound: the engine reads the source's durable choice under [slot]
+     * (a card-type display name such as "Artifact" or "Instant") wherever the protection is
+     * applied, so it behaves exactly like [CardType] of that type, and protects from nothing
+     * until a type is chosen. Only meaningful on statics a permanent grants —
+     * `GrantProtectionFromToGroup` and `GrantProtectionToController`; it has no fixed keyword, so
+     * a printed `Protection` keyword or a one-shot grant of it protects from nothing.
+     *
+     * @property slot The source's cast-choices slot holding the chosen type. An as-enters
+     *   `EntersWithChoice(ChoiceType.MODE)` over card-type ids writes [ChoiceSlot.MODE] (Serra's
+     *   Emissary); `Effects.ChooseCardTypeForSource` writes [ChoiceSlot.CARD_TYPE].
+     */
+    @SerialName("ProtectionScope.ChosenCardType")
+    @Serializable
+    data class ChosenCardType(val slot: ChoiceSlot = ChoiceSlot.CARD_TYPE) : ProtectionScope
+
+    /**
      * Protection from a subtype — "from Goblins". [cardType] narrows the quality to objects that
      * are also of that card type — "from God creatures" (Sigrid, God-Favored): a God that isn't
      * currently a creature (a Theros God below its devotion) doesn't match. Null matches the

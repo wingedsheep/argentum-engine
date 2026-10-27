@@ -10365,7 +10365,7 @@ staticAbility {
   (CR 702.16): the protection twin of `GrantHexproofFromToGroup`. Adds the same projected `PROTECTION_FROM_*`
   keyword a printed `KeywordAbility.Protection(scope)` uses (`ProtectionKeywords.keywordsFor`), so every
   protection leg — targeting, damage, enchanting/equipping, blocking — honours it with no extra wiring.
-  Accepts `Colors`, `Multicolored`, `Subtype`, `Supertype`, `EachOpponent`, and the source kinds
+  Accepts `Colors`, `Multicolored`, `Subtype`, `Supertype`, `EachOpponent`, `ChosenCardType`, and the source kinds
   (`Spells`, `PermanentsCastThisTurn`, `RingBearers`, `ActivatedAbilities`, `TriggeredAbilities`);
   `NonColor`, `Monocolored` and `Everything` (no keyword) and `Color` / `CardType` (one spelling per
   concept) are rejected at construction. Lord of
@@ -13586,6 +13586,16 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
 - `ProtectionScope.Monocolored` — the exactly-one-color twin (CR 105.2a). Engine-wired for granted hexproof
   (`GrantHexproofFromToGroup` — Dragonfire Blade) and player protection; creature *protection* from
   monocolored is not projected.
+- `ProtectionScope.ChosenCardType(slot = ChoiceSlot.CARD_TYPE)` — "protection from the chosen card type":
+  late-bound to the card type the **granting permanent** chose as it entered, read from its
+  `CastChoicesComponent` under `slot` wherever the protection applies, so it then behaves exactly like
+  `ProtectionScope.CardType` of that type (projected `PROTECTION_FROM_CARDTYPE_<TYPE>`; player protection
+  from sources of that type). Protects from nothing until a type is chosen. Valid in
+  `GrantProtectionFromToGroup` and `GrantProtectionToController`; a printed `Protection` keyword or a
+  one-shot `GrantPlayerProtection` has no permanent to read the choice from and protects from nothing.
+  Serra's Emissary pairs an `EntersWithChoice(ChoiceType.MODE)` over card-type ids (as Stenn, Paranoid
+  Partisan does) with `GrantProtectionFromToGroup(ProtectionScope.ChosenCardType(ChoiceSlot.MODE),
+  GroupFilter(Creature.youControl()))` + `GrantProtectionToController(ProtectionScope.ChosenCardType(ChoiceSlot.MODE))`.
 - `ProtectionScope.RingBearers` — "protection from Ring-bearers" (CR 701.54; the designation is a quality
   per CR 702.16a). Matches a battlefield source that is its controller's Ring-bearer — the same reading as
   `StatePredicate.IsRingBearer`, so a stolen bearer stops matching. Enforced like

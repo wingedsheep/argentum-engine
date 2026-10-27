@@ -184,6 +184,7 @@ fun ProtectionScope.protectionDescription(): String = when (this) {
     ProtectionScope.Multicolored -> "multicolored"
     ProtectionScope.Monocolored -> "monocolored"
     is ProtectionScope.CardType -> cardType.lowercase() + "s"
+    is ProtectionScope.ChosenCardType -> "the chosen card type"
     is ProtectionScope.Subtype -> subtype + "s"
     is ProtectionScope.Supertype -> supertype.lowercase() + " permanents"
     ProtectionScope.Everything -> "everything"

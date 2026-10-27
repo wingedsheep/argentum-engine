@@ -48,8 +48,9 @@ object PlayerProtectionRules {
                 // Each scope carries its own "as long as …" gate, re-evaluated here on every read
                 // because the marker was stamped once, on entry — see [ControllerGrantMarker].
                 ?.any {
+                    val scope = ProtectionKeywords.resolveChosen(it.scope, container) ?: return@any false
                     ControllerGrants.isActive(state, entityId, it.condition, predicateEvaluator = predicateEvaluator) &&
-                        scopeMatchesSource(state, playerId, it.scope, sourceId, casterId)
+                        scopeMatchesSource(state, playerId, scope, sourceId, casterId)
                 } == true
         }
     }
@@ -101,6 +102,9 @@ object PlayerProtectionRules {
             // An ability kind is a property of the targeting spell-or-ability, not of the source
             // object this reading is given; no player-protection grant names one.
             ProtectionScope.ActivatedAbilities, ProtectionScope.TriggeredAbilities -> false
+            // Bound to a granting permanent's choice — resolved by the caller; unbound it protects
+            // from nothing (a one-shot grant has no permanent to read the choice from).
+            is ProtectionScope.ChosenCardType -> false
         }
     }
 }

@@ -827,10 +827,16 @@ class StaticAbilityHandler(
                 )
             }
             is GrantProtectionFromToGroup -> {
+                val scope = ability.scope
                 ContinuousEffectData(
-                    modification = Modification.GrantProtectionFrom(
-                        com.wingedsheep.engine.mechanics.targeting.ProtectionKeywords.keywordsFor(ability.scope)
-                    ),
+                    // A chosen card type is bound to this permanent's entry choice, read at apply time.
+                    modification = if (scope is com.wingedsheep.sdk.scripting.ProtectionScope.ChosenCardType) {
+                        Modification.GrantProtectionFromChosenCardType(scope.slot)
+                    } else {
+                        Modification.GrantProtectionFrom(
+                            com.wingedsheep.engine.mechanics.targeting.ProtectionKeywords.keywordsFor(scope)
+                        )
+                    },
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }

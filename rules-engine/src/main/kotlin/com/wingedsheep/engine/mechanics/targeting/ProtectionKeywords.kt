@@ -1,5 +1,8 @@
 package com.wingedsheep.engine.mechanics.targeting
 
+import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
+import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
+import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.ProtectionScope
 
@@ -13,7 +16,9 @@ object ProtectionKeywords {
 
     /**
      * Empty for a scope with no creature-protection keyword (non-color, monocolored, everything);
-     * `GrantProtectionFromToGroup` rejects those at construction.
+     * `GrantProtectionFromToGroup` rejects those at construction. A source-bound
+     * [ProtectionScope.ChosenCardType] is also empty here — [resolveChosen] it against the granting
+     * permanent first.
      */
     fun keywordsFor(scope: ProtectionScope): Set<String> = when (scope) {
         is ProtectionScope.Color -> setOf("PROTECTION_FROM_${scope.color.name}")
@@ -30,7 +35,20 @@ object ProtectionKeywords {
         ProtectionScope.TriggeredAbilities ->
             setOf(SourceKindProtection.protectionKeyword(checkNotNull(SourceKind.of(scope))))
         is ProtectionScope.NonColor,
+        is ProtectionScope.ChosenCardType,
         ProtectionScope.Monocolored,
         ProtectionScope.Everything -> emptySet()
+    }
+
+    /**
+     * Binds a source-bound scope to the choice its granting permanent [source] made as it entered:
+     * [ProtectionScope.ChosenCardType] becomes the [ProtectionScope.CardType] stored under its slot,
+     * or null while nothing is chosen (protection from nothing). Every other scope is returned as is.
+     */
+    fun resolveChosen(scope: ProtectionScope, source: ComponentContainer?): ProtectionScope? = when (scope) {
+        is ProtectionScope.ChosenCardType ->
+            (source?.get<CastChoicesComponent>()?.chosen?.get(scope.slot) as? ChoiceValue.TextChoice)
+                ?.text?.let { ProtectionScope.CardType(it) }
+        else -> scope
     }
 }

@@ -150,7 +150,7 @@ data class GrantHexproofFromToGroup(
             ProtectionScope.Monocolored, ProtectionScope.Multicolored, is ProtectionScope.CardType,
             ProtectionScope.Spells, ProtectionScope.PermanentsCastThisTurn, ProtectionScope.RingBearers,
             ProtectionScope.ActivatedAbilities, ProtectionScope.TriggeredAbilities -> true
-            is ProtectionScope.Subtype, is ProtectionScope.Supertype,
+            is ProtectionScope.Subtype, is ProtectionScope.Supertype, is ProtectionScope.ChosenCardType,
             ProtectionScope.Everything, ProtectionScope.EachOpponent -> false
         }
     }
@@ -198,7 +198,7 @@ data class GrantProtectionFromToGroup(
         fun isSupported(scope: ProtectionScope): Boolean = when (scope) {
             is ProtectionScope.Colors, ProtectionScope.Multicolored,
             is ProtectionScope.Subtype, is ProtectionScope.Supertype,
-            ProtectionScope.EachOpponent,
+            ProtectionScope.EachOpponent, is ProtectionScope.ChosenCardType,
             ProtectionScope.Spells, ProtectionScope.PermanentsCastThisTurn, ProtectionScope.RingBearers,
             ProtectionScope.ActivatedAbilities, ProtectionScope.TriggeredAbilities -> true
             is ProtectionScope.Color, is ProtectionScope.CardType,
@@ -401,6 +401,7 @@ data class GrantProtectionToController(
             ProtectionScope.Multicolored -> "multicolored"
             ProtectionScope.Monocolored -> "monocolored"
             is ProtectionScope.CardType -> s.cardType.lowercase() + "s"
+            is ProtectionScope.ChosenCardType -> "the chosen card type"
             is ProtectionScope.Subtype -> s.subtype + "s"
             is ProtectionScope.Supertype -> s.supertype.lowercase() + " permanents"
             ProtectionScope.Everything -> "everything"

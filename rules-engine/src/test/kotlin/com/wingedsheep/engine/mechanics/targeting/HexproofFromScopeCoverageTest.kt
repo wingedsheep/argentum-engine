@@ -4,6 +4,10 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.scripting.GrantHexproofFromToGroup
 import com.wingedsheep.sdk.scripting.GrantProtectionFromToGroup
 import com.wingedsheep.sdk.scripting.ProtectionScope
+import com.wingedsheep.sdk.scripting.ChoiceSlot
+import com.wingedsheep.engine.state.ComponentContainer
+import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
+import com.wingedsheep.engine.state.components.battlefield.withCastChoice
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -33,7 +37,11 @@ class HexproofFromScopeCoverageTest : FunSpec({
         ProtectionScope.RingBearers,
         ProtectionScope.ActivatedAbilities,
         ProtectionScope.TriggeredAbilities,
+        ProtectionScope.ChosenCardType(),
     )
+
+    // A granting permanent that chose "Instant" as it entered — what a source-bound scope reads.
+    val chooser = ComponentContainer().withCastChoice(ChoiceSlot.CARD_TYPE, ChoiceValue.TextChoice("Instant"))
 
     test("the samples cover every ProtectionScope kind") {
         samples.map { it::class }.toSet() shouldBe ProtectionScope::class.sealedSubclasses.toSet()
@@ -49,7 +57,10 @@ class HexproofFromScopeCoverageTest : FunSpec({
 
     test("a scope the SDK accepts for a protection grant is one the engine projects") {
         samples.filter { GrantProtectionFromToGroup.isSupported(it) }.forEach { scope ->
-            withClue(scope) { ProtectionKeywords.keywordsFor(scope).isNotEmpty() shouldBe true }
+            withClue(scope) {
+                val bound = ProtectionKeywords.resolveChosen(scope, chooser)
+                (bound != null && ProtectionKeywords.keywordsFor(bound).isNotEmpty()) shouldBe true
+            }
         }
     }
 

@@ -678,6 +678,20 @@ sealed interface Modification {
     }
 
     /**
+     * Grants protection from the card type the source chose as it entered, read at apply-time
+     * from the source's `CastChoicesComponent` under [slot] and realized as the same
+     * `PROTECTION_FROM_CARDTYPE_<TYPE>` keyword a fixed card-type protection projects. Nothing is
+     * granted before a type is chosen. Serra's Emissary
+     * (`GrantProtectionFromToGroup(ProtectionScope.ChosenCardType(...))`).
+     */
+    @Serializable
+    data class GrantProtectionFromChosenCardType(
+        val slot: com.wingedsheep.sdk.scripting.ChoiceSlot
+    ) : Modification {
+        override val layer get() = Layer.ABILITY
+    }
+
+    /**
      * Grants each affected entity "protection from the colors of permanents the source's
      * controller controls". Read at apply-time: collects the projected colors of every
      * battlefield permanent controlled by the source's (projected) controller, then adds
