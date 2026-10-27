@@ -3483,7 +3483,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   `DirectedAttackRequirements` reads beside the Public Enemy static: the creature is bound only while it could
   attack that player at no cost (CR 508.1d), and only an attack on that player — not their planeswalker or
   battle, nor another player — obeys it. If it can't attack that player it is under no requirement at all.
-  Removed during cleanup; badged "Must Attack <player>".
+  Removed during cleanup or when the creature leaves the battlefield; its "Must Attack" badge names the player.
 - `Effects.MarkMustAttackNextCombat(target)` (`MarkMustAttackEffect`, window
   `MustAttackWindow.ControllersNextCombat`) — "that creature attacks during its controller's next combat
   phase if able" (Sizzling Soloist). The mark waits across turns for that player's next combat phase, binds
@@ -13175,7 +13175,7 @@ copy of it (CR 707.10e). The activated-ability analogue of the spell-level `cant
 > **Where set-mechanic helpers live.** The `card { … }` keyword helpers below for *set-specific*
 > mechanics — `mayBeginGameOnBattlefield()`, `flurry { }`, `mobilize(…)`, `firebending(n)`, `sneak(cost)`, `webSlinging(cost)`, `mayhem(cost)`, `madness(cost)`, `decayed()`,
 > `vividEtb { }` / `vividCostReduction()`, `convergeEntersWithCounters(counterType?)`,
-> `impending(time, cost)`, `renew(cost) { }`, `embalm(cost)`, `unearth(cost)`, `enduring()`,
+> `impending(time, cost)`, `renew(cost) { }`, `embalm(cost)`, `unearth(cost)`, `encore(cost)`, `enduring()`,
 > `craft(filter, cost)`, `station()`, `jobSelect()`, `forMirrodin()`, `gift(kind)` — are `CardBuilder` **extension functions** in
 > `mtg-sdk/.../dsl/mechanics/` (one file per mechanic), not methods on the core `CardBuilder`. They
 > stay in package `com.wingedsheep.sdk.dsl`, so the call syntax is unchanged, but a card file that

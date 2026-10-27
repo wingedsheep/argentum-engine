@@ -42,8 +42,8 @@ class MarkMustAttackExecutor : EffectExecutor<MarkMustAttackEffect> {
                 if (defenderTarget == null) {
                     state.updateEntity(targetId) { it.with(MustAttackThisTurnComponent) }
                 } else {
-                    // "Attacks that opponent this turn if able" names a player; one who has left
-                    // the game leaves no requirement at all.
+                    // "Attacks that opponent this turn if able" names a player. A player who has
+                    // since left the game binds nothing: the attack check only counts opponents still in it.
                     val defenderId = context.resolvePlayerTarget(defenderTarget, state)
                         ?.takeIf { state.getEntity(it)?.has<PlayerComponent>() == true }
                         ?: return EffectResult.success(state)
