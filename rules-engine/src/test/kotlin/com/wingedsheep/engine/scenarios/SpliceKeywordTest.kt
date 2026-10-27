@@ -22,6 +22,9 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.ProtectionScope
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.TargetObject
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.ints.shouldBeGreaterThan
@@ -108,6 +111,21 @@ class SpliceKeywordTest : FunSpec({
         spell { effect = Effects.GainLife(3) }
     }
 
+    // A splice card with two targets and an untargeted rider, for CR 608.2b on spliced text.
+    val spliceTwinStrike = card("Test Splice Twin Strike") {
+        manaCost = "{1}{R}"
+        colorIdentity = "R"
+        typeLine = "Instant — Arcane"
+        splice("{1}")
+        spell {
+            target(TargetObject(count = 2, filter = TargetFilter.Creature))
+            effect = Effects.Composite(listOf(
+                Effects.ForEachTarget(Effects.DealDamage(2, EffectTarget.ContextTarget(0))),
+                Effects.GainLife(3)
+            ))
+        }
+    }
+
     // A 2/2 with protection from red — the target that proves CR 702.47c.
     val redWardedBear = card("Test Red Warded Bear") {
         manaCost = "{2}{G}"
@@ -119,7 +137,7 @@ class SpliceKeywordTest : FunSpec({
     }
 
     val spliceTestCards = listOf(
-        arcaneBolt, arcaneMeditation, plainBolt, spliceRay, spliceGain, redWardedBear
+        arcaneBolt, arcaneMeditation, plainBolt, spliceRay, spliceGain, spliceTwinStrike, redWardedBear
     )
 
     fun createDriver(): GameTestDriver {
@@ -353,6 +371,59 @@ class SpliceKeywordTest : FunSpec({
         // The bolt hit the player, the spliced ray hit the creature — neither stole the other's target.
         driver.getLifeTotal(opponent) shouldBe 19
         driver.state.getZone(ZoneKey(opponent, Zone.GRAVEYARD)) shouldContain bear
+    }
+
+    test("608.2b: spliced text still acts on its targets that stayed legal") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        val opponent = driver.getOpponent(player)
+
+        val bolt = driver.putCardInHand(player, "Test Arcane Bolt")
+        val strike = driver.putCardInHand(player, "Test Splice Twin Strike")
+        val leaving = driver.putCreatureOnBattlefield(opponent, "Grizzly Bears")
+        val staying = driver.putCreatureOnBattlefield(opponent, "Grizzly Bears")
+        driver.giveMana(player, Color.RED, 2)
+
+        driver.submit(
+            spliceCast(
+                player, bolt, listOf(strike),
+                listOf(ChosenTarget.Player(opponent), ChosenTarget.Permanent(leaving), ChosenTarget.Permanent(staying))
+            )
+        ).error shouldBe null
+        driver.replaceState(driver.state.moveToZone(leaving, ZoneKey(opponent, Zone.BATTLEFIELD), ZoneKey(opponent, Zone.HAND)))
+        driver.bothPass()
+
+        driver.getLifeTotal(opponent) shouldBe 19
+        withClue("the still-legal target of the spliced text is dealt its damage") {
+            driver.state.getZone(ZoneKey(opponent, Zone.GRAVEYARD)) shouldContain staying
+        }
+        withClue("the untargeted part of the spliced text happens") { driver.getLifeTotal(player) shouldBe 23 }
+    }
+
+    test("608.2b: spliced text whose targets all left still does its untargeted part") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        val opponent = driver.getOpponent(player)
+
+        val bolt = driver.putCardInHand(player, "Test Arcane Bolt")
+        val strike = driver.putCardInHand(player, "Test Splice Twin Strike")
+        val first = driver.putCreatureOnBattlefield(opponent, "Grizzly Bears")
+        val second = driver.putCreatureOnBattlefield(opponent, "Grizzly Bears")
+        driver.giveMana(player, Color.RED, 2)
+
+        driver.submit(
+            spliceCast(
+                player, bolt, listOf(strike),
+                listOf(ChosenTarget.Player(opponent), ChosenTarget.Permanent(first), ChosenTarget.Permanent(second))
+            )
+        ).error shouldBe null
+        for (gone in listOf(first, second)) {
+            driver.replaceState(driver.state.moveToZone(gone, ZoneKey(opponent, Zone.BATTLEFIELD), ZoneKey(opponent, Zone.HAND)))
+        }
+        driver.bothPass()
+
+        withClue("the main spell's target is still legal, so the spell resolves") { driver.getLifeTotal(opponent) shouldBe 19 }
+        driver.getLifeTotal(player) shouldBe 23
     }
 
     // ---- 702.47e — splice is lost when the spell leaves the stack ----------------------------

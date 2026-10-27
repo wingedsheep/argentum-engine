@@ -10131,6 +10131,87 @@
     }
 }
 
+// Raise the Draugr
+{
+    "name": "Raise the Draugr",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Return target creature card from your graveyard to your hand.\n• Return two target creature cards that share a creature type from your graveyard to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature own:you",
+                                "zone": "Graveyard"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Return target creature card from your graveyard to your hand"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": "IterationSpace.Targets",
+                        "body": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "destination": "Hand"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "count": 2,
+                            "filter": {
+                                "baseFilter": "creature own:you",
+                                "zone": "Graveyard"
+                            },
+                            "sameCreatureType": true
+                        }
+                    ],
+                    "description": "Return two target creature cards that share a creature type from your graveyard to your hand"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "artist": "Randy Vargas",
+        "flavorText": "\"King Narfi calls. We go to war!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a67c196-632c-4c7b-a132-de07d894e634.jpg?1783928243",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "If you choose the second mode, the cards must share at least one creature type, such as Knight or Djinn. Card types (e.g., artifact) and supertypes (e.g., legendary or snow) aren't creature types."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If you choose the second mode and one of the two cards leaves your graveyard, you'll still return the other card to your hand as long as it has a creature type that the other card had as it left your graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Rally the Ranks
 {
     "name": "Rally the Ranks",

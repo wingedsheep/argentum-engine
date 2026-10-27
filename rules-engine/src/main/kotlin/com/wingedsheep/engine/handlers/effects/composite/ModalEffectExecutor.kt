@@ -30,8 +30,8 @@ import kotlin.reflect.KClass
  *   This branch then drains each chosen mode in order with its captured targets,
  *   pausing if a sub-effect needs another decision; remaining modes ride along on a
  *   [ModalPreChosenContinuation] that auto-resumes once the inner decision resolves.
- *   Per-mode Rule 608.2b re-validation is applied against
- *   [SpellOnStackComponent.modeTargetRequirements].
+ *   Rule 608.2b is applied per target: each mode receives its slice of the
+ *   resolution-validated slots, so a mode keeps acting on its still-legal targets.
  *
  * - **Resolution-time mode picking**: whatever arrives here with `chosenModes` empty. The executor
  *   presents a [ChooseOptionDecision] inline, pushes [ModalContinuation], and the modal-and-clone
@@ -275,8 +275,8 @@ internal data class PreTargetedEffectContext(
 /**
  * Process the remaining pre-chosen modes of a choose-N modal spell.
  *
- * Synchronously executes each entry's effect in order, applying per-mode 608.2b
- * re-validation against the original target requirements. When a mode's
+ * Synchronously executes each entry's effect in order with its still-legal targets
+ * (CR 608.2b, per target). When a mode's
  * execution pauses, pushes a [ModalPreChosenContinuation] holding the tail and
  * surfaces the pause; the continuation is auto-resumed once the inner decision
  * resolves.
@@ -297,9 +297,12 @@ internal fun processPreTargetedEffectQueue(
     val head = entries.first()
     val tail = entries.drop(1)
 
-    // 608.2b per-mode fizzle: if the mode required targets and at least one is now illegal,
-    // skip the mode entirely. Partial per-target filtering is a future refinement — for now
-    // we mirror the all-or-nothing shape used by the resolution-time ModalContinuation path.
+    // CR 608.2b is applied per target, not per entry: every resolver (spell, triggered and
+    // activated ability, fused halves, spliced text) hands each entry its slice of the
+    // resolution-validated slots in `alignedTargets`, with a null where a target became illegal,
+    // so the entry acts on the targets that are still legal (Unbury's second mode returns the
+    // card that stayed in the graveyard). An entry without that slice — a frame serialized before
+    // the slices existed — falls back to re-checking its targets as one set and skipping on failure.
     val cardComponent = ctx.sourceId?.let { state.getEntity(it)?.get<CardComponent>() }
     val sourceColors = if (cardComponent == null) emptySet() else state.projectedState.colorSetOf(ctx.sourceId)
     val sourceSubtypes = cardComponent?.typeLine?.subtypes?.map { it.value }?.toSet() ?: emptySet()

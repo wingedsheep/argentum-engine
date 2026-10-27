@@ -22,12 +22,8 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  *
  * Both modes target (CR 601.2c). The second mode's pair is one two-slot requirement with
  * [TargetObject.sameCreatureType], which reads a graveyard card's printed creature types (a
- * changeling card has them all). Each target is returned on its own.
- *
- * Known engine gap: the 2025-11-17 ruling says that if one of the pair leaves the graveyard the
- * other still returns, but `ModalEffectExecutor` re-checks a pre-chosen mode's targets
- * all-or-nothing (CR 608.2b partial legality isn't modelled for modes), so today the whole mode
- * does nothing in that case.
+ * changeling card has them all). Each target is returned on its own, so when one of the pair
+ * leaves the graveyard in response the other is still returned (CR 608.2b; the 2025-11-17 ruling).
  */
 val Unbury = card("Unbury") {
     manaCost = "{1}{B}"

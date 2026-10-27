@@ -47,11 +47,6 @@ internal class NonPermanentSpellResolver(
     private val spliceTargetValidator: TargetValidator
 ) {
     /**
-     * Re-validates a spliced card's own targets as the spell resolves (CR 608.2b via 702.47d): the
-     * spliced text is skipped when its targets have become illegal, exactly as a modal spell's
-     * pre-chosen mode is.
-     */
-    /**
      * The spliced text of [spellComponent]'s spell as a drain queue (CR 702.47b) — one entry per
      * spliced card, in the caster's chosen order, each carrying its own target slice and requirements.
      *
@@ -61,6 +56,7 @@ internal class NonPermanentSpellResolver(
     private fun buildSpliceEntries(
         spellComponent: SpellOnStackComponent,
         boundRequirements: List<TargetRequirement>,
+        splicedAlignedTargets: List<ChosenTarget?>,
     ): List<PreTargetedEffectEntry> {
         // Each spliced card's requirements as the cast bound them — the tail of the recorded list,
         // in splice order — so a partly filled "up to N" spliced group names the targets it holds.
@@ -69,13 +65,23 @@ internal class NonPermanentSpellResolver(
         val bound = printed.map { reqs ->
             (if (cursor >= 0) boundRequirements.subList(cursor, cursor + reqs.size) else reqs).also { cursor += reqs.size }
         }
+        // Each spliced card's slice of the spell's resolution-validated slots (CR 608.2b): a target
+        // that became illegal is a null in its slot, so the spliced text still acts on the targets
+        // that remain legal, and on whatever it does without a target.
+        var slot = 0
+        val alignedSlices = bound.map { reqs ->
+            val count = reqs.sumOf { it.count }
+            splicedAlignedTargets.drop(slot).take(count).also { slot += count }
+        }
         return spellComponent.splicedCardNames.mapIndexedNotNull { index, name ->
             val splicedDef = cardRegistry.getCard(name) ?: return@mapIndexedNotNull null
             val effect = splicedDef.script.spellEffect ?: return@mapIndexedNotNull null
+            val aligned = alignedSlices[index]
             PreTargetedEffectEntry(
                 effect = effect,
-                targets = spellComponent.splicedTargetsOrdered.getOrNull(index) ?: emptyList(),
-                targetRequirements = bound[index]
+                targets = aligned.filterNotNull(),
+                targetRequirements = bound[index],
+                alignedTargets = aligned
             )
         }
     }
@@ -117,9 +123,9 @@ internal class NonPermanentSpellResolver(
             cardRegistry.getCard(name)?.script?.targetRequirements?.size ?: 0
         }
         val allTargetRequirements = state.getEntity(spellId)?.get<TargetsComponent>()?.targetRequirements ?: emptyList()
-        val spliceEntries = buildSpliceEntries(spellComponent, allTargetRequirements)
         val splicedSlotCount = SpliceCasts
             .splicedTargetSlotCounts(spellComponent.splicedCardNames, cardRegistry, allTargetRequirements).sum()
+        val spliceEntries = buildSpliceEntries(spellComponent, allTargetRequirements, alignedTargets.takeLast(splicedSlotCount))
 
         val fusedDefinition = resolvedCardDef?.takeIf { spellComponent.castFused }
         if (spellEffect != null || fusedDefinition != null) {

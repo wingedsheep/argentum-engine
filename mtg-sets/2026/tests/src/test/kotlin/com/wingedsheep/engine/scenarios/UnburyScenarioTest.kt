@@ -123,4 +123,16 @@ class UnburyScenarioTest : FunSpec({
         driver.getExile(me).contains(bears) shouldBe true
         withClue("no other card is returned in its place") { driver.getGraveyard(me).contains(lions) shouldBe true }
     }
+    test("mode two still returns one of the pair when the other leaves the graveyard in response") {
+        val (driver, me) = setup()
+        val bears1 = driver.putCardInGraveyard(me, "Grizzly Bears")
+        val bears2 = driver.putCardInGraveyard(me, "Grizzly Bears")
+
+        driver.castMode(me, 1, listOf(bears1, bears2)).error shouldBe null
+        driver.replaceState(driver.state.moveToZone(bears1, ZoneKey(me, Zone.GRAVEYARD), ZoneKey(me, Zone.EXILE)))
+        driver.bothPass()
+
+        driver.getExile(me).contains(bears1) shouldBe true
+        withClue("CR 608.2b: the still-legal target is returned") { driver.getHand(me).contains(bears2) shouldBe true }
+    }
 })
