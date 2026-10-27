@@ -473,6 +473,100 @@
     ]
 }
 
+// Armed and Armored
+{
+    "name": "Armed and Armored",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Vehicles you control become artifact creatures until end of turn. Choose a Dwarf you control. Attach any number of Equipment you control to it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent Vehicle ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCardType",
+                        "cardType": "Creature",
+                        "target": "IterationEntity",
+                        "duration": "EndOfTurn"
+                    }
+                },
+                {
+                    "type": "SelectTarget",
+                    "requirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent Dwarf ctrl:you"
+                        }
+                    },
+                    "storeAs": "target1",
+                    "nonTargeting": true,
+                    "prompt": "Choose a Dwarf you control to attach Equipment to"
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "artifact Equipment",
+                        "player": "You"
+                    },
+                    "storeAs": "gathered2"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered2",
+                    "selection": "ChooseAnyNumber",
+                    "storeSelected": "selected3",
+                    "prompt": "Choose any number of Equipment you control to attach to the chosen Dwarf",
+                    "useTargetingUI": true
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Collection",
+                        "collection": "selected3"
+                    },
+                    "body": {
+                        "type": "AttachTargetEquipmentToCreature",
+                        "equipmentTarget": "IterationEntity",
+                        "creatureTarget": {
+                            "type": "PipelineTarget",
+                            "collectionName": "target1"
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "379",
+        "rarity": "UNCOMMON",
+        "artist": "Svetlin Velinov",
+        "flavorText": "The dwarves of Axgard seldom have reason to leave their impregnable underground kingdom—but when they do, they go in force.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4f4c1253-7eba-454b-9269-3695ba746a7a.jpg?1783928122",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "You can cast Armed and Armored even if you don't control any Vehicles or Dwarves. Whatever part of the effect that can happen does, and the rest is ignored."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The set of Vehicles affected by Armed and Armored is determined as the spell resolves. Vehicles you begin to control later in the turn won't automatically become creatures."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ascendant Spirit
 {
     "name": "Ascendant Spirit",
@@ -2507,6 +2601,96 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Cleaving Reaper
+{
+    "name": "Cleaving Reaper",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Angel Berserker",
+    "oracleText": "Flying, trample\nPay 3 life: Return this card from your graveyard to your hand. Activate only if you had an Angel or Berserker enter the battlefield under your control this turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Cleaving Reaper:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Any",
+                            "conditions": [
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "SubtypeEnteredUnderControlThisTurn",
+                                        "player": "You",
+                                        "subtypes": [
+                                            "Angel"
+                                        ]
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "SubtypeEnteredUnderControlThisTurn",
+                                        "player": "You",
+                                        "subtypes": [
+                                            "Berserker"
+                                        ]
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "376",
+        "rarity": "RARE",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "\"I won't pollute my blade with your blood, demon. You'll die by your own axe!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b59dadef-74e5-47c7-a3e0-51075ddb82b1.jpg?1783928123"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4621,6 +4805,57 @@
         "artist": "Miranda Meeks",
         "flavorText": "\"One day, the great serpent will rejoin us on Skemfar, and those who've wronged us will taste of our venom.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f3a6148-d005-49c1-a7fc-867c4e8251cd.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Elderfang Ritualist
+{
+    "name": "Elderfang Ritualist",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Elf Cleric",
+    "oracleText": "When this creature dies, return another target Elf card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Elderfang Ritualist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "Elf own:you",
+                        "zone": "Graveyard",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "385",
+        "rarity": "UNCOMMON",
+        "artist": "Wisnu Tan",
+        "flavorText": "Her fingers stiffened as the shrouded corpse stirred. Her final, ragged breath was one of triumph. \"Return, my chosen, and grant our people victory!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/57348f93-8764-4b1a-b02e-4e7881337fa2.jpg?1783928118"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -7051,6 +7286,219 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Halvar, God of Battle
+{
+    "name": "Halvar, God of Battle",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Legendary Creature — God",
+    "oracleText": "Creatures you control that are enchanted or equipped have double strike.\nAt the beginning of each combat, you may attach target Aura or Equipment attached to a creature you control to target creature you control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Halvar, God of Battle:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "AttachTargetEquipmentToCreature",
+                        "equipmentTarget": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "creatureTarget": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        {
+                                            "type": "HasSubtype",
+                                            "subtype": "Aura"
+                                        },
+                                        {
+                                            "type": "HasSubtype",
+                                            "subtype": "Equipment"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "IsAttachedTo",
+                                    "filter": "creature ctrl:you"
+                                }
+                            ]
+                        }
+                    },
+                    "id": "t0"
+                },
+                "additionalTargetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "At the beginning of each combat, you may attach target Aura or Equipment attached to a creature you control to target creature you control."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOUBLE_STRIKE",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "StateOr",
+                                "predicates": [
+                                    "IsEnchanted",
+                                    "IsEquipped"
+                                ]
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Sword of the Realms",
+        "manaCost": "{1}{W}",
+        "typeLine": "Legendary Artifact — Equipment",
+        "oracleText": "Equipped creature gets +2/+0 and has vigilance.\nWhenever equipped creature dies, return it to its owner's hand.\nEquip {1}{W}",
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Sword of the Realms:1",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "from": "Battlefield",
+                        "to": "Graveyard"
+                    },
+                    "binding": "ATTACHED",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": "TriggeringEntity",
+                        "destination": "Hand"
+                    },
+                    "descriptionOverride": "Whenever equipped creature dies, return it to its owner's hand."
+                }
+            ],
+            "activatedAbilities": [
+                {
+                    "id": "Sword of the Realms:2",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{1}{W}"
+                        }
+                    },
+                    "effect": {
+                        "type": "AttachEquipment",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "creature you control"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "creature you control"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isEquipAbility": true
+                }
+            ],
+            "staticAbilities": [
+                {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 0
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "VIGILANCE"
+                }
+            ]
+        },
+        "equipCost": "{1}{W}",
+        "metadata": {
+            "collectorNumber": "15",
+            "rarity": "MYTHIC",
+            "artist": "Lie Setiawan",
+            "flavorText": "It cuts through the Cosmos itself, carving new Omenpaths between the realms.",
+            "imageUri": "https://cards.scryfall.io/normal/back/9/7/97502411-5c93-434c-b77b-ceb2c32feae7.jpg?1783928291",
+            "rulings": [
+                {
+                    "date": "2021-02-05",
+                    "text": "If the creature equipped by Sword of the Realms dies but leaves the graveyard before the triggered ability resolves, it won't be returned to its owner's hand. It will just stay wherever it went."
+                },
+                {
+                    "date": "2021-02-05",
+                    "text": "If Sword of the Realms is attached to a token creature that dies, the Sword's triggered ability will trigger, but the token will cease to exist after going to the graveyard. It won't be returned to its owner's hand."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "MYTHIC",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/97502411-5c93-434c-b77b-ceb2c32feae7.jpg?1783928291",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "A creature you control is enchanted or equipped if there's an Aura or an Equipment attached to it. You don't have to control that Aura or Equipment."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Similarly, you don't have to control the Aura or Equipment that you choose as a target of Halvar's triggered ability, but it must be attached to a creature you control."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If either target of the triggered ability is an illegal target as the ability resolves, the ability won't do anything. If both targets are illegal, the ability won't resolve. If the Aura or Equipment is already attached to the target creature, nothing happens."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ],
+    "layout": "MODAL_DFC"
 }
 
 // Hengegate Pathway
@@ -10611,6 +11059,85 @@
     "layout": "MODAL_DFC"
 }
 
+// Renegade Reaper
+{
+    "name": "Renegade Reaper",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Angel Berserker",
+    "oracleText": "Flying\nWhen this creature enters, mill four cards. If at least one Angel card is milled this way, you gain 4 life. (To mill a card, put the top card of your library into your graveyard.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Renegade Reaper:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "milled",
+                                    "filter": "Angel"
+                                }
+                            },
+                            "then": {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, mill four cards. If at least one Angel card is milled this way, you gain 4 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "386",
+        "rarity": "UNCOMMON",
+        "artist": "Cynthia Sheppard",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a5675655-dc9f-45ad-9cd0-ce28fba1f972.jpg?1783928118"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Resplendent Marshal
 {
     "name": "Resplendent Marshal",
@@ -11371,6 +11898,236 @@
     ]
 }
 
+// Rune of Mortality
+{
+    "name": "Rune of Mortality",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment — Aura Rune",
+    "oracleText": "Enchant permanent\nWhen this Aura enters, draw a card.\nAs long as enchanted permanent is a creature, it has deathtouch.\nAs long as enchanted permanent is an Equipment, it has \"Equipped creature has deathtouch.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rune of Mortality:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "DEATHTOUCH"
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "creature"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantStaticAbility",
+                    "ability": {
+                        "type": "GrantKeyword",
+                        "keyword": "DEATHTOUCH"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "artifact Equipment"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "permanent"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6f75a5e5-70df-49c3-abe1-8cc6975f5171.jpg?1783928241"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Rune of Speed
+{
+    "name": "Rune of Speed",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment — Aura Rune",
+    "oracleText": "Enchant permanent\nWhen this Aura enters, draw a card.\nAs long as enchanted permanent is a creature, it gets +1/+0 and has haste.\nAs long as enchanted permanent is an Equipment, it has \"Equipped creature gets +1/+0 and has haste.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rune of Speed:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "CompositeStaticAbility",
+                    "abilities": [
+                        {
+                            "type": "ModifyStats",
+                            "powerBonus": 1,
+                            "toughnessBonus": 0
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE"
+                        }
+                    ]
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "creature"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantStaticAbility",
+                    "ability": {
+                        "type": "CompositeStaticAbility",
+                        "abilities": [
+                            {
+                                "type": "ModifyStats",
+                                "powerBonus": 1,
+                                "toughnessBonus": 0
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE"
+                            }
+                        ]
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "artifact Equipment"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "permanent"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/47faee66-b274-466a-890e-bb396dda943d.jpg?1783928225"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Rune of Sustenance
+{
+    "name": "Rune of Sustenance",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura Rune",
+    "oracleText": "Enchant permanent\nWhen this Aura enters, draw a card.\nAs long as enchanted permanent is a creature, it has lifelink.\nAs long as enchanted permanent is an Equipment, it has \"Equipped creature has lifelink.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rune of Sustenance:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK"
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "creature"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantStaticAbility",
+                    "ability": {
+                        "type": "GrantKeyword",
+                        "keyword": "LIFELINK"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EnchantedPermanent",
+                    "filter": "artifact Equipment"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "permanent"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "rarity": "UNCOMMON",
+        "artist": "Yeong-Hao Han",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e31b716-f325-445a-9098-9ca75d7b35a4.jpg?1783928279"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Runeforge Champion
 {
     "name": "Runeforge Champion",
@@ -11894,6 +12651,76 @@
     ]
 }
 
+// Skemfar Avenger
+{
+    "name": "Skemfar Avenger",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Elf Berserker",
+    "oracleText": "Whenever another nontoken Elf or Berserker you control dies, you draw a card and you lose 1 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skemfar Avenger:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasAnyOfSubtypes",
+                                "subtypes": [
+                                    "Elf",
+                                    "Berserker"
+                                ]
+                            },
+                            "IsNontoken"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever another nontoken Elf or Berserker you control dies, you draw a card and you lose 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "RARE",
+        "artist": "Randy Vargas",
+        "flavorText": "Stripped of their divinity, the elves of Skemfar channeled their rage and sorrow into bloody brutality.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fad2c6d4-03dd-4dab-861c-77c55bda0db7.jpg?1783928240"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Skemfar Elderhall
 {
     "name": "Skemfar Elderhall",
@@ -12059,6 +12886,106 @@
             {
                 "date": "2021-02-05",
                 "text": "The amount of life lost or gained is calculated as the triggered ability resolves based on the creatures you control at that time, including Skemfar Shadowsage itself if it's still under your control. You'll always use the greatest number possible. You don't need to choose any creature types. For example, if you control a Giant Wizard, a Giant Warrior, an Elf Warrior, and a Kor Warrior at that time, each opponent will lose 3 life or you'll gain 3 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Skull Raid
+{
+    "name": "Skull Raid",
+    "manaCost": "{3}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent discards two cards. If fewer than two cards were discarded this way, you draw cards equal to the difference.\nForetell {1}{B} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "keywords": [
+        "FORETELL"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Foretell",
+            "cost": "{1}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "hand"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "hand",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "chooser": "TargetPlayer",
+                    "storeSelected": "discarded",
+                    "prompt": "Choose 2 cards to discard"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "discarded",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "IfPositive",
+                        "amount": {
+                            "type": "Subtract",
+                            "left": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "right": {
+                                "type": "VariableReference",
+                                "variableName": "discarded_count"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/4589c520-4db3-47bf-bfb2-5d7e02ede4bf.jpg?1783928240",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The opponent must discard two cards if they have two or more cards in their hand. If they have only one card in hand, they'll discard that card and you'll draw a card. If they have no cards in hand, they can't discard any, so you'll draw two cards."
             }
         ]
     },
@@ -12997,6 +13924,124 @@
         "BLACK",
         "RED",
         "GREEN"
+    ]
+}
+
+// Thornmantle Striker
+{
+    "name": "Thornmantle Striker",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Elf Rogue",
+    "oracleText": "When this creature enters, choose one —\n• Remove X counters from target permanent, where X is the number of Elves you control.\n• Target creature an opponent controls gets -X/-X until end of turn, where X is the number of Elves you control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thornmantle Striker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "RemoveAnyNumberOfCounters",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "maxTotal": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "permanent Elf"
+                                },
+                                "minTotal": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "permanent Elf"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "permanent"
+                                    },
+                                    "id": "t0"
+                                }
+                            ],
+                            "description": "Remove X counters from target permanent, where X is the number of Elves you control"
+                        },
+                        {
+                            "effect": {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Multiply",
+                                    "amount": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "permanent Elf"
+                                    },
+                                    "multiplier": -1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Multiply",
+                                    "amount": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "permanent Elf"
+                                    },
+                                    "multiplier": -1
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t1"
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:opponent"
+                                    },
+                                    "id": "t1"
+                                }
+                            ],
+                            "description": "Target creature an opponent controls gets -X/-X until end of turn, where X is the number of Elves you control"
+                        }
+                    ],
+                    "countsAsModalSpell": false
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "387",
+        "rarity": "UNCOMMON",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/544b6477-cefa-40e2-a96a-72794c7eb815.jpg?1783928117",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "For each mode, use the number of Elves you control as the enters-the-battlefield ability resolves, including Thornmantle Striker itself if it's still under your control."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "For the first mode, you choose which counters are removed as the ability resolves. If the permanent has fewer counters on it than the number of Elves you control, you'll remove all of them."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "A planeswalker with no loyalty counters on it is put into its owner's graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -14131,6 +15176,304 @@
     ]
 }
 
+// Valkyrie's Sword
+{
+    "name": "Valkyrie's Sword",
+    "manaCost": "{1}{W}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "When this Equipment enters, you may pay {4}{W}. If you do, create a 4/4 white Angel Warrior creature token with flying and vigilance, then attach this Equipment to it.\nEquipped creature gets +2/+1.\nEquip {3}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Valkyrie's Sword:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{4}{W}"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CreateToken",
+                                "power": 4,
+                                "toughness": 4,
+                                "colors": [
+                                    "WHITE"
+                                ],
+                                "creatureTypes": [
+                                    "Angel",
+                                    "Warrior"
+                                ],
+                                "keywords": [
+                                    "FLYING",
+                                    "VIGILANCE"
+                                ]
+                            },
+                            {
+                                "type": "AttachEquipment",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "createdTokens"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Valkyrie's Sword:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "UNCOMMON",
+        "artist": "Aaron Miller",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/97873c66-6bff-4d79-850c-1e2663098ef4.jpg?1783928273",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "You decide whether to pay {4}{W} as the enters-the-battlefield ability resolves. If you do, you immediately create the Angel Warrior creature token and attach Valkyrie's Sword to it. No players may respond to your decision to pay or not, and no player may take actions during this process."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The Angel Warrior creature token enters the battlefield as a 4/4 creature. Any abilities that trigger when a creature with a certain power or toughness enters the battlefield will see the token enter as a 4/4 creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Valor of the Worthy
+{
+    "name": "Valor of the Worthy",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +1/+1.\nWhen enchanted creature leaves the battlefield, create a 1/1 white Spirit creature token with flying.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Valor of the Worthy:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "artist": "Mathias Kollros",
+        "flavorText": "\"If I am to die, let it be a hero's death!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/3/83632e73-be3f-43fc-932f-45cb1af4f8fb.jpg?1783928272"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Varragoth, Bloodsky Sire
+{
+    "name": "Varragoth, Bloodsky Sire",
+    "manaCost": "{2}{B}",
+    "typeLine": "Legendary Creature — Demon Rogue",
+    "oracleText": "Deathtouch\nBoast — {1}{B}: Target player searches their library for a card, then shuffles and puts that card on top. (Activate only if this creature attacked this turn and only once each turn.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Varragoth, Bloodsky Sire:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a card to put on top of your library",
+                                "selectedLabel": "Put on top of your library"
+                            },
+                            "ShuffleLibrary",
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Top"
+                                }
+                            },
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    "OncePerTurn",
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "AttackedThisTurn"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "isBoast": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "rarity": "RARE",
+        "artist": "Tyler Jacobson",
+        "flavorText": "\"I waded through a river of fire to bring death to Bretagard.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/efa8dbf0-4e5a-452b-826f-5813e8cd9d85.jpg?1783928237",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "A boast ability can be activated at any point after the creature with that ability has been declared as an attacker. This can be before blockers are declared, after blockers are declared but before combat damage is dealt, during combat after combat damage is dealt, during the postcombat main phase, during the end step, or, in some unusual cases, during the cleanup step."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If it's not your turn and you gain control of a creature with a boast ability after that creature attacked, you can activate that creature's boast ability if it hasn't been activated yet that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a creature with a boast ability is put onto the battlefield attacking, it was never declared as an attacker. Its boast ability can't be activated that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If an effect adds additional combat phases to a turn and a creature with a boast ability attacks more than once during that turn, its boast ability can still be activated only once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Vault Robber
 {
     "name": "Vault Robber",
@@ -14340,6 +15683,63 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Warchanter Skald
+{
+    "name": "Warchanter Skald",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Dwarf Cleric",
+    "oracleText": "Whenever this creature becomes tapped, if it's enchanted or equipped, create a 2/1 red Dwarf Berserker creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Warchanter Skald:1",
+                "trigger": "TapEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Dwarf",
+                        "Berserker"
+                    ]
+                },
+                "interveningIf": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "StateOr",
+                                "predicates": [
+                                    "IsEnchanted",
+                                    "IsEquipped"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "381",
+        "rarity": "UNCOMMON",
+        "artist": "Daniel Zrom",
+        "flavorText": "\"Who will be the hero of my tale?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f79c5e95-f6c6-4e2f-9c6c-d99addb757ac.jpg?1783928122"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
