@@ -128,7 +128,8 @@ sealed interface Player {
      * Since only the active player declares attackers (CR 508.1), this is also "that attacking
      * player" on an attack trigger that binds someone else as the triggering player: Breena, the
      * Demagogue's per-attacked-player trigger binds the *attacked* player as `TriggeringPlayer`,
-     * so "that attacking player draws a card" is `PlayerRef(ActivePlayer)`.
+     * so "that attacking player draws a card" is `PlayerRef(ActivePlayer)`. Under shared team turns
+     * (CR 805.10a) every player on the active team attacks, and this names only the active player.
      *
      * The closest neighbours don't take the axis: [ActivePlayerFirst] is every player, ordered;
      * [TriggeringPlayer] is the one player the trigger event names, which on these triggers is

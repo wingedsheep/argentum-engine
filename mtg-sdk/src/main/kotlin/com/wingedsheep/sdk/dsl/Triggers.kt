@@ -1035,6 +1035,9 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
         attacked: Player = Player.Each
     ): TriggerSpec {
         only("attacksAPlayer", Player.You, Player.Each)
+        require(attacked in setOf(Player.Each, Player.EachOpponent, Player.EachOtherPlayer)) {
+            "Triggers.<player>.attacksAPlayer(attacked) supports Each, EachOpponent, EachOtherPlayer, not $attacked"
+        }
         return spec(
             YouAttackEvent(minAttackers = minAttackers, attackerFilter = with, player = player, attackedPlayer = attacked)
         )

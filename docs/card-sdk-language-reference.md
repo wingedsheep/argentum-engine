@@ -5685,7 +5685,8 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   active player declares attackers, so it is "that attacking player" on an attack trigger that binds
   the *attacked* player as `TriggeringPlayer`: Breena, the Demagogue's "that attacking player draws a
   card" is `DrawCards(1, PlayerRef(Player.ActivePlayer))` under
-  `Triggers.anyPlayer.attacksAPlayer(attacked = Player.EachOpponent)`.
+  `Triggers.anyPlayer.attacksAPlayer(attacked = Player.EachOpponent)`. Under shared team turns
+  (CR 805.10a) every player on the active team attacks; this still names only the active player.
 - `Player.EachDefendingPlayer` — all defending seats during combat, in APNAP order, including
   before attackers are declared and opponents with no attackers assigned. Includes all opponents
   regardless of attack-left/right limits, respecting shared team turns. Outside combat this names nobody. Use it with
