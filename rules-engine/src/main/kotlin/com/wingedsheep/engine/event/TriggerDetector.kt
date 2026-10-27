@@ -370,6 +370,9 @@ class TriggerDetector(
         // several sources at once (two toxic creatures hitting one player) is one "counters were put
         // on it" event for that recipient (CR 603.2c), so fold the per-kind/per-source events.
         mergePerRecipientCounterTriggers(triggers)
+        // "Whenever a -1/-1 counter is put on a creature" triggers once per counter, not per
+        // recipient (Flourishing Defenses' ruling), so fan the folded triggers back out.
+        expandPerCounterTriggers(triggers)
 
         // Rule 603.10a: "Look back in time" for permanents leaving the battlefield together.
         // When several permanents leave at the same time (e.g., Infest, or a mass exile),
@@ -3623,6 +3626,32 @@ class TriggerDetector(
             ))
         }
         return kept
+    }
+
+    /**
+     * Replace each per-counter ([EventPattern.CountersPlacedEvent.perCounter]) trigger with one
+     * copy per counter its recipient received, each carrying a `counterCount` of 1. Runs after
+     * [mergePerRecipientCounterTriggers], so a recipient's simultaneous placements are summed first.
+     */
+    private fun expandPerCounterTriggers(triggers: MutableList<PendingTrigger>) {
+        if (triggers.none { isPerCounterTrigger(it) }) return
+        val expanded = mutableListOf<PendingTrigger>()
+        for (pending in triggers) {
+            if (!isPerCounterTrigger(pending)) {
+                expanded.add(pending)
+                continue
+            }
+            val count = pending.triggerContext.counterCount ?: 1
+            val single = pending.copy(triggerContext = pending.triggerContext.copy(counterCount = 1))
+            repeat(count) { expanded.add(single) }
+        }
+        triggers.clear()
+        triggers.addAll(expanded)
+    }
+
+    private fun isPerCounterTrigger(pending: PendingTrigger): Boolean {
+        val trigger = pending.ability.trigger
+        return trigger is EventPattern.CountersPlacedEvent && trigger.perCounter
     }
 
     private fun isPerRecipientCounterTrigger(pending: PendingTrigger): Boolean {

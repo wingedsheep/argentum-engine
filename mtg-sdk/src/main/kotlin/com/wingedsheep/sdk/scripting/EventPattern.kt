@@ -2740,16 +2740,35 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          * defaults. Distinct from [placedBy], which names who *put* the counters: an opponent's
          * effect giving you energy still fires a `recipient = Player.You` trigger.
          */
-        val recipient: Player? = null
+        val recipient: Player? = null,
+        /**
+         * The *per-counter* template "Whenever **a** -1/-1 counter is put on a creature"
+         * (Flourishing Defenses) — the ability triggers once for **each counter** placed, not once
+         * per recipient: a creature entering with two -1/-1 counters triggers it twice. Each
+         * firing carries a counter count of 1. Applied after the per-recipient fold
+         * (`TriggerDetector.expandPerCounterTriggers`), so a recipient's simultaneous placements
+         * are summed first and then fanned out. Per-permanent only — not combinable with [batch].
+         */
+        val perCounter: Boolean = false
     ) : EventPattern {
         init {
             require(recipient == null || (filter == GameObjectFilter.Any && !includePlayers)) {
                 "CountersPlacedEvent.recipient names a player recipient; filter and includePlayers describe permanents"
             }
+            require(!(perCounter && batch)) {
+                "CountersPlacedEvent.perCounter fires once per counter; batch fires once per placement batch"
+            }
         }
 
         override val description: String = buildString {
             val typeLabel = counterType?.let { "${it.printed} " } ?: ""
+            if (perCounter) {
+                append("a ${typeLabel}counter is put on ")
+                append(describeObjectForEvent(filter))
+                if (includePlayers) append(" or player")
+                if (firstTimeEachTurn) append(" for the first time this turn")
+                return@buildString
+            }
             if (recipient != null) {
                 append("${recipient.description} get one or more ${typeLabel}counters")
                 return@buildString
