@@ -995,7 +995,15 @@ data class CopyTargetSpellEffect(
      */
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
-    val tokenStartingLoyalty: DynamicAmount? = null
+    val tokenStartingLoyalty: DynamicAmount? = null,
+    /**
+     * Whether the copier may choose new targets for each copy (CR 707.10c — only when the effect
+     * says so). False is the plain "copy that spell": every copy keeps the original's targets and
+     * modes verbatim with no decision (CR 707.10), as Reflections of Littjara words it.
+     */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val mayChooseNewTargets: Boolean = true
 ) : Effect {
     override val description: String = run {
         // "that spell" when the copied spell is the trigger's own ("copy it"), not a chosen target.

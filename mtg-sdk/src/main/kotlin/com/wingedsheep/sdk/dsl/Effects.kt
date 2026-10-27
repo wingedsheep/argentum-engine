@@ -5744,6 +5744,9 @@ object Effects {
      * [copies] makes more than one independent copy, each retargetable on its own (CR 707.10c) —
      * "copy it for each other instant and sorcery spell you've cast before it this turn"
      * (Thousand-Year Storm). A count of zero or less makes no copies.
+     *
+     * `mayChooseNewTargets = false` is the bare "copy that spell" with no retarget clause — each
+     * copy keeps the original's targets and modes (CR 707.10), no decision (Reflections of Littjara).
      */
     fun CopyTargetSpell(
         target: EffectTarget,
@@ -5753,7 +5756,8 @@ object Effects {
         sacrificeTokenAtStep: com.wingedsheep.sdk.core.Step? = null,
         sacrificeTokenOnlyOnControllersTurn: Boolean = false,
         copies: DynamicAmount = DynamicAmount.Fixed(1),
-        exceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions = com.wingedsheep.sdk.scripting.effects.CopyExceptions.None
+        exceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions = com.wingedsheep.sdk.scripting.effects.CopyExceptions.None,
+        mayChooseNewTargets: Boolean = true
     ): Effect =
         CopyTargetSpellEffect(
             target,
@@ -5763,7 +5767,8 @@ object Effects {
             sacrificeTokenAtStep,
             sacrificeTokenOnlyOnControllersTurn,
             copies,
-            exceptions
+            exceptions,
+            mayChooseNewTargets = mayChooseNewTargets
         )
 
     /**

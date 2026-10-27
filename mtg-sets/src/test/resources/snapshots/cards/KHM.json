@@ -8810,6 +8810,51 @@
     ]
 }
 
+// Reflections of Littjara
+{
+    "name": "Reflections of Littjara",
+    "manaCost": "{4}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "As this enchantment enters, choose a creature type.\nWhenever you cast a spell of the chosen type, copy that spell. (A copy of a permanent spell becomes a token.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Reflections of Littjara:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "HasChosenSubtype"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CopyTargetSpell",
+                    "target": "TriggeringEntity",
+                    "mayChooseNewTargets": false
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CREATURE_TYPE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "rarity": "RARE",
+        "artist": "Aaron Miller",
+        "flavorText": "The masks float downstream toward the Mirrorlake, where faces arise to wear them.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/eadee447-ce9a-4dea-a074-bfd04197548e.jpg?1783928257"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Reidane, God of the Worthy
 {
     "name": "Reidane, God of the Worthy",

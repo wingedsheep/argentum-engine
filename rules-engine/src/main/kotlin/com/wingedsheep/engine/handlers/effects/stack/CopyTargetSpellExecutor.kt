@@ -19,7 +19,8 @@ import kotlin.reflect.KClass
 
 /**
  * Executor for CopyTargetSpellEffect.
- * Copies a targeted spell on the stack, allowing the controller to choose new targets.
+ * Copies a targeted spell on the stack, allowing the controller to choose new targets unless
+ * [CopyTargetSpellEffect.mayChooseNewTargets] is false.
  *
  * Reads the targeted spell's effect and target requirements from its components on the stack,
  * then creates [CopyTargetSpellEffect.copies] copies (one by default). If the original spell has
@@ -113,6 +114,17 @@ class CopyTargetSpellExecutor(
                 startingLoyalty = tokenStartingLoyalty
             )
         } else null
+
+        // Bare "copy that spell" (no "you may choose new targets"): copies keep the original's
+        // targets and modes verbatim (CR 707.10), so there is nothing to decide.
+        if (!effect.mayChooseNewTargets) {
+            return EffectResult.from(
+                putInheritedCopies(
+                    state, spellEntityId, context.controllerId, copyCount,
+                    effect.keywordsForCopy.toSet(), effect.removeLegendary, tokenRiders, exceptions
+                )
+            )
+        }
 
         // Propagate modal info from the source spell (700.2g — copies keep the
         // same chosen modes). Targets inherit by default; a future enhancement
