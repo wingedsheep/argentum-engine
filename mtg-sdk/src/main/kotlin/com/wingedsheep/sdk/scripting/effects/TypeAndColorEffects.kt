@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.effects
 
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -416,6 +417,9 @@ data class ChangeCreatureTypeTextEffect(
     init {
         require(replacementType == null || excludedTypes.isEmpty()) {
             "A fixed replacement type can't be combined with excluded types"
+        }
+        require(replacementType == null || replacementType in Subtype.ALL_CREATURE_TYPES) {
+            "Unknown creature type: $replacementType"
         }
     }
 
