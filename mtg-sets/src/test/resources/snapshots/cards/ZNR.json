@@ -150,6 +150,86 @@
     ]
 }
 
+// Archpriest of Iona
+{
+    "name": "Archpriest of Iona",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Archpriest of Iona's power is equal to the number of creatures in your party. (Your party consists of up to one each of Cleric, Rogue, Warrior, and Wizard.)\nAt the beginning of combat on your turn, if you have a full party, target creature gets +1/+1 and gains flying until end of turn.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": "PartySize"
+        },
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Archpriest of Iona:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FLYING",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": "PartySize",
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "RARE",
+        "artist": "Denman Rooke",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7dc61e4-46e3-473b-90f8-27e71e1088e8.jpg?1783929424"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ashaya, Soul of the Wild
 {
     "name": "Ashaya, Soul of the Wild",
@@ -2040,6 +2120,54 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Kabira Outrider
+{
+    "name": "Kabira Outrider",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "When this creature enters, target creature gets +1/+1 until end of turn for each creature in your party. (Your party consists of up to one each of Cleric, Rogue, Warrior, and Wizard.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kabira Outrider:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": "PartySize",
+                    "toughnessModifier": "PartySize",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "artist": "Izzy",
+        "flavorText": "Ondu moas make wildly uncomfortable mounts, but for determined warriors, their speed is enough to make up for it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/53c81719-f820-4674-9cfb-cd5eaf0c1f0d.jpg?1783929418"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

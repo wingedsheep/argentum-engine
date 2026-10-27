@@ -77,6 +77,27 @@ private val PERMANENT_TYPE_NAMES: Set<String> =
  */
 private val CREATURE_TYPE_NAMES: Set<String> = Subtype.ALL_CREATURE_TYPES.toSet()
 
+/** The four creature types a party draws from (CR 700.8), in bit order for [largestParty]. */
+private val PARTY_ROLES: List<String> = listOf("Cleric", "Rogue", "Warrior", "Wizard")
+
+/**
+ * The most party roles from [role] onward that can be filled, one creature per role, given how many
+ * creatures carry each role bitmask. Exhaustive over a 4-role, 15-class space, so it is exact.
+ */
+private fun largestParty(role: Int, creaturesPerMask: IntArray): Int {
+    if (role == PARTY_ROLES.size) return 0
+    var best = largestParty(role + 1, creaturesPerMask)
+    val bit = 1 shl role
+    for (mask in 1 until creaturesPerMask.size) {
+        if (mask and bit == 0 || creaturesPerMask[mask] == 0) continue
+        creaturesPerMask[mask]--
+        best = maxOf(best, 1 + largestParty(role + 1, creaturesPerMask))
+        creaturesPerMask[mask]++
+        if (best == PARTY_ROLES.size - role) break
+    }
+    return best
+}
+
 /**
  * Evaluates DynamicAmount values against the current game state.
  *
@@ -189,6 +210,7 @@ class DynamicAmountEvaluator(
         is DynamicAmount.DistinctEntitiesInCollections,
         is DynamicAmount.Fixed,
         is DynamicAmount.LargestSharedCreatureTypeCount,
+        is DynamicAmount.PartySize,
         is DynamicAmount.LastKnownDamageDealtToSource,
         is DynamicAmount.LastKnownSourceCounters,
         is DynamicAmount.LifeTotal,
@@ -1206,6 +1228,30 @@ class DynamicAmountEvaluator(
                     }
                 }
                 tally.values.maxOrNull() ?: 0
+            }
+
+            // CR 700.8: one Cleric, one Rogue, one Warrior and one Wizard at most. Each creature is
+            // reduced to the bitmask of party roles it can fill (projected subtypes, so Changeling
+            // and type-changing effects count); CR 700.8b's "count it the way that gives the highest
+            // result" is then a maximum matching of roles to creatures, found by trying each role
+            // against each mask class still available — at most 4 roles over 15 classes.
+            is DynamicAmount.PartySize -> {
+                val playerIds = resolveUnifiedPlayerIds(state, amount.player, context, projectedState).toSet()
+                if (playerIds.isEmpty()) return 0
+                val projection = resolveProjection(state, projectedState)
+                val creaturesPerMask = IntArray(16)
+                for (entityId in state.getBattlefield()) {
+                    if (controllerOf(state, projection, entityId) !in playerIds) continue
+                    if (!projection.isCreature(entityId)) continue
+                    val subtypes = projection.getSubtypes(entityId).ifEmpty {
+                        state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.subtypes
+                            ?.map { it.value }?.toSet() ?: emptySet()
+                    }
+                    var mask = 0
+                    PARTY_ROLES.forEachIndexed { bit, role -> if (role in subtypes) mask = mask or (1 shl bit) }
+                    if (mask != 0 && creaturesPerMask[mask] < PARTY_ROLES.size) creaturesPerMask[mask]++
+                }
+                largestParty(0, creaturesPerMask)
             }
 
         }

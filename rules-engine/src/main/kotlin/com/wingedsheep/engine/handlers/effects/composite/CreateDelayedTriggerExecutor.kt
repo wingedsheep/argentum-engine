@@ -390,6 +390,7 @@ class CreateDelayedTriggerExecutor(
         is DynamicAmount.EntityProperty,
         is DynamicAmount.Fixed,
         is DynamicAmount.LargestSharedCreatureTypeCount,
+        is DynamicAmount.PartySize,
         is DynamicAmount.LastKnownDamageDealtToSource,
         is DynamicAmount.LastKnownSourceCounters,
         is DynamicAmount.LifeTotal,

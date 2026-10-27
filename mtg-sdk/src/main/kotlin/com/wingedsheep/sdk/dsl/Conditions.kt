@@ -158,6 +158,10 @@ object Conditions {
     fun CompareAmounts(left: DynamicAmount, operator: ComparisonOperator, right: Int): ConditionInterface =
         Compare(left, operator, DynamicAmount.Fixed(right))
 
+    /** "If you have a full party" — four creatures in [player]'s party (CR 700.8c). */
+    fun FullParty(player: Player = Player.You): ConditionInterface =
+        CompareAmounts(DynamicAmount.PartySize(player), ComparisonOperator.GTE, 4)
+
     /**
      * If [amount] is a prime number (2, 3, 5, 7, …). 0 and 1 are not prime.
      *

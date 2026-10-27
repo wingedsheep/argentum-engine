@@ -16509,6 +16509,15 @@ both spellings, and the ability its bare-noun line grants says "Regenerate this 
   honored), restricted to actual creature types so artifact/land subtypes never inflate the count.
   Evaluates to 0 when no creature shares a type. Used by White Lotus Tile ("Add X mana of any one
   color, where X is …") — pair with `AddManaOfChoiceEffect(ManaColorSet.AnyColor, amount = …)`.
+- `PartySize(player = You)` (facade `DynamicAmounts.partySize()`) — the number of creatures in
+  `player`'s **party** (CR 700.8), 0–4: up to one Cleric, one Rogue, one Warrior and one Wizard they
+  control. Computed automatically (CR 700.8a); a creature with several of those types fills only one
+  slot, assigned to give the largest party (CR 700.8b) — a Cleric Wizard plus a Wizard is two, a
+  Changeling fills whichever slot is open. Reads projected subtypes. "If you have a full party"
+  (CR 700.8c) is `Conditions.FullParty()` (`PartySize >= 4`). Zendikar Rising: "for each creature in
+  your party" (Kabira Outrider), "power equal to the number of creatures in your party" (Archpriest
+  of Iona, via `dynamicPower`/`CharacteristicValue.Dynamic`), cost reductions via
+  `CostReductionSource.Dynamic(partySize())`.
 
 ### An object's characteristics
 

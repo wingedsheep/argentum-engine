@@ -101,6 +101,7 @@ internal enum class AmountSign {
             is DynamicAmount.CreaturesWithSubtypeDiedThisTurn, is DynamicAmount.PermanentsSacrificedThisWay,
             is DynamicAmount.CountersRemovedAsCost, is DynamicAmount.TotalPowerSacrificedThisWay,
             is DynamicAmount.LargestSharedCreatureTypeCount -> GAIN
+            is DynamicAmount.PartySize -> GAIN
         }
 
         private fun ofInt(n: Int): AmountSign = when {

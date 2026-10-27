@@ -173,6 +173,9 @@ object DynamicAmounts {
     fun largestSharedCreatureTypeCount(player: Player = Player.You): DynamicAmount =
         DynamicAmount.LargestSharedCreatureTypeCount(player)
 
+    /** The number of creatures in [player]'s party, 0–4 (CR 700.8). */
+    fun partySize(player: Player = Player.You): DynamicAmount = DynamicAmount.PartySize(player)
+
     /** Craft's exiled materials: their total power / total mana value / number of colors. */
     fun craftedMaterialsTotalPower(): DynamicAmount = DynamicAmount.CraftedMaterialsTotalPower
     fun craftedMaterialsTotalManaValue(): DynamicAmount = DynamicAmount.CraftedMaterialsTotalManaValue

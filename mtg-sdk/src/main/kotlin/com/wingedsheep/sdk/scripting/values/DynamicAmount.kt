@@ -2262,6 +2262,29 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     }
 
     /**
+     * The number of creatures in [player]'s **party** (CR 700.8): up to one each of a Cleric, a
+     * Rogue, a Warrior and a Wizard they control — 0 to 4. "Full party" is this amount at 4
+     * (CR 700.8c), spelled `Conditions.FullParty()`.
+     *
+     * Computed automatically, never declared (CR 700.8a). A creature with several of the four types
+     * fills only one slot, assigned so the party is as large as possible (CR 700.8b): a Cleric
+     * Wizard plus a Wizard is a party of two; a Changeling fills whichever slot is still empty.
+     * Reads projected subtypes, so type-changing effects are honored.
+     *
+     * Closest types: [LargestSharedCreatureTypeCount] tallies each tribe separately and lets one
+     * creature feed several tribes, and [Count] over a subtype filter counts creatures, not slots —
+     * neither can express the one-creature-per-slot matching party needs.
+     */
+    @SerialName("PartySize")
+    @Serializable
+    data class PartySize(
+        val player: Player = Player.You
+    ) : DynamicAmount {
+        override val description: String =
+            "the number of creatures in ${player.possessive} party"
+    }
+
+    /**
      * The size of the largest creature-type tribe among the creatures [player] controls — i.e.
      * "the greatest number of creatures you control that have a creature type in common."
      *

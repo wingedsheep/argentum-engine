@@ -668,6 +668,7 @@ Families:
 - `DynamicAmount.Max(left: DynamicAmount, right: DynamicAmount)` — Maximum of two amounts.
 - `DynamicAmount.Min(left: DynamicAmount, right: DynamicAmount)` — Minimum of two amounts.
 - `DynamicAmount.Multiply(amount: DynamicAmount, multiplier: Int)` — Multiply a dynamic amount by a fixed multiplier.
+- `DynamicAmount.PartySize(player: Player)` — The number of creatures in player's **party** (CR 700.8): up to one each of a Cleric, a Rogue, a Warrior and a Wizard they control — 0 to 4.
 - `DynamicAmount.PermanentsSacrificedThisWay` — Number of permanents sacrificed by the current resolving effect ("this way").
 - `DynamicAmount.PlayerCount(scope: Player)` — How many players are in scope — "for each opponent", "for each other player", "the number of players in the game".
 - `DynamicAmount.PlayerCounterCount(counterType: CounterType?, player: Player)` — How many counters of counterType a player currently has — the player-scoped sibling of EntityProperty's com.wingedsheep.sdk.scripting.values.EntityNumericProperty.CounterCount (which reads one obje…
