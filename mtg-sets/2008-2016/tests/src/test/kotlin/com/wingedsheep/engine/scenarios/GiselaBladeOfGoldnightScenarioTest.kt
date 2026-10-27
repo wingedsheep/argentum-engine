@@ -63,11 +63,11 @@ class GiselaBladeOfGoldnightScenarioTest : FunSpec({
     test("damage to an opponent and their permanents is doubled") {
         val d = driver()
         d.putCreatureOnBattlefield(d.player1, "Gisela, Blade of Goldnight")
-        val courser = d.putCreatureOnBattlefield(d.player2, "Centaur Courser")
+        val angler = d.putCreatureOnBattlefield(d.player2, "Gurmag Angler") // 5/5
         d.bolt(d.player2)
         d.getLifeTotal(d.player2) shouldBe 14
-        d.bolt(courser)
-        d.getGraveyard(d.player2).contains(courser) shouldBe true
+        d.bolt(angler)
+        d.getGraveyard(d.player2).contains(angler) shouldBe true
     }
 
     test("damage that can't be prevented is dealt in full") {

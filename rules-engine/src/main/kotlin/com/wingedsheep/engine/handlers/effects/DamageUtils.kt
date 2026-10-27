@@ -2594,6 +2594,9 @@ object DamageUtils {
         val riders = mutableListOf<PendingReplacementRider>()
         val projected = state.projectedState
 
+        // The affected player orders prevention effects (CR 616.1); "prevent half" goes before any
+        // fixed "prevent N", the order that always leaves them the least damage.
+        for (halfPass in listOf(true, false))
         for (entityId in state.getBattlefield()) {
             if (remainingDamage <= 0) break
             val container = state.getEntity(entityId) ?: continue
@@ -2602,7 +2605,7 @@ object DamageUtils {
 
             for (effect in replacementComponent.replacementEffects) {
                 if (remainingDamage <= 0) break
-                if (effect !is PreventDamage) continue
+                if (effect !is PreventDamage || effect.half != halfPass) continue
 
                 val damageEvent = effect.appliesTo
                 if (damageEvent !is com.wingedsheep.sdk.scripting.EventPattern.DamageEvent) continue

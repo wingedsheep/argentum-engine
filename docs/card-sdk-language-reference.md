@@ -17868,8 +17868,10 @@ The priority groups are (CR 616.1a–f):
   stay null), rounded up by default — `roundUp = false` for "rounded down". Gisela, Blade of
   Goldnight: `PreventDamage(half = true, appliesTo = DamageEvent(recipient = Recipient.AnyOf(listOf(
   Recipient.You, Recipient.PermanentYouControl))))`. Unlike `HalveDamage` it is a prevention effect, so
-  "damage can't be prevented" passes the damage through in full; it applies after `DoubleDamage`, and
-  each host applies once (two hosts take 3 to 1, then 0 rounded up).
+  "damage can't be prevented" passes the damage through in full. Each host applies once (two hosts
+  take 3 to 1, then 0 rounded up), and halves go before any fixed-amount prevention (the order that
+  leaves the recipient least damage; CR 616.1 lets them choose). The engine runs every `DoubleDamage` / `HalveDamage` /
+  `ModifyDamageAmount` pass before prevention rather than letting the affected player order them.
 - `ReplacementEffect.ExileCounteredSpellInstead(then?, appliesTo = EventPattern.CounterSpellEvent(counterer = You))`
   — "If a spell or ability you control would counter a spell, instead exile that spell and you may
   play that card without paying its mana cost" (Guile). Applied inside every `StackResolver` counter

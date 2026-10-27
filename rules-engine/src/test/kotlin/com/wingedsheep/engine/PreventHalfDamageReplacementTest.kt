@@ -38,9 +38,17 @@ class PreventHalfDamageReplacementTest : FunSpec({
 
     val wardUp = halfWard("Test Ward Up", roundUp = true)
     val wardDown = halfWard("Test Ward Down", roundUp = false)
+    val wardOne: CardDefinition = card("Test Ward One") {
+        manaCost = "{1}{W}"
+        typeLine = "Enchantment"
+        oracleText = "If a source would deal damage to you, prevent 1 of that damage."
+        replacementEffect(
+            PreventDamage(amount = 1, appliesTo = EventPattern.DamageEvent(recipient = Recipient.You))
+        )
+    }
 
     fun newGame(): GameTestDriver = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(wardUp, wardDown))
+        registerCards(TestCards.all + listOf(wardUp, wardDown, wardOne))
         initMirrorMatch(Deck.of("Mountain" to 40), skipMulligans = true, startingPlayer = 0)
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -69,6 +77,14 @@ class PreventHalfDamageReplacementTest : FunSpec({
     test("two hosts each apply once: 3 -> 1 -> 0 rounded up") {
         val d = newGame()
         d.putPermanentOnBattlefield(d.player2, "Test Ward Up")
+        d.putPermanentOnBattlefield(d.player2, "Test Ward Up")
+        d.bolt(d.player2)
+        d.getLifeTotal(d.player2) shouldBe 20
+    }
+
+    test("half goes before a fixed amount, whatever the battlefield order: 3 -> 1 -> 0") {
+        val d = newGame()
+        d.putPermanentOnBattlefield(d.player2, "Test Ward One")
         d.putPermanentOnBattlefield(d.player2, "Test Ward Up")
         d.bolt(d.player2)
         d.getLifeTotal(d.player2) shouldBe 20
