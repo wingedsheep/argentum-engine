@@ -1186,7 +1186,10 @@
                 "chapter": 1,
                 "effect": {
                     "type": "PlayAdditionalLands",
-                    "count": 1
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
                 }
             },
             {

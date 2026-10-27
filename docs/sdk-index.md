@@ -996,7 +996,7 @@ Families:
 - `PhaseInLinkedToSourceEffect` — Phase in every permanent that was phased out "until source leaves" by the effect's source (matched on the stored source link).
 - `PhaseOutEffect(target: EffectTarget, cantPhaseInWhileYouControlSource: Boolean)` — Phase out the target permanent (and anything attached to it).
 - `PhaseOutUntilLeavesEffect(target: EffectTarget, tapOnPhaseIn: Boolean)` — Phase a target permanent out **indefinitely**, linked to the effect's source: it stays phased out (it does not phase in at its controller's untap step) until the source leaves the battlefield, at w…
-- `PlayAdditionalLandsEffect(count: Int)` — You may play additional lands this turn.
+- `PlayAdditionalLandsEffect(count: DynamicAmount)` — You may play additional lands this turn.
 - `PlayFromCollectionWithoutPayingCostEffect(from: String)` — Play the first card in from during this effect's resolution without paying its mana cost.
 - `PlaySubgameEffect(nonWinners: String?, afterSubgame: Effect?)` — Players play a Magic subgame (CR 729) — a completely separate game, using their libraries as their decks.
 - `PlayerGuessesConditionEffect(condition: Condition, prompt: String, storeGuessedRightAs: String, guesser: Chooser, promptNameVariable: String?)` — "guesser guesses whether condition is true." The answer is compared to reality and `1` or `0` is stored under storeGuessedRightAs, leaving the payoff for a right or a wrong guess to the card rather…

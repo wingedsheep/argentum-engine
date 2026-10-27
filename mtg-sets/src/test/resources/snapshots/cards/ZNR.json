@@ -3697,6 +3697,56 @@
     ]
 }
 
+// Nahiri's Lithoforming
+{
+    "name": "Nahiri's Lithoforming",
+    "manaCost": "{X}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Sacrifice X lands. For each land sacrificed this way, draw a card. You may play X additional lands this turn. Lands you control enter tapped this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForceSacrifice",
+                    "filter": "land",
+                    "target": "Controller",
+                    "dynamicCount": "XValue"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": "PermanentsSacrificedThisWay"
+                },
+                {
+                    "type": "PlayAdditionalLands",
+                    "count": "XValue"
+                },
+                {
+                    "type": "GrantReplacementEffect",
+                    "replacement": {
+                        "type": "PermanentsEnterTapped",
+                        "appliesTo": {
+                            "type": "ZoneChangeEvent",
+                            "filter": "land ctrl:you",
+                            "to": "Battlefield"
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "rarity": "RARE",
+        "artist": "Campbell White",
+        "flavorText": "\"Zendikar has suffered enough. It is time, at last, for my home to know peace.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/06bb4bc1-6ef9-4015-9f5f-36f51dbac87e.jpg?1783929355"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Needleverge Pathway
 {
     "name": "Needleverge Pathway",
@@ -4644,7 +4694,10 @@
                 },
                 {
                     "type": "PlayAdditionalLands",
-                    "count": 1
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
                 },
                 {
                     "type": "DrawCards",

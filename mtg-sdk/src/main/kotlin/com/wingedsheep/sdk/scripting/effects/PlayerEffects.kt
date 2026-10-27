@@ -184,16 +184,25 @@ data class SkipStepOrPhaseEffect(
 
 /**
  * You may play additional lands this turn.
- * Used for Summer Bloom: "You may play up to three additional lands this turn."
+ * Used for Summer Bloom: "You may play up to three additional lands this turn." A [DynamicAmount]
+ * count is read once as the effect resolves — Nahiri's Lithoforming's "You may play X additional
+ * lands this turn" is `DynamicAmount.XValue`.
  *
  * @param count The number of additional lands you may play
  */
 @SerialName("PlayAdditionalLands")
 @Serializable
 data class PlayAdditionalLandsEffect(
-    val count: Int
+    val count: DynamicAmount
 ) : Effect {
-    override val description: String = "You may play up to $count additional land${if (count != 1) "s" else ""} this turn"
+    /** Convenience constructor for fixed amounts */
+    constructor(count: Int) : this(DynamicAmount.Fixed(count))
+
+    override val description: String = when (val c = count) {
+        is DynamicAmount.Fixed ->
+            "You may play up to ${c.amount} additional land${if (c.amount != 1) "s" else ""} this turn"
+        else -> "You may play additional lands equal to ${c.description} this turn"
+    }
 }
 
 /**

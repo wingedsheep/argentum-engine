@@ -1556,7 +1556,10 @@
             "effects": [
                 {
                     "type": "PlayAdditionalLands",
-                    "count": 1
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
                 },
                 {
                     "type": "DrawCards",

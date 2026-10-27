@@ -97,7 +97,8 @@ class ForceSacrificeExecutor(
         for ((index, playerId) in playerIds.withIndex()) {
             val validPermanents = findValidPermanents(state, playerId, filter, sourceId)
 
-            if (validPermanents.isEmpty()) {
+            // "Sacrifice X lands" with X = 0 (Nahiri's Lithoforming) sacrifices nothing — no prompt.
+            if (validPermanents.isEmpty() || count <= 0) {
                 continue
             }
 

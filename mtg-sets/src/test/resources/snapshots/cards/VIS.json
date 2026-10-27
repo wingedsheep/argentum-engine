@@ -1382,7 +1382,10 @@
     "script": {
         "spellEffect": {
             "type": "PlayAdditionalLands",
-            "count": 3
+            "count": {
+                "type": "Fixed",
+                "amount": 3
+            }
         }
     },
     "metadata": {

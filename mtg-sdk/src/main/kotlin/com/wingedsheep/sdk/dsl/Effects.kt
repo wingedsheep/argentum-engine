@@ -6491,6 +6491,9 @@ object Effects {
     /** "You may play [count] additional lands this turn." (Explore, Summer Bloom) */
     fun PlayAdditionalLands(count: Int): Effect = com.wingedsheep.sdk.scripting.effects.PlayAdditionalLandsEffect(count)
 
+    /** "You may play X additional lands this turn." — [count] read as it resolves (Nahiri's Lithoforming). */
+    fun PlayAdditionalLands(count: DynamicAmount): Effect = com.wingedsheep.sdk.scripting.effects.PlayAdditionalLandsEffect(count)
+
     /**
      * "Until end of turn, you may cast creature spells from your graveyard by foraging in addition
      * to paying their other costs" (Osteomancer Adept).

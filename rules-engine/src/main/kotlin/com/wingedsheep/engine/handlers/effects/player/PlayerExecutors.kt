@@ -92,7 +92,7 @@ class PlayerExecutors(
         WinGameExecutor(predicateEvaluator = zones.predicateEvaluator),
         GameIsDrawExecutor(),
         payOrSufferExecutor,
-        PlayAdditionalLandsExecutor(),
+        PlayAdditionalLandsExecutor(zones.predicateEvaluator.amounts),
         PreventLandPlaysThisTurnExecutor(),
         SecretChoiceExecutor(decisionHandler, zones.predicateEvaluator.amounts, effectExecutor),
         SetDayNightExecutor(cardRegistry),

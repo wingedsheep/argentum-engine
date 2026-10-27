@@ -1075,7 +1075,8 @@ object Steps {
                 slot("n", Cardinals.word)
                 build { scriptFor(it.int("n")) }
                 match { script ->
-                    val count = (script.spellEffect as? PlayAdditionalLandsEffect)?.count ?: return@match null
+                    val count = ((script.spellEffect as? PlayAdditionalLandsEffect)?.count
+                        as? DynamicAmount.Fixed)?.amount ?: return@match null
                     if (!Cardinals.spellable(count) || script != scriptFor(count)) return@match null
                     bind("n" to count)
                 }

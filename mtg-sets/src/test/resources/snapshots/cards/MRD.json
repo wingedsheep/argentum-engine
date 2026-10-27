@@ -5795,7 +5795,10 @@
                 {
                     "effect": {
                         "type": "PlayAdditionalLands",
-                        "count": 2
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
                     },
                     "description": "You may play up to two additional lands this turn"
                 }

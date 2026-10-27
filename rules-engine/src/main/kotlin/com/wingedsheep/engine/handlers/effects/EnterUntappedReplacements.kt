@@ -2,8 +2,8 @@ package com.wingedsheep.engine.handlers.effects
 
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.replacement.ActiveReplacements
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -16,7 +16,7 @@ import com.wingedsheep.sdk.scripting.EventPattern
  *
  * Unlike [com.wingedsheep.sdk.scripting.EntersTapped] — a self-replacement consumed once as the
  * source itself enters — [EntersUntapped] is a runtime replacement stamped into the source's
- * [ReplacementEffectSourceComponent] (see `StaticAbilityHandler.isRuntimeReplacementEffect`) and
+ * [com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent] (see `StaticAbilityHandler.isRuntimeReplacementEffect`) and
  * consulted from the battlefield whenever some *other* permanent would enter tapped. The entry
  * paths that mark a permanent tapped on entry (PlayLandHandler, ZoneTransitionService) ask
  * [entersUntapped] first and skip the tap when it returns true.
@@ -28,8 +28,9 @@ import com.wingedsheep.sdk.scripting.EventPattern
 object EnterUntappedReplacements {
 
     /**
-     * True if any battlefield permanent grants an [EntersUntapped] replacement whose `appliesTo`
-     * filter matches [enteringEntityId] (controlled by [enteringControllerId]). The entering
+     * True if any [EntersUntapped] replacement in force — printed on a battlefield permanent, held
+     * by an emblem, or granted for a duration ([ActiveReplacements]) — has an `appliesTo` filter
+     * that matches [enteringEntityId] (controlled by [enteringControllerId]). The entering
      * entity must already carry its [ControllerComponent] / [com.wingedsheep.engine.state.components.identity.CardComponent]
      * so the filter (type/subtype/"you control") resolves correctly.
      */
@@ -39,16 +40,11 @@ object EnterUntappedReplacements {
         enteringControllerId: EntityId,
         predicateEvaluator: PredicateEvaluator
     ): Boolean {
-        for (sourceId in state.getBattlefield()) {
-            if (sourceId == enteringEntityId) continue
-            val container = state.getEntity(sourceId) ?: continue
-            val replacementComponent = container.get<ReplacementEffectSourceComponent>() ?: continue
-            val sourceControllerId = container.get<ControllerComponent>()?.playerId ?: continue
-            for (effect in replacementComponent.replacementEffects) {
-                if (effect !is EntersUntapped) continue
-                if (matchesEnterFilter(effect.appliesTo, enteringEntityId, sourceId, sourceControllerId, state, predicateEvaluator = predicateEvaluator)) {
-                    return true
-                }
+        for (active in ActiveReplacements.all(state)) {
+            val effect = active.effect as? EntersUntapped ?: continue
+            if (!active.granted && active.sourceId == enteringEntityId) continue
+            if (matchesEnterFilter(effect.appliesTo, enteringEntityId, active.sourceId, active.controllerId, state, predicateEvaluator = predicateEvaluator)) {
+                return true
             }
         }
         return false
