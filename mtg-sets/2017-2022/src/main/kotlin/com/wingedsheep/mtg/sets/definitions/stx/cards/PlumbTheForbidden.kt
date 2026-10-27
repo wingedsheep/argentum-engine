@@ -38,7 +38,7 @@ val PlumbTheForbidden = card("Plumb the Forbidden") {
         val sacrificed = DynamicAmounts.permanentsSacrificedToCast(EffectTarget.TriggeringEntity)
         trigger = Triggers.self.isCast()
         interveningIf = Conditions.CompareAmounts(sacrificed, ComparisonOperator.GTE, 1)
-        effect = Effects.Repeat(sacrificed, Effects.CopyTargetSpell(target = EffectTarget.TriggeringEntity))
+        effect = Effects.Repeat(sacrificed, Effects.CopyTargetSpell(target = EffectTarget.TriggeringEntity, mayChooseNewTargets = false))
         description = "When you do, copy this spell for each creature sacrificed this way."
     }
 

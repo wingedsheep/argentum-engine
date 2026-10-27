@@ -25,7 +25,7 @@ val DoubleMajor = card("Double Major") {
 
     spell {
         val creatureSpell = target(TargetFilter.CreatureSpellOnStack.youControl())
-        effect = Effects.CopyTargetSpell(target = creatureSpell, removeLegendary = true)
+        effect = Effects.CopyTargetSpell(target = creatureSpell, removeLegendary = true, mayChooseNewTargets = false)
     }
 
     metadata {

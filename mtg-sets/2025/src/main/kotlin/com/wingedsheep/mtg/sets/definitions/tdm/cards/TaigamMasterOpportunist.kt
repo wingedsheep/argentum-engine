@@ -47,7 +47,7 @@ val TaigamMasterOpportunist = card("Taigam, Master Opportunist") {
     flurry {
         description = "copy it, then exile the spell you cast with four time counters on it. " +
             "If it doesn't have suspend, it gains suspend"
-        effect = Effects.CopyTargetSpell(EffectTarget.TriggeringEntity) then
+        effect = Effects.CopyTargetSpell(EffectTarget.TriggeringEntity, mayChooseNewTargets = false) then
             Effects.CounterTriggeringSpell(
                 counterDestination = CounterDestination.Exile(),
             ) then

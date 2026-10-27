@@ -30,7 +30,8 @@ val TawnosTheToymaker = card("Tawnos, the Toymaker") {
         effect = Effects.May(
             Effects.CopyTargetSpell(
                 target = EffectTarget.TriggeringEntity,
-                exceptions = CopyExceptions(addedCardTypes = setOf(CardType.ARTIFACT))
+                exceptions = CopyExceptions(addedCardTypes = setOf(CardType.ARTIFACT)),
+                mayChooseNewTargets = false
             )
         )
     }

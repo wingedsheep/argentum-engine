@@ -3952,7 +3952,8 @@
                         {
                             "type": "CopyTargetSpell",
                             "target": "TriggeringEntity",
-                            "removeLegendary": true
+                            "removeLegendary": true,
+                            "mayChooseNewTargets": false
                         },
                         {
                             "type": "AddCounters",
@@ -12229,7 +12230,8 @@
                     "effect": {
                         "type": "CopyTargetSpell",
                         "target": "TriggeringEntity",
-                        "removeLegendary": true
+                        "removeLegendary": true,
+                        "mayChooseNewTargets": false
                     },
                     "trigger": {
                         "event": {

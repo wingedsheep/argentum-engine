@@ -3932,7 +3932,8 @@
                     "target": {
                         "type": "BoundVariable",
                         "name": "t1"
-                    }
+                    },
+                    "mayChooseNewTargets": false
                 },
                 "targetRequirements": [
                     {
@@ -16112,7 +16113,8 @@
                             "addedCardTypes": [
                                 "ARTIFACT"
                             ]
-                        }
+                        },
+                        "mayChooseNewTargets": false
                     }
                 }
             }
