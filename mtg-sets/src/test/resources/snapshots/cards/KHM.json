@@ -567,6 +567,106 @@
     ]
 }
 
+// Arni Brokenbrow
+{
+    "name": "Arni Brokenbrow",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Creature — Human Berserker",
+    "oracleText": "Haste\nBoast — {1}: You may have Arni's base power become 1 plus the greatest power among other creatures you control until end of turn. (Activate only if this creature attacked this turn and only once each turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Arni Brokenbrow:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Change Arni's base power to 1 plus the greatest power among other creatures you control?"
+                    },
+                    "then": {
+                        "type": "SetBaseStats",
+                        "target": "Self",
+                        "power": {
+                            "type": "Add",
+                            "left": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "right": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "creature",
+                                "aggregation": "MAX",
+                                "property": "POWER",
+                                "excludeSelf": true
+                            }
+                        },
+                        "duration": "EndOfTurn"
+                    }
+                },
+                "restrictions": [
+                    "OncePerTurn",
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "AttackedThisTurn"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "isBoast": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "rarity": "RARE",
+        "artist": "Dmitry Burmak",
+        "flavorText": "\"I headbutted a troll. And won.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff334bba-0805-4d5d-86c4-99185fe9a77a.jpg?1783928237",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The greatest power among other creatures you control is determined as the boast ability resolves. You choose at that time whether you'd like to change Arni Brokenbrow's base power. If you control no other creatures at that time, you can change Arni's base power to 1 until end of turn. Arni objects to this course of action."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Any effects that modify Arni Brokenbrow's power without setting it to a specific value will apply after Arni's base power is set, regardless of the order in which those effects were created. The same is true of counters that modify Arni's power."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Arni Brokenbrow's new base power is set to the 1 plus the actual power of the other creature you control with the highest power, not that creature's base power. If that creature's power changes after the boast ability has resolved, Arni's power is unaffected."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "In some unfortunate cases, the greatest power among other creatures you control may be negative. For example, if that greatest power is -3, you could change Arni's base power to -2 until end of turn. Arni strenuously objects to this course of action."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ascendant Spirit
 {
     "name": "Ascendant Spirit",
@@ -1198,6 +1298,57 @@
         "GREEN"
     ],
     "layout": "MODAL_DFC"
+}
+
+// Basalt Ravager
+{
+    "name": "Basalt Ravager",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Giant Wizard",
+    "oracleText": "When this creature enters, it deals X damage to any target, where X is the greatest number of creatures you control that have a creature type in common.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Basalt Ravager:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": "LargestSharedCreatureTypeCount",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, it deals X damage to any target, where X is the greatest number of creatures you control that have a creature type in common."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "UNCOMMON",
+        "artist": "Andrey Kuzinskiy",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b32aea04-04f7-48a8-a8ab-8b38fa53da3b.jpg?1783928234",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The amount of damage dealt is calculated as the triggered ability resolves based on the creatures you control at that time, including Basalt Ravager itself if it's still under your control. You'll always use the greatest number possible. You don't need to choose any creature types."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Battershield Warrior
@@ -2504,6 +2655,61 @@
     ]
 }
 
+// Calamity Bearer
+{
+    "name": "Calamity Bearer",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Giant Berserker",
+    "oracleText": "If a Giant source you control would deal damage to a permanent or player, it deals double that damage to that permanent or player instead.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "DoubleDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "source": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Giant"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "RARE",
+        "artist": "Simon Dominic",
+        "flavorText": "He'd ignite the World Tree itself if he could.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a15edad1-ff68-4f20-95f6-99fe549bea98.jpg?1783928234",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The damage is dealt by the same source as the original source of damage. The doubled damage isn't dealt by Calamity Bearer unless it was the original source of damage."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If another effect (or effects) modifies how much damage your Giant source would deal—by preventing some of it, for example—the player being dealt damage or the controller of the permanent being dealt damage chooses the order in which any such effects (including Calamity Bearer's) apply. If all of the damage is prevented, Calamity Bearer's effect no longer applies."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If damage dealt by a Giant source you control is being divided or assigned among multiple permanents and/or players, that damage is divided or assigned before doubling. For example, if you attack with a 5/5 Giant with trample and it's blocked by a 2/2 creature, you can assign 2 damage to the blocker and 3 damage to the defending player. Those amounts are then doubled to 4 and 6, respectively."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Canopy Tactician
 {
     "name": "Canopy Tactician",
@@ -2552,6 +2758,89 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Cinderheart Giant
+{
+    "name": "Cinderheart Giant",
+    "manaCost": "{5}{R}{R}",
+    "typeLine": "Creature — Giant Berserker",
+    "oracleText": "Trample\nWhen this creature dies, it deals 7 damage to a creature an opponent controls chosen at random.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 6
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cinderheart Giant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "creature ctrl:opponent"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "Random",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "selected1"
+                            },
+                            "body": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 7
+                                },
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature dies, it deals 7 damage to a creature an opponent controls chosen at random."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "artist": "Viktor Titov",
+        "flavorText": "What fire giants lack in arcane prowess, they make up for with reckless, explosive rage.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/4/e4802e6c-6921-4dac-bf44-7e09d6942b71.jpg?1783928234",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The creature an opponent controls isn't targeted, so it's chosen as the triggered ability resolves. A creature with hexproof could be chosen, as could a creature with protection from red, although, in the latter case, the damage would be prevented."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -3042,6 +3331,53 @@
     ]
 }
 
+// Craven Hulk
+{
+    "name": "Craven Hulk",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Giant Coward",
+    "oracleText": "This creature can't block alone.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBlockUnlessCoBlocker",
+                "coBlockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "artist": "Nicholas Gregory",
+        "flavorText": "Abandoned at birth, the giant was raised by goats. Ironically, it grew up to be the most cautious member of the herd.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2be804ab-1024-4eee-b339-48ed8b84d363.jpg?1783928234",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Although Craven Hulk can't be the only creature you declare as a blocking creature, it can be the only creature that blocks any given attacking creature. Other blocking creatures don't have to block the same creature Craven Hulk does."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If you control more than one Craven Hulk, they can all block together, even if no other creatures block."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Once Craven Hulk has been declared as a blocking creature, it will remain in combat even if all other blockers leave the battlefield or are otherwise removed from combat."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Crippling Fear
 {
     "name": "Crippling Fear",
@@ -3111,6 +3447,85 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Crush the Weak
+{
+    "name": "Crush the Weak",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Crush the Weak deals 2 damage to each creature. If a creature dealt damage this way would die this turn, exile it instead.\nForetell {R} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "keywords": [
+        "FORETELL"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Foretell",
+            "cost": "{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            },
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": "IterationEntity",
+                        "damageDealtVariable": "storedNumber0"
+                    },
+                    {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "Compare",
+                                "left": {
+                                    "type": "VariableReference",
+                                    "variableName": "storedNumber0"
+                                },
+                                "operator": "GT",
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                }
+                            }
+                        },
+                        "then": {
+                            "type": "MarkExileOnDeath",
+                            "target": "IterationEntity"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "UNCOMMON",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/875a20c2-1d17-46ea-b4d2-3e70bc05aae3.jpg?1783928233",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Creatures don't necessarily have to be dealt lethal damage by Crush the Weak to be exiled. After being dealt damage, if they would die for any reason that turn, they'll be exiled instead."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -4380,6 +4795,52 @@
     ]
 }
 
+// Dual Strike
+{
+    "name": "Dual Strike",
+    "manaCost": "{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "When you next cast an instant or sorcery spell with mana value 4 or less this turn, copy that spell. You may choose new targets for the copy.\nForetell {R} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "keywords": [
+        "FORETELL"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Foretell",
+            "cost": "{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CopyNextSpellCast",
+            "spellFilter": {
+                "cardPredicates": [
+                    {
+                        "type": "Or",
+                        "predicates": [
+                            "IsInstant",
+                            "IsSorcery"
+                        ]
+                    },
+                    {
+                        "type": "ManaValueAtMost",
+                        "max": 4
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "UNCOMMON",
+        "artist": "Néstor Ossandón Leal",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6ef580f8-efec-4d31-8dc3-2018dd48b6f4.jpg?1783928231"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Duskwielder
 {
     "name": "Duskwielder",
@@ -4475,6 +4936,121 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Dwarven Hammer
+{
+    "name": "Dwarven Hammer",
+    "manaCost": "{2}{R}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "When this Equipment enters, you may pay {2}. If you do, create a 2/1 red Dwarf Berserker creature token, then attach this Equipment to it.\nEquipped creature gets +3/+0 and has trample.\nEquip {3}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dwarven Hammer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{2}"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CreateToken",
+                                "power": 2,
+                                "toughness": 1,
+                                "colors": [
+                                    "RED"
+                                ],
+                                "creatureTypes": [
+                                    "Dwarf",
+                                    "Berserker"
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/1/4/142bbbe1-4446-4d80-b82d-0df8ef17eac1.jpg?1783928079"
+                            },
+                            {
+                                "type": "AttachEquipment",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "createdTokens"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Dwarven Hammer:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 0
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE"
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "UNCOMMON",
+        "artist": "Raoul Vitale",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9cc132f-d4c1-4bc4-9c9e-f63ab5e7d094.jpg?1783928230",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "You decide whether to pay {2} as the enters-the-battlefield ability resolves. If you do, you immediately create the Dwarf Berserker creature token and attach Dwarven Hammer to it. No players may respond to your decision to pay or not, and no player may take actions during this process."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The Dwarf Berserker creature token enters the battlefield as a 2/1 creature. Any abilities that trigger when a creature with a certain power enters the battlefield will see the token enter as a 2/1 creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -5502,6 +6078,172 @@
     "layout": "MODAL_DFC"
 }
 
+// Fearless Liberator
+{
+    "name": "Fearless Liberator",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Dwarf Berserker",
+    "oracleText": "Boast — {2}{R}: Create a 2/1 red Dwarf Berserker creature token. (Activate only if this creature attacked this turn and only once each turn.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Fearless Liberator:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Dwarf",
+                        "Berserker"
+                    ]
+                },
+                "restrictions": [
+                    "OncePerTurn",
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "AttackedThisTurn"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "isBoast": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "UNCOMMON",
+        "artist": "Zezhou Chen",
+        "flavorText": "\"No one else had the spine for it, so I ran right between that giant's legs and hauled poor Valdir back to Axgard!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/212462b7-e23e-4c87-93aa-9cadefbf1ac8.jpg?1783928231",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "A boast ability can be activated at any point after the creature with that ability has been declared as an attacker. This can be before blockers are declared, after blockers are declared but before combat damage is dealt, during combat after combat damage is dealt, during the postcombat main phase, during the end step, or, in some unusual cases, during the cleanup step."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If it's not your turn and you gain control of a creature with a boast ability after that creature attacked, you can activate that creature's boast ability if it hasn't been activated yet that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a creature with a boast ability is put onto the battlefield attacking, it was never declared as an attacker. Its boast ability can't be activated that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If an effect adds additional combat phases to a turn and a creature with a boast ability attacks more than once during that turn, its boast ability can still be activated only once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Fearless Pup
+{
+    "name": "Fearless Pup",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Wolf",
+    "oracleText": "First strike\nBoast — {2}{R}: This creature gets +2/+0 until end of turn. (Activate only if this creature attacked this turn and only once each turn.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Fearless Pup:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "restrictions": [
+                    "OncePerTurn",
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "AttackedThisTurn"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "isBoast": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "artist": "Jehan Choo",
+        "flavorText": "\"Awooo!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0eba2250-0e9b-46fd-a4b5-23f30329e063.jpg?1783928230",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "A boast ability can be activated at any point after the creature with that ability has been declared as an attacker. This can be before blockers are declared, after blockers are declared but before combat damage is dealt, during combat after combat damage is dealt, during the postcombat main phase, during the end step, or, in some unusual cases, during the cleanup step."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If it's not your turn and you gain control of a creature with a boast ability after that creature attacked, you can activate that creature's boast ability if it hasn't been activated yet that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a creature with a boast ability is put onto the battlefield attacking, it was never declared as an attacker. Its boast ability can't be activated that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If an effect adds additional combat phases to a turn and a creature with a boast ability attacks more than once during that turn, its boast ability can still be activated only once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Feed the Serpent
 {
     "name": "Feed the Serpent",
@@ -5853,6 +6595,83 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Frost Bite
+{
+    "name": "Frost Bite",
+    "manaCost": "{R}",
+    "typeLine": "Snow Instant",
+    "oracleText": "Frost Bite deals 2 damage to target creature or planeswalker. If you control three or more snow permanents, it deals 3 damage instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsPermanent",
+                                "IsSnow"
+                            ]
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            },
+            "then": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 3
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            },
+            "otherwise": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "artist": "Caio Monteiro",
+        "flavorText": "\"Don't wander far—it's a bit nippy out there!\"\n—Leidurr, expedition leader",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/9423318a-c5a8-48d2-92f5-280d15a050a6.jpg?1783928228",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Whether or not you control three or more snow permanents is checked as Frost Bite is resolving."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -7232,6 +8051,92 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Hagi Mob
+{
+    "name": "Hagi Mob",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Troll Berserker",
+    "oracleText": "Boast — {1}{R}: This creature deals 1 damage to any target. (Activate only if this creature attacked this turn and only once each turn.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hagi Mob:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    "OncePerTurn",
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "AttackedThisTurn"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "isBoast": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "artist": "Steve Prescott",
+        "flavorText": "\"Graarg!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/3/d3b18cdb-bc17-42ae-bfb7-4eafce01cd39.jpg?1783928228",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "A boast ability can be activated at any point after the creature with that ability has been declared as an attacker. This can be before blockers are declared, after blockers are declared but before combat damage is dealt, during combat after combat damage is dealt, during the postcombat main phase, during the end step, or, in some unusual cases, during the cleanup step."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If it's not your turn and you gain control of a creature with a boast ability after that creature attacked, you can activate that creature's boast ability if it hasn't been activated yet that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a creature with a boast ability is put onto the battlefield attacking, it was never declared as an attacker. Its boast ability can't be activated that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If an effect adds additional combat phases to a turn and a creature with a boast ability attacks more than once during that turn, its boast ability can still be activated only once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -9463,6 +10368,117 @@
     ]
 }
 
+// Magda, Brazen Outlaw
+{
+    "name": "Magda, Brazen Outlaw",
+    "manaCost": "{1}{R}",
+    "typeLine": "Legendary Creature — Dwarf Berserker",
+    "oracleText": "Other Dwarves you control get +1/+0.\nWhenever a Dwarf you control becomes tapped, create a Treasure token.\nSacrifice five Treasures: Search your library for an artifact or Dragon card, put that card onto the battlefield, then shuffle.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Magda, Brazen Outlaw:1",
+                "trigger": {
+                    "type": "TapEvent",
+                    "filter": "permanent Dwarf ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Magda, Brazen Outlaw:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "artifact Treasure",
+                        "count": 5
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "artifact|Dragon"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for an artifact or Dragon card to put onto the battlefield",
+                            "selectedLabel": "Put onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "descriptionOverride": "Sacrifice five Treasures: Search your library for an artifact or Dragon card, put it onto the battlefield, then shuffle."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": "permanent Dwarf ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/079e6263-e54c-4899-a336-5315909b9322.jpg?1783928229",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Magda's triggered ability doesn't allow you to tap any Dwarves. You have to find some other way to tap them. Attacking is still a great way to go."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "For the triggered ability to trigger, a Dwarf you control has to actually change from untapped to tapped. If an effect attempts to tap a Dwarf you control while it is already tapped, the ability won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Maja, Bretagard Protector
 {
     "name": "Maja, Bretagard Protector",
@@ -10499,6 +11515,212 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Provoke the Trolls
+{
+    "name": "Provoke the Trolls",
+    "manaCost": "{3}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Provoke the Trolls deals 3 damage to any target. If a creature is dealt damage this way, it gets +5/+0 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "damageDealtVariable": "storedNumber0"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "VariableReference",
+                                        "variableName": "storedNumber0"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                {
+                                    "type": "EntityMatches",
+                                    "entity": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    },
+                                    "filter": "creature"
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 5
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "rarity": "UNCOMMON",
+        "artist": "Deruchenko Alexander",
+        "flavorText": "\"I like burning and pillaging as much as anyone, but sometimes it's just easier to throw a rock and let the trolls do the work.\"\n—Urik, Tuskeri raid leader",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/2727b05a-0c86-4c59-b7b4-425bdd8e775d.jpg?1783928226"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Quakebringer
+{
+    "name": "Quakebringer",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Giant Berserker",
+    "oracleText": "Your opponents can't gain life.\nAt the beginning of your upkeep, Quakebringer deals 2 damage to each opponent. This ability triggers only if Quakebringer is on the battlefield or if Quakebringer is in your graveyard and you control a Giant.\nForetell {2}{R}{R} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FORETELL"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Foretell",
+            "cost": "{2}{R}{R}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Quakebringer:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "activeZones": [
+                    "Battlefield",
+                    "Graveyard"
+                ],
+                "triggerRestriction": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "SourceInZone",
+                            "zones": [
+                                "Battlefield"
+                            ]
+                        },
+                        {
+                            "type": "All",
+                            "conditions": [
+                                {
+                                    "type": "SourceInZone",
+                                    "zones": [
+                                        "Graveyard"
+                                    ]
+                                },
+                                {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "permanent Giant"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, Quakebringer deals 2 damage to each opponent. This ability triggers only if Quakebringer is on the battlefield or if Quakebringer is in your graveyard and you control a Giant."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventLifeGain",
+                "appliesTo": {
+                    "type": "LifeGainEvent",
+                    "player": "EachOpponent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "MYTHIC",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c5bbffb9-1f1c-40e5-97f4-29bf1fc68625.jpg?1783928225",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Quakebringer entering the battlefield won't undo any life gained earlier in the turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If Quakebringer is on the battlefield at the beginning of your upkeep, its ability will trigger even if it's no longer a Giant and you don't control another Giant."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Because exiling a card with foretell from your hand is a special action, you can do so any time you have priority during your turn, including in response to spells and abilities. Once you announce you're taking the action, no other player can respond by trying to remove the card from your hand."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Casting a foretold card from exile follows the timing rules for that card. If you foretell an instant card, you can cast it as soon as the next player's turn. In most cases, if you foretell a card that isn't an instant (or doesn't have flash), you'll have to wait until your next turn to cast it."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If you're casting a foretold card from exile for its foretell cost, you can't choose to cast it for any other alternative costs. You can, however, pay additional costs, such as kicker costs. If the card has any mandatory additional costs, those must be paid to cast the spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

@@ -10,7 +10,7 @@ import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.dsl.plus
 
 /**
  * Arni Brokenbrow — Kaldheim #120 (canonical printing)
@@ -43,10 +43,7 @@ val ArniBrokenbrow = card("Arni Brokenbrow") {
         effect = Effects.May(
             Effects.SetBasePower(
                 target = EffectTarget.Self,
-                power = DynamicAmount.Add(
-                    DynamicAmount.Fixed(1),
-                    DynamicAmounts.battlefield(Player.You, GameObjectFilter.Creature, excludeSelf = true).maxPower()
-                ),
+                power = 1 + DynamicAmounts.battlefield(Player.You, GameObjectFilter.Creature, excludeSelf = true).maxPower(),
                 duration = Duration.EndOfTurn
             ),
             prompt = "Change Arni's base power to 1 plus the greatest power among other creatures you control?"
