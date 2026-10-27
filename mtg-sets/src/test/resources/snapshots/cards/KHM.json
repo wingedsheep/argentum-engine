@@ -386,6 +386,87 @@
     ]
 }
 
+// Axgard Braggart
+{
+    "name": "Axgard Braggart",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Dwarf Warrior",
+    "oracleText": "Boast — {1}{W}: Untap this creature. Put a +1/+1 counter on it. (Activate only if this creature attacked this turn and only once each turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Axgard Braggart:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": "Self",
+                            "tap": false
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "restrictions": [
+                    "OncePerTurn",
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "AttackedThisTurn"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "isBoast": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"Heavy? Ha! The Trollking of Mossrun was heavy, and I tossed him five miles!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4de5ff64-6fe7-4fc5-be27-cdbaa14545ab.jpg?1783928290",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "You can activate Axgard Braggart's boast ability even if Axgard Braggart is already untapped. You'll still put a +1/+1 counter on it."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "A boast ability can be activated at any point after the creature with that ability has been declared as an attacker. This can be before blockers are declared, after blockers are declared but before combat damage is dealt, during combat after combat damage is dealt, during the postcombat main phase, during the end step, or, in some unusual cases, during the cleanup step."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a creature with a boast ability is put onto the battlefield attacking, it was never declared as an attacker. Its boast ability can't be activated that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Axgard Cavalry
 {
     "name": "Axgard Cavalry",
@@ -491,6 +572,93 @@
         "GREEN"
     ],
     "layout": "MODAL_DFC"
+}
+
+// Battershield Warrior
+{
+    "name": "Battershield Warrior",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Boast — {1}{W}: Creatures you control get +1/+1 until end of turn. (Activate only if this creature attacked this turn and only once each turn.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Battershield Warrior:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "restrictions": [
+                    "OncePerTurn",
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "AttackedThisTurn"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "isBoast": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "UNCOMMON",
+        "artist": "Colin Boyer",
+        "flavorText": "\"I need no axe to best these weaklings.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fb79dc85-f85a-4846-9ac3-c75c64ea9c0a.jpg?1783928292",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "A boast ability can be activated at any point after the creature with that ability has been declared as an attacker. This can be before blockers are declared, after blockers are declared but before combat damage is dealt, during combat after combat damage is dealt, during the postcombat main phase, during the end step, or, in some unusual cases, during the cleanup step."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a creature with a boast ability is put onto the battlefield attacking, it was never declared as an attacker. Its boast ability can't be activated that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If an effect adds additional combat phases to a turn and a creature with a boast ability attacks more than once during that turn, its boast ability can still be activated only once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Battlefield Raptor
@@ -1090,6 +1258,73 @@
     ]
 }
 
+// Bound in Gold
+{
+    "name": "Bound in Gold",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant permanent\nEnchanted permanent can't attack, block, or crew Vehicles, and its activated abilities can't be activated unless they're mana abilities.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "CANT_CREW"
+            },
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": {
+                    "cardPredicates": [
+                        "IsPermanent"
+                    ],
+                    "statePredicates": [
+                        "IsAttachedToBySource"
+                    ]
+                },
+                "nonManaAbilitiesOnly": true
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "permanent"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "\"Trespassers will be smelted.\"\n—Axgard inscription",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/074d526a-1eef-4045-bd38-f6d68c4bc4b9.jpg?1783928289",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "A creature that \"can't crew Vehicles\" can't be tapped to pay the crew cost of a Vehicle."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Bound in Gold doesn't stop static abilities from affecting the game, and it doesn't stop triggered abilities from triggering. It also doesn't stop mana abilities from being activated. Most activated abilities that produce mana as they resolve are mana abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Breakneck Berserker
 {
     "name": "Breakneck Berserker",
@@ -1265,6 +1500,69 @@
         "artist": "Anastasia Ovchinnikova",
         "flavorText": "To the living, the horn sounds faint and mournful, but to the spirits of Istfell, it is a thunderous call that must be obeyed.",
         "imageUri": "https://cards.scryfall.io/normal/front/8/6/86a4c348-1012-4339-960a-c7bc7fd84fbb.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Codespell Cleric
+{
+    "name": "Codespell Cleric",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Vigilance\nWhen this creature enters, if it was the second spell you cast this turn, put a +1/+1 counter on target creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Codespell Cleric:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "SpellsCastThisTurn",
+                        "beforeTriggeringSpell": true
+                    },
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "artist": "Manuel Castañón",
+        "flavorText": "\"Today we are not Beskir or Tuskeri. We must fight as one clan, shoulder to shoulder, to defend our rightful home!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/1316a74e-da55-4668-87f2-98389a90a2a4.jpg?1783928286"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -1780,6 +2078,103 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Divine Gambit
+{
+    "name": "Divine Gambit",
+    "manaCost": "{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile target artifact, creature, or enchantment an opponent controls. That player may put a permanent card from their hand onto the battlefield.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": {
+                            "type": "ControllerOf",
+                            "targetDescription": "target artifact, creature, or enchantment"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "filter": "permanent"
+                                },
+                                "storeAs": "put_candidates"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "put_candidates",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "putting",
+                                "prompt": "You may put a permanent card from your hand onto the battlefield"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "putting",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|creature|enchantment ctrl:opponent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "UNCOMMON",
+        "artist": "Joe Slucher",
+        "flavorText": "There are rules, and then there are gods.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/696a8c12-4a1f-4b96-a921-538fa1a2de43.jpg?1783928285",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "If the artifact, creature, or enchantment is an illegal target as Divine Gambit tries to resolve, Divine Gambit won't resolve and none of its effects will happen. No player will put any cards onto the battlefield."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If the player chooses to put a double-faced card onto the battlefield, it enters with its front face up. They may do this only if the front face of the card is a permanent card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -3065,6 +3460,101 @@
     ]
 }
 
+// Forging the Tyrite Sword
+{
+    "name": "Forging the Tyrite Sword",
+    "manaCost": "{1}{R}{W}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI, II — Create a Treasure token.\nIII — Search your library for a card named Halvar, God of Battle or an Equipment card, reveal it, put it into your hand, then shuffle.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                {
+                                                    "type": "NameEquals",
+                                                    "name": "Halvar, God of Battle"
+                                                },
+                                                {
+                                                    "type": "HasSubtype",
+                                                    "subtype": "Equipment"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a card named Halvar, God of Battle or Equipment to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "211",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3ce46100-461d-424e-afa4-7a0bb7d0a822.jpg?1783928197"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Frenzied Raider
 {
     "name": "Frenzied Raider",
@@ -3566,6 +4056,130 @@
     ]
 }
 
+// Glorious Protector
+{
+    "name": "Glorious Protector",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Angel Cleric",
+    "oracleText": "Flash\nFlying\nWhen this creature enters, you may exile any number of non-Angel creatures you control until this creature leaves the battlefield.\nForetell {2}{W} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING",
+        "FORETELL"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Foretell",
+            "cost": "{2}{W}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Glorious Protector:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "NotSubtype",
+                                            "subtype": "Angel"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "Exile any number of non-Angel creatures you control until Glorious Protector leaves the battlefield",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "selected1"
+                            },
+                            "body": {
+                                "type": "ExileUntilLeaves",
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, you may exile any number of non-Angel creatures you control until this creature leaves the battlefield."
+            },
+            {
+                "id": "Glorious Protector:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "RARE",
+        "artist": "PINDURSKI",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d9f08552-7f1a-4fdb-9a70-d99cdbf75910.jpg?1783928284",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Glorious Protector's enters-the-battlefield ability doesn't target any creatures. You choose which non-Angel creatures to exile, if any, as that ability resolves."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If Glorious Protector leaves the battlefield before its triggered ability resolves, no creatures will be exiled."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a token is exiled this way, it will cease to exist and won't return to the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Gnottvold Recluse
 {
     "name": "Gnottvold Recluse",
@@ -3705,6 +4319,91 @@
         "artist": "Sidharth Chaturvedi",
         "flavorText": "Not a single rat has been seen in Istfell since the gods moved in.",
         "imageUri": "https://cards.scryfall.io/normal/front/e/8/e8e645c8-90ac-4865-b441-e64251d6c9a8.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Goldmaw Champion
+{
+    "name": "Goldmaw Champion",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Dwarf Warrior",
+    "oracleText": "Boast — {1}{W}: Tap target creature. (Activate only if this creature attacked this turn and only once each turn.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Goldmaw Champion:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    "OncePerTurn",
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "AttackedThisTurn"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "isBoast": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "artist": "Slawomir Maniak",
+        "flavorText": "\"That was nothing. I once took down a frost giant with a spoon!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/44d4cd64-8560-48f5-b0bc-f75286c1c91c.jpg?1783928283",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "A boast ability can be activated at any point after the creature with that ability has been declared as an attacker. This can be before blockers are declared, after blockers are declared but before combat damage is dealt, during combat after combat damage is dealt, during the postcombat main phase, during the end step, or, in some unusual cases, during the cleanup step."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If it's not your turn and you gain control of a creature with a boast ability after that creature attacked, you can activate that creature's boast ability if it hasn't been activated yet that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a creature with a boast ability is put onto the battlefield attacking, it was never declared as an attacker. Its boast ability can't be activated that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If an effect adds additional combat phases to a turn and a creature with a boast ability attacks more than once during that turn, its boast ability can still be activated only once."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -5882,6 +6581,115 @@
     "colorIdentityOverride": []
 }
 
+// Master Skald
+{
+    "name": "Master Skald",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Dwarf Warrior",
+    "oracleText": "When this creature enters, you may exile a creature card from your graveyard. If you do, return target artifact or enchantment card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Master Skald:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Graveyard",
+                                            "filter": "creature"
+                                        },
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered0",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "toExile",
+                                        "selectedLabel": "Exile"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "toExile",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Exile"
+                                        }
+                                    }
+                                ]
+                            },
+                            "successCriterion": {
+                                "type": "SuccessCriterion.CollectionNonEmpty",
+                                "name": "toExile"
+                            }
+                        },
+                        "then": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Hand",
+                            "fromZone": "Graveyard"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact|enchantment own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, you may exile a creature card from your graveyard. If you do, return target artifact or enchantment card from your graveyard to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"All my scars have stories to tell.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6b269e27-8e17-4bf2-b28a-a83ecc7d22c0.jpg?1783928282",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "You choose the target artifact or enchantment card in your graveyard as you put the triggered ability on the stack. Once the ability starts resolving, you choose which creature card to exile from your graveyard, if any."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If you choose an artifact creature card or an enchantment creature card in your graveyard as the target, you could exile that card as the triggered ability is resolving, but if you do, you won't return it to your hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Mistwalker
 {
     "name": "Mistwalker",
@@ -6725,6 +7533,173 @@
     "layout": "MODAL_DFC"
 }
 
+// Resplendent Marshal
+{
+    "name": "Resplendent Marshal",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Creature — Angel Warrior",
+    "oracleText": "Flying\nWhen this creature enters or dies, you may exile another creature card from your graveyard. When you do, put a +1/+1 counter on each creature you control other than this creature that shares a creature type with the exiled card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Resplendent Marshal:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectTarget",
+                                "requirement": {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature own:you",
+                                        "zone": "Graveyard",
+                                        "excludeSelf": true
+                                    }
+                                },
+                                "storeAs": "resplendentMarshalExiled",
+                                "nonTargeting": true,
+                                "prompt": "Choose another creature card in your graveyard to exile"
+                            },
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "resplendentMarshalExiled"
+                                },
+                                "destination": "Exile"
+                            }
+                        ]
+                    },
+                    "reflexiveEffect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "SharesCreatureTypeWith",
+                                            "entity": {
+                                                "type": "PipelineTarget",
+                                                "collectionName": "resplendentMarshalExiled"
+                                            }
+                                        }
+                                    ],
+                                    "controllerPredicate": "ControlledByYou"
+                                },
+                                "excludeSelf": true
+                            }
+                        },
+                        "body": {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "descriptionOverride": "You may exile another creature card from your graveyard. When you do, put a +1/+1 counter on each creature you control other than this creature that shares a creature type with the exiled card."
+                }
+            },
+            {
+                "id": "Resplendent Marshal:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectTarget",
+                                "requirement": {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature own:you",
+                                        "zone": "Graveyard",
+                                        "excludeSelf": true
+                                    }
+                                },
+                                "storeAs": "resplendentMarshalExiled",
+                                "nonTargeting": true,
+                                "prompt": "Choose another creature card in your graveyard to exile"
+                            },
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "resplendentMarshalExiled"
+                                },
+                                "destination": "Exile"
+                            }
+                        ]
+                    },
+                    "reflexiveEffect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "SharesCreatureTypeWith",
+                                            "entity": {
+                                                "type": "PipelineTarget",
+                                                "collectionName": "resplendentMarshalExiled"
+                                            }
+                                        }
+                                    ],
+                                    "controllerPredicate": "ControlledByYou"
+                                },
+                                "excludeSelf": true
+                            }
+                        },
+                        "body": {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "IterationEntity"
+                        }
+                    },
+                    "descriptionOverride": "You may exile another creature card from your graveyard. When you do, put a +1/+1 counter on each creature you control other than this creature that shares a creature type with the exiled card."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "MYTHIC",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5e849bec-2ee6-4c83-83e6-bf9f5543e414.jpg?1783928279",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "You don't choose which creature card you're exiling, if any, until the triggered ability is resolving. When you do, the reflexive triggered ability triggers. Players may respond to this reflexive triggered ability, knowing the creature types of the card you exiled and which creatures might get a +1/+1 counter."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Righteous Valkyrie
 {
     "name": "Righteous Valkyrie",
@@ -7106,6 +8081,109 @@
     ]
 }
 
+// Runeforge Champion
+{
+    "name": "Runeforge Champion",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Dwarf Warrior",
+    "oracleText": "When this creature enters, you may search your library and/or graveyard for a Rune card, reveal it, and put it into your hand. If you search your library this way, shuffle.\nYou may pay {1} rather than pay the mana cost for Rune spells you cast.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Runeforge Champion:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromMultipleZones",
+                                "zones": [
+                                    "Library",
+                                    "Graveyard"
+                                ],
+                                "filter": "Rune"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library and/or graveyard for a Rune card to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantAlternativeCastingCost",
+                "cost": "{1}",
+                "spellFilter": {
+                    "cardPredicates": [
+                        {
+                            "type": "HasSubtype",
+                            "subtype": "Rune"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "RARE",
+        "artist": "Andrey Kuzinskiy",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/4368b087-05a0-4a88-ab43-0cd16446239b.jpg?1783928277",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Runeforge Champion's last ability provides an alternative cost to cast Rune spells. You can't combine this with other alternative costs that may apply. In the unusual case that a Rune spell has additional costs, you can pay those in addition to the {1}. If those additional costs are mandatory, you must pay them in order to cast the spell."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Runeforge Champion's last ability doesn't change when you can cast a Rune spell."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Casting a Rune spell for an alternative cost doesn't change its mana cost or mana value."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Sarulf's Packmate
 {
     "name": "Sarulf's Packmate",
@@ -7219,6 +8297,99 @@
         "imageUri": "https://cards.scryfall.io/normal/front/4/f/4fa13084-3e68-49f4-8cc9-6d02286fd150.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Search for Glory
+{
+    "name": "Search for Glory",
+    "manaCost": "{2}{W}",
+    "typeLine": "Snow Sorcery",
+    "oracleText": "Search your library for a snow permanent card, a legendary card, or a Saga card, reveal it, put it into your hand, then shuffle. You gain 1 life for each {S} spent to cast this spell. ({S} is mana from a snow source.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        {
+                                            "type": "And",
+                                            "predicates": [
+                                                "IsSnow",
+                                                "IsPermanent"
+                                            ]
+                                        },
+                                        "IsLegendary",
+                                        {
+                                            "type": "HasSubtype",
+                                            "subtype": "Saga"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for a snow permanent or legendary or Saga card to put into your hand",
+                    "selectedLabel": "Put into your hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent",
+                {
+                    "type": "GainLife",
+                    "amount": "SnowManaSpent"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "RARE",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b65c215d-562d-4c7c-bc9f-b1d741050158.jpg?1783928277",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "If you cast Search for Glory without spending snow mana, you won't gain any life. You'll still perform the search."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If Search for Glory is copied, no snow mana was spent to cast the copy, so you won't gain any life. You'll still search . . . for glory."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Seize the Spoils
@@ -7906,6 +9077,48 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Starnheim Courser
+{
+    "name": "Starnheim Courser",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Pegasus",
+    "oracleText": "Flying\nArtifact and enchantment spells you cast cost {1} less to cast.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "artifact|enchantment"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "artist": "Andrew Mar",
+        "flavorText": "Every worthy warrior who arrives in Starnheim is gifted a mount befitting their heroism, a mighty pegasus raised and trained by the valkyries.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c5373dd-4aec-4e93-97fb-a639aa096764.jpg?1783928276",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The cost reduction applies only to generic mana in the costs of artifact and enchantment spells you cast. It can't reduce requirements of specific colors of mana."
+            }
+        ]
+    }
 }
 
 // Starnheim Unleashed
@@ -9055,6 +10268,88 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Usher of the Fallen
+{
+    "name": "Usher of the Fallen",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Spirit Warrior",
+    "oracleText": "Boast — {1}{W}: Create a 1/1 white Human Warrior creature token. (Activate only if this creature attacked this turn and only once each turn.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Usher of the Fallen:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Human",
+                        "Warrior"
+                    ]
+                },
+                "restrictions": [
+                    "OncePerTurn",
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "AttackedThisTurn"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "isBoast": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "UNCOMMON",
+        "artist": "Anastasia Ovchinnikova",
+        "flavorText": "\"I have led ten thousand through these mists and never lost the way.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/24e58478-c6a8-4f86-854a-a489c99bd777.jpg?1783928276",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "A boast ability can be activated at any point after the creature with that ability has been declared as an attacker. This can be before blockers are declared, after blockers are declared but before combat damage is dealt, during combat after combat damage is dealt, during the postcombat main phase, during the end step, or, in some unusual cases, during the cleanup step."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If it's not your turn and you gain control of a creature with a boast ability after that creature attacked, you can activate that creature's boast ability if it hasn't been activated yet that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a creature with a boast ability is put onto the battlefield attacking, it was never declared as an attacker. Its boast ability can't be activated that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If an effect adds additional combat phases to a turn and a creature with a boast ability attacks more than once during that turn, its boast ability can still be activated only once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

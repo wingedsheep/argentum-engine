@@ -3506,6 +3506,44 @@
     ]
 }
 
+// Revitalize
+{
+    "name": "Revitalize",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "You gain 3 life.\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "artist": "Matt Stewart",
+        "flavorText": "\"A potion is no substitute for a skilled surgeon, but it will hold your bits in.\"\n—Torricks, battlefield medic",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfbdd90c-1ae3-45e5-b1e5-5b8615a1511f.jpg?1783934597"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Rhox Oracle
 {
     "name": "Rhox Oracle",
