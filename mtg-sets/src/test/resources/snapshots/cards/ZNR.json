@@ -3360,7 +3360,7 @@
     "typeLine": "Creature — Angel Warrior",
     "oracleText": "Flying\nWhen this creature enters, you may reveal a card you own named Legion Angel from outside the game and put it into your hand.",
     "creatureStats": {
-        "power": 3,
+        "power": 4,
         "toughness": 3
     },
     "keywords": [

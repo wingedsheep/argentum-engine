@@ -2,15 +2,14 @@ package com.wingedsheep.mtg.sets.definitions.znr.cards
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Filters
+import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.EntersTapped
-import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TimingRule
-import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Makindi Stampede {3}{W}{W} // Makindi Mesas — Zendikar Rising #26
@@ -28,10 +27,7 @@ private val MakindiStampedeFront = card("Makindi Stampede") {
     oracleText = "Creatures you control get +2/+2 until end of turn."
 
     spell {
-        effect = Effects.ForEachInGroup(
-            GroupFilter(GameObjectFilter.Creature.youControl()),
-            Effects.ModifyStats(2, 2, EffectTarget.IterationEntity),
-        )
+        effect = Patterns.Group.modifyStatsForAll(2, 2, Filters.Group.creaturesYouControl)
     }
 
     metadata {

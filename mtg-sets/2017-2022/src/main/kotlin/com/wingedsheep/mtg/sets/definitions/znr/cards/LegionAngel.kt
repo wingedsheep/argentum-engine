@@ -26,7 +26,7 @@ val LegionAngel = card("Legion Angel") {
     oracleText = "Flying\n" +
         "When this creature enters, you may reveal a card you own named Legion Angel from outside " +
         "the game and put it into your hand."
-    power = 3
+    power = 4
     toughness = 3
 
     keywords(Keyword.FLYING)
