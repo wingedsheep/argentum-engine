@@ -24,6 +24,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CastFromTopOfLibraryUsesThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.GraveyardPlayPermissionUsedComponent
+import com.wingedsheep.engine.state.components.battlefield.chosenSubtype
 import com.wingedsheep.engine.state.components.battlefield.MayCastFromGraveyardUsedThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.CommanderComponent
@@ -35,6 +36,7 @@ import com.wingedsheep.engine.state.permissions.mayPlayEntersTappedRiders
 import com.wingedsheep.engine.state.components.player.MayCastCreaturesFromGraveyardWithForageComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
@@ -1226,10 +1228,20 @@ class CastZoneResolver(
                             .any { state.getEntity(it)?.get<CardComponent>()?.name == card.name }
                     }
                 }
+                // "creature spells of the chosen type" (Realmwalker). Judged against the granting
+                // permanent's stored choice, like the linked-exile branches above. No choice made
+                // matches nothing — not even a typeless creature (ruling). A changeling card is every
+                // creature type in every zone, so it matches any chosen creature type.
+                CardPredicate.HasChosenSubtype -> {
+                    val chosenType = grantingSourceId?.let { state?.getEntity(it)?.chosenSubtype() }
+                    if (chosenType == null) false else {
+                        card.typeLine.subtypes.any { it.value.equals(chosenType, ignoreCase = true) } ||
+                            (Keyword.CHANGELING in card.baseKeywords && chosenType in Subtype.ALL_CREATURE_TYPES)
+                    }
+                }
                 is CardPredicate.IsToken,
                 is CardPredicate.IsNontoken,
                 is CardPredicate.HasChosenColor,
-                is CardPredicate.HasChosenSubtype,
                 is CardPredicate.SharesChosenColorWithSource,
                 is CardPredicate.NameEqualsChosen,
                 is CardPredicate.NameEqualsChosenComponent,

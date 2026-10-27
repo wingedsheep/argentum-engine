@@ -7394,6 +7394,80 @@
     ]
 }
 
+// Realmwalker
+{
+    "name": "Realmwalker",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Shapeshifter",
+    "oracleText": "Changeling (This card is every creature type.)\nAs this creature enters, choose a creature type.\nYou may look at the top card of your library any time.\nYou may cast creature spells of the chosen type from the top of your library.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "CHANGELING"
+    ],
+    "script": {
+        "staticAbilities": [
+            "LookAtTopOfLibrary",
+            {
+                "type": "CastSpellTypesFromTopOfLibrary",
+                "filter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        "HasChosenSubtype"
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CREATURE_TYPE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "188",
+        "rarity": "RARE",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c8212667-7e18-42a5-9f36-4f8a6ad12f83.jpg?1783928207",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The top card of your library isn't in your hand, so you can't foretell it, discard it, or activate any of its activated abilities."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Realmwalker doesn't change when you can cast creature spells. Normally, this means during your main phase when the stack is empty, although flash may change this."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If Realmwalker is somehow on the battlefield with no choice having been made for it, you may still look at the top card of your library any time. You won't be able to cast any creature spells from the top of your library, even if they have no creature types."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "You can look at the top card of your library whenever you want (with one restriction; see below), even if you don't have priority. This action doesn't use the stack. Knowing what that card is becomes part of the information you have access to, just like you can look at the cards in your hand."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "You must choose an existing creature type, such as Elk or Advisor. You can't choose card types (e.g., artifact) or supertypes (e.g., snow)."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "You'll still pay all costs for the spell, including additional costs. You may also pay alternative costs if any are available."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If the top card of your library changes while you're casting a spell, playing a land, or activating an ability, you can't look at the new top card until you finish doing so. This means that if you cast a spell from the top of your library, you can't look at the next one until you're done paying for that spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Reidane, God of the Worthy
 {
     "name": "Reidane, God of the Worthy",

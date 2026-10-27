@@ -12727,7 +12727,11 @@ concerns — the `ClientStateTransformer` reveals the top card for `PlayFromTopO
   GameObjectFilter.Nonland, additionalCost = Costs.additional.RemoveCounters(counterType = null,
   count = 1, filter = GameObjectFilter.Creature))`. It is surfaced and checked like any zone-cast
   additional cost, and isn't owed when a cost-free permission (Future Sight, a costless grant, a
-  card-specific MayPlay) also covers the card.
+  card-specific MayPlay) also covers the card. Source-relative filter predicates read the granting
+  permanent: `withChosenSubtype()` is its "as this enters" creature-type choice (Realmwalker =
+  `CastSpellTypesFromTopOfLibrary(GameObjectFilter.Creature.withChosenSubtype())` + `EntersWithChoice(
+  CREATURE_TYPE)`; a changeling card matches any chosen type, no choice matches nothing), and
+  `sharingCardTypeWithLinkedExile()` its linked-exile pile (Cemetery Illuminator).
 - `LookAtTopOfLibrary(libraryOwner = EffectTarget.Controller)` — *private*: the holder may look at the
   top card of a library any time (revealed only to them). Default is their own (Lens of Clarity,
   Vizier of the Menagerie); a granted copy can name another player's library, pinned at grant
