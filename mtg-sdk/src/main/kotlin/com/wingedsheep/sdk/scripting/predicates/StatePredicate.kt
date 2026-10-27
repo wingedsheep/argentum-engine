@@ -752,7 +752,7 @@ sealed interface StatePredicate {
     }
 
     /**
-     * Controlled by its current controller without interruption since [since] — as this same object,
+     * Controlled by its current controller without interruption from the moment [since] names — as this same object,
      * so entering, blinking or any control interruption breaks it and regaining control doesn't
      * restore it; haste doesn't matter. [ControlMark.TURN_BEGAN] is Nettling Imp's "continuously
      * controlled since the beginning of the turn"; [ControlMark.YOUR_LAST_UPKEEP] is the negation of

@@ -69,10 +69,6 @@ object ControlHistory {
             ControlMark.YOUR_LAST_UPKEEP -> controlledSinceLastUpkeep(state, id, currentController)
         }
 
-    fun matches(state: GameState, projected: ProjectedState, id: EntityId): Boolean {
-        return matches(state, id, controller(state, projected, id))
-    }
-
     fun matches(state: GameState, id: EntityId, currentController: EntityId?): Boolean {
         if (state.logicalZone(id)?.zoneType != Zone.BATTLEFIELD) return false
         val history = state.controlAtTurnStart
@@ -90,7 +86,8 @@ object ControlHistory {
         val projected = state.projectedState
         val updated = state.controlAtUpkeepStart.toMutableMap()
         for (player in players) {
-            val now = state.getBattlefield().mapNotNull { id ->
+            // Phased-out permanents included: phasing doesn't interrupt control (CR 702.26d).
+            val now = state.allBattlefieldEntities().mapNotNull { id ->
                 if (controller(state, projected, id) != player) return@mapNotNull null
                 id to (state.objectRef(id) ?: return@mapNotNull null)
             }.toMap()
@@ -100,15 +97,24 @@ object ControlHistory {
     }
 
     /**
-     * `StatePredicate.ControlledSinceYourLastUpkeep`: its controller has controlled this very object
-     * without interruption since the beginning of their last upkeep. During that player's own upkeep
-     * the "last" upkeep is the one before it; a player with no such upkeep has controlled nothing
-     * since one, so everything they control reads as having come under their control since.
+     * The end of an upkeep step: only that player's upkeep reads the previous snapshot, so it is
+     * dropped rather than kept current by [record] until their next upkeep.
      */
-    fun controlledSinceLastUpkeep(state: GameState, projected: ProjectedState, id: EntityId): Boolean =
-        controlledSinceLastUpkeep(state, id, controller(state, projected, id))
+    fun endUpkeep(state: GameState, players: List<EntityId>): GameState {
+        val upkeeps = state.controlAtUpkeepStart
+        if (players.none { upkeeps[it]?.previous != null }) return state
+        return state.copy(controlAtUpkeepStart = upkeeps.mapValues { (player, record) ->
+            if (player in players && record.previous != null) record.copy(previous = null) else record
+        })
+    }
 
-    fun controlledSinceLastUpkeep(state: GameState, id: EntityId, currentController: EntityId?): Boolean {
+    /**
+     * `ControlledContinuouslySince(ControlMark.YOUR_LAST_UPKEEP)`: its controller has controlled this
+     * very object without interruption since the beginning of their last upkeep. During that player's
+     * own upkeep the "last" upkeep is the one before it; a player with no such upkeep has controlled
+     * nothing since one, so everything they control reads as having come under their control since.
+     */
+    private fun controlledSinceLastUpkeep(state: GameState, id: EntityId, currentController: EntityId?): Boolean {
         if (currentController == null || state.logicalZone(id)?.zoneType != Zone.BATTLEFIELD) return false
         val record = state.controlAtUpkeepStart[currentController] ?: return false
         val active = state.activePlayerId

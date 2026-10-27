@@ -1,7 +1,9 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.state.components.battlefield.PhasedOutComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.player.AdditionalUpkeepStepsComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
@@ -164,6 +166,48 @@ class EchoTest : FunSpec({
 
         d.toNextUpkeepOf(me)
         d.stackSize shouldBe 1
+    }
+
+    test("phasing out and back in doesn't make it owed again (CR 702.26d)") {
+        val d = driver()
+        val me = d.activePlayer!!
+        val bear = d.putPermanentOnBattlefield(me, "Test Echo Bear")
+        d.toNextUpkeepOf(me)
+        d.giveMana(me, Color.RED, 2)
+        d.bothPass()
+        d.submitYesNo(me, true)
+
+        // Phased out (Oubliette-style, so it stays out) across my next upkeep, then phased back in.
+        d.replaceState(d.state.updateEntity(bear) { it.with(PhasedOutComponent(me, phaseInOnSourceLeaves = me)) })
+        d.toNextUpkeepOf(me)
+        d.stackSize shouldBe 0
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        d.replaceState(d.state.updateEntity(bear) { it.without<PhasedOutComponent>() })
+
+        d.toNextUpkeepOf(me)
+        d.stackSize shouldBe 0
+        d.onBattlefield(bear) shouldBe true
+    }
+
+    test("an additional upkeep step counts as your last upkeep") {
+        val d = driver()
+        val me = d.activePlayer!!
+        val paid = d.putPermanentOnBattlefield(me, "Test Echo Bear")
+        d.toNextUpkeepOf(me)
+        d.giveMana(me, Color.RED, 2)
+        d.bothPass()
+        d.submitYesNo(me, true)
+
+        // Arrives after this turn's upkeep began, so the inserted upkeep step asks for it; the
+        // one already paid has been controlled since this turn's upkeep and isn't asked again.
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val fresh = d.putPermanentOnBattlefield(me, "Test Echo Bear")
+        d.replaceState(d.state.updateEntity(me) { it.with(AdditionalUpkeepStepsComponent(1)) })
+        d.passPriorityUntil(Step.UPKEEP)
+        d.stackSize shouldBe 1
+        d.bothPass()
+        d.onBattlefield(fresh) shouldBe false
+        d.onBattlefield(paid) shouldBe true
     }
 
     test("if it left the battlefield before the trigger resolves, nothing happens (intervening if)") {

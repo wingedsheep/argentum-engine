@@ -115,8 +115,9 @@ data class GameState(
 
     /**
      * Per player, the permanents they have controlled without interruption since the beginning of
-     * their upkeeps — `StatePredicate.ControlledSinceYourLastUpkeep`, which echo's "came under your
-     * control since the beginning of your last upkeep" (CR 702.30a) negates. Maintained by
+     * their upkeeps — `StatePredicate.ControlledContinuouslySince(ControlMark.YOUR_LAST_UPKEEP)`,
+     * which echo's "came under your control since the beginning of your last upkeep" (CR 702.30a)
+     * negates. Maintained by
      * [com.wingedsheep.engine.core.ControlHistory]; a player with no upkeep yet has no entry.
      */
     val controlAtUpkeepStart: Map<EntityId, UpkeepControl> = emptyMap(),

@@ -8,7 +8,8 @@ import kotlinx.serialization.Serializable
  * controlled since the beginning of their most recent upkeep, [previous] those since the upkeep
  * before it (null if there was none). During that player's upkeep "your last upkeep" is the
  * previous one — the current one is the upkeep echo is triggering in — so readers pick [previous]
- * then and [current] otherwise. Entries are only ever dropped, like the turn-start snapshot.
+ * then and [current] otherwise, and [previous] is cleared when the upkeep step ends. Entries are
+ * only ever dropped, like the turn-start snapshot.
  */
 @Serializable
 data class UpkeepControl(
