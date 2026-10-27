@@ -34,7 +34,8 @@ class ControlCombatDeclarationsExecutor : EffectExecutor<ControlCombatDeclaratio
             Player.EachOpponent -> ticked.getOpponents(controller)
             Player.EachOtherPlayer -> ticked.getOtherPlayers(controller)
             Player.You -> listOf(controller)
-            else -> ticked.activePlayers
+            Player.Each -> ticked.activePlayers
+            else -> error("ControlCombatDeclarationsThisTurnEffect can't resolve ${effect.declaringPlayers}")
         }.toSet()
         val grant = CombatDeclarationGrant(
             turnNumber = ticked.turnNumber,

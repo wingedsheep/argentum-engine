@@ -17,10 +17,10 @@ import { attackTargetsFor, canAttackTarget } from '@/utils/attackTargets'
 import { getWebSocket } from '../shared'
 
 /**
- * The seat a combat declaration should be tagged with. Normally the connection's own seat;
- * in single-client hotseat the one connection declares for whichever seat the server is
- * asking — the acting seat recorded from the legal action, falling back to the active
- * player for attackers / the (2-player) defending player for blockers.
+ * The seat a combat declaration should be tagged with: the acting seat recorded from the
+ * server's legal action whenever there is one. Without it, the connection's own seat — or, in
+ * single-client hotseat / a hijack, the active player for attackers and the (2-player)
+ * defending player for blockers.
  */
 function combatActingSeat(
   combatState: { mode: string; actingSeat: EntityId | null },

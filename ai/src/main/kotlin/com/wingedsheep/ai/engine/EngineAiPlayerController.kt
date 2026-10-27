@@ -96,10 +96,37 @@ class EngineAiPlayerController(
             }
         }
 
+        // A combat declaration the server routed to us from another seat (Master Warcraft, Brutal
+        // Hordechief): it is still that seat's declaration, validated against that seat's creatures
+        // and requirements, so it must be built for that seat — our own enumeration never offers it.
+        val routed = legalActions.map { it.action }.firstOrNull {
+            (it is DeclareBlockers && it.playerId != playerId) || (it is DeclareAttackers && it.playerId != playerId)
+        }
+        if (routed != null) {
+            val action = declarationFor(routed, gameState)
+            logger.info("Engine AI made {}'s routed declaration: {}", routed.playerId, action::class.simpleName)
+            return ActionResponse.SubmitAction(action)
+        }
+
         // Use the engine AI to choose the best action from the real game state
         val action = aiPlayer.chooseAction(gameState)
         logger.info("Engine AI chose: {}", action::class.simpleName)
         return ActionResponse.SubmitAction(action)
+    }
+
+    private val seatPlayers = mutableMapOf<EntityId, AIPlayer>()
+
+    /**
+     * The [offered] declaration's seat owes, chosen by an engine AI playing that seat. It doesn't
+     * exploit the choice for us, but it honours the seat's own must-block / must-attack
+     * requirements, where a declaration under our own id is rejected outright. Falls back to the
+     * offered (empty) declaration if that AI picks anything else.
+     */
+    private fun declarationFor(offered: GameAction, gameState: GameState): GameAction {
+        val seat = offered.playerId
+        val chosen = seatPlayers.getOrPut(seat) { AIPlayer.create(cardRegistry, seat, AiProfile.LIVE) }
+            .chooseAction(gameState)
+        return if (chosen::class == offered::class && chosen.playerId == seat) chosen else offered
     }
 
     override fun decideMulligan(mulliganMessage: MulliganInfo): Boolean {

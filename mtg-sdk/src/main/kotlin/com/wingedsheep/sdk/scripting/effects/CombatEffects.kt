@@ -603,7 +603,10 @@ data class MustBlockGroupEffect(
         GroupFilter.AllCreaturesYouControl -> "creatures you control"
         GroupFilter.AllCreaturesOpponentsControl -> "creatures your opponents control"
         else -> filter.description
-    }.replaceFirstChar { it.uppercase() } + " block this turn if able"
+    }.let { group ->
+        if (duration == Duration.EndOfTurn || duration.description.isEmpty()) "${group.replaceFirstChar { it.uppercase() }} block this turn if able"
+        else "${duration.description.replaceFirstChar { it.uppercase() }}, $group block each combat if able"
+    }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newFilter = filter.applyTextReplacement(replacer)

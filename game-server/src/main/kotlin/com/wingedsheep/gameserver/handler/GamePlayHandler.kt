@@ -1611,13 +1611,19 @@ class GamePlayHandler(
         val passIsLegal = gameSession.getLegalActions(aiPlayerId).any {
             it.action is com.wingedsheep.engine.core.PassPriority
         }
-        return cancelPending + when (gameSession.getStateForTesting()?.step) {
+        // A declaration routed to the AI from another seat (Master Warcraft, Brutal Hordechief) is
+        // still that seat's, so its do-nothing fallback must name that seat.
+        val state = gameSession.getStateForTesting()
+        val declaringSeat = state?.turnOrder?.firstOrNull {
+            it != aiPlayerId && com.wingedsheep.engine.mechanics.combat.CombatDeclarationControl.declarerFor(state, it) == aiPlayerId
+        } ?: aiPlayerId
+        return cancelPending + when (state?.step) {
             com.wingedsheep.sdk.core.Step.DECLARE_BLOCKERS -> {
-                val declare = com.wingedsheep.engine.core.DeclareBlockers(aiPlayerId, emptyMap())
+                val declare = com.wingedsheep.engine.core.DeclareBlockers(declaringSeat, emptyMap())
                 if (passIsLegal) listOf(pass, declare) else listOf(declare, pass)
             }
             com.wingedsheep.sdk.core.Step.DECLARE_ATTACKERS -> {
-                val declare = com.wingedsheep.engine.core.DeclareAttackers(aiPlayerId, emptyMap())
+                val declare = com.wingedsheep.engine.core.DeclareAttackers(declaringSeat, emptyMap())
                 if (passIsLegal) listOf(pass, declare) else listOf(declare, pass)
             }
             else -> listOf(pass)

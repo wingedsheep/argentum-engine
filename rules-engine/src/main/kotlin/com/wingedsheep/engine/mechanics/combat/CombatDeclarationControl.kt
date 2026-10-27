@@ -51,6 +51,7 @@ object CombatDeclarationControl {
      */
     fun controllerOf(state: GameState, declaration: CombatDeclaration, playerId: EntityId): EntityId? =
         state.turnOrder
+            .filter { it in state.activePlayers }
             .mapNotNull { holder ->
                 state.getEntity(holder)?.get<CombatDeclarationControlComponent>()?.grants
                     ?.filter {
@@ -63,7 +64,6 @@ object CombatDeclarationControl {
             }
             .maxByOrNull { it.second }
             ?.first
-            ?.takeIf { it in state.activePlayers }
 
     /**
      * The player who takes over the declaration [playerId] owes right now, or null when [playerId]
