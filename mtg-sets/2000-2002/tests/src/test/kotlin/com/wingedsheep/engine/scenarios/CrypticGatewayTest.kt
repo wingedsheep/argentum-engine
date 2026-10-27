@@ -197,8 +197,11 @@ class CrypticGatewayTest : FunSpec({
         )
         result.outcome shouldBe Outcome.Done
 
-        // Resolve ability — no decision since no valid creatures
+        // Resolve ability — asked even with no valid creature in hand (#3340), with nothing to pick
         driver.bothPass()
+        val decision = driver.pendingDecision as com.wingedsheep.engine.core.SelectCardsDecision
+        decision.options shouldBe emptyList()
+        driver.submitCardSelection(activePlayer, emptyList())
 
         // Pure Elf should still be in hand
         driver.getHand(activePlayer).contains(pureElf) shouldBe true

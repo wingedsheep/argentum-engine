@@ -623,7 +623,9 @@ class SelectFromCollectionExecutor(
             restrictions = effect.restrictions,
             spellFaces = spellFaces,
             shownCards = allDisplayCards,
-            hiddenPoolDeciders = hiddenDeciders
+            // Only a fixed count leaves the answer's size to the hidden cards: "choose up to" and
+            // "any number" sizes are the chooser's own choice, which a later skip may follow.
+            hiddenPoolDeciders = if (effect.selection is SelectionMode.ChooseExactly) hiddenDeciders else emptyList()
         )
 
         return EffectResult.from(state.suspendForDecision(decision, continuation))

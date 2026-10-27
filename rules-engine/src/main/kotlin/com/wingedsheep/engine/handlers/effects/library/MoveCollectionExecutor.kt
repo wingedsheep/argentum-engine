@@ -89,8 +89,11 @@ class MoveCollectionExecutor(
         // this step's own filter reads cards some player can't see (#3340). Then the order question
         // for cards put on a library is asked for any number of them, none included, since whether
         // it is asked would otherwise tell every player that number.
-        val countHidden = HiddenPools.isHidden(context.pipeline.storedCollections, effect.from) ||
-            (effect.filter != null && HiddenPools.hiddenOwners(state, allCards, visibility).isNotEmpty())
+        // Cards every player can see (revealed on the way, as Vendilion Clique's pick is) make
+        // their own count public.
+        val countHidden = (HiddenPools.isHidden(context.pipeline.storedCollections, effect.from) ||
+            (effect.filter != null && HiddenPools.hiddenOwners(state, allCards, visibility).isNotEmpty())) &&
+            (cards.isEmpty() || HiddenPools.hiddenOwners(state, cards, visibility).isNotEmpty())
         if (cards.isEmpty()) {
             if (countHidden && destination is CardDestination.ToZone && destination.zone == Zone.LIBRARY &&
                 destination.placement != ZonePlacement.Shuffled &&

@@ -63,6 +63,11 @@ class TerritoryCullerScenarioTest : ScenarioTestBase() {
 
             test("a non-creature top card can only be binned, never taken") {
                 val game = setup("Island")
+                // The creature pick is asked even with no creature on top (#3340): nothing to take.
+                val take = game.getPendingDecision() as SelectCardsDecision
+                take.options shouldBe emptyList()
+                game.skipSelection()
+                game.resolveStack()
                 withClue("Non-creature still gets the graveyard prompt") { game.hasPendingDecision() shouldBe true }
                 val bin = game.getPendingDecision() as SelectCardsDecision
                 bin.options.size shouldBe 1

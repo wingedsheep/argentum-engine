@@ -168,7 +168,13 @@ class KamahlsSummonsTest : FunSpec({
         driver.castSpell(activePlayer, summons)
         driver.bothPass()
 
-        // Both players skipped - no decision needed
+        // Each player is still asked (#3340), with nothing they could reveal
+        for (player in listOf(activePlayer, opponent)) {
+            val decision = driver.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
+            decision.playerId shouldBe player
+            decision.options shouldBe emptyList()
+            driver.submitCardSelection(player, emptyList())
+        }
         driver.isPaused shouldBe false
 
         // No tokens created

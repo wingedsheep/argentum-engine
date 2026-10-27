@@ -62,9 +62,10 @@ class GatherCardsExecutor(
         effect: GatherCardsEffect,
         context: EffectContext
     ): EffectResult {
-        // Who holds the hidden cards a filter read to build this pool (#3340): a filtered gather
-        // over a hand or library has a size nobody else can know. See [HiddenPools].
-        var poolDeciders: List<EntityId> = emptyList()
+        // The cards a filter read to build this pool (#3340): a filtered gather over a hand or
+        // library has a size nobody else can know. See [HiddenPools].
+        var filterRead: List<EntityId> = emptyList()
+        var inheritedDeciders: List<EntityId> = emptyList()
         val gathered = when (val source = effect.source) {
             is CardSource.TopOfLibrary -> {
                 val count = amountEvaluator.evaluate(state, source.count, context)
@@ -102,7 +103,7 @@ class GatherCardsExecutor(
                     else state.getZone(ZoneKey(playerId, source.zone))
                 }
                 val filtered = if (source.filter != GameObjectFilter.Any) {
-                    poolDeciders = HiddenPools.hiddenOwners(state, allCards, visibility)
+                    filterRead = allCards
                     val predicateContext = PredicateContext.fromEffectContext(context)
                     allCards.filter { cardId ->
                         matchesVisibleExileCard(state, cardId, source.zone, context) &&
@@ -132,7 +133,7 @@ class GatherCardsExecutor(
                     }
                 }
                 if (source.filter != GameObjectFilter.Any) {
-                    poolDeciders = HiddenPools.hiddenOwners(state, allCards.map { it.first }, visibility)
+                    filterRead = allCards.map { it.first }
                     val predicateContext = PredicateContext.fromEffectContext(context)
                     allCards.filter { (cardId, zone) ->
                         matchesVisibleExileCard(state, cardId, zone, context) &&
@@ -144,7 +145,7 @@ class GatherCardsExecutor(
             }
 
             is CardSource.FromVariable -> {
-                poolDeciders = HiddenPools.deciders(context.pipeline.storedCollections, source.variableName)
+                inheritedDeciders = HiddenPools.deciders(context.pipeline.storedCollections, source.variableName)
                 context.pipeline.storedCollections[source.variableName] ?: emptyList()
             }
 
@@ -416,14 +417,17 @@ class GatherCardsExecutor(
         // The searcher is who the gather names — the controller unless another player searches
         // their own library (Sandworm's "its controller may search their library").
         val searcher = if (effect.search) resolvePlayer(effect.searcher, context, state) else null
-        val cards = if (searcher != null &&
+        val cantSearch = searcher != null &&
             state.getEntity(searcher)?.has<CantSearchLibrariesComponent>() == true
-        ) {
-            val libraries = state.turnOrder.flatMap { state.getZone(ZoneKey(it, Zone.LIBRARY)) }.toSet()
+        val libraries = if (cantSearch) state.turnOrder.flatMap { state.getZone(ZoneKey(it, Zone.LIBRARY)) }.toSet() else emptySet()
+        val cards = if (cantSearch) {
             gathered.filter { it !in libraries }
         } else {
             limitSearchDepth(state, searcher, gathered)
         }
+        // A library nobody may search is publicly out of the pool, so its cards decide nothing.
+        val poolDeciders = (inheritedDeciders +
+            HiddenPools.hiddenOwners(state, filterRead.filter { it !in libraries }, visibility)).distinct()
         // Published for the pipeline's EmitLibrarySearchedEventEffect tail, so the searched
         // event names this searcher.
         val searcherCollection = searcher

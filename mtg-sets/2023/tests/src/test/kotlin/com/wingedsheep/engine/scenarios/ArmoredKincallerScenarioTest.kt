@@ -100,8 +100,11 @@ class ArmoredKincallerScenarioTest : FunSpec({
         val kincaller = driver.putCardInHand(me, "Armored Kincaller")
         val lifeBefore = driver.getLifeTotal(me)
 
-        // No SelectCardsDecision expected: GatherCards finds no Dinos in hand → auto-skip.
-        driver.castKincallerAndDrain(me, kincaller)
+        // The reveal is asked even with no Dino in hand (#3340); nothing can be revealed.
+        driver.castKincallerAndDrain(me, kincaller) { decision ->
+            decision.options shouldBe emptyList()
+            driver.submitCardSelection(me, emptyList())
+        }
 
         // "If you control another Dinosaur" is satisfied by Earthshaker Dreadmaw → gain 3 life.
         driver.getLifeTotal(me) shouldBe lifeBefore + 3
@@ -120,8 +123,11 @@ class ArmoredKincallerScenarioTest : FunSpec({
         val kincaller = driver.putCardInHand(me, "Armored Kincaller")
         val lifeBefore = driver.getLifeTotal(me)
 
-        // No SelectCardsDecision expected: no Dinos in hand → auto-skip.
-        driver.castKincallerAndDrain(me, kincaller)
+        // The reveal is asked even with no Dino in hand (#3340); nothing can be revealed.
+        driver.castKincallerAndDrain(me, kincaller) { decision ->
+            decision.options shouldBe emptyList()
+            driver.submitCardSelection(me, emptyList())
+        }
 
         // Neither condition is satisfied → no life gain.
         driver.getLifeTotal(me) shouldBe lifeBefore
