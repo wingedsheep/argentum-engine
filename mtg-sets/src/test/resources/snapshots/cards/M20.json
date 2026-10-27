@@ -262,6 +262,56 @@
     ]
 }
 
+// Audacious Thief
+{
+    "name": "Audacious Thief",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Whenever this creature attacks, you draw a card and you lose 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Audacious Thief:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature attacks, you draw a card and you lose 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "artist": "Dmitry Burmak",
+        "flavorText": "\"Skill, imagination, smarts: none of it matters unless you have the nerve to use it.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e1ff5e66-4718-43c3-8a58-1a0a8e788f83.jpg?1783933000"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Bag of Holding
 {
     "name": "Bag of Holding",
@@ -2877,6 +2927,65 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Skyknight Vanguard
+{
+    "name": "Skyknight Vanguard",
+    "manaCost": "{R}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Flying\nWhenever this creature attacks, create a 1/1 white Soldier creature token that's tapped and attacking.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skyknight Vanguard:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/a/4/a491d9da-a58d-4423-b565-c5a99ef63132.jpg?1783932857",
+                    "tapped": true,
+                    "attacking": true,
+                    "attackDefender": "CONTROLLER_CHOOSES"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "UNCOMMON",
+        "artist": "Bayard Wu",
+        "flavorText": "\"Jump! NOW!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/4/549634d8-1c33-401b-841d-a79ef4374dd1.jpg?1783932947",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "You choose which player or planeswalker the token is attacking. It doesn't have to be attacking the same player or planeswalker that Skyknight Vanguard is attacking."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Although the token is an attacking creature, it was never declared as an attacking creature. This means that abilities that trigger whenever a creature attacks won't trigger when the token enters the battlefield attacking."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
     ]
 }
 

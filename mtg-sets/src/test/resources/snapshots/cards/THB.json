@@ -4049,6 +4049,133 @@
     ]
 }
 
+// Tectonic Giant
+{
+    "name": "Tectonic Giant",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Elemental Giant",
+    "oracleText": "Whenever this creature attacks or becomes the target of a spell an opponent controls, choose one —\n• This creature deals 3 damage to each opponent.\n• Exile the top two cards of your library. Choose one of them. Until the end of your next turn, you may play that card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tectonic Giant:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        "AttackEvent",
+                        {
+                            "type": "BecomesTargetEvent",
+                            "byOpponent": true,
+                            "spellsOnly": true
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "EachOpponent"
+                                }
+                            },
+                            "description": "This creature deals 3 damage to each opponent"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "TopOfLibrary",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 2
+                                            }
+                                        },
+                                        "storeAs": "gathered0"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "gathered0",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Exile"
+                                        }
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered0",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected2",
+                                        "prompt": "Choose a card you may play until the end of your next turn"
+                                    },
+                                    {
+                                        "type": "GrantMayPlayFromExile",
+                                        "from": "selected2",
+                                        "expiry": {
+                                            "type": "UntilControllerStep",
+                                            "step": "CLEANUP",
+                                            "includeCurrentTurn": false
+                                        }
+                                    }
+                                ]
+                            },
+                            "description": "Exile the top two cards of your library. Choose one of them. Until the end of your next turn, you may play that card"
+                        }
+                    ],
+                    "countsAsModalSpell": false
+                },
+                "descriptionOverride": "Whenever this creature attacks or becomes the target of a spell an opponent controls, choose one — 3 damage to each opponent; or exile the top two cards of your library and choose one you may play until the end of your next turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6f226550-fc9f-4964-ac62-74f84d0ac3f3.jpg?1783931544",
+        "rulings": [
+            {
+                "date": "2020-01-24",
+                "text": "An ability that triggers when a creature becomes the target of a spell resolves before the spell that caused it to trigger. It resolves even if that spell is countered."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a spell targets Tectonic Giant more than once, its ability triggers only once."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "You choose which of the exiled cards you'll be able to play while the ability is resolving. You can't wait to pick one later. The other card remains in exile."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Tectonic Giant doesn't change when you can play the exiled card. For example, if you exile a sorcery card, you can cast it only during your main phase when the stack is empty. If you exile a land card, you can play it only during your main phase and only if you have an available land play remaining."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Terror of Mount Velus
 {
     "name": "Terror of Mount Velus",

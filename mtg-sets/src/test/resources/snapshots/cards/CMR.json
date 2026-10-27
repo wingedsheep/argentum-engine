@@ -131,6 +131,166 @@
     ]
 }
 
+// Akroma's Will
+{
+    "name": "Akroma's Will",
+    "manaCost": "{3}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one. If you control a commander as you cast this spell, you may choose both instead.\n• Creatures you control gain flying, vigilance, and double strike until end of turn.\n• Creatures you control gain lifelink, indestructible, and protection from each color until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GrantKeyword",
+                                    "keyword": "FLYING",
+                                    "target": "IterationEntity"
+                                },
+                                {
+                                    "type": "GrantKeyword",
+                                    "keyword": "VIGILANCE",
+                                    "target": "IterationEntity"
+                                },
+                                {
+                                    "type": "GrantKeyword",
+                                    "keyword": "DOUBLE_STRIKE",
+                                    "target": "IterationEntity"
+                                }
+                            ]
+                        }
+                    },
+                    "description": "Creatures you control gain flying, vigilance, and double strike until end of turn"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GrantKeyword",
+                                    "keyword": "LIFELINK",
+                                    "target": "IterationEntity"
+                                },
+                                {
+                                    "type": "GrantKeyword",
+                                    "keyword": "INDESTRUCTIBLE",
+                                    "target": "IterationEntity"
+                                },
+                                {
+                                    "type": "GrantKeyword",
+                                    "keyword": "PROTECTION_FROM_WHITE",
+                                    "target": "IterationEntity"
+                                },
+                                {
+                                    "type": "GrantKeyword",
+                                    "keyword": "PROTECTION_FROM_BLUE",
+                                    "target": "IterationEntity"
+                                },
+                                {
+                                    "type": "GrantKeyword",
+                                    "keyword": "PROTECTION_FROM_BLACK",
+                                    "target": "IterationEntity"
+                                },
+                                {
+                                    "type": "GrantKeyword",
+                                    "keyword": "PROTECTION_FROM_RED",
+                                    "target": "IterationEntity"
+                                },
+                                {
+                                    "type": "GrantKeyword",
+                                    "keyword": "PROTECTION_FROM_GREEN",
+                                    "target": "IterationEntity"
+                                }
+                            ]
+                        }
+                    },
+                    "description": "Creatures you control gain lifelink, indestructible, and protection from each color until end of turn"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1,
+            "dynamicChooseCount": {
+                "type": "Conditional",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsPermanent"
+                        ],
+                        "statePredicates": [
+                            "IsCommander"
+                        ]
+                    }
+                },
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "RARE",
+        "artist": "Antonio José Manzanedo",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c281997b-1566-4469-a14c-6645f81ab023.jpg?1783928892",
+        "rulings": [
+            {
+                "date": "2025-11-17",
+                "text": "\"Protection from each color\" is shorthand for protection from white, from blue, from black, from red, and from green. Colorless is not a color."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "There's no extra bonus if you control more than one commander."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "Once you've announced that you're casting a spell, players can't take any actions until you've finished doing so. Notably, opponents can't try to remove your commander to change how many modes you may choose."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "Even though the card is named after a specific character, controlling any commander will satisfy its condition."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "The commander you control doesn't have to be your commander."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "Once you've chosen both modes for the spell, it doesn't matter whether you continue to control a commander. This is true even if you somehow no longer control a commander as you finish casting the spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Annoyed Altisaur
 {
     "name": "Annoyed Altisaur",

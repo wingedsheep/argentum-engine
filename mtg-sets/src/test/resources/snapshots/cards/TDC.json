@@ -463,6 +463,82 @@
     ]
 }
 
+// Within Range
+{
+    "name": "Within Range",
+    "manaCost": "{3}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, create two 1/1 red Warrior creature tokens.\nWhenever you attack, each opponent loses life equal to the number of creatures attacking them.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Within Range:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Warrior"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/7/e/7edc0515-a130-45a7-aa09-0e23bba41587.jpg?1783906783"
+                }
+            },
+            {
+                "id": "Within Range:2",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "Each",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "IsAttackingPlayer",
+                                        "player": "Controller"
+                                    }
+                                ]
+                            }
+                        },
+                        "target": "Controller"
+                    }
+                },
+                "descriptionOverride": "Whenever you attack, each opponent loses life equal to the number of creatures attacking them."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "rarity": "RARE",
+        "artist": "Hector Ortiz",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/51188edb-9705-4960-854b-170744f40a88.jpg?1783907174"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Zurgo Stormrender
 {
     "name": "Zurgo Stormrender",

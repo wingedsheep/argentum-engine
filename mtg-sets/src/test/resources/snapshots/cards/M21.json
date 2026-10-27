@@ -1883,6 +1883,119 @@
     ]
 }
 
+// Subira, Tulzidi Caravanner
+{
+    "name": "Subira, Tulzidi Caravanner",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Creature — Human Shaman",
+    "oracleText": "Haste\n{1}: Another target creature with power 2 or less can't be blocked this turn.\n{1}{R}, {T}, Discard your hand: Until end of turn, whenever a creature you control with power 2 or less deals combat damage to a player, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Subira, Tulzidi Caravanner:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "CANT_BE_BLOCKED",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature pow<=2",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ]
+            },
+            {
+                "id": "Subira, Tulzidi Caravanner:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{R}"
+                            }
+                        },
+                        "CostTap",
+                        "CostDiscardHand"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "DealsDamageEvent",
+                            "damageType": "DamageCombat",
+                            "recipient": {
+                                "type": "RecipientPlayer",
+                                "player": "Any"
+                            },
+                            "sourceFilter": "creature pow<=2 ctrl:you"
+                        },
+                        "binding": "ANY"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "RARE",
+        "artist": "Leesha Hannigan",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/034b8d6d-95ea-434a-967a-e6675a7ce88a.jpg?1783930684",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "If the target creature's power is greater than 2 as the first activated ability tries to resolve, the ability doesn't resolve. However, if instead the creature's power is raised above 2 after the ability resolves, it still can't be blocked that turn."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Once a creature with power 2 or less has been blocked, Subira's middle ability won't cause it to become unblocked."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "You can activate Subira's last ability if your hand is empty. You simply discard zero cards."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "Once Subira's last ability resolves, check to see if the delayed triggered ability should trigger based on the power of the creatures immediately after damage is dealt, not based on their power as the ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Teferi's Protege
 {
     "name": "Teferi's Protege",

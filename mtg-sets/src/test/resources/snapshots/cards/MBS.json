@@ -274,6 +274,95 @@
     ]
 }
 
+// Hero of Bladehold
+{
+    "name": "Hero of Bladehold",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Battle cry (Whenever this creature attacks, each other attacking creature gets +1/+0 until end of turn.)\nWhenever this creature attacks, create two 1/1 white Soldier creature tokens that are tapped and attacking.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hero of Bladehold:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature attacking",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Battle cry (Whenever this creature attacks, each other attacking creature gets +1/+0 until end of turn.)"
+            },
+            {
+                "id": "Hero of Bladehold:2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/7/a/7a563df7-7b9d-4692-ab1b-578be1887b62.jpg?1783941682",
+                    "tapped": true,
+                    "attacking": true,
+                    "attackDefender": "CONTROLLER_CHOOSES"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "MYTHIC",
+        "artist": "Austin Hsu",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8a3853ec-e307-46e0-96d7-0706b5c45c5e.jpg?1783941393",
+        "rulings": [
+            {
+                "date": "2011-06-01",
+                "text": "Whenever Hero of Bladehold attacks, both abilities will trigger. You can put them onto the stack in any order. If the token-creating ability resolves first, the tokens each get +1/+0 until end of turn from the battle cry ability."
+            },
+            {
+                "date": "2011-06-01",
+                "text": "You choose which opponent or planeswalker an opponent controls that each token is attacking when it is put onto the battlefield."
+            },
+            {
+                "date": "2011-06-01",
+                "text": "Although the tokens are attacking, they never were declared as attacking creatures (for purposes of abilities that trigger whenever a creature attacks, for example)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Hexplate Golem
 {
     "name": "Hexplate Golem",

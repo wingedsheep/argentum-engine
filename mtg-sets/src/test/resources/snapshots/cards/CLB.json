@@ -1792,6 +1792,84 @@
     ]
 }
 
+// Karlach, Fury of Avernus
+{
+    "name": "Karlach, Fury of Avernus",
+    "manaCost": "{4}{R}",
+    "typeLine": "Legendary Creature — Tiefling Barbarian",
+    "oracleText": "Whenever you attack, if it's the first combat phase of the turn, untap all attacking creatures. They gain first strike until end of turn. After this phase, there is an additional combat phase.\nChoose a Background (You can have a Background as a second commander.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywordAbilities": [
+        {
+            "type": "Partner",
+            "kind": "ChooseABackground"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Karlach, Fury of Avernus:1",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature attacking"
+                                }
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "TapUntap",
+                                        "target": "IterationEntity",
+                                        "tap": false
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "FIRST_STRIKE",
+                                        "target": "IterationEntity"
+                                    }
+                                ]
+                            }
+                        },
+                        "AddCombatPhase"
+                    ]
+                },
+                "interveningIf": "IsFirstCombatPhaseOfTurn",
+                "descriptionOverride": "Whenever you attack, if it's the first combat phase of the turn, untap all attacking creatures. They gain first strike until end of turn. After this phase, there is an additional combat phase."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "rarity": "MYTHIC",
+        "artist": "Billy Christian",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/7/775480ed-f574-40cb-bd9b-21102eaaff63.jpg?1783922734",
+        "rulings": [
+            {
+                "date": "2022-06-10",
+                "text": "Notably, the triggered ability of Karlach doesn't give you any additional main phases. This means that you will move directly from the end of combat step of one combat phase to the beginning of combat step of the next one."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "Karlach doesn't have to be among the attacking creatures."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Korlessa, Scale Singer
 {
     "name": "Korlessa, Scale Singer",

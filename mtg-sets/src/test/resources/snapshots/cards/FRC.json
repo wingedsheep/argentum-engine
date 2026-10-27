@@ -1,1 +1,77 @@
-
+// Avacyn, Angel of Horror
+{
+    "name": "Avacyn, Angel of Horror",
+    "manaCost": "{5}{B}{B}{B}",
+    "typeLine": "Legendary Creature — Angel",
+    "oracleText": "Flying, deathtouch\nWhenever Avacyn or another nontoken creature you control dies, return that card to the battlefield under your control at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 8
+    },
+    "keywords": [
+        "FLYING",
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Avacyn, Angel of Horror:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Battlefield",
+                        "controllerOverride": "Controller",
+                        "fromZone": "Graveyard"
+                    }
+                },
+                "descriptionOverride": "Whenever Avacyn or another nontoken creature you control dies, return that card to the battlefield under your control at the beginning of the next end step."
+            },
+            {
+                "id": "Avacyn, Angel of Horror:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": "TriggeringEntity",
+                        "destination": "Battlefield",
+                        "controllerOverride": "Controller",
+                        "fromZone": "Graveyard"
+                    }
+                },
+                "descriptionOverride": "Whenever Avacyn or another nontoken creature you control dies, return that card to the battlefield under your control at the beginning of the next end step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "RARE",
+        "artist": "Pauline Voss",
+        "flavorText": "\"She binds them to do naught but worship her. It is no salvation she grants, but servitude.\"\n—Geist of Saint Thalia",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff65f46b-0f82-49b8-93b9-7ac0243ce941.jpg?1789644252",
+        "rulings": [
+            {
+                "date": "2026-08-21",
+                "text": "If Avacyn dies at the same time as another nontoken creature, her ability will trigger for each of them."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}

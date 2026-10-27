@@ -3439,6 +3439,113 @@
     ]
 }
 
+// Sword of the Animist
+{
+    "name": "Sword of the Animist",
+    "manaCost": "{2}",
+    "typeLine": "Legendary Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+1.\nWhenever equipped creature attacks, you may search your library for a basic land card, put it onto the battlefield tapped, then shuffle.\nEquip {2}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sword of the Animist:1",
+                "trigger": "AttackEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "basicland"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found",
+                                "prompt": "Search your library for a basic land card to put onto the battlefield tapped",
+                                "selectedLabel": "Put onto the battlefield tapped"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield",
+                                    "placement": "Tapped"
+                                }
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Sword of the Animist:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "240",
+        "rarity": "RARE",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "The blade glows only for Zendikar's chosen.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/3/f3687c36-c0ae-4dba-9379-b420236bf529.jpg?1783938307"
+    },
+    "colorIdentityOverride": []
+}
+
 // Thopter Engineer
 {
     "name": "Thopter Engineer",

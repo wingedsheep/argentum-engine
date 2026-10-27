@@ -416,6 +416,111 @@
     ]
 }
 
+// Otharri, Suns' Glory
+{
+    "name": "Otharri, Suns' Glory",
+    "manaCost": "{3}{R}{W}",
+    "typeLine": "Legendary Creature — Phoenix",
+    "oracleText": "Flying, lifelink, haste\nWhenever Otharri attacks, you get an experience counter. Then create a 2/2 red Rebel creature token that's tapped and attacking for each experience counter you have.\n{2}{R}{W}, Tap an untapped Rebel you control: Return this card from your graveyard to the battlefield tapped.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "LIFELINK",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Otharri, Suns' Glory:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "EXPERIENCE",
+                            "count": 1,
+                            "target": "Controller"
+                        },
+                        {
+                            "type": "CreateToken",
+                            "count": {
+                                "type": "PlayerCounterCount",
+                                "counterType": "EXPERIENCE"
+                            },
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "RED"
+                            ],
+                            "creatureTypes": [
+                                "Rebel"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/a/4/a41eb9df-d8b4-4697-a759-886faf16754d.jpg?1783918169",
+                            "tapped": true,
+                            "attacking": true,
+                            "attackDefender": "CONTROLLER_CHOOSES"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Otharri attacks, you get an experience counter. Then create a 2/2 red Rebel creature token that's tapped and attacking for each experience counter you have."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Otharri, Suns' Glory:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{R}{W}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomTapPermanents",
+                                "filter": "permanent Rebel untapped ctrl:you"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Battlefield",
+                    "placement": "Tapped",
+                    "fromZone": "Graveyard"
+                },
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "{2}{R}{W}, Tap an untapped Rebel you control: Return this card from your graveyard to the battlefield tapped."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "MYTHIC",
+        "artist": "Marta Nael",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/80c72839-0fa6-4b5f-83b7-6553ebf09bef.jpg?1783918163",
+        "rulings": [
+            {
+                "date": "2023-02-04",
+                "text": "Tapping a Rebel you control is part of the cost to activate the last ability of Otharri, Suns' Glory while it is in the graveyard. Once a player has begun to activate the ability, other players may not respond by removing that Rebel from the battlefield to prevent it from being tapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Phyresis Outbreak
 {
     "name": "Phyresis Outbreak",

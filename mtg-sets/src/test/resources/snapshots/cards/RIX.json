@@ -870,6 +870,91 @@
     ]
 }
 
+// Elenda, the Dusk Rose
+{
+    "name": "Elenda, the Dusk Rose",
+    "manaCost": "{2}{W}{B}",
+    "typeLine": "Legendary Creature — Vampire Knight",
+    "oracleText": "Lifelink\nWhenever another creature dies, put a +1/+1 counter on Elenda.\nWhen Elenda dies, create X 1/1 white Vampire creature tokens with lifelink, where X is Elenda's power.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Elenda, the Dusk Rose:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Elenda, the Dusk Rose:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Vampire"
+                    ],
+                    "keywords": [
+                        "LIFELINK"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/0/9/09293ae7-0629-417b-9eda-9bd3f6d8e118.jpg?1783935812"
+                },
+                "descriptionOverride": "When Elenda dies, create X 1/1 white Vampire creature tokens with lifelink, where X is Elenda's power."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "flavorText": "Her centuries-long search is ended.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a52af49b-cfeb-47a8-9ce5-5d35bfa9eb75.jpg?1783935277",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "If Elenda dies at the same time as another creature, both of its triggered abilities trigger. However, the first one won't do anything since you can't put a +1/+1 counter on Elenda."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "To determine how many Vampire tokens are created, use Elenda's power as it last existed on the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Exultant Skymarcher
 {
     "name": "Exultant Skymarcher",

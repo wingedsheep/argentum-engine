@@ -456,6 +456,98 @@
     ]
 }
 
+// Iroas, God of Victory
+{
+    "name": "Iroas, God of Victory",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Legendary Enchantment Creature — God",
+    "oracleText": "Indestructible\nAs long as your devotion to red and white is less than seven, Iroas isn't a creature.\nCreatures you control have menace. (They can't be blocked except by two or more creatures.)\nPrevent all damage that would be dealt to attacking creatures you control.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 4
+    },
+    "keywords": [
+        "INDESTRUCTIBLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "RemoveCardType",
+                    "cardType": "CREATURE"
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "DevotionTo",
+                        "colors": [
+                            "RED",
+                            "WHITE"
+                        ]
+                    },
+                    "operator": "LT",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "MENACE",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": "creature attacking ctrl:you"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "rarity": "MYTHIC",
+        "artist": "Slawomir Maniak",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/cacf28cb-feea-4afb-b22e-1b8d50ee66c1.jpg?1783939404",
+        "rulings": [
+            {
+                "date": "2014-04-26",
+                "text": "Iroas's last ability prevents all damage dealt to attacking creatures you control, not just combat damage."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "Your devotion to two colors is the number of mana symbols among mana costs of permanents you control that are the first color, the second, or both. If an effect counts your devotion to two colors, a hybrid symbol that is both of those colors is counted just once."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a God stops being a creature, it loses the type creature and the creature type God. It continues to be a legendary enchantment."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "The type-changing ability that can make a God not be a creature functions only on the battlefield. It's always a creature card in other zones, regardless of your devotion to its color. It's always a creature spell while it's on the stack."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If a God is attacking or blocking and it stops being a creature, it will be removed from combat. It won't rejoin combat if it resumes being a creature later during that combat."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Lightning Diadem
 {
     "name": "Lightning Diadem",
