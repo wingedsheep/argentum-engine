@@ -22,11 +22,8 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * without a prompt (CR 608.2c does-as-much-as-it-can — the Scryfall ruling spells this out: a
  * player with a single creature sacrifices that one).
  *
- * Known deviation: the printed card has every player choose in APNAP order and then sacrifices
- * everything simultaneously. The engine walks the players one at a time, so a later player's
- * choice is made with the earlier sacrifices already resolved. This is the same approximation
- * the existing multi-player edicts ship with and only shows up when a sacrifice triggers
- * something that changes a later chooser's board.
+ * Every player chooses in APNAP order, and only then are all the chosen creatures sacrificed
+ * together (CR 101.4), so a dies trigger sees every creature that went with it.
  */
 val BarterInBlood = card("Barter in Blood") {
     manaCost = "{2}{B}{B}"

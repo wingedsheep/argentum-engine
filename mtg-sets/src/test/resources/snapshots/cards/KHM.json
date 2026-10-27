@@ -13627,6 +13627,54 @@
     ]
 }
 
+// Tergrid's Shadow
+{
+    "name": "Tergrid's Shadow",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Each player sacrifices two creatures.\nForetell {2}{B}{B} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "keywords": [
+        "FORETELL"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Foretell",
+            "cost": "{2}{B}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForceSacrifice",
+            "filter": "creature",
+            "count": 2,
+            "target": {
+                "type": "PlayerRef",
+                "player": "Each"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "rarity": "UNCOMMON",
+        "artist": "Yongjae Choi",
+        "flavorText": "Tergrid, god of fright, never acknowledges her own shadow . . . or its murderous deeds.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/417f71d2-d7da-4279-8847-d27c67e9ea9d.jpg?1783928239",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "As Tergrid's Shadow resolves, first the player whose turn it is chooses two creatures they control, then each other player in turn order does the same, knowing the choices made before them. Then all the chosen creatures are sacrificed at the same time."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a player controls two or fewer creatures, that player sacrifices each creature they control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Tergrid, God of Fright
 {
     "name": "Tergrid, God of Fright",
