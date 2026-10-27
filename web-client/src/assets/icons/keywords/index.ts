@@ -230,4 +230,5 @@ export const counterManaClass: Record<string, string> = {
   REFINE: 'counter-time',
   VOYAGE: 'counter-lore',
   GHOSTFORM: 'counter-lore',
+  NIGHT: 'counter-time',
 }

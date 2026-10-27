@@ -1317,6 +1317,25 @@ object PredefinedTokens {
     }
 
     /**
+     * Replicated Ring — the colorless snow artifact token with "{T}: Add one mana of any color."
+     * Created eight at a time by Replicating Ring. Being snow, the mana it makes is snow mana.
+     */
+    val ReplicatedRing = card("Replicated Ring") {
+        typeLine = "Snow Artifact"
+        oracleText = "{T}: Add one mana of any color."
+
+        activatedAbility {
+            cost = Costs.Tap
+            effect = Effects.AddAnyColorMana(1)
+            manaAbility = true
+        }
+
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/b/3/b3ce1236-ec2f-4cd1-9701-ba6ead74c220.jpg?1783928077"
+        }
+    }
+
+    /**
      * Tamiyo's Notebook — a legendary colorless Book artifact token with
      * "Spells you cast cost {2} less to cast" and "{T}: Draw a card."
      * Created by Tamiyo, Compleated Sage's −7.
@@ -1412,6 +1431,7 @@ object PredefinedTokens {
         ForestDryad,
         Powerstone,
         IcyManalith,
+        ReplicatedRing,
         TamiyosNotebook,
         Gold
     )

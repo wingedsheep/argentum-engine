@@ -874,6 +874,13 @@ value class CounterType(val name: String) {
          */
         val GHOSTFORM = CounterType("GHOSTFORM")
 
+        /**
+         * Night counter (KHM — Replicating Ring). A passive countdown with no inherent rule, unrelated
+         * to the day/night designation: the Ring's upkeep trigger adds one and, at eight, removes them
+         * all and makes eight Replicated Ring tokens.
+         */
+        val NIGHT = CounterType("NIGHT")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -1029,6 +1036,7 @@ value class CounterType(val name: String) {
             REFINE,
             VOYAGE,
             GHOSTFORM,
+            NIGHT,
         )
 
         /**

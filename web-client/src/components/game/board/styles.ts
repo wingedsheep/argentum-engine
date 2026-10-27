@@ -2544,6 +2544,7 @@ const passiveCounterPalette: Record<string, CounterBadgePalette> = {
   REFINE: { bg: 'rgba(18, 30, 52, 0.95)', border: 'rgba(120, 160, 230, 0.7)', color: '#c6d8f6' },
   VOYAGE: { bg: 'rgba(14, 36, 48, 0.95)', border: 'rgba(90, 180, 210, 0.7)', color: '#b8e4f2' },
   GHOSTFORM: { bg: 'rgba(36, 36, 44, 0.95)', border: 'rgba(200, 200, 220, 0.7)', color: '#e6e6f2' },
+  NIGHT: { bg: 'rgba(22, 26, 52, 0.95)', border: 'rgba(140, 150, 220, 0.7)', color: '#d8dcff' },
   TRAINING: { bg: 'rgba(48, 40, 22, 0.95)', border: 'rgba(214, 170, 90, 0.7)', color: '#ecd09a' },
   MINUS_ZERO_MINUS_ONE: { bg: 'rgba(60, 20, 20, 0.95)', border: 'rgba(220, 120, 120, 0.7)', color: '#e09c9c' },
   MINUS_ZERO_MINUS_TWO: { bg: 'rgba(60, 20, 20, 0.95)', border: 'rgba(220, 120, 120, 0.7)', color: '#e09c9c' },

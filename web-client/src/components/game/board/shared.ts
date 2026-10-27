@@ -899,6 +899,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.VOYAGE,
   // Kaya's reminder that the creature returns to hand when it dies or is exiled.
   CounterType.GHOSTFORM,
+  // Replicating Ring's upkeep countdown to eight Replicated Rings.
+  CounterType.NIGHT,
   CounterType.PLUS_ONE_PLUS_TWO,
   CounterType.PLUS_TWO_PLUS_TWO,
   CounterType.MINUS_TWO_MINUS_TWO,
