@@ -282,9 +282,11 @@ data class EffectContext(
     val chosenEntitySnapshots: List<EntitySnapshot> = emptyList(),
     /**
      * LKI snapshots (CR 608.2h) of the permanents an earlier instruction of *this* resolution
-     * moved off the battlefield — a `MoveCollectionEffect` exile, destroy, bounce or sacrifice —
-     * each the same capture its [com.wingedsheep.engine.core.ZoneChangeEvent.lastKnown] carries.
-     * Read by [EffectTarget.IterationEntity] (see
+     * moved off the battlefield — a `MoveCollectionEffect` or single-target `MoveToZoneEffect`
+     * exile, destroy, bounce or sacrifice — each the same capture its
+     * [com.wingedsheep.engine.core.ZoneChangeEvent.lastKnown] carries. Read by
+     * [EffectTarget.IterationEntity] and by a chosen target ([EffectTarget.ContextTarget] /
+     * [EffectTarget.BoundVariable] — "become copies of that creature" after bouncing it) (see
      * [com.wingedsheep.engine.handlers.effects.LkiPolicy.LIVE_THEN_OWN_MOVE_LKI]) so "for each
      * permanent exiled this way, … a card that shares a card type with it" compares against the
      * permanent as it last existed on the battlefield: a token's types, an animated land's
