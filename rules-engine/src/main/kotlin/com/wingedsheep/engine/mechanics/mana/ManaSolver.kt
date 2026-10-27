@@ -38,7 +38,6 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.engine.mechanics.SummoningSicknessRules
 import com.wingedsheep.engine.mechanics.cost.CostPaymentService
-import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.costs.manaCostOrNull
@@ -3421,10 +3420,9 @@ class ManaSolver private constructor(
             val attachedTo = state.getEntity(sourceId)?.get<AttachedToComponent>()?.targetId
             attachedTo != null && canTapForCost(state, attachedTo)
         }
-        // CR 701.59a — forage: exile three cards from your graveyard, or sacrifice a Food.
-        is AbilityCost.Forage -> state.getZone(ZoneKey(playerId, Zone.GRAVEYARD)).size >= 3 ||
-            state.projectedState.getBattlefieldControlledBy(playerId)
-                .any { state.projectedState.hasSubtype(it, Subtype.FOOD.value) }
+        // CR 701.59a — forage: exile three cards from your graveyard, or sacrifice a Food. The one
+        // forage resolver also drops a Food no cost may sacrifice.
+        is AbilityCost.Forage -> com.wingedsheep.engine.handlers.costs.ForageCostResolver.canPay(state, playerId)
         is AbilityCost.Atom -> CostPaymentService.canAfford(
             state = state,
             payerId = playerId,
@@ -3434,7 +3432,7 @@ class ManaSolver private constructor(
             // (CR 601.2h); canAfford reads that flag itself.
             manaSolver = this,
             predicateEvaluator = predicateEvaluator,
-            lifePurpose = LifePaymentPurpose.ACTIVATE_MANA_ABILITY
+            purpose = LifePaymentPurpose.ACTIVATE_MANA_ABILITY
         )
         is AbilityCost.Composite -> cost.costs.all {
             nonManaAbilityCostIsPayable(state, playerId, sourceId, it)

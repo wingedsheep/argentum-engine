@@ -284,6 +284,10 @@ class ActivatedAbilityEnumerator(
                     is AbilityCost.TapGrantingPermanent -> {
                         if (!granterIsUntapped(state, granterByAbilityId[ability.id])) continue
                     }
+                    // "Sacrifice <the granting permanent>" — unpayable while no cost may sacrifice it.
+                    is AbilityCost.SacrificeGrantingPermanent -> {
+                        if (!granterIsSacrificeable(state, granterByAbilityId[ability.id])) continue
+                    }
                     // "Remove all aim counters from Hankyu" names the granter just as "Tap Fishing
                     // Pole" does; it must still be there, though with no counters it pays nothing.
                     is AbilityCost.RemoveAllCounters -> {
@@ -782,6 +786,12 @@ class ActivatedAbilityEnumerator(
                                 // "{1}, {T}, Tap Fishing Pole:".
                                 is AbilityCost.TapGrantingPermanent -> {
                                     if (!granterIsUntapped(state, granterByAbilityId[ability.id])) {
+                                        costCanBePaid = false
+                                        break
+                                    }
+                                }
+                                is AbilityCost.SacrificeGrantingPermanent -> {
+                                    if (!granterIsSacrificeable(state, granterByAbilityId[ability.id])) {
                                         costCanBePaid = false
                                         break
                                     }
@@ -1662,6 +1672,14 @@ class ActivatedAbilityEnumerator(
      * [AbilityCost.TapGrantingPermanent]; an unresolved granter (null) is treated as unpayable,
      * since the cost names a specific permanent that must still be there to tap (CR 201.5a).
      */
+    /**
+     * Can [granterId] pay an [AbilityCost.SacrificeGrantingPermanent]? An unresolved granter defers
+     * to activation time, as [com.wingedsheep.engine.handlers.CostHandler] does; a known one must be
+     * a permanent a cost may sacrifice.
+     */
+    private fun granterIsSacrificeable(state: com.wingedsheep.engine.state.GameState, granterId: EntityId?): Boolean =
+        granterId == null || com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality.canSacrificeForCost(state, granterId)
+
     private fun granterIsUntapped(state: com.wingedsheep.engine.state.GameState, granterId: EntityId?): Boolean {
         if (granterId == null) return false
         val granter = state.getEntity(granterId) ?: return false

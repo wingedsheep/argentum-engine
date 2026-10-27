@@ -818,21 +818,27 @@ class CostPaymentService(private val services: EngineServices) {
             sourceId: EntityId,
             manaSolver: ManaSolver,
             predicateEvaluator: PredicateEvaluator,
-            /** Why the cost is paid — Karn's Sylex reads it for life; any purpose but OTHER also drops permanents no cost may sacrifice. */
-            lifePurpose: LifePaymentPurpose = LifePaymentPurpose.OTHER
+            /**
+             * Why the cost is paid. Any purpose but [LifePaymentPurpose.OTHER] means it is paid to cast
+             * a spell or activate an ability, which gates two things: a cost-scoped life prohibition
+             * (Karn's Sylex) and the sacrifice pool, which then drops permanents no cost may sacrifice
+             * ([SacrificeCostLegality], Angel of Jubilation). OTHER (a resolving spell's "unless you pay",
+             * a morph cost) is reached by neither.
+             */
+            purpose: LifePaymentPurpose = LifePaymentPurpose.OTHER
         ): Boolean {
             return when (val c = resolve(state, cost, sourceId)) {
                 // Only unresolvable own-mana-costs reach here (missing source/card component) — unpayable.
                 is PayCost.OwnManaCost -> false
                 // Unknowable without the resolving effect's context; see pay().
                 is PayCost.DynamicLife -> false
-                is PayCost.Choice -> c.options.any { canAfford(state, payerId, it, sourceId, manaSolver, predicateEvaluator = predicateEvaluator, lifePurpose = lifePurpose) }
+                is PayCost.Choice -> c.options.any { canAfford(state, payerId, it, sourceId, manaSolver, predicateEvaluator = predicateEvaluator, purpose = purpose) }
                 is PayCost.Atom -> when (val atom = c.atom) {
                     is CostAtom.Mana -> manaSolver.canPay(state, payerId, atom.cost)
                     // CR 119.4 — a player may pay life only if their life total is at least the amount; paying
                     // life that would reduce them to 0 or less is legal (they then lose as a state-based action).
                     is CostAtom.PayLife -> CostAtomAmounts.canPayLife( // CR 119.8 too
-                        state, payerId, CostAtomAmounts.life(state, atom, payerId, predicateEvaluator, sourceId), lifePurpose
+                        state, payerId, CostAtomAmounts.life(state, atom, payerId, predicateEvaluator, sourceId), purpose
                     )
                     is CostAtom.Discard -> domain(state, payerId, c, sourceId, predicateEvaluator = predicateEvaluator).size >= atom.count
                     // CR 118.3 — an empty hand discards nothing, and a cost of nothing is payable.
@@ -866,7 +872,7 @@ class CostPaymentService(private val services: EngineServices) {
                         // Paid as part of casting or activating (not while something resolves), the
                         // pool drops what no cost may sacrifice (Angel of Jubilation).
                         val candidates = domain(state, payerId, c, sourceId, predicateEvaluator = predicateEvaluator)
-                            .let { if (lifePurpose == LifePaymentPurpose.OTHER) it else SacrificeCostLegality.sacrificeableForCost(state, it) }
+                            .let { if (purpose == LifePaymentPurpose.OTHER) it else SacrificeCostLegality.sacrificeableForCost(state, it) }
                         if (atom.distinctNames) distinctNameCount(state, candidates) >= atom.count
                         else candidates.size >= atom.count
                     }

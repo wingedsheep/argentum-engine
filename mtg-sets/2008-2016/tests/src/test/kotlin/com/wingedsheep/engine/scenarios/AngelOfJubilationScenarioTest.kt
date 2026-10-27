@@ -116,10 +116,13 @@ class AngelOfJubilationScenarioTest : FunSpec({
         val angel = d.putCreatureOnBattlefield(d.player1, "Angel of Jubilation")
         val altar = d.putPermanentOnBattlefield(d.player1, "Ashnod's Altar")
         val fodder = d.putCreatureOnBattlefield(d.player1, "Savannah Lions")
+        val gris = d.putCreatureOnBattlefield(d.player1, "Griselbrand")
         d.canUse(d.player1, altar) shouldBe false
+        d.canUse(d.player1, gris) shouldBe false
 
         d.moveToGraveyard(angel)
         d.canUse(d.player1, altar) shouldBe true
+        withClue("Griselbrand's life cost is payable again") { d.canUse(d.player1, gris) shouldBe true }
         d.submit(
             ActivateAbility(
                 playerId = d.player1, sourceId = altar, abilityId = AshnodsAltar.activatedAbilities.single().id,

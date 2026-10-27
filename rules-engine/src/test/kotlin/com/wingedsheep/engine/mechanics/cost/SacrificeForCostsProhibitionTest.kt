@@ -128,6 +128,26 @@ class SacrificeForCostsProhibitionTest : FunSpec({
         oracleText = "Emerge {B}"
         emerge("{B}")
     }
+    val greed = card("Sac Any Number Sorcery") {
+        manaCost = "{B}"
+        typeLine = "Sorcery"
+        oracleText = "As an additional cost to cast this spell, you may sacrifice any number of creatures.\nDraw a card."
+        additionalCost(Costs.additional.SacrificePermanents(GameObjectFilter.Creature))
+        spell { effect = Effects.DrawCards(1) }
+    }
+    val soulblast = card("Sac All Sorcery") {
+        manaCost = "{B}"
+        typeLine = "Sorcery"
+        oracleText = "As an additional cost to cast this spell, sacrifice all creatures you control.\nDraw a card."
+        additionalCost(Costs.additional.SacrificeAll(GameObjectFilter.Creature))
+        spell { effect = Effects.DrawCards(1) }
+    }
+    val plainLock = card("Plain Sacrifice Lock") {
+        manaCost = "{3}"
+        typeLine = "Enchantment"
+        oracleText = "Creatures you control can't be sacrificed."
+        staticAbility { ability = CantBeSacrificed(GroupFilter.AllCreaturesYouControl) }
+    }
     val colorlessSpell = card("Two Colorless Sorcery") {
         manaCost = "{2}"
         typeLine = "Sorcery"
@@ -139,7 +159,7 @@ class SacrificeForCostsProhibitionTest : FunSpec({
         val driver = GameTestDriver()
         driver.registerCards(
             TestCards.all + listOf(
-                lock, bear, construct, trinket, splinters, edict, outlet, artifactOutlet, altar, selfSac, emerger, colorlessSpell
+                lock, bear, construct, trinket, splinters, edict, outlet, artifactOutlet, altar, selfSac, emerger, greed, soulblast, plainLock, colorlessSpell
             )
         )
         driver.initMirrorMatch(deck = Deck.of("Swamp" to 40), skipMulligans = true, startingPlayer = 0)
@@ -189,6 +209,57 @@ class SacrificeForCostsProhibitionTest : FunSpec({
                 playerId = me, cardId = horror, useAlternativeCost = true,
                 alternativeCostType = AlternativeCostType.EMERGE, additionalCostPayment = sacrificing(creature)
             )
+        ).error shouldNotBe null
+        driver.findPermanent(me, "Sac Test Bear") shouldBe creature
+    }
+
+    test("'sacrifice any number of creatures' offers none of them and refuses one") {
+        val (driver, me) = newDriver()
+        driver.putLandOnBattlefield(me, "Swamp")
+        val creature = driver.putCreatureOnBattlefield(me, "Sac Test Bear")
+        val spell = driver.putCardInHand(me, "Sac Any Number Sorcery")
+        fun offer() = driver.legalActions(me).single { (it.action as? CastSpell)?.cardId == spell }
+        withClue("the creature is on offer without the lock") {
+            offer().additionalCostInfo?.validSacrificeTargets.orEmpty() shouldContain creature
+        }
+
+        driver.putPermanentOnBattlefield(me, "Sacrifice Cost Lock")
+        withClue("choosing none still pays it, so the spell stays castable — without the creature") {
+            offer().affordable shouldBe true
+            offer().additionalCostInfo?.validSacrificeTargets.orEmpty() shouldNotContain creature
+        }
+        driver.submit(
+            CastSpell(
+                playerId = me, cardId = spell,
+                additionalCostPayment = AdditionalCostPayment(variableCostPermanents = listOf(creature)),
+            )
+        ).error shouldNotBe null
+        driver.findPermanent(me, "Sac Test Bear") shouldBe creature
+    }
+
+    test("'sacrifice all creatures you control' can't be paid while you control a creature") {
+        val (driver, me) = newDriver()
+        driver.putPermanentOnBattlefield(me, "Sacrifice Cost Lock")
+        driver.putLandOnBattlefield(me, "Swamp")
+        val spell = driver.putCardInHand(me, "Sac All Sorcery")
+        withClue("controlling none sacrifices nothing, so it is payable") { driver.canCast(me, spell) shouldBe true }
+
+        val creature = driver.putCreatureOnBattlefield(me, "Sac Test Bear")
+        driver.canCast(me, spell) shouldBe false
+        driver.submit(CastSpell(playerId = me, cardId = spell)).error shouldNotBe null
+        driver.findPermanent(me, "Sac Test Bear") shouldBe creature
+    }
+
+    test("a permanent that can't be sacrificed at all can't pay a sacrifice cost either") {
+        val (driver, me) = newDriver()
+        val outletId = driver.putPermanentOnBattlefield(me, "Creature Sac Outlet")
+        val creature = driver.putCreatureOnBattlefield(me, "Sac Test Bear")
+        val abilityId = outlet.activatedAbilities.single().id
+        driver.putPermanentOnBattlefield(me, "Plain Sacrifice Lock")
+
+        driver.canActivate(me, outletId) shouldBe false
+        driver.submit(
+            ActivateAbility(playerId = me, sourceId = outletId, abilityId = abilityId, costPayment = sacrificing(creature))
         ).error shouldNotBe null
         driver.findPermanent(me, "Sac Test Bear") shouldBe creature
     }

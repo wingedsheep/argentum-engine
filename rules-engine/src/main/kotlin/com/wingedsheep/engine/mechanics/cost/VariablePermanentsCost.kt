@@ -122,7 +122,8 @@ object VariablePermanentsCost {
      * Permanents [playerId] may choose to pay [atom], in battlefield order.
      *
      * A `TAP` atom sees only untapped permanents (CR 701.26a — "only untapped permanents can be
-     * tapped"); the other actions see every match. [sourceId] is the cost's own source, excluded
+     * tapped"); a `SACRIFICE` atom drops what no cost may sacrifice ([SacrificeCostLegality]); the
+     * other actions see every match. [sourceId] is the cost's own source, excluded
      * when the atom sets `excludeSelf`; pass null for a spell's additional cost, which has no
      * source permanent on the battlefield.
      */
@@ -140,6 +141,9 @@ object VariablePermanentsCost {
             val container = state.getEntity(entityId) ?: return@filter false
             container.get<CardComponent>() ?: return@filter false
             if (atom.action == PermanentCostAction.TAP && container.has<TappedComponent>()) return@filter false
+            if (atom.action == PermanentCostAction.SACRIFICE && !SacrificeCostLegality.canSacrificeForCost(state, entityId)) {
+                return@filter false
+            }
             predicateEvaluator.matches(state, projected, entityId, atom.filter, context)
         }
     }

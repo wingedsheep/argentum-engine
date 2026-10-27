@@ -174,6 +174,15 @@ internal object SacrificeAllCostKind : SpellCostKind<CostAtom.SacrificeAll> {
     override fun canPay(state: GameState, payerId: EntityId, cost: CostAtom.SacrificeAll, costHandler: CostHandler) =
         costHandler.sacrificeAllCandidates(state, cost, payerId).all { SacrificeCostLegality.canSacrificeForCost(state, it) }
 
+    // The cast enumeration and the cast validator ask the same question as canPay, so the spell is
+    // neither offered nor accepted while one of the permanents it would take can't be sacrificed.
+    override fun enumerate(env: SpellCostEnumeration, cost: CostAtom.SacrificeAll, offer: SpellCostOffer) =
+        env.costUtils.canPaySacrificeAll(env.state, env.playerId, cost)
+
+    override fun validate(check: SpellCostCheck, cost: CostAtom.SacrificeAll): String? =
+        if (canPay(check.state, check.playerId, cost, check.costHandler)) null
+        else "A permanent this spell would sacrifice can't be sacrificed to cast it"
+
     // The caster picks nothing, so the client submits no payment for it.
     override fun paysUnprompted(cost: CostAtom.SacrificeAll) = true
 
@@ -762,6 +771,9 @@ internal object VariablePermanentsCostKind : SpellCostKind<CostAtom.VariablePerm
             // turn may still pay (as with crew, CR 702.122b).
             if (cost.action == PermanentCostAction.TAP && permContainer.has<TappedComponent>()) {
                 return "${permCard.name} is already tapped"
+            }
+            if (cost.action == PermanentCostAction.SACRIFICE && !SacrificeCostLegality.canSacrificeForCost(state, permId)) {
+                return "${permCard.name} can't be sacrificed to cast this spell"
             }
             if (!check.predicateEvaluator.matches(state, projected, permId, cost.filter, context)) {
                 return "${permCard.name} doesn't match the required filter: ${cost.filter.description}"
