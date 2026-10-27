@@ -13519,6 +13519,85 @@
     ]
 }
 
+// Moritte of the Frost
+{
+    "name": "Moritte of the Frost",
+    "manaCost": "{2}{G}{U}{U}",
+    "typeLine": "Legendary Snow Creature — Shapeshifter",
+    "oracleText": "Changeling (This card is every creature type.)\nYou may have Moritte enter as a copy of a permanent you control, except it's legendary and snow in addition to its other types and, if it's a creature, it enters with two additional +1/+1 counters on it and has changeling.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "keywords": [
+        "CHANGELING"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersAsCopy",
+                "copyFilter": {
+                    "cardPredicates": [
+                        "IsPermanent"
+                    ],
+                    "controllerPredicate": "ControlledByYou"
+                },
+                "entersWithCounters": {
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "ifEntrantMatches": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "exceptions": {
+                    "addedSupertypes": [
+                        "LEGENDARY",
+                        "SNOW"
+                    ],
+                    "conditional": [
+                        {
+                            "cardType": "CREATURE",
+                            "exceptions": {
+                                "addedKeywords": [
+                                    "CHANGELING"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "UNCOMMON",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/22fdbe71-abca-4e48-99b2-1cb6b35d930b.jpg?1783928193",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "If Moritte copies a nonlegendary permanent, you'll control two permanents with same name, but only one of them (Moritte) will be legendary. You won't put any of them into their owner's graveyard."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If Moritte copies a creature, it enters with two +1/+1 counters on it, plus any counters that will be put on it by abilities it copied or abilities of other objects."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If Moritte copies a permanent that's normally not a creature but has been made a creature by another effect, Moritte enters as a noncreature permanent that doesn't get +1/+1 counters or have changeling."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Mystic Reflection
 {
     "name": "Mystic Reflection",

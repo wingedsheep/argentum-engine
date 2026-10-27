@@ -2560,12 +2560,18 @@ data class EntersAsCopy(
  *   this filter as the permanent enters, read against the entrant's controller — "if you control that
  *   creature" is `GameObjectFilter.Any.youControl()`. A copied object that has left the battlefield
  *   by then no longer matches a battlefield filter, so no counters.
+ * @property ifEntrantMatches When non-null, the counters are placed only if the entering copy itself
+ *   matches this filter as it enters — "if it's a creature, it enters with two additional +1/+1
+ *   counters" (Moritte of the Frost). Unlike [ifCopiedMatches] this reads the entrant's own
+ *   characteristics, which are the copiable values (plus the copy's exceptions) rather than the
+ *   copied object's: a land animated by a non-copy effect is copied as a noncreature, so no counters.
  */
 @Serializable
 data class CopyEntryCounters(
     val count: DynamicAmount,
     val counterType: CounterType = CounterType.PLUS_ONE_PLUS_ONE,
     val ifCopiedMatches: GameObjectFilter? = null,
+    val ifEntrantMatches: GameObjectFilter? = null,
 ) {
     val description: String
         get() = buildString {
@@ -2582,6 +2588,11 @@ data class CopyEntryCounters(
                 null -> {}
                 GameObjectFilter.Any.youControl() -> append(" if you control that creature")
                 else -> append(" if the copied object matches: ${ifCopiedMatches.description}")
+            }
+            ifEntrantMatches?.let { filter ->
+                val desc = filter.description
+                if (filter == GameObjectFilter.Creature) append(" if it's a creature")
+                else append(" if it's ${if (desc.first().lowercaseChar() in "aeiou") "an" else "a"} $desc")
             }
         }
 }

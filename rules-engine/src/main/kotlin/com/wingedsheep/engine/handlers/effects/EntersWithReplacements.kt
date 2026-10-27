@@ -379,7 +379,8 @@ object EntersWithReplacements {
     /**
      * How many counters an `EntersAsCopy.entersWithCounters` rider puts on [entityId], which entered
      * as a copy of [copiedId]: zero when the rider's `ifCopiedMatches` filter doesn't match the
-     * copied object (read against [controllerId] — "if you control that creature"), else its count.
+     * copied object (read against [controllerId] — "if you control that creature") or its
+     * `ifEntrantMatches` filter doesn't match the entrant itself, as the copy has made it, else its count.
      * Shared by the cast, direct-entry and effect-entry copy paths.
      */
     fun copyEntryCounterCount(
@@ -395,6 +396,10 @@ object EntersWithReplacements {
             if (copiedId == null) return 0
             val context = com.wingedsheep.engine.handlers.PredicateContext(controllerId = controllerId, sourceId = entityId)
             if (!predicateEvaluator.matches(state, state.projectedState, copiedId, filter, context)) return 0
+        }
+        rider.ifEntrantMatches?.let { filter ->
+            val context = com.wingedsheep.engine.handlers.PredicateContext(controllerId = controllerId, sourceId = entityId)
+            if (!predicateEvaluator.matches(state, state.projectedState, entityId, filter, context)) return 0
         }
         val context = com.wingedsheep.engine.handlers.EffectContext(
             sourceId = entityId, controllerId = controllerId, xValue = xValue)

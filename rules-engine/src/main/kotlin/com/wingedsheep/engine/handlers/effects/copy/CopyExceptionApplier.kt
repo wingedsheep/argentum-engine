@@ -59,8 +59,16 @@ object CopyExceptionApplier {
      * the whole type line (CR 205.1a), so it replaces the copied types *and* supersedes an addition
      * on the same axis — an "in addition to its other types" clause (CR 205.1b) and a replacing one
      * can't both be printed on the same characteristic.
+     *
+     * [CopyExceptions.conditional] clauses are then folded in, each tested against the type line
+     * built so far ("if it's a creature" asks about the copy, not the copied object).
      */
-    fun typeLine(base: TypeLine, exceptions: CopyExceptions): TypeLine = base.copy(
+    fun typeLine(base: TypeLine, exceptions: CopyExceptions): TypeLine =
+        exceptions.conditional.fold(flatTypeLine(base, exceptions)) { line, clause ->
+            if (clause.cardType in line.cardTypes) flatTypeLine(line, clause.exceptions) else line
+        }
+
+    private fun flatTypeLine(base: TypeLine, exceptions: CopyExceptions): TypeLine = base.copy(
         supertypes = base.supertypes + exceptions.addedSupertypes - exceptions.removedSupertypes,
         cardTypes = exceptions.overrideCardTypes ?: (base.cardTypes + exceptions.addedCardTypes),
         subtypes = exceptions.overrideSubtypes ?: (base.subtypes + exceptions.addedSubtypes),
@@ -73,6 +81,9 @@ object CopyExceptionApplier {
      * marker, revert markers).
      *
      * A no-op fast path when the exceptions are empty, so a plain copy allocates nothing.
+     *
+     * [CopyExceptions.conditional] clauses apply afterwards, in order, each only when the copy built
+     * so far has the clause's card type — a flip side is tested on its own type line.
      */
     fun apply(
         base: CardComponent,
@@ -82,6 +93,10 @@ object CopyExceptionApplier {
         copierStats: CreatureStats? = null,
     ): CardComponent {
         if (exceptions.isEmpty) return base
+        if (exceptions.conditional.isNotEmpty()) {
+            val flat = apply(base, exceptions.copy(conditional = emptyList()), resolvingTrigger, copierColors, copierStats)
+            return exceptions.conditional.fold(flat) { copy, clause -> applyIf(copy, clause, copierColors, copierStats) }
+        }
         val addedTriggers = exceptions.addedTriggeredAbilities +
             if (exceptions.retainResolvingTriggeredAbility && resolvingTrigger != null) listOf(resolvingTrigger)
             else emptyList()
@@ -118,6 +133,18 @@ object CopyExceptionApplier {
             // that 0 is itself a copiable value.
             manaCost = if (exceptions.noManaCost) ManaCost.ZERO else base.manaCost,
         )
+    }
+
+    private fun applyIf(
+        copy: CardComponent,
+        clause: CopyExceptions.IfCardType,
+        copierColors: Set<com.wingedsheep.sdk.core.Color>,
+        copierStats: CreatureStats?,
+    ): CardComponent {
+        val face = if (clause.cardType in copy.typeLine.cardTypes)
+            apply(copy.copy(flipSide = null), clause.exceptions, copierColors = copierColors, copierStats = copierStats)
+        else copy.copy(flipSide = null)
+        return face.copy(flipSide = copy.flipSide?.let { applyIf(it, clause, copierColors, copierStats) })
     }
 
     /**
