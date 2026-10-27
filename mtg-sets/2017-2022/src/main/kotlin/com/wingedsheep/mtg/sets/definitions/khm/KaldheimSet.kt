@@ -21,7 +21,6 @@ object KaldheimSet : MtgSet {
     override val displayName = "Kaldheim"
     override val releaseDate = "2021-02-05"
     override val block = "Kaldheim"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
