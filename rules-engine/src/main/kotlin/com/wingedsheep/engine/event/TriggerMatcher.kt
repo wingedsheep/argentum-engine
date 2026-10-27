@@ -171,7 +171,7 @@ class TriggerMatcher(
                 // the way step triggers do: Each is any declaration ("two or more creatures
                 // attack"), EachOpponent is an opposing team's.
                 if (!matchesPlayerForStep(trigger.player, controllerId, state)) return false
-                if (trigger.perAttackedPlayer) {
+                if (trigger.attackedPlayer != null) {
                     return attackedPlayersFor(trigger, event, sourceId, controllerId, state).isNotEmpty()
                 }
                 youAttackAttackers(trigger, event, sourceId, controllerId, state).size >= trigger.minAttackers
@@ -1123,7 +1123,11 @@ class TriggerMatcher(
             .filter { it in state.turnOrder }
             .groupingBy { it }
             .eachCount()
-        return state.turnOrder.filter { (countsByPlayer[it] ?: 0) >= trigger.minAttackers }
+        val attacked = trigger.attackedPlayer ?: Player.Each
+        return state.turnOrder.filter {
+            (countsByPlayer[it] ?: 0) >= trigger.minAttackers &&
+                matchesPlayer(state, attacked, it, controllerId, sourceId)
+        }
     }
 
     /**

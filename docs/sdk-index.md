@@ -1272,7 +1272,7 @@ Families:
 - `EventPattern.TurnFaceUpEvent` — When a permanent is turned face up.
 - `EventPattern.UntapEvent(filter: GameObjectFilter?, batch: Boolean)` — When a permanent becomes untapped.
 - `EventPattern.VenturedIntoDungeonEvent(player: Player)` — Whenever a player ventures into the dungeon (CR 701.49) — once per venture, whether it entered a dungeon's first room or moved the marker on, and for "venture into Undercity" too.
-- `EventPattern.YouAttackEvent(minAttackers: Int, attackerFilter: GameObjectFilter?, player: Player, perAttackedPlayer: Boolean)` — When you attack with at least minAttackers creatures.
+- `EventPattern.YouAttackEvent(minAttackers: Int, attackerFilter: GameObjectFilter?, player: Player, attackedPlayer: Player?)` — When you attack with at least minAttackers creatures.
 - `EventPattern.ZoneChangeEvent(filter: GameObjectFilter, from: Zone?, to: Zone?, excludeTo: Zone?, excludeSacrifice: Boolean, requireCraftMaterial: Boolean)` — When an object changes zones.
 
 ## FeasibilityCheck
@@ -1458,6 +1458,7 @@ Families:
 
 ## Player
 
+- `Player.ActivePlayer` — The active player — the player whose turn it is (CR 102.1), read when the effect resolves.
 - `Player.ActivePlayerFirst` — All players in APNAP order (active player first, then turn order)
 - `Player.AnOpponent` — A genuinely non-targeted "an opponent" — used only where the printed text has a single opponent act without targeting them (a chooser: "an opponent chooses a creature type", "choose ...
 - `Player.Any` — Any player (for matching/filtering)

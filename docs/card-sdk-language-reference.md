@@ -5681,6 +5681,11 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   in event filters (`SpellCastEvent(player = …)`), exists-conditions, and battlefield
   aggregations ("creatures your opponents control").
 - `Player.ActivePlayerFirst` — all players in APNAP order.
+- `Player.ActivePlayer` — the single active player (whose turn it is), read at resolution. Only the
+  active player declares attackers, so it is "that attacking player" on an attack trigger that binds
+  the *attacked* player as `TriggeringPlayer`: Breena, the Demagogue's "that attacking player draws a
+  card" is `DrawCards(1, PlayerRef(Player.ActivePlayer))` under
+  `Triggers.anyPlayer.attacksAPlayer(attacked = Player.EachOpponent)`.
 - `Player.EachDefendingPlayer` — all defending seats during combat, in APNAP order, including
   before attackers are declared and opponents with no attackers assigned. Includes all opponents
   regardless of attack-left/right limits, respecting shared team turns. Outside combat this names nobody. Use it with
@@ -8346,12 +8351,18 @@ The shapes in this family, with their engine notes.
   removed before the trigger resolves (Rabble Rousing). Battlefield trigger path only.
 - `Triggers.you.attacksAPlayer(with?, minAttackers?)` — "whenever you attack **a player**" /
   "whenever one or more [with] you control attack a player" / "two or more creatures you control
-  attack a player" (CR 508.3e). `YouAttackEvent(perAttackedPlayer = true)`: fires **once per player
+  attack a player" (CR 508.3e). `YouAttackEvent(attackedPlayer = Player.Each)`: fires **once per player
   attacked** (Echoing Assault, Meriadoc Brandybuck, Bitter Work, Dollmaker's Shop rulings), binding that
   player as `Player.TriggeringPlayer` ("that player"). Attackers aimed at a planeswalker or battle count
   toward no player, and `with` / `minAttackers` are counted per attacked player — two creatures split
   across two players don't satisfy "two or more … attack a player". Expanded only on the battlefield
   trigger path; a delayed or emblem trigger with the flag would fire once, unbound.
+- `Triggers.anyPlayer.attacksAPlayer(with?, minAttackers?, attacked = Player.Each)` — the same
+  once-per-attacked-player form for any player's declaration. `attacked` (`YouAttackEvent.attackedPlayer`)
+  scopes which attacked players count, relative to the trigger's controller: `Player.EachOpponent` is
+  "whenever a player attacks **one of your opponents**" (Breena, the Demagogue) — an attack on you
+  doesn't fire it, your own attacks do. The attacked opponent is `Player.TriggeringPlayer`; "that
+  attacking player" is `Player.ActivePlayer`.
 - `Triggers.anyPlayer.attacks(minAttackers = 2)` — "whenever two or more creatures attack": any
   player's declaration, once per declaration (Argent Dais). `Triggers.anOpponent.attacks(...)` is
   "whenever an opponent attacks with …". All three read `YouAttackEvent.player` against the active

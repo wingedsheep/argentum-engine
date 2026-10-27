@@ -8886,7 +8886,7 @@
                 "trigger": {
                     "type": "YouAttackEvent",
                     "minAttackers": 2,
-                    "perAttackedPlayer": true
+                    "attackedPlayer": "Each"
                 },
                 "binding": "ANY",
                 "effect": {
@@ -9493,7 +9493,7 @@
                 "trigger": {
                     "type": "YouAttackEvent",
                     "minAttackers": 2,
-                    "perAttackedPlayer": true
+                    "attackedPlayer": "Each"
                 },
                 "binding": "ANY",
                 "effect": {
@@ -10731,7 +10731,7 @@
                         ],
                         "controllerPredicate": "ControlledByYou"
                     },
-                    "perAttackedPlayer": true
+                    "attackedPlayer": "Each"
                 },
                 "binding": "ANY",
                 "effect": {

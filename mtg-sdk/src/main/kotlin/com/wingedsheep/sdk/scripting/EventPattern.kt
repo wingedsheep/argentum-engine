@@ -1179,14 +1179,17 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * (Argent Dais) is spelled, since only the active player (team) declares attackers;
      * [Player.EachOpponent] is "whenever an opponent attacks with …". Once per declaration.
      *
-     * [perAttackedPlayer] is the "… attack **a player**" form (CR 508.3e): "whenever you attack a
+     * [attackedPlayer] set is the "… attack **a player**" form (CR 508.3e): "whenever you attack a
      * player" (Echoing Assault), "whenever one or more Halflings you control attack a player"
      * (Meriadoc Brandybuck). Only attackers declared against a *player* count — not a planeswalker
      * or battle — and [minAttackers] / [attackerFilter] are counted per attacked player. It fires
      * once for each player attacked that way, binding that player as the triggering player
-     * ("that player", `Player.TriggeringPlayer`), per the cards' rulings.
+     * ("that player", `Player.TriggeringPlayer`), per the cards' rulings. [attackedPlayer] scopes
+     * which attacked players count, relative to the trigger's controller: [Player.Each] is any
+     * player, [Player.EachOpponent] is "whenever a player attacks **one of your opponents**"
+     * (Breena, the Demagogue — where "that attacking player" is then `Player.ActivePlayer`).
      *
-     * Without [perAttackedPlayer], a battlefield firing captures the declared attackers it counted
+     * Without [attackedPlayer] (null), a battlefield firing captures the declared attackers it counted
      * as its trigger-captured collection, so "create that many …" (Rabble Rousing) reads how many
      * creatures you attacked with, even after one leaves combat.
      */
@@ -1196,14 +1199,16 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         val minAttackers: Int = 1,
         val attackerFilter: GameObjectFilter? = null,
         val player: Player = Player.You,
-        val perAttackedPlayer: Boolean = false
+        val attackedPlayer: Player? = null
     ) : EventPattern {
         override val description: String = buildString {
             val count = if (minAttackers <= 1) "one or more " else "$minAttackers or more "
             val attackers = attackerFilter?.description ?: "creatures"
+            val defender = if (attackedPlayer == Player.EachOpponent) "one of your opponents" else "a player"
             when {
-                perAttackedPlayer && attackerFilter == null && minAttackers <= 1 -> append("you attack a player")
-                perAttackedPlayer -> append(count).append(attackers).append(" you control attack a player")
+                attackedPlayer != null && attackerFilter == null && minAttackers <= 1 ->
+                    append(if (player == Player.You) "you attack " else "a player attacks ").append(defender)
+                attackedPlayer != null -> append(count).append(attackers).append(if (player == Player.You) " you control" else "").append(" attack $defender")
                 player == Player.Each -> append(count).append(attackers).append(" attack")
                 player == Player.EachOpponent -> append("an opponent attacks with ").append(count).append(attackers)
                 else -> append("you attack with ").append(count).append(attackers)

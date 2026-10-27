@@ -1824,7 +1824,7 @@ class TriggerDetector(
                     // attacked, binding that player as "that player" (Echoing Assault, Meriadoc
                     // Brandybuck — the cards' rulings).
                     else if (trigger is EventPattern.YouAttackEvent &&
-                        (trigger as EventPattern.YouAttackEvent).perAttackedPlayer &&
+                        (trigger as EventPattern.YouAttackEvent).attackedPlayer != null &&
                         event is AttackersDeclaredEvent) {
                         val attacked = matcher.attackedPlayersFor(
                             trigger as EventPattern.YouAttackEvent, event, entityId, controllerId, state

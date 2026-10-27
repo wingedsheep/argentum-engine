@@ -4140,7 +4140,7 @@
                                 ],
                                 "controllerPredicate": "ControlledByYou"
                             },
-                            "perAttackedPlayer": true
+                            "attackedPlayer": "Each"
                         },
                         "binding": "ANY",
                         "effect": {

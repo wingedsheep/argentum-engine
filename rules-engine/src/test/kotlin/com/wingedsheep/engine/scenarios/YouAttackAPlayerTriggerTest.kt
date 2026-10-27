@@ -18,13 +18,16 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 /**
- * `YouAttackEvent(perAttackedPlayer = true)` — "whenever you attack a player" (CR 508.3e), spelled
+ * `YouAttackEvent(attackedPlayer = Player.Each)` — "whenever you attack a player" (CR 508.3e), spelled
  * `Triggers.you.attacksAPlayer(with, minAttackers)`.
  *
  * Pins what the axis adds over the once-per-declaration "whenever you attack": it fires once for
  * each player attacked (Echoing Assault / Meriadoc Brandybuck rulings) and binds that player as
  * `Player.TriggeringPlayer`; an attacker aimed at a planeswalker counts toward no player; and the
  * attacker count and filter are per attacked player, not summed across the declaration.
+ *
+ * Also pins the `attacked` scope with any player as the attacker — "whenever a player attacks one
+ * of your opponents" (Breena, the Demagogue) — and `Player.ActivePlayer` as "that attacking player".
  */
 class YouAttackAPlayerTriggerTest : FunSpec({
 
@@ -58,6 +61,24 @@ class YouAttackAPlayerTriggerTest : FunSpec({
         }
     }
 
+    /**
+     * "Whenever a player attacks one of your opponents, that attacking player draws a card and the
+     * attacked player loses 1 life."
+     */
+    val opponentWatcher = card("Test Opponent-Attacked Watcher") {
+        manaCost = "{2}"
+        typeLine = "Artifact"
+        triggeredAbility {
+            trigger = Triggers.anyPlayer.attacksAPlayer(attacked = Player.EachOpponent)
+            effect = Effects.Composite(
+                listOf(
+                    Effects.DrawCards(1, EffectTarget.PlayerRef(Player.ActivePlayer)),
+                    Effects.LoseLife(1, EffectTarget.PlayerRef(Player.TriggeringPlayer))
+                )
+            )
+        }
+    }
+
     val walker = card("Test Attacked Walker") {
         manaCost = "{3}"
         typeLine = "Legendary Planeswalker — Test"
@@ -65,7 +86,7 @@ class YouAttackAPlayerTriggerTest : FunSpec({
         oracleText = ""
     }
 
-    val cards = TestCards.all + drain + pairDrain + centaurDrain + walker
+    val cards = TestCards.all + drain + pairDrain + centaurDrain + opponentWatcher + walker
 
     fun GameTestDriver.ready(player: EntityId, name: String): EntityId =
         putCreatureOnBattlefield(player, name).also { removeSummoningSickness(it) }
@@ -176,5 +197,46 @@ class YouAttackAPlayerTriggerTest : FunSpec({
         d.resolveAll()
         d.getLifeTotal(p2) shouldBe 20
         d.getLifeTotal(p3) shouldBe 19
+    }
+
+    test("any player attacking one of your opponents: the attacking player draws, attacks on you don't count") {
+        val (d, p1, others) = threePlayer()
+        val (p2, p3) = others
+        // p2 watches; p1 (active) attacks both p2 and p3 — only p3 is p2's opponent being attacked.
+        d.putPermanentOnBattlefield(p2, "Test Opponent-Attacked Watcher")
+        val atP2 = d.ready(p1, "Grizzly Bears")
+        val atP3 = d.ready(p1, "Grizzly Bears")
+        val hands = listOf(p1, p2, p3).associateWith { d.getHandSize(it) }
+
+        d.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        d.declareAttackers(p1, mapOf(atP2 to p2, atP3 to p3)).error shouldBe null
+        withClue("the attack on the watcher's controller is not an attack on one of its opponents") {
+            d.stackSize shouldBe 1
+        }
+        d.resolveAll()
+        d.getLifeTotal(p3) shouldBe 19
+        d.getLifeTotal(p2) shouldBe 20
+        withClue("ActivePlayer is the attacking player, not the trigger's controller") {
+            d.getHandSize(p1) shouldBe hands.getValue(p1) + 1
+            d.getHandSize(p2) shouldBe hands.getValue(p2)
+            d.getHandSize(p3) shouldBe hands.getValue(p3)
+        }
+    }
+
+    test("any player attacking one of your opponents includes your own attacks, once per opponent") {
+        val (d, p1, others) = threePlayer()
+        val (p2, p3) = others
+        d.putPermanentOnBattlefield(p1, "Test Opponent-Attacked Watcher")
+        val atP2 = d.ready(p1, "Grizzly Bears")
+        val atP3 = d.ready(p1, "Grizzly Bears")
+        val hand = d.getHandSize(p1)
+
+        d.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        d.declareAttackers(p1, mapOf(atP2 to p2, atP3 to p3)).error shouldBe null
+        d.stackSize shouldBe 2
+        d.resolveAll()
+        d.getLifeTotal(p2) shouldBe 19
+        d.getLifeTotal(p3) shouldBe 19
+        d.getHandSize(p1) shouldBe hand + 2
     }
 })

@@ -591,7 +591,7 @@ object Triggers {
      * **Attacks.** "Whenever one or more Merfolk you control attack" is `YouAttackEvent`, and the
      * family is left out rather than half-read for two reasons that would each cost more than the
      * rows are worth: 8 of its lines print "attack **a player**", a per-attacked-player narrowing
-     * (`YouAttackEvent.perAttackedPlayer`, `Triggers.you.attacksAPlayer`) that a reading must keep
+     * (`YouAttackEvent.attackedPlayer`, `Triggers.you.attacksAPlayer`) that a reading must keep
      * apart from the once-per-declaration form — so the two English sentences don't collapse — and the
      * corpus writes the attacker filter's card type three different ways. A probe over the family's
      * declined lines puts the payoff at 6 readable lines out of 48; the rest are blocked on "that

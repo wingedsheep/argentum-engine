@@ -365,6 +365,7 @@ object TargetResolutionUtils {
             is Player.ContextPlayer -> context.positionalTarget(player.index)?.toEntityId()
             is Player.BoundVariable -> context.pipeline.namedTargets[player.name]?.toEntityId()
             Player.TriggeringPlayer -> context.triggeringPlayerId ?: context.triggeringEntityId
+            Player.ActivePlayer -> state.activePlayerId
             Player.Candidate -> context.candidatePlayerId
             Player.AnOpponent -> state.getOpponents(context.controllerId).firstOrNull()
             Player.DefendingPlayer -> resolveDefendingPlayer(context, state)

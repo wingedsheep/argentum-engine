@@ -201,6 +201,109 @@
     ]
 }
 
+// Breena, the Demagogue
+{
+    "name": "Breena, the Demagogue",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Legendary Creature — Bird Warlock",
+    "oracleText": "Flying\nWhenever a player attacks one of your opponents, if that opponent has more life than another of your opponents, that attacking player draws a card and you put two +1/+1 counters on a creature you control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Breena, the Demagogue:1",
+                "trigger": {
+                    "type": "YouAttackEvent",
+                    "player": "Each",
+                    "attackedPlayer": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "ActivePlayer"
+                            }
+                        },
+                        {
+                            "type": "SelectTarget",
+                            "requirement": {
+                                "type": "TargetObject",
+                                "filter": {
+                                    "baseFilter": "creature ctrl:you"
+                                }
+                            },
+                            "storeAs": "target1",
+                            "nonTargeting": true,
+                            "prompt": "Choose a creature you control to get two +1/+1 counters"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 2,
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "target1"
+                            }
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "LifeTotal",
+                        "player": "TriggeringPlayer"
+                    },
+                    "operator": "GT",
+                    "right": {
+                        "type": "LeastAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": "YourLifeTotal"
+                    }
+                },
+                "descriptionOverride": "Whenever a player attacks one of your opponents, if that opponent has more life than another of your opponents, that attacking player draws a card and you put two +1/+1 counters on a creature you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "MYTHIC",
+        "artist": "Simon Dominic",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6cb82b10-d785-4e20-84ac-0660d49be8ad.jpg?1783927617",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "Breena's triggered ability will trigger even if you control no creatures."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If the attacking player is one of your opponents and has less life than the player being attacked, then the condition is satisfied."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "You choose which creature to put +1/+1 counters on as the ability is resolving. Once you make the choice, no player may take actions until the counters are placed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Curiosity Crafter
 {
     "name": "Curiosity Crafter",

@@ -123,6 +123,23 @@ sealed interface Player {
         override val description: String = "each player"
     }
 
+    /**
+     * The active player — the player whose turn it is (CR 102.1), read when the effect resolves.
+     * Since only the active player declares attackers (CR 508.1), this is also "that attacking
+     * player" on an attack trigger that binds someone else as the triggering player: Breena, the
+     * Demagogue's per-attacked-player trigger binds the *attacked* player as `TriggeringPlayer`,
+     * so "that attacking player draws a card" is `PlayerRef(ActivePlayer)`.
+     *
+     * The closest neighbours don't take the axis: [ActivePlayerFirst] is every player, ordered;
+     * [TriggeringPlayer] is the one player the trigger event names, which on these triggers is
+     * the defender.
+     */
+    @SerialName("ActivePlayer")
+    @Serializable
+    data object ActivePlayer : Player {
+        override val description: String = "the active player"
+    }
+
     /** All players in APNAP order (active player first, then turn order) */
     @SerialName("ActivePlayerFirst")
     @Serializable
@@ -542,6 +559,7 @@ sealed interface Player {
             EachTargetedPlayer -> "those players'"
             is InCollection -> "those players'"
             Each -> "each player's"
+            ActivePlayer -> "the active player's"
             ActivePlayerFirst -> "each player's"
             EachStartingWithYou -> "each player's"
             EachOpponent -> "each opponent's"
