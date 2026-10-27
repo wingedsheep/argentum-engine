@@ -73,6 +73,9 @@ class TriggersSubjectVerbTest : DescribeSpec({
         it("isAttacked picks the you / opponent event") {
             Triggers.you.isAttacked().event shouldBe EventPattern.CreaturesAttackYouEvent(minAttackers = 1)
             Triggers.anOpponent.isAttacked().event shouldBe EventPattern.CreaturesAttackYourOpponentEvent(minAttackers = 1)
+            Triggers.player(Player.EnchantedPlayer).isAttacked().event shouldBe
+                EventPattern.CreaturesAttackYouEvent(attackedPlayer = Player.EnchantedPlayer)
+            shouldThrow<IllegalArgumentException> { Triggers.player(Player.EnchantedPlayer).isAttacked(unblocked = true) }
         }
     }
 

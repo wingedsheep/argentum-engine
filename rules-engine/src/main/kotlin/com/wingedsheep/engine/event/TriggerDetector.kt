@@ -1268,7 +1268,7 @@ class TriggerDetector(
                         triggeringEntityId = watchedTriggering
                             ?: TriggerContext.fromEvent(event).triggeringEntityId,
                         capturedEntitySnapshots = delayed.capturedEntitySnapshots.ifEmpty { null }
-                    ).withAttackersAgainstYou(specEvent, event, delayed.controllerId, state),
+                    ).withAttackersAgainstYou(specEvent, event, delayed.sourceId, delayed.controllerId, state),
                     consumesDelayedTriggerId = if (delayed.fireOnce) delayed.id else null,
                     carriedPipeline = delayed.carriedPipelineFor(state)
                 )
@@ -1814,7 +1814,7 @@ class TriggerDetector(
                                 controllerId = controllerId,
                                 triggerContext = TriggerContext.fromEvent(event).copy(
                                     capturedEntityIds = matcher.attackersAgainstYou(
-                                        trigger as EventPattern.CreaturesAttackYouEvent, event, controllerId, state
+                                        trigger as EventPattern.CreaturesAttackYouEvent, event, entityId, controllerId, state
                                     )
                                 )
                             )
@@ -2059,7 +2059,7 @@ class TriggerDetector(
                                     sourceName = cardComponent.name,
                                     controllerId = ownerId,
                                     triggerContext = TriggerContext.fromEvent(event).let { ctx ->
-                                        if (capturedTargets == null) ctx.withAttackersAgainstYou(ability.trigger, event, ownerId, state)
+                                        if (capturedTargets == null) ctx.withAttackersAgainstYou(ability.trigger, event, entityId, ownerId, state)
                                         else ctx.copy(
                                             capturedEntityIds = capturedTargets,
                                             capturedEntitySnapshots = copiableSnapshots(state, capturedTargets)
@@ -2378,11 +2378,12 @@ class TriggerDetector(
     private fun TriggerContext.withAttackersAgainstYou(
         trigger: EventPattern,
         event: EngineGameEvent,
+        sourceId: EntityId,
         controllerId: EntityId,
         state: GameState
     ): TriggerContext {
         val attackTrigger = trigger as? EventPattern.CreaturesAttackYouEvent ?: return this
-        return copy(capturedEntityIds = matcher.attackersAgainstYou(attackTrigger, event, controllerId, state))
+        return copy(capturedEntityIds = matcher.attackersAgainstYou(attackTrigger, event, sourceId, controllerId, state))
     }
 
     /**
@@ -2408,7 +2409,7 @@ class TriggerDetector(
                         sourceName = global.sourceName,
                         controllerId = global.controllerId,
                         triggerContext = TriggerContext.fromEvent(event)
-                            .withAttackersAgainstYou(ability.trigger, event, global.controllerId, state)
+                            .withAttackersAgainstYou(ability.trigger, event, global.sourceId, global.controllerId, state)
                     )
                 )
             }

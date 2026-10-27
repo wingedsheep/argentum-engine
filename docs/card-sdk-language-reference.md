@@ -3073,6 +3073,10 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   Mite (Crawling Chorus, Basilica Shepherd, Mirrex, …). `count` accepts an `Int` or a `DynamicAmount`
   (White Sun's Twilight's X). A predefined token gets its definition's printed keyword components the way
   a card does, so the Mite's toxic 1 is real toxic, not a label.
+- `CreateGold(count?, controller?)` — Gold artifact tokens with "Sacrifice this token: Add one mana of any
+  color." (`PredefinedTokens.Gold`) — no tap in the cost, so a Gold that just entered can be sacrificed
+  at once. Inside `ForEachPlayer` the visited player creates them ("each opponent attacking that player
+  does the same" — Curse of Opulence).
 - `CreatePowerstone(count?, tapped?, controller?)` — colorless Powerstone artifact tokens with "{T}: Add {C}. This
   mana can't be spent to cast a nonartifact spell." (`PredefinedTokens.Powerstone`) — The Brothers' War's ramp token
   (Stern Lesson, Fallaji Excavation, Powerstone Engineer, …). Pass `tapped = true` for the usual "create a tapped
@@ -5760,7 +5764,7 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   (`DynamicAmount.LifeTotal(EnchantedPlayer)`, `EffectTarget.PlayerRef(EnchantedPlayer)`) and to scope a
   `PreventLifeGain` (`LifeGainEvent(player = EnchantedPlayer)`), a cast trigger
   (`Triggers.player(Player.EnchantedPlayer).casts(filter)` — "whenever enchanted player casts …", Curse of
-  Silence) or a spell tax (`SpellCostTarget.PlayerCasts(EnchantedPlayer, filter)`). Resolves to nothing if the source isn't
+  Silence; `.isAttacked()` — "whenever enchanted player is attacked", Curse of Opulence) or a spell tax (`SpellCostTarget.PlayerCasts(EnchantedPlayer, filter)`). Resolves to nothing if the source isn't
   an Aura attached to a player. Once the Aura has left the battlefield, effects and group filters
   (`controlledByEnchantedPlayer()`) read the player it was last attached to (CR 608.2h), so an
   enters trigger still pays off when the Aura is destroyed in response. (Grievous Wound, Overencumbered.)
@@ -8400,6 +8404,16 @@ The shapes in this family, with their engine notes.
   together in 2HG): "that player draws three cards" is
   `Effects.DrawCards(3, EffectTarget.PlayerRef(Player.TriggeringPlayer))`. Creatures attacking you
   are always an opponent's, so the trigger carries no controller filter.
+- `Triggers.player(Player.EnchantedPlayer).isAttacked()` — "whenever **enchanted player** is attacked"
+  on a Curse (CR 303.4, enchant player): `CreaturesAttackYouEvent(attackedPlayer = Player.EnchantedPlayer)`.
+  The trigger is the Curse controller's, but only creatures declared attacking the player the Curse
+  enchants count (not their planeswalkers), once per combat; they're the firing's captured collection
+  and the attacking player is the triggering player, as on the "you" form. It never fires while the
+  source enchants no player. `includePlaneswalkers` / `unblocked` are "you"-only. "Each opponent
+  attacking that player does the same" is judged on resolution (a player is attacking another if they
+  control a creature attacking them — the Curse cycle's ruling): `ForEachPlayer(EachOpponent,
+  If(YouControl(Creature.attackingEnchantedPlayer()), …))`, `Player.You` being the visited opponent
+  (Curse of Opulence).
 - `Triggers.anOpponent.isAttacked()` — the "your opponents are attacked" counterpart of
   `Triggers.you.isAttacked()`; fires once per `AttackersDeclaredEvent` when one or more declared
   attackers have one of the controller's opponents (a player, via `state.getOpponents`) as

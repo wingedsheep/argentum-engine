@@ -173,6 +173,98 @@
     "colorIdentityOverride": []
 }
 
+// Curse of Opulence
+{
+    "name": "Curse of Opulence",
+    "manaCost": "{R}",
+    "typeLine": "Enchantment — Aura Curse",
+    "oracleText": "Enchant player\nWhenever enchanted player is attacked, create a Gold token. Each opponent attacking that player does the same. (A Gold token is an artifact with \"Sacrifice this token: Add one mana of any color.\")",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Curse of Opulence:1",
+                "trigger": {
+                    "type": "CreaturesAttackYouEvent",
+                    "attackedPlayer": "EnchantedPlayer"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Gold"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "Exists",
+                                        "player": "You",
+                                        "zone": "Battlefield",
+                                        "filter": {
+                                            "cardPredicates": [
+                                                "IsCreature"
+                                            ],
+                                            "statePredicates": [
+                                                "IsAttackingEnchantedPlayer"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "then": {
+                                    "type": "CreatePredefinedToken",
+                                    "tokenType": "Gold"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever enchanted player is attacked, create a Gold token. Each opponent attacking that player does the same."
+            }
+        ],
+        "auraTarget": "TargetPlayer"
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "UNCOMMON",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e23db9d3-d11f-4b2c-8349-687bc0e9d4c2.jpg?1783935943",
+        "rulings": [
+            {
+                "date": "2017-08-25",
+                "text": "Curse of Opulence's triggered ability resolves after attackers have been declared. Any costs to attack must have already been paid before the attacking player creates the Gold."
+            },
+            {
+                "date": "2017-08-25",
+                "text": "Each Curse's ability triggers only once, no matter how many creatures are attacking the enchanted player."
+            },
+            {
+                "date": "2017-08-25",
+                "text": "A player is attacking another player if they control a creature that's attacking that player. If no creatures are attacking the enchanted player as a Curse's ability resolves (most likely because they've left the battlefield), only the Curse's controller performs its actions."
+            },
+            {
+                "date": "2017-08-25",
+                "text": "The triggered ability of these Curses won't trigger if only a planeswalker controlled by the enchanted player is attacked."
+            },
+            {
+                "date": "2017-08-25",
+                "text": "If you enchant yourself with one of these Curses, you'll get its effects whenever another player attacks you."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Edgar Markov
 {
     "name": "Edgar Markov",

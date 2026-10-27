@@ -1237,15 +1237,35 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * counts only the attackers with unblocked status then (CR 509.1h). In multiplayer each
      * defending player declares in turn, so it fires once, on the declaration that completes the
      * controller's team. The controller of those attackers is the triggering player ("that player").
+     *
+     * [attackedPlayer] names whose attack it watches when that isn't the controller's own:
+     * [Player.EnchantedPlayer] is "whenever **enchanted player** is attacked" (the Curse of
+     * Opulence cycle, CR 303.4 enchant player) — the trigger still belongs to the Curse's
+     * controller, but only attackers declared against the player the Curse enchants count. It
+     * resolves to nothing, and never fires, while the source isn't attached to a player.
      */
     @SerialName("CreaturesAttackYouEvent")
     @Serializable
     data class CreaturesAttackYouEvent(
         val minAttackers: Int = 1,
         val includePlaneswalkersYouControl: Boolean = false,
-        val unblocked: Boolean = false
+        val unblocked: Boolean = false,
+        val attackedPlayer: Player = Player.You
     ) : EventPattern {
+        init {
+            require(attackedPlayer == Player.You || attackedPlayer == Player.EnchantedPlayer) {
+                "CreaturesAttackYouEvent: attackedPlayer supports You and EnchantedPlayer, not $attackedPlayer"
+            }
+            require(attackedPlayer == Player.You || (!includePlaneswalkersYouControl && !unblocked)) {
+                "CreaturesAttackYouEvent: includePlaneswalkersYouControl and unblocked are only supported for attackedPlayer = You"
+            }
+        }
+
         override val description: String = buildString {
+            if (attackedPlayer == Player.EnchantedPlayer) {
+                append(if (minAttackers <= 1) "enchanted player is attacked" else "$minAttackers or more creatures attack enchanted player")
+                return@buildString
+            }
             append(if (minAttackers <= 1) "one or more creatures attack" else "$minAttackers or more creatures attack")
             append(if (includePlaneswalkersYouControl) " you and/or planeswalkers you control" else " you")
             if (unblocked) append(" and aren't blocked")

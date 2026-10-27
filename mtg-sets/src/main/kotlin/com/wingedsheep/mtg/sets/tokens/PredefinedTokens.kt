@@ -100,6 +100,27 @@ object PredefinedTokens {
     }
 
     /**
+     * Gold token — an artifact with "Sacrifice this token: Add one mana of any color." Unlike a
+     * Treasure it needs no tap, so a Gold token that entered this turn can still be sacrificed.
+     * Created by `Effects.CreateGold()` (Curse of Opulence).
+     */
+    val Gold = card("Gold") {
+        typeLine = "Artifact — Gold"
+        oracleText = "Sacrifice this token: Add one mana of any color."
+
+        activatedAbility {
+            cost = Costs.SacrificeSelf
+            effect = Effects.AddAnyColorMana(1)
+            manaAbility = true
+            description = "Sacrifice this token: Add one mana of any color."
+        }
+
+        metadata {
+            imageUri = "https://cards.scryfall.io/normal/front/9/b/9b180a33-65ef-43b3-b969-f603b1fc23fb.jpg?1783935826"
+        }
+    }
+
+    /**
      * Meteorite token — a colorless artifact (Roxanne, Starfall Savant) with:
      * "When this token enters, it deals 2 damage to any target." and
      * "{T}: Add one mana of any color."
@@ -1371,6 +1392,7 @@ object PredefinedTokens {
         ForestTentacle,
         ForestDryad,
         Powerstone,
-        TamiyosNotebook
+        TamiyosNotebook,
+        Gold
     )
 }

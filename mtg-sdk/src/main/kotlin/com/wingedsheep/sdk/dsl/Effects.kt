@@ -3646,6 +3646,14 @@ object Effects {
         CreatePredefinedTokenEffect("Treasure", count, controller, tapped = tapped, imageUri = imageUri)
 
     /**
+     * Create Gold tokens — an artifact with "Sacrifice this token: Add one mana of any color."
+     * (`PredefinedTokens.Gold`; Curse of Opulence). [controller] redirects them, as on
+     * [CreateTreasure]; inside `ForEachPlayer` the visited player creates them.
+     */
+    fun CreateGold(count: Int = 1, controller: EffectTarget? = null): Effect =
+        CreatePredefinedTokenEffect("Gold", count, controller)
+
+    /**
      * Create a dynamic number of Treasure tokens — the count is evaluated at resolution
      * time. Used for cards like Goldvein Hydra ("create a number of tapped Treasure tokens
      * equal to its power") where the amount depends on game state.

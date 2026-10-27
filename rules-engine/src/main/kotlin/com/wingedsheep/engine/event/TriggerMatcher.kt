@@ -188,7 +188,7 @@ class TriggerMatcher(
                     (trigger.fromZoneOtherThan == null || event.fromZone != trigger.fromZoneOtherThan)
             }
             is EventPattern.CreaturesAttackYouEvent ->
-                attackersAgainstYou(trigger, event, controllerId, state).size >= trigger.minAttackers
+                attackersAgainstYou(trigger, event, sourceId, controllerId, state).size >= trigger.minAttackers
             is EventPattern.CreaturesAttackYourOpponentEvent -> {
                 if (event !is AttackersDeclaredEvent) return false
                 // Count attackers declared against an opponent *player* of the controller (not the
@@ -1039,6 +1039,7 @@ class TriggerMatcher(
     private fun attacksYou(
         trigger: EventPattern.CreaturesAttackYouEvent,
         attackerId: EntityId,
+        attackedPlayerId: EntityId,
         controllerId: EntityId,
         state: GameState
     ): Boolean {
@@ -1047,7 +1048,7 @@ class TriggerMatcher(
             ?.defenderId
         return when {
             defenderId == null -> false
-            defenderId == controllerId -> true
+            defenderId == attackedPlayerId -> true
             !trigger.includePlaneswalkersYouControl -> false
             else -> state.getEntity(defenderId)
                 ?.get<ControllerComponent>()
@@ -1070,12 +1071,21 @@ class TriggerMatcher(
     fun attackersAgainstYou(
         trigger: EventPattern.CreaturesAttackYouEvent,
         event: EngineGameEvent,
+        sourceId: EntityId,
         controllerId: EntityId,
         state: GameState
-    ): List<EntityId> = when {
-        trigger.unblocked -> unblockedAttackersAgainstYou(trigger, event, controllerId, state)
-        event is AttackersDeclaredEvent -> event.attackers.filter { attacksYou(trigger, it, controllerId, state) }
-        else -> emptyList()
+    ): List<EntityId> {
+        // The player whose attack is watched: the controller, or the player the source Curse
+        // enchants ("whenever enchanted player is attacked") — none while it enchants no player.
+        val attackedPlayerId = when (trigger.attackedPlayer) {
+            Player.EnchantedPlayer -> TargetResolutionUtils.enchantedPlayer(sourceId, state) ?: return emptyList()
+            else -> controllerId
+        }
+        return when {
+            trigger.unblocked -> unblockedAttackersAgainstYou(trigger, event, controllerId, state)
+            event is AttackersDeclaredEvent -> event.attackers.filter { attacksYou(trigger, it, attackedPlayerId, controllerId, state) }
+            else -> emptyList()
+        }
     }
 
     /**
@@ -1153,7 +1163,7 @@ class TriggerMatcher(
         return state.findEntitiesWith<com.wingedsheep.engine.state.components.combat.AttackingComponent>()
             .map { it.first }
             .filter { attackerId ->
-                attacksYou(trigger, attackerId, controllerId, state) &&
+                attacksYou(trigger, attackerId, controllerId, controllerId, state) &&
                     state.getEntity(attackerId)?.let {
                         !com.wingedsheep.engine.mechanics.combat.CombatStatusQueries.isBlockedAttacker(state, attackerId, it)
                     } == true
