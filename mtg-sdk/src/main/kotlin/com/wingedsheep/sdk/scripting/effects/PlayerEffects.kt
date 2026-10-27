@@ -1202,9 +1202,11 @@ data class GrantSpellsCantBeCounteredEffect(
  * An emblem whose text is a replacement effect ("If you control a creature, damage that would reduce
  * your life total to less than 1 reduces it to 1 instead." — Serra the Benevolent's −6) carries it in
  * [ownedReplacementEffects]. The emblem is its source and its controller is "you", read by the same
- * scans that read a permanent printing the replacement (the life-loss family today:
- * `LifeLossFloor`, `ModifyLifeLoss`, `ReplaceLifeReductionToZero`, plus every other read site that
- * goes through the engine's active-replacement enumeration).
+ * scans that read a permanent printing the replacement — today the life-total family
+ * (`LifeLossFloor`, `ModifyLifeLoss`, `ReplaceLifeReductionToZero`) and the other read sites that go
+ * through the engine's active-replacement enumeration (token creation, `LoyaltyDamageFloor`). Families
+ * whose scans walk only the battlefield (draw/zone-change, damage prevention, enters-tapped, life
+ * payment) don't see an emblem yet.
  *
  * @property groupFilter Which permanents the emblem affects. Unused — and so left at its default —
  *   by an emblem that carries no group modification at all, only [ownedStaticAbilities].
