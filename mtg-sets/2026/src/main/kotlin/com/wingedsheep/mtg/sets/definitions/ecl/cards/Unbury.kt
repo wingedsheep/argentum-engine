@@ -24,6 +24,8 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * [TargetObject.sameCreatureType], which reads a graveyard card's printed creature types (a
  * changeling card has them all). Each target is returned on its own, so when one of the pair
  * leaves the graveyard in response the other is still returned (CR 608.2b; the 2025-11-17 ruling).
+ * The shared type isn't re-checked at resolution against the departed card's last-known types;
+ * a graveyard card's types almost never change, so the survivor still shares one.
  */
 val Unbury = card("Unbury") {
     manaCost = "{1}{B}"

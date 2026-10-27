@@ -123,6 +123,7 @@ class UnburyScenarioTest : FunSpec({
         driver.getExile(me).contains(bears) shouldBe true
         withClue("no other card is returned in its place") { driver.getGraveyard(me).contains(lions) shouldBe true }
     }
+
     test("mode two still returns one of the pair when the other leaves the graveyard in response") {
         val (driver, me) = setup()
         val bears1 = driver.putCardInGraveyard(me, "Grizzly Bears")

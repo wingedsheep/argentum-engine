@@ -23,6 +23,8 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * The second mode's pair is one two-slot requirement with [TargetObject.sameCreatureType]. Each
  * target is returned on its own, so when one of the pair leaves the graveyard in response the other
  * is still returned (CR 608.2b; the 2021-02-05 ruling).
+ * The shared type isn't re-checked at resolution against the departed card's last-known types;
+ * a graveyard card's types almost never change, so the survivor still shares one.
  */
 val RaiseTheDraugr = card("Raise the Draugr") {
     manaCost = "{1}{B}"

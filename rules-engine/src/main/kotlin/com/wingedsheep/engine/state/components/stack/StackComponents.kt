@@ -66,8 +66,8 @@ data class SpellOnStackComponent(
     /**
      * Card-definition names of the cards revealed from hand and **spliced** onto this spell
      * (CR 702.47a), in the order their text was added. Each one's `spellEffect` is executed after the
-     * main spell's own effects when the spell resolves (CR 702.47b), with its own target slice from
-     * [splicedTargetsOrdered].
+     * main spell's own effects when the spell resolves (CR 702.47b), with its own slice of the spell's
+     * resolution-validated target slots — the tail of the flat list, in this order (CR 608.2b).
      *
      * Names rather than entity ids: the spliced card never leaves hand, so what the spell gained is
      * its *text*, not a reference to the object — and the spell must keep resolving that text even if
