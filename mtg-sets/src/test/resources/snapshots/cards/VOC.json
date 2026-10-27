@@ -75,6 +75,65 @@
     ]
 }
 
+// Olivia's Wrath
+{
+    "name": "Olivia's Wrath",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each non-Vampire creature gets -X/-X until end of turn, where X is the number of Vampires you control.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Vampire"
+                            }
+                        ]
+                    }
+                }
+            },
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent Vampire"
+                    },
+                    "multiplier": -1
+                },
+                "toughnessModifier": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent Vampire"
+                    },
+                    "multiplier": -1
+                },
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "rarity": "RARE",
+        "artist": "Néstor Ossandón Leal",
+        "flavorText": "\"These worthless cattle think they can sneak unnoticed into my wedding? Dispose of them.\"\n—Olivia Voldaren",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/98893cc1-f502-4ca6-b6c1-e09fa1f4ef7a.jpg?1783925002"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Storm of Souls
 {
     "name": "Storm of Souls",

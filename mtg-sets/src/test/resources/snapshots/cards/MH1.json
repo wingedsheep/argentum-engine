@@ -665,6 +665,67 @@
     ]
 }
 
+// Cordial Vampire
+{
+    "name": "Cordial Vampire",
+    "manaCost": "{B}{B}",
+    "typeLine": "Creature — Vampire",
+    "oracleText": "Whenever this creature or another creature dies, put a +1/+1 counter on each Vampire you control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cordial Vampire:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent Vampire ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "rarity": "RARE",
+        "artist": "Winona Nelson",
+        "flavorText": "\"Please, come in! Hors d'oeuvres are on the table.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a90a1c44-ee0f-4c12-bfaf-6f371bcce167.jpg?1783933130",
+        "rulings": [
+            {
+                "date": "2019-06-14",
+                "text": "If Cordial Vampire dies at the same time as one or more other creatures, its ability triggers for each of them."
+            },
+            {
+                "date": "2019-06-14",
+                "text": "If a Vampire you control is dealt lethal damage at the same time as another creature, they die at the same time. That Vampire can't receive a counter from Cordial Vampire's ability in time to save it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Crashing Footfalls
 {
     "name": "Crashing Footfalls",

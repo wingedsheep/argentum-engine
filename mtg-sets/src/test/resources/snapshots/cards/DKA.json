@@ -2101,6 +2101,59 @@
     ]
 }
 
+// Stromkirk Captain
+{
+    "name": "Stromkirk Captain",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Creature — Vampire Soldier",
+    "oracleText": "First strike\nOther Vampire creatures you control get +1/+1 and have first strike.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Vampire ctrl:you",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FIRST_STRIKE",
+                "filter": {
+                    "baseFilter": "creature Vampire ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "rarity": "UNCOMMON",
+        "artist": "Jana Schirmer & Johannes Voss",
+        "flavorText": "\"No longer can we allow our human populations to be mindlessly slaughtered by ghouls. Slay all who trespass.\"\n—Runo Stromkirk",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5bfcca87-04f8-480a-bae6-ae87f7afb7e1.jpg?1783940795",
+        "rulings": [
+            {
+                "date": "2011-01-22",
+                "text": "If a creature with first strike deals damage in the first combat damage step, but then loses first strike before regular combat damage, it won't deal combat damage a second time (unless it also has double strike)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Thalia, Guardian of Thraben
 {
     "name": "Thalia, Guardian of Thraben",

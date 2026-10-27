@@ -769,6 +769,109 @@
     ]
 }
 
+// Patron of the Vein
+{
+    "name": "Patron of the Vein",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Vampire Shaman",
+    "oracleText": "Flying\nWhen this creature enters, destroy target creature an opponent controls.\nWhenever a creature an opponent controls dies, exile it and put a +1/+1 counter on each Vampire you control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Patron of the Vein:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, destroy target creature an opponent controls."
+            },
+            {
+                "id": "Patron of the Vein:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:opponent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "TriggeringEntity",
+                            "destination": "Exile",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "permanent Vampire ctrl:you"
+                                }
+                            },
+                            "body": {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever a creature an opponent controls dies, exile it and put a +1/+1 counter on each Vampire you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "rarity": "RARE",
+        "artist": "Tommy Arnold",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e27db39c-c4b8-46b9-afe6-1737841bdad6.jpg?1783935944",
+        "rulings": [
+            {
+                "date": "2017-08-25",
+                "text": "Destroying a creature with Patron of the Vein's first ability causes its last ability to trigger if Patron of the Vein is still on the battlefield."
+            },
+            {
+                "date": "2017-08-25",
+                "text": "Patron of the Vein's last ability puts a +1/+1 counter on each Vampire you control, including itself, even if the creature that died can't be exiled (most likely because it was a token)."
+            },
+            {
+                "date": "2017-08-25",
+                "text": "If Patron of the Vein and a creature an opponent controls die simultaneously (perhaps because they fought or were in combat together), Patron of the Vein's last ability triggers, but Patron of the Vein won't be on the battlefield as that ability resolves. It can't be saved by the +1/+1 counter that would have been put on it. The same is true of any other Vampires you control that die at the same time. Your remaining Vampires will each get a +1/+1 counter."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Ramos, Dragon Engine
 {
     "name": "Ramos, Dragon Engine",

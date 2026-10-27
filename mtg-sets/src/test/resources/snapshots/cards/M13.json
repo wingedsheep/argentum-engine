@@ -799,6 +799,46 @@
     ]
 }
 
+// Rhox Faithmender
+{
+    "name": "Rhox Faithmender",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Rhino Monk",
+    "oracleText": "Lifelink (Damage dealt by this creature also causes you to gain that much life.)\nIf you would gain life, you gain twice that much life instead.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 5
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "replacementEffects": [
+            "ModifyLifeGain"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "RARE",
+        "artist": "Wesley Burt",
+        "flavorText": "Rhoxes who live long enough to retire from war lend support with their extensive knowledge of combat injuries.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/5/85ea185a-7b38-49f3-be73-be8180fb6295.jpg?1783940514",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "If you control two Rhox Faithmenders, life you gain will be multiplied by four. Three Rhox Faithmenders will multiply any life gain by eight, and so on."
+            },
+            {
+                "date": "2012-07-01",
+                "text": "If an effect sets your life total to a specific number, and that number is higher than your current life total, the effect will cause you to gain life equal to the difference. Rhox Faithmender will then double that number. For example, if you have 3 life and an effect says that your life total \"becomes 10,\" your life total will actually become 17."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Rummaging Goblin
 {
     "name": "Rummaging Goblin",

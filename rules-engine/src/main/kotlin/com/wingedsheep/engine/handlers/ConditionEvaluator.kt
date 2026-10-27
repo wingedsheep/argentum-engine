@@ -1471,9 +1471,14 @@ class ConditionEvaluator(
         ctx: ConditionEvaluationContext
     ): Boolean {
         val sourceId = ctx.sourceId ?: return false
-        val attached = state.getEntity(sourceId)?.get<AttachedToComponent>()?.targetId
+        val source = state.getEntity(sourceId)
+        val attached = source?.get<AttachedToComponent>()?.targetId
         val permanentId = attached ?: when (ctx) {
-            is Resolution -> sourceId  // resolution-mode fallback (granted-ability scope)
+            // An Aura/Equipment that left the battlefield before its ability resolved is read as it
+            // last existed: its host is the creature it was attached to when it left — the same
+            // last-known host [EffectTarget.EquippedCreature] resolves to for the effect itself
+            // (Blade of the Bloodchief ruling). Otherwise fall back to the source (granted-ability scope).
+            is Resolution -> source?.get<LastKnownPermanentComponent>()?.snapshot?.attachedTo ?: sourceId
             is Projection -> return false
         }
         val projected = ctx.projectedStateFor(state)

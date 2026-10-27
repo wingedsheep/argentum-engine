@@ -280,6 +280,116 @@
     ]
 }
 
+// Blade of the Bloodchief
+{
+    "name": "Blade of the Bloodchief",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Whenever a creature dies, put a +1/+1 counter on equipped creature. If equipped creature is a Vampire, put two +1/+1 counters on it instead.\nEquip {1}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Blade of the Bloodchief:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "EquippedCreature",
+                            "filter": "creature Vampire"
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 2,
+                        "target": "EquippedCreature"
+                    },
+                    "otherwise": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "EquippedCreature"
+                    }
+                },
+                "descriptionOverride": "Whenever a creature dies, put a +1/+1 counter on equipped creature. If equipped creature is a Vampire, put two +1/+1 counters on it instead."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Blade of the Bloodchief:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "196",
+        "rarity": "RARE",
+        "artist": "Jung Park",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7e4b42e5-0e60-4148-907e-456d9f3043be.jpg?1783942128",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "Blade of the Bloodchief's ability triggers regardless of who controlled the creature and whose graveyard it was put into."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "The +1/+1 counters are put on the equipped creature, not Blade of the Bloodchief. If Blade of the Bloodchief is moved to a different creature, the +1/+1 counters will stay where they are."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "The creature that gets the counters is the one that's equipped by Blade of the Bloodchief at the time the ability resolves. It doesn't matter what creature Blade of the Bloodchief was attached to (if any) when it triggered."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "If Blade of the Bloodchief leaves the battlefield before its triggered ability resolves, the counters are put on the creature it was attached to at the time it left the battlefield. If it wasn't attached to a creature at that time, nothing gets the counters."
+            },
+            {
+                "date": "2009-10-01",
+                "text": "If the equipped creature itself is put into a graveyard, Blade of the Bloodchief's ability will trigger. However, it won't do anything when it resolves unless a spell or ability has caused it to become attached to another creature by that time. (Remember that you may activate an equip ability only as a sorcery.)"
+            },
+            {
+                "date": "2009-10-01",
+                "text": "If the equipped creature and another creature are dealt lethal damage at the same time, the equipped creature will be put into a graveyard before it would receive any counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Bladetusk Boar
 {
     "name": "Bladetusk Boar",
@@ -2658,6 +2768,58 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Malakir Bloodwitch
+{
+    "name": "Malakir Bloodwitch",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Vampire Shaman",
+    "oracleText": "Flying, protection from white\nWhen this creature enters, each opponent loses life equal to the number of Vampires you control. You gain life equal to the life lost this way.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Color",
+                "color": "WHITE"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Malakir Bloodwitch:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrainLife",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent Vampire"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "rarity": "RARE",
+        "artist": "Shelly Wan",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/865ac36f-4c61-468b-a2ed-ed2d1bbbf4e3.jpg?1783942152"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

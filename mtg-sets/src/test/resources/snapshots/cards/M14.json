@@ -72,6 +72,71 @@
     ]
 }
 
+// Archangel of Thune
+{
+    "name": "Archangel of Thune",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nLifelink (Damage dealt by this creature also causes you to gain that much life.)\nWhenever you gain life, put a +1/+1 counter on each creature you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Archangel of Thune:1",
+                "trigger": "LifeGainEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever you gain life, put a +1/+1 counter on each creature you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "MYTHIC",
+        "artist": "James Ryman",
+        "flavorText": "Even the wicked have nightmares.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/531cba81-afd7-4be4-adec-87edb77ba2a9.jpg?1783939946",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "If a creature you control is dealt lethal damage at the same time that you gain life, it won't receive a counter from Archangel of Thune's ability in time to save it."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "Each creature with lifelink dealing combat damage causes a separate life-gaining event. For example, if two creatures you control with lifelink deal combat damage at the same time, the ability will trigger twice. However, if a single creature you control with lifelink deals combat damage to multiple creatures, players, and/or planeswalkers at the same time (perhaps because it has trample or was blocked by more than one creature), the ability will trigger only once."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "If you gain an amount of life \"for each\" of something, that life is gained as one event and the ability triggers only once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Barrage of Expendables
 {
     "name": "Barrage of Expendables",

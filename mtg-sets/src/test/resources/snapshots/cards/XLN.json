@@ -2649,6 +2649,71 @@
     ]
 }
 
+// Mavren Fein, Dusk Apostle
+{
+    "name": "Mavren Fein, Dusk Apostle",
+    "manaCost": "{2}{W}",
+    "typeLine": "Legendary Creature — Vampire Cleric",
+    "oracleText": "Whenever one or more nontoken Vampires you control attack, create a 1/1 white Vampire creature token with lifelink.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mavren Fein, Dusk Apostle:1",
+                "trigger": {
+                    "type": "YouAttackEvent",
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Vampire"
+                            },
+                            "IsNontoken"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Vampire"
+                    ],
+                    "keywords": [
+                        "LIFELINK"
+                    ]
+                },
+                "descriptionOverride": "Whenever one or more nontoken Vampires you control attack, create a 1/1 white Vampire creature token with lifelink."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "flavorText": "In the rapture of his Blood Fast, he destroyed the navigator's tools and steered the ship to shore by faith alone.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7294e40-11b3-4d5c-82d0-c8ec6bd3a6c9.jpg?1783935796",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "Once you attack with one or more nontoken Vampires, Mavren Fein's ability will create a Vampire token even if some or all of those Vampires leave the battlefield or are removed from combat."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Nest Robber
 {
     "name": "Nest Robber",
@@ -3705,6 +3770,69 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Sanctum Seeker
+{
+    "name": "Sanctum Seeker",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Creature — Vampire Knight",
+    "oracleText": "Whenever a Vampire you control attacks, each opponent loses 1 life and you gain 1 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sanctum Seeker:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature Vampire ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "rarity": "RARE",
+        "artist": "Volkan Baǵa",
+        "flavorText": "The Sanctum Seekers were the first of the knightly orders to cross the sea and are still the most zealous.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/72150779-0bb6-4d20-a898-cda93a66e7cd.jpg?1783935756",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "In a Two-Headed Giant game, Sanctum Seeker's ability causes the opposing team to lose 2 life and you to gain 1 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

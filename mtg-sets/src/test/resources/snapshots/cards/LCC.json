@@ -140,6 +140,181 @@
     }
 }
 
+// Clavileño, First of the Blessed
+{
+    "name": "Clavileño, First of the Blessed",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Legendary Creature — Vampire Cleric",
+    "oracleText": "Whenever you attack, target attacking Vampire that isn't a Demon becomes a Demon in addition to its other types. It gains \"When this creature dies, draw a card and create a tapped 4/3 white and black Vampire Demon creature token with flying.\"",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Clavileño, First of the Blessed:2",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCreatureType",
+                            "subtype": "Demon",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantTriggeredAbility",
+                            "ability": {
+                                "id": "Clavileño, First of the Blessed:1",
+                                "trigger": {
+                                    "type": "ZoneChangeEvent",
+                                    "from": "Battlefield",
+                                    "to": "Graveyard"
+                                },
+                                "effect": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "DrawCards",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        {
+                                            "type": "CreateToken",
+                                            "power": 4,
+                                            "toughness": 3,
+                                            "colors": [
+                                                "WHITE",
+                                                "BLACK"
+                                            ],
+                                            "creatureTypes": [
+                                                "Vampire",
+                                                "Demon"
+                                            ],
+                                            "keywords": [
+                                                "FLYING"
+                                            ],
+                                            "imageUri": "https://cards.scryfall.io/normal/front/3/0/3005eb0a-5c96-4a07-a6b9-a907d1095cdf.jpg?1783913605",
+                                            "tapped": true
+                                        }
+                                    ]
+                                }
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "Permanent"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "HasSubtype",
+                                    "subtype": "Vampire"
+                                },
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Demon"
+                                }
+                            ],
+                            "statePredicates": [
+                                "IsAttacking"
+                            ]
+                        }
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you attack, target attacking Vampire that isn't a Demon becomes a Demon in addition to its other types. It gains \"When this creature dies, draw a card and create a tapped 4/3 white and black Vampire Demon creature token with flying.\""
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "MYTHIC",
+        "artist": "Matt Stewart",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f55b648-b1ec-407a-a0c7-7647755793d1.jpg?1783913936"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
+// Master of Dark Rites
+{
+    "name": "Master of Dark Rites",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Vampire Cleric",
+    "oracleText": "{T}, Sacrifice another creature: Add {B}{B}{B}. Spend this mana only to cast Vampire, Cleric, and/or Demon spells.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Master of Dark Rites:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "restriction": {
+                        "type": "SubtypeSpellsOnly",
+                        "subtypes": [
+                            "Vampire",
+                            "Cleric",
+                            "Demon"
+                        ]
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}, Sacrifice another creature: Add {B}{B}{B}. Spend this mana only to cast Vampire, Cleric, and/or Demon spells."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "rarity": "RARE",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"With each sacrifice, we step closer to the Age of Everflowing Blood.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/6394a522-37bb-4cf3-b434-5121c8000ac6.jpg?1783913910"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Ripples of Potential
 {
     "name": "Ripples of Potential",

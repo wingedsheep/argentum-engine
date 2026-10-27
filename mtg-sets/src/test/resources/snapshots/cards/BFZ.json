@@ -1277,6 +1277,72 @@
     ]
 }
 
+// Drana, Liberator of Malakir
+{
+    "name": "Drana, Liberator of Malakir",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Legendary Creature — Vampire Ally",
+    "oracleText": "Flying, first strike\nWhenever Drana deals combat damage to a player, put a +1/+1 counter on each attacking creature you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Drana, Liberator of Malakir:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature attacking ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "MYTHIC",
+        "artist": "Mike Bierek",
+        "flavorText": "\"I will not live as a slave. If you would be free, then fight alongside me.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/3/d3f6ed18-eb6f-4d07-8660-cf7c074c87cd.jpg?1783938202",
+        "rulings": [
+            {
+                "date": "2015-08-25",
+                "text": "Drana's last ability triggers after combat damage has been dealt, so only attacking creatures that survive the combat damage step in which Drana deals combat damage will have +1/+1 counters put on them."
+            },
+            {
+                "date": "2015-08-25",
+                "text": "The +1/+1 counter won't change how much damage Drana or any other attacking creature with first strike or double strike deals during that combat damage step. However, the +1/+1 counters that are put on attacking creatures without first strike will affect the damage those creatures deal during the regular combat damage step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Eldrazi Devastator
 {
     "name": "Eldrazi Devastator",

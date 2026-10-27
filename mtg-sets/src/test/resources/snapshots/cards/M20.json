@@ -2131,6 +2131,124 @@
     ]
 }
 
+// Knight of the Ebon Legion
+{
+    "name": "Knight of the Ebon Legion",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Vampire Knight",
+    "oracleText": "{2}{B}: This creature gets +3/+3 and gains deathtouch until end of turn.\nAt the beginning of your end step, if a player lost 4 or more life this turn, put a +1/+1 counter on this creature. (Damage causes loss of life.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Knight of the Ebon Legion:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "CountPlayersWith",
+                        "scope": "Each",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "TurnTracking",
+                                "player": "You",
+                                "tracker": "LIFE_LOST_AMOUNT"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, if a player lost 4 or more life this turn, put a +1/+1 counter on this creature."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Knight of the Ebon Legion:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DEATHTOUCH",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "This creature gets +3/+3 and gains deathtouch until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "rarity": "RARE",
+        "artist": "Alex Konstad",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/29425426-7bf2-4872-aa35-c12c22801edd.jpg?1783932992",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "Knight of the Ebon Legion looks at your entire turn to determine whether a player lost 4 or more life. It doesn't matter how many players lost 4 or more life, only whether anyone did. It also doesn't matter whether Knight of the Ebon Legion was on the battlefield when they lost life."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "It doesn't matter whether a player has 4 or less life than they started the turn with. If a player lost 4 life but also gained 6 life, that player still lost 4 life."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "A player doesn't need to have lost 4 life all at once. If a player loses 2 life twice during a turn, that player lost 4 life during that turn, and Knight of the Ebon Legion receives a +1/+1 counter."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "A player loses life if they pay life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Kykar, Wind's Fury
 {
     "name": "Kykar, Wind's Fury",
@@ -3325,6 +3443,32 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Vampire of the Dire Moon
+{
+    "name": "Vampire of the Dire Moon",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Vampire",
+    "oracleText": "Deathtouch (Any amount of damage this deals to a creature is enough to destroy it.)\nLifelink (Damage dealt by this creature also causes you to gain that much life.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "DEATHTOUCH",
+        "LIFELINK"
+    ],
+    "metadata": {
+        "collectorNumber": "120",
+        "rarity": "UNCOMMON",
+        "artist": "Anna Podedworna",
+        "flavorText": "\"This place suits me: craven authorities and plentiful prey.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3c185b9-5d97-4a5a-af0b-8b9c44dcd235.jpg?1783932986"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
