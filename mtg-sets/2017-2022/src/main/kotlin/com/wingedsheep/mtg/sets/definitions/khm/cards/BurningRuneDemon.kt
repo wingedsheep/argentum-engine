@@ -15,7 +15,7 @@ import com.wingedsheep.sdk.scripting.references.Player
 
 /**
  * Burning-Rune Demon — Kaldheim #81
- * {4}{B}{B} · Creature — Demon · 6/6
+ * {4}{B}{B} · Creature — Demon Berserker · 6/6
  *
  * Flying. When this creature enters, you may search your library for exactly two cards not
  * named Burning-Rune Demon that have different names. If you do, reveal those cards. An
@@ -35,7 +35,7 @@ import com.wingedsheep.sdk.scripting.references.Player
 val BurningRuneDemon = card("Burning-Rune Demon") {
     manaCost = "{4}{B}{B}"
     colorIdentity = "B"
-    typeLine = "Creature — Demon"
+    typeLine = "Creature — Demon Berserker"
     power = 6
     toughness = 6
     oracleText = "Flying\n" +
