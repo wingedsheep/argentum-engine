@@ -169,6 +169,77 @@
     ]
 }
 
+// Crumbling Ashes
+{
+    "name": "Crumbling Ashes",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "At the beginning of your upkeep, destroy target creature with a -1/-1 counter on it.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Crumbling Ashes:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "HasCounter",
+                                    "counterType": "MINUS_ONE_MINUS_ONE"
+                                }
+                            ]
+                        }
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "At the beginning of your upkeep, destroy target creature with a -1/-1 counter on it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "UNCOMMON",
+        "artist": "Chuck Lukacs",
+        "flavorText": "\"I was there to watch my brothers' quenching. I drew the slightest warmth from their dying rage.\"\n—Illulia of Nighthearth",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/e/3e73ac3c-bd5a-4993-be65-76396b7d38ad.jpg?1783942687",
+        "rulings": [
+            {
+                "date": "2008-08-01",
+                "text": "This ability is mandatory. If you're the only player who controls a creature with a -1/-1 counter on it as your upkeep begins, you must target one of your own creatures."
+            },
+            {
+                "date": "2008-08-01",
+                "text": "You can't target a creature unless it already has a -1/-1 counter on it as your upkeep begins. Putting a -1/-1 counter on a creature during your upkeep won't let Crumbling Ashes destroy it that turn."
+            },
+            {
+                "date": "2008-08-01",
+                "text": "If the targeted creature loses all its -1/-1 counters by the time the ability resolves, the ability won't resolve because its only target is illegal. The creature won't be destroyed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Duskdale Wurm
 {
     "name": "Duskdale Wurm",
@@ -496,6 +567,81 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Necroskitter
+{
+    "name": "Necroskitter",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Wither (This deals damage to creatures in the form of -1/-1 counters.)\nWhenever a creature an opponent controls with a -1/-1 counter on it dies, you may return that card to the battlefield under your control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "WITHER"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Necroskitter:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "MINUS_ONE_MINUS_ONE"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByOpponent"
+                    },
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "TriggeringEntity",
+                        "destination": "Battlefield",
+                        "controllerOverride": "Controller",
+                        "fromZone": "Graveyard"
+                    }
+                },
+                "descriptionOverride": "Whenever a creature an opponent controls with a -1/-1 counter on it dies, you may return that card to the battlefield under your control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "RARE",
+        "artist": "Jaime Jones",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/02907b62-5456-4605-a8cd-321487928761.jpg?1783942686",
+        "rulings": [
+            {
+                "date": "2008-08-01",
+                "text": "It doesn't matter how many -1/-1 counters were on the creature when it was put into a graveyard from the battlefield, as long as it had at least one."
+            },
+            {
+                "date": "2008-08-01",
+                "text": "The card returns to the battlefield without any -1/-1 counters on it (unless some other effect causes it to enter with some)."
+            },
+            {
+                "date": "2008-08-01",
+                "text": "It doesn't matter whose graveyard the creature is put into. It matters only that an opponent controlled it when it left the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

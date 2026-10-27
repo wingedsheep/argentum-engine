@@ -1236,6 +1236,56 @@
     ]
 }
 
+// Mother of Runes
+{
+    "name": "Mother of Runes",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "{T}: Target creature you control gains protection from the color of your choice until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Mother of Runes:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "ChooseColorThen",
+                    "then": {
+                        "type": "GrantProtectionFromChosenColor",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}: Target creature you control gains protection from the color of your choice until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "UNCOMMON",
+        "artist": "Scott M. Fischer",
+        "flavorText": "\"My family protects all families.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b1a46ab-95cb-4c24-924f-fc2afd4fcac7.jpg?1783946251"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Opportunity
 {
     "name": "Opportunity",

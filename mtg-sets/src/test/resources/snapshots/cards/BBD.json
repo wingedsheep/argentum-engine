@@ -195,6 +195,98 @@
     ]
 }
 
+// Generous Patron
+{
+    "name": "Generous Patron",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elf Advisor",
+    "oracleText": "When this creature enters, support 2. (Put a +1/+1 counter on each of up to two other target creatures.)\nWhenever you put one or more counters on a creature you don't control, draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Generous Patron:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, support 2 — put a +1/+1 counter on each of up to two other target creatures."
+            },
+            {
+                "id": "Generous Patron:2",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": null,
+                    "filter": "creature ctrl:opponent",
+                    "placedBy": "You"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever you put one or more counters on a creature you don't control, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "RARE",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/59ea095b-af0e-4178-b6f4-816abb635fc0.jpg?1783934853",
+        "rulings": [
+            {
+                "date": "2018-06-08",
+                "text": "If you put one or more counters on multiple creatures you don't control at the same time, such as by supporting two different creatures you don't control, Generous Patron's last ability triggers for each of those creatures."
+            },
+            {
+                "date": "2018-06-08",
+                "text": "Support can target a creature another player controls."
+            },
+            {
+                "date": "2018-06-08",
+                "text": "If a creature enters the battlefield with counters under another player's control, that player is the player who puts those counters on it, even if you control the spell or ability putting that creature onto the battlefield."
+            },
+            {
+                "date": "2018-06-08",
+                "text": "Generous Patron's last ability triggers even if the counters you put on another player's creatures aren't +1/+1 counters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Grothama, All-Devouring
 {
     "name": "Grothama, All-Devouring",

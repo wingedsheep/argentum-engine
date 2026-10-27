@@ -821,3 +821,36 @@
         "RED"
     ]
 }
+
+// Vitalize
+{
+    "name": "Vitalize",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Untap all creatures you control.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            "body": {
+                "type": "TapUntap",
+                "target": "IterationEntity",
+                "tap": false
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "artist": "Pete Venters",
+        "flavorText": "\"After waking to the magic of Llanowar, no dreams can compare.\"\n—Mirri of the *Weatherlight*",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6ee4997-4b1a-4e03-88ac-63b451bb7b38.jpg?1783946715"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}

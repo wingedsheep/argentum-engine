@@ -2625,6 +2625,66 @@
     ]
 }
 
+// Sephara, Sky's Blade
+{
+    "name": "Sephara, Sky's Blade",
+    "manaCost": "{4}{W}{W}{W}",
+    "typeLine": "Legendary Creature — Angel",
+    "oracleText": "You may pay {W} and tap four untapped creatures you control with flying rather than pay this spell's mana cost.\nFlying, lifelink\nOther creatures you control with flying have indestructible. (Damage and effects that say \"destroy\" don't destroy them.)",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "FLYING",
+        "LIFELINK"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "INDESTRUCTIBLE",
+                "filter": {
+                    "baseFilter": "creature kw:flying ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ],
+        "selfAlternativeCost": {
+            "manaCost": "{W}",
+            "additionalCosts": [
+                {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "count": 4,
+                        "filter": "creature kw:flying"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "RARE",
+        "artist": "Livia Prima",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc95881b-8fbf-4d82-b631-5e4404ccc28a.jpg?1783933020",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "To pay Sephara's alternative cost, you may tap any untapped creatures you control with flying, including ones you haven't controlled continuously since the beginning of your most recent turn."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Because damage remains marked on a creature until it's removed as the turn ends, lethal damage dealt to other creatures you control with flying may cause them to be destroyed if Sephara leaves the battlefield during that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Silverback Shaman
 {
     "name": "Silverback Shaman",
@@ -3004,6 +3064,110 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Vilis, Broker of Blood
+{
+    "name": "Vilis, Broker of Blood",
+    "manaCost": "{5}{B}{B}{B}",
+    "typeLine": "Legendary Creature — Demon",
+    "oracleText": "Flying\n{B}, Pay 2 life: Target creature gets -1/-1 until end of turn.\nWhenever you lose life, draw that many cards. (Damage causes loss of life.)",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 8
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vilis, Broker of Blood:2",
+                "trigger": "LifeLossEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_LIFE_LOST"
+                    }
+                },
+                "descriptionOverride": "Whenever you lose life, draw that many cards."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Vilis, Broker of Blood:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{B}, Pay 2 life: Target creature gets -1/-1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "RARE",
+        "artist": "Tyler Jacobson",
+        "flavorText": "\"You can sign, or you can spend your life imagining what might have been yours.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ecdf2bd9-87b9-470a-ad2e-0ebf98560f87.jpg?1783932985",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "A player loses life if they pay life."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If you pay life to cast a spell or activate an ability, you don't draw cards until after you've finished casting that spell or activating that ability. You draw those cards before that spell or ability resolves, but after targets are chosen for it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

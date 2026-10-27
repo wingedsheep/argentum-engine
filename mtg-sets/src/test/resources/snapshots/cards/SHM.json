@@ -399,6 +399,75 @@
     }
 }
 
+// Blowfly Infestation
+{
+    "name": "Blowfly Infestation",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature dies, if it had a -1/-1 counter on it, put a -1/-1 counter on target creature.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Blowfly Infestation:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "MINUS_ONE_MINUS_ONE"
+                            }
+                        ]
+                    },
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "MINUS_ONE_MINUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever a creature dies, if it had a -1/-1 counter on it, put a -1/-1 counter on target creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "rarity": "UNCOMMON",
+        "artist": "Drew Tucker",
+        "flavorText": "When the giant Tollek Worldslayer fell, a corruption erupted from his corpse to carry on his name.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/ae027b38-a6cc-41f7-8f0d-9d1402b46517.jpg?1783942756",
+        "rulings": [
+            {
+                "date": "2008-05-01",
+                "text": "When Blowfly Infestation's ability resolves, it will put a single -1/-1 counter on the targeted creature. It doesn't matter how many -1/-1 counters were on the creature that went to a graveyard as long as it had at least one on it."
+            },
+            {
+                "date": "2008-05-01",
+                "text": "This ability is mandatory. If you're the only player who controls any creatures when this ability triggers, you must target one of them."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Boartusk Liege
 {
     "name": "Boartusk Liege",

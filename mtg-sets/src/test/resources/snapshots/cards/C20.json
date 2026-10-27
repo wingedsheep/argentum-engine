@@ -198,6 +198,66 @@
     ]
 }
 
+// Flawless Maneuver
+{
+    "name": "Flawless Maneuver",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "If you control a commander, you may cast this spell without paying its mana cost.\nCreatures you control gain indestructible until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            "body": {
+                "type": "GrantKeyword",
+                "keyword": "INDESTRUCTIBLE",
+                "target": "IterationEntity"
+            }
+        },
+        "selfAlternativeCost": {
+            "manaCost": "{0}",
+            "condition": {
+                "type": "Exists",
+                "player": "You",
+                "zone": "Battlefield",
+                "filter": {
+                    "cardPredicates": [
+                        "IsPermanent"
+                    ],
+                    "statePredicates": [
+                        "IsCommander"
+                    ]
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"Captain, your units are the tip of our spear. There is zero room for failure.\"\n—Jirina Kudro",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c972abe6-c732-4745-bde4-8b51698f05be.jpg?1783931225",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "It doesn't matter whose commander you control. Any one will do. If you have two commanders, you just need to control one of them."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "Once you begin casting this spell, players can't take any other actions until you're done casting it. Notably, they can't try to remove the commander you control to make you pay its cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Martial Impetus
 {
     "name": "Martial Impetus",

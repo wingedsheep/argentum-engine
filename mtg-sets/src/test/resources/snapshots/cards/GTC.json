@@ -877,6 +877,92 @@
     ]
 }
 
+// Hellkite Tyrant
+{
+    "name": "Hellkite Tyrant",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying, trample\nWhenever this creature deals combat damage to a player, gain control of all artifacts that player controls.\nAt the beginning of your upkeep, if you control twenty or more artifacts, you win the game.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hellkite Tyrant:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "artifact ctrl:triggering-player"
+                        }
+                    },
+                    "body": {
+                        "type": "GainControl",
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, gain control of all artifacts that player controls."
+            },
+            {
+                "id": "Hellkite Tyrant:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "WinGame",
+                    "message": "Hellkite Tyrant: twenty or more artifacts."
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "artifact"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 20
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, if you control twenty or more artifacts, you win the game."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "MYTHIC",
+        "artist": "Aleksi Briclot",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0bc3401f-935b-45ce-b1e6-300a5d9dfd4f.jpg?1783940124",
+        "rulings": [
+            {
+                "date": "2013-01-24",
+                "text": "If you don't control twenty or more artifacts at the beginning of your upkeep, Hellkite Tyrant's last ability won't trigger. If it does trigger, it will check again when it tries to resolve. If you don't control twenty or more artifacts at that time, the ability will do nothing."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // High Priest of Penance
 {
     "name": "High Priest of Penance",

@@ -1,3 +1,78 @@
+// Crown of Skemfar
+{
+    "name": "Crown of Skemfar",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +1/+1 for each Elf you control and has reach.\n{2}{G}: Return this card from your graveyard to your hand.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Crown of Skemfar:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
+                },
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "{2}{G}: Return this card from your graveyard to your hand."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "permanent Elf"
+                },
+                "toughnessBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "permanent Elf"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "REACH"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "RARE",
+        "artist": "Jason Felix",
+        "flavorText": "Lathril, queen of the ancient Einir, left a powerful legacy for her mortal descendants.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e6297586-8953-408e-a38c-2239d45807e1.jpg?1783928337",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The power/toughness bonus given by Crown of Skemfar will change as the number of Elves you control changes."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Elderfang Venom
 {
     "name": "Elderfang Venom",
