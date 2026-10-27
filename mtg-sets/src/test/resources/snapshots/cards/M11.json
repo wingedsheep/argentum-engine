@@ -177,6 +177,83 @@
     ]
 }
 
+// Angelic Arbiter
+{
+    "name": "Angelic Arbiter",
+    "manaCost": "{5}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nEach opponent who cast a spell this turn can't attack with creatures.\nEach opponent who attacked with a creature this turn can't cast spells.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "SpellsCastThisTurn",
+                        "player": "ActivePlayer"
+                    },
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                },
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                }
+            },
+            {
+                "type": "PlayersCantCastSpells",
+                "condition": {
+                    "type": "PlayerAttackedWithCreaturesThisTurn",
+                    "filter": "creature",
+                    "atLeast": 1
+                },
+                "conditionFromCaster": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "RARE",
+        "artist": "Steve Argyle",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/71f05793-9e6f-4815-9a13-f791cb4b6aa0.jpg?1783941838",
+        "rulings": [
+            {
+                "date": "2010-08-15",
+                "text": "During your turn, Angelic Arbiter's abilities have no effect on the game."
+            },
+            {
+                "date": "2010-08-15",
+                "text": "During an opponent's turn, that opponent may either cast spells or attack with creatures, but not both (assuming that Angelic Arbiter is on the battlefield for the entirety of that turn). The player may perform other actions, such as activating abilities and playing lands."
+            },
+            {
+                "date": "2010-08-15",
+                "text": "If Angelic Arbiter leaves the battlefield during an opponent's turn, its abilities cease to affect the game. For example, if an opponent casts Doom Blade to destroy Angelic Arbiter, that player may then attack with creatures."
+            },
+            {
+                "date": "2010-08-15",
+                "text": "If Angelic Arbiter enters during an opponent's turn, its abilities take actions that player performed earlier in the turn into account, even though it wasn't on the battlefield at the time. For example, if an opponent casts a spell, then you use Leyline of Anticipation's ability to cast Angelic Arbiter as though it had flash, that player won't be able to attack with creatures that turn."
+            },
+            {
+                "date": "2010-08-15",
+                "text": "Angelic Arbiter's last ability applies if an opponent attacked with at least one creature during the current turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Arc Runner
 {
     "name": "Arc Runner",

@@ -11185,7 +11185,11 @@ in the declare-blockers step, even before the turn-based block action has comple
   face-down or ability-stripped holder contributes nothing). Arboria = `CantAttackUnless(Conditions.Any(
   CompareAmounts(spellsCastDuringTheirLastTurn(DefendingPlayer), GTE, 1),
   CompareAmounts(nontokenPermanentsPutDuringTheirLastTurn(DefendingPlayer), GTE, 1)),
-  GroupFilter.AllCreatures, coversPlaneswalkers = false)`.
+  GroupFilter.AllCreatures, coversPlaneswalkers = false)`. A restriction keyed to the **attacking**
+  player reads `Player.ActivePlayer` (only the active player declares attackers, CR 508.1): Angelic
+  Arbiter's "each opponent who cast a spell this turn can't attack with creatures" =
+  `CantAttackUnless(CompareAmounts(spellsCastThisTurn(Player.ActivePlayer), EQ, 0),
+  GroupFilter.AllCreaturesOpponentsControl)`.
 - `CantAttackUnlessSacrifice(sacrificeFilter, count = 1)` — a **non-mana** attack cost, paid as
   attackers are declared: Leviathan's "this creature can't attack unless you sacrifice two Islands".
   The clause is a restriction (CR 508.1c) whose cost is determined and paid at CR 508.1h–j — not an
@@ -11906,7 +11910,10 @@ staticAbility {
   true` evaluates `condition` from the *casting player's* seat instead, for timing relative to each
   restricted player: Dosan the Falling Leaf = `PlayersCantCastSpells(Player.Each, condition =
   IsNotYourTurn, conditionFromCaster = true)` ("Players can cast spells only during their own turns"
-  — correct in multiplayer, where a controller-relative pair of statics is not). **where**
+  — correct in multiplayer, where a controller-relative pair of statics is not); Angelic Arbiter's
+  "each opponent who attacked with a creature this turn can't cast spells" =
+  `PlayersCantCastSpells(Player.EachOpponent, condition = YouAttackedWithCreaturesThisTurn(Creature, 1),
+  conditionFromCaster = true)`. **where**
   (`fromZones`, the zones the card is cast *from*, read before it moves to the stack; `null` = any):
   Soulless Jailer = `PlayersCantCastSpells(Player.Each, GameObjectFilter.Noncreature, fromZones =
   setOf(Zone.GRAVEYARD, Zone.EXILE))`. Teferi, Time Raveler = `PlayersCantCastSpells(Player.EachOpponent, condition =
