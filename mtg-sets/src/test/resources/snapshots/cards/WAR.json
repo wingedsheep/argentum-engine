@@ -2490,6 +2490,117 @@
     ]
 }
 
+// God-Eternal Bontu
+{
+    "name": "God-Eternal Bontu",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Legendary Creature — Zombie God",
+    "oracleText": "Menace\nWhen God-Eternal Bontu enters, sacrifice any number of other permanents, then draw that many cards.\nWhen God-Eternal Bontu dies or is put into exile from the battlefield, you may put her into her owner's library third from the top.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 6
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "God-Eternal Bontu:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Sacrifice",
+                            "filter": "permanent",
+                            "any": true,
+                            "excludeSource": true
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": "PermanentsSacrificedThisWay"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When God-Eternal Bontu enters, sacrifice any number of other permanents, then draw that many cards."
+            },
+            {
+                "id": "God-Eternal Bontu:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Put God-Eternal Bontu into its owner's library third from the top?"
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Library",
+                        "fromZone": "Graveyard",
+                        "positionFromTop": 2
+                    }
+                },
+                "descriptionOverride": "When God-Eternal Bontu dies, you may put her into her owner's library third from the top."
+            },
+            {
+                "id": "God-Eternal Bontu:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Exile"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Put God-Eternal Bontu into its owner's library third from the top?"
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Library",
+                        "fromZone": "Exile",
+                        "positionFromTop": 2
+                    }
+                },
+                "descriptionOverride": "When God-Eternal Bontu is put into exile from the battlefield, you may put her into her owner's library third from the top."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "MYTHIC",
+        "artist": "Lius Lasahido",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/3714a135-e2b9-43a7-a2a2-fa5a2e0ac61a.jpg?1783933445",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "If any abilities trigger as you sacrifice other permanents, those abilities won't be put onto the stack until after you've drawn cards."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "As Bontu's first triggered ability resolves, you may choose to sacrifice zero other permanents."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If a second God-Eternal Bontu enters the battlefield under your control, you'll put one into your graveyard before you can sacrifice anything to the new Bontu's triggered ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Heartfire
 {
     "name": "Heartfire",
@@ -3298,6 +3409,85 @@
     "startingLoyalty": 5,
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Kaya's Ghostform
+{
+    "name": "Kaya's Ghostform",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature or planeswalker you control\nWhen enchanted permanent dies or is put into exile, return that card to the battlefield under your control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kaya's Ghostform:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "TriggeringEntity",
+                    "destination": "Battlefield",
+                    "controllerOverride": "Controller",
+                    "fromZone": "Graveyard"
+                },
+                "descriptionOverride": "When enchanted permanent dies or is put into exile, return that card to the battlefield under your control."
+            },
+            {
+                "id": "Kaya's Ghostform:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Exile"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "TriggeringEntity",
+                    "destination": "Battlefield",
+                    "controllerOverride": "Controller",
+                    "fromZone": "Exile"
+                },
+                "descriptionOverride": "When enchanted permanent dies or is put into exile, return that card to the battlefield under your control."
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature|planeswalker ctrl:you"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "artist": "Johan Grenier",
+        "flavorText": "The Eternals found some sparks to be quite slippery.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/98f3be88-24e2-433f-9138-f0cb59d09a0f.jpg?1783933444",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Kaya's Ghostform can enchant a token, but its last ability won't return the token to the battlefield."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If an effect exiles the enchanted permanent and immediately returns it to the battlefield, the last ability of Kaya's Ghostform triggers but will have no effect. If an effect exiles the enchanted permanent and would return it to the battlefield at a later time, Kaya's Ghostform will return that card to the battlefield and it won't be returned later."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the enchanted permanent is put into a graveyard or exile but leaves that zone before the last ability of Kaya's Ghostform resolves, that card stays in its new zone, even if that zone is also a graveyard or exile. You don't return it to the battlefield."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If Kaya's Ghostform and the enchanted permanent are both put into graveyards and/or exiled at the same time, the enchanted permanent will be returned to the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

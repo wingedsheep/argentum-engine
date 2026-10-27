@@ -1,3 +1,100 @@
+// Command Beacon
+{
+    "name": "Command Beacon",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{T}, Sacrifice this land: Put your commander into your hand from the command zone.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Command Beacon:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Command Beacon:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Command",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsCommander"
+                                    ],
+                                    "controllerPredicate": "OwnedByYou"
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Choose your commander to put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{T}, Sacrifice this land: Put your commander into your hand from the command zone."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "RARE",
+        "artist": "Jonas De Ro",
+        "flavorText": "\"I gazed once into that light. Now it burns in my mind, forever denying me rest.\"\n—Riku of Two Reflections",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/166fa02f-e456-48ca-8ac3-d217afceff4d.jpg?1783938103",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "If you cast a commander from your hand, the commander tax doesn't apply. Additionally, that casting won't add to commander tax if you later cast the commander from the command zone."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "If your commander isn't in the command zone (or you don't have a commander) as the last ability resolves, nothing happens."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "If you have two commanders with the partner ability in the command zone, Command Beacon's effect puts one of your choice into your hand, not both."
+            }
+        ]
+    }
+}
+
 // Dread Summons
 {
     "name": "Dread Summons",

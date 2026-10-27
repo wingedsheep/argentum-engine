@@ -566,6 +566,74 @@
     ]
 }
 
+// Pest Infestation
+{
+    "name": "Pest Infestation",
+    "manaCost": "{X}{X}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy up to X target artifacts and/or enchantments. Create twice X 1/1 black and green Pest creature tokens with \"When this token dies, you gain 1 life.\"",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    }
+                },
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Pest",
+                    "dynamicCount": {
+                        "type": "Multiply",
+                        "amount": "XValue",
+                        "multiplier": 2
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "artifact|enchantment"
+                },
+                "id": "t0",
+                "dynamicMaxCount": "XValue"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "rarity": "RARE",
+        "artist": "Brian Valeza",
+        "flavorText": "A thousand years of history undone by one juvenile prank.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/4720b4f2-e6af-4223-9250-a0ed21ed5693.jpg?1792506360",
+        "rulings": [
+            {
+                "date": "2021-04-16",
+                "text": "The number of Pests created is equal to twice the chosen value of X, no matter how many artifacts and enchantments were destroyed."
+            },
+            {
+                "date": "2021-04-16",
+                "text": "If any artifacts or enchantments were chosen as targets, and all of them are illegal targets as Pest Infestation tries to resolve, it won't resolve and none of its effects will happen. No Pests will be created."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Promise of Loyalty
 {
     "name": "Promise of Loyalty",
