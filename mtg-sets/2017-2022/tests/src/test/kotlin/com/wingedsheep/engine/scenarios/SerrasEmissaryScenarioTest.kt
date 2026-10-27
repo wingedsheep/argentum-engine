@@ -81,7 +81,7 @@ class SerrasEmissaryScenarioTest : ScenarioTestBase() {
             game.getLifeTotal(1) shouldBe 17
         }
 
-        test("creature chosen: your creatures can't be blocked by creatures, and creatures can't damage you") {
+        test("creature chosen: you are protected from creature sources, and your creatures can't be blocked by creatures") {
             val game = boardWith().build()
             game.castEmissaryChoosing("Creature")
 

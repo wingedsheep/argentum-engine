@@ -43,13 +43,14 @@ val SerrasEmissary = card("Serra's Emissary") {
         EntersWithChoice(
             choiceType = ChoiceType.MODE,
             modeOptions = listOf(
-                "Artifact", "Battle", "Creature", "Enchantment", "Instant",
-                "Kindred", "Land", "Planeswalker", "Sorcery"
-            ).map { type ->
+                "Artifact" to "artifacts", "Battle" to "battles", "Creature" to "creatures",
+                "Enchantment" to "enchantments", "Instant" to "instants", "Kindred" to "Kindred cards",
+                "Land" to "lands", "Planeswalker" to "planeswalkers", "Sorcery" to "sorceries"
+            ).map { (type, plural) ->
                 ModeOption(
                     id = type,
                     label = type,
-                    description = "You and creatures you control have protection from ${type.lowercase()}s."
+                    description = "You and creatures you control have protection from $plural."
                 )
             }
         )

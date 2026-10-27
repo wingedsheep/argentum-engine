@@ -3801,7 +3801,7 @@
                     {
                         "id": "Kindred",
                         "label": "Kindred",
-                        "description": "You and creatures you control have protection from kindreds."
+                        "description": "You and creatures you control have protection from Kindred cards."
                     },
                     {
                         "id": "Land",
@@ -3816,7 +3816,7 @@
                     {
                         "id": "Sorcery",
                         "label": "Sorcery",
-                        "description": "You and creatures you control have protection from sorcerys."
+                        "description": "You and creatures you control have protection from sorceries."
                     }
                 ]
             }

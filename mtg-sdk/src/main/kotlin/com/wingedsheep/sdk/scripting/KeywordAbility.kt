@@ -118,6 +118,9 @@ sealed interface KeywordAbility {
             // Monocolored exists for hexproof (CR 105.2a); protection from monocolored has no
             // engine reading, so it fails here rather than printing text nothing enforces.
             require(scope != ProtectionScope.Monocolored) { "Protection from monocolored is not supported" }
+            // A chosen card type is read off the permanent that grants it — a static grant, not a
+            // printed keyword (GrantProtectionFromToGroup / GrantProtectionToController).
+            require(scope !is ProtectionScope.ChosenCardType) { "Protection from the chosen card type is a granted static" }
         }
 
         override val keyword: Keyword? = when (scope) {
@@ -163,6 +166,10 @@ sealed interface KeywordAbility {
     @SerialName("Hexproof")
     @Serializable
     data class Hexproof(val scope: ProtectionScope) : KeywordAbility {
+        init {
+            require(scope !is ProtectionScope.ChosenCardType) { "Hexproof from the chosen card type is not supported" }
+        }
+
         override val description: String = when (scope) {
             is ProtectionScope.Color -> "Hexproof from ${scope.color.displayName.lowercase()}"
             is ProtectionScope.Colors -> "Hexproof from " +

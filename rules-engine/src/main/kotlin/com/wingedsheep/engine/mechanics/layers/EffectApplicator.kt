@@ -349,15 +349,9 @@ internal class EffectApplicator(
                     values.keywords.addAll(mod.keywords)
                 }
                 is Modification.GrantProtectionFromChosenCardType -> {
-                    val chosen = com.wingedsheep.engine.mechanics.targeting.ProtectionKeywords.resolveChosen(
-                        com.wingedsheep.sdk.scripting.ProtectionScope.ChosenCardType(mod.slot),
-                        state.getEntity(effect.sourceId)
-                    )
-                    if (chosen != null) {
-                        values.keywords.addAll(
-                            com.wingedsheep.engine.mechanics.targeting.ProtectionKeywords.keywordsFor(chosen)
-                        )
-                    }
+                    com.wingedsheep.engine.mechanics.targeting.ProtectionKeywords
+                        .chosenCardTypeKeyword(state.getEntity(effect.sourceId), mod.slot)
+                        ?.let { values.keywords.add(it) }
                 }
                 is Modification.GrantProtectionFromControlledColors -> {
                     // Protection from the colors of permanents the source's controller controls

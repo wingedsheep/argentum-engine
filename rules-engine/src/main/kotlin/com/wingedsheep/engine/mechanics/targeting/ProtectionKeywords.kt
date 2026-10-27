@@ -4,6 +4,7 @@ import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
 import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.ProtectionScope
 
 /**
@@ -46,9 +47,14 @@ object ProtectionKeywords {
      * or null while nothing is chosen (protection from nothing). Every other scope is returned as is.
      */
     fun resolveChosen(scope: ProtectionScope, source: ComponentContainer?): ProtectionScope? = when (scope) {
-        is ProtectionScope.ChosenCardType ->
-            (source?.get<CastChoicesComponent>()?.chosen?.get(scope.slot) as? ChoiceValue.TextChoice)
-                ?.text?.let { ProtectionScope.CardType(it) }
+        is ProtectionScope.ChosenCardType -> chosenCardType(source, scope.slot)?.let { ProtectionScope.CardType(it) }
         else -> scope
     }
+
+    /** The `PROTECTION_FROM_CARDTYPE_<TYPE>` keyword for the card type [source] chose under [slot], or null. */
+    fun chosenCardTypeKeyword(source: ComponentContainer?, slot: ChoiceSlot): String? =
+        chosenCardType(source, slot)?.let { "PROTECTION_FROM_CARDTYPE_${it.uppercase()}" }
+
+    private fun chosenCardType(source: ComponentContainer?, slot: ChoiceSlot): String? =
+        (source?.get<CastChoicesComponent>()?.chosen?.get(slot) as? ChoiceValue.TextChoice)?.text
 }
