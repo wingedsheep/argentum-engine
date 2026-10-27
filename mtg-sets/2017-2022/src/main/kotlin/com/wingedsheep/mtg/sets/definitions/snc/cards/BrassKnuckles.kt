@@ -39,7 +39,7 @@ val BrassKnuckles = card("Brass Knuckles") {
 
     triggeredAbility {
         trigger = Triggers.self.isCast()
-        effect = Effects.CopyTargetSpell(target = EffectTarget.TriggeringEntity)
+        effect = Effects.CopyTargetSpell(target = EffectTarget.TriggeringEntity, mayChooseNewTargets = false)
         description = "When you cast this spell, copy it."
     }
 

@@ -4711,7 +4711,8 @@
                 "type": "BoundVariable",
                 "name": "t0"
             },
-            "removeLegendary": true
+            "removeLegendary": true,
+            "mayChooseNewTargets": false
         },
         "targetRequirements": [
             {
@@ -12844,7 +12845,8 @@
                     },
                     "then": {
                         "type": "CopyTargetSpell",
-                        "target": "TriggeringEntity"
+                        "target": "TriggeringEntity",
+                        "mayChooseNewTargets": false
                     }
                 },
                 "descriptionOverride": "When you cast this spell, copy it if you control a planeswalker, Cleric, Druid, Shaman, Warlock, or Wizard."
@@ -14906,7 +14908,8 @@
                     },
                     "body": {
                         "type": "CopyTargetSpell",
-                        "target": "TriggeringEntity"
+                        "target": "TriggeringEntity",
+                        "mayChooseNewTargets": false
                     }
                 },
                 "interveningIf": {

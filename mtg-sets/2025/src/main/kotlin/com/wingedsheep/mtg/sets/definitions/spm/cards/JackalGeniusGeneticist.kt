@@ -29,7 +29,7 @@ val JackalGeniusGeneticist = card("Jackal, Genius Geneticist") {
             ComparisonOperator.EQ,
             DynamicAmounts.sourcePower()
         )
-        effect = Effects.CopyTargetSpell(target = EffectTarget.TriggeringEntity, removeLegendary = true) then
+        effect = Effects.CopyTargetSpell(target = EffectTarget.TriggeringEntity, removeLegendary = true, mayChooseNewTargets = false) then
             Effects.AddCounters(CounterType.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
     }
 

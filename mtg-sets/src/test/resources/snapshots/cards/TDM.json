@@ -13384,7 +13384,8 @@
                 "trigger": "CastThisSpellEvent",
                 "effect": {
                     "type": "CopyTargetSpell",
-                    "target": "TriggeringEntity"
+                    "target": "TriggeringEntity",
+                    "mayChooseNewTargets": false
                 },
                 "interveningIf": {
                     "type": "PlayerCastSpellsThisTurn",

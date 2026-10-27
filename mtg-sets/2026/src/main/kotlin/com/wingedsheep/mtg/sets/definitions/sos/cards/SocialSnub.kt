@@ -35,7 +35,7 @@ val SocialSnub = card("Social Snub") {
     triggeredAbility {
         trigger = Triggers.self.isCast()
         triggerRestriction = Conditions.ControlCreature
-        effect = Effects.May(Effects.CopyTargetSpell(target = EffectTarget.TriggeringEntity))
+        effect = Effects.May(Effects.CopyTargetSpell(target = EffectTarget.TriggeringEntity, mayChooseNewTargets = false))
         description = "When you cast this spell while you control a creature, you may copy this spell."
     }
 

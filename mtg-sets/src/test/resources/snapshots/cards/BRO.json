@@ -16113,7 +16113,8 @@
                             "addedCardTypes": [
                                 "ARTIFACT"
                             ]
-                        }
+                        },
+                        "mayChooseNewTargets": false
                     }
                 }
             }

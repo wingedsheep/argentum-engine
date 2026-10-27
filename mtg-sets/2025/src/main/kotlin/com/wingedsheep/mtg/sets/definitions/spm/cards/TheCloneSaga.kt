@@ -58,6 +58,7 @@ val TheCloneSaga = card("The Clone Saga") {
             effect = Effects.CopyTargetSpell(
                 target = EffectTarget.TriggeringEntity,
                 removeLegendary = true,
+                mayChooseNewTargets = false,
             ),
             fireOnce = true,
             expiry = DelayedTriggerExpiry.EndOfTurn,

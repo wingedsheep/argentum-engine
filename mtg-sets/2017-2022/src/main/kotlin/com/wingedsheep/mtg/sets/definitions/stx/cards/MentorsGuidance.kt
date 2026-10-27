@@ -38,7 +38,7 @@ val MentorsGuidance = card("Mentor's Guidance") {
                 GameObjectFilter.Planeswalker or
                     GameObjectFilter.Permanent.withAnySubtype("Cleric", "Druid", "Shaman", "Warlock", "Wizard")
             ),
-            Effects.CopyTargetSpell(target = EffectTarget.TriggeringEntity)
+            Effects.CopyTargetSpell(target = EffectTarget.TriggeringEntity, mayChooseNewTargets = false)
         )
         description = "When you cast this spell, copy it if you control a planeswalker, Cleric, " +
             "Druid, Shaman, Warlock, or Wizard."
