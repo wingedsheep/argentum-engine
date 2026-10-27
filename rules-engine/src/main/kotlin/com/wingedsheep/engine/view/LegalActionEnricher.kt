@@ -113,6 +113,7 @@ class LegalActionEnricher(
             xConstrainsTargetCountExactly = action.xConstrainsTargetCountExactly,
             validAttackers = action.validAttackers,
             mandatoryAttackers = action.mandatoryAttackers,
+            loneAttackers = action.loneAttackers,
             validAttackTargets = action.validAttackTargets,
             attackTargetsByAttacker = action.attackTargetsByAttacker,
             validBlockers = action.validBlockers,

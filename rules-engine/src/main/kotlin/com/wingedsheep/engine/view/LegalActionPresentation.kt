@@ -117,6 +117,8 @@ data class LegalActionInfo(
     val xConstrainsTargetCountExactly: Boolean = false,
     val validAttackers: List<EntityId>? = null,
     val mandatoryAttackers: List<EntityId>? = null,
+    /** Valid attackers that can only attack alone (Master of Cruelties); null when none. */
+    val loneAttackers: List<EntityId>? = null,
     val validAttackTargets: List<EntityId>? = null,
     /**
      * Sparse per-attacker narrowing of [validAttackTargets]: an attacker listed here may attack

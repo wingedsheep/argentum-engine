@@ -221,6 +221,11 @@ export interface CombatState {
   validCreatures: readonly EntityId[]
   /** Creatures that must attack this combat (from MustAttack, Taunt, etc.) */
   mandatoryAttackers: readonly EntityId[]
+  /**
+   * Valid attackers that can only attack alone (Master of Cruelties) — the server's list. Picking
+   * one clears the rest of the selection; picking another creature drops it.
+   */
+  loneAttackers?: readonly EntityId[]
   /** For blockers mode: creatures that are attacking */
   attackingCreatures: readonly EntityId[]
   /** For blockers mode: attackers that must be blocked by all creatures able to block them */

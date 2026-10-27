@@ -88,6 +88,11 @@ data class LegalAction(
     // Combat
     override val validAttackers: List<EntityId>? = null,
     val mandatoryAttackers: List<EntityId>? = null,
+    /**
+     * The [validAttackers] that can only attack alone (CR 506.5 — Master of Cruelties): a
+     * declaration with one of them and any other attacker is rejected. Null when there are none.
+     */
+    val loneAttackers: List<EntityId>? = null,
     val validAttackTargets: List<EntityId>? = null,
     /**
      * Per-attacker narrowing of [validAttackTargets] (CR 508.1b–c): each attacker chooses its own

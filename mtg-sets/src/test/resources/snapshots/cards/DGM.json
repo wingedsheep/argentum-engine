@@ -161,6 +161,78 @@
     ]
 }
 
+// Master of Cruelties
+{
+    "name": "Master of Cruelties",
+    "manaCost": "{3}{B}{R}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "First strike, deathtouch\nThis creature can only attack alone.\nWhenever this creature attacks a player and isn't blocked, that player's life total becomes 1. This creature assigns no combat damage this combat.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Master of Cruelties:1",
+                "trigger": "BecomesUnblockedEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "SetLifeTotal",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "DefendingPlayer"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "ASSIGNS_NO_COMBAT_DAMAGE",
+                            "target": "Self",
+                            "duration": "EndOfCombat"
+                        }
+                    ]
+                },
+                "triggerRestriction": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsAttackingAnOpponent"
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever this creature attacks a player and isn't blocked, that player's life total becomes 1. This creature assigns no combat damage this combat."
+            }
+        ],
+        "staticAbilities": [
+            "CanOnlyAttackAlone"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b4d8ab5-252c-4727-817d-6f18cbaedd91.jpg?1783940026"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Maze's End
 {
     "name": "Maze's End",

@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.DeclareBlockers
 import com.wingedsheep.engine.legalactions.ActionEnumerator
 import com.wingedsheep.engine.legalactions.EnumerationContext
 import com.wingedsheep.engine.legalactions.LegalAction
+import com.wingedsheep.engine.mechanics.combat.LoneAttackers
 import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
 import com.wingedsheep.sdk.core.Step
@@ -94,6 +95,7 @@ class CombatEnumerator : ActionEnumerator {
                     action = DeclareAttackers(playerId, emptyMap()),
                     validAttackers = attackers,
                     mandatoryAttackers = mandatoryAttackers.ifEmpty { null },
+                    loneAttackers = LoneAttackers.of(state, attackers, context.cardRegistry).ifEmpty { null },
                     validAttackTargets = validAttackTargets.ifEmpty { null },
                     attackTargetsByAttacker = narrowedTargets.ifEmpty { null },
                 ))

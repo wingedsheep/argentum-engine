@@ -498,6 +498,27 @@ data class CantAttackUnlessCoAttacker(
 }
 
 /**
+ * "This creature can only attack alone" (Master of Cruelties): a declaration that has this
+ * creature attacking along with any other creature is illegal (CR 508.1c). "Attacks alone" means
+ * it is the only creature declared as an attacker (CR 506.5), so a creature put onto the
+ * battlefield attacking afterwards changes nothing.
+ *
+ * The inverse of [CantAttackUnlessCoAttacker] with the bare `Creature` filter. Like that one it
+ * depends on the whole declared attacker set, so it is checked against the declaration, and it
+ * weighs into CR 508.1d: when the creature, or the others, are required to attack, the declaration
+ * that obeys more requirements wins — another creature that must attack does, and this one stays
+ * home (the card's ruling).
+ *
+ * Always scoped to the creature carrying it: printed on it, or on a token through its granted
+ * static abilities. A face-down creature or one that has lost its abilities is unrestricted.
+ */
+@SerialName("CanOnlyAttackAlone")
+@Serializable
+data object CanOnlyAttackAlone : StaticAbility {
+    override val description: String = "This creature can only attack alone"
+}
+
+/**
  * This creature can't block unless a condition is met.
  * Checked at block declaration time when the attacking player is known.
  *

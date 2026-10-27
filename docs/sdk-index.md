@@ -1807,6 +1807,7 @@ Families:
 - `CanBlockAdditionalForCreatureGroup(count: Int, filter: GroupFilter)` — Grants "can block an additional N creatures" to a group of creatures.
 - `CanBlockAnyNumber(filter: GroupFilter)` — This creature can block any number of creatures.
 - `CanBlockAsThoughUntapped(filter: GroupFilter)` — Creatures matching filter can block as though they were untapped — lifting the "untapped creature" requirement of CR 509.1a for them and nothing else.
+- `CanOnlyAttackAlone` — "This creature can only attack alone" (Master of Cruelties): a declaration that has this creature attacking along with any other creature is illegal (CR 508.1c).
 - `CanOnlyBlockCreaturesWith(blockerFilter: GameObjectFilter, filter: GroupFilter)` — This creature can only block creatures matching a filter.
 - `CantAttack(filter: GroupFilter)` — Prevents the affected permanents from attacking.
 - `CantAttackOrBlockUnlessPay(amount: DynamicAmount, appliesToBlocking: Boolean)` — This permanent can't attack or block unless its controller pays amount generic mana for it (CR 508.1a / 509.1a — the payment is part of the cost of declaring it).

@@ -126,13 +126,26 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
         return state
       }
 
+      // "Can only attack alone" (Master of Cruelties): picking such a creature replaces the
+      // selection, and picking anything else drops it — never a declaration the server rejects.
+      const lone = state.combatState.loneAttackers ?? []
+      const displaced = isSelected
+        ? []
+        : state.combatState.selectedAttackers.filter(
+            (id) => id !== creatureId && (lone.includes(creatureId) || lone.includes(id)),
+          )
+      if (displaced.some((id) => state.combatState!.mandatoryAttackers.includes(id))) {
+        return state
+      }
+
       const newAttackers = isSelected
         ? state.combatState.selectedAttackers.filter((id) => id !== creatureId)
-        : [...state.combatState.selectedAttackers, creatureId]
+        : [...state.combatState.selectedAttackers.filter((id) => !displaced.includes(id)), creatureId]
 
       // Clean up attackerTargets if deselecting; sticky-assign on select when a
       // defender has already been picked this declaration (multiplayer).
       const newTargets = { ...state.combatState.attackerTargets }
+      for (const id of displaced) delete newTargets[id]
       if (isSelected) {
         delete newTargets[creatureId]
       } else if (
@@ -147,9 +160,10 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
 
       // Prune bands when an attacker is deselected: drop the creature from every band,
       // then discard any band that fell below 2 members.
-      const newBands = isSelected
+      const dropped = isSelected ? [creatureId] : displaced
+      const newBands = dropped.length > 0
         ? state.combatState.bands
-            .map((band) => band.filter((id) => id !== creatureId))
+            .map((band) => band.filter((id) => !dropped.includes(id)))
             .filter((band) => band.length >= 2)
         : state.combatState.bands
 
@@ -390,8 +404,18 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
     // Sticky defender applies to the whole selection (multiplayer) — same rule as
     // toggling attackers one by one, so "Attack All" never reopens the defender pick
     // when a defender is already chosen (or was pre-assigned as the sole legal one).
-    const newAttackers = [...combatState.validCreatures]
-    const newTargets = { ...combatState.attackerTargets }
+    // Creatures that can only attack alone stay home beside the others (Master of Cruelties);
+    // one attacks only when it is required, or when it is all there is.
+    const lone = combatState.loneAttackers ?? []
+    const others = combatState.validCreatures.filter((id) => !lone.includes(id))
+    const newAttackers = combatState.mandatoryAttackers.some((id) => lone.includes(id))
+      ? [...combatState.mandatoryAttackers]
+      : others.length > 0
+        ? others
+        : combatState.validCreatures.slice(0, 1)
+    const newTargets: Record<EntityId, EntityId> = Object.fromEntries(
+      Object.entries(combatState.attackerTargets).filter(([id]) => newAttackers.includes(id as EntityId)),
+    )
     if (combatState.stickyDefenderId) {
       for (const id of newAttackers) {
         if (!newTargets[id] && canAttackTarget(combatState, id, combatState.stickyDefenderId)) {
@@ -406,6 +430,9 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
         ...combatState,
         selectedAttackers: newAttackers,
         attackerTargets: newTargets,
+        bands: combatState.bands
+          .map((band) => band.filter((id) => newAttackers.includes(id)))
+          .filter((band) => band.length >= 2),
       },
     })
   },

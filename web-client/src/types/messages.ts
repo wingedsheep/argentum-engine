@@ -1133,6 +1133,8 @@ export interface LegalActionInfo {
   readonly validAttackers?: readonly EntityId[]
   /** Creature IDs that must attack this combat (from MustAttack, Taunt, etc.) */
   readonly mandatoryAttackers?: readonly EntityId[]
+  /** Valid attackers that can only attack alone (Master of Cruelties); absent when none */
+  readonly loneAttackers?: readonly EntityId[]
   /** Valid attack targets: opponent planeswalker IDs that can be attacked */
   readonly validAttackTargets?: readonly EntityId[]
   /**

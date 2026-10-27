@@ -420,7 +420,9 @@ object CombatSeed {
     /**
      * Last line of defence before a plan is submitted: every attacker whose chosen defender the
      * engine doesn't list for it is moved to [defenderFor] — or dropped when it has none — so one
-     * restricted creature can never get the whole declaration rejected.
+     * restricted creature can never get the whole declaration rejected. A creature that can only
+     * attack alone (Master of Cruelties) stays home beside other attackers — unless it is the one
+     * the engine requires, when it goes alone.
      */
     fun legalize(
         state: GameState,
@@ -429,16 +431,25 @@ object CombatSeed {
         primary: EntityId?,
     ): Map<EntityId, EntityId> {
         if (legalAction.attackTargetsByAttacker.isNullOrEmpty() && plan.values.all { it in legalAction.validAttackTargets.orEmpty() }) {
-            return plan
+            return alone(legalAction, plan)
         }
         val valid = legalAction.validAttackers.orEmpty().toSet()
-        return plan.mapNotNull { (attacker, defender) ->
+        return alone(legalAction, plan.mapNotNull { (attacker, defender) ->
             when {
                 attacker !in valid -> null
                 defender in legalAction.attackTargetsFor(attacker) -> attacker to defender
                 else -> defenderFor(state, legalAction, attacker, primary)?.let { attacker to it }
             }
-        }.toMap()
+        }.toMap())
+    }
+
+    /** [plan] obeying "can only attack alone" ([LegalAction.loneAttackers], CR 506.5). */
+    private fun alone(legalAction: LegalAction, plan: Map<EntityId, EntityId>): Map<EntityId, EntityId> {
+        val lone = legalAction.loneAttackers.orEmpty()
+        if (plan.size < 2 || plan.keys.none { it in lone }) return plan
+        val required = legalAction.mandatoryAttackers.orEmpty().firstOrNull { it in lone && it in plan }
+        if (required != null) return mapOf(required to plan.getValue(required))
+        return plan.filterKeys { it !in lone }.ifEmpty { plan.entries.first().let { mapOf(it.key to it.value) } }
     }
 
     /**

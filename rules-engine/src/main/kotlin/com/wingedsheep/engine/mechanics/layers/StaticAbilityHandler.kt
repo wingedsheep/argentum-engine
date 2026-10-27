@@ -1233,6 +1233,7 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.CantAttackUnlessSacrifice,
             is com.wingedsheep.sdk.scripting.ExertAsItAttacks,
             is CantAttackUnlessCoAttacker,
+            is com.wingedsheep.sdk.scripting.CanOnlyAttackAlone,
             is CantBeAttackedBy,
             is com.wingedsheep.sdk.scripting.CantAttackYou,
             is com.wingedsheep.sdk.scripting.Goaded,

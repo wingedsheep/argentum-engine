@@ -305,6 +305,7 @@ export default function App() {
         blockerAssignments: {},
         validCreatures,
         mandatoryAttackers,
+        loneAttackers: attackersAction?.loneAttackers ?? [],
         attackingCreatures: [],
         mustBeBlockedAttackers: [],
         blockerMaxBlockCounts: {},

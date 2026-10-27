@@ -1420,6 +1420,7 @@ CanAttackDespiteDefender — StaticAbility
 CanBlockAdditionalForCreatureGroup — StaticAbility
 CanBlockAnyNumber — StaticAbility
 CanBlockAsThoughUntapped — StaticAbility
+CanOnlyAttackAlone — StaticAbility
 CanOnlyBlockCreaturesWith — StaticAbility
 CantAttack — StaticAbility
 CantAttackOrBlockUnlessPay — StaticAbility

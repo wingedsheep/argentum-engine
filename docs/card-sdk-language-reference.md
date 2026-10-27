@@ -11227,6 +11227,17 @@ in the declare-blockers step, even before the turn-based block action has comple
   `CantAttackUnless` (which is defender-relative), this depends on the whole proposed attacker
   group, so it's validated against the other declared attackers at declaration time (CR 508.1c,
   projected state; self never counts as its own co-attacker).
+- `CanOnlyAttackAlone` — "This creature can only attack alone" (Master of Cruelties). A
+  declaration with it and any other attacker is illegal (CR 508.1c); "alone" is the declared set
+  (CR 506.5), so a creature put onto the battlefield attacking later changes nothing. It weighs
+  into CR 508.1d: when attack requirements are in play (goad, Taunt, "attacks each combat if
+  able"), the declaration obeying more of them wins — two other required creatures attack and this
+  one stays home; one other required creature ties with this one attacking alone, and either is
+  legal. `mandatoryAttackers` only lists what every such best declaration contains, so the client
+  never locks in a creature the player may legally leave home. The declare-attackers legal action
+  lists the restricted creatures in `loneAttackers`: the client swaps the selection when one is
+  picked, and the AI drops them from multi-creature plans. Read off the card definition and
+  `grantedStaticAbilities` (tokens); a face-down creature or one that lost all abilities is free.
 - `CantBlockUnlessCoBlocker(coBlockerFilter, filter = source)` — the blocking sibling: "This
   creature can't block unless [a creature matching coBlockerFilter] also blocks." Validated against
   the whole proposed blocker group at declaration time (CR 509.1b, `BlockPhaseManager`); the
