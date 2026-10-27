@@ -953,7 +953,7 @@ Families:
 - `MarkEnduringReturnEffect` — Stamps the source permanent as having returned via its Enduring ability (Duskmourn Glimmer cycle).
 - `MarkExileControllerGraveyardOnDeathEffect(target: EffectTarget)` — Mark target creature so that when it dies this turn, its controller's graveyard is exiled.
 - `MarkExileOnDeathEffect(target: EffectTarget, duration: Duration)` — Mark target creature so that if it would die, it goes to exile instead of graveyard.
-- `MarkMustAttackEffect(target: EffectTarget, window: MustAttackWindow)` — Mark a creature as required to attack if able, for the window named — "target creature attacks this turn if able" or "that creature attacks during its controller's next combat phase if able" (Sizzl…
+- `MarkMustAttackEffect(target: EffectTarget, window: MustAttackWindow, defender: EffectTarget?)` — Mark a creature as required to attack if able, for the window named — "target creature attacks this turn if able" or "that creature attacks during its controller's next combat phase if able" (Sizzl…
 - `MarkMustBlockThisTurnEffect(target: EffectTarget)` — Mark a creature as "blocks this turn if able" (Culvert Ambusher).
 - `MarkSpellExileWithCountersEffect(target: EffectTarget, counterType: CounterType, count: Int)` — Mark a spell on the stack so that, when it resolves, it is exiled with the specified counters on it instead of being put into its owner's graveyard.
 - `MarkSpellPlotOnResolveEffect(target: EffectTarget)` — Mark a spell on the stack so that, when it resolves, it is exiled instead of put into its owner's graveyard and **becomes plotted** (CR 718).

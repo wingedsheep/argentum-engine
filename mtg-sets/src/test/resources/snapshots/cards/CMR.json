@@ -909,6 +909,114 @@
     ]
 }
 
+// Impulsive Pilferer
+{
+    "name": "Impulsive Pilferer",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Goblin Pirate",
+    "oracleText": "When this creature dies, create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")\nEncore {3}{R} ({3}{R}, Exile this card from your graveyard: For each opponent, create a token copy that attacks that opponent this turn if able. They gain haste. Sacrifice them at the beginning of the next end step. Activate only as a sorcery.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "ENCORE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Impulsive Pilferer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                },
+                "descriptionOverride": "When this creature dies, create a Treasure token."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "encore_{3}{R}",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{R}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CreateTokenCopyOfTarget",
+                                "target": "Self",
+                                "sacrificeAtStep": "END",
+                                "controller": {
+                                    "type": "PlayerRef",
+                                    "player": "ControllerOfSource"
+                                }
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Collection",
+                                    "collection": "createdTokens"
+                                },
+                                "body": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GrantKeyword",
+                                            "keyword": "HASTE",
+                                            "target": "IterationEntity",
+                                            "duration": "Permanent"
+                                        },
+                                        {
+                                            "type": "MarkMustAttack",
+                                            "target": "IterationEntity",
+                                            "defender": {
+                                                "type": "PlayerRef",
+                                                "player": "You"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Encore {3}{R} ({3}{R}, Exile this card from your graveyard: For each opponent, create a token copy that attacks that opponent this turn if able. They gain haste. Sacrifice them at the beginning of the next end step. Activate only as a sorcery.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "artist": "Jakub Kasper",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/55ba9bea-5549-45cf-896c-501a1c81fd5a.jpg?1783928813"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ingenuity Engine
 {
     "name": "Ingenuity Engine",

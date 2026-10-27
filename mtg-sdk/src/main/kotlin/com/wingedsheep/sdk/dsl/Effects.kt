@@ -6293,6 +6293,13 @@ object Effects {
         MarkMustAttackEffect(target)
 
     /**
+     * "[target] attacks [defender] this turn if able" — the requirement names the player to attack
+     * (encore's token copies, CR 702.141a). Bound only while the creature could attack that player.
+     */
+    fun MarkMustAttackThisTurn(target: EffectTarget, defender: EffectTarget): Effect =
+        MarkMustAttackEffect(target, MustAttackWindow.ThisTurn, defender)
+
+    /**
      * "That creature attacks during its controller's next combat phase if able" (Sizzling
      * Soloist) — the requirement waits for that player's next combat, across turns.
      */

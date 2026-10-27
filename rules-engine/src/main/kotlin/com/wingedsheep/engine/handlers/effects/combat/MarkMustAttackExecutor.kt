@@ -5,7 +5,9 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.combat.MustAttackNextCombatComponent
+import com.wingedsheep.engine.state.components.combat.MustAttackPlayerThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackThisTurnComponent
+import com.wingedsheep.engine.state.components.identity.PlayerComponent
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.scripting.effects.MarkMustAttackEffect
@@ -15,7 +17,8 @@ import kotlin.reflect.KClass
 /**
  * Executor for [MarkMustAttackEffect]: puts the requirement for its window on the target creature
  * — [MustAttackThisTurnComponent] for this turn, [MustAttackNextCombatComponent] for its
- * controller's next combat phase.
+ * controller's next combat phase, or [MustAttackPlayerThisTurnComponent] when the effect names the
+ * player to attack (encore).
  */
 class MarkMustAttackExecutor : EffectExecutor<MarkMustAttackEffect> {
 
@@ -34,7 +37,22 @@ class MarkMustAttackExecutor : EffectExecutor<MarkMustAttackEffect> {
         }
 
         val newState = when (effect.window) {
-            MustAttackWindow.ThisTurn -> state.updateEntity(targetId) { it.with(MustAttackThisTurnComponent) }
+            MustAttackWindow.ThisTurn -> {
+                val defenderTarget = effect.defender
+                if (defenderTarget == null) {
+                    state.updateEntity(targetId) { it.with(MustAttackThisTurnComponent) }
+                } else {
+                    // "Attacks that opponent this turn if able" names a player; one who has left
+                    // the game leaves no requirement at all.
+                    val defenderId = context.resolvePlayerTarget(defenderTarget, state)
+                        ?.takeIf { state.getEntity(it)?.has<PlayerComponent>() == true }
+                        ?: return EffectResult.success(state)
+                    state.updateEntity(targetId) { container ->
+                        val existing = container.get<MustAttackPlayerThisTurnComponent>()?.defenderIds.orEmpty()
+                        container.with(MustAttackPlayerThisTurnComponent(existing + defenderId))
+                    }
+                }
+            }
             MustAttackWindow.ControllersNextCombat -> {
                 // Past the beginning of combat on the controller's own turn, this combat's attackers
                 // are already declared, so it is not the "next" combat phase.

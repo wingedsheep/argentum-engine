@@ -748,18 +748,38 @@ data class RemoveFromCombatEffect(
  * CR 611.2c) is [MustAttackGroupEffect].
  *
  * The requirement is on the creature, not on any effect source: it survives the source leaving
- * the battlefield, and it doesn't care which defender the creature attacks.
+ * the battlefield. With no [defender] it doesn't care which defender the creature attacks.
+ *
+ * [defender] names the **player** the creature must attack — "a token that's a copy of this card
+ * that attacks that opponent this turn if able" (encore, CR 702.141a). The creature is then bound
+ * only while it could attack that player at no cost (CR 508.1d): attacking that player's
+ * planeswalker or battle, or another player, breaks the requirement; if it can't attack that
+ * player at all (that player has left the game, or a "can't attack you" effect protects them), it
+ * is under no requirement and may attack anyone or not attack. Only [MustAttackWindow.ThisTurn]
+ * takes a defender.
  *
  * @property target The creature to mark (typically EffectTarget.IterationEntity within ForEachInGroup)
  * @property window How long the requirement binds — see [MustAttackWindow].
+ * @property defender The player it must attack, resolved when the effect resolves; null for any defender.
  */
 @SerialName("MarkMustAttack")
 @Serializable
 data class MarkMustAttackEffect(
     val target: EffectTarget = EffectTarget.Self,
-    val window: MustAttackWindow = MustAttackWindow.ThisTurn
+    val window: MustAttackWindow = MustAttackWindow.ThisTurn,
+    val defender: EffectTarget? = null
 ) : Effect {
-    override val description: String = "${target.description} attacks ${window.phrase} if able"
+    init {
+        require(defender == null || window == MustAttackWindow.ThisTurn) {
+            "MarkMustAttackEffect names a defender only for MustAttackWindow.ThisTurn"
+        }
+    }
+
+    override val description: String = buildString {
+        append("${target.description} attacks ")
+        if (defender != null) append("${defender.description} ")
+        append("${window.phrase} if able")
+    }
 }
 
 /** When a [MarkMustAttackEffect] requirement binds. */

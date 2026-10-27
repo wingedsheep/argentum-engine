@@ -632,6 +632,19 @@ enum class Keyword(val displayName: String) {
     UNEARTH("Unearth"),
 
     /**
+     * Encore [cost] (CR 702.141, Commander Legends). "[Cost], Exile this card from your graveyard:
+     * For each opponent, create a token that's a copy of this card that attacks that opponent this
+     * turn if able. The tokens gain haste. Sacrifice them at the beginning of the next end step.
+     * Activate only as a sorcery."
+     *
+     * Like [EMBALM], a graveyard-activated ability composed of existing primitives — a per-opponent
+     * token copy, a permanent haste grant, a player-directed must-attack mark and a delayed
+     * sacrifice. Wired in one call via the `encore(cost)` helper on
+     * [com.wingedsheep.sdk.dsl.CardBuilder]; the keyword itself is display-only.
+     */
+    ENCORE("Encore"),
+
+    /**
      * Ascend (Ixalan, CR 702.131). On a permanent spell, means "When this permanent
      * enters, if you control ten or more permanents, you get the city's blessing
      * for the rest of the game." Engine wires the trigger explicitly per card; the

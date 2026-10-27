@@ -288,6 +288,19 @@ data class MustAttackPlayerComponent(
 data object MustAttackThisTurnComponent : Component
 
 /**
+ * Marks a creature that attacks a **named player** this turn if able — encore's token copies,
+ * "attacks that opponent this turn if able" (CR 702.141a), put there by a
+ * [com.wingedsheep.sdk.scripting.effects.MarkMustAttackEffect] with a `defender`.
+ *
+ * Unlike [MustAttackThisTurnComponent] the requirement is directed: it binds the creature only
+ * while it could attack one of [defenderIds] at no cost (CR 508.1d), and then only an attack on
+ * that player — not their planeswalker or battle — obeys it. `DirectedAttackRequirements` reads it
+ * alongside the Public Enemy static. Removed at end of turn during cleanup.
+ */
+@Serializable
+data class MustAttackPlayerThisTurnComponent(val defenderIds: Set<EntityId>) : Component
+
+/**
  * Marks a creature that attacks during its controller's next combat phase if able (Sizzling
  * Soloist) — [com.wingedsheep.sdk.scripting.effects.MustAttackWindow.ControllersNextCombat].
  * Enforced like [MustAttackThisTurnComponent] while its controller declares attackers, and

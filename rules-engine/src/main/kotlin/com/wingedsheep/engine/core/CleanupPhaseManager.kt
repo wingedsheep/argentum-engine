@@ -29,6 +29,7 @@ import com.wingedsheep.engine.state.components.combat.BlockedOrWasBlockedByLegen
 import com.wingedsheep.engine.state.components.combat.CanAttackDespiteDefenderThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.GoadedComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackThisTurnComponent
+import com.wingedsheep.engine.state.components.combat.MustAttackPlayerThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.PlayerAttackedThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.PlayerAttackersLastTurnComponent
 import com.wingedsheep.engine.state.components.combat.BlockedThisTurnComponent
@@ -1431,11 +1432,14 @@ class CleanupPhaseManager(
             }
 
             // Remove MustAttackThisTurnComponent from all creatures (Walking Desecration effect)
+            // and the player-directed MustAttackPlayerThisTurnComponent (encore tokens).
             val creaturesWithMustAttack = newState.entities.filter { (_, container) ->
-                container.has<MustAttackThisTurnComponent>()
+                container.has<MustAttackThisTurnComponent>() || container.has<MustAttackPlayerThisTurnComponent>()
             }.keys
             for (entityId in creaturesWithMustAttack) {
-                newState = newState.updateEntity(entityId) { it.without<MustAttackThisTurnComponent>() }
+                newState = newState.updateEntity(entityId) {
+                    it.without<MustAttackThisTurnComponent>().without<MustAttackPlayerThisTurnComponent>()
+                }
             }
 
             // Remove CanAttackDespiteDefenderThisTurnComponent (Krotiq Nestguard's "can attack

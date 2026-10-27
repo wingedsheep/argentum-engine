@@ -620,6 +620,21 @@ internal class CardActiveEffectsProjector(
             )
         }
 
+        // Player-directed mark (encore tokens): "attacks <player> this turn if able".
+        state.getEntity(entityId)?.get<MustAttackPlayerThisTurnComponent>()?.let { mark ->
+            val names = mark.defenderIds
+                .mapNotNull { state.getEntity(it)?.get<PlayerComponent>()?.name }
+                .ifEmpty { listOf("a chosen player") }
+            effects.add(
+                ClientCardEffect(
+                    effectId = "must_attack_player_this_turn",
+                    name = "Must Attack",
+                    description = "This creature must attack ${names.joinToString(" or ")} this turn if able",
+                    icon = "must-attack"
+                )
+            )
+        }
+
         if (state.getEntity(entityId)?.has<MustAttackNextCombatComponent>() == true) {
             effects.add(
                 ClientCardEffect(

@@ -3477,6 +3477,13 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   enforced by `AttackPhaseManager` and removed during cleanup. It composes with the token pipeline for “that
   token attacks this combat if able”: create the token, then target
   `PipelineTarget(CREATED_TOKENS, 0)` with this facade.
+- `Effects.MarkMustAttackThisTurn(target, defender)` (`MarkMustAttackEffect.defender`, `ThisTurn` window only) —
+  "it attacks **that player** this turn if able" (encore's token copies, CR 702.141a). `defender` is resolved
+  to a player when the effect resolves and stored on the creature as `MustAttackPlayerThisTurnComponent`, which
+  `DirectedAttackRequirements` reads beside the Public Enemy static: the creature is bound only while it could
+  attack that player at no cost (CR 508.1d), and only an attack on that player — not their planeswalker or
+  battle, nor another player — obeys it. If it can't attack that player it is under no requirement at all.
+  Removed during cleanup; badged "Must Attack <player>".
 - `Effects.MarkMustAttackNextCombat(target)` (`MarkMustAttackEffect`, window
   `MustAttackWindow.ControllersNextCombat`) — "that creature attacks during its controller's next combat
   phase if able" (Sizzling Soloist). The mark waits across turns for that player's next combat phase, binds
@@ -14784,6 +14791,16 @@ Blighted Agent, Ichor Rats, Plague Stinger, Skithiryx.
   EXILE))` (entry-timestamp tracked, so a blinked permanent is a new object the old trigger ignores) +
   `GrantExileOnLeave(Self)` (a component, not an ability — it survives "loses all abilities", per the unearth rulings).
   Declares `Keyword.UNEARTH` for display.
+- `Encore(cost)` — `card { encore(cost) }` builder helper (CR 702.141, Commander Legends). "[Cost], Exile this card
+  from your graveyard: For each opponent, create a token that's a copy of this card that attacks that opponent this
+  turn if able. The tokens gain haste. Sacrifice them at the beginning of the next end step. Activate only as a
+  sorcery." Composed by the `encoreAbility(cost)` factory: `AbilityCost.Composite(Mana(cost), ExileSelf)` +
+  `activateFromZone = Zone.GRAVEYARD` + `timing = SorcerySpeed`, whose effect is `ForEachPlayer(EachOpponent, [
+  CreateTokenCopyOfTarget(Self, sacrificeAtStep = END, controller = PlayerRef(ControllerOfSource)),
+  ForEachInCollection(CreatedTokens, GrantKeyword(HASTE, IterationEntity, Permanent) then
+  MarkMustAttackThisTurn(IterationEntity, defender = PlayerRef(You)))])` — each visit rebinds "you" to that
+  opponent, so the copy is pinned to the activator and the mark names the visited opponent. Haste is *gained*, not
+  a copiable value. Declares `Keyword.ENCORE` for display (Impulsive Pilferer).
 - `scavengeAbility(cost: ManaCost? = null)` — the Scavenge ability (CR 702.97, Return to Ravnica) as an
   `ActivatedAbility` factory, for printed scavenge and whole-graveyard grants alike. "[Cost], Exile this card
   from your graveyard: Put a number of +1/+1 counters equal to the power of the card you exiled on target creature.
