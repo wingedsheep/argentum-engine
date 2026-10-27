@@ -165,13 +165,19 @@ export function ManaSourceSelectionUI({
         ))}
       </div>
 
-      <div className={styles.hint}>
-        {isCostCovered ? 'Cost covered — press Pay.' : 'Click a highlighted source to tap it.'}
-      </div>
-      {/* Always visible: the escape hatch for costs the highlighted menu can't cover. */}
-      <div className={styles.hint} style={{ opacity: 0.7, fontSize: 11 }}>
-        You can also click any permanent to use its mana ability.
-      </div>
+      {payAvailable ? (
+        <>
+          <div className={styles.hint}>
+            {isCostCovered ? 'Cost covered — press Pay.' : 'Click a highlighted source to tap it.'}
+          </div>
+          {/* The escape hatch for costs the highlighted menu can't cover. */}
+          <div className={styles.hint} style={{ opacity: 0.7, fontSize: 11 }}>
+            You can also click any permanent to use its mana ability.
+          </div>
+        </>
+      ) : (
+        <div className={styles.hint}>You have no way to pay this — decline.</div>
+      )}
       {waterbendPermanents.length > 0 && (
         <div className={styles.hint}>
           <AbilityText
