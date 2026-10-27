@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.khm.cards.MaskwoodNexus
 import com.wingedsheep.mtg.sets.definitions.khm.cards.Realmwalker
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
@@ -58,7 +59,7 @@ class RealmwalkerScenarioTest : FunSpec({
 
     fun setup(): Pair<GameTestDriver, EntityId> {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(Realmwalker, elf, bear, shapeshifter))
+        driver.registerCards(TestCards.all + listOf(Realmwalker, MaskwoodNexus, elf, bear, shapeshifter))
         driver.initMirrorMatch(deck = Deck.of("Island" to 40), skipMulligans = true)
         val you = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -115,6 +116,19 @@ class RealmwalkerScenarioTest : FunSpec({
 
         offered(driver, you, "Test Shapeshifter") shouldBe true
         castFromTop(driver, you, top).error shouldBe null
+    }
+
+    test("a cross-zone type grant counts — Maskwood Nexus makes a Bear in the library every type") {
+        val (driver, you) = setup()
+        castRealmwalkerChoosing(driver, you, "Elf")
+        driver.putPermanentOnBattlefield(you, "Maskwood Nexus")
+        val top = driver.putCardOnTopOfLibrary(you, "Test Bear")
+        driver.giveColorlessMana(you, 1)
+
+        withClue("the enumerator and the cast handler must agree on the granted types") {
+            offered(driver, you, "Test Bear") shouldBe true
+            castFromTop(driver, you, top).error shouldBe null
+        }
     }
 
     test("with no type chosen nothing on top is castable") {

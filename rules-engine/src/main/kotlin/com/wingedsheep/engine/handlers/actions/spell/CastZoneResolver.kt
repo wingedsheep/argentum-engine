@@ -881,12 +881,12 @@ class CastZoneResolver(
                         ?.get<CastFromTopOfLibraryUsesThisTurnComponent>()?.uses ?: 0
                     val maxCasts = unwrapped.maxCastsPerTurn
                     val hasUse = maxCasts == null || uses < maxCasts
-                    if (hasUse && matchesCardFilter(cardComponent, unwrapped.filter, state, entityId, state.projectedState.colorSetOf(cardId))) return true
+                    if (hasUse && matchesCardFilter(cardComponent, unwrapped.filter, state, entityId, state.projectedState.colorSetOf(cardId), subtypes = effectiveSubtypes(state, cardId, cardComponent))) return true
                 }
                 if (unwrapped is PlayLandsAndCastFilteredFromTopOfLibrary) {
                     // A null spellFilter is a lands-only permission: nothing is castable.
                     val spellFilter = unwrapped.spellFilter
-                    if (spellFilter != null && matchesCardFilter(cardComponent, spellFilter, colors = state.projectedState.colorSetOf(cardId))) return true
+                    if (spellFilter != null && matchesCardFilter(cardComponent, spellFilter, colors = state.projectedState.colorSetOf(cardId), subtypes = effectiveSubtypes(state, cardId, cardComponent))) return true
                 }
             }
         }
@@ -918,10 +918,10 @@ class CastZoneResolver(
                 } else ability
                 if (unwrapped is PlayFromTopOfLibrary) return null
                 if (unwrapped is PlayLandsAndCastFilteredFromTopOfLibrary &&
-                    unwrapped.spellFilter?.let { matchesCardFilter(cardComponent, it, colors = state.projectedState.colorSetOf(cardId)) } == true
+                    unwrapped.spellFilter?.let { matchesCardFilter(cardComponent, it, colors = state.projectedState.colorSetOf(cardId), subtypes = effectiveSubtypes(state, cardId, cardComponent)) } == true
                 ) return null
                 if (unwrapped !is CastSpellTypesFromTopOfLibrary ||
-                    !matchesCardFilter(cardComponent, unwrapped.filter, state, entityId, state.projectedState.colorSetOf(cardId))
+                    !matchesCardFilter(cardComponent, unwrapped.filter, state, entityId, state.projectedState.colorSetOf(cardId), subtypes = effectiveSubtypes(state, cardId, cardComponent))
                 ) continue
                 // An unlimited cost-free grant wins outright. An unlimited *costed* one (Falco Spara)
                 // doesn't: a limited free grant covering the card is what waives that cost, so its
@@ -963,10 +963,10 @@ class CastZoneResolver(
                     ability.ability
                 } else ability
                 if (unwrapped is PlayLandsAndCastFilteredFromTopOfLibrary &&
-                    unwrapped.spellFilter?.let { matchesCardFilter(cardComponent, it, colors = state.projectedState.colorSetOf(cardId)) } == true
+                    unwrapped.spellFilter?.let { matchesCardFilter(cardComponent, it, colors = state.projectedState.colorSetOf(cardId), subtypes = effectiveSubtypes(state, cardId, cardComponent)) } == true
                 ) return null
                 if (unwrapped !is CastSpellTypesFromTopOfLibrary ||
-                    !matchesCardFilter(cardComponent, unwrapped.filter, state, entityId, state.projectedState.colorSetOf(cardId))
+                    !matchesCardFilter(cardComponent, unwrapped.filter, state, entityId, state.projectedState.colorSetOf(cardId), subtypes = effectiveSubtypes(state, cardId, cardComponent))
                 ) continue
                 val maxCasts = unwrapped.maxCastsPerTurn
                 val uses = state.getEntity(entityId)
@@ -1077,6 +1077,17 @@ class CastZoneResolver(
          * (The Great Work) has no object to be `Self`, so source-relative predicates fail closed.
          * Shared by the handler-side resolver and `CastFromZoneEnumerator` so the two stay in step.
          */
+        /**
+         * [cardId]'s subtypes for a cast-from-zone filter: printed plus cross-zone "is the chosen
+         * type" grants — the same set `PredicateEvaluator` reads for a card off the battlefield.
+         */
+        fun effectiveSubtypes(state: GameState, cardId: EntityId, card: CardComponent): Set<String> =
+            card.typeLine.subtypes.mapTo(mutableSetOf()) { it.value } +
+                state.projectedState.crossZoneGrantedSubtypes(state, cardId)
+
+        private fun Set<String>.hasIgnoringCase(subtype: String): Boolean =
+            any { it.equals(subtype, ignoreCase = true) }
+
         fun graveyardGrantFilterContext(playerId: EntityId, grantSourceId: EntityId): PredicateContext =
             PredicateContext(controllerId = playerId, sourceId = grantSourceId.takeIf { it != playerId })
 
@@ -1087,6 +1098,9 @@ class CastZoneResolver(
          *   granting permanent's linked-exile pile (Cemetery Illuminator) can't be judged from the
          *   card alone. Callers that have no source leave them null and that predicate fails closed,
          *   which is the same policy the rest of this `when` applies to source-relative predicates.
+         * @param subtypes the card's effective subtypes: printed plus cross-zone "is the chosen
+         *   type" grants (Maskwood Nexus, Leyline of Transformation). Callers holding the card's id
+         *   pass [effectiveSubtypes] so the handler agrees with the enumerator's `PredicateEvaluator`.
          */
         fun matchesCardFilter(
             card: CardComponent,
@@ -1094,9 +1108,10 @@ class CastZoneResolver(
             state: GameState? = null,
             grantingSourceId: EntityId? = null,
             colors: Set<Color> = card.colors,
+            subtypes: Set<String> = card.typeLine.subtypes.mapTo(mutableSetOf()) { it.value },
         ): Boolean {
             for (predicate in filter.cardPredicates) {
-                if (!matchesCardPredicate(card, predicate, state, grantingSourceId, colors)) return false
+                if (!matchesCardPredicate(card, predicate, state, grantingSourceId, colors, subtypes)) return false
             }
             return true
         }
@@ -1105,8 +1120,9 @@ class CastZoneResolver(
             card: CardComponent,
             predicate: CardPredicate,
             state: GameState? = null,
-            grantingSourceId: EntityId? = null,
-            colors: Set<Color> = card.colors,
+            grantingSourceId: EntityId?,
+            colors: Set<Color>,
+            subtypes: Set<String>,
         ): Boolean {
             val cmc = card.manaCost.cmc
             val power = card.baseStats?.basePower
@@ -1144,10 +1160,13 @@ class CastZoneResolver(
                 is CardPredicate.IsMonocolored -> colors.size == 1
                 is CardPredicate.HasExactlyColors -> colors.size == predicate.count
                 // --- Subtypes ---
-                is CardPredicate.HasSubtype -> card.typeLine.hasSubtype(predicate.subtype)
-                is CardPredicate.HasAnyOfSubtypes ->
-                    predicate.subtypes.any { card.typeLine.hasSubtype(it) }
-                is CardPredicate.NotSubtype -> !card.typeLine.hasSubtype(predicate.subtype)
+                is CardPredicate.HasSubtype -> card.typeLine.hasSubtype(predicate.subtype) ||
+                    subtypes.hasIgnoringCase(predicate.subtype.value)
+                is CardPredicate.HasAnyOfSubtypes -> predicate.subtypes.any {
+                    card.typeLine.hasSubtype(it) || subtypes.hasIgnoringCase(it.value)
+                }
+                is CardPredicate.NotSubtype -> !card.typeLine.hasSubtype(predicate.subtype) &&
+                    !subtypes.hasIgnoringCase(predicate.subtype.value)
                 is CardPredicate.HasBasicLandType ->
                     card.typeLine.hasSubtype(com.wingedsheep.sdk.core.Subtype(predicate.landType))
                 // --- Name / origin ---
@@ -1189,18 +1208,11 @@ class CastZoneResolver(
                 is CardPredicate.HasCycling -> card.hasCycling
                 is CardPredicate.HasNonManaActivatedAbility -> card.hasNonManaActivatedAbility
                 // --- Combinators ---
-                is CardPredicate.Or -> predicate.predicates.any { matchesCardPredicate(card, it, state, grantingSourceId, colors) }
-                is CardPredicate.And -> predicate.predicates.all { matchesCardPredicate(card, it, state, grantingSourceId, colors) }
+                is CardPredicate.Or -> predicate.predicates.any { matchesCardPredicate(card, it, state, grantingSourceId, colors, subtypes) }
+                is CardPredicate.And -> predicate.predicates.all { matchesCardPredicate(card, it, state, grantingSourceId, colors, subtypes) }
                 is CardPredicate.Not ->
                     !com.wingedsheep.engine.handlers.predicates.LiveBattlefieldPredicates.answerableOnlyLive(predicate.predicate) &&
-                        !matchesCardPredicate(card, predicate.predicate, state, grantingSourceId, colors)
-                // Predicates that can't be judged from a card's static characteristics alone —
-                // they need runtime/interaction context (a chosen value, another entity, X, a
-                // pipeline variable/stored group, the recipient/source of an effect), or describe
-                // a stack ability rather than a castable card. No cast-from-zone filter uses them,
-                // and matching a condition we can't verify would silently widen the grant, so they
-                // fail closed. This `when` is exhaustive: adding a CardPredicate forces a decision
-                // here rather than leaking through a permissive `else`.
+                        !matchesCardPredicate(card, predicate.predicate, state, grantingSourceId, colors, subtypes)
                 // "shares a card type with a card exiled with this creature" (Cemetery
                 // Illuminator). Unlike its neighbours in the fail-closed bucket below this one
                 // *can* be judged here: the pile hangs off the granting permanent, which every
@@ -1235,10 +1247,17 @@ class CastZoneResolver(
                 CardPredicate.HasChosenSubtype -> {
                     val chosenType = grantingSourceId?.let { state?.getEntity(it)?.chosenSubtype() }
                     if (chosenType == null) false else {
-                        card.typeLine.subtypes.any { it.value.equals(chosenType, ignoreCase = true) } ||
+                        subtypes.hasIgnoringCase(chosenType) ||
                             (Keyword.CHANGELING in card.baseKeywords && chosenType in Subtype.ALL_CREATURE_TYPES)
                     }
                 }
+                // Predicates that can't be judged from a card's static characteristics alone —
+                // they need runtime/interaction context (a chosen value, another entity, X, a
+                // pipeline variable/stored group, the recipient/source of an effect), or describe
+                // a stack ability rather than a castable card. No cast-from-zone filter uses them,
+                // and matching a condition we can't verify would silently widen the grant, so they
+                // fail closed. This `when` is exhaustive: adding a CardPredicate forces a decision
+                // here rather than leaking through a permissive `else`.
                 is CardPredicate.IsToken,
                 is CardPredicate.IsNontoken,
                 is CardPredicate.HasChosenColor,

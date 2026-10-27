@@ -271,7 +271,10 @@ class LegalityKernel(
             }
             if (cap != null && card.manaCost.cmc > cap) return false
         }
-        return CastZoneResolver.matchesCardFilter(card, grant.filter, state, granter.granterId, state.projectedState.colorSetOf(cardId))
+        return CastZoneResolver.matchesCardFilter(
+            card, grant.filter, state, granter.granterId, state.projectedState.colorSetOf(cardId),
+            subtypes = CastZoneResolver.effectiveSubtypes(state, cardId, card),
+        )
     }
 
     /** The first granter (battlefield order) whose grant lets [playerId] cast [cardId], or `null`. */
