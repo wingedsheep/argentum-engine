@@ -3932,7 +3932,8 @@
                     "target": {
                         "type": "BoundVariable",
                         "name": "t1"
-                    }
+                    },
+                    "mayChooseNewTargets": false
                 },
                 "targetRequirements": [
                     {

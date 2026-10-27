@@ -33,7 +33,7 @@ val DoubleDown = card("Double Down") {
 
     triggeredAbility {
         trigger = Triggers.you.casts(GameObjectFilter.Any.withAnyOfSubtypes(Subtype.OUTLAW_TYPES))
-        effect = Effects.CopyTargetSpell(target = EffectTarget.TriggeringEntity)
+        effect = Effects.CopyTargetSpell(target = EffectTarget.TriggeringEntity, mayChooseNewTargets = false)
         description = "Whenever you cast an outlaw spell, copy that spell."
     }
 

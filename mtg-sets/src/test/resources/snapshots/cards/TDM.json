@@ -16455,7 +16455,8 @@
                     "effects": [
                         {
                             "type": "CopyTargetSpell",
-                            "target": "TriggeringEntity"
+                            "target": "TriggeringEntity",
+                            "mayChooseNewTargets": false
                         },
                         {
                             "type": "Counter",

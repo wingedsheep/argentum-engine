@@ -4950,7 +4950,8 @@
                 "binding": "ANY",
                 "effect": {
                     "type": "CopyTargetSpell",
-                    "target": "TriggeringEntity"
+                    "target": "TriggeringEntity",
+                    "mayChooseNewTargets": false
                 },
                 "descriptionOverride": "Whenever you cast an outlaw spell, copy that spell."
             }

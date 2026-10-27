@@ -40,7 +40,7 @@ val DrafnaFounderOfLatNam = card("Drafna, Founder of Lat-Nam") {
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{3}"), Costs.Tap)
         val spell = target(TargetFilter(GameObjectFilter.Artifact.youControl(), zone = Zone.STACK))
-        effect = Effects.CopyTargetSpell(target = spell)
+        effect = Effects.CopyTargetSpell(target = spell, mayChooseNewTargets = false)
         description = "{3}, {T}: Copy target artifact spell you control. (The copy becomes a token.)"
     }
 

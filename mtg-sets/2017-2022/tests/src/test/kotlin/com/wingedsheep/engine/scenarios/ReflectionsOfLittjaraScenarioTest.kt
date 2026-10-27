@@ -5,12 +5,14 @@ import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.core.PaymentStrategy
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.CopyOfComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.c20.cards.TwinningStaff
 import com.wingedsheep.mtg.sets.definitions.khm.cards.ReflectionsOfLittjara
 import com.wingedsheep.mtg.sets.definitions.lrw.cards.EyeblightsEnding
 import com.wingedsheep.sdk.core.Color
@@ -44,7 +46,7 @@ class ReflectionsOfLittjaraScenarioTest : FunSpec({
     /** Reflections of Littjara on your battlefield with Elf chosen; returns the driver, you, the opponent. */
     fun setup(): Triple<GameTestDriver, EntityId, EntityId> {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(ReflectionsOfLittjara, EyeblightsEnding, elf))
+        driver.registerCards(TestCards.all + listOf(ReflectionsOfLittjara, EyeblightsEnding, TwinningStaff, elf))
         driver.initMirrorMatch(deck = Deck.of("Island" to 40), skipMulligans = true)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         val you = driver.activePlayer!!
@@ -86,6 +88,27 @@ class ReflectionsOfLittjaraScenarioTest : FunSpec({
         driver.bothPass()
         driver.state.getBattlefield().contains(bearA) shouldBe false
         driver.state.getBattlefield().contains(bearB) shouldBe true
+        driver.state.stack.isEmpty() shouldBe true
+        driver.state.getZone(you, com.wingedsheep.sdk.core.Zone.GRAVEYARD).contains(ending) shouldBe true
+    }
+
+    test("with Twinning Staff, only the additional copy may be retargeted") {
+        val (driver, you, opponent) = setup()
+        driver.putPermanentOnBattlefield(you, "Twinning Staff")
+        val bearA = driver.putCreatureOnBattlefield(opponent, "Grizzly Bears")
+        val bearB = driver.putCreatureOnBattlefield(opponent, "Grizzly Bears")
+
+        driver.giveMana(you, Color.BLACK, 3)
+        val ending = driver.putCardInHand(you, "Eyeblight's Ending")
+        driver.castSpellWithTargets(you, ending, listOf(ChosenTarget.Permanent(bearA))).error shouldBe null
+
+        // The trigger's own copy keeps bearA; Twinning Staff's additional copy asks once.
+        driver.bothPass()
+        (driver.state.pendingDecision is ChooseTargetsDecision) shouldBe true
+        driver.submitTargetSelection(you, listOf(bearB)).error shouldBe null
+
+        spellCopies(driver).map { driver.state.getEntity(it)!!.get<TargetsComponent>()!!.targets }
+            .toSet() shouldBe setOf(listOf(ChosenTarget.Permanent(bearA)), listOf(ChosenTarget.Permanent(bearB)))
     }
 
     test("a creature spell of the chosen type is copied into a token") {
@@ -97,7 +120,7 @@ class ReflectionsOfLittjaraScenarioTest : FunSpec({
         repeat(3) { if (driver.state.stack.isNotEmpty()) driver.bothPass() }
 
         driver.state.getBattlefield().count { id ->
-            driver.state.getEntity(id)?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()?.name == "Test Elf"
+            driver.state.getEntity(id)?.get<CardComponent>()?.name == "Test Elf"
         } shouldBe 2
     }
 

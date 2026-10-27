@@ -19074,7 +19074,8 @@
                 "binding": "ANY",
                 "effect": {
                     "type": "CopyTargetSpell",
-                    "target": "TriggeringEntity"
+                    "target": "TriggeringEntity",
+                    "mayChooseNewTargets": false
                 },
                 "triggerRestriction": {
                     "type": "All",

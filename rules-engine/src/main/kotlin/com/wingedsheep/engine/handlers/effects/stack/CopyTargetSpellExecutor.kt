@@ -52,11 +52,23 @@ class CopyTargetSpellExecutor(
         // matching prior spells means no copies at all — the ability still resolved.
         // A copy-count replacement ("copy it that many times plus an additional time") resizes the
         // instruction once, before any copy exists; zero copies stays zero.
+        val baseCount = dynamicAmountEvaluator.evaluate(state, effect.copies, context)
         val copyCount = KeywordActionAmountModifier.copySpell(
-            state, context.controllerId, spellEntityId,
-            dynamicAmountEvaluator.evaluate(state, effect.copies, context), targetFinder.predicateEvaluator
+            state, context.controllerId, spellEntityId, baseCount, targetFinder.predicateEvaluator
         )
         if (copyCount <= 0) return EffectResult.success(state)
+        // A bare "copy that spell" keeps its targets, but the extra copies a copy-count
+        // replacement adds come with that replacement's own "you may choose new targets for the
+        // additional copy" (Twinning Staff), so they take the retargetable path afterwards.
+        val addedCount = copyCount - baseCount
+        if (!effect.mayChooseNewTargets && baseCount > 0 && addedCount > 0) {
+            val kept = copySpellTimes(state, effect, context, spellEntityId, baseCount)
+            if (kept.outcome !is Outcome.Done) return kept
+            val added = copySpellTimes(
+                kept.state, effect.copy(mayChooseNewTargets = true), context, spellEntityId, addedCount
+            )
+            return added.copy(events = kept.events + added.events)
+        }
         return copySpellTimes(state, effect, context, spellEntityId, copyCount)
     }
 
