@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.support.answerForcedPayments
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.support.GameTestDriver
@@ -74,7 +75,7 @@ class EsperSentinelScenarioTest : FunSpec({
         d.redFloating(caster) shouldBe 0
     }
 
-    test("a caster who can't pay isn't asked - the draw happens") {
+    test("a caster who can't pay can only refuse - the draw happens") {
         val d = createDriver()
         val caster = d.activePlayer!!
         val owner = d.getOpponent(caster)
@@ -83,6 +84,9 @@ class EsperSentinelScenarioTest : FunSpec({
 
         d.castBoltIntoSentinel(caster, owner, red = 1)
 
+        // The caster's hand could hold a Spirit Guide, so they are asked — refusal only.
+        d.pendingDecision!!.playerId shouldBe caster
+        d.answerForcedPayments()
         d.pendingDecision shouldBe null
         d.getHandSize(owner) shouldBe handBefore + 1
     }
@@ -94,6 +98,7 @@ class EsperSentinelScenarioTest : FunSpec({
         d.putCreatureOnBattlefield(owner, "Esper Sentinel")
 
         d.castBoltIntoSentinel(caster, owner, red = 1)
+        d.answerForcedPayments()
         while (d.stackSize > 0) d.bothPass()
 
         val second = d.putCardInHand(caster, "Lightning Bolt")
@@ -117,6 +122,7 @@ class EsperSentinelScenarioTest : FunSpec({
 
         // The Bolt is still their first noncreature spell: castBoltIntoSentinel sees the trigger.
         d.castBoltIntoSentinel(caster, owner, red = 1)
+        d.answerForcedPayments()
         d.getHandSize(owner) shouldBe handBefore + 1
     }
 
