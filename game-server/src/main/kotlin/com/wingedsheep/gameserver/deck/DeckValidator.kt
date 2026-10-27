@@ -565,7 +565,7 @@ class DeckValidator @Autowired constructor(
             for (commander in commanders) merge(commander, 1, Int::plus)
         }
 
-        // Resolve every submitted card; basic lands bypass the pool-membership check (the lobby
+        // Resolve every submitted card; nonsnow basic lands bypass the pool-membership check (the lobby
         // ships basics out-of-band via lobby.basicLands).
         for ((cardName, submitted) in allCounts) {
             val card = cardRegistry.getCard(cardName)
@@ -577,7 +577,7 @@ class DeckValidator @Autowired constructor(
                 )
                 continue
             }
-            if (card.typeLine.isBasicLand) continue
+            if (card.typeLine.isBasicLand && !card.typeLine.isSnow) continue
 
             val available = poolCounts[cardName] ?: 0
             if (submitted > available) {

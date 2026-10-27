@@ -215,9 +215,10 @@ class SealedSession(
             return "Deck must have at least 40 cards (has $totalCards)"
         }
 
-        // Count available copies from pool (excluding basic lands)
+        // Count available copies from pool (excluding basic lands, which are free — but not basic
+        // snow lands: Limited players only get those by opening them)
         val poolCounts = pool
-            .filterNot { it.typeLine.isBasicLand }
+            .filterNot { it.typeLine.isBasicLand && !it.typeLine.isSnow }
             .groupingBy { it.name }
             .eachCount()
 

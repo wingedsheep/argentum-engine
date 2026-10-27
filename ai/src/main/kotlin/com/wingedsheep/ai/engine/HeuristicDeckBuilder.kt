@@ -69,7 +69,7 @@ private fun buildFreshSealedDeck(pool: List<CardDefinition>, targetSize: Int): M
     val ratings = pool.associateWith { LimitedCardRater.rate(it) }
 
     val nonLands = pool.filter { !it.typeLine.isLand }
-    val poolLands = pool.filter { it.typeLine.isLand && !it.typeLine.isBasicLand }
+    val poolLands = pool.filter { it.typeLine.isLand && (!it.typeLine.isBasicLand || it.typeLine.isSnow) }
 
     // Score each color by the total limited rating of its cards
     val colorScores = mutableMapOf<Color, Double>()
@@ -356,7 +356,7 @@ private fun completeSealedDeck(
     }
 
     // On-color non-basic lands from the pool.
-    for (land in pool.filter { it.typeLine.isLand && !it.typeLine.isBasicLand && landFitsColors(it, bestColors) }) {
+    for (land in pool.filter { it.typeLine.isLand && (!it.typeLine.isBasicLand || it.typeLine.isSnow) && landFitsColors(it, bestColors) }) {
         if (total() >= targetSize) break
         val have = deck[land.name] ?: 0
         val available = poolCounts[land.name] ?: 0

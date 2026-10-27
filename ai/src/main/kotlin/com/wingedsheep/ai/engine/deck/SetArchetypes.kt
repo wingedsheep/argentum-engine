@@ -694,7 +694,7 @@ object SetArchetypes {
                     "Assemble an Elf tribe, find more Elves and Warriors off the top, and grow the team with Elf payoffs. A tribal midrange deck that sacrifices and recurs creatures for value.",
                     creatureTypes = listOf("Elf")),
                 Archetype("Equipment & Auras", listOf(Color.RED, Color.WHITE),
-                    "Suit up creatures with Equipment and Auras, rebuying the ones that die and pumping equipped tokens. An aggressive deck that makes every enchanted or equipped creature a threat."),
+                    "Suit up creatures with Equipment and Auras, pumping enchanted or equipped tokens and returning fallen nontoken creatures to hand. An aggressive deck that makes every enchanted or equipped creature a threat."),
                 Archetype("Snow", listOf(Color.GREEN, Color.BLUE),
                     "Play snow lands and snow permanents to power snow costs and payoffs, copying the best permanents along the way. A value midrange deck whose spells get stronger the more snow mana it has."),
             )

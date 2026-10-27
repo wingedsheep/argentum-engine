@@ -1997,7 +1997,7 @@ class LobbyHandler(
         aiProperties: com.wingedsheep.gameserver.config.AiProperties
     ): Map<String, Int>? {
         val nonLands = pool.filter { !it.typeLine.isLand }
-        val poolLands = pool.filter { it.typeLine.isLand && !it.typeLine.isBasicLand }
+        val poolLands = pool.filter { it.typeLine.isLand && (!it.typeLine.isBasicLand || it.typeLine.isSnow) }
 
         val prompt = buildString {
             appendLine("You are building a 40-card sealed deck from this card pool.")

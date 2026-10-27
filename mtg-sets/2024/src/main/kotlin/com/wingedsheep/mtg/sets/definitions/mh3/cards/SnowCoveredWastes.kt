@@ -43,8 +43,8 @@ val SnowCoveredWastes = card("Snow-Covered Wastes") {
         // `CardDiscovery` files every basic land into `MtgSet.basicLands`, and
         // `BoosterGenerator.getBasicLands` turns that list — filtered by `inBooster` — into the
         // basics a limited player may add to their deck freely. A basic *snow* land must not be
-        // free (see the ruling below), so it opts out here. Nothing is lost on the pack side:
-        // `isBoosterEligible` already excludes every basic land from generated boosters.
+        // free (see the ruling below), so it opts out here. Packs reach snow basics only through
+        // reprint rows in a set's card pool, never through `MtgSet.basicLands`.
         inBooster = false
 
         ruling(

@@ -1541,7 +1541,7 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Equipment & Auras',
         colors: ['R', 'W'],
         keyCard: 'Koll, the Forgemaster',
-        description: 'Suit up creatures with Equipment and Auras, rebuying the ones that die and pumping equipped tokens. An aggressive deck that makes every enchanted or equipped creature a threat.',
+        description: 'Suit up creatures with Equipment and Auras, pumping enchanted or equipped tokens and returning fallen nontoken creatures to hand. An aggressive deck that makes every enchanted or equipped creature a threat.',
       },
       {
         name: 'Snow',
