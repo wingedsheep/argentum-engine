@@ -1478,10 +1478,7 @@ class PredicateEvaluator(
                 card.name.equals(chosenName, ignoreCase = true)
             }
 
-            // Source-component card-type reference: the card type durably chosen by the source
-            // permanent as it entered (Arachne). Read from the source's CastChoicesComponent[slot];
-            // works at cost-calculation / projection time as long as the predicate context supplies
-            // the choosing permanent as the source. The card-type analogue of NameEqualsChosenComponent.
+            // Pipeline-variable card-type reference (Alrund): the type chosen earlier in this resolution.
             is CardPredicate.CardTypeEqualsChosen -> {
                 val chosenType = context?.chosenValues?.get(predicate.variableName) ?: return false
                 // Projected types (plus off-battlefield grants), so a card made a creature by an
@@ -1489,6 +1486,10 @@ class PredicateEvaluator(
                 types.any { it.equals(chosenType, ignoreCase = true) }
             }
 
+            // Source-component card-type reference: the card type durably chosen by the source
+            // permanent as it entered (Arachne). Read from the source's CastChoicesComponent[slot];
+            // works at cost-calculation / projection time as long as the predicate context supplies
+            // the choosing permanent as the source. The card-type analogue of NameEqualsChosenComponent.
             is CardPredicate.CardTypeEqualsChosenComponent -> {
                 val sourceId = context?.sourceId ?: return false
                 val chosenType = (state.getEntity(sourceId)
