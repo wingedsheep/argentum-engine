@@ -5,9 +5,11 @@ import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.DecisionContext
 import com.wingedsheep.engine.core.DecisionResponse
+import com.wingedsheep.engine.core.ManaSourcesSelectedResponse
 import com.wingedsheep.engine.core.ReorderLibraryDecision
 import com.wingedsheep.engine.core.SearchCardInfo
 import com.wingedsheep.engine.core.SelectCardsDecision
+import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.core.SubmitDecision
 import com.wingedsheep.engine.core.TargetsResponse
 import com.wingedsheep.engine.core.YesNoDecision
@@ -203,6 +205,18 @@ class ForcedDecisionAutoAnswerTest : ScenarioTestBase() {
             ForcedDecisionAutoAnswer.responseFor(may, may).shouldBeNull()
             val forced = may.copy(yesAvailable = false)
             ForcedDecisionAutoAnswer.responseFor(forced, forced) shouldBe YesNoResponse("may", false)
+        }
+
+        test("a mana payment nothing can pay is answered decline; a payable one is asked") {
+            // "Counter it unless that player pays {1}" against a tapped-out player whose hand could
+            // have held a Spirit Guide: asked, with "decline" alone (#3340 group C).
+            val pay = SelectManaSourcesDecision(
+                id = "pay", playerId = player, prompt = "Pay {1}", context = context,
+                availableSources = emptyList(), requiredCost = "{1}", autoPaySuggestion = emptyList(), canDecline = true,
+            )
+            ForcedDecisionAutoAnswer.responseFor(pay, pay).shouldBeNull()
+            val forced = pay.copy(payAvailable = false)
+            ForcedDecisionAutoAnswer.responseFor(forced, forced) shouldBe ManaSourcesSelectedResponse("pay", declined = true)
         }
 
         test("the engine's own decision decides forcedness, not the seat's transformed copy") {

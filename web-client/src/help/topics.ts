@@ -1249,9 +1249,10 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
       { kind: 'p', text: 'Preferences → Gameplay → Choices with only one answer has three settings. Answer instantly is the fastest: no pause at all, but an observant opponent can tell from the speed that you had no choice — and so, sometimes, what you don’t have in hand. Answer for me (the default) waits the short, human-like pause first, so a forced answer is hard to tell from a quick real one, though an opponent who watches closely may still read something into the timing. Ask me every time shows each of these questions like any other, so you click through them yourself and your timing gives nothing away.' },
       { kind: 'p', text: 'When everyone at the table can already see that a question has only one answer, there is no pause in either answering setting: a Flametongue Kavu entering with no other creature in play has to target itself, and waiting would hide nothing. The game only skips the pause when every possible answer was in plain view — creatures on the battlefield, cards in graveyards, spells on the stack. If the answer could depend on a card nobody else can see — a hand, a library, a face-down creature — the pause stays.' },
       { kind: 'p', text: 'With Ask me every time, a “you may…” you can’t actually do (“you may discard a creature card” with no creature card in hand) shows its Yes button greyed out, so No is the only answer.' },
+      { kind: 'p', text: 'Payments work the same way. While you hold any cards, your opponents can’t tell whether one of them could make mana (a Simian Spirit Guide, say), so a “counter it unless its controller pays {1}”, a ward cost or a “you may pay {1}” is still put to you when you’re tapped out. If you really can’t pay, the only answer is to decline: the game answers it for you, or, with Ask me every time, shows the Pay button greyed out. With an empty hand and no mana, everyone can see you can’t pay, so the question is skipped.' },
       { kind: 'tip', text: 'Click the notice to dismiss it early.' },
     ],
-    related: ['decisions', 'preferences', 'trigger-order'],
+    related: ['decisions', 'preferences', 'trigger-order', 'mana-payment'],
   },
   {
     id: 'trigger-order',

@@ -201,7 +201,7 @@ class FastDecisionResponder(private val intents: IntentCatalog = IntentCatalog.N
             // Auto-pay when the solver found a payment; otherwise submit nothing, which the engine
             // reads as a decline and ends the line cleanly rather than looping on it.
             is SelectManaSourcesDecision ->
-                if (decision.autoPaySuggestion.isNotEmpty()) {
+                if (decision.payAvailable && decision.autoPaySuggestion.isNotEmpty()) {
                     ManaSourcesSelectedResponse(decision.id, autoPay = true)
                 } else {
                     ManaSourcesSelectedResponse(decision.id, declined = true)

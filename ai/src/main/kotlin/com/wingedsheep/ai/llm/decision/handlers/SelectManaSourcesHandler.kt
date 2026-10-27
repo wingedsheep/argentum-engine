@@ -24,6 +24,7 @@ class SelectManaSourcesHandler : AiDecisionHandler<SelectManaSourcesDecision> {
      * re-raises the same decision, looping forever. Mirrors the engine AI's `DecisionResponder`.
      */
     private fun bestEffortResponse(decision: SelectManaSourcesDecision): ManaSourcesSelectedResponse {
+        if (!decision.payAvailable) return ManaSourcesSelectedResponse(decisionId = decision.id, declined = true)
         if (decision.autoPaySuggestion.isNotEmpty()) {
             return ManaSourcesSelectedResponse(decisionId = decision.id, autoPay = true)
         }

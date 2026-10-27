@@ -750,6 +750,11 @@ export interface SelectManaSourcesDecision extends PendingDecisionBase {
    * Waterbend (e.g. Ward—Waterbend). Empty for ordinary mana-only costs.
    */
   readonly waterbendPermanents?: readonly WaterbendPermanentChoice[]
+  /**
+   * False when nothing can pay the cost, so declining is the only legal answer. The question is
+   * still asked so that whether it is asked doesn't reveal hidden cards.
+   */
+  readonly payAvailable?: boolean
 }
 
 /**

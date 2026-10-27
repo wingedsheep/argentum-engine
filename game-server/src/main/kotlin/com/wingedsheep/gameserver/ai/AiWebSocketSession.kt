@@ -366,7 +366,9 @@ class AiWebSocketSession(
                     ActionResponse.SubmitDecision(
                         aiPlayerId,
                         com.wingedsheep.engine.core.ManaSourcesSelectedResponse(
-                            decisionId = pendingDecision.id, autoPay = true
+                            decisionId = pendingDecision.id,
+                            autoPay = pendingDecision.payAvailable,
+                            declined = !pendingDecision.payAvailable
                         )
                     )
                 }

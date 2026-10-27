@@ -866,11 +866,12 @@ class PayOrSufferExecutor(
         sourceName: String,
         controllerId: EntityId
     ): EffectResult {
-        // Check if the player can pay the mana cost
-        val manaSolver = ManaSolver(cardRegistry, predicateEvaluator)
-        if (!manaSolver.canPay(state, controllerId, cost.cost)) {
+        // Suffer without asking only when everyone can see the payment is impossible (#3340). A
+        // player who can't actually pay is asked with the consequence as the only answer.
+        if (publiclyUnpayable(state, controllerId, PayCost.Atom(cost), sourceId)) {
             return executeSufferEffect(state, effect.suffer, context)
         }
+        val payable = canPayCost(state, controllerId, PayCost.Atom(cost), sourceId)
 
         // Create a yes/no decision
         val consequence = describeConsequence(effect, sourceName)
@@ -886,7 +887,8 @@ class PayOrSufferExecutor(
                 phase = DecisionPhase.RESOLUTION
             ),
             yesText = "Pay ${cost.cost}",
-            noText = "Accept consequence"
+            noText = "Accept consequence",
+            yesAvailable = payable
         ) }
 
         val continuation = PayOrSufferContinuation(
@@ -1031,8 +1033,8 @@ class PayOrSufferExecutor(
      * match the filter is hidden, so a "maybe" there is asked, and [canPayCost] then decides what
      * the question offers.
      *
-     * Mana costs still go through [canPayCost], whose solver also counts mana abilities usable
-     * from the hand. That is #3340's group C, fixed separately.
+     * A mana cost is ruled out only by [ManaSolver.couldPossiblyPay]: the solver behind
+     * [canPayCost] also counts mana abilities usable from the hand (a Spirit Guide).
      */
     private fun publiclyUnpayable(
         state: GameState,
@@ -1041,7 +1043,12 @@ class PayOrSufferExecutor(
         sourceId: EntityId
     ): Boolean = when (cost) {
         is PayCost.Choice -> cost.options.all { publiclyUnpayable(state, playerId, it, sourceId) }
+        is PayCost.OwnManaCost -> {
+            val ownCost = state.getEntity(sourceId)?.get<CardComponent>()?.manaCost
+            ownCost == null || !ManaSolver(cardRegistry, predicateEvaluator).couldPossiblyPay(state, playerId, ownCost)
+        }
         is PayCost.Atom -> when (val atom = cost.atom) {
+            is CostAtom.Mana -> !ManaSolver(cardRegistry, predicateEvaluator).couldPossiblyPay(state, playerId, atom.cost)
             is CostAtom.Discard -> state.getHand(playerId).size < atom.count
             is CostAtom.ExileFrom ->
                 if (atom.zone.isHidden) state.getZone(ZoneKey(playerId, atom.zone)).size < atom.count

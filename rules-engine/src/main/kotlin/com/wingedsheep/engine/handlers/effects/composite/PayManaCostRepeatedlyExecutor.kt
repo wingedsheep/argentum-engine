@@ -109,6 +109,10 @@ class PayManaCostRepeatedlyExecutor(
          * Treasure, Springleaf Drum). Capping with `canPay` would count those and offer a count the
          * payment then fails on. The two must agree, so both go through the same predicate.
          *
+         * The count reads only public facts, so it may decide whether a question is asked (#3340):
+         * auto-pay never spends a mana ability from the hand (a Spirit Guide), and the probe solves
+         * hand-blind, so the hand can't steer it either.
+         *
          * A free cost (`{0}`) is payable any number of times, so an uncapped effect just reports
          * the mana-count bound — a degenerate shape that should carry an explicit [maxTimes].
          */

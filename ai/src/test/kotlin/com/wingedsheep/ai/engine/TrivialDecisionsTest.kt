@@ -236,6 +236,18 @@ class TrivialDecisionsTest : FunSpec({
         DecisionValidators.validate(may.copy(yesAvailable = false), YesNoResponse("may", true), GameState()).shouldNotBeNull()
     }
 
+    test("a mana payment is forced only when paying is impossible, and then the answer is decline") {
+        val pay = SelectManaSourcesDecision(
+            id = "pay", playerId = player, prompt = "Pay {1} or your spell will be countered", context = context,
+            availableSources = emptyList(), requiredCost = "{1}", autoPaySuggestion = emptyList(), canDecline = true,
+        )
+        TrivialDecisions.responseFor(pay).shouldBeNull()
+        val impossible = pay.copy(payAvailable = false)
+        TrivialDecisions.responseFor(impossible) shouldBe ManaSourcesSelectedResponse("pay", declined = true)
+        DecisionValidators.validate(impossible, ManaSourcesSelectedResponse("pay", autoPay = true), GameState()).shouldNotBeNull()
+        DecisionValidators.validate(impossible, ManaSourcesSelectedResponse("pay", declined = true), GameState()).shouldBeNull()
+    }
+
     test("a lone option is not forced when the decision can be cancelled") {
         val decision = ChooseOptionDecision(
             id = "option",

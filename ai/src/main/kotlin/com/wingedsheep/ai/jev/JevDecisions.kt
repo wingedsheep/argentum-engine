@@ -90,7 +90,7 @@ internal class JevDecisions(private val q: JevChoices, private val label: (Entit
             CombatResolutionResponse(d.id, edges)
         }
         is SelectManaSourcesDecision -> {
-            if (d.canDecline && q.pick("${d.prompt}: pay ${d.requiredCost}?", listOf(true, false)) == false) {
+            if (!d.payAvailable || (d.canDecline && q.pick("${d.prompt}: pay ${d.requiredCost}?", listOf(true, false)) == false)) {
                 ManaSourcesSelectedResponse(d.id, declined = true)
             } else {
                 val waterbend = cards("Tap to help pay ${d.requiredCost}", d.waterbendPermanents.map { it.entityId }, 0, d.waterbendPermanents.size)

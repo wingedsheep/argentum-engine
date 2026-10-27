@@ -442,9 +442,12 @@ class WardCounterEffectExecutor(
             manaCost: ManaCost,
             waterbend: Boolean,
             manaSolver: ManaSolver = ManaSolver(zones.cardRegistry, zones.predicateEvaluator),
-            waterbendPermanents: List<TapForGenericPermanentData>? = null
+            waterbendPermanents: List<TapForGenericPermanentData>? = null,
+            /** Judge by public information only ([ManaSolver.couldPossiblyPay]), as [publiclyUnpayable] does. */
+            publicOnly: Boolean = false
         ): Boolean {
-            if (manaSolver.canPay(state, payingPlayerId, manaCost)) return true
+            if (publicOnly && manaSolver.couldPossiblyPay(state, payingPlayerId, manaCost)) return true
+            if (!publicOnly && manaSolver.canPay(state, payingPlayerId, manaCost)) return true
             if (!waterbend) return false
             val costUtils = costEnumerationUtils(zones)
             val permanents = waterbendPermanents
@@ -688,8 +691,8 @@ class WardCounterEffectExecutor(
          * Whether every player can see that [payingPlayerId] can't pay [cost]. Only this may
          * counter without a question (#3340). A discard of filtered cards can be ruled out publicly
          * only by the hand's size, since which cards match is hidden. Everything else is read as
-         * [canPayWardCost] reads it. Its mana check still counts mana abilities usable from the
-         * hand, which is #3340's group C, fixed separately.
+         * [canPayWardCost] reads it, except mana: a hand that could hold a Spirit Guide keeps a
+         * mana cost possible ([ManaSolver.couldPossiblyPay]).
          */
         fun publiclyUnpayable(
             state: GameState,
@@ -699,6 +702,9 @@ class WardCounterEffectExecutor(
             controllerId: EntityId?
         ): Boolean = when (cost) {
             is WardCost.Discard -> state.getHand(payingPlayerId).size < cost.count
+            is WardCost.Mana -> !canAffordManaCost(
+                state, zones, payingPlayerId, ManaCost.parse(cost.manaCost), cost.waterbend, publicOnly = true
+            )
             is WardCost.Composite -> cost.parts.any { publiclyUnpayable(state, zones, it, payingPlayerId, controllerId) }
             is WardCost.Choice -> cost.options.all { publiclyUnpayable(state, zones, it, payingPlayerId, controllerId) }
             else -> !canPayWardCost(state, zones, cost, payingPlayerId, controllerId)
@@ -732,15 +738,21 @@ class WardCounterEffectExecutor(
                 emptyList()
             }
 
+            // Counter without asking only when everyone can see the cost can't be paid (#3340). A
+            // payer who can't actually pay is asked with "decline" as the only answer, which
+            // auto-answers; the question's kind and source are the same either way.
             if (!canAffordManaCost(
                     state, zones, payingPlayerId, manaCost, waterbend,
-                    manaSolver, waterbendPermanents
+                    manaSolver, waterbendPermanents, publicOnly = true
                 )
             ) {
                 return counterSpellOrAbility(state, counterer, spellEntityId, controllerId)
             }
+            val payable = canAffordManaCost(
+                state, zones, payingPlayerId, manaCost, waterbend, manaSolver, waterbendPermanents
+            )
 
-            val sources = manaSolver.findAvailableManaSources(state, payingPlayerId)
+            val sources = if (payable) manaSolver.findAvailableManaSources(state, payingPlayerId) else emptyList()
             val sourceOptions = sources.map { source ->
                 ManaSourceOption(
                     entityId = source.entityId,
@@ -753,10 +765,10 @@ class WardCounterEffectExecutor(
                 )
             }
 
-            val solution = manaSolver.solve(state, payingPlayerId, manaCost)
+            val solution = if (payable) manaSolver.solve(state, payingPlayerId, manaCost) else null
             val autoPaySuggestion = solution?.sources?.map { it.entityId } ?: emptyList()
 
-            val waterbendOptions = waterbendPermanents.map {
+            val waterbendOptions = if (!payable) emptyList() else waterbendPermanents.map {
                 WaterbendPermanentChoice(it.entityId, it.name, it.isCreature)
             }
 
@@ -781,7 +793,8 @@ class WardCounterEffectExecutor(
                 requiredCost = manaCost.toString(),
                 autoPaySuggestion = autoPaySuggestion,
                 canDecline = true,
-                waterbendPermanents = waterbendOptions
+                waterbendPermanents = waterbendOptions,
+                payAvailable = payable
             ) }
 
             val continuation = CounterUnlessPaysManaSelectionContinuation(

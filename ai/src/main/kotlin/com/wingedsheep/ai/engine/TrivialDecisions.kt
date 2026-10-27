@@ -18,6 +18,7 @@ import com.wingedsheep.engine.core.PendingDecision
 import com.wingedsheep.engine.core.ReorderLibraryDecision
 import com.wingedsheep.engine.core.SearchLibraryDecision
 import com.wingedsheep.engine.core.SelectCardsDecision
+import com.wingedsheep.engine.core.ManaSourcesSelectedResponse
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.core.TargetsResponse
 import com.wingedsheep.engine.core.YesNoDecision
@@ -115,7 +116,10 @@ object TrivialDecisions {
 
         // autoPaySuggestion is one solver-selected payment. Manual source choices, mana abilities
         // with side effects, and (when offered) declining remain strategy-owned.
-        is SelectManaSourcesDecision -> null
+        // Nothing can pay the cost: refusing is the only answer (#3340).
+        is SelectManaSourcesDecision ->
+            if (!decision.payAvailable && decision.canDecline) ManaSourcesSelectedResponse(decision.id, declined = true)
+            else null
 
         // Single option with no separate cancel response.
         is ChooseOptionDecision -> {

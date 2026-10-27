@@ -303,9 +303,10 @@ class ChainSpellContinuationResumer(
         checkForMore: CheckForMore
     ): ExecutionResult {
         // Check cost prerequisites
-        if (!ChainCopyExecutor.canPayCopyCost(state, recipientPlayerId, effect.copyCost, predicateEvaluator = services.predicateEvaluator, manaSolver = services.manaSolver)) {
+        if (!ChainCopyExecutor.canPayCopyCost(state, recipientPlayerId, effect.copyCost, predicateEvaluator = services.predicateEvaluator, manaSolver = services.manaSolver, publicOnly = true)) {
             return checkForMore(state, events)
         }
+        val payable = ChainCopyExecutor.canPayCopyCost(state, recipientPlayerId, effect.copyCost, predicateEvaluator = services.predicateEvaluator, manaSolver = services.manaSolver)
 
         // Check if there are valid targets for a potential copy
         val legalTargets = services.targetFinder.findLegalTargets(
@@ -335,7 +336,8 @@ class ChainSpellContinuationResumer(
                 phase = DecisionPhase.RESOLUTION
             ),
             yesText = yesText,
-            noText = noText
+            noText = noText,
+            yesAvailable = payable
         ) }
 
         val copyContinuation = ChainCopyDecisionContinuation(

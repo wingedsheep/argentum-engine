@@ -109,7 +109,9 @@ export function ManaSourceSelectionUI({
       ),
     [costSymbols, manaPool, selectedManaSources, selectedWaterbend, decision.availableSources, acceptedColors],
   )
-  const isCostCovered = coverage.every(isCovered)
+  // Nothing can pay the cost: declining is the only answer (the server refuses a payment).
+  const payAvailable = decision.payAvailable !== false
+  const isCostCovered = payAvailable && coverage.every(isCovered)
   const floatingCoversAll = coverage.every((pip) => pip.floating || pip.symbol === 'X')
 
   const handleAutoPay = () => {
@@ -199,6 +201,7 @@ export function ManaSourceSelectionUI({
         <button
           onClick={handleConfirm}
           disabled={!isCostCovered}
+          title={payAvailable ? undefined : 'Not possible right now'}
           className={`${styles.confirmButton} ${styles.confirmButtonSmall}`}
         >
           {payLabel}

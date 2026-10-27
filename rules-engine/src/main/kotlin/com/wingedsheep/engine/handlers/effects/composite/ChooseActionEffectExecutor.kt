@@ -127,12 +127,11 @@ class ChooseActionEffectExecutor(
  * Shared by [ChooseActionEffectExecutor], [GatedEffectExecutor], and [ReflexiveTriggerEffectExecutor].
  *
  * With [publicOnly], the answer is whether the check *might* hold as far as every player can tell,
- * which is what decides whether a question is asked at all (#3340). The only difference is a
- * filtered count of a hidden zone ("a nonland card in your hand"): which cards match is hidden, so
- * only the zone's size is read. Without it, the answer is the truth, which decides what the
- * question offers. Every `false` in public mode is also `false` in full mode.
- *
- * [FeasibilityCheck.CanPayMana] reads [ManaSolver.canPay] either way. That is #3340's group C.
+ * which is what decides whether a question is asked at all (#3340). Two checks differ: a filtered
+ * count of a hidden zone ("a nonland card in your hand") reads only the zone's size, since which
+ * cards match is hidden; and [FeasibilityCheck.CanPayMana] reads [ManaSolver.couldPossiblyPay],
+ * since the hand could hold a Spirit Guide. Without it, the answer is the truth, which decides
+ * what the question offers. Every `false` in public mode is also `false` in full mode.
  */
 internal fun checkFeasibility(
     state: GameState,
@@ -168,7 +167,10 @@ internal fun checkFeasibility(
                 } >= check.count
             }
         }
-        is FeasibilityCheck.CanPayMana -> manaSolver.canPay(state, playerId, check.cost)
+        // Publicly, a hand that could hold a Spirit Guide keeps the payment possible.
+        is FeasibilityCheck.CanPayMana ->
+            if (publicOnly) manaSolver.couldPossiblyPay(state, playerId, check.cost)
+            else manaSolver.canPay(state, playerId, check.cost)
     }
 }
 

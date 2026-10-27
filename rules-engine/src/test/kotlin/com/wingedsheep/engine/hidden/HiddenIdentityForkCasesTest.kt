@@ -4,6 +4,10 @@ import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.core.ChooseNumberDecision
+import com.wingedsheep.engine.core.CycleCard
+import com.wingedsheep.engine.core.ManaSourcesSelectedResponse
+import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.core.GameAction
 import com.wingedsheep.engine.core.PassPriority
 import com.wingedsheep.engine.core.PlayLand
@@ -18,6 +22,7 @@ import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.support.HiddenIdentityForkChecker
 import com.wingedsheep.engine.support.HiddenIdentityForkChecker.End
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
@@ -195,8 +200,22 @@ class HiddenIdentityForkCasesTest : ScenarioTestBase() {
         }
     }
 
+    /** "You may pay {1}. If you do, you gain 3 life." */
+    private val toll = card("Hidden Test Toll") {
+        manaCost = "{U}"
+        typeLine = "Sorcery"
+        spell { effect = Effects.MayPay(ManaCost.parse("{1}"), Effects.GainLife(3)) }
+    }
+
+    /** "You may pay {X}. If you do, you gain X life." */
+    private val tithe = card("Hidden Test Tithe") {
+        manaCost = "{U}"
+        typeLine = "Sorcery"
+        spell { effect = Effects.MayPayX(Effects.GainLife(DynamicAmount.XValue)) }
+    }
+
     init {
-        cardRegistry.register(listOf(herald, signal, glimpse, tell, peekCard, offering, ultimatum, tribute, sift))
+        cardRegistry.register(listOf(herald, signal, glimpse, tell, peekCard, offering, ultimatum, tribute, sift, toll, tithe))
     }
 
     private fun cardIn(state: GameState, owner: EntityId, name: String, inHand: Boolean = true): EntityId =
@@ -579,6 +598,153 @@ class HiddenIdentityForkCasesTest : ScenarioTestBase() {
             val decision = game.state.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
             decision.yesAvailable shouldBe false
             game.execute(SubmitDecision(game.player2Id, YesNoResponse(decision.id, true))).error.shouldNotBeNull()
+        }
+
+        // #3340 group C: whether a player is asked to pay mana can't depend on a mana ability in
+        // their hidden hand. Each case taps P2 out and forks a Simian Spirit Guide in P2's hand into
+        // a vanilla card: with the Guide P2 could pay, without it they can't, and either way the
+        // same question is asked. A hand that can't pay is offered only the refusal.
+        fun groupC(
+            name: String,
+            p2Hand: List<String>,
+            p2Lands: Pair<String, Int>?,
+            setUp: ScenarioBuilder.() -> ScenarioBuilder = { this },
+            activePlayer: Int = 2,
+            expected: (TestGame) -> Unit,
+            script: MutableList<GameAction>.(TestGame, GameState) -> Unit,
+        ) = test(name) {
+            var builder = scenario().withPlayers()
+            p2Hand.forEach { builder = builder.withCardInHand(2, it) }
+            if (p2Lands != null) builder = builder.withLandsOnBattlefield(2, p2Lands.first, p2Lands.second)
+            val game = builder.setUp().withActivePlayer(activePlayer).inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN).build()
+            val start = game.state
+            val actions = mutableListOf<GameAction>().apply { script(game, start) }
+            game.state.pendingDecision.shouldNotBeNull().playerId shouldBe game.player2Id
+            expected(game)
+
+            val outcome = checker.checkZoneFork(
+                start, cardIn(start, game.player2Id, "Simian Spirit Guide"), cardRegistry.requireCard("Grizzly Bears"), game.player1Id, actions,
+            )
+
+            outcome.leak.shouldBeNull()
+            outcome.end shouldBe End.Completed
+            outcome.checked shouldBe actions.size
+        }
+
+        /** P2 casts Shock at P1 with their only Mountain; P1 answers with [counter] and lets it resolve. */
+        fun MutableList<GameAction>.shockMetBy(game: TestGame, start: GameState, counter: String) {
+            add(CastSpell(game.player2Id, cardIn(start, game.player2Id, "Shock"), targets = listOf(ChosenTarget.Player(game.player1Id))))
+            game.execute(last())
+            add(PassPriority(game.player2Id))
+            game.execute(last())
+            val shock = game.state.stack.single()
+            play(game, CastSpell(game.player1Id, cardIn(start, game.player1Id, counter), targets = listOf(ChosenTarget.Spell(shock))))
+        }
+
+        groupC("counter-unless-pay asks whether or not the hand holds a Spirit Guide",
+            p2Hand = listOf("Shock", "Simian Spirit Guide"), p2Lands = "Mountain" to 1,
+            setUp = { withCardInHand(1, "Force Spike").withLandsOnBattlefield(1, "Island", 1) },
+            expected = { it.state.pendingDecision.shouldBeInstanceOf<YesNoDecision>() },
+        ) { game, start -> shockMetBy(game, start, "Force Spike") }
+
+        groupC("an optional trigger payment asks whether or not the hand holds a Spirit Guide",
+            p2Hand = listOf("Simian Spirit Guide"), p2Lands = null, activePlayer = 1,
+            setUp = { withCardOnBattlefield(2, "Lightning Rift").withCardInLibrary(1, "Plains").withCardInHand(1, "Secluded Steppe").withLandsOnBattlefield(1, "Plains", 1) },
+            expected = { it.state.pendingDecision.shouldBeInstanceOf<YesNoDecision>() },
+        ) { game, start -> play(game, CycleCard(game.player1Id, cardIn(start, game.player1Id, "Secluded Steppe"))) }
+
+        groupC("pay-or-suffer asks whether or not the hand holds a Spirit Guide",
+            p2Hand = listOf("Shock", "Simian Spirit Guide"), p2Lands = "Mountain" to 1,
+            setUp = { withCardOnBattlefield(1, "Rhystic Study") },
+            expected = { it.state.pendingDecision.shouldBeInstanceOf<YesNoDecision>() },
+        ) { game, start ->
+            play(game, CastSpell(game.player2Id, cardIn(start, game.player2Id, "Shock"), targets = listOf(ChosenTarget.Player(game.player1Id))))
+        }
+
+        groupC("a ward mana cost asks whether or not the hand holds a Spirit Guide",
+            p2Hand = listOf("Shock", "Simian Spirit Guide"), p2Lands = "Mountain" to 1,
+            setUp = { withCardOnBattlefield(1, "Gavony Dawnguard") },
+            expected = { it.state.pendingDecision.shouldBeInstanceOf<SelectManaSourcesDecision>() },
+        ) { game, start ->
+            val dawnguard = game.findPermanent("Gavony Dawnguard")!!
+            play(game, CastSpell(game.player2Id, cardIn(start, game.player2Id, "Shock"), targets = listOf(ChosenTarget.Permanent(dawnguard))))
+        }
+
+        groupC("a gated may-pay asks whether or not the hand holds a Spirit Guide",
+            p2Hand = listOf("Hidden Test Toll", "Simian Spirit Guide"), p2Lands = "Island" to 1,
+            expected = { it.state.pendingDecision.shouldBeInstanceOf<YesNoDecision>() },
+        ) { game, start -> play(game, CastSpell(game.player2Id, cardIn(start, game.player2Id, "Hidden Test Toll"))) }
+
+        groupC("a may-pay-X asks whether or not the hand holds a Spirit Guide",
+            p2Hand = listOf("Hidden Test Tithe", "Simian Spirit Guide"), p2Lands = "Island" to 1,
+            expected = { it.state.pendingDecision.shouldBeInstanceOf<ChooseNumberDecision>() },
+        ) { game, start -> play(game, CastSpell(game.player2Id, cardIn(start, game.player2Id, "Hidden Test Tithe"))) }
+
+        groupC("a chain copy's mana cost asks whether or not the hand holds Spirit Guides",
+            p2Hand = listOf("Simian Spirit Guide", "Simian Spirit Guide"), p2Lands = null, activePlayer = 1,
+            setUp = { withCardInHand(1, "Chain Lightning").withLandsOnBattlefield(1, "Mountain", 1) },
+            expected = { it.state.pendingDecision.shouldBeInstanceOf<YesNoDecision>() },
+        ) { game, start ->
+            play(game, CastSpell(game.player1Id, cardIn(start, game.player1Id, "Chain Lightning"), targets = listOf(ChosenTarget.Player(game.player2Id))))
+        }
+
+        test("counter-unless-pay with no way to pay offers only don't pay, and a payment is refused") {
+            val game = scenario().withPlayers()
+                .withCardInHand(2, "Shock").withCardInHand(2, "Grizzly Bears").withLandsOnBattlefield(2, "Mountain", 1)
+                .withCardInHand(1, "Force Spike").withLandsOnBattlefield(1, "Island", 1)
+                .withActivePlayer(2).inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN).build()
+            mutableListOf<GameAction>().shockMetBy(game, game.state, "Force Spike")
+            val decision = game.state.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+            decision.playerId shouldBe game.player2Id
+            decision.yesAvailable shouldBe false
+            game.execute(SubmitDecision(game.player2Id, YesNoResponse(decision.id, true))).error.shouldNotBeNull()
+            game.execute(SubmitDecision(game.player2Id, YesNoResponse(decision.id, false))).error.shouldBeNull()
+            game.state.getGraveyard(game.player2Id).any { game.state.getEntity(it)?.get<CardComponent>()?.name == "Shock" } shouldBe true
+        }
+
+        test("a ward mana cost with no way to pay offers only decline, and a payment is refused") {
+            val game = scenario().withPlayers()
+                .withCardInHand(2, "Shock").withCardInHand(2, "Grizzly Bears").withLandsOnBattlefield(2, "Mountain", 1)
+                .withCardOnBattlefield(1, "Gavony Dawnguard")
+                .withActivePlayer(2).inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN).build()
+            val dawnguard = game.findPermanent("Gavony Dawnguard")!!
+            mutableListOf<GameAction>().play(game, CastSpell(game.player2Id, cardIn(game.state, game.player2Id, "Shock"), targets = listOf(ChosenTarget.Permanent(dawnguard))))
+            val decision = game.state.pendingDecision.shouldBeInstanceOf<SelectManaSourcesDecision>()
+            decision.payAvailable shouldBe false
+            decision.availableSources shouldBe emptyList()
+            game.execute(SubmitDecision(game.player2Id, ManaSourcesSelectedResponse(decision.id, autoPay = true))).error.shouldNotBeNull()
+            game.execute(SubmitDecision(game.player2Id, ManaSourcesSelectedResponse(decision.id, declined = true))).error.shouldBeNull()
+        }
+
+        test("an empty hand with no mana still counters without asking") {
+            val game = scenario().withPlayers()
+                .withCardInHand(2, "Shock").withLandsOnBattlefield(2, "Mountain", 1)
+                .withCardInHand(1, "Force Spike").withLandsOnBattlefield(1, "Island", 1)
+                .withActivePlayer(2).inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN).build()
+            mutableListOf<GameAction>().shockMetBy(game, game.state, "Force Spike")
+            game.state.pendingDecision.shouldBeNull()
+            game.state.stack shouldBe emptyList()
+        }
+
+        test("a face-down permanent's own mana ability is not counted toward a payment") {
+            // P2's face-down permanent is a Llanowar Elves or a Grizzly Bears. Face down it has no
+            // abilities (CR 708.2), so with an empty hand the Force Spike counters without asking.
+            val game = scenario().withPlayers()
+                .withCardInHand(2, "Shock").withLandsOnBattlefield(2, "Mountain", 1)
+                .withCardOnBattlefield(2, "Llanowar Elves")
+                .withCardInHand(1, "Force Spike").withLandsOnBattlefield(1, "Island", 1)
+                .withActivePlayer(2).inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN).build()
+            val faceDown = game.findPermanent("Llanowar Elves")!!
+            game.state = game.state.updateEntity(faceDown) { it.with(FaceDownComponent) }
+            val start = game.state
+            val actions = mutableListOf<GameAction>().apply { shockMetBy(game, start, "Force Spike") }
+            game.state.pendingDecision.shouldBeNull()
+
+            val outcome = checker.checkFaceDownFork(start, faceDown, cardRegistry.requireCard("Grizzly Bears"), game.player1Id, actions)
+
+            outcome.leak.shouldBeNull()
+            outcome.end shouldBe End.Completed
+            outcome.checked shouldBe actions.size
         }
     }
 }

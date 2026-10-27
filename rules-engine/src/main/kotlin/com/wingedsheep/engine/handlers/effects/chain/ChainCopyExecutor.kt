@@ -126,9 +126,10 @@ class ChainCopyExecutor(
         context: EffectContext
     ): EffectResult {
         // Check cost prerequisites
-        if (!canPayCopyCost(state, recipientPlayerId, effect.copyCost, predicateEvaluator = predicateEvaluator, manaSolver = manaSolver)) {
+        if (!canPayCopyCost(state, recipientPlayerId, effect.copyCost, predicateEvaluator = predicateEvaluator, manaSolver = manaSolver, publicOnly = true)) {
             return EffectResult.success(state, events)
         }
+        val payable = canPayCopyCost(state, recipientPlayerId, effect.copyCost, predicateEvaluator = predicateEvaluator, manaSolver = manaSolver)
 
         // Check if there are valid targets for a potential copy
         val legalTargets = targetFinder.findLegalTargets(
@@ -162,7 +163,8 @@ class ChainCopyExecutor(
                 phase = DecisionPhase.RESOLUTION
             ),
             yesText = yesText,
-            noText = noText
+            noText = noText,
+            yesAvailable = payable
         ) }
 
         val continuation = ChainCopyDecisionContinuation(
@@ -177,20 +179,25 @@ class ChainCopyExecutor(
 
     companion object {
         /**
-         * Check if the recipient can pay the copy cost.
+         * Check if the recipient can pay the copy cost. With [publicOnly], whether they *might* as
+         * far as every player can tell — what decides whether the copy is offered at all (#3340);
+         * a mana cost then reads [ManaSolver.couldPossiblyPay].
          */
         fun canPayCopyCost(
             state: GameState,
             playerId: EntityId,
             cost: PayCost?,
             predicateEvaluator: PredicateEvaluator,
-            manaSolver: ManaSolver
+            manaSolver: ManaSolver,
+            publicOnly: Boolean = false
         ): Boolean {
             if (cost == null) return true
             return when (val atom = (cost as? PayCost.Atom)?.atom) {
                 // The broad "payable at all" check: the payment window lets the payer activate any
                 // mana ability (CR 605.3a), not just the ones auto-pay would tap.
-                is CostAtom.Mana -> manaSolver.canPay(state, playerId, atom.cost)
+                is CostAtom.Mana ->
+                    if (publicOnly) manaSolver.couldPossiblyPay(state, playerId, atom.cost)
+                    else manaSolver.canPay(state, playerId, atom.cost)
                 is CostAtom.Sacrifice -> {
                     findMatchingPermanents(state, playerId, atom.filter, predicateEvaluator = predicateEvaluator).size >= atom.count
                 }

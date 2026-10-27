@@ -236,7 +236,7 @@ class TriggerProcessor(
      *
      * Asks "Pay {cost}?" first. If the player says yes, proceeds to mana source selection,
      * then target selection. If the player says no, the trigger is skipped entirely.
-     * If the player can't pay, the trigger is skipped silently.
+     * If everyone can see the player can't pay, the trigger is skipped silently.
      *
      * Before asking, checks if legal targets exist — if not, the ability fizzles
      * without even asking the pay question.
@@ -249,12 +249,14 @@ class TriggerProcessor(
         val ability = trigger.ability
         val manaCost = ability.effect.asOptionalManaPayment()!!.cost
 
-        // Check if the player can pay the mana cost
+        // Skip silently only when everyone can see the payment is impossible (#3340): whether the
+        // question is asked must not show a Spirit Guide in hand. A player who can't actually pay
+        // is asked with "Don't pay" as the only answer, which auto-answers.
         val manaSolver = ManaSolver(cardRegistry, amountEvaluator.predicates)
-        if (!manaSolver.canPay(state, trigger.controllerId, manaCost)) {
-            // Can't pay - skip silently
+        if (!manaSolver.couldPossiblyPay(state, trigger.controllerId, manaCost)) {
             return ExecutionResult.success(state)
         }
+        val payable = manaSolver.canPay(state, trigger.controllerId, manaCost)
 
         // Check if legal targets exist before asking the pay question
         val legalTargets = targetFinder.findLegalTargets(
@@ -314,6 +316,7 @@ class TriggerProcessor(
             noText = "Don't pay",
             phase = DecisionPhase.RESOLUTION,
             abilityIdentity = state.triggerIdentityFromCurrentCardDefinition(trigger.sourceId, ability.id),
+            yesAvailable = payable,
             answer = MayPayManaTriggerContinuation(
                 trigger = trigger,
                 targetRequirement = targetRequirement,

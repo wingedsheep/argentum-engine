@@ -270,11 +270,16 @@ class GatedEffectExecutor(
             }
         }
 
-        // Gate.MayPay: don't offer an impossible "yes" — fall straight through to `otherwise`.
-        if (gate is Gate.MayPay && !canAfford(state, playerId, gate.cost, context)) {
-            return effect.otherwise
-                ?.let { effectExecutor(state, it, context) }
-                ?: EffectResult.success(state)
+        // Gate.MayPay: when everyone can see the cost can't be paid, fall straight through to
+        // `otherwise`. When only hidden cards decide it (a hand that could hold a Spirit Guide), ask
+        // anyway, offering "no" alone if it really can't be paid (#3340).
+        if (gate is Gate.MayPay) {
+            if (!canAfford(state, playerId, gate.cost, context, publicOnly = true)) {
+                return effect.otherwise
+                    ?.let { effectExecutor(state, it, context) }
+                    ?: EffectResult.success(state)
+            }
+            if (!canAfford(state, playerId, gate.cost, context)) yesAvailable = false
         }
 
         // "You may sacrifice a [permanent]. If you do, …" — *whether* and *which* are one choice, so
@@ -288,7 +293,7 @@ class GatedEffectExecutor(
         // a "Pay {cost}?" yes/no that, on "yes", routes through the mana-source-selection
         // continuations rather than the generic auto-tapping cost composite. See [OptionalManaPayment].
         effect.asOptionalManaPayment()?.let { mana ->
-            return executeOptionalManaPayment(state, playerId, mana.cost, mana.then, context)
+            return executeOptionalManaPayment(state, playerId, mana.cost, mana.then, context, yesAvailable)
         }
 
         val sourceName = context.sourceId?.let { sourceId ->
@@ -416,7 +421,8 @@ class GatedEffectExecutor(
         playerId: EntityId,
         manaCost: ManaCost,
         then: Effect,
-        context: EffectContext
+        context: EffectContext,
+        yesAvailable: Boolean
     ): EffectResult {
         val sourceName = context.sourceId?.let { sourceId ->
             state.getEntity(sourceId)?.get<CardComponent>()?.name
@@ -428,7 +434,8 @@ class GatedEffectExecutor(
             prompt = "Pay $manaCost?",
             context = decisionContext(context, sourceName),
             yesText = "Pay $manaCost",
-            noText = "Don't pay"
+            noText = "Don't pay",
+            yesAvailable = yesAvailable
         ) }
 
         val continuation = MayPayManaContinuation(
@@ -464,16 +471,17 @@ class GatedEffectExecutor(
             manaSolver, CostCalculator(cardRegistry, predicateEvaluator), predicateEvaluator, cardRegistry
         )
         val waterbendPermanents = costUtils.findTapForGenericPermanents(state, playerId, TapForGeneric.WATERBEND)
-        val affordable = manaSolver.canPay(state, playerId, manaCost) ||
-            costUtils.canAffordWithTapForGeneric(state, playerId, manaCost, waterbendPermanents)
-        if (!affordable) {
-            // Can't pay → the "unless" fires (e.g. discard a card).
+        val tapsCanPay = costUtils.canAffordWithTapForGeneric(state, playerId, manaCost, waterbendPermanents)
+        // Visibly can't pay → the "unless" fires (e.g. discard a card). Only public facts may skip
+        // the question (#3340); a payer who can't actually pay is asked with "decline" alone.
+        if (!manaSolver.couldPossiblyPay(state, playerId, manaCost) && !tapsCanPay) {
             return otherwise?.let { effectExecutor(state, it, context) } ?: EffectResult.success(state)
         }
+        val payable = tapsCanPay || manaSolver.canPay(state, playerId, manaCost)
 
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
 
-        val sources = manaSolver.findAvailableManaSources(state, playerId)
+        val sources = if (payable) manaSolver.findAvailableManaSources(state, playerId) else emptyList()
         val sourceOptions = sources.map { source ->
             ManaSourceOption(
                 entityId = source.entityId,
@@ -485,9 +493,9 @@ class GatedEffectExecutor(
                 requiresTappingAnotherPermanent = source.tapPermanentsSubCost != null
             )
         }
-        val solution = manaSolver.solve(state, playerId, manaCost)
+        val solution = if (payable) manaSolver.solve(state, playerId, manaCost) else null
         val autoPaySuggestion = solution?.sources?.map { it.entityId } ?: emptyList()
-        val waterbendOptions = waterbendPermanents.map {
+        val waterbendOptions = if (!payable) emptyList() else waterbendPermanents.map {
             WaterbendPermanentChoice(it.entityId, it.name, it.isCreature)
         }
 
@@ -506,7 +514,8 @@ class GatedEffectExecutor(
             requiredCost = manaCost.toString(),
             autoPaySuggestion = autoPaySuggestion,
             canDecline = true,
-            waterbendPermanents = waterbendOptions
+            waterbendPermanents = waterbendOptions,
+            payAvailable = payable
         ) }
 
         val continuation = MayPayManaSelectionContinuation(
@@ -595,12 +604,15 @@ class GatedEffectExecutor(
             ?.let { TargetResolutionUtils.resolvePlayerTarget(it, context, state) }
             ?: context.controllerId
 
-        val maxAffordable = manaSolver.getAvailableManaCount(state, playerId)
-        if (maxAffordable <= 0) {
+        // Skip only when everyone can see there is no mana to pay with (#3340). The chooser's real
+        // ceiling may be 0 (a hand without a Spirit Guide): then 0 is the only answer, a forced one.
+        if (manaSolver.publicAvailableManaCeiling(state, playerId) <= 0) {
             return effect.otherwise
                 ?.let { effectExecutor(state, it, context) }
                 ?: EffectResult.success(state)
         }
+
+        val maxAffordable = manaSolver.getAvailableManaCount(state, playerId)
 
         val sourceName = context.sourceId?.let { sourceId ->
             state.getEntity(sourceId)?.get<CardComponent>()?.name
@@ -761,9 +773,18 @@ class GatedEffectExecutor(
      * fail open (assumed payable) so exotic cost pipelines still prompt and abort later via the
      * resumer's `stopOnError` composite.
      */
-    private fun canAfford(state: GameState, playerId: EntityId, cost: Effect, context: EffectContext): Boolean =
-        when (cost) {
-            is PayManaCostEffect -> manaSolver.canPay(state, playerId, cost.cost)
+    private fun canAfford(
+        state: GameState,
+        playerId: EntityId,
+        cost: Effect,
+        context: EffectContext,
+        /** Judge mana by public information only ([ManaSolver.couldPossiblyPay]); the rest is public already. */
+        publicOnly: Boolean = false
+    ): Boolean {
+        fun canPayMana(payer: EntityId, mana: ManaCost) =
+            if (publicOnly) manaSolver.couldPossiblyPay(state, payer, mana) else manaSolver.canPay(state, payer, mana)
+        return when (cost) {
+            is PayManaCostEffect -> canPayMana(playerId, cost.cost)
             is PayDynamicManaCostEffect -> {
                 // Affordability must target whoever actually foots the bill — resolve the cost's own
                 // `payer` rather than trusting the gate's decisionMaker to match it. A computed
@@ -772,9 +793,7 @@ class GatedEffectExecutor(
                 val payerId = TargetResolutionUtils
                     .resolvePlayerTarget(EffectTarget.PlayerRef(cost.payer), context, state)
                     ?: playerId
-                amount <= 0 || manaSolver.canPay(
-                    state, payerId, PayDynamicManaCostExecutor.dynamicManaCost(amount, cost.color)
-                )
+                amount <= 0 || canPayMana(payerId, PayDynamicManaCostExecutor.dynamicManaCost(amount, cost.color))
             }
             is PayExactCountersEffect -> {
                 val payer = TargetResolutionUtils.resolvePlayerRef(cost.player, context, state)
@@ -798,6 +817,7 @@ class GatedEffectExecutor(
             // one repetition, so a payer who can't afford even that must not be offered the "yes"
             // (the cost would then error and `stopOnError` would swallow the whole payoff). Mirrors
             // ReflexiveTriggerEffectExecutor.isActionFeasible, which scores the same shape.
+            // Public as it stands: the probe auto-taps battlefield sources only, hand-blind.
             is PayManaCostRepeatedlyEffect -> PayManaCostRepeatedlyExecutor.affordableRepetitions(
                 state, playerId, cost.cost, cost.maxTimes, cardRegistry,
                 predicateEvaluator = predicateEvaluator
@@ -818,7 +838,7 @@ class GatedEffectExecutor(
                 amount <= 0 || (holder != null &&
                     (state.getEntity(holder)?.get<CountersComponent>()?.getCount(cost.counterType) ?: 0) >= amount)
             }
-            is CompositeEffect -> cost.effects.all { canAfford(state, playerId, it, context) }
+            is CompositeEffect -> cost.effects.all { canAfford(state, playerId, it, context, publicOnly) }
             // "You may sacrifice [filter]" — payable only if the player controls enough matching
             // permanents (`any = true`, "sacrifice any number", is always payable: zero is legal).
             // Without this the gate fails open and offers an impossible "yes": Pippin's Bravery with
@@ -826,6 +846,7 @@ class GatedEffectExecutor(
             is SacrificeEffect -> cost.any || sacrificeFodder(state, playerId, cost, context).size >= cost.count
             else -> true
         }
+    }
 
     /**
      * Can the "if you do" action under a "you may" still clear its own success bar?

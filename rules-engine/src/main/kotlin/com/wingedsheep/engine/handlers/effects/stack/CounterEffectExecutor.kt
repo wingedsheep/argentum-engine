@@ -127,12 +127,14 @@ class CounterEffectExecutor(
         val payingPlayerId = TargetResolutionUtils.stackObjectController(state, spellEntityId)
             ?: return EffectResult.error(state, "Spell or ability not found on stack")
 
+        // Counter without asking only when everyone can see the payment is impossible (#3340).
         val manaSolver = ManaSolver(cardRegistry, predicateEvaluator)
-        if (!manaSolver.canPay(state, payingPlayerId, cost)) {
+        if (!manaSolver.couldPossiblyPay(state, payingPlayerId, cost)) {
             return performCounter(state, effect, spellEntityId, context)
         }
 
-        return offerPayment(state, effect, spellEntityId, payingPlayerId, cost, onPaid, context)
+        return offerPayment(state, effect, spellEntityId, payingPlayerId, cost, onPaid, context,
+            payable = manaSolver.canPay(state, payingPlayerId, cost))
     }
 
     private fun handleUnlessPaysDynamic(
@@ -155,12 +157,14 @@ class CounterEffectExecutor(
 
         val manaCost = ManaCost(listOf(ManaSymbol.Generic(totalGenericCost)))
 
+        // Counter without asking only when everyone can see the payment is impossible (#3340).
         val manaSolver = ManaSolver(cardRegistry, predicateEvaluator)
-        if (!manaSolver.canPay(state, payingPlayerId, manaCost)) {
+        if (!manaSolver.couldPossiblyPay(state, payingPlayerId, manaCost)) {
             return performCounter(state, effect, spellEntityId, context)
         }
 
-        return offerPayment(state, effect, spellEntityId, payingPlayerId, manaCost, condition.onPaid, context)
+        return offerPayment(state, effect, spellEntityId, payingPlayerId, manaCost, condition.onPaid, context,
+            payable = manaSolver.canPay(state, payingPlayerId, manaCost))
     }
 
     private fun offerPayment(
@@ -170,7 +174,9 @@ class CounterEffectExecutor(
         payingPlayerId: EntityId,
         manaCost: ManaCost,
         onPaid: com.wingedsheep.sdk.scripting.effects.Effect?,
-        context: EffectContext
+        context: EffectContext,
+        /** Whether the payer can actually pay; when not, declining is the only answer offered. */
+        payable: Boolean
     ): EffectResult {
         // Name the card asking (Spell Stutter, Mana Leak, …) — the prompt is about *its* demand.
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
@@ -195,6 +201,7 @@ class CounterEffectExecutor(
             prompt = "Pay $manaCost to prevent your ${if (state.isSpellOnStack(spellEntityId)) "spell" else "ability"} from being countered?",
             yesText = "Pay $manaCost",
             noText = "Don't pay",
+            yesAvailable = payable,
             answer = continuation
         )
 

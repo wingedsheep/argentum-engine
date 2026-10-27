@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ManaSourcesSelectedResponse
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
@@ -72,8 +73,11 @@ class WardCounterTest : FunSpec({
         // Ward trigger goes on the stack; resolve it — caller cannot pay ⇒ Bolt is countered.
         driver.bothPass()
 
-        // No pending decision — the executor goes straight to counter.
-        driver.pendingDecision shouldBe null
+        // The caster holds a hand that could have held a mana ability (a Spirit Guide), so the
+        // payment is asked (#3340) — with declining as the only answer, since nothing can pay.
+        val ask = driver.pendingDecision.shouldBeInstanceOf<SelectManaSourcesDecision>()
+        ask.payAvailable shouldBe false
+        driver.submitDecision(activePlayer, ManaSourcesSelectedResponse(ask.id, declined = true))
 
         // Resolve everything. Bolt was countered before it could deal damage, so the
         // bear is still alive.

@@ -112,6 +112,8 @@ class DecisionHandler {
         noText: String = "No",
         phase: DecisionPhase = DecisionPhase.RESOLUTION,
         abilityIdentity: com.wingedsheep.sdk.scripting.AbilityIdentity? = null,
+        /** False when "no" is the only legal answer, a forced question (see [YesNoDecision.yesAvailable]). */
+        yesAvailable: Boolean = true,
         answer: AnswerContinuation,
     ): ExecutionResult {
         return state.suspendForDecision(
@@ -126,7 +128,8 @@ class DecisionHandler {
                     abilityIdentity = abilityIdentity
                 ),
                 yesText = yesText,
-                noText = noText
+                noText = noText,
+                yesAvailable = yesAvailable
             ) },
             answer = answer,
         )

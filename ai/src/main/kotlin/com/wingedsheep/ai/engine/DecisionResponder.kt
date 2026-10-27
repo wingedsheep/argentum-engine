@@ -1317,6 +1317,7 @@ class DecisionResponder(
     // ── Mana sources ─────────────────────────────────────────────────────
 
     private fun respondManaSelection(decision: SelectManaSourcesDecision): DecisionResponse {
+        if (!decision.payAvailable) return ManaSourcesSelectedResponse(decision.id, declined = true)
         // Auto-pay uses the engine's solver, which excludes Treasures (sacrifice
         // sub-cost) and Springleaf-Drum-style sources (tap-permanent sub-cost). When
         // the solver finds no solution, [autoPaySuggestion] is empty — submitting

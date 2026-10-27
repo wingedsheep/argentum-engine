@@ -87,7 +87,7 @@ object DecisionValidators {
             is CombatResolutionDecision -> validateCombatResolution(decision, response)
             is SearchLibraryDecision -> validateLibrarySearch(decision, response)
             is ReorderLibraryDecision -> validateLibraryReorder(decision, response)
-            is SelectManaSourcesDecision -> validateManaSourcesSelection(response)
+            is SelectManaSourcesDecision -> validateManaSourcesSelection(decision, response)
             is BatchYesNoDecision -> validateBatchYesNo(response)
         }
     }
@@ -669,9 +669,16 @@ object DecisionValidators {
         return null
     }
 
-    private fun validateManaSourcesSelection(response: DecisionResponse): String? {
+    private fun validateManaSourcesSelection(decision: SelectManaSourcesDecision, response: DecisionResponse): String? {
         if (response !is ManaSourcesSelectedResponse) {
             return "Expected mana sources selected response"
+        }
+        // Nothing can pay the cost, so only a refusal is legal. The pool can't cover it either, so
+        // an empty submission is a refusal too (ManaSourcesSelectedResponse.isDecline).
+        if (!decision.payAvailable &&
+            (response.autoPay || response.selectedSources.isNotEmpty() || response.waterbendPermanents.isNotEmpty())
+        ) {
+            return "Paying ${decision.requiredCost} isn't possible here"
         }
         return null
     }

@@ -844,7 +844,16 @@ data class SelectManaSourcesDecision(
      * returned in [ManaSourcesSelectedResponse.waterbendPermanents]; mirrors the activated-ability
      * waterbend surface (`LegalAction.waterbendPermanents`).
      */
-    val waterbendPermanents: List<WaterbendPermanentChoice> = emptyList()
+    val waterbendPermanents: List<WaterbendPermanentChoice> = emptyList(),
+    /**
+     * False when the payer can't pay [requiredCost], so declining is the only legal answer: the
+     * payment twin of [YesNoDecision.yesAvailable]. Whether the question is asked may depend only
+     * on what every player knows (#3340) — a hand that could hold a Spirit Guide keeps the
+     * payment publicly possible — while the hidden cards decide only what it offers. With this
+     * false (and [canDecline] true) the decision is forced, so the AI and the human auto-answer
+     * both decline without a prompt.
+     */
+    val payAvailable: Boolean = true
 ) : PendingDecision
 
 /**

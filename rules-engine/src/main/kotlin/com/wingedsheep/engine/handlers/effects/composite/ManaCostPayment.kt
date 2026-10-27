@@ -152,6 +152,8 @@ fun canAutoPayManaCost(
     val remainingCost = manaPool.payPartial(cost).remainingCost
     if (remainingCost.isEmpty()) return true
 
+    // Hand-blind: this answers whether, not how, and whether a question is asked must not depend
+    // on the hidden hand (#3340).
     return ManaSolver(cardRegistry, predicateEvaluator = predicateEvaluator)
-        .solve(state, player, remainingCost, precomputedSources = precomputedSources) != null
+        .solve(state, player, remainingCost, precomputedSources = precomputedSources, handAware = false) != null
 }

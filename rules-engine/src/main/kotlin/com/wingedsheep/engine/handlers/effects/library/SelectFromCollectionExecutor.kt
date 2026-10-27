@@ -187,6 +187,12 @@ class SelectFromCollectionExecutor(
         // OnePerCardType caps the max at the most cards that can each claim a distinct type).
         // They are also propagated into the continuation for response-time normalization.
         val restrictionCeiling = restrictionCeiling(effect.restrictions, state, context, eligibleCards, controllerPermanentColors)
+        // The same ceiling as every player can work it out: a mana-paid cap
+        // ([SelectionRestriction.MaxAffordablePayment]) can't count a Spirit Guide that may be in
+        // hand. This decides whether a zero ceiling skips the question (#3340); the true ceiling
+        // above decides what it offers.
+        val publicCeiling = if (effect.restrictions.none { it is SelectionRestriction.MaxAffordablePayment }) restrictionCeiling
+            else restrictionCeiling(effect.restrictions, state, context, eligibleCards, controllerPermanentColors, publicOnly = true)
 
         // Which cards are eligible is hidden when the pool was built from hidden cards, or when
         // this step reads the characteristics of a card some player can't see. Either way, how
@@ -224,11 +230,11 @@ class SelectFromCollectionExecutor(
             is SelectionMode.ChooseExactly -> {
                 val requested = amountEvaluator.evaluate(state, selection.count, context)
                 val count = minOf(requested, restrictionCeiling)
-                if (count == 0 || (eligibleCards.isEmpty() && !eligibilityHidden)) {
+                if (minOf(requested, publicCeiling) == 0 || (eligibleCards.isEmpty() && !eligibilityHidden)) {
                     // Zero requested, or visibly nothing eligible — auto-select nothing
                     return selectedWithoutAsking(emptyList())
                 }
-                if (eligibleCards.isEmpty()) return askWithNothingEligible()
+                if (eligibleCards.isEmpty() || count == 0) return askWithNothingEligible()
                 if (count >= eligibleCards.size && effect.restrictions.isEmpty() && !effect.alwaysPrompt && !eligibilityHidden) {
                     // Must select all eligible, and everyone can see so — no choice needed. Over
                     // hidden cards it is asked: selecting every option is then the only answer,
@@ -259,11 +265,12 @@ class SelectFromCollectionExecutor(
             is SelectionMode.ChooseUpTo -> {
                 val requested = amountEvaluator.evaluate(state, selection.count, context)
                 val count = minOf(requested, restrictionCeiling)
-                if (count <= 0 && !effect.showAllCards) {
+                if (minOf(requested, publicCeiling) <= 0 && !effect.showAllCards) {
                     // "Up to zero" is no choice at all — a dynamic count that came out 0 (Hurkyl,
                     // Master Wizard's per-type pick for a type you didn't cast) selects nothing.
                     return selectedWithoutAsking(emptyList())
                 }
+                if (count <= 0 && !effect.showAllCards) return askWithNothingEligible()
                 if (eligibleCards.isEmpty()) {
                     // Show all cards even though none are selectable (e.g., "look at top 3, you may
                     // reveal a creature or land"); over a hidden pool, ask with nothing to pick.
@@ -290,11 +297,13 @@ class SelectFromCollectionExecutor(
                     return selectedWithoutAsking(emptyList())
                 }
                 val maxSelectable = minOf(eligibleCards.size, restrictionCeiling)
-                if (maxSelectable <= 0 && !effect.showAllCards) {
-                    // A restriction ceiling of zero (e.g. MaxAffordablePayment with no mana
-                    // available) makes the choice vacuous — skip the prompt, select nothing.
+                if (minOf(eligibleCards.size, publicCeiling) <= 0 && !effect.showAllCards) {
+                    // A restriction ceiling everyone can see is zero (e.g. MaxAffordablePayment with
+                    // no mana and an empty hand) makes the choice vacuous — skip the prompt.
                     return selectedWithoutAsking(emptyList())
                 }
+                // Zero only because of what the hidden hand lacks: asked, with nothing to pick.
+                if (maxSelectable <= 0 && !effect.showAllCards) return askWithNothingEligible()
                 val nonSelectable = if (effect.showAllCards) cards.filter { it !in eligibleCards } else emptyList()
                 createDecision(state, context, effect, eligibleCards, 0, maxSelectable, decidingPlayerId, allCards = cards, nonSelectableCards = nonSelectable, controllerPermanentColors = controllerPermanentColors, hiddenDeciders = hiddenDeciders)
             }
@@ -353,7 +362,9 @@ class SelectFromCollectionExecutor(
         state: GameState,
         context: EffectContext,
         eligibleCards: List<EntityId>,
-        controllerPermanentColors: Set<com.wingedsheep.sdk.core.Color>? = null
+        controllerPermanentColors: Set<com.wingedsheep.sdk.core.Color>? = null,
+        /** Cap a mana payment by [ManaSolver.publicAvailableManaCeiling] instead of the real count. */
+        publicOnly: Boolean = false
     ): Int {
         if (restrictions.isEmpty()) return Int.MAX_VALUE
         var ceiling = Int.MAX_VALUE
@@ -448,6 +459,9 @@ class SelectFromCollectionExecutor(
                         .resolvePlayerTarget(EffectTarget.PlayerRef(restriction.payer), context, state)
                         ?: context.controllerId
                     val manaCap = if (restriction.manaPerSelected <= 0) Int.MAX_VALUE
+                        else if (publicOnly) manaSolver.publicAvailableManaCeiling(state, payerId).let {
+                            if (it == Int.MAX_VALUE) it else it / restriction.manaPerSelected
+                        }
                         else manaSolver.getAvailableManaCount(state, payerId) / restriction.manaPerSelected
                     val lifeCap = when {
                         restriction.lifePerSelected <= 0 -> Int.MAX_VALUE

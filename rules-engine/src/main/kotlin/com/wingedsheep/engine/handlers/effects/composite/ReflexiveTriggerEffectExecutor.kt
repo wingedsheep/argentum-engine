@@ -159,7 +159,8 @@ class ReflexiveTriggerEffectExecutor(
      * selection fails open (see [isCompositeFeasible]).
      * @param publicOnly Answer whether the action *might* be feasible as far as every player can
      * tell (#3340): a hidden zone's cards are counted without their filter, because which of them
-     * match is hidden. Every `false` here is also `false` without it.
+     * match is hidden, and a mana payment reads [ManaSolver.couldPossiblyPay], because the hand
+     * could hold a Spirit Guide. Every `false` here is also `false` without it.
      */
     private fun isActionFeasible(
         state: GameState,
@@ -216,7 +217,8 @@ class ReflexiveTriggerEffectExecutor(
         // that can't be made can't be performed, so the may-question must be absent. Mirrors
         // GatedEffectExecutor.canAfford for the same shape in a Gate.MayPay cost slot.
         is com.wingedsheep.sdk.scripting.effects.PayManaCostEffect ->
-            action.waterbend || manaSolver.canPay(state, context.controllerId, action.cost)
+            action.waterbend || if (publicOnly) manaSolver.couldPossiblyPay(state, context.controllerId, action.cost)
+                else manaSolver.canPay(state, context.controllerId, action.cost)
         // "You may pay {E}{E}{E}" (Guide of Souls) — an all-or-nothing player-counter payment
         // is only feasible if the payer already has at least that many. Mirrors the SacrificeEffect
         // case: without this, the "may pay" prompt would be offered even at 0 energy, and
@@ -249,6 +251,7 @@ class ReflexiveTriggerEffectExecutor(
         // at all and the may-question must be absent. Without this the executor would raise the
         // prompt and then fail on every answer.
         is com.wingedsheep.sdk.scripting.effects.PayManaCostRepeatedlyEffect ->
+            // Public in both modes: the probe auto-taps battlefield sources only, hand-blind.
             PayManaCostRepeatedlyExecutor.affordableRepetitions(
                 state, context.controllerId, action.cost, action.maxTimes, cardRegistry,
                 predicateEvaluator = predicateEvaluator

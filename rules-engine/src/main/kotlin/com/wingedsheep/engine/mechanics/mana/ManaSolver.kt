@@ -427,10 +427,17 @@ class ManaSolver private constructor(
          * paid by a dedicated pass that only taps sources able to produce one of these colors,
          * and the per-color amount is reported in [ManaSolution.xRestrictedManaSpent].
          */
-        xManaRestriction: Set<Color> = emptySet()
+        xManaRestriction: Set<Color> = emptySet(),
+        /**
+         * False to pick sources without reading the payer's hand. The hand only steers which
+         * sources a tap keeps for later spells; a caller that asks *whether* a cost can be paid,
+         * to decide whether a question is asked, passes false so the answer can't depend on the
+         * hidden hand (#3340).
+         */
+        handAware: Boolean = true
     ): ManaSolution? {
         if (cost.snowCount > 0) {
-            return solveWithSnow(state, playerId, cost, xValue, excludeSources, spellContext, precomputedSources, xManaRestriction)
+            return solveWithSnow(state, playerId, cost, xValue, excludeSources, spellContext, precomputedSources, xManaRestriction, handAware)
         }
         // Get all untapped mana sources controlled by the player.
         //
@@ -481,7 +488,7 @@ class ManaSolver private constructor(
         }
 
         // Analyze hand to inform smart tapping decisions
-        val handRequirements = analyzeHandRequirements(state, playerId)
+        val handRequirements = if (handAware) analyzeHandRequirements(state, playerId) else emptyMap()
 
         // Count available sources per color for hand-awareness (respecting per-color restrictions)
         val availableSourcesByColor = mutableMapOf<Color, Int>()
@@ -1173,6 +1180,7 @@ class ManaSolver private constructor(
         spellContext: SpellPaymentContext?,
         precomputedSources: List<ManaSource>?,
         xManaRestriction: Set<Color>,
+        handAware: Boolean,
     ): ManaSolution? {
         val base = ManaCost(cost.symbols.filterNot { it is ManaSymbol.Snow })
         val pips = cost.snowCount
@@ -1201,7 +1209,7 @@ class ManaSolver private constructor(
         // Reserving sources only removes options, so a base the whole board can't pay fails every
         // combination — check once before trying up to MAX_SNOW_RESERVATIONS of them.
         if (candidates.size > pips && !(base.isEmpty() && xValue == 0) &&
-            solve(state, playerId, base, xValue, excludeSources, spellContext, precomputedSources, xManaRestriction) == null
+            solve(state, playerId, base, xValue, excludeSources, spellContext, precomputedSources, xManaRestriction, handAware) == null
         ) return null
 
         // Lexicographic combinations, cheapest first; bounded so a board of snow lands can't blow up.
@@ -1211,7 +1219,7 @@ class ManaSolver private constructor(
             val reserved = chosen.map { candidates[it] }
             val rest = if (base.isEmpty() && xValue == 0) ManaSolution(emptyList(), emptyMap())
                 else solve(state, playerId, base, xValue, excludeSources + reserved.map { it.entityId },
-                    spellContext, precomputedSources, xManaRestriction)
+                    spellContext, precomputedSources, xManaRestriction, handAware)
             if (rest != null) {
                 val produced = rest.manaProduced.toMutableMap()
                 val leftovers = rest.remainingBonusMana.toMutableList()
@@ -1410,8 +1418,9 @@ class ManaSolver private constructor(
 
             val card = container.get<CardComponent>() ?: return@mapNotNull null
 
-            // Check for explicit mana abilities via CardRegistry
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId)
+            // Check for explicit mana abilities via CardRegistry. A face-down permanent has none
+            // of its card's abilities (CR 708.2), so it is judged by what everyone can see.
+            val cardDef = container.faceUpCardDefinition(cardRegistry)
             // Suppress the card's own activated abilities when projection has stripped them
             // (e.g., Noggle the Mind / Humility / Deep Freeze). Granted abilities are kept.
             val allAbilities = if (cardDef == null || projected.hasLostAllAbilities(entityId)) emptyList()
@@ -2516,8 +2525,7 @@ class ManaSolver private constructor(
      */
     private fun hasSelfTapManaAbility(state: GameState, entityId: EntityId): Boolean {
         val container = state.getEntity(entityId) ?: return false
-        val card = container.get<CardComponent>() ?: return false
-        val cardDef = cardRegistry.getCard(card.cardDefinitionId)
+        val cardDef = container.faceUpCardDefinition(cardRegistry)
         val manaAbilities = cardDef?.script?.activatedAbilities?.filter { it.isManaAbility && it.activateFromZone == Zone.BATTLEFIELD }.orEmpty()
         if (manaAbilities.any { abilityCostHasTap(it.cost) }) return true
         // No printed mana ability: a land with a basic subtype still has the intrinsic tap ability.
@@ -3033,6 +3041,39 @@ class ManaSolver private constructor(
     }
 
     /**
+     * Whether public information alone leaves open that [playerId] can pay [cost]: the answer
+     * every player at the table could compute. Only a `false` here may skip a "pay?" question.
+     *
+     * [canPay] and [getAvailableManaCount] count mana abilities that work from the hand (Simian
+     * Spirit Guide's "Exile this card from your hand: Add {R}"), so a gate of the form "ask only if
+     * they can pay" shows the opponent whether such a card is in hand (#3340). Here the hand is
+     * judged by its size alone: a hand with any card in it could hold such an ability, so the
+     * payment stays possible. With an empty hand nothing hidden is left to count, and [canPay]
+     * reads only public facts — the battlefield (face-down permanents by their face-down
+     * characteristics), the graveyard and the mana pool.
+     *
+     * The gate asks whenever this is true. [canPay] then decides what the question offers: a
+     * player who can't actually pay is offered only the refusal, a forced answer.
+     */
+    fun couldPossiblyPay(state: GameState, playerId: EntityId, cost: ManaCost, xValue: Int = 0): Boolean =
+        mayHoldHiddenManaAbilities(state, playerId) || canPay(state, playerId, cost, xValue)
+
+    /**
+     * The most mana [playerId] could have available as far as public information shows: the
+     * public counterpart of [getAvailableManaCount], as [couldPossiblyPay] is of [canPay].
+     * [Int.MAX_VALUE] while a hidden zone could hold a mana ability.
+     */
+    fun publicAvailableManaCeiling(state: GameState, playerId: EntityId): Int =
+        if (mayHoldHiddenManaAbilities(state, playerId)) Int.MAX_VALUE
+        else getAvailableManaCount(state, playerId)
+
+    /** Whether a hidden zone whose mana abilities [canPay] counts (the hand) holds any card. */
+    private fun mayHoldHiddenManaAbilities(state: GameState, playerId: EntityId): Boolean =
+        ManaPaymentWindow.OFF_BATTLEFIELD_MANA_ZONES.any { zone ->
+            zone.isHidden && state.getZone(ZoneKey(playerId, zone)).isNotEmpty()
+        }
+
+    /**
      * Bonus mana available from TapPermanents mana abilities.
      */
     /** Life-funded special actions share one life budget; multiple permissions do not duplicate it.
@@ -3105,8 +3146,7 @@ class ManaSolver private constructor(
         for (entityId in battlefieldCards) {
             if (!state.manaAbilitySourceAllowed(playerId, entityId, predicateEvaluator)) continue
             val container = state.getEntity(entityId) ?: continue
-            val card = container.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val cardDef = container.faceUpCardDefinition(cardRegistry) ?: continue
 
             // Skip own abilities that have been stripped by a continuous effect (Humility, Noggle the Mind, etc.)
             if (projected.hasLostAllAbilities(entityId)) continue
@@ -3420,11 +3460,11 @@ class ManaSolver private constructor(
             // Already tapped → can't pay the {T} sub-cost.
             if (container.has<TappedComponent>()) continue
 
-            val card = container.get<CardComponent>() ?: continue
+            if (!container.has<CardComponent>()) continue
             // Own abilities stripped by Humility / similar — skip the printed mana ability; an
             // ability a resolved effect granted still counts.
             val printed = if (projected.hasLostAllAbilities(entityId)) emptyList()
-                else cardRegistry.getCard(card.cardDefinitionId)?.script?.activatedAbilities.orEmpty()
+                else container.faceUpCardDefinition(cardRegistry)?.script?.activatedAbilities.orEmpty()
             val abilities = printed + runtimeGrants[entityId].orEmpty()
             if (abilities.isEmpty()) continue
 
@@ -3544,8 +3584,7 @@ class ManaSolver private constructor(
             if (!state.manaAbilitySourceAllowed(playerId, entityId, predicateEvaluator)) continue
             val container = state.getEntity(entityId) ?: continue
             if (container.has<TappedComponent>()) continue
-            val card = container.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            val cardDef = container.faceUpCardDefinition(cardRegistry) ?: continue
             if (projected.hasLostAllAbilities(entityId)) continue
 
             val isCreature = projected.isCreature(entityId)
