@@ -283,6 +283,14 @@ data class TriggerContext(
      */
     val capturedEntitySnapshots: List<com.wingedsheep.engine.state.components.stack.EntitySnapshot>? = null,
     /**
+     * For a "whenever [player] attack(s) with …" firing ([com.wingedsheep.sdk.scripting.EventPattern.YouAttackEvent]),
+     * whom each captured attacker was declared attacking — a player, planeswalker or battle id —
+     * frozen as the trigger fired so a creature removed from combat in response still counts.
+     * Read by [com.wingedsheep.sdk.scripting.conditions.TriggeringAttackersAttackedPlayer]
+     * (Firemane Commando). Null for every other trigger.
+     */
+    val capturedAttackerDefenders: Map<EntityId, EntityId>? = null,
+    /**
      * For [com.wingedsheep.engine.core.PermanentAttachedEvent] /
      * [com.wingedsheep.engine.core.PermanentUnattachedEvent] triggers — the permanent the triggering
      * attachment (Aura/Equipment) became attached to, or came off of. Resolved by

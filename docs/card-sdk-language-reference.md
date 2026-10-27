@@ -8404,7 +8404,10 @@ The shapes in this family, with their engine notes.
   attacking player" is `Player.ActivePlayer`.
 - `Triggers.anyPlayer.attacks(minAttackers = 2)` — "whenever two or more creatures attack": any
   player's declaration, once per declaration (Argent Dais). `Triggers.anOpponent.attacks(...)` is
-  "whenever an opponent attacks with …". All three read `YouAttackEvent.player` against the active
+  "whenever an opponent attacks with …", `Triggers.player(Player.EachOtherPlayer).attacks(...)`
+  "whenever another player attacks with …" (Firemane Commando; a teammate's attack on your shared
+  2HG turn is your own). Every form freezes whom each counted attacker was declared attacking, read
+  by `Conditions.TriggeringAttackersAttackedPlayer` ("if none of those creatures attacked you"). All read `YouAttackEvent.player` against the active
   player (team), the way step triggers do, since only the active player declares attackers.
   On these forms (not `attacksAPlayer`) `Player.TriggeringPlayer` is **the attacking player** (the declaration's
   `attackingPlayerId`), so "whenever a player attacks, … the attacking player draws a card" (Norn's
@@ -15569,6 +15572,14 @@ that works in both resolution and static-ability (projection) contexts.
   and a creature that returned to the battlefield has attacked nobody. Inside `ForEachPlayer(Player.Each, ...)`, `Player.You` is
   the iterated player — Angel of Destiny's "each player this creature attacked this turn loses
   the game" is `ForEachPlayer(Player.Each, If(SourceAttackedPlayerThisTurn(Player.You), LoseGame()))`.
+- `TriggeringAttackersAttackedPlayer(player = Player.You)` — one or more of the creatures a
+  `Triggers.<player>.attacks(…)` firing counted were declared attacking `player` directly (CR 508.1b;
+  a planeswalker that player controls or a battle they protect doesn't count). Whom each attacker
+  was declared attacking is frozen on the trigger as it fires (`TriggerContext.capturedAttackerDefenders`),
+  so removing an attacker from combat or the battlefield in response changes nothing; resolution-only,
+  false outside such a firing. Firemane Commando's "they draw a card if none of those creatures
+  attacked you" is `Triggers.player(Player.EachOtherPlayer).attacks(minAttackers = 2)` →
+  `If(Not(TriggeringAttackersAttackedPlayer()), DrawCards(1, PlayerRef(Player.TriggeringPlayer)))`.
 - `SourceAttackedThisCombat` / `SourceBlockedThisCombat` — source was declared as an attacker /
   blocker at least once during the current combat (per-creature `AttackedThisCombatComponent` /
   `BlockedThisCombatComponent`, stamped at declaration time, cleared when the combat phase ends;

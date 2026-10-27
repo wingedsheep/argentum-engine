@@ -1,1 +1,83 @@
-
+// Firemane Commando
+{
+    "name": "Firemane Commando",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Angel Soldier",
+    "oracleText": "Flying\nWhenever you attack with two or more creatures, draw a card.\nWhenever another player attacks with two or more creatures, they draw a card if none of those creatures attacked you.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Firemane Commando:1",
+                "trigger": {
+                    "type": "YouAttackEvent",
+                    "minAttackers": 2
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            {
+                "id": "Firemane Commando:2",
+                "trigger": {
+                    "type": "YouAttackEvent",
+                    "minAttackers": 2,
+                    "player": "EachOtherPlayer"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": "TriggeringAttackersAttackedPlayer"
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "TriggeringPlayer"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "rarity": "RARE",
+        "artist": "Andrew Mar",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/426a50de-13bb-4481-8643-ad492d3fc84a.jpg?1783917250",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "The last triggered ability cares only that none of the attacking creatures attacked you. The other player will draw a card if they attacked a planeswalker you control or a battle you protect with two or more creatures, for example."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "No matter how many creatures another player attacks with, Firemane Commando's last ability will look at all of them to make sure none of them attacked you. If any of them did, the player won't draw a card."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "For both triggered abilities, once the ability triggers, it doesn't matter what happens to the attacking creatures in response."
+            }
+        ]
+    }
+}

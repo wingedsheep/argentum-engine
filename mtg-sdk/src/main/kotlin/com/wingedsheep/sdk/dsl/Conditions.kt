@@ -1510,6 +1510,15 @@ object Conditions {
         com.wingedsheep.sdk.scripting.conditions.SourceAttackedPlayerThisTurn(player)
 
     /**
+     * If any of the creatures this "whenever [player] attack(s) with …" trigger counted were
+     * declared attacking [player] directly — frozen as the trigger fired. "They draw a card if none
+     * of those creatures attacked you" is `Not(TriggeringAttackersAttackedPlayer())` (Firemane
+     * Commando).
+     */
+    fun TriggeringAttackersAttackedPlayer(player: Player = Player.You): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.TriggeringAttackersAttackedPlayer(player)
+
+    /**
      * If this permanent was declared as an attacker during its controller's **most recent own
      * turn** — "if it attacked during your last turn". The one-turn-back sibling of
      * [SourceAttackedThisTurn]: false on the turn it actually attacked, true on the next one.

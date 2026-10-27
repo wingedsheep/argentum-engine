@@ -1012,10 +1012,12 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
      * "attacks [with one or more [with]]" — attackers are declared, once per combat.
      * [Triggers.you] is "whenever you attack"; [Triggers.anOpponent] is "whenever an opponent
      * attacks with …"; [Triggers.anyPlayer] is "whenever two or more creatures attack" (Argent
-     * Dais) — any declaration. A single creature attacking is [ObjectTriggerSubject.attacks].
+     * Dais) — any declaration; `Triggers.player(Player.EachOtherPlayer)` is "whenever another
+     * player attacks with …" (Firemane Commando). A single creature attacking is
+     * [ObjectTriggerSubject.attacks].
      */
     fun attacks(with: GameObjectFilter? = null, minAttackers: Int = 1): TriggerSpec {
-        only("attacks", Player.You, Player.EachOpponent, Player.Each)
+        only("attacks", Player.You, Player.EachOpponent, Player.EachOtherPlayer, Player.Each)
         return spec(YouAttackEvent(minAttackers = minAttackers, attackerFilter = with, player = player))
     }
 

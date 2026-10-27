@@ -435,6 +435,7 @@ Families:
 - `TargetMarkedDamageExceedsToughness(targetIndex: Int)` — Condition: "if excess damage was dealt this way" — true when the target creature's marked damage now strictly exceeds its (projected) toughness.
 - `TargetSharesMostCommonColor(targetIndex: Int)` — Condition: "if target shares a color with the most common color among all permanents or a color tied for most common".
 - `ThisAbilityActivatedThisTurnAtLeast(count: Int)` — True when the activated ability currently resolving has been activated at least count times this turn, counting the activation that is resolving right now.
+- `TriggeringAttackersAttackedPlayer(player: Player)` — Condition: one or more of the creatures a "whenever player attack(s) with …" trigger counted were declared attacking player — "they draw a card if none of those creatures attacked you" is `Not(Trig…
 - `TriggeringEntityEnteredOrWasCastFromGraveyard` — Condition: "if it entered or was cast from a graveyard".
 - `TriggeringEntityHadCounters` — Condition: "if it had counters on it" (intervening-if for dies/leaves triggers).
 - `TriggeringEntityHadMinusOneMinusOneCounter` — Condition: "if it had a -1/-1 counter on it" (intervening-if for dies/leaves triggers).

@@ -1177,7 +1177,8 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * step triggers are: [Player.You] (the default) is "whenever you attack" — your team's turn;
      * [Player.Each] is any declaration, which is how "whenever two or more creatures attack"
      * (Argent Dais) is spelled, since only the active player (team) declares attackers;
-     * [Player.EachOpponent] is "whenever an opponent attacks with …". Once per declaration.
+     * [Player.EachOpponent] is "whenever an opponent attacks with …", [Player.EachOtherPlayer]
+     * "whenever another player attacks with …". Once per declaration.
      *
      * [attackedPlayer] set is the "… attack **a player**" form (CR 508.3e): "whenever you attack a
      * player" (Echoing Assault), "whenever one or more Halflings you control attack a player"
@@ -1191,7 +1192,9 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      *
      * Without [attackedPlayer] (null), a battlefield firing captures the declared attackers it counted
      * as its trigger-captured collection, so "create that many …" (Rabble Rousing) reads how many
-     * creatures you attacked with, even after one leaves combat.
+     * creatures you attacked with, even after one leaves combat. The firing also freezes whom each
+     * of them was declared attacking, for `TriggeringAttackersAttackedPlayer` ("if none of those
+     * creatures attacked you" — Firemane Commando).
      */
     @SerialName("YouAttackEvent")
     @Serializable
@@ -1211,6 +1214,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
                 attackedPlayer != null -> append(count).append(attackers).append(if (player == Player.You) " you control" else "").append(" attack $defender")
                 player == Player.Each -> append(count).append(attackers).append(" attack")
                 player == Player.EachOpponent -> append("an opponent attacks with ").append(count).append(attackers)
+                player == Player.EachOtherPlayer -> append("another player attacks with ").append(count).append(attackers)
                 else -> append("you attack with ").append(count).append(attackers)
             }
         }

@@ -214,6 +214,30 @@ data object YouWereAttackedThisStep : Condition {
 }
 
 /**
+ * Condition: one or more of the creatures a "whenever [player] attack(s) with …" trigger counted
+ * were declared attacking [player] — "they draw a card if none of those creatures attacked you"
+ * is `Not(TriggeringAttackersAttackedPlayer(Player.You))` (Firemane Commando).
+ *
+ * Only a player chosen directly as the defender counts (CR 508.1b): attacking a planeswalker that
+ * player controls or a battle they protect doesn't attack them (the card's ruling). Whom each
+ * attacker was declared attacking is frozen with the trigger as it fires, so removing an attacker
+ * from combat or the battlefield in response changes nothing (ruling: "once the ability triggers,
+ * it doesn't matter what happens to the attacking creatures"). Resolution-only: outside a
+ * `Triggers.<player>.attacks(…)` firing there are no such creatures and it is false.
+ *
+ * Closest neighbours: [SourceAttackedPlayerThisTurn] asks it of the source creature across the
+ * whole turn (a second combat would blur which declaration this trigger saw), and
+ * [YouWereAttackedThisStep] asks it of every attacker in the step, live.
+ */
+@SerialName("TriggeringAttackersAttackedPlayer")
+@Serializable
+data class TriggeringAttackersAttackedPlayer(
+    val player: Player = Player.You
+) : Condition {
+    override val description: String = "if any of those creatures attacked ${player.description}"
+}
+
+/**
  * Condition: "If [player] attacked with [atLeast] or more creatures matching [filter] this turn".
  * Counts every creature [player] declared as an attacker this turn whose current state
  * (per the projected state) matches the filter.

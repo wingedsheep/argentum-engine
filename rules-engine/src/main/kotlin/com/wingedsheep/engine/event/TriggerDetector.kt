@@ -1979,7 +1979,14 @@ class TriggerDetector(
                                         // Never clobber a capture the event itself carries
                                         // (manifest dread's graveyard cards).
                                         capturedEntityIds = capturedTargets ?: capturedAttackers ?: ctx.capturedEntityIds,
-                                        capturedEntitySnapshots = capturedTargets?.let { copiableSnapshots(state, it) }
+                                        capturedEntitySnapshots = capturedTargets?.let { copiableSnapshots(state, it) },
+                                        capturedAttackerDefenders = capturedAttackers?.let { attackers ->
+                                            attackers.mapNotNull { id ->
+                                                state.getEntity(id)
+                                                    ?.get<com.wingedsheep.engine.state.components.combat.AttackingComponent>()
+                                                    ?.defenderId?.let { id to it }
+                                            }.toMap()
+                                        }
                                     )
                                 }
                             )

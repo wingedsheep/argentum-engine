@@ -393,6 +393,7 @@ class ConditionEvaluator(
             YouDiscardedThisCardThisTurn,
             YouSacrificedPermanentThisWay,
             YouWereAttackedThisStep,
+            is com.wingedsheep.sdk.scripting.conditions.TriggeringAttackersAttackedPlayer,
             YouWonTheClash -> null
         }
     }
@@ -956,6 +957,16 @@ class ConditionEvaluator(
                 ifResolution { evaluateAnotherPermanentWithSameNameAsTarget(state, condition, it) }
             is IsInPhase -> ifResolution { evaluateIsInPhase(state, condition, it) }
             is YouWereAttackedThisStep -> ifResolution { evaluateYouWereAttackedThisStep(state, it) }
+            // Whom the trigger's counted attackers were declared attacking, frozen as it fired: a
+            // player only when chosen directly (CR 508.1b), and removing an attacker in response
+            // changes nothing (Firemane Commando's rulings).
+            is com.wingedsheep.sdk.scripting.conditions.TriggeringAttackersAttackedPlayer -> {
+                val playerId = resolvePlayer(state, condition.player, ctx)
+                ifResolution { effectContext ->
+                    playerId != null &&
+                        effectContext.triggerContext?.capturedAttackerDefenders?.containsValue(playerId) == true
+                }
+            }
             is IsFirstSpellPaidWithTreasureManaCastThisTurn ->
                 ifResolution { evaluateFirstSpellPaidWithTreasureMana(state, it) }
             is OpponentSpellOnStack -> ifResolution { evaluateOpponentSpellOnStack(state, it) }
