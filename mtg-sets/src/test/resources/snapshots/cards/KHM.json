@@ -16068,6 +16068,81 @@
     ]
 }
 
+// Rampage of the Valkyries
+{
+    "name": "Rampage of the Valkyries",
+    "manaCost": "{3}{W}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, create a 4/4 white Angel creature token with flying and vigilance.\nWhenever an Angel you control dies, each other player sacrifices a creature of their choice.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rampage of the Valkyries:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Angel"
+                    ],
+                    "keywords": [
+                        "FLYING",
+                        "VIGILANCE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/8/9864812a-b3b1-4e12-8737-0795cdff994c.jpg?1783902808"
+                }
+            },
+            {
+                "id": "Rampage of the Valkyries:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Angel ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "creature",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOtherPlayer"
+                    }
+                },
+                "descriptionOverride": "Whenever an Angel you control dies, each other player sacrifices a creature of their choice."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "393",
+        "rarity": "UNCOMMON",
+        "artist": "Billy Christian",
+        "flavorText": "\"This is a foul place. Cleanse it.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e928b7c-ca30-4e2d-adf7-965f111c8bf1.jpg?1783928115",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The last ability of Rampage of the Valkyries will trigger whenever any Angel you control dies, not just the one created by the first ability."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "As the last ability resolves, if it's not your turn, the first player to choose a creature they control is the player whose turn it is. If it is your turn, the next player in turn order chooses first. In either case, each other player in turn order then chooses a creature they control, knowing the choices made before their choice. Then all chosen creatures are sacrificed at the same time."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Raven Wings
 {
     "name": "Raven Wings",
@@ -20999,6 +21074,311 @@
     "colorIdentityOverride": [
         "WHITE",
         "BLUE"
+    ]
+}
+
+// The Three Seasons
+{
+    "name": "The Three Seasons",
+    "manaCost": "{G}{U}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Mill three cards.\nII — Return up to two target snow permanent cards from your graveyard to your hand.\nIII — Choose three cards in each graveyard. Their owners shuffle those cards into their libraries.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Hand"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsPermanent",
+                                "IsSnow"
+                            ],
+                            "controllerPredicate": "OwnedByYou"
+                        },
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Graveyard"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
+                                },
+                                "chooser": "SourceController",
+                                "storeSelected": "selected1",
+                                "prompt": "Choose three cards in this graveyard to shuffle into their owner's library",
+                                "selectedLabel": "Shuffle in"
+                            },
+                            {
+                                "type": "ConditionalOnCollection",
+                                "collection": "selected1",
+                                "ifNotEmpty": {
+                                    "type": "MoveCollection",
+                                    "from": "selected1",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Library",
+                                        "placement": "Shuffled"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "231",
+        "rarity": "UNCOMMON",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/8/48ce03b3-ec7c-46df-b89a-55405f3b5245.jpg?1783928189",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "For the chapter III ability, if a player has no cards in their graveyard, they don't shuffle their library."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
+// The Trickster-God's Heist
+{
+    "name": "The Trickster-God's Heist",
+    "manaCost": "{2}{U}{B}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — You may exchange control of two target creatures.\nII — You may exchange control of two target nonbasic, noncreature permanents that share a card type.\nIII — Target player loses 3 life and you gain 3 life.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "ExchangeControl",
+                        "target1": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "target2": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "additionalTargetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "ExchangeControl",
+                        "target1": {
+                            "type": "BoundVariable",
+                            "name": "t2"
+                        },
+                        "target2": {
+                            "type": "BoundVariable",
+                            "name": "t3"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsNoncreature",
+                                "IsPermanent",
+                                {
+                                    "type": "Not",
+                                    "predicate": "IsBasicLand"
+                                }
+                            ]
+                        }
+                    },
+                    "id": "t2"
+                },
+                "additionalTargetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsNoncreature",
+                                    "IsPermanent",
+                                    {
+                                        "type": "Not",
+                                        "predicate": "IsBasicLand"
+                                    },
+                                    {
+                                        "type": "SharesCardTypeWith",
+                                        "entity": {
+                                            "type": "BoundVariable",
+                                            "name": "t2"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "t3"
+                    }
+                ]
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t4"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t4"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "232",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4aa19a68-0d71-4123-a64d-8cb76f93cd74.jpg?1783928189",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "If one of the target permanents of the chapter I or chapter II ability is an illegal target as that ability resolves, the exchange won't happen. If both targets are illegal, the ability doesn't resolve."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "For those two abilities, you don't have to control either target."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If the same player controls both target permanents as the chapter I or chapter II ability resolves, nothing happens."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Gaining control of a creature doesn't cause a player to gain control of any Auras or Equipment attached to it."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "For the chapter II ability, either target can have card types the other does not. For example, you can target an artifact land and an artifact."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
