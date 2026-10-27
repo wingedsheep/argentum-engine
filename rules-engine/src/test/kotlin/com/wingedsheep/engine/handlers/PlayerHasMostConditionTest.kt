@@ -102,7 +102,7 @@ class PlayerHasMostConditionTest : FunSpec({
         d.holds(activeHasMostLife, p[2]) shouldBe true
     }
 
-    test("battlefield counts are per controller, from projected state") {
+    test("battlefield counts are per controller") {
         val (d, p) = threePlayer()
         repeat(2) { d.putLandOnBattlefield(p[1], "Plains") }
         d.putLandOnBattlefield(p[2], "Plains")
@@ -137,5 +137,14 @@ class PlayerHasMostConditionTest : FunSpec({
         withClue("tied with an opponent: no longer more than each other player") {
             d.state.projectedState.hasKeyword(bird, Keyword.FLYING) shouldBe false
         }
+    }
+
+    test("descriptions read as the printed wording") {
+        Conditions.PlayerHasMoreThanEachOtherPlayer(Player.TriggeringPlayer, hand).description shouldBe
+            "if ${Player.TriggeringPlayer.description} has more cards in hand than each other player"
+        Conditions.PlayerHasMoreThanEachOtherPlayer(Player.TriggeringPlayer, lands).description shouldBe
+            "if ${Player.TriggeringPlayer.description} controls more lands than each other player"
+        Conditions.PlayerHasMostLife(Player.You).description shouldBe
+            "if ${Player.You.description} has the most life or is tied for the most"
     }
 })

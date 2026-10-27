@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.text.TextReplacer
+import com.wingedsheep.sdk.scripting.values.Aggregation
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 import com.wingedsheep.sdk.scripting.values.TurnTracker
@@ -243,10 +244,13 @@ data class Compare(
  *   hand, lands and life this way. Alone in the game, a player trivially has more than each
  *   other player.
  *
- * Neither [Compare] over [com.wingedsheep.sdk.scripting.values.DynamicAmount.GreatestAmongPlayers]
- * (it can't exclude the measured player from the maximum, which "strictly more than each other
- * player" needs) nor a per-player `ForEachPlayer` loop (it can't ask about one named player)
- * expresses either wording.
+ * Write [amount] from the measured player's side only: an outward reference inside it
+ * (`Player.EachOpponent`, `Player.TargetPlayer`) measures the same set for every player, so the
+ * comparison is meaningless.
+ *
+ * "Strictly more than each other player" is why this is one condition rather than [Compare] over
+ * [com.wingedsheep.sdk.scripting.values.DynamicAmount.GreatestAmongPlayers]: that maximum can't
+ * leave the measured player out. The tied form shares the type so both wordings read one way.
  */
 @SerialName("PlayerHasMost")
 @Serializable
@@ -255,9 +259,25 @@ data class PlayerHasMost(
     val amount: DynamicAmount,
     val includeTies: Boolean = true,
 ) : Condition {
-    override val description: String =
-        if (includeTies) "if ${player.description} has the most ${amount.description} or is tied for the most"
-        else "if ${player.description} has more ${amount.description} than each other player"
+    override val description: String = run {
+        // "has the most life" / "controls more lands": the printed verb + noun for the amounts the
+        // wording takes, falling back to the amount's own phrase for anything else.
+        val (verb, noun) = when (amount) {
+            DynamicAmount.YourLifeTotal -> "has" to "life"
+            is DynamicAmount.LifeTotal -> "has" to "life"
+            is DynamicAmount.Count -> when (amount.zone) {
+                Zone.BATTLEFIELD -> "controls" to DynamicAmount.pluralize(amount.filter.description)
+                else -> "has" to "${DynamicAmount.pluralize(amount.filter.description)} in ${amount.zone.name.lowercase()}"
+            }
+            is DynamicAmount.AggregateBattlefield ->
+                if (amount.aggregation == Aggregation.COUNT && amount.property == null && amount.counterType == null) {
+                    "controls" to DynamicAmount.pluralize(amount.filter.description)
+                } else "has" to "of ${amount.description}"
+            else -> "has" to "of ${amount.description}"
+        }
+        if (includeTies) "if ${player.description} $verb the most $noun or is tied for the most"
+        else "if ${player.description} $verb more $noun than each other player"
+    }
 
     override fun applyTextReplacement(replacer: TextReplacer): Condition {
         val newAmount = amount.applyTextReplacement(replacer)

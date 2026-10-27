@@ -1503,9 +1503,12 @@ class ConditionEvaluator(
      * - [Player.AnOpponent]: a non-targeted opponent of the controller. Returns the first opponent
      *   in turn order — sufficient for per-player tracker reads where each player has
      *   its own bucket.
-     * - [Player.TriggeringPlayer]: only resolvable in resolution mode.
-     * - Other relational forms are not currently supported by the player-relative
-     *   conditions and return `null`.
+     * - [Player.TriggeringPlayer]: only resolvable in resolution mode — the bound triggering
+     *   player, else the triggering entity when that entity is a player.
+     * - [Player.ActivePlayer]: the active player, in both modes.
+     * - [Player.Any] ("any player") has no single answer and returns `null`.
+     * - Every other single-player reference resolves at resolution exactly as an effect's does
+     *   ([TargetResolutionUtils.resolvePlayerRef]); under projection it returns `null`.
      */
     private fun resolvePlayer(state: GameState, player: Player, ctx: ConditionEvaluationContext): EntityId? {
         return when (player) {
@@ -1522,6 +1525,7 @@ class ConditionEvaluator(
                 ec.triggeringPlayerId ?: ec.triggeringEntityId?.takeIf { it in state.turnOrder }
             }
             is Player.ActivePlayer -> state.activePlayerId
+            is Player.Any -> null
             // The attacked player for the source's attack assignment (read from its
             // AttackingComponent by resolveDefendingPlayer) — Preacher of the Schism's "attacks the
             // player with the most life".

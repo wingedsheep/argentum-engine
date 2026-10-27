@@ -15133,7 +15133,9 @@ answer it and would silently return `false`.
   `DynamicAmount.Count(Player.You, Zone.BATTLEFIELD, filter)` (battlefield counts read projected
   state). `includeTies = true` is "has the most … **or is tied for** the most" (no other player has
   more); `false` is "has more … **than each other player**" (strictly more than every other player —
-  you and teammates included; alone in the game it holds). Facades:
+  you and teammates included; alone in the game it holds). Never put an outward reference
+  (`Player.EachOpponent`, `Player.TargetPlayer`) inside `amount` — it would measure the same set for
+  every player. Facades:
   - `PlayerHasMoreThanEachOtherPlayer(player, amount)` — the strict form. Battle Angels of Tyr checks
     the damaged player (`Player.TriggeringPlayer`) three times: hand, lands, life.
   - `PlayerHasMostLife(player)` — `PlayerHasMost(player, LifeTotal(You))`. Preacher of the Schism gates
