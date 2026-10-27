@@ -976,8 +976,8 @@ data class CopyTargetSpellEffect(
      */
     val sacrificeTokenOnlyOnControllersTurn: Boolean = false,
     /**
-     * How many copies to create (CR 707.10 — each is an independent copy, and the controller may
-     * choose new targets for each one separately). Defaults to a single copy. Pass a [DynamicAmount]
+     * How many copies to create (CR 707.10 — each is an independent copy, and when
+     * [mayChooseNewTargets] the controller may choose new targets for each one separately). Defaults to a single copy. Pass a [DynamicAmount]
      * for "copy it for each …" clauses whose count is only known at resolution — Thousand-Year Storm
      * copies the triggering spell once per other instant or sorcery cast before it this turn. A
      * count of zero or less makes no copies at all.
@@ -995,7 +995,16 @@ data class CopyTargetSpellEffect(
      */
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
-    val tokenStartingLoyalty: DynamicAmount? = null
+    val tokenStartingLoyalty: DynamicAmount? = null,
+    /**
+     * Whether the copy's controller may choose new targets for each copy (CR 707.10c — "you may
+     * choose new targets for the copy"). False is the bare "copy that spell": a copy copies every
+     * decision made for the original, its targets and modes included (CR 707.10), so it goes on the
+     * stack aimed where the original was, with no prompt (Reflections of Littjara, Double Down).
+     */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val mayChooseNewTargets: Boolean = true
 ) : Effect {
     override val description: String = run {
         // "that spell" when the copied spell is the trigger's own ("copy it"), not a chosen target.

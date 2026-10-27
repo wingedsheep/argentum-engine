@@ -31,7 +31,7 @@ val MendicantCoreGuidelight = card("Mendicant Core, Guidelight") {
             trigger = Triggers.you.casts(GameObjectFilter.Artifact)
             effect = Effects.MayPay(
                 cost = ManaCost.parse("{1}"),
-                then = Effects.CopyTargetSpell(EffectTarget.TriggeringEntity)
+                then = Effects.CopyTargetSpell(EffectTarget.TriggeringEntity, mayChooseNewTargets = false)
             )
         }
     }

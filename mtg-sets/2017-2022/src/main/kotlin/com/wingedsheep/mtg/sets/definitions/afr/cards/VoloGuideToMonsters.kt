@@ -42,7 +42,7 @@ val VoloGuideToMonsters = card("Volo, Guide to Monsters") {
                 )
             )
         )
-        effect = Effects.CopyTargetSpell(target = EffectTarget.TriggeringEntity)
+        effect = Effects.CopyTargetSpell(target = EffectTarget.TriggeringEntity, mayChooseNewTargets = false)
     }
 
     metadata {

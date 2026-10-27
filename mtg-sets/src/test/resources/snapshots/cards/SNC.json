@@ -1542,7 +1542,8 @@
                 "trigger": "CastThisSpellEvent",
                 "effect": {
                     "type": "CopyTargetSpell",
-                    "target": "TriggeringEntity"
+                    "target": "TriggeringEntity",
+                    "mayChooseNewTargets": false
                 },
                 "descriptionOverride": "When you cast this spell, copy it."
             }
