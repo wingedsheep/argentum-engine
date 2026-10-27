@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
@@ -45,8 +46,20 @@ class KayasGhostformScenarioTest : ScenarioTestBase() {
         }
     }
 
+    // Farewell's creatures + enchantments modes in one simultaneous exile.
+    private val exileBoth = card("Ghostform Farewell Test Spell") {
+        manaCost = "{0}"
+        typeLine = "Sorcery"
+        oracleText = "Exile all creatures and enchantments."
+        spell {
+            effect = Effects.Pipeline {
+                exile(gather(GameObjectFilter.Creature or GameObjectFilter.Enchantment))
+            }
+        }
+    }
+
     init {
-        cardRegistry.register(listOf(exileSpell, slay))
+        cardRegistry.register(listOf(exileSpell, slay, exileBoth))
 
         test("enchanted creature dies and returns to the battlefield") {
             val game = scenario()
@@ -84,6 +97,25 @@ class KayasGhostformScenarioTest : ScenarioTestBase() {
             game.isInExile(1, "Grizzly Bears") shouldBe false
             game.findPermanent("Grizzly Bears").shouldNotBeNull()
             game.isInGraveyard(1, "Kaya's Ghostform") shouldBe true
+        }
+
+        test("aura exiled together with the enchanted creature still returns it (ruling)") {
+            val game = scenario()
+                .withPlayers()
+                .withCardOnBattlefield(1, "Grizzly Bears")
+                .withCardAttachedTo(1, "Kaya's Ghostform", "Grizzly Bears")
+                .withCardInHand(2, "Ghostform Farewell Test Spell")
+                .withActivePlayer(2)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.castSpell(2, "Ghostform Farewell Test Spell").error shouldBe null
+            game.resolveStack()
+
+            game.isInExile(1, "Grizzly Bears") shouldBe false
+            val returned = game.findPermanent("Grizzly Bears").shouldNotBeNull()
+            projector.project(game.state).getController(returned) shouldBe game.player1Id
+            game.isInExile(1, "Kaya's Ghostform") shouldBe true
         }
     }
 }

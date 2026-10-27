@@ -2085,9 +2085,6 @@ class TriggerDetector(
             deathAndLeaveDetector.detectDeathTriggers(state, index.statics, event, triggers)
             // Handle "whenever a creature dealt damage by this creature this turn dies" triggers
             deathAndLeaveDetector.detectCreatureDealtDamageBySourceDiesTriggers(state, event, triggers, projected, index)
-            // Handle ATTACHED zone-change triggers on auras that went to graveyard with their creature
-            // (detected on the AURA's zone change event using lastKnownAttachedTo)
-            deathAndLeaveDetector.detectDeadAuraAttachmentTriggers(state, index.statics, event, triggers)
             // Handle persist (CR 702.79) — nontoken creature with persist dies with no -1/-1 counter
             deathAndLeaveDetector.detectPersistTriggers(state, event, triggers)
             // Handle undying (CR 702.93) — permanent with undying dies with no +1/+1 counter
@@ -2100,6 +2097,10 @@ class TriggerDetector(
         // Handle leaves-the-battlefield triggers (source is no longer on battlefield)
         if (event is ZoneChangeEvent && event.isBattlefieldDeparture) {
             deathAndLeaveDetector.detectLeavesBattlefieldTriggers(state, index.statics, event, triggers)
+            // ATTACHED zone-change triggers on auras that left with their creature, to any zone —
+            // after it in an SBA, or alongside it (Farewell exiling both, CR 603.10a). Detected on
+            // the AURA's zone change event using lastKnownAttachedTo.
+            deathAndLeaveDetector.detectDeadAuraAttachmentTriggers(state, index.statics, event, triggers)
         }
 
         // A card returning to hand is absent from the graveyard's resident-source pass.
