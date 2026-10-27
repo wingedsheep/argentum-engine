@@ -428,7 +428,7 @@ class GatherCardsExecutor(
         // The search is no search at all when every library it looks through is forbidden, so its
         // searched event must not fire (EmitLibrarySearchedEventExecutor reads this).
         val searchForbidden = searcher != null && forbiddenOwners.isNotEmpty() &&
-            searchedLibraryOwners(effect.source, context, state)
+            LibrarySearchRestrictions.searchedLibraryOwners(effect.source) { resolvePlayers(it, context, state) }
                 .let { owners -> owners != null && owners.isNotEmpty() && forbiddenOwners.containsAll(owners) }
         // A library nobody may search is publicly out of the pool, so its cards decide nothing.
         val poolDeciders = (inheritedDeciders +
@@ -571,17 +571,6 @@ class GatherCardsExecutor(
      * library card is findable only if it is among the top N of its library. Non-library cards
      * (the graveyard half of "search your graveyard and library") are untouched.
      */
-    /**
-     * The players whose libraries [source] looks through, or null when it names no library or
-     * its player can't be resolved.
-     */
-    private fun searchedLibraryOwners(source: CardSource, context: EffectContext, state: GameState): List<EntityId>? =
-        when (source) {
-            is CardSource.FromZone -> source.player.takeIf { source.zone == Zone.LIBRARY }
-            is CardSource.FromMultipleZones -> source.player.takeIf { Zone.LIBRARY in source.zones }
-            else -> null
-        }?.let { resolvePlayers(it, context, state) }
-
     private fun limitSearchDepth(state: GameState, searcher: EntityId?, gathered: List<EntityId>): List<EntityId> {
         if (searcher == null || gathered.isEmpty()) return gathered
         val depth = KeywordActionAmountModifier.librarySearchDepth(state, searcher, predicateEvaluator)

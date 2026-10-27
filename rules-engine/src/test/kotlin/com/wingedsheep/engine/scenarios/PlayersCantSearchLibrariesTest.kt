@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Patterns
+import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
@@ -68,12 +69,22 @@ class PlayersCantSearchLibrariesTest : FunSpec({
                 EmitLibrarySearchedEventEffect,
             ))
         } }
+    // "You may search your graveyard and/or library for a card, put it into your hand."
+    val optionalWideTutor = card("Optional Wide Tutor") { manaCost = "{0}"; typeLine = "Sorcery"
+        spell { effect = Effects.May(Patterns.Library.searchMultipleZones(listOf(Zone.GRAVEYARD, Zone.LIBRARY), destination = SearchDestination.HAND)) } }
+    val mandatoryWideTutor = card("Mandatory Wide Tutor") { manaCost = "{0}"; typeLine = "Sorcery"
+        spell { effect = Patterns.Library.searchMultipleZones(listOf(Zone.GRAVEYARD, Zone.LIBRARY), destination = SearchDestination.HAND) } }
     val mute = card("Mute Lock") { manaCost = "{0}"; typeLine = "Instant"
         spell { val t = target(TargetFilter.Permanent); effect = Effects.RemoveAllAbilities(t) } }
 
     fun driver() = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(ownLock, anyLock, mandatoryTutor, optionalTutor, everyoneTutors, raidLibraries, mute))
+        registerCards(TestCards.all + listOf(ownLock, anyLock, mandatoryTutor, optionalTutor, everyoneTutors, raidLibraries,
+            optionalWideTutor, mandatoryWideTutor, mute))
         initMirrorMatch(Deck.of("Island" to 40)); passPriorityUntil(Step.PRECOMBAT_MAIN)
+    }
+    fun castSpellAndResolve(d: GameTestDriver, p: EntityId, name: String) {
+        d.castSpell(p, d.putCardInHand(p, name)).error shouldBe null
+        d.bothPass()
     }
     fun GameTestDriver.cast(p: EntityId, name: String, targets: List<EntityId> = emptyList()): List<GameEvent> {
         castSpell(p, putCardInHand(p, name), targets).error shouldBe null
@@ -134,6 +145,22 @@ class PlayersCantSearchLibrariesTest : FunSpec({
         d.cast(me, "Everyone Tutors")
         val only = d.state.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
         withClue("only the lock's controller searches — my own spell can't make me search") { only.playerId shouldBe opp }
+        d.submitCardSelection(opp, emptyList()).error shouldBe null
+        withClue("and I get no search of my own afterwards") { d.state.pendingDecision shouldBe null }
+    }
+
+    for (name in listOf("Optional Wide Tutor", "Mandatory Wide Tutor")) {
+        test("own scope: $name still searches the graveyard half of \"graveyard and/or library\"") {
+            val d = driver(); val me = d.activePlayer!!; val opp = d.getOpponent(me)
+            d.putPermanentOnBattlefield(opp, "Own Search Lock")
+            val inGraveyard = d.putCardInGraveyard(me, "Island")
+            castSpellAndResolve(d, me, name)
+            if (d.state.pendingDecision is com.wingedsheep.engine.core.YesNoDecision) d.submitYesNo(me, true).error shouldBe null
+            val choice = d.state.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
+            withClue("only the graveyard card is findable; the library is out of the search") {
+                choice.options shouldBe listOf(inGraveyard)
+            }
+        }
     }
 
     test("any scope: an affected player can't search any library") {

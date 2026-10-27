@@ -11,6 +11,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.SourceReferenceText
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.toEntityId
+import com.wingedsheep.engine.handlers.effects.library.LibrarySearchRestrictions
 import com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver
 import com.wingedsheep.engine.legalactions.utils.CostEnumerationUtils
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
@@ -189,10 +190,19 @@ class GatedEffectExecutor(
             val searcher = leadingSearch?.let {
                 TargetResolutionUtils.resolvePlayerRef(it.searcher, context, state) ?: context.controllerId
             }
+            // A search that also reads a hand or graveyard ("search your graveyard and/or library")
+            // can still be chosen for those zones; its gather drops only the forbidden library.
             if (searcher != null && leadingSearch != null &&
-                com.wingedsheep.engine.handlers.effects.library.LibrarySearchRestrictions.isSearchForbidden(
+                LibrarySearchRestrictions.readsOnlyLibraries(leadingSearch.source) &&
+                LibrarySearchRestrictions.isSearchForbidden(
                     state, searcher, context.effectControllerId ?: context.controllerId,
-                    searchedLibraryOwner(leadingSearch, context, state)?.let { listOf(it) }
+                    LibrarySearchRestrictions.searchedLibraryOwners(leadingSearch.source) { player ->
+                        when (player) {
+                            is Player.Each -> state.turnOrder
+                            is Player.EachOpponent -> state.getOpponents(context.controllerId)
+                            else -> TargetResolutionUtils.resolvePlayerRef(player, context, state)?.let { listOf(it) }
+                        }
+                    }
                 )
             ) {
                 return effect.otherwise
@@ -1165,22 +1175,7 @@ class GatedEffectExecutor(
         }
     }
 
-    /** True when [effect]'s first step is a library search (a `GatherCardsEffect(search = true)`). */
     /** The search gather [effect] leads with, if it leads with one (its searcher is who is asked). */
-    /** The single player whose library [search] looks through, or null when it isn't one known library. */
-    private fun searchedLibraryOwner(
-        search: com.wingedsheep.sdk.scripting.effects.GatherCardsEffect,
-        context: EffectContext,
-        state: GameState
-    ): EntityId? {
-        val player = when (val source = search.source) {
-            is CardSource.FromZone -> source.player.takeIf { source.zone == Zone.LIBRARY }
-            is CardSource.FromMultipleZones -> source.player.takeIf { Zone.LIBRARY in source.zones }
-            else -> null
-        } ?: return null
-        return TargetResolutionUtils.resolvePlayerRef(player, context, state)
-    }
-
     private fun leadingSearch(effect: Effect): com.wingedsheep.sdk.scripting.effects.GatherCardsEffect? = when (effect) {
         is com.wingedsheep.sdk.scripting.effects.GatherCardsEffect -> effect.takeIf { it.search }
         is com.wingedsheep.sdk.scripting.effects.CompositeEffect ->

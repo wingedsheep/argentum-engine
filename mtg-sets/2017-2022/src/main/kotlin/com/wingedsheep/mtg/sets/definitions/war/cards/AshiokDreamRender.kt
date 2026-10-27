@@ -67,5 +67,11 @@ val AshiokDreamRender = card("Ashiok, Dream Render") {
             "Effects that instruct your opponents to reveal or look at cards from the top of their " +
                 "libraries will still work. Only effects that use the word \"search\" are affected."
         )
+        ruling(
+            "2019-05-03",
+            "If Ashiok's last ability targets an opponent, the cards put into their graveyard will be among " +
+                "the cards exiled by the ability. No player may take any actions between the time the cards are " +
+                "put into a graveyard and the time your opponents' graveyards are all exiled."
+        )
     }
 }

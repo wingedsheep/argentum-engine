@@ -4,7 +4,9 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.ForbidsLibrarySearchComponent
 import com.wingedsheep.engine.state.components.player.CantSearchLibrariesComponent
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.LibrarySearchProhibition
+import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.references.Player
 
 /**
@@ -69,5 +71,27 @@ object LibrarySearchRestrictions {
         if (forbidden.isEmpty()) return false
         if (libraryOwners == null) return forbidden.containsAll(state.turnOrder)
         return libraryOwners.isNotEmpty() && forbidden.containsAll(libraryOwners)
+    }
+
+    /**
+     * The players whose libraries a search over [source] looks through — its player reference
+     * fanned out by [resolvePlayers] — or null when it reads no library or the player can't be
+     * resolved.
+     */
+    fun searchedLibraryOwners(source: CardSource, resolvePlayers: (Player) -> List<EntityId>?): List<EntityId>? =
+        when (source) {
+            is CardSource.FromZone -> source.player.takeIf { source.zone == Zone.LIBRARY }
+            is CardSource.FromMultipleZones -> source.player.takeIf { Zone.LIBRARY in source.zones }
+            else -> null
+        }?.let(resolvePlayers)
+
+    /**
+     * Whether [source] reads nothing but libraries — "search your library", not "search your
+     * graveyard and/or library", whose other zones a forbidden library leaves searchable.
+     */
+    fun readsOnlyLibraries(source: CardSource): Boolean = when (source) {
+        is CardSource.FromZone -> source.zone == Zone.LIBRARY
+        is CardSource.FromMultipleZones -> source.zones.isNotEmpty() && source.zones.all { it == Zone.LIBRARY }
+        else -> false
     }
 }
