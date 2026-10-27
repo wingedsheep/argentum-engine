@@ -7,8 +7,14 @@
  * engine's own decision, with the same rules the AI uses) and sends the answer with the decision.
  * This module is the client's half: it never decides what is legal, it only chooses *whether* to
  * use the answer it was given (the player's preference) and *when* to send it.
+ *
+ * When: at once in the "instant" mode, and after [humanAnswerDelayMs] in the "delayed" one — except
+ * that a question the server marks public (`autoAnswerPublic`: everyone can see it has one answer,
+ * like Flametongue Kavu's trigger with no other creature in play) is answered at once in both, since
+ * a pause there hides nothing.
  */
 import type { ClientGameState, DecisionResponse, EntityId, PendingDecision } from '@/types'
+import type { ForcedChoiceMode } from '@/store/preferencesStore'
 import { createSubmitActionMessage } from '@/types'
 import { decisionInteractionEpoch } from '@/network/liveAction'
 import { getWebSocket } from '../shared'
@@ -52,6 +58,8 @@ export function setAutoAnswerDelayForTests(draw: () => number): () => void {
 export interface AutoAnswer {
   readonly decision: PendingDecision
   readonly response: DecisionResponse
+  /** Answer without the human-like pause: the player chose "instant", or the forcedness is public. */
+  readonly immediate: boolean
 }
 
 /** The short "answered for you" notice shown to the decider. */
@@ -68,11 +76,12 @@ export interface AutoAnswerNotice {
 export function autoAnswerFor(
   pendingDecision: PendingDecision | null | undefined,
   response: DecisionResponse | null | undefined,
-  enabled: boolean
+  mode: ForcedChoiceMode,
+  isPublic: boolean = false
 ): AutoAnswer | null {
-  if (!enabled || !pendingDecision || !response) return null
+  if (mode === 'ask' || !pendingDecision || !response) return null
   if (response.decisionId !== pendingDecision.id) return null
-  return { decision: pendingDecision, response }
+  return { decision: pendingDecision, response, immediate: mode === 'instant' || isPublic }
 }
 
 let scheduled: { decisionId: string; handle: ReturnType<typeof setTimeout> } | null = null
@@ -84,8 +93,9 @@ export function cancelAutoAnswer(): void {
 }
 
 /**
- * Answer [auto] after a delay drawn for this question, or cancel the pending answer when this
- * update has none. The same question arriving again (a resync) keeps its original clock.
+ * Answer [auto] after a delay drawn for this question (none when it is [AutoAnswer.immediate]), or
+ * cancel the pending answer when this update has none. The same question arriving again (a resync)
+ * keeps its original clock.
  */
 export function scheduleAutoAnswer(auto: AutoAnswer | null, set: SetState, get: GetState): void {
   if (!auto) {
@@ -116,7 +126,7 @@ export function scheduleAutoAnswer(auto: AutoAnswer | null, set: SetState, get: 
         text: describeAutoAnswer(auto.decision, auto.response, gameState),
       },
     })
-  }, drawDelay())
+  }, auto.immediate ? 0 : drawDelay())
   scheduled = { decisionId, handle }
 }
 

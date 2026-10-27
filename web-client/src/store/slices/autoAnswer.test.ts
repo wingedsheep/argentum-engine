@@ -28,9 +28,9 @@ let delays: number[] = []
 let restoreDelay: () => void = () => {}
 const handlers = createGameplayHandlers(useGameStore.setState, useGameStore.getState)
 
-function setAutoAnswer(autoAnswerForced: boolean): void {
+function setAutoAnswer(forcedChoices: 'instant' | 'delayed' | 'ask'): void {
   const prefs = usePreferences.getState().prefs
-  usePreferences.getState().replace({ ...prefs, gameplay: { ...prefs.gameplay, autoAnswerForced } })
+  usePreferences.getState().replace({ ...prefs, gameplay: { ...prefs.gameplay, forcedChoices } })
 }
 
 const position: ClientGameState = {
@@ -61,11 +61,12 @@ const reveal: PendingDecision = {
 }
 const forced = { type: 'CardsSelectedResponse', decisionId: reveal.id, selectedCards: [] } as DecisionResponse
 
-function receive(pendingDecision?: PendingDecision, autoAnswer?: DecisionResponse): void {
+function receive(pendingDecision?: PendingDecision, autoAnswer?: DecisionResponse, autoAnswerPublic?: boolean): void {
   const message: StateUpdateMessage = {
     type: 'stateUpdate', state: position, events: [], legalActions: [], interactionEpoch: EPOCH,
     ...(pendingDecision ? { pendingDecision } : {}),
     ...(autoAnswer ? { autoAnswer } : {}),
+    ...(autoAnswerPublic != null ? { autoAnswerPublic } : {}),
   }
   handlers.onStateUpdate(message)
 }
@@ -75,7 +76,7 @@ beforeEach(() => {
   send.mockClear()
   setWebSocket({ send, onStateVersionReceived: vi.fn(), requestResync: vi.fn() } as unknown as GameWebSocket)
   useGameStore.setState({ sessionId: 'auto-answer-test', playerId: ME, interactionEpoch: null, autoAnswerNotice: null })
-  setAutoAnswer(true)
+  setAutoAnswer('delayed')
   delays = [1400, 2100]
   restoreDelay = setAutoAnswerDelayForTests(() => delays.shift() ?? 1000)
 })
@@ -129,15 +130,41 @@ describe('forced questions', () => {
   })
 
   it('asks as usual when the player turned it off, or when the answer is for another question', () => {
-    setAutoAnswer(false)
+    setAutoAnswer('ask')
     receive(reveal, forced)
     expect(useGameStore.getState().pendingDecision).toEqual(reveal)
+    // A public question is still asked when the player wants to be asked.
+    receive({ ...reveal, id: `${EPOCH}:public` }, { ...forced, decisionId: `${EPOCH}:public` } as DecisionResponse, true)
+    expect(useGameStore.getState().pendingDecision?.id).toBe(`${EPOCH}:public`)
 
-    setAutoAnswer(true)
+    setAutoAnswer('delayed')
     receive({ ...reveal, id: `${EPOCH}:other` }, forced)
     expect(useGameStore.getState().pendingDecision?.id).toBe(`${EPOCH}:other`)
     vi.advanceTimersByTime(AUTO_ANSWER_MAX_DELAY_MS * 2)
     expect(send).not.toHaveBeenCalled()
+  })
+})
+
+describe('answering without the pause', () => {
+  it('answers at once in the instant mode', () => {
+    setAutoAnswer('instant')
+    receive(reveal, forced)
+    expect(useGameStore.getState().pendingDecision).toBeNull()
+    vi.advanceTimersByTime(0)
+    expect(send).toHaveBeenCalledTimes(1)
+  })
+
+  it('answers a public question at once in the delayed mode, and a hidden one after the pause', () => {
+    receive(reveal, forced, true)
+    vi.advanceTimersByTime(0)
+    expect(send).toHaveBeenCalledTimes(1)
+
+    const hidden = { ...reveal, id: `${EPOCH}:hidden` }
+    receive(hidden, { ...forced, decisionId: hidden.id } as DecisionResponse, false)
+    vi.advanceTimersByTime(1400 - 1)
+    expect(send).toHaveBeenCalledTimes(1)
+    vi.advanceTimersByTime(1)
+    expect(send).toHaveBeenCalledTimes(2)
   })
 })
 

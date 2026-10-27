@@ -1238,6 +1238,10 @@ class GameSession(
         val autoAnswer = if (useEngineDecisionIds) null else pendingDecision?.let { seatDecision ->
             state.pendingDecision?.let { ForcedDecisionAutoAnswer.responseFor(it, seatDecision) }
         }
+        // Whether everyone can see the question is forced, so the browser needn't pause before
+        // answering it (#3340).
+        val autoAnswerPublic = autoAnswer != null &&
+            state.pendingDecision?.let { ForcedDecisionAutoAnswer.isPublic(state, it, visibility) } == true
 
         // Accumulate into persistent game log (filter noisy events). An ability's resolution is a
         // per-update signal for clients, not a log line: the trigger/activation line and the
@@ -1300,11 +1304,11 @@ class GameSession(
         if (previous != null) {
             // Compute delta and send smaller message
             val delta = StateDiffCalculator.computeDelta(previous, stateWithLog)
-            return ServerMessage.StateDeltaUpdate(delta, clientEvents, legalActions, pendingDecision, nextStopPoint, opponentDecisionStatus, stopOverrideInfo, isUndoAvailable(playerId), priorityModeStr, version, interactionEpoch, autoAnswer)
+            return ServerMessage.StateDeltaUpdate(delta, clientEvents, legalActions, pendingDecision, nextStopPoint, opponentDecisionStatus, stopOverrideInfo, isUndoAvailable(playerId), priorityModeStr, version, interactionEpoch, autoAnswer, autoAnswerPublic)
         }
 
         // First update — send full state
-        return ServerMessage.StateUpdate(stateWithLog, clientEvents, legalActions, pendingDecision, nextStopPoint, opponentDecisionStatus, stopOverrideInfo, isUndoAvailable(playerId), priorityModeStr, version, interactionEpoch, autoAnswer)
+        return ServerMessage.StateUpdate(stateWithLog, clientEvents, legalActions, pendingDecision, nextStopPoint, opponentDecisionStatus, stopOverrideInfo, isUndoAvailable(playerId), priorityModeStr, version, interactionEpoch, autoAnswer, autoAnswerPublic)
     }
 
     /** [value] with every card id in [playerId]'s own names; unchanged for a seat that has none. */

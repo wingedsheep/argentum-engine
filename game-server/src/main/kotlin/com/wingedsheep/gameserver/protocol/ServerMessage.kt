@@ -166,6 +166,12 @@ sealed interface ServerMessage {
          * player. Browser seats only; null whenever the question is a real choice.
          */
         val autoAnswer: com.wingedsheep.engine.core.DecisionResponse? = null,
+        /**
+         * True when everyone at the table can already see that [pendingDecision] has only
+         * [autoAnswer] (`ForcedDecisionAutoAnswer.isPublic`), so answering it at once gives
+         * nothing away. False whenever that is unknown, or could depend on a hidden card.
+         */
+        val autoAnswerPublic: Boolean = false,
     ) : ServerMessage
 
     /**
@@ -200,6 +206,12 @@ sealed interface ServerMessage {
          * player. Browser seats only; null whenever the question is a real choice.
          */
         val autoAnswer: com.wingedsheep.engine.core.DecisionResponse? = null,
+        /**
+         * True when everyone at the table can already see that [pendingDecision] has only
+         * [autoAnswer] (`ForcedDecisionAutoAnswer.isPublic`), so answering it at once gives
+         * nothing away. False whenever that is unknown, or could depend on a hidden card.
+         */
+        val autoAnswerPublic: Boolean = false,
     ) : ServerMessage
 
     /**

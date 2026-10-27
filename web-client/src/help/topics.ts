@@ -1165,7 +1165,7 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
         'Starting priority mode — Auto, Stops or Full Control. Every game begins in it; the mode button still switches it for the game you are in.',
         'Always stop at — your standing stops, for your turn and your opponents’. The phase-bar dots edit the same list.',
         'Hold priority over my own — triggered abilities, activated abilities, spells: get priority back while one of yours waits on the stack, whenever you can respond to it.',
-        'Auto-tap mana, Order my triggers automatically, Choices with only one answer (answer for me, or ask me every time), and Follow the action for games with three or more players.',
+        'Auto-tap mana, Order my triggers automatically, Choices with only one answer (answer instantly, answer for me after a short pause, or ask me every time), and Follow the action for games with three or more players.',
       ] },
       { kind: 'h', text: 'Battlefield' },
       { kind: 'p', text: 'Identical permanents — same name, tapped state, counters, damage and so on — collapse into one stack with a count. Lands, creatures and other permanents each have their own rule:' },
@@ -1242,11 +1242,12 @@ export const HELP_TOPICS: readonly HelpTopic[] = [
     section: 'playing',
     title: 'Choices with only one answer',
     summary:
-      'Some questions have only one legal answer — “you may reveal a Dragon card from your hand” with none in hand, a search with nothing left to find, a mandatory trigger whose only legal target is the creature itself. Unless you set Choices with only one answer to Ask me every time, the game answers those for you after a short pause, and a short notice at the top of the board says what it answered.',
+      'Some questions have only one legal answer — “you may reveal a Dragon card from your hand” with none in hand, a search with nothing left to find, a mandatory trigger whose only legal target is the creature itself. Unless you set Choices with only one answer to Ask me every time, the game answers those for you — at once, or after a short pause — and a short notice at the top of the board says what it answered.',
     body: [
       { kind: 'p', text: 'You are still asked every one of these questions, and your opponent sees you deciding for a moment. That is on purpose: if the game skipped the question whenever you had no answer but “no”, the missing pause would tell your opponent what is in your hand or library. The pause changes every time — usually a second or so, now and then two — so it looks like a person clicking rather than a timer.' },
       { kind: 'p', text: 'Only questions the server marks as having a single legal answer are answered for you. Anything with a real choice — including which order cards go in — still waits for you, and so does a question that is how you look at cards (“look at the top three…”), so you always get to see them.' },
-      { kind: 'p', text: 'Preferences → Gameplay → Choices with only one answer has two settings. Answer for me (the default) is faster, but the game picks the timing, and an opponent who watches closely may still read something into it. Ask me every time shows each of these questions like any other, so you click through them yourself and your timing gives nothing away.' },
+      { kind: 'p', text: 'Preferences → Gameplay → Choices with only one answer has three settings. Answer instantly is the fastest: no pause at all, but an observant opponent can tell from the speed that you had no choice — and so, sometimes, what you don’t have in hand. Answer for me (the default) waits the short, human-like pause first, so a forced answer is hard to tell from a quick real one, though an opponent who watches closely may still read something into the timing. Ask me every time shows each of these questions like any other, so you click through them yourself and your timing gives nothing away.' },
+      { kind: 'p', text: 'When everyone at the table can already see that a question has only one answer, there is no pause in either answering setting: a Flametongue Kavu entering with no other creature in play has to target itself, and waiting would hide nothing. The game only skips the pause when every possible answer was in plain view — creatures on the battlefield, cards in graveyards, spells on the stack. If the answer could depend on a card nobody else can see — a hand, a library, a face-down creature — the pause stays.' },
       { kind: 'p', text: 'With Ask me every time, a “you may…” you can’t actually do (“you may discard a creature card” with no creature card in hand) shows its Yes button greyed out, so No is the only answer.' },
       { kind: 'tip', text: 'Click the notice to dismiss it early.' },
     ],

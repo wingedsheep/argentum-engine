@@ -91,6 +91,21 @@ data class DecisionContext(
      */
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val sourceIsPrivate: Boolean = false,
+
+    /**
+     * Every zone the question's candidates could have come from, when the producer knows its
+     * choice space exactly — the zones a target requirement looks in, say. Players are always
+     * public and are not a zone: a "target player" question declares the empty set. Null, the
+     * default, means *unknown*.
+     *
+     * Consumers use it to tell whether a question's shape is public (#3340): when every object in
+     * these zones is visible to everyone, an observer can work out the legal answers as well as
+     * the decider can. Declare it only where the candidate pool is exactly "the objects in these
+     * zones that pass a filter on visible characteristics". A pool picked out of a hidden zone, or
+     * one that depends on a hidden card, stays null; an unknown is read as "not public".
+     */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val candidateZones: Set<com.wingedsheep.sdk.core.Zone>? = null,
 )
 
 /**

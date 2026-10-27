@@ -11,6 +11,7 @@ import {
   STACK_LIMITS,
   STOPPABLE_STEPS,
   usePreferences,
+  type ForcedChoiceMode,
   type MotionPreference,
   type StackingRule,
 } from '@/store/preferencesStore'
@@ -26,19 +27,25 @@ const MODE_OPTIONS: { value: PriorityModeValue; label: string; hint: string }[] 
 ]
 
 /**
- * `gameplay.autoAnswerForced`, shown as the two modes it switches between. The hint names the
- * trade-off: the forced answer is faster, but its timing is the game's, not yours.
+ * `gameplay.forcedChoices`. Each hint names its trade-off: the faster the forced answer, the more
+ * its timing can tell an opponent the question was forced. All three answer at once a question
+ * everyone can see is forced, since a pause there hides nothing.
  */
-const FORCED_CHOICE_OPTIONS: { value: 'answer' | 'ask'; label: string; hint: string }[] = [
+const FORCED_CHOICE_OPTIONS: { value: ForcedChoiceMode; label: string; hint: string }[] = [
   {
-    value: 'answer',
+    value: 'instant',
+    label: 'Answer instantly',
+    hint: 'When a question has only one legal answer — “you may reveal a Dragon card” with none in hand, a search with nothing to find, a trigger whose only legal target is itself — the game answers it at once and shows a notice. Fastest, but an observant opponent can tell from the speed that you had no choice, and so that you had no Dragon in hand.',
+  },
+  {
+    value: 'delayed',
     label: 'Answer for me',
-    hint: 'When a question has only one legal answer — “you may reveal a Dragon card” with none in hand, a search with nothing to find, a trigger whose only legal target is itself — the game answers it after a short, human-like pause and shows a notice. Faster, but an observant opponent may read something into the timing.',
+    hint: 'The game answers a question with only one legal answer after a short, human-like pause, and shows a notice. Nearly as quick, and the pause makes it hard to tell from a real choice — though an opponent watching closely may still read something into the timing. When everyone can see the answer was forced (a trigger whose only target is the creature itself), there is no pause.',
   },
   {
     value: 'ask',
     label: 'Ask me every time',
-    hint: 'Every question waits for you, even one with a single legal answer. Slower, but you click through it like any other choice, so your timing gives nothing away.',
+    hint: 'Every question waits for you, even one with a single legal answer. Slowest, but you click through it like any other choice, so your timing gives nothing away.',
   },
 ]
 
@@ -202,12 +209,12 @@ export function PreferencesPanel({ compact = false }: { compact?: boolean }) {
         />
         <Field
           label="Choices with only one answer"
-          hint={FORCED_CHOICE_OPTIONS.find((o) => o.value === (gameplay.autoAnswerForced ? 'answer' : 'ask'))?.hint}
+          hint={FORCED_CHOICE_OPTIONS.find((o) => o.value === gameplay.forcedChoices)?.hint}
         >
           <Segmented
-            value={gameplay.autoAnswerForced ? 'answer' : 'ask'}
+            value={gameplay.forcedChoices}
             options={FORCED_CHOICE_OPTIONS}
-            onChange={(mode) => update('gameplay', { autoAnswerForced: mode === 'answer' })}
+            onChange={(forcedChoices) => update('gameplay', { forcedChoices })}
             label="Choices with only one answer"
           />
         </Field>

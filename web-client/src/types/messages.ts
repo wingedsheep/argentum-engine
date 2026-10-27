@@ -239,6 +239,11 @@ export interface StateUpdateMessage {
    * decision; the client may submit this unchanged instead of asking the player (#3340).
    */
   readonly autoAnswer?: DecisionResponse | null
+  /**
+   * Everyone can see `pendingDecision` has only `autoAnswer`, so it may be sent without the
+   * human-like pause. Absent or false whenever that is unknown or could depend on a hidden card.
+   */
+  readonly autoAnswerPublic?: boolean
 }
 
 /**
@@ -325,6 +330,11 @@ export interface StateDeltaUpdateMessage {
    * decision; the client may submit this unchanged instead of asking the player (#3340).
    */
   readonly autoAnswer?: DecisionResponse | null
+  /**
+   * Everyone can see `pendingDecision` has only `autoAnswer`, so it may be sent without the
+   * human-like pause. Absent or false whenever that is unknown or could depend on a hidden card.
+   */
+  readonly autoAnswerPublic?: boolean
 }
 
 // ============================================================================

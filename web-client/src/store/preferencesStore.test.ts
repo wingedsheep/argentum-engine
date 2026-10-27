@@ -65,6 +65,21 @@ describe('parsePreferences', () => {
     expect(parsePreferences({ gameplay: { ownStackStops: 'SPELLS' } }).gameplay.ownStackStops).toEqual([])
   })
 
+  it('reads the forced-choice mode, migrating the boolean it replaced', () => {
+    const mode = (gameplay: Record<string, unknown>) => parsePreferences({ gameplay }).gameplay.forcedChoices
+    expect(mode({})).toBe('delayed')
+    expect(mode({ forcedChoices: 'instant' })).toBe('instant')
+    expect(mode({ forcedChoices: 'ask' })).toBe('ask')
+    // A document saved before the three modes existed keeps its choice.
+    expect(mode({ autoAnswerForced: true })).toBe('delayed')
+    expect(mode({ autoAnswerForced: false })).toBe('ask')
+    // The new field wins over a leftover old one; nonsense falls back to the old one, then the default.
+    expect(mode({ forcedChoices: 'instant', autoAnswerForced: false })).toBe('instant')
+    expect(mode({ forcedChoices: 'sometimes', autoAnswerForced: false })).toBe('ask')
+    expect(mode({ forcedChoices: 3 })).toBe('delayed')
+    expect('autoAnswerForced' in parsePreferences({ gameplay: { autoAnswerForced: false } }).gameplay).toBe(false)
+  })
+
   it('normalizes a one-card stack: group-from 1 is 2, stack-size 1 is unlimited', () => {
     expect(parsePreferences({ battlefield: { other: { groupFrom: 1, stackSize: 1 } } }).battlefield.other)
       .toEqual({ groupFrom: 2, stackSize: 0 })

@@ -36,6 +36,11 @@ export interface StackingRule {
 
 /** `system` follows the OS "reduce motion" setting; `reduce` always cuts animations short. */
 export type MotionPreference = 'system' | 'reduce'
+/**
+ * What to do with a question that has only one legal answer (#3340): answer it at once, answer it
+ * after a human-like pause, or show it like any other.
+ */
+export type ForcedChoiceMode = 'instant' | 'delayed' | 'ask'
 
 export interface Preferences {
   version: 1
@@ -61,12 +66,16 @@ export interface Preferences {
      */
     autoOrderTriggers: boolean
     /**
-     * Answer a question that has only one legal answer for you ("you may reveal a Dragon card"
-     * with none in hand), after a short randomized delay, with a notice instead of a dialog. The
-     * server says which questions those are. Shown as "Choices with only one answer": Answer for
-     * me (true) / Ask me every time (false).
+     * A question that has only one legal answer for you ("you may reveal a Dragon card" with none
+     * in hand) — the server says which questions those are. `instant` answers it at once and
+     * `delayed` after a short randomized pause, each with a notice instead of a dialog; `ask`
+     * shows it as usual. Either answering mode answers at once when the server marks the question
+     * public (everyone can see it is forced). Shown as "Choices with only one answer".
+     *
+     * Replaces the boolean `autoAnswerForced` (true = `delayed`, false = `ask`), which documents
+     * saved before the change still carry; [parsePreferences] reads it.
      */
-    autoAnswerForced: boolean
+    forcedChoices: ForcedChoiceMode
     /** Multiplayer: move the camera to the board where the action is. */
     followAction: boolean
   }
@@ -115,7 +124,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
     ownStackStops: [],
     autoTap: true,
     autoOrderTriggers: true,
-    autoAnswerForced: true,
+    forcedChoices: 'delayed',
     followAction: true,
   },
   battlefield: {
@@ -140,6 +149,7 @@ export const OWN_STACK_STOPS: readonly OwnStackStop[] = ['TRIGGERED_ABILITIES', 
 const OWN_STACK_STOP_SET = new Set<string>(OWN_STACK_STOPS)
 const MODES = new Set<string>(['auto', 'stops', 'fullControl'])
 const MOTIONS = new Set<string>(['system', 'reduce'])
+const FORCED_CHOICE_MODES = new Set<string>(['instant', 'delayed', 'ask'])
 
 function obj(v: unknown): Record<string, unknown> {
   return v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : {}
@@ -169,6 +179,15 @@ function stacking(v: unknown, fallback: StackingRule): StackingRule {
   }
 }
 
+/** `gameplay.forcedChoices`, or the boolean it replaced in a document saved before it existed. */
+function forcedChoices(g: Record<string, unknown>): ForcedChoiceMode {
+  if (typeof g.forcedChoices === 'string' && FORCED_CHOICE_MODES.has(g.forcedChoices)) {
+    return g.forcedChoices as ForcedChoiceMode
+  }
+  if (typeof g.autoAnswerForced === 'boolean') return g.autoAnswerForced ? 'delayed' : 'ask'
+  return DEFAULT_PREFERENCES.gameplay.forcedChoices
+}
+
 /** Read any JSON as preferences, falling back to the default for every missing or invalid field. */
 export function parsePreferences(raw: unknown): Preferences {
   const root = obj(raw)
@@ -189,7 +208,7 @@ export function parsePreferences(raw: unknown): Preferences {
       ownStackStops: ownStackStops(g.ownStackStops),
       autoTap: bool(g.autoTap, D.gameplay.autoTap),
       autoOrderTriggers: bool(g.autoOrderTriggers, D.gameplay.autoOrderTriggers),
-      autoAnswerForced: bool(g.autoAnswerForced, D.gameplay.autoAnswerForced),
+      forcedChoices: forcedChoices(g),
       followAction: bool(g.followAction, D.gameplay.followAction),
     },
     battlefield: {

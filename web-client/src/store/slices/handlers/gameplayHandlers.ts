@@ -221,6 +221,7 @@ interface StateUpdateEnvelope {
   readonly undoAvailable?: boolean
   readonly priorityMode?: PriorityModeValue | null
   readonly autoAnswer?: DecisionResponse | null
+  readonly autoAnswerPublic?: boolean
 }
 
 /** A replaced timeline invalidates every partially built action in the same store update. */
@@ -732,7 +733,12 @@ function processStateUpdate(
 
   // A question with one legal answer, which the server answered for us: never put it in front of
   // the player — not even for a frame — and send that answer after a short delay instead.
-  const autoAnswer = autoAnswerFor(msg.pendingDecision, msg.autoAnswer, getPreferences().gameplay.autoAnswerForced)
+  const autoAnswer = autoAnswerFor(
+    msg.pendingDecision,
+    msg.autoAnswer,
+    getPreferences().gameplay.forcedChoices,
+    msg.autoAnswerPublic === true
+  )
 
   set((state) => ({
     gameState: resolvedState,

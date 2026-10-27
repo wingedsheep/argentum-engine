@@ -538,6 +538,9 @@ class TriggerProcessor(
             requirements = requirementInfos,
             legalTargets = allLegalTargets,
             effectHint = effectHint,
+            // Where the candidates were looked for, so a consumer can tell whether everyone can
+            // see the question has only one answer (#3340).
+            candidateZones = com.wingedsheep.engine.mechanics.targeting.TargetCandidateZones.of(allRequirements),
             answer = TriggeredAbilityContinuation(
                 resolvingTriggeredAbility = trigger.rulesText,
                 sourceId = trigger.sourceId,
@@ -909,7 +912,11 @@ class TriggerProcessor(
                     sourceName = ability.sourceName,
                     // Part of putting the ability on the stack, not of resolving it (CR 603.3d).
                     phase = DecisionPhase.TRIGGER,
-                    effectHint = mode.description
+                    effectHint = mode.description,
+                    // Every chosen mode's pools: "each mode targets a different player" filters this
+                    // mode's candidates by the later modes' pools.
+                    candidateZones = com.wingedsheep.engine.mechanics.targeting.TargetCandidateZones.of(
+                        chosenModeIndices.flatMap { lockedModes[it].targetRequirements })
                 ),
                 targetRequirements = requirementInfos,
                 legalTargets = legalTargetsMap
