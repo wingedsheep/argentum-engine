@@ -291,7 +291,7 @@ class TrivialDecisionsTest : FunSpec({
         TrivialDecisions.responseFor(decision).shouldBeNull()
     }
 
-    test("multi-card selection is not forced without explicit repeated-selection semantics") {
+    test("selecting every one of several distinct options when that many are required is forced") {
         val decision = SelectCardsDecision(
             id = "shared-card-selection",
             playerId = player,
@@ -302,18 +302,34 @@ class TrivialDecisionsTest : FunSpec({
             maxSelections = 2,
         )
 
-        // The same pending-decision shape is used by distributed counter-removal costs,
-        // where repeated IDs carry multiplicity. The decision itself does not identify
-        // that use, so selecting each option once is not provably the unique response.
+        // Without selectionLimits an option may be named only once, so naming both is the only
+        // legal answer (#3340: a selection over hidden cards is asked even when it is forced).
         DecisionValidators.validate(
             decision,
-            CardsSelectedResponse(decision.id, listOf(first, second)),
+            CardsSelectedResponse(decision.id, listOf(first, first)),
+        ).shouldNotBeNull()
+        val forced = TrivialDecisions.responseFor(decision).shouldBeInstanceOf<CardsSelectedResponse>()
+        forced.selectedCards shouldBe listOf(first, second)
+    }
+
+    test("an allocation that may repeat an option is not forced") {
+        val decision = SelectCardsDecision(
+            id = "counter-allocation",
+            playerId = player,
+            prompt = "Remove two counters",
+            context = context,
+            options = listOf(first, second),
+            minSelections = 2,
+            maxSelections = 2,
+            selectionLimits = mapOf(first to 2, second to 2),
+        )
+
+        // Repeated IDs carry multiplicity here: two counters from the first permanent is legal too.
+        DecisionValidators.validate(
+            decision,
+            CardsSelectedResponse(decision.id, listOf(first, first)),
         ) shouldBe null
         TrivialDecisions.responseFor(decision).shouldBeNull()
-
-        val rollout = FastDecisionResponder().respond(GameState(), decision, player)
-        rollout.shouldBeInstanceOf<CardsSelectedResponse>()
-        rollout.selectedCards shouldBe listOf(first, second)
     }
 
     test("state-dependent card constraints are not guessed without state") {

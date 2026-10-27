@@ -1296,6 +1296,11 @@ data class SelectFromCollectionEffect(
      * forced). Used by reveal-then-discard flows where the caster is picking from
      * another player's zone — auto-selecting the one eligible card feels abrupt
      * and players want to see and confirm the pick.
+     *
+     * The engine already behaves as if this were set whenever which cards are eligible
+     * depends on cards some player can't see (a search, a filtered look at a hand or
+     * library): every player sees whether a question is pending, so it is never skipped
+     * on hidden cards (#3340). Cards need this only for public pools.
      */
     val alwaysPrompt: Boolean = false
 ) : Effect {

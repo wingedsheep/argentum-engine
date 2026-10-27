@@ -55,6 +55,8 @@ class MoveCollectionExecutor(
 ) : EffectExecutor<MoveCollectionEffect> {
     private val predicateEvaluator = zones.predicateEvaluator
 
+    private val visibility = com.wingedsheep.engine.view.Visibility(cardRegistry, conditionEvaluator = predicateEvaluator.conditions)
+
     override val effectType: KClass<MoveCollectionEffect> = MoveCollectionEffect::class
 
     override fun execute(
@@ -83,7 +85,22 @@ class MoveCollectionExecutor(
 
         if (effect.moveType == MoveType.Discard) context = context.copy(discardCollectionName = effect.from)
         val destination = effect.destination
+        // How many cards this moves is hidden when hidden cards decided the collection, or when
+        // this step's own filter reads cards some player can't see (#3340). Then the order question
+        // for cards put on a library is asked for any number of them, none included, since whether
+        // it is asked would otherwise tell every player that number.
+        val countHidden = HiddenPools.isHidden(context.pipeline.storedCollections, effect.from) ||
+            (effect.filter != null && HiddenPools.hiddenOwners(state, allCards, visibility).isNotEmpty())
         if (cards.isEmpty()) {
+            if (countHidden && destination is CardDestination.ToZone && destination.zone == Zone.LIBRARY &&
+                destination.placement != ZonePlacement.Shuffled &&
+                (effect.order == CardOrder.ControllerChooses || effect.order == CardOrder.OwnerChooses)
+            ) {
+                val destPlayerId = resolvePlayer(destination.player, context, state)
+                    ?: return EffectResult.error(state, "Could not resolve destination player for MoveCollection")
+                val chooserId = if (effect.order == CardOrder.OwnerChooses) destPlayerId else context.controllerId
+                return pauseForOrderDecision(state, context, emptyList(), Zone.LIBRARY, destPlayerId, destination.placement, chooserId, effect.revealed)
+            }
             // Nothing to move, but for library shuffles we still shuffle (e.g., ShuffleGraveyardIntoLibrary
             // shuffles even when the graveyard is empty, per the card's rules text).
             if (destination is CardDestination.ToZone &&
@@ -164,7 +181,7 @@ class MoveCollectionExecutor(
 
         var result = when (destination) {
             is CardDestination.ToZone ->
-                moveToZone(state, context, cards, destination, effect.order, effect.revealed, effect.moveType, effect.faceDown, effect.noRegenerate, effect.storeMovedAs, effect.underOwnersControl, effect.revealToSelf, fromCollection = effect.from, entryCounterType = effect.addCounterType)
+                moveToZone(state, context, cards, destination, effect.order, effect.revealed, effect.moveType, effect.faceDown, effect.noRegenerate, effect.storeMovedAs, effect.underOwnersControl, effect.revealToSelf, fromCollection = effect.from, entryCounterType = effect.addCounterType, countHidden = countHidden)
             is CardDestination.ToZoneExiledFrom ->
                 moveToZonesExiledFrom(state, context, cards, destination, effect)
         }
@@ -552,7 +569,8 @@ class MoveCollectionExecutor(
         revealToSelf: Boolean = true,
         fromCollection: String? = null,
         entryCounterType: com.wingedsheep.sdk.core.CounterType? = null,
-        replacementSourceState: GameState? = null
+        replacementSourceState: GameState? = null,
+        countHidden: Boolean = false
     ): EffectResult {
         val destPlayerId = resolvePlayer(destination.player, context, state)
             ?: return EffectResult.error(state, "Could not resolve destination player for MoveCollection")
@@ -570,7 +588,9 @@ class MoveCollectionExecutor(
             // anything the chooser wouldn't otherwise see. Two or more cards are always asked
             // about, even copies of one card: every seat sees whether a question is pending but
             // not which cards are going back, so skipping for copies would tell the other players
-            // what the library holds (#3340).
+            // what the library holds (#3340). When hidden cards decided how many cards go back
+            // ([countHidden]), even one card is asked about: skipping at one and asking at two
+            // would tell the other players the count.
             val shown = fromCollection?.let {
                 context.pipeline.storedCollections[
                     com.wingedsheep.engine.handlers.PipelineState.shownKey(it, chooserId)
@@ -578,7 +598,7 @@ class MoveCollectionExecutor(
             }.orEmpty()
             val noOrderToChoose = cards.size == 1
             val alreadySeen = cards.isNotEmpty() && cards.all { it in shown }
-            if ((!isBottom || cards.size > 1) && !(alreadySeen && noOrderToChoose)) {
+            if (countHidden || ((!isBottom || cards.size > 1) && !(alreadySeen && noOrderToChoose))) {
                 return pauseForOrderDecision(state, context, cards, destZone, destPlayerId, destination.placement, chooserId, revealed)
             }
         }

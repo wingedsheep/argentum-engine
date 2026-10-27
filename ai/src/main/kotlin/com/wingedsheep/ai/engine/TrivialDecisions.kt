@@ -68,9 +68,12 @@ object TrivialDecisions {
             } else null
         }
 
-        // The shared response contract intentionally permits repeated IDs for distributed counter
-        // removal. Without metadata distinguishing that use, only zero/one-option selections can
-        // prove uniqueness here; larger all-options selections stay policy-owned.
+        // Without [SelectCardsDecision.selectionLimits] a selection names each option at most once
+        // (the validator refuses a repeat), so selecting every option when exactly that many are
+        // required is the only answer: a search over hidden cards that finds exactly the two
+        // cards it must take is asked (#3340), and answered here. Allocations that may repeat an
+        // option carry selectionLimits and stay policy-owned, as does an [SelectCardsDecision.ordered]
+        // selection, whose order is the choice.
         //
         // Nothing to pick from with nothing required ("you may reveal a Dragon card" and there is
         // none, a search that finds nothing) has the empty selection as its only answer, however
@@ -89,7 +92,8 @@ object TrivialDecisions {
                 decision.selectionLimits == null && decision.conditionalMinimums.isEmpty()
             ) {
                 CardsSelectedResponse(decision.id, emptyList())
-            } else if (decision.options.size <= 1 &&
+            } else if ((decision.options.size <= 1 || !decision.ordered) &&
+                decision.options.distinct().size == decision.options.size &&
                 !hasStateDependentConstraints &&
                 decision.minSelections == decision.options.size &&
                 decision.maxSelections == decision.options.size

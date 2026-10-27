@@ -62,6 +62,9 @@ class GatherCardsExecutor(
         effect: GatherCardsEffect,
         context: EffectContext
     ): EffectResult {
+        // Who holds the hidden cards a filter read to build this pool (#3340): a filtered gather
+        // over a hand or library has a size nobody else can know. See [HiddenPools].
+        var poolDeciders: List<EntityId> = emptyList()
         val gathered = when (val source = effect.source) {
             is CardSource.TopOfLibrary -> {
                 val count = amountEvaluator.evaluate(state, source.count, context)
@@ -99,6 +102,7 @@ class GatherCardsExecutor(
                     else state.getZone(ZoneKey(playerId, source.zone))
                 }
                 val filtered = if (source.filter != GameObjectFilter.Any) {
+                    poolDeciders = HiddenPools.hiddenOwners(state, allCards, visibility)
                     val predicateContext = PredicateContext.fromEffectContext(context)
                     allCards.filter { cardId ->
                         matchesVisibleExileCard(state, cardId, source.zone, context) &&
@@ -128,6 +132,7 @@ class GatherCardsExecutor(
                     }
                 }
                 if (source.filter != GameObjectFilter.Any) {
+                    poolDeciders = HiddenPools.hiddenOwners(state, allCards.map { it.first }, visibility)
                     val predicateContext = PredicateContext.fromEffectContext(context)
                     allCards.filter { (cardId, zone) ->
                         matchesVisibleExileCard(state, cardId, zone, context) &&
@@ -139,6 +144,7 @@ class GatherCardsExecutor(
             }
 
             is CardSource.FromVariable -> {
+                poolDeciders = HiddenPools.deciders(context.pipeline.storedCollections, source.variableName)
                 context.pipeline.storedCollections[source.variableName] ?: emptyList()
             }
 
@@ -424,13 +430,9 @@ class GatherCardsExecutor(
             ?.let { mapOf(com.wingedsheep.engine.handlers.PipelineState.SEARCHER_KEY to listOf(it)) }
             .orEmpty()
 
-        if (cards.isEmpty()) {
-            return EffectResult.success(state).copy(
-                updatedCollections = mapOf(effect.storeAs to emptyList<EntityId>()) + searcherCollection
-            )
-        }
-
-        val events = if (effect.revealed) {
+        // An empty pool still publishes its marks: a search that found nothing is still a search,
+        // and a filtered hidden zone with no match is still a hidden fact.
+        val events = if (effect.revealed && cards.isNotEmpty()) {
             val cardNames = cards.map { cardId ->
                 state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown"
             }
@@ -480,18 +482,18 @@ class GatherCardsExecutor(
             }
             else -> emptySet()
         }
-        val newState = if (revealAudience.isNotEmpty()) {
+        val newState = if (revealAudience.isNotEmpty() && cards.isNotEmpty()) {
             LibraryRevealUtils.markRevealed(state, cards, revealAudience)
         } else {
             state
         }
 
-        // A search marks what it found, so the pick that follows can say it is one (a found card is
-        // a gain; an empty pick is "fail to find"). A later non-search gather into the same name
-        // clears a stale mark.
+        // A search marks itself with its searcher, so the pick that follows can say it is one (a
+        // found card is a gain; an empty pick is "fail to find"), even when it found nothing. A
+        // later non-search gather into the same name clears a stale mark.
         val searchedKey = com.wingedsheep.engine.handlers.PipelineState.searchedKey(effect.storeAs)
         val searchCollections = when {
-            effect.search -> mapOf(effect.storeAs to cards, searchedKey to cards)
+            effect.search -> mapOf(effect.storeAs to cards, searchedKey to listOfNotNull(searcher))
             searchedKey in context.pipeline.storedCollections -> mapOf(effect.storeAs to cards, searchedKey to emptyList())
             else -> mapOf(effect.storeAs to cards)
         }
@@ -509,7 +511,8 @@ class GatherCardsExecutor(
         } else {
             collections + com.wingedsheep.engine.handlers.effects.EffectDiscardDestinations.clearUnknown(context, effect.storeAs)
         }
-        return EffectResult.success(newState, events).copy(updatedCollections = updatedCollections + searcherCollection)
+        val hiddenMarks = HiddenPools.marks(listOf(effect.storeAs), poolDeciders, context.pipeline.storedCollections)
+        return EffectResult.success(newState, events).copy(updatedCollections = updatedCollections + hiddenMarks + searcherCollection)
     }
 
 

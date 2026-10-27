@@ -51,6 +51,14 @@ data class SelectFromCollectionContinuation(
      */
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
     val shownCards: List<EntityId>? = null,
+    /**
+     * The players whose hidden cards decided which cards were eligible (#3340). The resumer marks
+     * the selected and remainder collections with them under
+     * [com.wingedsheep.engine.handlers.PipelineState.hiddenPoolKey], so later steps over those
+     * collections keep asking. Empty when the eligible set was public.
+     */
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val hiddenPoolDeciders: List<EntityId> = emptyList(),
 ) : AnswerContinuation
 
 /**

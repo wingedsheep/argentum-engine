@@ -49,10 +49,11 @@ data class PipelineState(
 
         /**
          * Reserved metadata collection published by a library-searching gather
-         * (`GatherCardsEffect.search`) alongside [collection]: the cards that search found. A
-         * SelectFromCollection over [collection] reads it to mark its decision as a library
-         * search ([com.wingedsheep.engine.core.SelectCardsDecision.librarySearch]). Empty when a
-         * later non-search gather reused the name.
+         * (`GatherCardsEffect.search`) alongside [collection]: the player who searched, present
+         * even when the search found nothing. A SelectFromCollection over [collection] reads it to
+         * mark its decision as a library search
+         * ([com.wingedsheep.engine.core.SelectCardsDecision.librarySearch]), whose empty answer is
+         * "fail to find". Empty when a later non-search gather reused the name.
          */
         fun searchedKey(collection: String): String = "__searched:$collection"
 
@@ -63,6 +64,16 @@ data class PipelineState(
          * Empty when a later non-mill gather reused the name.
          */
         fun milledKey(collection: String): String = "__milled:$collection"
+
+        /**
+         * Reserved metadata collection published alongside [collection] when which cards it holds
+         * was decided by cards some player can't see — a filtered gather over a hand or library, a
+         * selection over hidden cards. Holds the players whose hidden cards decided it; empty (or
+         * absent) when the pool is public. A step over [collection] then asks its question rather
+         * than skipping it or answering it itself (#3340). See
+         * [com.wingedsheep.engine.handlers.effects.library.HiddenPools].
+         */
+        fun hiddenPoolKey(collection: String): String = "__hiddenPool:$collection"
 
         /**
          * Reserved metadata collection published by a library-searching gather

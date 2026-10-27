@@ -296,6 +296,13 @@ object DecisionValidators {
                 return "Invalid selection: $cardId is not a valid option"
             }
         }
+        // An ordinary selection names each card once; only an allocation (selectionLimits) may
+        // repeat one.
+        if (decision.selectionLimits == null &&
+            response.selectedCards.distinct().size != response.selectedCards.size
+        ) {
+            return "Invalid selection: a card may be selected only once"
+        }
         if (decision.selectionLimits != null) {
             for ((cardId, count) in response.selectedCards.groupingBy { it }.eachCount()) {
                 if (count > (decision.selectionLimits[cardId] ?: 0)) {

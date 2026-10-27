@@ -56,18 +56,22 @@ import kotlinx.serialization.json.jsonObject
 
 /**
  * Pausing never changes what an effect does. Each shape runs twice, with and without the
- * selection pause: once where its selection resolves on its own (one eligible card), once where the
- * same selection asks (`alwaysPrompt`) and gets the same card. Both runs must end in the same game,
+ * selection pause: once where its selection resolves on its own (select every eligible card, of
+ * which there is one), once where the same pick asks and gets the same card. Both runs must end in the same game,
  * and the run without the selection pause is the reference. (Some shapes also ask other questions —
  * a "may", a secret number — in both runs.)
  */
 class EffectProgramPauseTwinTest : FunSpec({
 
-    /** Pick the one creature card in hand; asks only when [prompt]. Stores "pool" and "picked". */
+    /**
+     * Pick the one creature card in hand; asks only when [prompt]. Stores "pool" and "picked". A
+     * choice over a filtered hand is always asked (#3340), so the silent twin selects all instead.
+     */
     fun pick(prompt: Boolean): List<Effect> = listOf(
         GatherCardsEffect(source = CardSource.FromZone(Zone.HAND, Player.You, GameObjectFilter.Creature), storeAs = "pool"),
         SelectFromCollectionEffect(
-            from = "pool", selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
+            from = "pool",
+            selection = if (prompt) SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)) else SelectionMode.All,
             storeSelected = "picked", alwaysPrompt = prompt,
         ),
     )

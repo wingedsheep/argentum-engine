@@ -673,6 +673,11 @@ class LibraryAndZoneContinuationResumer(
             updatedCollections[continuation.storeRemainder] = remainder
             publishShown(continuation.storeRemainder, remainder)
         }
+        updatedCollections += com.wingedsheep.engine.handlers.effects.library.HiddenPools.marks(
+            listOfNotNull(continuation.storeSelected, continuation.storeRemainder),
+            continuation.hiddenPoolDeciders,
+            continuation.storedCollections
+        )
 
         // Inject updated collections into the consumer frame beneath (if any)
         val newState = exposeCollectionsToNextFrame(state,
