@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.CounterType
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -30,7 +29,7 @@ val BushyBodyguard = card("Bushy Bodyguard") {
     oracleText = "Offspring {2} (You may pay an additional {2} as you cast this spell. If you do, when this creature enters, create a 1/1 token copy of it.)\nWhen this creature enters, you may forage. If you do, put two +1/+1 counters on it. (To forage, exile three cards from your graveyard or sacrifice a Food.)"
 
     // Offspring modeled as Kicker
-    keywordAbility(KeywordAbility.OptionalAdditionalCost(ManaCost.parse("{2}")))
+    keywordAbility(KeywordAbility.offspring("{2}"))
 
     // Offspring ETB: create token copy when kicked
     triggeredAbility {

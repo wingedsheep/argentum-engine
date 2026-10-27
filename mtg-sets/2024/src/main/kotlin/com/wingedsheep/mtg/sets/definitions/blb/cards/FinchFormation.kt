@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -31,7 +30,7 @@ val FinchFormation = card("Finch Formation") {
     keywords(Keyword.FLYING)
 
     // Offspring modeled as Kicker
-    keywordAbility(KeywordAbility.OptionalAdditionalCost(ManaCost.parse("{3}")))
+    keywordAbility(KeywordAbility.offspring("{3}"))
 
     // Offspring ETB: create token copy when kicked
     triggeredAbility {

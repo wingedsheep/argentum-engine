@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
@@ -36,7 +35,7 @@ val ThornplateIntimidator = card("Thornplate Intimidator") {
         "When this creature enters, target opponent loses 3 life unless they sacrifice a nonland permanent of their choice or discard a card."
 
     // Offspring modeled as Kicker
-    keywordAbility(KeywordAbility.OptionalAdditionalCost(ManaCost.parse("{3}")))
+    keywordAbility(KeywordAbility.offspring("{3}"))
 
     // Offspring ETB: create token copy when kicked
     triggeredAbility {

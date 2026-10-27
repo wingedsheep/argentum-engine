@@ -2199,10 +2199,15 @@
         "power": 2,
         "toughness": 1
     },
+    "keywords": [
+        "OFFSPRING"
+    ],
     "keywordAbilities": [
         {
             "type": "Kicker",
-            "manaCost": "{2}"
+            "manaCost": "{2}",
+            "displayPrefix": "Offspring",
+            "keyword": "OFFSPRING"
         }
     ],
     "script": {
@@ -3785,10 +3790,15 @@
         "power": 2,
         "toughness": 2
     },
+    "keywords": [
+        "OFFSPRING"
+    ],
     "keywordAbilities": [
         {
             "type": "Kicker",
-            "manaCost": "{2}"
+            "manaCost": "{2}",
+            "displayPrefix": "Offspring",
+            "keyword": "OFFSPRING"
         }
     ],
     "script": {
@@ -4422,12 +4432,15 @@
         "toughness": 3
     },
     "keywords": [
-        "FLYING"
+        "FLYING",
+        "OFFSPRING"
     ],
     "keywordAbilities": [
         {
             "type": "Kicker",
-            "manaCost": "{B}"
+            "manaCost": "{B}",
+            "displayPrefix": "Offspring",
+            "keyword": "OFFSPRING"
         }
     ],
     "script": {
@@ -6456,12 +6469,15 @@
         "toughness": 2
     },
     "keywords": [
-        "FLYING"
+        "FLYING",
+        "OFFSPRING"
     ],
     "keywordAbilities": [
         {
             "type": "Kicker",
-            "manaCost": "{3}"
+            "manaCost": "{3}",
+            "displayPrefix": "Offspring",
+            "keyword": "OFFSPRING"
         }
     ],
     "script": {
@@ -6825,10 +6841,15 @@
         "power": 1,
         "toughness": 2
     },
+    "keywords": [
+        "OFFSPRING"
+    ],
     "keywordAbilities": [
         {
             "type": "Kicker",
-            "manaCost": "{2}"
+            "manaCost": "{2}",
+            "displayPrefix": "Offspring",
+            "keyword": "OFFSPRING"
         }
     ],
     "script": {
@@ -9397,10 +9418,15 @@
         "power": 3,
         "toughness": 2
     },
+    "keywords": [
+        "OFFSPRING"
+    ],
     "keywordAbilities": [
         {
             "type": "Kicker",
-            "manaCost": "{1}"
+            "manaCost": "{1}",
+            "displayPrefix": "Offspring",
+            "keyword": "OFFSPRING"
         }
     ],
     "script": {
@@ -11531,10 +11557,15 @@
         "power": 1,
         "toughness": 2
     },
+    "keywords": [
+        "OFFSPRING"
+    ],
     "keywordAbilities": [
         {
             "type": "Kicker",
-            "manaCost": "{2}"
+            "manaCost": "{2}",
+            "displayPrefix": "Offspring",
+            "keyword": "OFFSPRING"
         }
     ],
     "script": {
@@ -13322,12 +13353,15 @@
         "toughness": 1
     },
     "keywords": [
-        "TRAMPLE"
+        "TRAMPLE",
+        "OFFSPRING"
     ],
     "keywordAbilities": [
         {
             "type": "Kicker",
-            "manaCost": "{2}"
+            "manaCost": "{2}",
+            "displayPrefix": "Offspring",
+            "keyword": "OFFSPRING"
         }
     ],
     "script": {
@@ -15275,10 +15309,15 @@
         "power": 4,
         "toughness": 4
     },
+    "keywords": [
+        "OFFSPRING"
+    ],
     "keywordAbilities": [
         {
             "type": "Kicker",
-            "manaCost": "{2}"
+            "manaCost": "{2}",
+            "displayPrefix": "Offspring",
+            "keyword": "OFFSPRING"
         }
     ],
     "script": {
@@ -17253,10 +17292,15 @@
         "power": 3,
         "toughness": 3
     },
+    "keywords": [
+        "OFFSPRING"
+    ],
     "keywordAbilities": [
         {
             "type": "Kicker",
-            "manaCost": "{1}{U}"
+            "manaCost": "{1}{U}",
+            "displayPrefix": "Offspring",
+            "keyword": "OFFSPRING"
         }
     ],
     "script": {
@@ -17946,12 +17990,15 @@
         "toughness": 1
     },
     "keywords": [
-        "FLYING"
+        "FLYING",
+        "OFFSPRING"
     ],
     "keywordAbilities": [
         {
             "type": "Kicker",
-            "manaCost": "{2}{B}"
+            "manaCost": "{2}{B}",
+            "displayPrefix": "Offspring",
+            "keyword": "OFFSPRING"
         }
     ],
     "script": {
@@ -18129,10 +18176,15 @@
         "power": 2,
         "toughness": 1
     },
+    "keywords": [
+        "OFFSPRING"
+    ],
     "keywordAbilities": [
         {
             "type": "Kicker",
-            "manaCost": "{2}"
+            "manaCost": "{2}",
+            "displayPrefix": "Offspring",
+            "keyword": "OFFSPRING"
         }
     ],
     "script": {
@@ -19056,10 +19108,15 @@
         "power": 2,
         "toughness": 2
     },
+    "keywords": [
+        "OFFSPRING"
+    ],
     "keywordAbilities": [
         {
             "type": "Kicker",
-            "manaCost": "{2}"
+            "manaCost": "{2}",
+            "displayPrefix": "Offspring",
+            "keyword": "OFFSPRING"
         }
     ],
     "script": {
@@ -19314,10 +19371,15 @@
         "power": 4,
         "toughness": 3
     },
+    "keywords": [
+        "OFFSPRING"
+    ],
     "keywordAbilities": [
         {
             "type": "Kicker",
-            "manaCost": "{3}"
+            "manaCost": "{3}",
+            "displayPrefix": "Offspring",
+            "keyword": "OFFSPRING"
         }
     ],
     "script": {
@@ -20008,10 +20070,15 @@
         "power": 1,
         "toughness": 2
     },
+    "keywords": [
+        "OFFSPRING"
+    ],
     "keywordAbilities": [
         {
             "type": "Kicker",
-            "manaCost": "{4}"
+            "manaCost": "{4}",
+            "displayPrefix": "Offspring",
+            "keyword": "OFFSPRING"
         }
     ],
     "script": {
@@ -21356,10 +21423,15 @@
         "power": 4,
         "toughness": 4
     },
+    "keywords": [
+        "OFFSPRING"
+    ],
     "keywordAbilities": [
         {
             "type": "Kicker",
-            "manaCost": "{2}"
+            "manaCost": "{2}",
+            "displayPrefix": "Offspring",
+            "keyword": "OFFSPRING"
         }
     ],
     "script": {

@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -31,7 +30,7 @@ val StarscapeCleric = card("Starscape Cleric") {
     toughness = 1
 
     // Offspring modeled as Kicker
-    keywordAbility(KeywordAbility.OptionalAdditionalCost(ManaCost.parse("{2}{B}")))
+    keywordAbility(KeywordAbility.offspring("{2}{B}"))
 
     // Offspring ETB: create token copy when kicked
     triggeredAbility {

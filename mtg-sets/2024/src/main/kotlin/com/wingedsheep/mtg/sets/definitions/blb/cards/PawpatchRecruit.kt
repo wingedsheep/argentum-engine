@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -35,7 +34,7 @@ val PawpatchRecruit = card("Pawpatch Recruit") {
         "Whenever a creature you control becomes the target of a spell or ability an opponent controls, put a +1/+1 counter on target creature you control other than that creature."
 
     // Offspring modeled as Kicker
-    keywordAbility(KeywordAbility.OptionalAdditionalCost(ManaCost.parse("{2}")))
+    keywordAbility(KeywordAbility.offspring("{2}"))
 
     // Offspring ETB: create token copy when kicked
     triggeredAbility {

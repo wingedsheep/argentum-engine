@@ -25,12 +25,14 @@ class MurasaSproutlingScenarioTest : ScenarioTestBase() {
                 .withLandsOnBattlefield(1, "Forest", 5)
                 .withCardInGraveyard(1, "Ghitu Chronicler")
                 .withCardInGraveyard(1, "Grizzly Bears")
+                .withCardInGraveyard(1, "Steampath Charger")
                 .withActivePlayer(1)
                 .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                 .build()
 
             val chronicler = game.findCardsInGraveyard(1, "Ghitu Chronicler").single()
             val bears = game.findCardsInGraveyard(1, "Grizzly Bears").single()
+            val offspringCard = game.findCardsInGraveyard(1, "Steampath Charger").single()
             val sproutling = game.findCardsInHand(1, "Murasa Sproutling").single()
 
             game.execute(CastSpell(game.player1Id, sproutling, declaredCostSlot = ChoiceSlot.KICKED))
@@ -42,12 +44,15 @@ class MurasaSproutlingScenarioTest : ScenarioTestBase() {
             val legal = decision.legalTargets[0].orEmpty()
             legal shouldContain chronicler
             legal shouldNotContain bears
+            // Offspring rides the kicker rail but is not a kicker ability.
+            legal shouldNotContain offspringCard
 
             game.selectTargets(listOf(chronicler)).error shouldBe null
             game.resolveStack()
 
             game.isInHand(1, "Ghitu Chronicler") shouldBe true
             game.isInGraveyard(1, "Grizzly Bears") shouldBe true
+            game.isInGraveyard(1, "Steampath Charger") shouldBe true
         }
 
         test("unkicked, it returns nothing") {

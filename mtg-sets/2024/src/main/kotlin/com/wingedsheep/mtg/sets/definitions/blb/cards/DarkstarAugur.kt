@@ -1,7 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
@@ -37,7 +36,7 @@ val DarkstarAugur = card("Darkstar Augur") {
     oracleText = "Offspring {B} (You may pay an additional {B} as you cast this spell. If you do, when this creature enters, create a 1/1 token copy of it.)\nFlying\nAt the beginning of your upkeep, reveal the top card of your library and put that card into your hand. You lose life equal to its mana value."
 
     // Offspring modeled as Kicker
-    keywordAbility(KeywordAbility.OptionalAdditionalCost(ManaCost.parse("{B}")))
+    keywordAbility(KeywordAbility.offspring("{B}"))
 
     // Offspring ETB: create token copy when kicked
     triggeredAbility {

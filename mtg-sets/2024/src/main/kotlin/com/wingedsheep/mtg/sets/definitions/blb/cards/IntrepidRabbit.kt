@@ -1,6 +1,5 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -29,7 +28,7 @@ val IntrepidRabbit = card("Intrepid Rabbit") {
     oracleText = "Offspring {1} (You may pay an additional {1} as you cast this spell. If you do, when this creature enters, create a 1/1 token copy of it.)\nWhen this creature enters, target creature you control gets +1/+1 until end of turn."
 
     // Offspring modeled as Kicker
-    keywordAbility(KeywordAbility.OptionalAdditionalCost(ManaCost.parse("{1}")))
+    keywordAbility(KeywordAbility.offspring("{1}"))
 
     // Offspring ETB: create token copy when kicked
     triggeredAbility {

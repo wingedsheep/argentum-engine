@@ -53,26 +53,28 @@ class CoralhelmChroniclerScenarioTest : ScenarioTestBase() {
             game.librarySize(1) shouldBe 4
         }
 
-        test("casting a kicked spell loots; an unkicked one doesn't") {
+        test("casting a kicked spell loots; a kicker card cast without its kicker doesn't") {
             val game = scenario()
                 .withPlayers("Player1", "Player2")
                 .withCardOnBattlefield(1, "Coralhelm Chronicler")
                 .withCardInHand(1, "Murasa Sproutling")
-                .withCardInHand(1, "Grizzly Bears")
-                .withLandsOnBattlefield(1, "Forest", 7)
+                .withCardInHand(1, "Murasa Sproutling")
+                .withLandsOnBattlefield(1, "Forest", 8)
                 .withCardInLibrary(1, "Island")
                 .withCardInLibrary(1, "Island")
                 .withActivePlayer(1)
                 .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                 .build()
 
-            game.castSpell(1, "Grizzly Bears").error shouldBe null
+            val (unkicked, kicked) = game.findCardsInHand(1, "Murasa Sproutling")
+
+            game.execute(CastSpell(game.player1Id, unkicked)).error shouldBe null
             game.hasPendingDecision() shouldBe false
             game.resolveStack()
             game.handSize(1) shouldBe 1
+            game.librarySize(1) shouldBe 2
 
-            val sproutling = game.findCardsInHand(1, "Murasa Sproutling").single()
-            game.execute(CastSpell(game.player1Id, sproutling, declaredCostSlot = ChoiceSlot.KICKED))
+            game.execute(CastSpell(game.player1Id, kicked, declaredCostSlot = ChoiceSlot.KICKED))
                 .error shouldBe null
             game.resolveStack()
 
