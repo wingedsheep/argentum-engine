@@ -232,12 +232,16 @@ export function selectCardInteraction(state: GameStore, input: CardInteractionIn
   const tapForGeneric = state.tapForGenericSelectionState
   const harmonize = state.harmonizeSelectionState
 
-  // Combat. In single-client hotseat the seat we control may render on the opponent row, so any
-  // creature counts as "ours" / "theirs" and combatState membership disambiguates.
+  // Combat. When this client declares for another seat — single-client hotseat, or a declaration
+  // the server routed to us (Master Warcraft, Brutal Hordechief: we choose an opponent's blocks) —
+  // the declaring seat's creatures may render on the opponent row, so any creature counts as
+  // "ours" / "theirs" and combatState membership disambiguates.
   const combat = state.combatState
   const hotseat = viewed?.hotseat ?? false
-  const ownForCombat = (!isOpponentCard && isCreature) || (hotseat && isCreature)
-  const opponentForCombat = isOpponentCard || hotseat
+  const declaringForAnotherSeat = !!combat?.actingSeat && !!state.playerId && combat.actingSeat !== state.playerId
+  const anySideForCombat = hotseat || declaringForAnotherSeat
+  const ownForCombat = (!isOpponentCard && isCreature) || (anySideForCombat && isCreature)
+  const opponentForCombat = isOpponentCard || anySideForCombat
   const isInAttackerMode = combat?.mode === 'declareAttackers'
   const isInBlockerMode = combat?.mode === 'declareBlockers'
   const isValidCombatCreature = listHas(combat?.validCreatures, cardId)

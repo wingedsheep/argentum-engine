@@ -89,6 +89,15 @@ describe('selectCardInteraction', () => {
     expect(selectCardInteraction(hotseat, input('bear', { isCreature: false })).isValidAttacker).toBe(false)
   })
 
+  it("lets you pick an opponent's blockers when the server routed their declaration to you", () => {
+    // Brutal Hordechief / Master Warcraft: the legal action is the opponent's DeclareBlockers.
+    const routed = combat({ mode: 'declareBlockers', actingSeat: id('p2'), validCreatures: [id('giant')] })
+    const mine = combat({ mode: 'declareBlockers', actingSeat: id('p1'), validCreatures: [id('giant')] })
+    const theirGiant = input('giant', { isOpponentCard: true })
+    expect(selectCardInteraction(store({ playerId: id('p1'), combatState: routed }), theirGiant).isValidBlocker).toBe(true)
+    expect(selectCardInteraction(store({ playerId: id('p1'), combatState: mine }), theirGiant).isValidBlocker).toBe(false)
+  })
+
   it('reads hotseat and server combat from the spectated game when spectating', () => {
     const c = combat({ validCreatures: [id('bear')] })
     const s = store({

@@ -782,7 +782,7 @@ Families:
 - `CompositeEffect(effects: List<Effect>, stopOnError: Boolean, descriptionOverride: String?, descriptionAmounts: List<DynamicAmount>)` — Multiple effects that happen together.
 - `ConditionalOnCollectionEffect(collection: String, ifNotEmpty: Effect, ifEmpty: Effect?, minSize: Int, countDistinctCardTypes: Boolean, filter: GameObjectFilter)` — Conditionally execute an effect based on the size of a named collection.
 - `ConniveEffect(subject: EffectTarget, body: Effect, replacementsApplied: Boolean, count: DynamicAmount)` — "subject connives" (CR 701.50) — the named keyword action, wrapping the pipeline that carries it out.
-- `ControlCombatDeclarationsThisTurnEffect` — "You choose which creatures attack this turn.
+- `ControlCombatDeclarationsThisTurnEffect(declarations: Set<CombatDeclaration>, declaringPlayers: Player)` — "You choose which creatures attack this turn.
 - `ControlPlayerDuringResolutionEffect(target: EffectTarget, resolvingObject: EffectTarget?)` — Move input authority for target only while the captured stack object resolves.
 - `ConvertCountersToTokensEffect(counterType: CounterType, tokenFactory: CreateTokenEffect)` — "Remove any number of counterType counters from the source.
 - `CopyCardIntoCollectionEffect(source: EffectTarget, storeAs: String)` — Copy a single card referenced by source and store the copy's entity id in the pipeline collection storeAs.
@@ -974,6 +974,7 @@ Families:
 - `MoveUntilSourceLeavesEffect(target: EffectTarget, destination: Zone)` — Move an object out of its zone until this source leaves the battlefield.
 - `MustAttackGroupEffect(filter: GroupFilter, defender: MustAttackDefender, duration: Duration)` — "filter attack each combat if able" for duration — Kardur, Doomscourge's "until your next turn, creatures your opponents control attack each combat if able and attack a player other than you if abl…
 - `MustBeBlockedEffect(target: EffectTarget, allCreatures: Boolean)` — Target creature must be blocked this turn.
+- `MustBlockGroupEffect(filter: GroupFilter, duration: Duration)` — All creatures matching a filter block this turn if able — Brutal Hordechief's "creatures your opponents control block this turn if able".
 - `NoteCreatureTypeEffect(storeAs: String, prompt: String?, options: List<String>, secret: Boolean)` — "Note a creature type that hasn't been noted for this <source>." (LTR — Long List of the Ents) Prompts the controller to pick a creature type, with the source's *current* set of already-noted types…
 - `NoteNumberForSourceEffect(amount: DynamicAmount, slot: ChoiceSlot)` — "Note <a number>" for the source permanent — evaluate amount once and write it **durably on the source permanent** in its cast-choices bag under slot, replacing any prior value; read it back later…
 - `OpenLifeBidEffect(onWin: Effect, participant: Player)` — Open life-bidding auction between the caster and another participant.

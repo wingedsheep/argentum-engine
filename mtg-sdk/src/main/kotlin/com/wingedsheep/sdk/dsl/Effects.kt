@@ -79,6 +79,7 @@ import com.wingedsheep.sdk.scripting.effects.MarkMustBlockThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveSuspectedEffect
 import com.wingedsheep.sdk.scripting.effects.SuspectEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockGroupEffect
+import com.wingedsheep.sdk.scripting.effects.MustBlockGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CantBeBlockedGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CantActivateLoyaltyAbilitiesEffect
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
@@ -6197,6 +6198,15 @@ object Effects {
         CantBlockGroupEffect(filter, duration)
 
     /**
+     * "[Filter] block this turn if able." — a floating group requirement that also binds creatures
+     * matching [filter] later in the turn (Rule 611.2c). Brutal Hordechief:
+     * `MustBlockGroup(GroupFilter.AllCreaturesOpponentsControl)`. [MarkMustBlockThisTurn] is the
+     * per-object sibling. See [MustBlockGroupEffect].
+     */
+    fun MustBlockGroup(filter: GroupFilter, duration: Duration = Duration.EndOfTurn): Effect =
+        MustBlockGroupEffect(filter, duration)
+
+    /**
      * "[Filter] can't be blocked this turn." — a floating group restriction that also covers
      * creatures matching [filter] later in the turn (Rule 611.2c). Jace, Arcane Strategist's −7.
      */
@@ -6566,7 +6576,19 @@ object Effects {
      * `castOnlyIf(Conditions.BeforeAttackersDeclared)` for the card's timing line.
      */
     fun ChooseAttackersAndBlockersThisTurn(): Effect =
-        com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsThisTurnEffect
+        com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsThisTurnEffect()
+
+    /**
+     * "You choose how [creatures controlled by [players]] block this turn" — only the block
+     * declarations those players owe move to the controller (Brutal Hordechief:
+     * `ChooseBlockersThisTurn(Player.EachOpponent)`, usually after `MustBlockGroup`).
+     * See [com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsThisTurnEffect].
+     */
+    fun ChooseBlockersThisTurn(players: Player = Player.Each): Effect =
+        com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsThisTurnEffect(
+            declarations = setOf(com.wingedsheep.sdk.scripting.effects.CombatDeclaration.BLOCKERS),
+            declaringPlayers = players
+        )
 
     /**
      * Grant a flat damage bonus to a player's sources this turn.

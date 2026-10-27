@@ -5,18 +5,21 @@ import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisComba
 import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.player.CombatDeclarationControlComponent
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.scripting.effects.CombatDeclaration
 import com.wingedsheep.sdk.model.EntityId
 
 /**
  * Who makes a combat *declaration* (Master Warcraft: "You choose which creatures attack this turn.
- * You choose which creatures block this turn and how those creatures block.").
+ * You choose which creatures block this turn and how those creatures block."; Brutal Hordechief:
+ * "you choose how those creatures block" for creatures your opponents control).
  *
  * A declaration is owed by the active player in an undeclared declare attackers step, and by each
  * defending player in an undeclared declare blockers step (CR 508.1 / 509.1). Normally the player
- * who owes it makes it; while a [CombatDeclarationControlComponent] is in force this turn, the
- * player carrying it makes it instead. The declaration itself is unchanged — it is still the owing
- * player's `DeclareAttackers` / `DeclareBlockers`, validated against their creatures and their
- * requirements and restrictions — only the *input* moves.
+ * who owes it makes it; while a [CombatDeclarationControlComponent] grant covering that
+ * declaration and that player is in force this turn, the player carrying it makes it instead. The
+ * declaration itself is unchanged — it is still the owing player's `DeclareAttackers` /
+ * `DeclareBlockers`, validated against their creatures and their requirements and restrictions —
+ * only the *input* moves.
  *
  * Deliberately separate from [GameState.actorFor]: that one moves all input *and* the right to see
  * the controlled player's hidden zones (Mindslaver), while this moves exactly two choices and
@@ -24,26 +27,39 @@ import com.wingedsheep.sdk.model.EntityId
  */
 object CombatDeclarationControl {
 
-    /** True while [playerId] owes an attack or block declaration that hasn't been made yet. */
-    fun owesDeclaration(state: GameState, playerId: EntityId): Boolean {
-        val entity = state.getEntity(playerId) ?: return false
+    /**
+     * The declaration [playerId] owes right now and hasn't made yet, or null when they owe none.
+     */
+    fun owedDeclaration(state: GameState, playerId: EntityId): CombatDeclaration? {
+        val entity = state.getEntity(playerId) ?: return null
         if (state.step == Step.DECLARE_ATTACKERS && state.isActiveTurnFor(playerId)) {
-            return entity.get<AttackersDeclaredThisCombatComponent>() == null
+            return CombatDeclaration.ATTACKERS.takeIf { entity.get<AttackersDeclaredThisCombatComponent>() == null }
         }
         if (state.step == Step.DECLARE_BLOCKERS && !state.isActiveTurnFor(playerId)) {
-            return entity.get<BlockersDeclaredThisCombatComponent>() == null &&
-                CombatDefenders.isDefendingPlayer(state, playerId)
+            return CombatDeclaration.BLOCKERS.takeIf {
+                entity.get<BlockersDeclaredThisCombatComponent>() == null &&
+                    CombatDefenders.isDefendingPlayer(state, playerId)
+            }
         }
-        return false
+        return null
     }
 
-    /** The player who makes every combat declaration this turn, or null when nobody took them over. */
-    fun controllerThisTurn(state: GameState): EntityId? =
+    /**
+     * The player who makes [declaration] for [playerId] this turn, or null when nobody took it
+     * over: the holder of the latest grant this turn that covers both (Brutal Hordechief ruling —
+     * the last such effect to resolve decides, for the players it covers).
+     */
+    fun controllerOf(state: GameState, declaration: CombatDeclaration, playerId: EntityId): EntityId? =
         state.turnOrder
-            .mapNotNull { id ->
-                state.getEntity(id)?.get<CombatDeclarationControlComponent>()
-                    ?.takeIf { it.turnNumber == state.turnNumber }
-                    ?.let { id to it.timestamp }
+            .mapNotNull { holder ->
+                state.getEntity(holder)?.get<CombatDeclarationControlComponent>()?.grants
+                    ?.filter {
+                        it.turnNumber == state.turnNumber &&
+                            declaration in it.declarations &&
+                            playerId in it.declaringPlayers
+                    }
+                    ?.maxOfOrNull { it.timestamp }
+                    ?.let { holder to it }
             }
             .maxByOrNull { it.second }
             ?.first
@@ -54,8 +70,8 @@ object CombatDeclarationControl {
      * (or whoever already acts for them) makes it as usual.
      */
     fun declarerFor(state: GameState, playerId: EntityId): EntityId? {
-        if (!owesDeclaration(state, playerId)) return null
-        return controllerThisTurn(state)
+        val owed = owedDeclaration(state, playerId) ?: return null
+        return controllerOf(state, owed, playerId)
     }
 
     /**

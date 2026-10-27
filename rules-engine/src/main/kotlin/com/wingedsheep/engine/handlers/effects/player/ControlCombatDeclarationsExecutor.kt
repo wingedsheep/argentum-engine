@@ -5,14 +5,18 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.CombatDeclarationControlComponent
+import com.wingedsheep.engine.state.components.player.CombatDeclarationGrant
 import com.wingedsheep.sdk.scripting.effects.ControlCombatDeclarationsThisTurnEffect
+import com.wingedsheep.sdk.scripting.references.Player
 import kotlin.reflect.KClass
 
 /**
- * Executor for [ControlCombatDeclarationsThisTurnEffect] (Master Warcraft): marks the controller as
- * the player who makes every attack and block declaration for the rest of this turn. The marker is
- * turn-stamped, so it lapses by itself when the turn ends; a later one (a second Warcraft) wins via
- * its timestamp. Routing the declarations is [com.wingedsheep.engine.mechanics.combat.CombatDeclarationControl].
+ * Executor for [ControlCombatDeclarationsThisTurnEffect] (Master Warcraft, Brutal Hordechief): adds
+ * a turn-stamped [CombatDeclarationGrant] to the controller naming the declarations it takes over
+ * and the players who owe them, resolved now. Grants from earlier turns are dropped on the way;
+ * the rest lapse by themselves when the turn ends. Among grants covering the same declaration the
+ * latest wins, by timestamp. Routing the declarations is
+ * [com.wingedsheep.engine.mechanics.combat.CombatDeclarationControl].
  */
 class ControlCombatDeclarationsExecutor : EffectExecutor<ControlCombatDeclarationsThisTurnEffect> {
 
@@ -25,13 +29,24 @@ class ControlCombatDeclarationsExecutor : EffectExecutor<ControlCombatDeclaratio
         context: EffectContext
     ): EffectResult {
         val ticked = state.tick()
-        val newState = ticked.updateEntity(context.controllerId) { container ->
-            container.with(
-                CombatDeclarationControlComponent(
-                    turnNumber = ticked.turnNumber,
-                    timestamp = ticked.timestamp
-                )
-            )
+        val controller = context.controllerId
+        val declaringPlayers = when (effect.declaringPlayers) {
+            Player.EachOpponent -> ticked.getOpponents(controller)
+            Player.EachOtherPlayer -> ticked.getOtherPlayers(controller)
+            Player.You -> listOf(controller)
+            else -> ticked.activePlayers
+        }.toSet()
+        val grant = CombatDeclarationGrant(
+            turnNumber = ticked.turnNumber,
+            timestamp = ticked.timestamp,
+            declarations = effect.declarations,
+            declaringPlayers = declaringPlayers
+        )
+        val newState = ticked.updateEntity(controller) { container ->
+            val current = container.get<CombatDeclarationControlComponent>()?.grants
+                ?.filter { it.turnNumber == ticked.turnNumber }
+                .orEmpty()
+            container.with(CombatDeclarationControlComponent(current + grant))
         }
         return EffectResult.success(newState)
     }

@@ -172,6 +172,116 @@
     ]
 }
 
+// Brutal Hordechief
+{
+    "name": "Brutal Hordechief",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Orc Warrior",
+    "oracleText": "Whenever a creature you control attacks, defending player loses 1 life and you gain 1 life.\n{3}{R/W}{R/W}: Creatures your opponents control block this turn if able, and you choose how those creatures block.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Brutal Hordechief:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "DefendingPlayer"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Brutal Hordechief:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{R/W}{R/W}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MustBlockGroup",
+                            "filter": {
+                                "baseFilter": "creature ctrl:opponent"
+                            }
+                        },
+                        {
+                            "type": "ControlCombatDeclarationsThisTurn",
+                            "declarations": [
+                                "BLOCKERS"
+                            ],
+                            "declaringPlayers": "EachOpponent"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "MYTHIC",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/ab8ec769-99cd-4542-9b4d-61ee41b622bc.jpg?1783938699",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "All blocking declarations must still be legal."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "If there's a cost associated with having a creature block and you choose for that creature to block, its controller can choose to pay that cost or not. If that player decides to not pay that cost, you must propose a new set of blocking creatures."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "You'll choose how each creature controlled by an opponent blocks, even if that creature wasn't on the battlefield or wasn't controlled by an opponent as the activated ability resolved."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "In a multiplayer game, if more than one player activates Brutal Hordechief's activated ability on the same turn, the controller of the last ability to resolve will choose how any creatures controlled by players who didn't resolve this ability will block."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "The defending player affected by Brutal Hordechief's triggered ability is determined relative to the creature that attacked. For example, if Brutal Hordechief attacked one opponent and two other creatures you control attacked another opponent, the first opponent would lose 1 life and the second opponent would lose 2 life. You'd gain a total of 3 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Collateral Damage
 {
     "name": "Collateral Damage",

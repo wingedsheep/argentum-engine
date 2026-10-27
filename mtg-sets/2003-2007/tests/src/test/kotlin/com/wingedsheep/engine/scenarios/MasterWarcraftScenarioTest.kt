@@ -7,6 +7,7 @@ import com.wingedsheep.engine.mechanics.combat.CombatDeclarationControl
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.scripting.effects.CombatDeclaration
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
@@ -56,7 +57,7 @@ class MasterWarcraftScenarioTest : ScenarioTestBase() {
             val game = board(caster = 1)
             game.castSpell(1, "Master Warcraft").error shouldBe null
             game.resolveStack()
-            CombatDeclarationControl.controllerThisTurn(game.state) shouldBe game.player1Id
+            CombatDeclarationControl.controllerOf(game.state, CombatDeclaration.BLOCKERS, game.player2Id) shouldBe game.player1Id
 
             game.advanceTo(Step.DECLARE_ATTACKERS)
             game.declareAttackers(mapOf("Grizzly Bears" to 2)).error shouldBe null
@@ -90,7 +91,7 @@ class MasterWarcraftScenarioTest : ScenarioTestBase() {
             game.execute(PassPriority(game.player1Id)).error shouldBe null
             game.castSpell(2, "Master Warcraft").error shouldBe null
             game.resolveStack()
-            CombatDeclarationControl.controllerThisTurn(game.state) shouldBe game.player2Id
+            CombatDeclarationControl.controllerOf(game.state, CombatDeclaration.ATTACKERS, game.player1Id) shouldBe game.player2Id
 
             game.advanceTo(Step.DECLARE_ATTACKERS)
             withClue("the active player doesn't get to declare attackers") {
@@ -128,7 +129,7 @@ class MasterWarcraftScenarioTest : ScenarioTestBase() {
             game.castSpell(1, "Master Warcraft").error shouldBe null
             game.resolveStack()
             game.state = game.state.copy(turnNumber = game.state.turnNumber + 1)
-            CombatDeclarationControl.controllerThisTurn(game.state) shouldBe null
+            CombatDeclarationControl.controllerOf(game.state, CombatDeclaration.BLOCKERS, game.player2Id) shouldBe null
         }
 
         test("castable up to the beginning of combat, not once attackers are being declared") {

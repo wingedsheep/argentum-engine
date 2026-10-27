@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.TurnPart
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.effects.CombatDeclaration
 import com.wingedsheep.sdk.scripting.effects.HijackScope
 import com.wingedsheep.sdk.scripting.effects.ManaExpiry
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
@@ -2217,22 +2218,34 @@ data class EndTheTurnRequestedComponent(val sourceId: EntityId? = null) : Compon
 
 /**
  * "You choose which creatures attack this turn. You choose which creatures block this turn and how
- * those creatures block." (Master Warcraft.) Placed on the player who makes every attack and block
- * declaration during turn [turnNumber].
+ * those creatures block." (Master Warcraft), or a narrower "you choose how creatures your opponents
+ * control block" (Brutal Hordechief). Placed on the player who takes the declarations over; one
+ * [CombatDeclarationGrant] per resolved effect, since one player can hold several (a Master
+ * Warcraft and a Hordechief activation in one turn).
  *
  * Moves only the *declaration*: the declared attackers and blockers still belong to — and must be
  * legal for — the players who control them (the engine validates the declaration exactly as it
  * would theirs), and every other decision, priority and hidden zone stays with its owner. Read
- * through [com.wingedsheep.engine.mechanics.combat.CombatDeclarationControl]; expires on its own
- * once the turn number moves on.
+ * through [com.wingedsheep.engine.mechanics.combat.CombatDeclarationControl]; grants expire on
+ * their own once the turn number moves on.
  */
 @Serializable
 data class CombatDeclarationControlComponent(
-    /** The turn during which this player makes every attack and block declaration. */
-    val turnNumber: Int,
-    /** When the effect was created; the latest one wins when two players cast it the same turn. */
-    val timestamp: Long
+    val grants: List<CombatDeclarationGrant>
 ) : Component
+
+/**
+ * One resolved take-over of combat declarations during turn [turnNumber]: the [declarations] owed
+ * by any of [declaringPlayers] (frozen at resolution).
+ */
+@Serializable
+data class CombatDeclarationGrant(
+    val turnNumber: Int,
+    /** When the effect was created; the latest grant covering a declaration wins. */
+    val timestamp: Long,
+    val declarations: Set<CombatDeclaration>,
+    val declaringPlayers: Set<EntityId>
+)
 
 /**
  * Tracks a Mindslaver-style "you control target opponent" effect, scoped to either the

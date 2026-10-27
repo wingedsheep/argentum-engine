@@ -577,6 +577,41 @@ data class CantBlockGroupEffect(
 }
 
 /**
+ * All creatures matching a filter block this turn if able — Brutal Hordechief's "creatures your
+ * opponents control block this turn if able".
+ *
+ * The durational, group-wide counterpart of the printed [com.wingedsheep.sdk.scripting.MustBlock]
+ * static (Grand Melee), and the group sibling of [MarkMustBlockThisTurnEffect], which marks one
+ * creature and never reaches a later one. A rule-modifying effect, so — like [CantBlockGroupEffect]
+ * — it binds every creature matching [filter] when blockers are declared, including ones that
+ * arrived after it resolved (Rule 611.2c). "You" in [filter] is the effect's controller, fixed when
+ * it resolves.
+ *
+ * @property filter Which creatures must block (e.g., GroupFilter.AllCreaturesOpponentsControl)
+ * @property duration How long the requirement lasts
+ */
+@SerialName("MustBlockGroup")
+@Serializable
+data class MustBlockGroupEffect(
+    val filter: GroupFilter,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    // GroupFilter's generic description ("all an opponent controls creatures") reads badly as a
+    // sentence subject, and this text becomes the ability's button label — name the common groups.
+    override val description: String = when (filter) {
+        GroupFilter.AllCreatures -> "creatures"
+        GroupFilter.AllCreaturesYouControl -> "creatures you control"
+        GroupFilter.AllCreaturesOpponentsControl -> "creatures your opponents control"
+        else -> filter.description
+    }.replaceFirstChar { it.uppercase() } + " block this turn if able"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * All creatures matching a filter can't be blocked this turn.
  * Used for Jace, Arcane Strategist's −7: "Creatures you control can't be blocked this turn."
  *
