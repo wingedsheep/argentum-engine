@@ -787,9 +787,13 @@ internal class PermanentEntry(
         // ZoneTransitionService.moveToZone. Every other entry reaches the same shared
         // placeEntryCounters call through ZoneMovementUtils.applyIntrinsicEntryCountersIfNeeded.
         // A spell copy may enter with a starting loyalty other than the printed one (casualty X's
-        // "the copy has starting loyalty X", CR 707.10f).
-        val copyStartingLoyalty = newState.getEntity(spellId)
+        // "the copy has starting loyalty X", CR 707.10f). Failing that, a copy exception's
+        // "its starting loyalty is N" carried as a copiable value — a Clone entering as a copy of
+        // Jace, Mirror Mage's token starts at 1 — wins over the printed loyalty.
+        val spellEntity = newState.getEntity(spellId)
+        val copyStartingLoyalty = spellEntity
             ?.get<com.wingedsheep.engine.state.components.stack.SpellCopyTokenRidersComponent>()?.startingLoyalty
+            ?: spellEntity?.get<CardComponent>()?.startingLoyaltyOverride
         val intrinsicEntryCounters = if (cardDef != null && !spellComponent.castFaceDown) {
             when {
                 // Compleated (CR 702.150a): two fewer loyalty counters for each Phyrexian mana

@@ -13,6 +13,8 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.EntersAsCopy
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CopyExceptions
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import io.kotest.assertions.withClue
@@ -23,7 +25,8 @@ import io.kotest.matchers.shouldBe
  * `CopyExceptions.startingLoyalty` — "create a token that's a copy of Jace, except it's not legendary
  * and its starting loyalty is 1" (Jace, Mirror Mage). The token enters with the overridden number of
  * loyalty counters instead of the printed one (CR 306.5b), and because a copy exception is a copiable
- * value (CR 707.9b), a plain copy of that token starts at the overridden loyalty too.
+ * value (CR 707.9b), a plain copy of that token — minted, or a cast clone entering as a copy — starts at
+ * the overridden loyalty too.
  */
 class StartingLoyaltyCopyExceptionTest : FunSpec({
 
@@ -57,9 +60,18 @@ class StartingLoyaltyCopyExceptionTest : FunSpec({
         }
     }
 
+    val cloner = card("Walker Cloner") {
+        manaCost = "{1}"
+        typeLine = "Creature — Shapeshifter"
+        power = 0
+        toughness = 0
+        oracleText = "You may have this creature enter as a copy of a planeswalker on the battlefield."
+        replacementEffect(EntersAsCopy(copyFilter = GameObjectFilter.Planeswalker))
+    }
+
     fun setup(): Pair<GameTestDriver, EntityId> {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(walker, mirror, replicate))
+        driver.registerCards(TestCards.all + listOf(walker, mirror, replicate, cloner))
         driver.initMirrorMatch(deck = Deck.of("Swamp" to 40))
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         val caster = driver.activePlayer!!
@@ -122,5 +134,30 @@ class StartingLoyaltyCopyExceptionTest : FunSpec({
         tokens.size shouldBe 2
         val copyOfCopy = tokens.single { it != token }
         withClue("the copy of the copy starts at 1, not the printed 4") { loyalty(driver, copyOfCopy) shouldBe 1 }
+    }
+
+    test("a cast clone entering as a copy of the token starts at the overridden loyalty too") {
+        val (driver, caster) = setup()
+        val spell = driver.putCardInHand(caster, "Mirror Walker")
+        driver.castSpell(caster, spell).outcome shouldBe Outcome.Done
+        resolveAll(driver)
+        val original = walkers(driver).single()
+        val mirrorSpell = driver.putCardInHand(caster, "Mirror Walker Copy")
+        driver.castSpell(caster, mirrorSpell, listOf(original)).outcome shouldBe Outcome.Done
+        resolveAll(driver)
+        val token = walkers(driver).single { isToken(driver, it) }
+
+        val clone = driver.putCardInHand(caster, "Walker Cloner")
+        driver.castSpell(caster, clone).outcome shouldBe Outcome.Done
+        driver.bothPass()
+        driver.submitCardSelection(caster, listOf(token)).error shouldBe null
+        resolveAll(driver)
+
+        withClue("the clone resolved as a nonlegendary copy of the token") {
+            walkers(driver).size shouldBe 3
+        }
+        withClue("the clone took the token's copiable starting loyalty of 1, not the printed 4") {
+            loyalty(driver, clone) shouldBe 1
+        }
     }
 })
