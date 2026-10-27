@@ -667,6 +667,127 @@
     ]
 }
 
+// Arni Slays the Troll
+{
+    "name": "Arni Slays the Troll",
+    "manaCost": "{R}{G}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Target creature you control fights up to one target creature you don't control.\nII — Add {R}. Put two +1/+1 counters on up to one target creature you control.\nIII — You gain life equal to the greatest power among creatures you control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Fight",
+                    "target1": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "additionalTargetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "controllerPredicate": {
+                                    "type": "ControllerNot",
+                                    "predicate": "ControlledByYou"
+                                }
+                            }
+                        },
+                        "id": "t1"
+                    }
+                ]
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "RED"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 2,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t2"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t2"
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature",
+                        "aggregation": "MAX",
+                        "property": "POWER"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "rarity": "UNCOMMON",
+        "artist": "Simon Dominic",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d18396f9-ae20-4471-84ab-a2148319bc39.jpg?1783928202",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "For the chapter I ability, if either target is an illegal target as that ability resolves, neither creature will deal or be dealt damage."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The chapter II ability isn't a mana ability. It uses the stack and can be responded to."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If you choose no targets for the chapter II ability, you'll simply add {R} as the ability resolves. However, if you do choose a target creature you control, and that creature is an illegal target as the ability resolves, the ability won't resolve. You won't add {R} in that case."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "For the chapter III ability, use the greatest power among creatures you control as the ability resolves to determine how much life you will gain. If you control no creatures at that time, or if all creatures you control have power 0 or less, you won't gain any life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Ascendant Spirit
 {
     "name": "Ascendant Spirit",
@@ -1438,6 +1559,147 @@
     ]
 }
 
+// Battle of Frost and Fire
+{
+    "name": "Battle of Frost and Fire",
+    "manaCost": "{3}{U}{R}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — This Saga deals 4 damage to each non-Giant creature and each planeswalker.\nII — Scry 3.\nIII — Whenever you cast a spell with mana value 5 or greater this turn, draw two cards, then discard a card.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            {
+                                                "type": "And",
+                                                "predicates": [
+                                                    "IsCreature",
+                                                    {
+                                                        "type": "NotSubtype",
+                                                        "subtype": "Giant"
+                                                    }
+                                                ]
+                                            },
+                                            "IsPlaneswalker"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "target": "IterationEntity"
+                    }
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Scry",
+                    "count": 3
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "ManaValueAtLeast",
+                                        "min": 5
+                                    }
+                                ]
+                            }
+                        },
+                        "binding": "ANY"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "rarity": "RARE",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/620ed5b7-8874-40d0-9245-98876bdec153.jpg?1783928201",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The triggered ability created by the chapter III ability may trigger multiple times during the turn, even though Battle of Frost and Fire will likely no longer be on the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Battlefield Raptor
 {
     "name": "Battlefield Raptor",
@@ -1460,6 +1722,86 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Bearded Axe
+{
+    "name": "Bearded Axe",
+    "manaCost": "{2}{R}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+1 for each Dwarf, Equipment, and/or Vehicle you control.\nEquip {2}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Bearded Axe:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "Dwarf|Equipment|Vehicle"
+                },
+                "toughnessBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "Dwarf|Equipment|Vehicle"
+                }
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "388",
+        "rarity": "UNCOMMON",
+        "artist": "Ovidio Cartagena",
+        "flavorText": "Every dwarven artisan spends the first hundred years of their life forging a single weapon and infusing it with runic magic.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/2381dbab-e968-4bbc-b3a7-a1e55b066039.jpg?1783928116",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The bonus granted by Bearded Axe is constantly updated as the number of Dwarves, Equipment, and Vehicles you control changes."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Bearded Axe will count itself, so it will give at least +1/+1 in most cases."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -6277,6 +6619,123 @@
     ]
 }
 
+// Fire Giant's Fury
+{
+    "name": "Fire Giant's Fury",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target Giant you control gets +2/+2 and gains trample until end of turn. Whenever it deals combat damage to a player this turn, exile that many cards from the top of your library. Until the end of your next turn, you may play those cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "ContextProperty",
+                                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                                    }
+                                },
+                                "storeAs": "impulseExiled"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "impulseExiled",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                }
+                            },
+                            {
+                                "type": "GrantMayPlayFromExile",
+                                "from": "impulseExiled",
+                                "expiry": {
+                                    "type": "UntilControllerStep",
+                                    "step": "CLEANUP",
+                                    "includeCurrentTurn": false
+                                }
+                            }
+                        ]
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "DealsDamageEvent",
+                            "damageType": "DamageCombat",
+                            "recipient": {
+                                "type": "RecipientPlayer",
+                                "player": "Any"
+                            }
+                        }
+                    },
+                    "watchedTarget": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature Giant ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "389",
+        "rarity": "UNCOMMON",
+        "artist": "Andrew Mar",
+        "flavorText": "So ended the feast, the hall, and the clan.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c7f05d49-dfc1-4dad-89e0-07174330d98e.jpg?1783928116",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "You may play those cards that turn even if the Giant leaves the battlefield or another player gains control of it."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Any exiled cards that you don't play by the end of your next turn remain exiled."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Firja, Judge of Valor
 {
     "name": "Firja, Judge of Valor",
@@ -7212,6 +7671,57 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Gilded Assault Cart
+{
+    "name": "Gilded Assault Cart",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Trample\nCrew 2 (Tap any number of creatures you control with total power 2 or more: This Vehicle becomes an artifact creature until end of turn.)\nSacrifice two Treasures: Return this card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 1
+    },
+    "keywords": [
+        "TRAMPLE",
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 2
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Gilded Assault Cart:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "artifact Treasure",
+                        "count": 2
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
+                },
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "390",
+        "rarity": "UNCOMMON",
+        "artist": "Joseph Meehan",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/5274c2fa-eb0e-438b-8a48-d0b58829083a.jpg?1783928116"
+    }
 }
 
 // Glacial Floodplain
@@ -8972,6 +9482,143 @@
     }
 }
 
+// Invasion of the Giants
+{
+    "name": "Invasion of the Giants",
+    "manaCost": "{U}{R}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Scry 2.\nII — Draw a card. Then you may reveal a Giant card from your hand. When you do, this Saga deals 2 damage to target opponent or planeswalker.\nIII — The next Giant spell you cast this turn costs {2} less to cast.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Scry",
+                    "count": 2
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "Giant"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "prompt": "You may reveal a Giant card from your hand"
+                        },
+                        {
+                            "type": "RevealCollection",
+                            "from": "selected2",
+                            "fromZone": "Hand"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "selected2"
+                                }
+                            },
+                            "then": {
+                                "type": "ReflexiveTrigger",
+                                "action": {
+                                    "type": "Composite",
+                                    "effects": []
+                                },
+                                "optional": false,
+                                "reflexiveEffect": {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    },
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "reflexiveTargetRequirements": [
+                                    {
+                                        "type": "TargetOpponentOrPlaneswalker",
+                                        "id": "t0"
+                                    }
+                                ],
+                                "descriptionOverride": "this Saga deals 2 damage to target opponent or planeswalker"
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "Draw a card. Then you may reveal a Giant card from your hand. When you do, this Saga deals 2 damage to target opponent or planeswalker."
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "ModifySpellCosts",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Giant"
+                            }
+                        ]
+                    },
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "nextSpellOnly": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "215",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f5075a0-c72a-474c-937c-95dc9205d14f.jpg?1783928196",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The chapter II ability goes on the stack without a target. You choose whether to reveal a Giant card from your hand after you have drawn a card. When you do, the reflexive triggered ability triggers. This is different than effects that say \"If you do\" in that players can respond after you've revealed the Giant card but before damage is dealt."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions (such as that of the effect of the chapter III ability). The mana value of the spell is determined only by its mana cost, no matter what the total cost to cast the spell was."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Iron Verdict
 {
     "name": "Iron Verdict",
@@ -9797,6 +10444,98 @@
         "imageUri": "https://cards.scryfall.io/normal/front/f/2/f28e151f-b61b-486f-b7f8-7abde207c442.jpg"
     },
     "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Koll, the Forgemaster
+{
+    "name": "Koll, the Forgemaster",
+    "manaCost": "{R}{W}",
+    "typeLine": "Legendary Creature — Dwarf Warrior",
+    "oracleText": "Whenever another nontoken creature you control dies, if it was enchanted or equipped, return it to its owner's hand.\nCreature tokens you control that are enchanted or equipped get +1/+1.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Koll, the Forgemaster:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsNontoken"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "StateOr",
+                                "predicates": [
+                                    "IsEnchanted",
+                                    "IsEquipped"
+                                ]
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "TriggeringEntity",
+                    "destination": "Hand"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsToken"
+                        ],
+                        "statePredicates": [
+                            {
+                                "type": "StateOr",
+                                "predicates": [
+                                    "IsEnchanted",
+                                    "IsEquipped"
+                                ]
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "220",
+        "rarity": "UNCOMMON",
+        "artist": "Bram Sels",
+        "flavorText": "Using tyrite from a fallen Cosmos monster, Koll forged a weapon to awe Halvar himself.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/22f68b53-0cf7-434d-9da5-1d18c0828a46.jpg?1783928193",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "A creature token you control is enchanted or equipped if there's an Aura or an Equipment attached to it. You don't have to control that Aura or Equipment."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "A creature token you control that's enchanted or equipped gets only +1/+1 from Koll's last ability, no matter how many Auras and Equipment are attached to that creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
         "WHITE"
     ]
 }
@@ -12097,6 +12836,140 @@
     ]
 }
 
+// Reckless Crew
+{
+    "name": "Reckless Crew",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create X 2/1 red Dwarf Berserker creature tokens, where X is the number of Vehicles you control plus the number of Equipment you control. For each of those tokens, you may attach an Equipment you control to it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Add",
+                        "left": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "permanent Vehicle"
+                        },
+                        "right": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "permanent Equipment"
+                        }
+                    },
+                    "power": 2,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Dwarf",
+                        "Berserker"
+                    ]
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "artifact Equipment",
+                        "player": "You"
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "DistinctEntitiesInCollections",
+                            "collections": [
+                                "createdTokens"
+                            ]
+                        }
+                    },
+                    "storeSelected": "selected2",
+                    "prompt": "Choose up to one Equipment you control for each Dwarf Berserker token",
+                    "useTargetingUI": true
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Collection",
+                        "collection": "selected2"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "createdTokens",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "StateNot",
+                                            "predicate": "IsEquipped"
+                                        }
+                                    ]
+                                },
+                                "storeSelected": "selected3",
+                                "prompt": "Choose a Dwarf Berserker token to attach this Equipment to",
+                                "useTargetingUI": true
+                            },
+                            {
+                                "type": "AttachTargetEquipmentToCreature",
+                                "equipmentTarget": "IterationEntity",
+                                "creatureTarget": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "selected3"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "146",
+        "rarity": "RARE",
+        "artist": "Izzy",
+        "flavorText": "\"Boat's burning! Row faster!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bdd68d9d-b0b9-4915-8a12-658eb0e3dd4a.jpg?1783928224",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Count the number of Vehicles and Equipment you control as Reckless Crew resolves to determine how many Dwarf Berserkers to create."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "All Equipment you decide to attach to tokens become attached at the same time."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "You can't have more than one Equipment become attached to the same token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Reflections of Littjara
 {
     "name": "Reflections of Littjara",
@@ -13702,6 +14575,116 @@
     ]
 }
 
+// Shackles of Treachery
+{
+    "name": "Shackles of Treachery",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of target creature until end of turn. Untap that creature. Until end of turn, it gains haste and \"Whenever this creature deals damage, destroy target Equipment attached to it.\"",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GrantTriggeredAbility",
+                    "ability": {
+                        "id": "Shackles of Treachery:1",
+                        "trigger": "DealsDamageEvent",
+                        "effect": {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "destination": "Graveyard",
+                            "byDestruction": true
+                        },
+                        "targetRequirement": {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsArtifact",
+                                        {
+                                            "type": "HasSubtype",
+                                            "subtype": "Equipment"
+                                        }
+                                    ],
+                                    "statePredicates": [
+                                        "IsAttachedToSource"
+                                    ]
+                                }
+                            },
+                            "id": "t1"
+                        },
+                        "descriptionOverride": "Whenever this creature deals damage, destroy target Equipment attached to it."
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "artist": "Dmitry Burmak",
+        "flavorText": "In that instant, Toralf felt only the power of the storm and the need to destroy.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/db743c6e-1385-468e-921a-7a525b88a1b6.jpg?1783928223",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Gaining control of a creature doesn't cause you to gain control of any Auras or Equipment attached to it."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "The triggered ability gained by the creature will trigger when that creature deals any damage, not just combat damage."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If that ability triggers, you must choose a legal target if one is available. It doesn't matter who controls the Equipment attached to the creature. If that Equipment is no longer attached to the creature as the ability tries to resolve, the ability won't resolve and the Equipment won't be destroyed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Shepherd of the Cosmos
 {
     "name": "Shepherd of the Cosmos",
@@ -13795,6 +14778,134 @@
         "imageUri": "https://cards.scryfall.io/normal/front/f/0/f09d98db-0176-41a7-b99b-ead29876cdab.jpg?1783928172"
     },
     "colorIdentityOverride": []
+}
+
+// Showdown of the Skalds
+{
+    "name": "Showdown of the Skalds",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Exile the top four cards of your library. Until the end of your next turn, you may play those cards.\nII, III — Whenever you cast a spell this turn, put a +1/+1 counter on target creature you control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "gathered0",
+                            "expiry": {
+                                "type": "UntilControllerStep",
+                                "step": "CLEANUP",
+                                "includeCurrentTurn": false
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "trigger": {
+                        "event": "SpellCastEvent",
+                        "binding": "ANY"
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "trigger": {
+                        "event": "SpellCastEvent",
+                        "binding": "ANY"
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t1"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "229",
+        "rarity": "RARE",
+        "artist": "Steven Belledin",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d9d840e-1f13-44e3-a4de-903cfa58a346.jpg?1783928190",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The cards you exile because of the chapter I ability are exiled face up."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Playing a card this way follows the normal rules for playing the card. You must pay its costs, and you must follow all applicable timing rules."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Under normal circumstances, you can play a land from among the exiled cards only if you haven't played a land yet that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Any cards you don't play by the end of your next turn will remain exiled."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
 }
 
 // Sigrid, God-Favored
@@ -14213,6 +15324,72 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Smashing Success
+{
+    "name": "Smashing Success",
+    "manaCost": "{3}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target artifact or land. If an artifact is destroyed this way, create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "gathered0",
+                    "filter": "artifact",
+                    "storeMatching": "matching1"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy",
+                    "storeMovedAs": "moved2"
+                },
+                {
+                    "type": "ConditionalOnCollection",
+                    "collection": "moved2",
+                    "ifNotEmpty": {
+                        "type": "ConditionalOnCollection",
+                        "collection": "matching1",
+                        "ifNotEmpty": {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Treasure"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|land"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "artist": "Slawomir Maniak",
+        "flavorText": "\"Who said there's no profit in destruction?\"\n—Magda, brazen outlaw",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c22c7383-ba4d-4b3c-91d6-2d6528e19825.jpg?1783928222"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -14767,6 +15944,125 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Surtland Flinger
+{
+    "name": "Surtland Flinger",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Giant Berserker",
+    "oracleText": "Whenever this creature attacks, you may sacrifice another creature. When you do, this creature deals damage equal to the sacrificed creature's power to any target. If the sacrificed creature was a Giant, this creature deals twice that much damage instead.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Surtland Flinger:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectTarget",
+                                "requirement": {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you",
+                                        "excludeSelf": true
+                                    }
+                                },
+                                "storeAs": "target0",
+                                "nonTargeting": true,
+                                "prompt": "Choose another creature to sacrifice"
+                            },
+                            {
+                                "type": "StoreNumber",
+                                "name": "surtlandFlingerDamage",
+                                "amount": {
+                                    "type": "Conditional",
+                                    "condition": {
+                                        "type": "CollectionContainsMatch",
+                                        "collection": "target0",
+                                        "filter": "creature Giant"
+                                    },
+                                    "ifTrue": {
+                                        "type": "Multiply",
+                                        "amount": {
+                                            "type": "EntityProperty",
+                                            "entity": {
+                                                "type": "PipelineTarget",
+                                                "collectionName": "target0"
+                                            },
+                                            "numericProperty": "Power"
+                                        },
+                                        "multiplier": 2
+                                    },
+                                    "ifFalse": {
+                                        "type": "EntityProperty",
+                                        "entity": {
+                                            "type": "PipelineTarget",
+                                            "collectionName": "target0"
+                                        },
+                                        "numericProperty": "Power"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "SacrificeTarget",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "target0"
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveEffect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "VariableReference",
+                            "variableName": "surtlandFlingerDamage"
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "AnyTarget",
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "You may sacrifice another creature. When you do, Surtland Flinger deals damage equal to that creature's power to any target, or twice that much if it was a Giant."
+                },
+                "descriptionOverride": "Whenever Surtland Flinger attacks, you may sacrifice another creature. When you do, Surtland Flinger deals damage equal to the sacrificed creature's power to any target. If the sacrificed creature was a Giant, Surtland Flinger deals twice that much damage instead."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "377",
+        "rarity": "RARE",
+        "artist": "Dmitry Burmak",
+        "flavorText": "Victory before camaraderie.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4a628052-8175-495f-bfab-eeb3a0388e4e.jpg?1783928121",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Surtland Flinger's triggered ability goes on the stack without a target. While that ability is resolving, you may sacrifice another creature. When you do, the reflexive triggered ability triggers and you pick a target to be dealt damage. Players may take actions after you've sacrificed the creature but before damage is dealt."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Use the power of the creature as it was sacrificed to determine how much damage is dealt. Damage will be dealt before blockers are declared."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -15704,6 +17000,88 @@
     "layout": "MODAL_DFC"
 }
 
+// Tormentor's Helm
+{
+    "name": "Tormentor's Helm",
+    "manaCost": "{R}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+1.\nWhenever equipped creature becomes blocked, it deals 1 damage to defending player.\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tormentor's Helm:1",
+                "trigger": "BecomesBlockedEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "DefendingPlayer"
+                    },
+                    "damageSource": "TriggeringEntity"
+                },
+                "descriptionOverride": "Whenever equipped creature becomes blocked, it deals 1 damage to defending player."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Tormentor's Helm:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "155",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/2318d4f8-309e-4645-b6d1-46572edd6996.jpg?1783928221",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The triggered ability triggers only once if the equipped creature becomes blocked, no matter how many creatures blocked it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Toski, Bearer of Secrets
 {
     "name": "Toski, Bearer of Secrets",
@@ -15763,6 +17141,166 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Tundra Fumarole
+{
+    "name": "Tundra Fumarole",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Snow Sorcery",
+    "oracleText": "Tundra Fumarole deals 4 damage to target creature or planeswalker. Add {C} for each {S} spent to cast this spell. Until end of turn, you don't lose this mana as steps and phases end. ({S} is mana from a snow source.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "AddColorlessMana",
+                    "amount": "SnowManaSpent",
+                    "expiry": "KEPT_UNTIL_END_OF_TURN"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "rarity": "RARE",
+        "artist": "Simon Dominic",
+        "flavorText": "The only thing that smells worse than troll is burnt troll.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b251aa7c-d011-4b52-ab92-415d536c0182.jpg?1783928221"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Tuskeri Firewalker
+{
+    "name": "Tuskeri Firewalker",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Berserker",
+    "oracleText": "Boast — {1}: Exile the top card of your library. You may play that card this turn. (Activate only if this creature attacked this turn and only once each turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tuskeri Firewalker:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "impulseExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "impulseExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "impulseExiled"
+                        }
+                    ]
+                },
+                "restrictions": [
+                    "OncePerTurn",
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "AttackedThisTurn"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "isBoast": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "\"Toralf blessed me with fire. I am worthy of Starnheim!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a54d0170-a375-4e65-b98d-3e94a3aeef90.jpg?1783928221",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The card you exile with the boast ability is exiled face up."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Playing a card this way follows the normal rules for playing the card. You must pay its costs, and you must follow all applicable timing rules. For example, if the card is a sorcery card, you can cast it only during your main phase while the stack is empty."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Under normal circumstances, you can play a land this way only if you haven't played a land yet that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If you don't play the card by the end of the turn, it will remain exiled. Boasting again on a future turn won't let you play that card."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "A boast ability can be activated at any point after the creature with that ability has been declared as an attacker. This can be before blockers are declared, after blockers are declared but before combat damage is dealt, during combat after combat damage is dealt, during the postcombat main phase, during the end step, or, in some unusual cases, during the cleanup step."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If it's not your turn and you gain control of a creature with a boast ability after that creature attacked, you can activate that creature's boast ability if it hasn't been activated yet that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a creature with a boast ability is put onto the battlefield attacking, it was never declared as an attacker. Its boast ability can't be activated that turn."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If an effect adds additional combat phases to a turn and a creature with a boast ability attacks more than once during that turn, its boast ability can still be activated only once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
