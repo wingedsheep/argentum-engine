@@ -163,6 +163,61 @@
     ]
 }
 
+// Angel of Jubilation
+{
+    "name": "Angel of Jubilation",
+    "manaCost": "{1}{W}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nOther nonblack creatures you control get +1/+1.\nPlayers can't pay life or sacrifice creatures to cast spells or activate abilities.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotColor",
+                                "color": "BLACK"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "excludeSelf": true
+                }
+            },
+            "PlayersCantPayLifeForCosts",
+            {
+                "type": "CantBeSacrificed",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "scope": "CASTING_AND_ACTIVATION_COSTS"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "RARE",
+        "artist": "Terese Nielsen",
+        "flavorText": "\"Though Innistrad is not cleansed of evil, we finally have cause to rejoice.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/16c5dfed-4dee-4e48-a445-89f03d7794e6.jpg?1783940743"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Angel's Tomb
 {
     "name": "Angel's Tomb",

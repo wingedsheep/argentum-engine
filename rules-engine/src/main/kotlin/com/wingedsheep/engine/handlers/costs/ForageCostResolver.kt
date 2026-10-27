@@ -69,7 +69,9 @@ object ForageCostResolver {
         val foods = state.getBattlefield().filter { permId ->
             state.getEntity(permId) ?: return@filter false
             projected.getController(permId) == playerId &&
-                projected.hasSubtype(permId, Subtype.FOOD.value)
+                projected.hasSubtype(permId, Subtype.FOOD.value) &&
+                // A Food creature is out of the pool while no cost may sacrifice it.
+                com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality.canSacrificeForCost(state, permId)
         }
         return Candidates(exileCards, foods)
     }

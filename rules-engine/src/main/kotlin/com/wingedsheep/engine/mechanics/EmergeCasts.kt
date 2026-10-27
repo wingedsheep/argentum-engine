@@ -94,7 +94,8 @@ object EmergeCasts {
         val projected = state.projectedState
         val context = PredicateContext(controllerId = playerId)
         return projected.getBattlefieldControlledBy(playerId).filter {
-            predicateEvaluator.matches(state, projected, it, emerge.sacrificeFilter, context)
+            com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality.canSacrificeForCost(state, it) &&
+                predicateEvaluator.matches(state, projected, it, emerge.sacrificeFilter, context)
         }
     }
 

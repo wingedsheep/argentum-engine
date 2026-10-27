@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.cost.spell
 
+import com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality
 import com.wingedsheep.engine.state.LifePaymentPurpose
 
 import com.wingedsheep.engine.mechanics.cost.SharedCreatureTypeTapCost
@@ -95,7 +96,7 @@ internal fun exileFromOwnZone(ledger: SpellCostLedger, cardIds: List<EntityId>, 
 /** "Sacrifice a creature" (Natural Order). */
 internal object SacrificeCostKind : SpellCostKind<CostAtom.Sacrifice> {
     override fun canPay(state: GameState, payerId: EntityId, cost: CostAtom.Sacrifice, costHandler: CostHandler) =
-        costHandler.findMatchingPermanentsUnified(state, payerId, cost.filter).size >= cost.count
+        costHandler.findSacrificeCostCandidates(state, payerId, cost.filter).size >= cost.count
 
     override fun enumerate(env: SpellCostEnumeration, cost: CostAtom.Sacrifice, offer: SpellCostOffer): Boolean {
         val validSacTargets = candidates(env, cost)
@@ -146,6 +147,9 @@ internal object SacrificeCostKind : SpellCostKind<CostAtom.Sacrifice> {
             if (!check.predicateEvaluator.matches(state, projected, permId, cost.filter, context)) {
                 return "${permCard.name} doesn't match the required filter: $filterDesc"
             }
+            if (!SacrificeCostLegality.canSacrificeForCost(state, permId)) {
+                return "${permCard.name} can't be sacrificed to cast this spell"
+            }
         }
         return null
     }
@@ -165,8 +169,10 @@ internal object SacrificeCostKind : SpellCostKind<CostAtom.Sacrifice> {
 
 /** "Sacrifice all creatures you control" (Soulblast) — every matching permanent, nothing chosen. */
 internal object SacrificeAllCostKind : SpellCostKind<CostAtom.SacrificeAll> {
-    // Controlling none of them sacrifices nothing, so this is always payable (CR 118.3).
-    override fun canPay(state: GameState, payerId: EntityId, cost: CostAtom.SacrificeAll, costHandler: CostHandler) = true
+    // Controlling none of them sacrifices nothing, so this is payable (CR 118.3) — unless one of
+    // them is a permanent no cost may sacrifice.
+    override fun canPay(state: GameState, payerId: EntityId, cost: CostAtom.SacrificeAll, costHandler: CostHandler) =
+        costHandler.sacrificeAllCandidates(state, cost, payerId).all { SacrificeCostLegality.canSacrificeForCost(state, it) }
 
     // The caster picks nothing, so the client submits no payment for it.
     override fun paysUnprompted(cost: CostAtom.SacrificeAll) = true

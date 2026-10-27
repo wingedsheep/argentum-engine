@@ -1111,6 +1111,9 @@ internal class CastValidator(
             return "Casualty creature is not controlled by you"
         }
         if (!projected.isCreature(creatureId)) return "Casualty requires a creature"
+        if (!com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality.canSacrificeForCost(state, creatureId)) {
+            return "That creature can't be sacrificed to cast this spell"
+        }
         val power = projected.getPower(creatureId) ?: 0
         // Casualty X: the announced X (CR 601.2b) is the threshold; unannounced, X is the
         // sacrificed creature's power — the largest X that creature pays for.

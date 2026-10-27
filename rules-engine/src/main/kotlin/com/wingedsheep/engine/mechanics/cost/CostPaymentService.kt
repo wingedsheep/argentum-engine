@@ -818,7 +818,7 @@ class CostPaymentService(private val services: EngineServices) {
             sourceId: EntityId,
             manaSolver: ManaSolver,
             predicateEvaluator: PredicateEvaluator,
-            /** Why the life would be paid — a cost-scoped prohibition (Karn's Sylex) reads it. */
+            /** Why the cost is paid — Karn's Sylex reads it for life; any purpose but OTHER also drops permanents no cost may sacrifice. */
             lifePurpose: LifePaymentPurpose = LifePaymentPurpose.OTHER
         ): Boolean {
             return when (val c = resolve(state, cost, sourceId)) {
@@ -863,7 +863,10 @@ class CostPaymentService(private val services: EngineServices) {
                     is CostAtom.RevealFromHand -> domain(state, payerId, c, sourceId, predicateEvaluator = predicateEvaluator).size >= atom.count
                     is CostAtom.PutFromHandOnTopOfLibrary -> domain(state, payerId, c, sourceId, predicateEvaluator = predicateEvaluator).size >= atom.count
                     is CostAtom.Sacrifice -> {
+                        // Paid as part of casting or activating (not while something resolves), the
+                        // pool drops what no cost may sacrifice (Angel of Jubilation).
                         val candidates = domain(state, payerId, c, sourceId, predicateEvaluator = predicateEvaluator)
+                            .let { if (lifePurpose == LifePaymentPurpose.OTHER) it else SacrificeCostLegality.sacrificeableForCost(state, it) }
                         if (atom.distinctNames) distinctNameCount(state, candidates) >= atom.count
                         else candidates.size >= atom.count
                     }

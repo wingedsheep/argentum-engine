@@ -480,6 +480,8 @@ export enum AbilityFlag {
   CANT_BECOME_UNTAPPED = 'CANT_BECOME_UNTAPPED',
   MAY_NOT_UNTAP = 'MAY_NOT_UNTAP',
   CANT_RECEIVE_COUNTERS = 'CANT_RECEIVE_COUNTERS',
+  CANT_BE_SACRIFICED = 'CANT_BE_SACRIFICED',
+  CANT_BE_SACRIFICED_FOR_COSTS = 'CANT_BE_SACRIFICED_FOR_COSTS',
   SURVIVES_ZERO_LOYALTY = 'SURVIVES_ZERO_LOYALTY',
   CANT_CREW = 'CANT_CREW',
   CANT_TRANSFORM = 'CANT_TRANSFORM',
@@ -498,6 +500,10 @@ export const AbilityFlagDisplayNames: Record<AbilityFlag, string> = {
   [AbilityFlag.CANT_BECOME_UNTAPPED]: "Can't become untapped",
   [AbilityFlag.MAY_NOT_UNTAP]: 'You may choose not to untap',
   [AbilityFlag.CANT_RECEIVE_COUNTERS]: "Can't have counters put on it",
+  [AbilityFlag.CANT_BE_SACRIFICED]: "Can't be sacrificed",
+  // Granted to every creature at once by Angel of Jubilation, so it must be named here or each one
+  // shows the raw enum identifier in its preview panel.
+  [AbilityFlag.CANT_BE_SACRIFICED_FOR_COSTS]: "Can't be sacrificed to cast spells or activate abilities",
   [AbilityFlag.SURVIVES_ZERO_LOYALTY]: "Isn't put into its owner's graveyard for having 0 loyalty",
   [AbilityFlag.CANT_CREW]: "Can't crew Vehicles",
   [AbilityFlag.CANT_TRANSFORM]: "Can't transform",

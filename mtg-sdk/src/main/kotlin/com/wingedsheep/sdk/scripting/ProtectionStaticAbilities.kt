@@ -308,19 +308,44 @@ data class MaxCounters(
 }
 
 /**
- * Permanents matching [filter] can't be sacrificed.
+ * Permanents matching [filter] can't be sacrificed — at all, or only to pay a cost ([scope]).
  *
- * Projected as the [com.wingedsheep.sdk.core.AbilityFlag.CANT_BE_SACRIFICED] flag, which the
- * sacrifice executor honors by refusing to sacrifice such a permanent. Wrap in a
+ * [Scope.ANY] projects the [com.wingedsheep.sdk.core.AbilityFlag.CANT_BE_SACRIFICED] flag, which
+ * every sacrifice path honors: the sacrifice executor refuses such a permanent, and a cost of
+ * casting a spell or activating an ability can't sacrifice it. Wrap in a
  * [ConditionalStaticAbility] for time-restricted forms (e.g. Zurgo, Thunder's Decree:
  * "During your end step, Warrior tokens you control have 'This token can't be sacrificed.'").
+ *
+ * [Scope.CASTING_AND_ACTIVATION_COSTS] projects
+ * [com.wingedsheep.sdk.core.AbilityFlag.CANT_BE_SACRIFICED_FOR_COSTS] instead: "Players can't
+ * sacrifice creatures to cast spells or activate abilities" (Angel of Jubilation) is
+ * `CantBeSacrificed(GroupFilter.AllCreatures, Scope.CASTING_AND_ACTIVATION_COSTS)`. The prohibition
+ * is per permanent, as the ruling reads it — an artifact creature can't pay "Sacrifice an artifact",
+ * a noncreature artifact still can — and it reaches additional and alternative costs (emerge,
+ * casualty) and mana abilities alike. A sacrifice a resolving spell or ability performs (an edict,
+ * exploit, "sacrifice it unless you pay") is untouched.
  */
 @SerialName("CantBeSacrificed")
 @Serializable
 data class CantBeSacrificed(
-    val filter: GroupFilter = GroupFilter.attachedCreature()
+    val filter: GroupFilter = GroupFilter.attachedCreature(),
+    val scope: Scope = Scope.ANY,
 ) : StaticAbility {
-    override val description: String = "${filter.description} can't be sacrificed"
+    /** When the matching permanents can't be sacrificed. */
+    @Serializable
+    enum class Scope {
+        /** Never — by an effect or to pay a cost. */
+        ANY,
+
+        /** Not to pay a cost of casting a spell or activating an ability (mana abilities included). */
+        CASTING_AND_ACTIVATION_COSTS,
+    }
+
+    override val description: String = when (scope) {
+        Scope.ANY -> "${filter.description} can't be sacrificed"
+        Scope.CASTING_AND_ACTIVATION_COSTS ->
+            "${filter.description} can't be sacrificed to cast spells or activate abilities"
+    }
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this

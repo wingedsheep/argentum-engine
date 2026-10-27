@@ -327,8 +327,8 @@ class ActivatedAbilityEnumerator(
                             // Affordable when at least minCount eligible permanents exist; the player
                             // picks which during activation (the handler pauses). Same candidate pool
                             // as a sacrifice cost.
-                            val eligible = context.costUtils.findAbilitySacrificeTargets(
-                                state, playerId, atom.filter, if (atom.excludeSelf) entityId else null, sourceId = entityId
+                            val eligible = context.costUtils.findVariablePermanentCostTargets(
+                                state, playerId, atom, if (atom.excludeSelf) entityId else null, sourceId = entityId
                             )
                             if (eligible.size < atom.minCount) continue
                         }
@@ -413,7 +413,10 @@ class ActivatedAbilityEnumerator(
                         is CostAtom.DiscardHand -> {}
                         // Same for sacrificing every matching permanent: controlling none of them
                         // sacrifices nothing.
-                        is CostAtom.SacrificeAll -> {}
+                        is CostAtom.SacrificeAll -> {
+                            // ...unless one of them is a permanent no cost may sacrifice.
+                            if (!context.costUtils.canPaySacrificeAll(state, playerId, atom, entityId)) continue
+                        }
                         // Gated above, before this `when` — only the chooser is offered the
                         // ability at all — and it takes no enumeration-time selection.
                         is CostAtom.RevealNotedCreatureType -> {}
@@ -469,6 +472,7 @@ class ActivatedAbilityEnumerator(
                     }
                     is AbilityCost.SacrificeSelf -> {
                         // Source must be on battlefield (always true when iterating battlefield)
+                        if (!com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality.canSacrificeForCost(state, entityId)) continue
                         sacrificeTargets = listOf(entityId)
                     }
                     is AbilityCost.Blight -> {
@@ -561,8 +565,8 @@ class ActivatedAbilityEnumerator(
                                         // of a composite cost (Fabrication Foundry's {2}{W}, {T},
                                         // Exile …). Affordable when at least minCount eligible
                                         // permanents exist; the player picks which during activation.
-                                        val eligible = context.costUtils.findAbilitySacrificeTargets(
-                                            state, playerId, atom.filter, if (atom.excludeSelf) entityId else null, sourceId = entityId
+                                        val eligible = context.costUtils.findVariablePermanentCostTargets(
+                                            state, playerId, atom, if (atom.excludeSelf) entityId else null, sourceId = entityId
                                         )
                                         if (eligible.size < atom.minCount) {
                                             costCanBePaid = false
@@ -675,7 +679,12 @@ class ActivatedAbilityEnumerator(
                                     is CostAtom.PutCountersOnPermanent,
                                     // See the top-level branch: always payable, nothing to select.
                                     is CostAtom.DiscardHand -> {}
-                                    is CostAtom.SacrificeAll -> {}
+                                    is CostAtom.SacrificeAll -> {
+                                        if (!context.costUtils.canPaySacrificeAll(state, playerId, atom, entityId)) {
+                                            costCanBePaid = false
+                                            break
+                                        }
+                                    }
                                     // See the top-level branch: gated before the `when`.
                                     is CostAtom.RevealNotedCreatureType -> {}
                                     // See the top-level branch: unpayable while unattached.
@@ -745,6 +754,10 @@ class ActivatedAbilityEnumerator(
                                 }
                                 is AbilityCost.SacrificeSelf -> {
                                     // Source must be on battlefield (always true when iterating battlefield)
+                                    if (!com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality.canSacrificeForCost(state, entityId)) {
+                                        costCanBePaid = false
+                                        break
+                                    }
                                     sacrificeTargets = listOf(entityId)
                                 }
                                 is AbilityCost.TapAttachedCreature -> {
@@ -1086,8 +1099,8 @@ class ActivatedAbilityEnumerator(
                         // legal choice; the selection pause offers the same viable picks.
                         val single = effectiveCost.extractVariablePermanentsCost()?.takeIf { it.maxCount == 1 }
                         if (single != null) {
-                            val eligible = context.costUtils.findAbilitySacrificeTargets(
-                                state, playerId, single.filter, if (single.excludeSelf) entityId else null, sourceId = entityId
+                            val eligible = context.costUtils.findVariablePermanentCostTargets(
+                                state, playerId, single, if (single.excludeSelf) entityId else null, sourceId = entityId
                             )
                             val viable = com.wingedsheep.engine.mechanics.cost.VariablePermanentsCost.viableSinglePicks(
                                 state, single, eligible, targetReqs, playerId, entityId,

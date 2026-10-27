@@ -3,6 +3,7 @@ package com.wingedsheep.engine.legalactions.utils
 import com.wingedsheep.engine.state.LifePaymentPurpose
 
 import com.wingedsheep.engine.mechanics.cost.PlayerCounterPayment
+import com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.legalactions.*
@@ -52,7 +53,8 @@ class CostEnumerationUtils(
         return projected.getBattlefieldControlledBy(playerId).filter { entityId ->
             val container = state.getEntity(entityId) ?: return@filter false
             container.get<CardComponent>() ?: return@filter false
-            predicateEvaluator.matches(state, projected, entityId, cost.filter, predicateContext)
+            SacrificeCostLegality.canSacrificeForCost(state, entityId) &&
+                predicateEvaluator.matches(state, projected, entityId, cost.filter, predicateContext)
         }
     }
 
@@ -66,7 +68,8 @@ class CostEnumerationUtils(
         return projected.getBattlefieldControlledBy(playerId).filter { entityId ->
             val container = state.getEntity(entityId) ?: return@filter false
             container.get<CardComponent>() ?: return@filter false
-            predicateEvaluator.matches(state, projected, entityId, filter, predicateContext)
+            SacrificeCostLegality.canSacrificeForCost(state, entityId) &&
+                predicateEvaluator.matches(state, projected, entityId, filter, predicateContext)
         }
     }
 
@@ -92,6 +95,46 @@ class CostEnumerationUtils(
         filter: GameObjectFilter,
         excludeEntityId: EntityId? = null,
         sourceId: EntityId? = null
+    ): List<EntityId> = SacrificeCostLegality.sacrificeableForCost(
+        state, findAbilityPermanentCostTargets(state, playerId, filter, excludeEntityId, sourceId)
+    )
+
+    /**
+     * The pool a [CostAtom.VariablePermanents] cost picks from — the same source-relative pool as a
+     * sacrifice cost, narrowed by [SacrificeCostLegality] only when the cost sacrifices (an exile or
+     * tap variant may still take a creature no cost can sacrifice).
+     */
+    fun findVariablePermanentCostTargets(
+        state: GameState,
+        playerId: EntityId,
+        atom: CostAtom.VariablePermanents,
+        excludeEntityId: EntityId? = null,
+        sourceId: EntityId? = null
+    ): List<EntityId> {
+        val pool = findAbilityPermanentCostTargets(state, playerId, atom.filter, excludeEntityId, sourceId)
+        return if (atom.action == com.wingedsheep.sdk.scripting.costs.PermanentCostAction.SACRIFICE) {
+            SacrificeCostLegality.sacrificeableForCost(state, pool)
+        } else pool
+    }
+
+    /**
+     * Whether a "Sacrifice all [filter] you control" cost can be paid: controlling none sacrifices
+     * nothing (CR 118.3), but one that no cost may sacrifice makes the whole cost unpayable.
+     */
+    fun canPaySacrificeAll(
+        state: GameState,
+        playerId: EntityId,
+        atom: CostAtom.SacrificeAll,
+        sourceId: EntityId? = null
+    ): Boolean = findAbilityPermanentCostTargets(state, playerId, atom.filter, null, sourceId)
+        .all { SacrificeCostLegality.canSacrificeForCost(state, it) }
+
+    private fun findAbilityPermanentCostTargets(
+        state: GameState,
+        playerId: EntityId,
+        filter: GameObjectFilter,
+        excludeEntityId: EntityId?,
+        sourceId: EntityId?
     ): List<EntityId> {
         val predicateContext = PredicateContext(controllerId = playerId, sourceId = sourceId)
         val projected = state.projectedState

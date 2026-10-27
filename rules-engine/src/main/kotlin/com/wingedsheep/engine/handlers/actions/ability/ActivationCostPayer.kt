@@ -516,6 +516,7 @@ internal class ActivationCostPayer(
                     action.playerId, sourceId = action.sourceId,
                 )
                 .let { if (sacrificeCost.excludeSelf) it.filter { id -> id != action.sourceId } else it }
+                .let { com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality.sacrificeableForCost(state, it) }
                 .takeIf { it.size <= sacrificeCost.count && !sacrificeCost.distinctNames }
                 .orEmpty()
         } else {

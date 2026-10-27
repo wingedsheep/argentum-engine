@@ -1764,6 +1764,9 @@ class ManaSolver private constructor(
                 }
 
                 if (!abilityCanBeUsed) continue
+                // A sacrifice-self mana ability whose source no cost may sacrifice (Angel of
+                // Jubilation on a creature) can't be activated at all, so it is no mana source.
+                if (abilityRequiresSacrifice && !com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality.canSacrificeForCost(state, entityId)) continue
 
                 // A mana ability whose life cost (printed "Pay N life" plus any Thran Portal tax)
                 // its controller can't pay can't be activated (CR 119.4), so auto-pay mustn't pick it.
@@ -3401,14 +3404,16 @@ class ManaSolver private constructor(
     ): Boolean = when (cost) {
         is AbilityCost.Free -> true
         is AbilityCost.Tap -> canTapForCost(state, sourceId)
-        // The source itself pays these, and it is on the battlefield by construction.
-        is AbilityCost.SacrificeSelf, is AbilityCost.ExileSelf,
+        // The source itself pays these, and it is on the battlefield by construction — a sacrifice
+        // only while no cost-scoped prohibition protects it.
+        is AbilityCost.SacrificeSelf -> com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality.canSacrificeForCost(state, sourceId)
+        is AbilityCost.ExileSelf,
         is AbilityCost.ReturnSelfToHand, is AbilityCost.DiscardSelf -> true
         // Discarding an empty hand is a legal payment of "discard your hand".
         is AbilityCost.DiscardHand -> true
         is AbilityCost.SacrificeChosenCreatureType -> {
             val chosenType = state.getEntity(sourceId)?.chosenCreatureType()
-            chosenType != null && controlsMatching(
+            chosenType != null && controlsSacrificeable(
                 state, playerId, GameObjectFilter.Creature.withSubtype(chosenType), null, 1
             )
         }
@@ -3451,8 +3456,8 @@ class ManaSolver private constructor(
         return true
     }
 
-    /** Whether [playerId] controls at least [count] permanents matching [filter]. */
-    private fun controlsMatching(
+    /** Whether [playerId] controls at least [count] permanents matching [filter] that a cost may sacrifice. */
+    private fun controlsSacrificeable(
         state: GameState,
         playerId: EntityId,
         filter: GameObjectFilter,
@@ -3462,7 +3467,8 @@ class ManaSolver private constructor(
         val projected = state.projectedState
         val context = PredicateContext(controllerId = playerId)
         return projected.getBattlefieldControlledBy(playerId).count { id ->
-            id != excludeId && predicateEvaluator.matches(state, projected, id, filter, context)
+            id != excludeId && com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality.canSacrificeForCost(state, id) &&
+                predicateEvaluator.matches(state, projected, id, filter, context)
         } >= count
     }
 
@@ -3517,6 +3523,7 @@ class ManaSolver private constructor(
                 val hasTap = composite.costs.any { it is AbilityCost.Tap }
                 val hasSacSelf = composite.costs.any { it is AbilityCost.SacrificeSelf }
                 if (!hasTap || !hasSacSelf) continue
+                if (!com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality.canSacrificeForCost(state, entityId)) continue
 
                 // Skip abilities that bundle a mana sub-cost — the player can still afford them
                 // when the pool has mana, but counting their net production here would

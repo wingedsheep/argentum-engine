@@ -14,6 +14,7 @@ import com.wingedsheep.engine.handlers.effects.library.KeywordActionAmountModifi
 import com.wingedsheep.engine.handlers.effects.life.LifePaymentService
 import com.wingedsheep.engine.mechanics.SummoningSicknessRules
 import com.wingedsheep.engine.mechanics.cost.CostPaymentService
+import com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality
 import com.wingedsheep.engine.mechanics.cost.VariablePermanentsCost
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
@@ -137,7 +138,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
                 val chosenType = state.getEntity(sourceId)?.chosenCreatureType()
                     ?: return false
                 val filter = GameObjectFilter.Creature.withSubtype(chosenType)
-                findMatchingPermanentsUnified(state, controllerId, filter, sourceId).isNotEmpty()
+                findSacrificeCostCandidates(state, controllerId, filter, sourceId).isNotEmpty()
             }
             is AbilityCost.DiscardHand -> {
                 // You can always discard your hand, even if it's empty
@@ -165,7 +166,8 @@ class CostHandler(private val zones: ZoneTransitionService) {
             }
             is AbilityCost.SacrificeSelf -> {
                 sourceId in state.getBattlefield() &&
-                    state.projectedState.getController(sourceId) == controllerId
+                    state.projectedState.getController(sourceId) == controllerId &&
+                    SacrificeCostLegality.canSacrificeForCost(state, sourceId)
             }
             is AbilityCost.ExileSelf -> {
                 // Source must exist (can be on battlefield or in graveyard for graveyard abilities)
@@ -182,8 +184,9 @@ class CostHandler(private val zones: ZoneTransitionService) {
                 true
             }
             is AbilityCost.SacrificeGrantingPermanent -> {
-                // Same granter-resolution contract as ExileGrantingPermanent above.
-                true
+                // Same granter-resolution contract as ExileGrantingPermanent above; a known granter
+                // still has to be one a cost may sacrifice.
+                granterId == null || SacrificeCostLegality.canSacrificeForCost(state, granterId)
             }
             is AbilityCost.TapGrantingPermanent -> {
                 // Unlike its exile/sacrifice siblings this one has a real payability gate: a
@@ -419,6 +422,9 @@ class CostHandler(private val zones: ZoneTransitionService) {
                     ?: return CostPaymentResult.failure("Source permanent not found")
                 val sourceController = state.projectedState.getController(sourceId)
                     ?: return CostPaymentResult.failure("Source permanent has no controller")
+                if (!SacrificeCostLegality.canSacrificeForCost(state, sourceId)) {
+                    return CostPaymentResult.failure("It can't be sacrificed to pay this cost")
+                }
                 val sourceName = sourceContainer.get<CardComponent>()?.name ?: "Unknown"
 
                 // Capture AttachedToComponent before zone transition — needed by effects like
@@ -530,6 +536,9 @@ class CostHandler(private val zones: ZoneTransitionService) {
                     ?: return CostPaymentResult.failure("Granting permanent not found")
                 val granterController = granter.get<ControllerComponent>()?.playerId
                     ?: return CostPaymentResult.failure("Granting permanent has no controller")
+                if (!SacrificeCostLegality.canSacrificeForCost(state, granterId)) {
+                    return CostPaymentResult.failure("The granting permanent can't be sacrificed to pay this cost")
+                }
 
                 // Capture AttachedToComponent before the zone transition so a granted effect that
                 // reads the sacrificed granter's attachment at resolution time still sees it —
@@ -708,8 +717,10 @@ class CostHandler(private val zones: ZoneTransitionService) {
         // Always payable — an empty hand discards nothing, and a cost of nothing is a cost you can
         // pay (CR 118.3). Same answer the AbilityCost.DiscardHand branch gives above.
         is CostAtom.DiscardHand -> true
-        // Always payable for the same reason — controlling none of them sacrifices nothing.
-        is CostAtom.SacrificeAll -> true
+        // Always payable for the same reason — controlling none of them sacrifices nothing — unless
+        // one of them is a permanent no cost may sacrifice.
+        is CostAtom.SacrificeAll ->
+            sacrificeAllCandidates(state, atom, controllerId, sourceId).all { SacrificeCostLegality.canSacrificeForCost(state, it) }
         is CostAtom.PayLife -> {
             // CR 810.9a — affordability uses the team's shared total in Two-Headed Giant.
             // CR 119.4 — a player may pay life only if their life total is >= the payment.
@@ -719,7 +730,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
             CostAtomAmounts.canPayLife(state, controllerId, CostAtomAmounts.life(state, atom, controllerId, predicateEvaluator, sourceId), lifePurpose)
         }
         is CostAtom.Sacrifice -> {
-            val candidates = findMatchingPermanentsUnified(state, controllerId, atom.filter, sourceId)
+            val candidates = findSacrificeCostCandidates(state, controllerId, atom.filter, sourceId)
             val eligible = if (atom.excludeSelf) candidates.filter { it != sourceId } else candidates
             if (atom.distinctNames) {
                 // "Sacrifice N ... with different names" — need at least N distinctly-named candidates.
@@ -730,6 +741,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
         }
         is CostAtom.VariablePermanents -> {
             val candidates = findMatchingPermanentsUnified(state, controllerId, atom.filter, sourceId)
+                .let { if (atom.action == PermanentCostAction.SACRIFICE) SacrificeCostLegality.sacrificeableForCost(state, it) else it }
             val eligible = if (atom.excludeSelf) candidates.filter { it != sourceId } else candidates
             eligible.size >= atom.minCount
         }
@@ -1186,6 +1198,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
             val candidates = findMatchingCardsUnified(
                 state, state.controlledBattlefield(controllerId), filter, controllerId, sourceId
             ).let { if (excludeSelf) it.filter { id -> id != sourceId } else it }
+                .let { SacrificeCostLegality.sacrificeableForCost(state, it) }
             if (candidates.size < requiredCount) {
                 return CostPaymentResult.failure("Not enough sacrifice targets chosen (need $requiredCount, got ${candidates.size})")
             }
@@ -1227,6 +1240,9 @@ class CostHandler(private val zones: ZoneTransitionService) {
 
             if (!predicateEvaluator.matches(state, projected, toSacrifice, filter, context)) {
                 return CostPaymentResult.failure("Sacrifice target does not match the required filter")
+            }
+            if (!SacrificeCostLegality.canSacrificeForCost(state, toSacrifice)) {
+                return CostPaymentResult.failure("$sacrificeName can't be sacrificed to pay this cost")
             }
             // Validate excludeSelf: "sacrifice another creature" cannot sacrifice the source.
             if (excludeSelf && toSacrifice == sourceId) {
@@ -1293,6 +1309,7 @@ class CostHandler(private val zones: ZoneTransitionService) {
                 state, state.controlledBattlefield(controllerId), filter, controllerId, sourceId
             ).let { if (excludeSelf) it.filter { id -> id != sourceId } else it }
                 .let { if (atom.action == PermanentCostAction.TAP) it.filter { id -> state.getEntity(id)?.has<TappedComponent>() != true } else it }
+                .let { if (atom.action == PermanentCostAction.SACRIFICE) SacrificeCostLegality.sacrificeableForCost(state, it) else it }
             if (candidates.size < minCount) {
                 return CostPaymentResult.failure("Not enough permanents to $verb (need $minCount, got ${candidates.size})")
             }
@@ -1315,6 +1332,9 @@ class CostHandler(private val zones: ZoneTransitionService) {
         }
         if (toPay.size < minCount) {
             return CostPaymentResult.failure("Not enough permanents chosen to $verb (need $minCount, got ${toPay.size})")
+        }
+        if (atom.action == PermanentCostAction.SACRIFICE && toPay.any { !SacrificeCostLegality.canSacrificeForCost(state, it) }) {
+            return CostPaymentResult.failure("A chosen permanent can't be sacrificed to pay this cost")
         }
         val maxCount = atom.maxCount
         if (maxCount != null && toPay.size > maxCount) {
@@ -1824,6 +1844,19 @@ class CostHandler(private val zones: ZoneTransitionService) {
         sourceId: EntityId? = null
     ): List<EntityId> =
         findMatchingCardsUnified(state, state.controlledBattlefield(controllerId), atom.filter, controllerId, sourceId)
+
+    /**
+     * The permanents [controllerId] controls that a sacrifice cost over [filter] may take: the
+     * filter's matches, less those no cost may sacrifice ([SacrificeCostLegality]). Shared by
+     * activation affordability and the spell-side sacrifice cost so the two pools can't disagree.
+     */
+    internal fun findSacrificeCostCandidates(
+        state: GameState,
+        controllerId: EntityId,
+        filter: GameObjectFilter,
+        sourceId: EntityId? = null
+    ): List<EntityId> =
+        SacrificeCostLegality.sacrificeableForCost(state, findMatchingPermanentsUnified(state, controllerId, filter, sourceId))
 
     internal fun findMatchingPermanentsUnified(
         state: GameState,

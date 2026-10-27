@@ -191,6 +191,10 @@ class ManaAbilityEnumerator(
                     is AbilityCost.Tap -> {
                         if (!context.costUtils.canPayTapCost(state, entityId)) affordable = false
                     }
+                    // "Sacrifice this: Add …" — unpayable while no cost may sacrifice the source.
+                    is AbilityCost.SacrificeSelf -> {
+                        if (!com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality.canSacrificeForCost(state, entityId)) affordable = false
+                    }
                     is AbilityCost.TapAttachedCreature -> {
                         if (!context.costUtils.canPayTapAttachedCreatureCost(state, entityId)) affordable = false
                     }
@@ -339,6 +343,9 @@ class ManaAbilityEnumerator(
                                     }
                                 }
                                 is AbilityCost.SacrificeSelf -> {
+                                    if (!com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality.canSacrificeForCost(state, entityId)) {
+                                        affordable = false; break
+                                    }
                                     sacrificeTargets = listOf(entityId)
                                 }
                                 is AbilityCost.TapAttachedCreature -> {

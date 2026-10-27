@@ -1932,6 +1932,7 @@ class CastSpellEnumerator(
                 if (projected.getController(permId) != playerId) continue
                 if (!projected.isCreature(permId)) continue
                 if ((projected.getPower(permId) ?: 0) < threshold) continue
+                if (!com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality.canSacrificeForCost(state, permId)) continue
                 eligibleSacrifices.add(permId)
             }
             if (eligibleSacrifices.isEmpty()) continue

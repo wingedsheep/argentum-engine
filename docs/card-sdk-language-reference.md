@@ -10595,10 +10595,21 @@ staticAbility {
   `max` anyway (it gained the limit later) loses the excess as a state-based action
   (`CounterLimitCheck`, CR 704.5r). A cast entrant's own printed limit caps its entry counters;
   limits granted to it by other permanents apply once it is on the battlefield.
-- `CantBeSacrificed(filter)` — matching permanents can't be sacrificed (projects the
+- `CantBeSacrificed(filter, scope = Scope.ANY)` — matching permanents can't be sacrificed (projects the
   `AbilityFlag.CANT_BE_SACRIFICED` flag, honored by the sacrifice executor — a sacrifice that can't
-  happen simply no-ops). Wrap in `ConditionalStaticAbility` for time-restricted forms, e.g. Zurgo,
+  happen simply no-ops — and by every sacrifice *cost*, which can't take such a permanent). Wrap in
+  `ConditionalStaticAbility` for time-restricted forms, e.g. Zurgo,
   Thunder's Decree: `ConditionalStaticAbility(CantBeSacrificed(GroupFilter(Token.youControl().withSubtype("Warrior"))), IsInStep(listOf(Step.END)))`.
+  `scope = CantBeSacrificed.Scope.CASTING_AND_ACTIVATION_COSTS` narrows it to costs: "Players can't
+  sacrifice creatures to cast spells or activate abilities" (Angel of Jubilation) is
+  `CantBeSacrificed(GroupFilter.AllCreatures, CantBeSacrificed.Scope.CASTING_AND_ACTIVATION_COSTS)`,
+  projecting `AbilityFlag.CANT_BE_SACRIFICED_FOR_COSTS`. The engine's `SacrificeCostLegality` is the
+  one check every sacrifice-cost pool, validator and payment consults — additional costs (Bone
+  Splinters), alternative costs (emerge), casualty, forage's Food, "Sacrifice this", and activated
+  abilities including mana abilities (Ashnod's Altar, auto-pay included). It is per permanent, as the
+  ruling reads it: an artifact creature can't pay "Sacrifice an artifact", a noncreature artifact
+  still can. Sacrifices a resolving spell or ability performs (edicts, exploit, "unless you
+  sacrifice") ignore it. Pair with `PlayersCantPayLifeForCosts()` for "pay life or sacrifice".
 - `OpponentsCantMakeYouSacrifice` — "Spells and abilities your opponents control can't cause you to
   sacrifice permanents" (Sigarda, Host of Herons). The **player-scoped** counterpart of
   `CantBeSacrificed`: it protects the controller rather than a set of permanents, so it also covers

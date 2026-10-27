@@ -64,6 +64,14 @@ enum class AbilityFlag(val displayName: String) {
     // ── Sacrifice restriction flags ─────────────────────────────
     CANT_BE_SACRIFICED("Can't be sacrificed"),
 
+    /**
+     * Can't be sacrificed to pay a cost of casting a spell or activating an ability, mana abilities
+     * included — `CantBeSacrificed(scope = CASTING_AND_ACTIVATION_COSTS)` (Angel of Jubilation).
+     * Read through the engine's `SacrificeCostLegality`, which every sacrifice-cost candidate pool,
+     * validator and payment consults; sacrifices a resolving spell or ability performs ignore it.
+     */
+    CANT_BE_SACRIFICED_FOR_COSTS("Can't be sacrificed to cast spells or activate abilities"),
+
     // ── Cost-payment restriction flags ──────────────────────────
     /**
      * Can't be returned to its owner's hand to pay a beam me up cost (Marooned). Read by

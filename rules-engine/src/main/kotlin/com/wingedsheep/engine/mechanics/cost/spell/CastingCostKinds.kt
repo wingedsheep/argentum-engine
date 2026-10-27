@@ -347,6 +347,11 @@ internal object AnyNumberForCostReductionCostKind : SpellCostKind<AdditionalCost
                     if (cost.action == PermanentCostAction.TAP && state.getEntity(id)?.has<TappedComponent>() == true) {
                         return "${card.name} is already tapped"
                     }
+                    if (cost.action == PermanentCostAction.SACRIFICE &&
+                        !com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality.canSacrificeForCost(state, id)
+                    ) {
+                        return "${card.name} can't be sacrificed to cast this spell"
+                    }
                 }
                 PermanentCostAction.EXILE -> {
                     if (id == check.action.cardId) return "A spell can't exile itself to pay its own cost"

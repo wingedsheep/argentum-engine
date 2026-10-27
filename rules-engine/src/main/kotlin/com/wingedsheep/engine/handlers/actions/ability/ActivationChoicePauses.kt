@@ -398,6 +398,7 @@ internal class ActivationChoicePauses(
                 sourceId = action.sourceId,
             )
             .let { if (sacrificeCost.excludeSelf) it.filter { id -> id != action.sourceId } else it }
+            .let { com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality.sacrificeableForCost(state, it) }
         // Normally we only pause when there's a real choice (candidates > count); the forced
         // case auto-picks. But "with different names" is always a real choice — the player must
         // pick a distinctly-named set even when candidates == count — so always pause for it.
@@ -496,6 +497,11 @@ internal class ActivationChoicePauses(
                 sourceId = action.sourceId,
             )
             .let { if (variablePermanentsCost.excludeSelf) it.filter { id -> id != action.sourceId } else it }
+            .let {
+                if (variablePermanentsCost.action == com.wingedsheep.sdk.scripting.costs.PermanentCostAction.SACRIFICE) {
+                    com.wingedsheep.engine.mechanics.cost.SacrificeCostLegality.sacrificeableForCost(state, it)
+                } else it
+            }
             // A single-permanent cost announces X by its pick: offer only picks that leave a target.
             .let {
                 VariablePermanentsCost.viableSinglePicks(

@@ -1087,8 +1087,13 @@ class StaticAbilityHandler(
                 )
             }
             is CantBeSacrificed -> {
+                val flag = when (ability.scope) {
+                    CantBeSacrificed.Scope.ANY -> com.wingedsheep.sdk.core.AbilityFlag.CANT_BE_SACRIFICED
+                    CantBeSacrificed.Scope.CASTING_AND_ACTIVATION_COSTS ->
+                        com.wingedsheep.sdk.core.AbilityFlag.CANT_BE_SACRIFICED_FOR_COSTS
+                }
                 ContinuousEffectData(
-                    modification = Modification.GrantKeyword(com.wingedsheep.sdk.core.AbilityFlag.CANT_BE_SACRIFICED.name),
+                    modification = Modification.GrantKeyword(flag.name),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
