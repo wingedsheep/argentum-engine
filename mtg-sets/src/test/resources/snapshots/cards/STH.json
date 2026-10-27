@@ -922,6 +922,73 @@
     ]
 }
 
+// Tortured Existence
+{
+    "name": "Tortured Existence",
+    "manaCost": "{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "{B}, Discard a creature card: Return target creature card from your graveyard to your hand.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tortured Existence:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomDiscard",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "artist": "Keith Parkinson",
+        "flavorText": "\"There are terrors lurking in the unseen corners of us all.\"\n—Crovax",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/7/1754b92b-d6f9-4503-af01-dee03f72a048.jpg?1783946558",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "You can't return the same card you are discarding. This is because you pick the target before paying the costs."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Wall of Blossoms
 {
     "name": "Wall of Blossoms",

@@ -4731,6 +4731,126 @@
     ]
 }
 
+// Underrealm Lich
+{
+    "name": "Underrealm Lich",
+    "manaCost": "{3}{B}{G}",
+    "typeLine": "Creature — Zombie Elf Shaman",
+    "oracleText": "If you would draw a card, instead look at the top three cards of your library, then put one into your hand and the rest into your graveyard.\nPay 4 life: This creature gains indestructible until end of turn. Tap it.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Underrealm Lich:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "INDESTRUCTIBLE",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "ReplaceDrawWith",
+                "replacementEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Put in graveyard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "211",
+        "rarity": "MYTHIC",
+        "artist": "Anna Steinbauer",
+        "flavorText": "\"You've strayed, overworlder.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/0782e090-209c-428f-966a-17f3ceab2903.jpg?1783934118",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "If an effect instructs you to draw multiple cards, each draw is performed—and replaced by Underrealm Lich's ability—one at a time. This means that if you're drawing two cards, you'll look at the top three cards of your library, put one into your hand, put the other two into your graveyard, and then repeat the process with the next three cards in your library."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Underrealm Lich's first ability applies even if you have fewer than three cards in your library. If you have no cards in your library, you can't lose the game for trying to draw a card from an empty library."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "You can activate Underrealm Lich's last ability even if it's already tapped. It can't be tapped again, but it still gains indestructible."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Vedalken Mesmerist
 {
     "name": "Vedalken Mesmerist",

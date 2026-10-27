@@ -4066,6 +4066,105 @@
     ]
 }
 
+// Perpetual Timepiece
+{
+    "name": "Perpetual Timepiece",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Mill two cards. (Put the top two cards of your library into your graveyard.)\n{2}, Exile this artifact: Shuffle any number of target cards from your graveyard into your library.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Perpetual Timepiece:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Perpetual Timepiece:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": "IterationSpace.Targets",
+                            "body": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "destination": "Library"
+                            }
+                        },
+                        "ShuffleLibrary"
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "unlimited": true,
+                        "filter": {
+                            "baseFilter": "own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "227",
+        "rarity": "UNCOMMON",
+        "artist": "Cliff Childs",
+        "flavorText": "Do not be so caught up in keeping track of time that you forget to make use of it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bbc87a27-93d9-4ce0-a022-0309242c1e89.jpg?1783937150",
+        "rulings": [
+            {
+                "date": "2016-09-20",
+                "text": "You can activate Perpetual Timepiece's second ability with no targets just to shuffle your library. If you choose any targets and they all become illegal targets, the ability won't resolve and you won't shuffle your library."
+            }
+        ]
+    }
+}
+
 // Prakhata Club Security
 {
     "name": "Prakhata Club Security",

@@ -2101,6 +2101,55 @@
     ]
 }
 
+// Secrets of the Dead
+{
+    "name": "Secrets of the Dead",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you cast a spell from your graveyard, draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Secrets of the Dead:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        {
+                            "type": "SpellCastFromZone",
+                            "zone": "Graveyard"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever you cast a spell from your graveyard, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "UNCOMMON",
+        "artist": "Eytan Zana",
+        "flavorText": "\"The veil between the living and the dead is so very thin that the whispers of the ancients can finally be heard.\"\n—Amalric of Midvast Hall",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c982d679-581d-43e1-acd0-db77eb0987c2.jpg?1783940836",
+        "rulings": [
+            {
+                "date": "2011-01-22",
+                "text": "Secrets of the Dead's triggered ability resolves before the spell you cast from your graveyard does."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Stromkirk Captain
 {
     "name": "Stromkirk Captain",

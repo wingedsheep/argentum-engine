@@ -4211,6 +4211,124 @@
     ]
 }
 
+// Siren Stormtamer
+{
+    "name": "Siren Stormtamer",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Siren Pirate Wizard",
+    "oracleText": "Flying\n{U}, Sacrifice this creature: Counter target spell or ability that targets you or a creature you control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Siren Stormtamer:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{U}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Counter",
+                    "target": "CounterTarget.SpellOrAbility"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "anyOf": [
+                                    {
+                                        "cardPredicates": [
+                                            {
+                                                "type": "Or",
+                                                "predicates": [
+                                                    {
+                                                        "type": "TargetsPlayer",
+                                                        "player": "You"
+                                                    },
+                                                    {
+                                                        "type": "TargetsMatching",
+                                                        "subfilter": {
+                                                            "cardPredicates": [
+                                                                "IsCreature"
+                                                            ],
+                                                            "controllerPredicate": "ControlledByYou"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "cardPredicates": [
+                                            "IsActivatedOrTriggeredAbility",
+                                            {
+                                                "type": "Or",
+                                                "predicates": [
+                                                    {
+                                                        "type": "TargetsPlayer",
+                                                        "player": "You"
+                                                    },
+                                                    {
+                                                        "type": "TargetsMatching",
+                                                        "subfilter": {
+                                                            "cardPredicates": [
+                                                                "IsCreature"
+                                                            ],
+                                                            "controllerPredicate": "ControlledByYou"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{U}, Sacrifice this creature: Counter target spell or ability that targets you or a creature you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "rarity": "UNCOMMON",
+        "artist": "Josu Hernaiz",
+        "flavorText": "He's the calm that hides the coming storm.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/72f7375c-2d9b-4738-b539-00e1949980e7.jpg?1783935772",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "Siren Stormtamer's activated ability can target a spell or ability that has multiple targets, as long as at least one of those targets is you or a creature you control."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "If the creature you control targeted by the target spell or ability leaves the battlefield, that spell or ability is no longer a legal target for Siren Stormtamer's ability. On the other hand, if that targeted creature becomes an illegal target for the target spell but remains on the battlefield under your control, the target spell or ability is still a legal target for Siren Stormtamer's ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Skittering Heartstopper
 {
     "name": "Skittering Heartstopper",

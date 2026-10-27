@@ -2101,6 +2101,78 @@
     ]
 }
 
+// Hedron Crab
+{
+    "name": "Hedron Crab",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Crab",
+    "oracleText": "Landfall — Whenever a land you control enters, target player mills three cards. (They put the top three cards of their library into their graveyard.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hedron Crab:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Ejsing",
+        "flavorText": "Hedrons perplex minds both great and small.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0fa1946-4f97-4c52-b5f2-b80571230616.jpg?1783942165"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Hedron Scrabbler
 {
     "name": "Hedron Scrabbler",
@@ -3604,6 +3676,71 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Ob Nixilis, the Fallen
+{
+    "name": "Ob Nixilis, the Fallen",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Legendary Creature — Demon",
+    "oracleText": "Landfall — Whenever a land you control enters, you may have target player lose 3 life. If you do, put three +1/+1 counters on Ob Nixilis.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ob Nixilis, the Fallen:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 3,
+                                "target": "Self"
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "rarity": "MYTHIC",
+        "artist": "Jason Felix",
+        "flavorText": "His spark lost, he plots revenge upon the plane whose corrupting mana fractured his soul.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/7824a001-3f0e-4ac5-8406-e58f4288f2f2.jpg?1783942149"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

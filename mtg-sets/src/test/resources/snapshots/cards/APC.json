@@ -1983,6 +1983,94 @@
     ]
 }
 
+// Pernicious Deed
+{
+    "name": "Pernicious Deed",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "{X}, Sacrifice this enchantment: Destroy each artifact, creature, and enchantment with mana value X or less.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Pernicious Deed:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                "IsArtifact",
+                                                "IsCreature",
+                                                "IsEnchantment"
+                                            ]
+                                        },
+                                        {
+                                            "type": "CompareNumericProperty",
+                                            "property": "MANA_VALUE",
+                                            "operator": "LTE",
+                                            "amount": "XValue"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "RARE",
+        "artist": "Christopher Moeller",
+        "flavorText": "\"Yawgmoth,\" Freyalise whispered as she set the bomb, \"now you will pay for your treachery.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/ae4cbb33-4947-49f0-b612-a92141fbfaa6.jpg?1783945332",
+        "rulings": [
+            {
+                "date": "2018-03-16",
+                "text": "If a permanent has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2018-03-16",
+                "text": "A token has a mana value of 0 unless it is copying something else."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Phyrexian Arena
 {
     "name": "Phyrexian Arena",

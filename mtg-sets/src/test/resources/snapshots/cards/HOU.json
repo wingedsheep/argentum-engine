@@ -874,6 +874,208 @@
     "colorIdentityOverride": []
 }
 
+// The Scarab God
+{
+    "name": "The Scarab God",
+    "manaCost": "{3}{U}{B}",
+    "typeLine": "Legendary Creature — God",
+    "oracleText": "At the beginning of your upkeep, each opponent loses X life and you scry X, where X is the number of Zombies you control.\n{2}{U}{B}: Exile target creature card from a graveyard. Create a token that's a copy of it, except it's a 4/4 black Zombie.\nWhen The Scarab God dies, return it to its owner's hand at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "The Scarab God:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "permanent Zombie"
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "AggregateBattlefield",
+                                            "player": "You",
+                                            "filter": "permanent Zombie"
+                                        },
+                                        "isScry": true
+                                    },
+                                    "storeAs": "scried"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "scried",
+                                    "selection": "ChooseAnyNumber",
+                                    "storeSelected": "toBottom",
+                                    "storeRemainder": "toTop",
+                                    "prompt": "Scry: choose cards to put on the bottom of your library",
+                                    "selectedLabel": "Put on bottom",
+                                    "remainderLabel": "Put on top"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "toBottom",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Library",
+                                        "placement": "Bottom"
+                                    }
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "toTop",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Library",
+                                        "placement": "Top"
+                                    },
+                                    "order": "ControllerChooses"
+                                },
+                                {
+                                    "type": "Gated",
+                                    "gate": {
+                                        "type": "Gate.WhenCondition",
+                                        "condition": {
+                                            "type": "Compare",
+                                            "left": {
+                                                "type": "AggregateBattlefield",
+                                                "player": "You",
+                                                "filter": "permanent Zombie"
+                                            },
+                                            "operator": "GT",
+                                            "right": {
+                                                "type": "Fixed",
+                                                "amount": 0
+                                            }
+                                        }
+                                    },
+                                    "then": "EmitScriedEvent"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "The Scarab God:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": "TriggeringEntity",
+                        "destination": "Hand",
+                        "fromZone": "Graveyard"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "The Scarab God:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{U}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "CreateTokenCopyOfTarget",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "overridePower": 4,
+                            "overrideToughness": 4,
+                            "overrideColors": [
+                                "BLACK"
+                            ],
+                            "overrideSubtypes": [
+                                "Zombie"
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{2}{U}{B}: Exile target creature card from a graveyard. Create a token that's a copy of it, except it's a 4/4 black Zombie."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "MYTHIC",
+        "artist": "Lius Lasahido",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/621cfd79-be4e-41e3-95ce-62b0eeff5baf.jpg?1783936010",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "The number of Zombies you control is counted as The Scarab God's first ability resolves. Players can try to change that number in response to the ability (perhaps by activating its second ability)."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "If this creature dies but leaves your graveyard before the next end step, it will remain in its new zone."
+            },
+            {
+                "date": "2017-07-14",
+                "text": "The \"next end step\" refers to the next end step that occurs, not the end step of the next turn. If this creature dies before a turn's end step (for example, during combat), it will be returned to its owner's hand at the beginning of that turn's end step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Tragic Lesson
 {
     "name": "Tragic Lesson",

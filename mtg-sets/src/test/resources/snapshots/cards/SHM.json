@@ -3210,6 +3210,92 @@
     }
 }
 
+// River Kelpie
+{
+    "name": "River Kelpie",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Whenever this creature or another permanent enters from a graveyard, draw a card.\nWhenever a player casts a spell from a graveyard, draw a card.\nPersist (When this creature dies, if it had no -1/-1 counters on it, return it to the battlefield under its owner's control with a -1/-1 counter on it.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "PERSIST"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "River Kelpie:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent",
+                    "from": "Graveyard",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever this creature or another permanent enters from a graveyard, draw a card."
+            },
+            {
+                "id": "River Kelpie:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "Each",
+                    "requires": [
+                        {
+                            "type": "SpellCastFromZone",
+                            "zone": "Graveyard"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever a player casts a spell from a graveyard, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "RARE",
+        "artist": "Jeff Easley",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/970adaaf-1534-4529-8da4-c4dcf7c08b7b.jpg?1783942758",
+        "rulings": [
+            {
+                "date": "2008-05-01",
+                "text": "If River Kelpie and another permanent are each put onto the battlefield from a graveyard at the same time, River Kelpie's first ability will trigger twice. (It will see the other permanent entering.)"
+            },
+            {
+                "date": "2008-05-01",
+                "text": "If you cast another artifact, creature, enchantment, or planeswalker spell from a graveyard, only the second ability triggers. That's because the card is put onto the stack, not onto the battlefield."
+            },
+            {
+                "date": "2008-05-01",
+                "text": "If you cast River Kelpie itself from your graveyard (by using Yawgmoth's Will, for example), neither ability triggers. The first ability doesn't trigger because River Kelpie is put onto the stack; the second ability doesn't trigger because it works only while River Kelpie is already on the battlefield."
+            },
+            {
+                "date": "2008-05-01",
+                "text": "If you play a land card from a graveyard (by using Crucible of Worlds, for example), only the first ability triggers. That's because the land (which isn't a spell) is put directly onto the battlefield from the graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Roughshod Mentor
 {
     "name": "Roughshod Mentor",
