@@ -46,6 +46,24 @@ data class SourceDealtDamageToPlayerThisTurn(
 }
 
 /**
+ * Condition: the effect's source — a creature — was declared attacking [player] this turn
+ * (CR 508.1). Only a player chosen directly as the defender counts: attacking a planeswalker or
+ * battle doesn't attack its controller or protector. The record is kept on the creature as the
+ * current object and survives it leaving combat, but not a zone change (CR 400.7).
+ *
+ * Inside `ForEachPlayer(Player.Each)`, `SourceAttackedPlayerThisTurn(Player.You)` asks the
+ * question of each player in turn — "each player this creature attacked this turn loses the
+ * game" (Angel of Destiny).
+ */
+@SerialName("SourceAttackedPlayerThisTurn")
+@Serializable
+data class SourceAttackedPlayerThisTurn(
+    val player: Player
+) : Condition {
+    override val description: String = "if this attacked ${player.description} this turn"
+}
+
+/**
  * Condition: "it's [threshold] or less of the controller's turn of the game".
  *
  * True when the controller (resolved through context) has taken at most

@@ -290,6 +290,7 @@ SacrificedPermanentHadSubtype — Condition
 SacrificedPermanentWasLegendary — Condition
 SacrificedPermanentWasSuspected — Condition
 SneakCostWasPaid — Condition
+SourceAttackedPlayerThisTurn — Condition
 SourceCastForImpending — Condition
 SourceChosenModeIs — Condition
 SourceDealtDamageToPlayerThisTurn — Condition

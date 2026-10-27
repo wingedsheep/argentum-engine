@@ -359,6 +359,7 @@ class ConditionEvaluator(
             is SourceIsBlockingOrBlockedBySubtype,
             SourceIsModified,
             is com.wingedsheep.sdk.scripting.conditions.SourceDealtDamageToPlayerThisTurn,
+            is com.wingedsheep.sdk.scripting.conditions.SourceAttackedPlayerThisTurn,
             SourceIsRingBearer,
             SourcePlottedOnPriorTurn,
             SourceReturnedAsEnchantment,
@@ -590,6 +591,17 @@ class ConditionEvaluator(
 
             // The source's per-recipient damage memory, stamped with the turn of its latest damage
             // to each player; stripped on a zone change, so a returned permanent has no history.
+            // The source's per-turn attack record, scoped to the current object (CR 400.7).
+            is com.wingedsheep.sdk.scripting.conditions.SourceAttackedPlayerThisTurn -> {
+                val playerId = resolvePlayer(state, condition.player, ctx)
+                val sourceId = ctx.sourceId
+                playerId != null && sourceId != null &&
+                    playerId in state.getEntity(sourceId)
+                        ?.get<com.wingedsheep.engine.state.components.combat.TimesAttackedThisTurnComponent>()
+                        ?.attackedPlayersFor(state.turnNumber, state.objectRef(sourceId))
+                        .orEmpty()
+            }
+
             is com.wingedsheep.sdk.scripting.conditions.SourceDealtDamageToPlayerThisTurn -> {
                 val playerId = resolvePlayer(state, condition.player, ctx)
                 val sourceId = ctx.sourceId

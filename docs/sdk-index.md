@@ -416,6 +416,7 @@ Families:
 - `SacrificedPermanentWasLegendary` — Condition: "If the sacrificed permanent was legendary." Reads `EffectContext.sacrificedPermanents` (snapshots captured at cost-payment time or by a same-spell sacrifice effect like a symmetric edic…
 - `SacrificedPermanentWasSuspected` — Condition: "If the sacrificed creature was suspected." (CR 701.60a) The suspect sibling of SacrificedPermanentWasLegendary, reading the same `EffectContext.sacrificedPermanents` snapshots — here th…
 - `SneakCostWasPaid` — Condition: "If this spell's sneak cost was paid" (CR 702.190).
+- `SourceAttackedPlayerThisTurn(player: Player)` — Condition: the effect's source — a creature — was declared attacking player this turn (CR 508.1).
 - `SourceCastForImpending` — Condition: "If this permanent's impending cost was paid" (CR 702.176a).
 - `SourceChosenModeIs(modeId: String)` — Condition: "If the chosen mode is modeId".
 - `SourceDealtDamageToPlayerThisTurn(player: Player)` — Condition: the effect's source dealt damage — combat or noncombat — to player this turn.

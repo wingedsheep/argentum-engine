@@ -15530,6 +15530,13 @@ that works in both resolution and static-ability (projection) contexts.
 - `SourceAttackedThisTurn` — source was declared as an attacker at least once during the
   current turn (per-creature, derived from the controller's `PlayerAttackersThisTurnComponent`).
   Negate via `Conditions.Not(...)` for Erg Raiders-style "if it didn't attack this turn".
+- `SourceAttackedPlayerThisTurn(player = Player.You)` — source was declared attacking `player`
+  directly this turn (CR 508.1); attacking that player's planeswalker or a battle they protect
+  doesn't count. Reads the `attackedPlayerIds` on the creature's own `TimesAttackedThisTurnComponent`
+  (unioned across combats, scoped to the current object and turn), so it survives the creature
+  leaving combat but not a zone change. Inside `ForEachPlayer(Player.Each, ...)`, `Player.You` is
+  the iterated player — Angel of Destiny's "each player this creature attacked this turn loses
+  the game" is `ForEachPlayer(Player.Each, If(SourceAttackedPlayerThisTurn(Player.You), LoseGame()))`.
 - `SourceAttackedThisCombat` / `SourceBlockedThisCombat` — source was declared as an attacker /
   blocker at least once during the current combat (per-creature `AttackedThisCombatComponent` /
   `BlockedThisCombatComponent`, stamped at declaration time, cleared when the combat phase ends;

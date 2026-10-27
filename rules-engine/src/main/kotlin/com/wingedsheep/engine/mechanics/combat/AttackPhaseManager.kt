@@ -394,11 +394,15 @@ internal class AttackPhaseManager(
                     .with(AttackedThisCombatComponent)
                     .with(
                         newState.objectRef(attackerId).let { current ->
+                            val previous = container.get<com.wingedsheep.engine.state.components.combat.TimesAttackedThisTurnComponent>()
                             com.wingedsheep.engine.state.components.combat.TimesAttackedThisTurnComponent(
                                 turnNumber = newState.turnNumber,
-                                count = (container.get<com.wingedsheep.engine.state.components.combat.TimesAttackedThisTurnComponent>()
-                                    ?.countFor(newState.turnNumber, current) ?: 0) + 1,
-                                attackerObject = current
+                                count = (previous?.countFor(newState.turnNumber, current) ?: 0) + 1,
+                                attackerObject = current,
+                                // Only a player chosen as the defender is "attacked" (CR 508.1);
+                                // `in turnOrder` is the player-identity idiom used below.
+                                attackedPlayerIds = previous?.attackedPlayersFor(newState.turnNumber, current).orEmpty() +
+                                    listOfNotNull(defenderId.takeIf { it in newState.turnOrder })
                             )
                         }
                     )

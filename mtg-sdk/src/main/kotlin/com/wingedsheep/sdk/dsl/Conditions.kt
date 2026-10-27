@@ -1480,6 +1480,15 @@ object Conditions {
         Any(SourceAttackedThisTurn, SourceBlockedThisTurn)
 
     /**
+     * If this creature was declared attacking [player] directly this turn (attacking their
+     * planeswalker or a battle they protect doesn't count). Inside `ForEachPlayer`, pass
+     * [Player.You] to ask it of each iterated player — Angel of Destiny's "each player this
+     * creature attacked this turn loses the game".
+     */
+    fun SourceAttackedPlayerThisTurn(player: Player = Player.You): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.SourceAttackedPlayerThisTurn(player)
+
+    /**
      * If this permanent was declared as an attacker during its controller's **most recent own
      * turn** — "if it attacked during your last turn". The one-turn-back sibling of
      * [SourceAttackedThisTurn]: false on the turn it actually attacked, true on the next one.
