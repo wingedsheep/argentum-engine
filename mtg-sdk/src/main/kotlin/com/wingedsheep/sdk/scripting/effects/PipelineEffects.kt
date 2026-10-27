@@ -1012,8 +1012,9 @@ enum class CardOrder {
  * @property search This gather *is* a search of a library (CR 701.23) — the "search your library
  *   for …" step, not a bulk move of a whole library (Jace, the Mind Sculptor's −12) or a look at
  *   its top. A gather is the only place a search can be told apart from those, so the flag rides
- *   here: when the [searcher] can't search libraries ([CantSearchLibrariesEffect]), library
- *   cards are left out of the gathered collection.
+ *   here: library cards the [searcher] is forbidden to search ([CantSearchLibrariesEffect], or a
+ *   [com.wingedsheep.sdk.scripting.PlayersCantSearchLibraries] static) are left out of the
+ *   gathered collection.
  * @property searcher Who performs the search when [search] is set. Defaults to [Player.You], the
  *   effect's controller ("search your library", and "search target player's library" — Cranial
  *   Extraction, where *you* search). A different player searches their own library in

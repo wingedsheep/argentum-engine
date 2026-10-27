@@ -292,6 +292,103 @@
     ]
 }
 
+// Ashiok, Dream Render
+{
+    "name": "Ashiok, Dream Render",
+    "manaCost": "{1}{U/B}{U/B}",
+    "typeLine": "Legendary Planeswalker — Ashiok",
+    "oracleText": "Spells and abilities your opponents control can't cause their controller to search their library.\n−1: Target player mills four cards. Then exile each opponent's graveyard.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ashiok, Dream Render:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            }
+                        },
+                        "ExileOpponentsGraveyards"
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "PlayersCantSearchLibraries",
+                "affected": "EachOpponent",
+                "scope": "OWN_LIBRARY_BY_OWN_EFFECTS"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "UNCOMMON",
+        "artist": "Cynthia Sheppard",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2df3258-c053-48a8-974f-d80899b2cd93.jpg?1783933381",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "Spells and abilities your opponents control may cause other players to search their libraries, and spells and abilities you control may cause your opponents to search their libraries."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If an effect says \"You may search your library . . . If you do, shuffle your library\" or \"You may search your library . . . then shuffle your library,\" your opponents can't choose to search, so they won't shuffle."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If an effect says \"Search your library . . . then shuffle your library,\" your opponents shuffle their libraries even though they can't search."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "Effects that instruct your opponents to reveal or look at cards from the top of their libraries will still work. Only effects that use the word \"search\" are affected."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Band Together
 {
     "name": "Band Together",

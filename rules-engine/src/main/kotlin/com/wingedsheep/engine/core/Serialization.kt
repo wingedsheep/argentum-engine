@@ -662,6 +662,7 @@ val engineSerializersModule = SerializersModule {
         subclass(CantBeBlockedWhilePropertyAtMostComponent::class)
         subclass(GrantsCantLoseGameComponent::class)
         subclass(ForbidsLifePaymentForCostsComponent::class)
+        subclass(ForbidsLibrarySearchComponent::class)
         subclass(GrantsOpponentsCantWinGameComponent::class)
         subclass(GrantsCantLoseGameFromLifeComponent::class)
         subclass(GrantsControllerHexproofComponent::class)

@@ -26,8 +26,8 @@ import kotlinx.serialization.json.contentOrNull
  *
  * The sentence match drops reminder text (a keyword's "(… Discard this card: Search your library
  * …)" is the keyword's own, engine-implemented search) and skips phrases where the card doesn't
- * itself search: "can't search", "would search", and a trigger condition ("Whenever an opponent
- * searches their library, …").
+ * itself search: "can't search", "can't cause … to search" (Ashiok, Dream Render), "would search",
+ * and a trigger condition ("Whenever an opponent searches their library, …").
  */
 class LibrarySearchFlagTest : FunSpec({
 
@@ -35,7 +35,7 @@ class LibrarySearchFlagTest : FunSpec({
     val sentence = Regex("""\n+|(?<=[.])\s+(?=[A-Z•"“])""")
     val printsSearch = Regex("""\bsearch(?:es)?\b[^.]*?\blibrar(?:y|ies)\b""", RegexOption.IGNORE_CASE)
     val notOwnSearch = Regex(
-        """can't search|cannot search|would search|""" +
+        """can't search|cannot search|would search|can't cause\b[^.]*\bto search|""" +
             """\b(?:whenever|when|if)\b[^,]*\bsearch(?:es|ed)?\b[^,]*\blibrar(?:y|ies)\b[^,]*,""",
         RegexOption.IGNORE_CASE
     )

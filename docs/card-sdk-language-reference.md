@@ -3614,7 +3614,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   finds no library cards, and the `EmitLibrarySearchedEventEffect` tail emits nothing. The rest of the instruction still runs, so a
   "search …, then shuffle" still shuffles; looking at / revealing the top of a library is not a search and is untouched.
   An optional search ("you may search … then shuffle" — a `Effects.May` whose action leads with a search gather) can't be
-  chosen at all, so it is skipped without a prompt and without the shuffle.
+  chosen at all, so it is skipped without a prompt and without the shuffle. Static twin: `PlayersCantSearchLibraries`.
 - `CantPlayCardsFromHandEffect(target = Controller, duration = UntilYourNextTurn)` — target can't play cards (cast
   spells **or** play lands) from their **hand** zone for the duration. Hand-scoped: cards in exile/graveyard with a
   may-play permission stay playable. Facade: `Effects.CantPlayCardsFromHand(target, duration)`. Pairs with an impulse
@@ -11195,6 +11195,20 @@ in the declare-blockers step, even before the turn-based block action has comple
   **when** (`condition`). A *filtered* lock never suppresses the land drop wholesale: the blanket
   `canPlayLand` probe deliberately ignores it and `EnumerationContext.cantPlayLand(cardId)` removes
   only the named cards, so the unaffected lands in a hand stay playable.
+- `PlayersCantSearchLibraries(affected = Player.Each, scope = LibrarySearchProhibition.ANY_LIBRARY)` —
+  a static prohibition on searching libraries (CR 701.23); the battlefield twin of the one-shot
+  `CantSearchLibrariesEffect`. `affected` is relative to the source's controller. `scope`:
+  `ANY_LIBRARY` forbids every search (Stranglehold, `affected = Player.EachOpponent`);
+  `OWN_LIBRARY_BY_OWN_EFFECTS` forbids only a search of the player's *own* library caused by a spell
+  or ability *they* control — Ashiok, Dream Render ("Spells and abilities your opponents control
+  can't cause their controller to search their library"); another player's spell may still make them
+  search, and their own spell may still search someone else's library. The cause is the resolving
+  spell/ability's controller (`effectControllerId`, stable across "each player searches"). A
+  forbidden search is no search: the library contributes no cards, no searched event fires, a "you may
+  search …" can't be chosen (so it doesn't shuffle), and a mandatory "search … then shuffle" still
+  shuffles. Stamped as `ForbidsLibrarySearchComponent` by `StaticAbilityHandler` (bare abilities only,
+  ignored while the source has lost its abilities) and read through `LibrarySearchRestrictions` by the
+  search gather, `EmitLibrarySearchedEventExecutor` and the may-gate.
 - `RestrictCardsDrawnPerTurn(affected = Player.EachOpponent, maxPerTurn = 1)` — a per-turn cap on
   cards drawn (CR 121.2b): Narset, Parter of Veils / Leovold ("Each opponent can't draw more than one
   card each turn"), `affected = Player.Each` for Spirit of the Labyrinth, and `maxPerTurn = 0` for

@@ -369,6 +369,14 @@ class StaticAbilityHandler(
                 )
             }
 
+        // "Players can't search libraries" (Stranglehold, Ashiok) — read by LibrarySearchRestrictions.
+        allStaticAbilities.filterIsInstance<com.wingedsheep.sdk.scripting.PlayersCantSearchLibraries>()
+            .takeIf { it.isNotEmpty() }?.let {
+                result = result.with(
+                    com.wingedsheep.engine.state.components.battlefield.ForbidsLibrarySearchComponent(it)
+                )
+            }
+
         // Global Layer 3 color-word change (Swirl the Mists): read by TextChanges, which scans the
         // battlefield for this marker and reads the source's chosen color live.
         if (allStaticAbilities.any { it is com.wingedsheep.sdk.scripting.ChangeAllColorWordsToChosenColor }) {
@@ -1386,6 +1394,7 @@ class StaticAbilityHandler(
             is CantBeBlockedWhilePropertyAtMost,
             is com.wingedsheep.sdk.scripting.ChangeAllColorWordsToChosenColor,
             is com.wingedsheep.sdk.scripting.PlayersCantPayLifeForCosts,
+            is com.wingedsheep.sdk.scripting.PlayersCantSearchLibraries,
             is com.wingedsheep.sdk.scripting.GrantCantLoseGameFromLife,
             is GrantHexproofToController,
             is GrantProtectionToController,

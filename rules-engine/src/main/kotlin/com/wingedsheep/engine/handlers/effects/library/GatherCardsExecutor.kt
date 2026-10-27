@@ -13,7 +13,6 @@ import com.wingedsheep.engine.state.isPlayerControlledByEffect
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
-import com.wingedsheep.engine.state.components.player.CantSearchLibrariesComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.CardSource
@@ -411,27 +410,39 @@ class GatherCardsExecutor(
             }
         }
 
-        // A search the searcher is forbidden to make finds nothing in any library (Shadow of
-        // Doubt). Only the library half is dropped: "search your graveyard and/or library" still
-        // finds graveyard cards. The rest of the instruction (move nothing, shuffle) still runs.
-        // The searcher is who the gather names — the controller unless another player searches
-        // their own library (Sandworm's "its controller may search their library").
+        // A forbidden library contributes nothing to the search (Shadow of Doubt: every library;
+        // Ashiok, Dream Render: an opponent's own library when their own spell or ability makes
+        // them search it — see LibrarySearchRestrictions). Only the library half is dropped:
+        // "search your graveyard and/or library" still finds graveyard cards. The rest of the
+        // instruction (move nothing, shuffle) still runs. The searcher is who the gather names —
+        // the controller unless another player searches their own library (Sandworm's "its
+        // controller may search their library"); the cause is the spell or ability's controller,
+        // stable across a per-player iteration.
         val searcher = if (effect.search) resolvePlayer(effect.searcher, context, state) else null
-        val cantSearch = searcher != null &&
-            state.getEntity(searcher)?.has<CantSearchLibrariesComponent>() == true
-        val libraries = if (cantSearch) state.turnOrder.flatMap { state.getZone(ZoneKey(it, Zone.LIBRARY)) }.toSet() else emptySet()
-        val cards = if (cantSearch) {
-            gathered.filter { it !in libraries }
-        } else {
-            limitSearchDepth(state, searcher, gathered)
-        }
+        val causeController = context.effectControllerId ?: context.controllerId
+        val forbiddenOwners = searcher
+            ?.let { LibrarySearchRestrictions.forbiddenLibraryOwners(state, it, causeController) }
+            .orEmpty()
+        val libraries = forbiddenOwners.flatMapTo(HashSet()) { state.getZone(ZoneKey(it, Zone.LIBRARY)) }
+        val cards = limitSearchDepth(state, searcher, gathered.filter { it !in libraries })
+        // The search is no search at all when every library it looks through is forbidden, so its
+        // searched event must not fire (EmitLibrarySearchedEventExecutor reads this).
+        val searchForbidden = searcher != null && forbiddenOwners.isNotEmpty() &&
+            searchedLibraryOwners(effect.source, context, state)
+                .let { owners -> owners != null && owners.isNotEmpty() && forbiddenOwners.containsAll(owners) }
         // A library nobody may search is publicly out of the pool, so its cards decide nothing.
         val poolDeciders = (inheritedDeciders +
             HiddenPools.hiddenOwners(state, filterRead.filter { it !in libraries }, visibility, context.pipeline.storedCollections)).distinct()
         // Published for the pipeline's EmitLibrarySearchedEventEffect tail, so the searched
         // event names this searcher.
         val searcherCollection = searcher
-            ?.let { mapOf(com.wingedsheep.engine.handlers.PipelineState.SEARCHER_KEY to listOf(it)) }
+            ?.let {
+                mapOf(
+                    com.wingedsheep.engine.handlers.PipelineState.SEARCHER_KEY to listOf(it),
+                    com.wingedsheep.engine.handlers.PipelineState.SEARCH_FORBIDDEN_KEY to
+                        if (searchForbidden) listOf(it) else emptyList(),
+                )
+            }
             .orEmpty()
 
         // An empty pool still publishes its marks: a search that found nothing is still a search,
@@ -560,6 +571,17 @@ class GatherCardsExecutor(
      * library card is findable only if it is among the top N of its library. Non-library cards
      * (the graveyard half of "search your graveyard and library") are untouched.
      */
+    /**
+     * The players whose libraries [source] looks through, or null when it names no library or
+     * its player can't be resolved.
+     */
+    private fun searchedLibraryOwners(source: CardSource, context: EffectContext, state: GameState): List<EntityId>? =
+        when (source) {
+            is CardSource.FromZone -> source.player.takeIf { source.zone == Zone.LIBRARY }
+            is CardSource.FromMultipleZones -> source.player.takeIf { Zone.LIBRARY in source.zones }
+            else -> null
+        }?.let { resolvePlayers(it, context, state) }
+
     private fun limitSearchDepth(state: GameState, searcher: EntityId?, gathered: List<EntityId>): List<EntityId> {
         if (searcher == null || gathered.isEmpty()) return gathered
         val depth = KeywordActionAmountModifier.librarySearchDepth(state, searcher, predicateEvaluator)

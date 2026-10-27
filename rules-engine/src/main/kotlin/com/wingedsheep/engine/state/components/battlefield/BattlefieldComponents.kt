@@ -1314,6 +1314,20 @@ data class ForbidsLifePaymentForCostsComponent(
 ) : Component
 
 /**
+ * Marks a permanent whose static abilities forbid players to search libraries —
+ * [com.wingedsheep.sdk.scripting.PlayersCantSearchLibraries] (Stranglehold, Ashiok, Dream Render).
+ * Read through [com.wingedsheep.engine.handlers.effects.library.LibrarySearchRestrictions]; leaves
+ * with the permanent, and is ignored while the permanent has lost its abilities.
+ *
+ * Unconditional by construction, as [ForbidsLifePaymentForCostsComponent] is: `StaticAbilityHandler`
+ * stamps only the bare abilities.
+ */
+@Serializable
+data class ForbidsLibrarySearchComponent(
+    val prohibitions: List<com.wingedsheep.sdk.scripting.PlayersCantSearchLibraries>
+) : Component
+
+/**
  * Marks a permanent as granting the Station-using-toughness effect to creatures its
  * controller controls. When a creature with this component's controller taps for a
  * Station ability and its toughness > power, it contributes toughness instead of power.

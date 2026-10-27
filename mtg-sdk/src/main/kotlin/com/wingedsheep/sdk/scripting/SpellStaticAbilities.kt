@@ -1330,6 +1330,67 @@ data class PlayersCantPlayLands(
 }
 
 /**
+ * Which library searches a [PlayersCantSearchLibraries] forbids its affected players to make.
+ */
+@Serializable
+enum class LibrarySearchProhibition {
+    /** Every search of every library — "Your opponents can't search libraries." (Stranglehold). */
+    ANY_LIBRARY,
+
+    /**
+     * Only a search of the player's *own* library that a spell or ability *they* control causes —
+     * "Spells and abilities your opponents control can't cause their controller to search their
+     * library." (Ashiok, Dream Render). Their spells may still make them search another player's
+     * library, and another player's spells may still make them search their own.
+     */
+    OWN_LIBRARY_BY_OWN_EFFECTS,
+}
+
+/**
+ * A continuous prohibition on searching libraries (CR 701.23) for the [affected] players, relative
+ * to the source's controller, scoped by [scope].
+ *
+ *  - Stranglehold: `PlayersCantSearchLibraries(Player.EachOpponent)`.
+ *  - Ashiok, Dream Render: `PlayersCantSearchLibraries(Player.EachOpponent,
+ *    LibrarySearchProhibition.OWN_LIBRARY_BY_OWN_EFFECTS)`.
+ *
+ * A forbidden search finds nothing in that library and is no search at all, so "whenever a player
+ * searches their library" doesn't trigger. The rest of the instruction still happens: a mandatory
+ * "search …, then shuffle" still shuffles, while a "you may search …" can't be chosen, so nothing
+ * happens — not even its shuffle (Ashiok's rulings). Searching the graveyard or hand half of a
+ * "search your graveyard and/or library" is untouched, and looking at or revealing the top of a
+ * library is not a search.
+ *
+ * The static twin of the one-shot `CantSearchLibrariesEffect` (Shadow of Doubt, "Players can't
+ * search libraries this turn"), which stamps the player for a duration and can't follow its
+ * source off the battlefield. Not a [LimitLibrarySearch]: that replacement still lets the search
+ * happen, over the top N cards, and still counts as a search.
+ */
+@SerialName("PlayersCantSearchLibraries")
+@Serializable
+data class PlayersCantSearchLibraries(
+    val affected: Player = Player.Each,
+    val scope: LibrarySearchProhibition = LibrarySearchProhibition.ANY_LIBRARY,
+) : StaticAbility {
+    override val description: String = when (scope) {
+        LibrarySearchProhibition.ANY_LIBRARY -> when (affected) {
+            is Player.You -> "You can't search libraries"
+            is Player.EachOpponent -> "Your opponents can't search libraries"
+            is Player.Each -> "Players can't search libraries"
+            else -> "${affected.description.replaceFirstChar { it.uppercase() }} can't search libraries"
+        }
+        LibrarySearchProhibition.OWN_LIBRARY_BY_OWN_EFFECTS -> when (affected) {
+            is Player.You -> "Spells and abilities you control can't cause you to search your library"
+            is Player.EachOpponent ->
+                "Spells and abilities your opponents control can't cause their controller to search their library"
+            is Player.Each ->
+                "Spells and abilities can't cause their controller to search their library"
+            else -> "Spells and abilities ${affected.description} controls can't cause them to search their library"
+        }
+    }
+}
+
+/**
  * A per-turn cap on how many cards a player can draw (CR 121.2b): "Each opponent can't draw more
  * than one card each turn." (Narset, Parter of Veils; Leovold, Emissary of Trest), "Each player
  * can't draw more than one card each turn." (Spirit of the Labyrinth). `maxPerTurn = 0` is the

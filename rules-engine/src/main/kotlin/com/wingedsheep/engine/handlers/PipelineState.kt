@@ -92,6 +92,14 @@ data class PipelineState(
         const val SEARCHER_KEY = "__searcher"
 
         /**
+         * Reserved metadata collection published beside [SEARCHER_KEY]: the searcher when every
+         * library the search looked through was forbidden to them
+         * ([com.wingedsheep.engine.handlers.effects.library.LibrarySearchRestrictions]), else
+         * empty. A forbidden search is no search, so `EmitLibrarySearchedEventEffect` emits nothing.
+         */
+        const val SEARCH_FORBIDDEN_KEY = "__searchForbidden"
+
+        /**
          * Pipeline collection name under which a batch trigger seeds the entities it captured
          * (the matching permanents in a `PermanentsEnteredEvent` batch). Aliases the SDK-side
          * contract [com.wingedsheep.sdk.scripting.effects.IterationSpace.TRIGGER_CAPTURED_COLLECTION]

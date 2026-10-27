@@ -7,7 +7,6 @@ import com.wingedsheep.engine.handlers.PipelineState
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.player.CantSearchLibrariesComponent
 import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 import kotlin.reflect.KClass
 
@@ -35,13 +34,21 @@ class EmitLibrarySearchedEventExecutor : EffectExecutor<EmitLibrarySearchedEvent
         effect: EmitLibrarySearchedEventEffect,
         context: EffectContext
     ): EffectResult {
-        val playerId = context.pipeline.storedCollections[PipelineState.SEARCHER_KEY]?.firstOrNull()
-            ?: context.controllerId
-        // A player who can't search libraries (Shadow of Doubt) didn't search, so there is no
-        // search event for "whenever a player searches their library" triggers to see.
-        if (state.getEntity(playerId)?.has<CantSearchLibrariesComponent>() == true) {
-            return EffectResult.success(state)
+        val collections = context.pipeline.storedCollections
+        val recordedSearcher = collections[PipelineState.SEARCHER_KEY]?.firstOrNull()
+        val playerId = recordedSearcher ?: context.controllerId
+        // A player forbidden to make this search (Shadow of Doubt, Ashiok, Dream Render) didn't
+        // search, so there is no search event for "whenever a player searches their library"
+        // triggers to see. The search gather decided it; without one, the search is of the
+        // player's own library.
+        val forbidden = if (recordedSearcher != null) {
+            collections[PipelineState.SEARCH_FORBIDDEN_KEY].orEmpty().isNotEmpty()
+        } else {
+            LibrarySearchRestrictions.isSearchForbidden(
+                state, playerId, context.effectControllerId ?: context.controllerId, listOf(playerId)
+            )
         }
+        if (forbidden) return EffectResult.success(state)
         val sourceName = context.sourceId
             ?.let { state.getEntity(it)?.get<CardComponent>()?.name }
             ?: "Search"
