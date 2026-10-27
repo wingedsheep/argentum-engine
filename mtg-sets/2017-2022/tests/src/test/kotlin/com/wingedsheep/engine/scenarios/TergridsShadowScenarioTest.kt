@@ -45,7 +45,7 @@ class TergridsShadowScenarioTest : ScenarioTestBase() {
             // Blood Artist died alongside the other three, so it sees all four deaths.
             var drains = 0
             while (true) {
-                val decision = game.getPendingDecision() as? ChooseTargetsDecision ?: break
+                if (game.getPendingDecision() !is ChooseTargetsDecision) break
                 game.selectTargets(listOf(game.player2Id)).error shouldBe null
                 drains++
                 game.resolveStack()
