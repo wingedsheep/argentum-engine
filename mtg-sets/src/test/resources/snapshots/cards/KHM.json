@@ -1270,6 +1270,137 @@
     ]
 }
 
+// Axgard Armory
+{
+    "name": "Axgard Armory",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped.\n{T}: Add {W}.\n{1}{R}{R}{W}, {T}, Sacrifice this land: Search your library for an Aura card and/or an Equipment card, reveal them, put them into your hand, then shuffle.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Axgard Armory:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Axgard Armory:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{R}{R}{W}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "enchantment Aura"
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for an Aura enchantment card to put into your hand",
+                            "selectedLabel": "Put into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "EmitLibrarySearchedEvent",
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Library",
+                                        "filter": "artifact Equipment"
+                                    },
+                                    "storeAs": "searchable",
+                                    "search": true
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "searchable",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "found",
+                                    "prompt": "Search your library for an Equipment artifact card to put into your hand",
+                                    "selectedLabel": "Put into your hand"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "found",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Hand"
+                                    },
+                                    "revealed": true
+                                },
+                                "ShuffleLibrary",
+                                "EmitLibrarySearchedEvent"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "250",
+        "rarity": "UNCOMMON",
+        "artist": "Cliff Childs",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f9c77d35-8418-48fb-b7d7-7cfa763545c5.jpg?1783928180"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Axgard Braggart
 {
     "name": "Axgard Braggart",
@@ -3197,6 +3328,105 @@
     ]
 }
 
+// Bretagard Stronghold
+{
+    "name": "Bretagard Stronghold",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped.\n{T}: Add {G}.\n{G}{W}{W}, {T}, Sacrifice this land: Put a +1/+1 counter on each of up to two target creatures you control. They gain vigilance and lifelink until end of turn. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Bretagard Stronghold:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Bretagard Stronghold:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{G}{W}{W}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddCounters",
+                                "counterType": "PLUS_ONE_PLUS_ONE",
+                                "count": 1,
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "VIGILANCE",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "LIFELINK",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 2,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Put a +1/+1 counter on each of up to two target creatures you control. They gain vigilance and lifelink until end of turn. Activate only as a sorcery."
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "253",
+        "rarity": "UNCOMMON",
+        "artist": "Jung Park",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/24a0f2e2-cfd7-4374-a172-4357d5de47bb.jpg?1783928179"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Brinebarrow Intruder
 {
     "name": "Brinebarrow Intruder",
@@ -3788,6 +4018,63 @@
     ]
 }
 
+// Colossal Plow
+{
+    "name": "Colossal Plow",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Whenever this Vehicle attacks, add {W}{W}{W} and you gain 3 life. Until end of turn, you don't lose this mana as steps and phases end.\nCrew 6 (Tap any number of creatures you control with total power 6 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 3
+    },
+    "keywords": [
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 6
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Colossal Plow:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "WHITE",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "expiry": "KEPT_UNTIL_END_OF_TURN"
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "236",
+        "rarity": "UNCOMMON",
+        "artist": "Joe Slucher",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fba3fe29-067f-4c7e-8b3b-779f3b37712a.jpg?1783928186"
+    }
+}
+
 // Cosima, God of the Voyage
 {
     "name": "Cosima, God of the Voyage",
@@ -4071,6 +4358,72 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Cosmos Elixir
+{
+    "name": "Cosmos Elixir",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "At the beginning of your end step, draw a card if your life total is greater than your starting life total. Otherwise, you gain 2 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cosmos Elixir:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "LifeTotal",
+                                "player": "You"
+                            },
+                            "operator": "GT",
+                            "right": {
+                                "type": "StartingLifeTotal",
+                                "player": "You"
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "otherwise": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "rarity": "RARE",
+        "artist": "Volkan Baǵa",
+        "flavorText": "The Skoti owe their immortality to the elixir, and the manner of its creation is their most closely guarded secret.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6bf084fe-7762-49c5-974a-cdecc10666b3.jpg?1783928186",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "You compare your current life total to your starting life total as Cosmos Elixir's ability resolves to determine whether you draw a card or gain 2 life. There are no situations in which you'll do both."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Craven Hulk
@@ -6820,6 +7173,63 @@
     "layout": "MODAL_DFC"
 }
 
+// Faceless Haven
+{
+    "name": "Faceless Haven",
+    "manaCost": "",
+    "typeLine": "Snow Land",
+    "oracleText": "{T}: Add {C}.\n{S}{S}{S}: This land becomes a 4/3 creature with vigilance and all creature types until end of turn. It's still a land. ({S} can be paid with one mana from a snow source.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Faceless Haven:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Faceless Haven:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{S}{S}{S}"
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "keywords": [
+                        "VIGILANCE",
+                        "CHANGELING"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "255",
+        "rarity": "RARE",
+        "artist": "Titus Lunter",
+        "flavorText": "It is everywhere and nowhere, a place unbound by logic, just beyond the real.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e3cd82e5-6072-4334-a493-01ca4ad6b4eb.jpg?1783928179"
+    }
+}
+
 // Fall of the Impostor
 {
     "name": "Fall of the Impostor",
@@ -9157,6 +9567,83 @@
     ]
 }
 
+// Great Hall of Starnheim
+{
+    "name": "Great Hall of Starnheim",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped.\n{T}: Add {B}.\n{W}{W}{B}, {T}, Sacrifice this land and a creature you control: Create a 4/4 white Angel Warrior creature token with flying and vigilance. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Great Hall of Starnheim:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Great Hall of Starnheim:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{W}{W}{B}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Angel",
+                        "Warrior"
+                    ],
+                    "keywords": [
+                        "FLYING",
+                        "VIGILANCE"
+                    ]
+                },
+                "timing": "SorcerySpeed"
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "259",
+        "rarity": "UNCOMMON",
+        "artist": "Jonas De Ro",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a23c757e-5944-47ce-b06f-27b4c403044c.jpg?1783928176"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Grim Draugr
 {
     "name": "Grim Draugr",
@@ -10618,6 +11105,125 @@
         "flavorText": "The demons took no captives and claimed no spoils; they sought only to destroy.",
         "imageUri": "https://cards.scryfall.io/normal/front/7/7/77da4de2-4d34-40e5-8fc0-850aef05356b.jpg?1783928227"
     }
+}
+
+// Immersturm Skullcairn
+{
+    "name": "Immersturm Skullcairn",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped.\n{T}: Add {B}.\n{1}{B}{R}{R}, {T}, Sacrifice this land: It deals 3 damage to target player. That player discards a card. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Immersturm Skullcairn:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Immersturm Skullcairn:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}{R}{R}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand",
+                                        "player": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "chooser": "TargetPlayer",
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard",
+                                        "player": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        }
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "263",
+        "rarity": "UNCOMMON",
+        "artist": "Cliff Childs",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/12ed97de-736d-43d8-977b-308ac54f88f4.jpg?1783928173"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
 }
 
 // In Search of Greatness
@@ -12911,6 +13517,82 @@
     ]
 }
 
+// Littjara Mirrorlake
+{
+    "name": "Littjara Mirrorlake",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped.\n{T}: Add {U}.\n{2}{G}{G}{U}, {T}, Sacrifice this land: Create a token that's a copy of target creature you control, except it enters with an additional +1/+1 counter on it. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Littjara Mirrorlake:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Littjara Mirrorlake:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{G}{G}{U}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "initialCounters": {
+                        "PLUS_ONE_PLUS_ONE": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Create a token that's a copy of target creature you control, except it enters with an additional +1/+1 counter on it. Activate only as a sorcery."
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "264",
+        "rarity": "UNCOMMON",
+        "artist": "Jokubas Uogintas",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6bf2bb3e-828f-4d53-9d0a-26bbc5e7f3cc.jpg?1783928173"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Magda, Brazen Outlaw
 {
     "name": "Magda, Brazen Outlaw",
@@ -14672,6 +15354,121 @@
     ]
 }
 
+// Port of Karfell
+{
+    "name": "Port of Karfell",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped.\n{T}: Add {U}.\n{3}{U}{B}{B}, {T}, Sacrifice this land: Mill four cards, then return a creature card from your graveyard to the battlefield tapped. (To mill a card, put the top card of your library into your graveyard.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Port of Karfell:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Port of Karfell:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{U}{B}{B}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "creature"
+                            },
+                            "storeAs": "gathered2"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered2",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected3",
+                            "prompt": "Choose a creature card to return to the battlefield tapped"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected3",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Mill four cards, then return a creature card from your graveyard to the battlefield tapped."
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "265",
+        "rarity": "UNCOMMON",
+        "artist": "Mauricio Calle",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bb9465a6-d009-4ecd-9fd1-d046547de902.jpg?1783928172",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "The last activated ability doesn't target any creature cards in graveyards. You may return a creature card that was just milled or one that was already there."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Priest of the Haunted Edge
 {
     "name": "Priest of the Haunted Edge",
@@ -14844,6 +15641,118 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Pyre of Heroes
+{
+    "name": "Pyre of Heroes",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}, {T}, Sacrifice a creature: Search your library for a creature card that shares a creature type with the sacrificed creature and has mana value equal to 1 plus that creature's mana value. Put that card onto the battlefield, then shuffle. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Pyre of Heroes:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "SharesCreatureTypeWith",
+                                            "entity": "SacrificedAsCost"
+                                        },
+                                        {
+                                            "type": "ManaValueEqualsDynamic",
+                                            "amount": {
+                                                "type": "Add",
+                                                "left": {
+                                                    "type": "EntityProperty",
+                                                    "entity": "SacrificedAsCost",
+                                                    "numericProperty": "ManaValue"
+                                                },
+                                                "right": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found",
+                            "prompt": "Search your library for a creature card that shares a creature type with the sacrificed creature with mana value equal to (the sacrificed creature's mana value + 1) to put onto the battlefield",
+                            "selectedLabel": "Put onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "{2}, {T}, Sacrifice a creature: Search your library for a creature card that shares a creature type with the sacrificed creature and has mana value equal to 1 plus its mana value, put it onto the battlefield, then shuffle."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "241",
+        "rarity": "RARE",
+        "artist": "Piotr Dura",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/ae9a8e44-f5de-497d-be48-adf1bcbaec97.jpg?1783928184",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Use the creature types and mana value of the creature you sacrificed as it existed on the battlefield to determine what creature card you can find. Notably, if you sacrifice a creature that's a double-faced permanent with its back face up, you'll use the characteristics of the back face, not the front face."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Quakebringer
@@ -15156,6 +16065,72 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Raven Wings
+{
+    "name": "Raven Wings",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+0, has flying, and is a Bird in addition to its other types.\nEquip {2}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Raven Wings:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "FLYING"
+            },
+            {
+                "type": "GrantSubtype",
+                "subtype": "Bird",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "243",
+        "artist": "Andrew Mar",
+        "flavorText": "\"There are some places even our ships cannot travel. I would know their secrets too.\"\n—Inga Rune-Eyes",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/60916ebe-6d84-4873-bd91-351bbe219c57.jpg?1783928183"
+    }
 }
 
 // Ravenform
@@ -16803,6 +17778,113 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Runed Crown
+{
+    "name": "Runed Crown",
+    "manaCost": "{3}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "When this Equipment enters, you may search your library, hand, and/or graveyard for a Rune card and put it onto the battlefield attached to this Equipment. If you search your library this way, shuffle.\nEquipped creature gets +1/+1.\nEquip {2}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Runed Crown:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromMultipleZones",
+                                "zones": [
+                                    "Library",
+                                    "Hand",
+                                    "Graveyard"
+                                ],
+                                "filter": "Rune"
+                            },
+                            "storeAs": "gathered0",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Search your library, hand, and/or graveyard for a Rune card to put onto the battlefield attached to Runed Crown"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "attachTo": "Self"
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                "descriptionOverride": "When this Equipment enters, you may search your library, hand, and/or graveyard for a Rune card and put it onto the battlefield attached to this Equipment. If you search your library this way, shuffle."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Runed Crown:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "245",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Gallegos",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1ef89770-2dbb-4a57-99f7-191591bb8e38.jpg?1783928183"
+    }
 }
 
 // Runeforge Champion
@@ -20753,6 +21835,133 @@
     ]
 }
 
+// Tyrite Sanctum
+{
+    "name": "Tyrite Sanctum",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{2}, {T}: Target legendary creature becomes a God in addition to its other types. Put a +1/+1 counter on it.\n{4}, {T}, Sacrifice this land: Put an indestructible counter on target God.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tyrite Sanctum:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Tyrite Sanctum:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCreatureType",
+                            "subtype": "God",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsLegendary"
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Target legendary creature becomes a God in addition to its other types. Put a +1/+1 counter on it."
+            },
+            {
+                "id": "Tyrite Sanctum:3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "INDESTRUCTIBLE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent God"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "Put an indestructible counter on target God."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "272",
+        "rarity": "RARE",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/309ff3bf-acd3-4bea-b518-6e25f6cfce61.jpg?1783928170",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "You can activate the middle ability targeting a legendary creature that's already a God. You'll put a +1/+1 counter on it."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Tyvar Kell
 {
     "name": "Tyvar Kell",
@@ -21943,6 +23152,109 @@
     ]
 }
 
+// Waking the Trolls
+{
+    "name": "Waking the Trolls",
+    "manaCost": "{4}{R}{G}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Destroy target land.\nII — Put target land card from a graveyard onto the battlefield under your control.\nIII — Choose target opponent. If they control fewer lands than you, create a number of 4/4 green Troll Warrior creature tokens with trample equal to the difference.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "land"
+                    },
+                    "id": "t0"
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "destination": "Battlefield",
+                    "controllerOverride": "Controller",
+                    "fromZone": "Graveyard"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "land",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t1"
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "IfPositive",
+                        "amount": {
+                            "type": "Subtract",
+                            "left": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Battlefield",
+                                "filter": "land"
+                            },
+                            "right": {
+                                "type": "Count",
+                                "player": "TargetOpponent",
+                                "zone": "Battlefield",
+                                "filter": "land"
+                            }
+                        }
+                    },
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Troll",
+                        "Warrior"
+                    ],
+                    "keywords": [
+                        "TRAMPLE"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/8/8/8869a8cc-d196-417f-bba5-5ed31bae6a18.jpg?1783928078"
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t2"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "234",
+        "rarity": "RARE",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/36016324-384c-4c68-8f73-8f39a244c879.jpg?1783928187"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Warchanter Skald
 {
     "name": "Warchanter Skald",
@@ -22047,6 +23359,55 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Weathered Runestone
+{
+    "name": "Weathered Runestone",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "Nonland permanent cards in graveyards and libraries can't enter the battlefield.\nPlayers can't cast spells from graveyards or libraries.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantEnterTheBattlefield",
+                "filter": "nonland permanent",
+                "fromZones": [
+                    "Graveyard",
+                    "Library"
+                ]
+            },
+            {
+                "type": "PlayersCantCastSpells",
+                "affected": "Each",
+                "fromZones": [
+                    "Graveyard",
+                    "Library"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "247",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0fc2478f-e624-46fb-85af-1254564cd4d2.jpg?1783928181",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "Players can still play lands from graveyards if an effect allows them to. Similarly, effects can put land cards onto the battlefield from any zone."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If an effect exiles a card from a graveyard or library and allows a player to cast it, the player may do so. The spell is cast from exile."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "Look at the card as it exists in your graveyard or library to determine whether it can enter the battlefield. If it's a double-faced card, use its front-face characteristics only."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Weigh Down
