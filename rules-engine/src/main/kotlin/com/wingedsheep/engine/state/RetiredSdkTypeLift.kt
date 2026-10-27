@@ -143,11 +143,21 @@ internal object RetiredSdkTypeLift {
      * a stored grant. A true flag is a cap of one; a false one is the uncapped default.
      */
     private fun withoutRetiredFields(element: JsonObject, type: String?): JsonObject =
-        withoutSkipUntapFlags(withoutLandEntersTapped(
+        withDynamicLandCount(withoutSkipUntapFlags(withoutLandEntersTapped(
             withoutCreaturesOnly(
                 withoutSingleEntryCounter(withoutCastTimeFlags(withoutColorlessAsAnyColor(withoutSingleUse(element, type))), type)
             )
-        ), type)
+        ), type), type)
+
+    /**
+     * `PlayAdditionalLandsEffect.count` was a bare number; it is now a `DynamicAmount`, so a stored
+     * `2` becomes `Fixed(2)`.
+     */
+    private fun withDynamicLandCount(element: JsonObject, type: String?): JsonObject {
+        if (type != "PlayAdditionalLands") return element
+        val count = element["count"] as? JsonPrimitive ?: return element
+        return JsonObject(element + ("count" to encode(DynamicAmount.serializer(), DynamicAmount.Fixed(count.int))))
+    }
 
     /**
      * "Don't untap during their next untap step" carried `affectsCreatures` / `affectsLands` flags; it

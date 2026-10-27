@@ -55,17 +55,24 @@ data class ActiveReplacement(
  */
 object ActiveReplacements {
 
-    /** Every printed-on-the-battlefield, emblem-held and granted replacement effect currently in force. */
-    fun all(state: GameState): List<ActiveReplacement> {
+    /**
+     * Every printed-on-the-battlefield, emblem-held and granted replacement effect currently in
+     * force — or, with [accept], only those it admits. The filter runs before a printed source's
+     * projected controller is read, so a read site interested in one kind (the enter-tapped
+     * kernel) never forces a layer projection over sources that hold none of it.
+     */
+    fun all(state: GameState, accept: (ReplacementEffect) -> Boolean = { true }): List<ActiveReplacement> {
         val results = mutableListOf<ActiveReplacement>()
 
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
             val replacementSource = container.get<ReplacementEffectSourceComponent>() ?: continue
+            if (replacementSource.replacementEffects.none(accept)) continue
             val controllerId = state.projectedState.getController(entityId)
                 ?: container.get<ControllerComponent>()?.playerId
                 ?: continue
             for (effect in replacementSource.replacementEffects) {
+                if (!accept(effect)) continue
                 results.add(
                     ActiveReplacement(
                         effect = effect,
@@ -84,6 +91,7 @@ object ActiveReplacements {
             val replacementSource = container.get<ReplacementEffectSourceComponent>() ?: continue
             val controllerId = container.get<ControllerComponent>()?.playerId ?: continue
             for (effect in replacementSource.replacementEffects) {
+                if (!accept(effect)) continue
                 results.add(
                     ActiveReplacement(
                         effect = effect,
@@ -96,6 +104,7 @@ object ActiveReplacements {
         }
 
         for (grant in state.grantedReplacementEffects) {
+            if (!accept(grant.replacement)) continue
             results.add(
                 ActiveReplacement(
                     effect = grant.replacement,

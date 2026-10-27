@@ -250,4 +250,9 @@ class RetiredSdkTypeLiftTest : FunSpec({
             JsonObject(mapOf("affectsCreatures" to JsonPrimitive(false), "affectsLands" to JsonPrimitive(true)))
         ) shouldBe com.wingedsheep.engine.state.components.player.SkipUntapComponent(listOf(GameObjectFilter.Land))
     }
+
+    test("a retired bare-number additional-land count becomes a Fixed amount") {
+        lifted(Effect.serializer(), old("PlayAdditionalLands", "count" to JsonPrimitive(2))) shouldBe
+            com.wingedsheep.sdk.scripting.effects.PlayAdditionalLandsEffect(DynamicAmount.Fixed(2))
+    }
 })

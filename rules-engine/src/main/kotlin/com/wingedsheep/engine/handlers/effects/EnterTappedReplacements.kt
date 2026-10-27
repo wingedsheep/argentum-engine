@@ -46,7 +46,7 @@ object EnterTappedReplacements {
         enteringControllerId: EntityId,
         predicateEvaluator: PredicateEvaluator
     ): Boolean {
-        for (active in ActiveReplacements.all(state)) {
+        for (active in ActiveReplacements.all(state) { it is PermanentsEnterTapped }) {
             val effect = active.effect as? PermanentsEnterTapped ?: continue
             if (!active.granted && active.sourceId == enteringEntityId) continue
             if (!matchesEnterFilter(effect.appliesTo, enteringEntityId, active.sourceId, active.controllerId, state, predicateEvaluator = predicateEvaluator)) continue

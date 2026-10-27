@@ -18,6 +18,8 @@ import com.wingedsheep.sdk.scripting.EntersUntapped
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PermanentsEnterTapped
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -74,6 +76,15 @@ class GrantedEnterTappedReplacementTest : FunSpec({
         }
     }
 
+    val UnearthLand = card("Unearth Land") {
+        manaCost = "{G}"
+        typeLine = "Sorcery"
+        spell {
+            val land = target(TargetFilter(GameObjectFilter.Land, zone = Zone.GRAVEYARD))
+            effect = Effects.PutOntoBattlefieldFromGraveyard(land)
+        }
+    }
+
     val SlowLand = card("Slow Land") {
         typeLine = "Land"
         replacementEffect(EntersTapped())
@@ -86,6 +97,7 @@ class GrantedEnterTappedReplacementTest : FunSpec({
         driver.registerCard(UntapTheLands)
         driver.registerCard(VariableBloom)
         driver.registerCard(SlowLand)
+        driver.registerCard(UnearthLand)
         driver.initMirrorMatch(deck = Deck.of("Forest" to 30, "Grizzly Bears" to 10), skipMulligans = true)
         return driver
     }
@@ -107,6 +119,29 @@ class GrantedEnterTappedReplacementTest : FunSpec({
         val forest = driver.putCardInHand(player, "Forest")
         driver.playLand(player, forest).outcome shouldBe Outcome.Done
         driver.isTapped(forest) shouldBe true
+    }
+
+    test("a land put onto the battlefield by an effect enters tapped; an opponent's land doesn't") {
+        val driver = createDriver()
+        val player = driver.activePlayer!!
+        val opponent = driver.getOpponent(player)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        driver.castGrant(player, "Tap the Lands")
+        val mine = driver.putCardInGraveyard(player, "Forest")
+        val theirs = driver.putCardInGraveyard(opponent, "Forest")
+        listOf(mine to player, theirs to opponent).forEach { (land, owner) ->
+            driver.giveMana(player, Color.GREEN, 1)
+            driver.castSpellWithTargets(
+                player, driver.putCardInHand(player, "Unearth Land"),
+                listOf(ChosenTarget.Card(land, owner, Zone.GRAVEYARD))
+            ).outcome shouldBe Outcome.Done
+            driver.bothPass()
+            driver.state.getBattlefield().contains(land) shouldBe true
+        }
+
+        driver.isTapped(mine) shouldBe true
+        driver.isTapped(theirs) shouldBe false
     }
 
     test("the grant's filter is respected — a nonland permanent cast this turn enters untapped") {

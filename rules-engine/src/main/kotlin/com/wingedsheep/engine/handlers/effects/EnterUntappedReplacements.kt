@@ -40,7 +40,7 @@ object EnterUntappedReplacements {
         enteringControllerId: EntityId,
         predicateEvaluator: PredicateEvaluator
     ): Boolean {
-        for (active in ActiveReplacements.all(state)) {
+        for (active in ActiveReplacements.all(state) { it is EntersUntapped }) {
             val effect = active.effect as? EntersUntapped ?: continue
             if (!active.granted && active.sourceId == enteringEntityId) continue
             if (matchesEnterFilter(effect.appliesTo, enteringEntityId, active.sourceId, active.controllerId, state, predicateEvaluator = predicateEvaluator)) {

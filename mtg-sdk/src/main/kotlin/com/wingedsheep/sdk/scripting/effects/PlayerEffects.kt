@@ -201,7 +201,7 @@ data class PlayAdditionalLandsEffect(
     override val description: String = when (val c = count) {
         is DynamicAmount.Fixed ->
             "You may play up to ${c.amount} additional land${if (c.amount != 1) "s" else ""} this turn"
-        else -> "You may play additional lands equal to ${c.description} this turn"
+        else -> "You may play ${c.description} additional lands this turn"
     }
 }
 
