@@ -1040,6 +1040,11 @@ data class EntersWithKeywords(
  * permanent, "you" its controller, and [com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity]
  * the permanent the damage would have been dealt to. Damage that can't be prevented is dealt, and
  * then nothing was prevented, so the rider doesn't run.
+ *
+ * [half] prevents **half** of the damage that reaches this prevention instead of a fixed [amount],
+ * rounded up by default ([roundUp]) — Gisela, Blade of Goldnight's "If a source would deal damage to
+ * you or a permanent you control, prevent half that damage, rounded up." It is a prevention effect,
+ * so damage that can't be prevented passes through in full. [amount] must be null with it.
  */
 @SerialName("PreventDamage")
 @Serializable
@@ -1047,8 +1052,14 @@ data class PreventDamage(
     val amount: Int? = null,  // null = prevent all
     override val restrictions: List<Condition> = emptyList(),
     override val appliesTo: EventPattern,
-    val onPrevented: Effect? = null
+    val onPrevented: Effect? = null,
+    val half: Boolean = false,
+    val roundUp: Boolean = true
 ) : ReplacementEffect {
+    init {
+        require(!half || amount == null) { "PreventDamage: half prevents a fraction, not a fixed amount" }
+    }
+
     override val description: String = buildString {
         val restrictionDesc = restrictions.joinToString(" and ") { it.description.removePrefix("if ") }
         if (restrictionDesc.isNotEmpty()) {
@@ -1059,7 +1070,9 @@ data class PreventDamage(
         }
         append(appliesTo.description)
         append(", prevent ")
-        if (amount == null) {
+        if (half) {
+            append("half that damage, rounded ${if (roundUp) "up" else "down"}")
+        } else if (amount == null) {
             append("that damage")
         } else {
             append("$amount of that damage")

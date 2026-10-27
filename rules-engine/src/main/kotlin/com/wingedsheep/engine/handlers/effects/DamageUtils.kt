@@ -2646,7 +2646,11 @@ object DamageUtils {
 
                 if (recipientMatches) {
                     val preventAmount = effect.amount
-                    val prevented = if (preventAmount == null) remainingDamage else minOf(preventAmount, remainingDamage)
+                    val prevented = when {
+                        effect.half -> if (effect.roundUp) (remainingDamage + 1) / 2 else remainingDamage / 2
+                        preventAmount == null -> remainingDamage
+                        else -> minOf(preventAmount, remainingDamage)
+                    }
                     remainingDamage -= prevented
                     val onPrevented = effect.onPrevented
                     if (onPrevented != null && prevented > 0) {

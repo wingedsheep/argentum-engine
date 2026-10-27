@@ -17864,6 +17864,12 @@ The priority groups are (CR 616.1a–f):
   per application, with the amount that application prevented; `Self` is the replacement's host, "you"
   its controller, `TriggeringEntity` the permanent the damage would have been dealt to. Unpreventable
   damage prevents nothing, so the rider doesn't run.
+  `half = true` prevents **half** the damage that reaches it instead of a fixed `amount` (which must
+  stay null), rounded up by default — `roundUp = false` for "rounded down". Gisela, Blade of
+  Goldnight: `PreventDamage(half = true, appliesTo = DamageEvent(recipient = Recipient.AnyOf(listOf(
+  Recipient.You, Recipient.PermanentYouControl))))`. Unlike `HalveDamage` it is a prevention effect, so
+  "damage can't be prevented" passes the damage through in full; it applies after `DoubleDamage`, and
+  each host applies once (two hosts take 3 to 1, then 0 rounded up).
 - `ReplacementEffect.ExileCounteredSpellInstead(then?, appliesTo = EventPattern.CounterSpellEvent(counterer = You))`
   — "If a spell or ability you control would counter a spell, instead exile that spell and you may
   play that card without paying its mana cost" (Guile). Applied inside every `StackResolver` counter
