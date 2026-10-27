@@ -2659,6 +2659,14 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   resolution. Compose as `ChooseColorThen(then = ChangeColorToChosen(target))` for "target ...
   becomes the color of your choice" (Blind Seer). Under `ChooseColorsThen` it takes the whole chosen
   set (`EffectContext.chosenColors`) — "the color **or colors** of your choice" (Quickchange).
+- `ChangeCreatureTypeText(target, excludedTypes?, replacementType?)` — Layer-3 indefinite text change
+  over **creature types**: "replacing all instances of one creature type with another" on a spell or
+  permanent, recorded as a `TextReplacement` that rewrites its subtypes and every creature-type word in
+  its rules text. `excludedTypes` forbids replacement types ("The new creature type can't be Wall" —
+  Artificial Evolution). `replacementType` fixes the new type, so the player picks only the type it
+  replaces — "replacing all instances of one creature type with Vampire" (New Blood); the fixed type is
+  left out of the FROM list and arrives pre-selected as the sole TO option of the same
+  `ChooseReplacementDecision`. The two parameters can't be combined.
 - `ChangeWordInText(categories, target, duration)` — Layer-3 text change: the player picks one **color word**
   or **basic land type** and a different replacement of the same category, recorded as a
   `TextReplacement` on the target. `categories` is a required nonempty set of `TextWordCategory`

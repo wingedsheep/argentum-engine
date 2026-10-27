@@ -2319,10 +2319,16 @@ object Effects {
 
     /**
      * Change the text of [target] by replacing all instances of one creature type with another of
-     * the controller's choice, other than [excludedTypes] (Artificial Evolution).
+     * the controller's choice, other than [excludedTypes] (Artificial Evolution). A
+     * [replacementType] fixes the new type, so the controller picks only the type it replaces
+     * ("replacing all instances of one creature type with Vampire" — New Blood).
      */
-    fun ChangeCreatureTypeText(target: EffectTarget, excludedTypes: List<String> = emptyList()): Effect =
-        com.wingedsheep.sdk.scripting.effects.ChangeCreatureTypeTextEffect(target, excludedTypes)
+    fun ChangeCreatureTypeText(
+        target: EffectTarget,
+        excludedTypes: List<String> = emptyList(),
+        replacementType: String? = null
+    ): Effect =
+        com.wingedsheep.sdk.scripting.effects.ChangeCreatureTypeTextEffect(target, excludedTypes, replacementType)
 
     /** Every creature matching [filter] becomes [subtypes] (replacing its creature types) until [duration] ends. */
     fun SetGroupCreatureSubtypes(

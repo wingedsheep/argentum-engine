@@ -400,6 +400,9 @@ data class BecomeChosenManaColorEffect(
  *
  * @param excludedTypes Creature types that cannot be chosen as the replacement (TO) type.
  *   For Artificial Evolution this is listOf("Wall"). Other cards may have no restriction.
+ * @param replacementType A fixed replacement (TO) type — "replacing all instances of one creature
+ *   type with Vampire" (New Blood). The player then picks only the FROM type. Can't be combined
+ *   with [excludedTypes].
  *
  * The executor adds a TextReplacementComponent to the target entity.
  */
@@ -407,10 +410,19 @@ data class BecomeChosenManaColorEffect(
 @Serializable
 data class ChangeCreatureTypeTextEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0),
-    val excludedTypes: List<String> = emptyList()
+    val excludedTypes: List<String> = emptyList(),
+    val replacementType: String? = null
 ) : Effect {
+    init {
+        require(replacementType == null || excludedTypes.isEmpty()) {
+            "A fixed replacement type can't be combined with excluded types"
+        }
+    }
+
     override val description: String = buildString {
-        append("Change the text of ${target.description} by replacing all instances of one creature type with another.")
+        append("Change the text of ${target.description} by replacing all instances of one creature type with ")
+        append(replacementType ?: "another")
+        append(".")
         if (excludedTypes.isNotEmpty()) {
             append(" The new creature type can't be ${excludedTypes.joinToString(" or ")}.")
         }

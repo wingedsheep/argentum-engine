@@ -756,7 +756,7 @@ Families:
 - `ChainCopyEffect(action: Effect, target: EffectTarget, copyRecipient: CopyRecipient, copyCost: PayCost?, copyTargetRequirement: TargetRequirement)` — Unified chain copy effect for all "Chain of X" cards from Onslaught.
 - `ChangeColorEffect(target: EffectTarget, colors: Set<String>, duration: Duration)` — Replace the colors of a single target with the specified set until the duration expires.
 - `ChangeColorToChosenEffect(target: EffectTarget, duration: Duration)` — Replace the target's colors with the color(s) chosen earlier in this resolution (read from `EffectContext.chosenColors`, falling back to the single `chosenColor`).
-- `ChangeCreatureTypeTextEffect(target: EffectTarget, excludedTypes: List<String>)` — Change the text of target spell or permanent by replacing all instances of one creature type with another.
+- `ChangeCreatureTypeTextEffect(target: EffectTarget, excludedTypes: List<String>, replacementType: String?)` — Change the text of target spell or permanent by replacing all instances of one creature type with another.
 - `ChangeGroupColorEffect(colors: Set<String>, filter: GroupFilter, duration: Duration)` — Change color for a group of creatures.
 - `ChangeOwnershipEffect(card: EffectTarget, newOwner: EffectTarget)` — newOwner becomes the owner of card — "You own target card in the ante" (Darkpact), "that player owns this card and you own the other exiled card" (Bronze Tablet).
 - `ChangeSpeedEffect(target: EffectTarget, amount: DynamicAmount, minimum: Int)` — Changes the target player's **speed** by a signed amount (Aetherdrift, CR 702.179).

@@ -91,7 +91,8 @@ export function ChooseReplacementDecisionUI({ decision }: { decision: ChooseRepl
   const responsive = useResponsive()
 
   const [fromIndex, setFromIndex] = useState<number | null>(decision.defaultFromIndex ?? null)
-  const [toIndex, setToIndex] = useState<number | null>(null)
+  // A fixed replacement ("... with Vampire") arrives as the only TO option: pre-select it.
+  const [toIndex, setToIndex] = useState<number | null>(decision.toOptions.length === 1 ? 0 : null)
   const [fromFilter, setFromFilter] = useState('')
   const [toFilter, setToFilter] = useState('')
   const [minimized, setMinimized] = useState(false)

@@ -17,14 +17,10 @@ import kotlin.reflect.KClass
  * "Change the text of target spell or permanent by replacing all instances of one
  * creature type with another."
  *
- * This executor:
- * 1. Resolves the target entity
- * 2. Presents a ChooseOptionDecision with all creature types for the FROM type
- * 3. Pushes a ChooseFromCreatureTypeContinuation (with excludedTypes) for the next step
- *
- * The ContinuationHandler handles steps 2 and 3:
- * - ChooseFromCreatureTypeContinuation: presents TO type choice (excluding types from effect)
- * - ChooseToCreatureTypeContinuation: applies the TextReplacementComponent
+ * This executor resolves the target and presents one [ChooseReplacementDecision] (FROM and TO
+ * creature types on a single screen); [TextReplacementContinuationResumer] attaches the
+ * TextReplacementComponent. A fixed `replacementType` (New Blood's "with Vampire") is the sole
+ * TO option and is left out of the FROM options.
  */
 class ChangeCreatureTypeTextExecutor(
     private val decisionHandler: DecisionHandler = DecisionHandler()
@@ -61,8 +57,10 @@ class ChangeCreatureTypeTextExecutor(
         val presentTypes = allCreatureTypes.filter {
             it in state.projectedState.getSubtypes(targetId) || it.lowercase() in textWords
         }.toSet()
-        val fromOptions = allCreatureTypes.filter { it in presentTypes } +
-            allCreatureTypes.filter { it !in presentTypes }
+        // A fixed replacement (New Blood's "with Vampire") can't usefully replace itself.
+        val fixedTo = effect.replacementType
+        val fromTypes = allCreatureTypes.filter { !it.equals(fixedTo, ignoreCase = true) }
+        val fromOptions = fromTypes.filter { it in presentTypes } + fromTypes.filter { it !in presentTypes }
         val fromMetadata = fromOptions.map { type ->
             if (type in presentTypes && targetName != null) OptionMetadata(id = type, description = "On $targetName")
             else OptionMetadata(id = type)
@@ -70,10 +68,12 @@ class ChangeCreatureTypeTextExecutor(
         // Pre-select the target's first on-card creature type.
         val defaultFromIndex = fromOptions.indexOfFirst { it in presentTypes }.takeIf { it >= 0 }
 
-        // TO options: any creature type the effect doesn't forbid (e.g. Artificial Evolution can't
-        // pick Wall). No per-from constraint — any allowed type may replace any creature type.
+        // TO options: the fixed replacement type when the card names one, otherwise any creature
+        // type the effect doesn't forbid (e.g. Artificial Evolution can't pick Wall). No per-from
+        // constraint — any allowed type may replace any creature type.
         val excluded = effect.excludedTypes.map { it.lowercase() }.toSet()
-        val toOptions = allCreatureTypes.filter { it.lowercase() !in excluded }
+        val toOptions = if (fixedTo != null) listOf(fixedTo)
+        else allCreatureTypes.filter { it.lowercase() !in excluded }
 
         val excludedNote = if (effect.excludedTypes.isNotEmpty())
             " (can't be ${effect.excludedTypes.joinToString(" or ")})" else ""
@@ -81,7 +81,8 @@ class ChangeCreatureTypeTextExecutor(
         val decision = { decisionId: String -> ChooseReplacementDecision(
             id = decisionId,
             playerId = context.controllerId,
-            prompt = (if (targetName != null) "Change a creature type in $targetName's text" else "Change a creature type") + excludedNote,
+            prompt = (if (targetName != null) "Change a creature type in $targetName's text" else "Change a creature type") +
+                (fixedTo?.let { " to $it" } ?: excludedNote),
             context = DecisionContext(
                 sourceId = context.sourceId,
                 sourceName = sourceName,

@@ -769,6 +769,64 @@
     ]
 }
 
+// New Blood
+{
+    "name": "New Blood",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, tap an untapped Vampire you control.\nGain control of target creature. Change the text of that creature by replacing all instances of one creature type with Vampire.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "ChangeCreatureTypeText",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "replacementType": "Vampire"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomTapPermanents",
+                    "filter": "creature Vampire"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "RARE",
+        "artist": "Howard Lyon",
+        "flavorText": "\"Now isn't that better?\"\n—Olivia Voldaren",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6b44503-7978-4c9e-a8a1-fd38c76d3545.jpg?1783935944"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Patron of the Vein
 {
     "name": "Patron of the Vein",
