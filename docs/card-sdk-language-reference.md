@@ -11963,7 +11963,10 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
 - `AdditionalManaOnTap(color, amount, anyColor = false)` — aura: "Whenever enchanted land is tapped
   for mana, its controller adds additional mana." `color = null` reads the aura's `ChosenColorComponent`;
   `anyColor = true` makes it one mana of **any color the controller chooses** each tap (prompts on a
-  manual tap; flexible for the solver). (Elvish Guidance = fixed `{G}`; **Fertile Ground** = `anyColor`)
+  manual tap; flexible for the solver). The aura is the bonus mana's source (CR 106.3), so a **snow**
+  aura's bonus is snow mana and pays `{S}`, whether or not the land is snow — the auto-pay solver can
+  spend an any-color snow bonus on a second `{S}` pip. (Elvish Guidance = fixed `{G}`; **Fertile
+  Ground** = `anyColor`; **Glittering Frost** = `anyColor` + `GrantSupertype("SNOW")` on a snow Aura)
 - `AdditionalManaOnSourceTap(sourceFilter, color = null, amount = 1, rider = null, whenProducing = TappedForManaType.ANY)` — global: "Whenever
   a `<sourceFilter>` is tapped for mana, that player adds …". `color = null` mirrors the produced color.
   `rider` is an optional non-mana `Effect` resolved inline, controlled by the tapping player

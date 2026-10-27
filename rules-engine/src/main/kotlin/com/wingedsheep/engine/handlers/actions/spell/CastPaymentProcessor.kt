@@ -512,7 +512,8 @@ class CastPaymentProcessor(
             solutionConsumedRiders = solution.consumedRiders
             // Mana tapped directly for this payment carries the provenance of its source (read from
             // the pre-payment [state], where every tapped source still exists with its type line).
-            spentProvenance = spentProvenance + tappedSourceProvenance(state, solution.manaProduced)
+            spentProvenance = spentProvenance + tappedSourceProvenance(state, solution.manaProduced) +
+                SpentManaProvenance(snow = solution.bonusSnowManaSpent, snowColors = solution.bonusSnowColorsSpent)
             // Fold the X portion the solver tapped (allowed colors only) into the X-by-color tally.
             for ((color, amount) in solution.xRestrictedManaSpent) {
                 xSpentByColor[color] = (xSpentByColor[color] ?: 0) + amount
@@ -567,6 +568,8 @@ class CastPaymentProcessor(
                                 pool.addRestricted(entry.color, entry.amount, entry.restriction)
                             else -> pool.add(entry.color, entry.amount)
                         }
+                        // Mana from a snow source floats as snow mana (CR 107.4h).
+                        if (entry.snow) pool = pool.markSnow(if (entry.colorless) null else entry.color, entry.amount)
                         if (!entry.countsTowardSpent && entry.sourceId != null) {
                             val tag = ManaProvenanceTracker.sourceTag(state, entry.sourceId)
                             val color = if (entry.colorless) null else entry.color

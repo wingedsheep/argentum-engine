@@ -196,10 +196,14 @@ class ManaAbilityResolutionPipeline(
                 val auraController = container.get<ControllerComponent>()?.playerId ?: landController
                 val extraFirings = countAdditionalSourceTriggerDoublers(currentState, entityId, auraController)
                 val firings = 1 + extraFirings
+                // The aura is the source of this mana (CR 106.3), so a snow aura's bonus is snow
+                // mana whatever the land is (Glittering Frost).
+                val snowAura = ManaProvenanceTracker.isSnowSource(currentState, entityId)
                 repeat(firings) {
                     currentState = currentState.updateEntity(landController) { c ->
                         val pool = c.get<ManaPoolComponent>() ?: ManaPoolComponent()
-                        c.with(pool.add(manaColor, amount))
+                        val added = pool.add(manaColor, amount)
+                        c.with(if (snowAura) added.markSnow(manaColor, amount) else added)
                     }
 
                     events.add(ManaAddedEvent(
@@ -314,12 +318,14 @@ class ManaAbilityResolutionPipeline(
                 // them just like any other trigger. firings = 1 (natural) + N (doublers).
                 val extraFirings = countAdditionalSourceTriggerDoublers(currentState, entityId, staticController)
                 val firings = 1 + extraFirings
+                // This static's permanent is the mana's source (CR 106.3): snow if it is snow.
+                val snowSource = ManaProvenanceTracker.isSnowSource(currentState, entityId)
                 repeat(firings) {
                     currentState = currentState.updateEntity(tappingPlayerId) { c ->
                         val pool = c.get<ManaPoolComponent>() ?: ManaPoolComponent()
                         val newPool = if (bonusColor != null) pool.add(bonusColor, bonusAmount)
                                       else pool.addColorless(bonusAmount)
-                        c.with(newPool)
+                        c.with(if (snowSource) newPool.markSnow(bonusColor, bonusAmount) else newPool)
                     }
 
                     events.add(ManaAddedEvent(

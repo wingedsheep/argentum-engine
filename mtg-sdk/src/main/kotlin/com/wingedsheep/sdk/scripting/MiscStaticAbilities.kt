@@ -231,6 +231,9 @@ data class CompositeStaticAbility(
  *   Used by Fertile Ground ("adds an additional one mana of any color"). On a manual tap the
  *   controller is prompted for the color; when auto-tapping for a cost the solver treats the
  *   bonus as flexible and supplies whatever color the cost needs.
+ *
+ * The aura is the source of the bonus mana (CR 106.3): a snow aura's bonus is snow mana and pays
+ * `{S}` (Glittering Frost), whatever the land is.
  */
 @SerialName("AdditionalManaOnTap")
 @Serializable

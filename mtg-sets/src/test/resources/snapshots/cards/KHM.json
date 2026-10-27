@@ -8178,6 +8178,44 @@
     ]
 }
 
+// Glittering Frost
+{
+    "name": "Glittering Frost",
+    "manaCost": "{2}{G}",
+    "typeLine": "Snow Enchantment — Aura",
+    "oracleText": "Enchant land\nEnchanted land is snow.\nWhenever enchanted land is tapped for mana, its controller adds an additional one mana of any color.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantSupertype",
+                "supertype": "SNOW"
+            },
+            {
+                "type": "AdditionalManaOnTap",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "anyColor": true
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "land"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c60fbc33-6198-4661-967e-cc94f2788e4a.jpg?1783928215"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Glorious Protector
 {
     "name": "Glorious Protector",
