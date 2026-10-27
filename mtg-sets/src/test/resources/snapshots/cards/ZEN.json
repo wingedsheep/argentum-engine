@@ -1235,6 +1235,90 @@
     ]
 }
 
+// Emeria, the Sky Ruin
+{
+    "name": "Emeria, the Sky Ruin",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped.\nAt the beginning of your upkeep, if you control seven or more Plains, you may return target creature card from your graveyard to the battlefield.\n{T}: Add {W}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Emeria, the Sky Ruin:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Battlefield",
+                        "fromZone": "Graveyard"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land Plains"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 7
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Emeria, the Sky Ruin:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "213",
+        "rarity": "RARE",
+        "artist": "Jaime Jones",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/d/fdf6016e-71e7-4339-80f9-78e9aa44c54b.jpg?1783942124",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "Emeria, the Sky Ruin's triggered ability has an \"intervening 'if' clause.\" That means (1) the ability won't trigger at all unless you control seven or more Plains as your upkeep starts, and (2) the ability will do nothing if you control fewer than seven Plains by the time it resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Expedition Map
 {
     "name": "Expedition Map",

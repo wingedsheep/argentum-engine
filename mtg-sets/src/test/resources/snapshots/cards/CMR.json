@@ -504,6 +504,97 @@
     ]
 }
 
+// Court of Grace
+{
+    "name": "Court of Grace",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, you become the monarch.\nAt the beginning of your upkeep, create a 1/1 white Spirit creature token with flying. If you're the monarch, create a 4/4 white Angel creature token with flying instead.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Court of Grace:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "TakeDesignation",
+                    "designation": "MONARCH"
+                }
+            },
+            {
+                "id": "Court of Grace:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "PlayerHasDesignation",
+                            "designation": "MONARCH"
+                        }
+                    },
+                    "then": {
+                        "type": "CreateToken",
+                        "power": 4,
+                        "toughness": 4,
+                        "colors": [
+                            "WHITE"
+                        ],
+                        "creatureTypes": [
+                            "Angel"
+                        ],
+                        "keywords": [
+                            "FLYING"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7c65b6a-9c63-4604-b7db-d75772799616.jpg?1783928590"
+                    },
+                    "otherwise": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "WHITE"
+                        ],
+                        "creatureTypes": [
+                            "Spirit"
+                        ],
+                        "keywords": [
+                            "FLYING"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/2/1/21e580cb-6092-48b7-ba3e-d64ec28860da.jpg?1783928591"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "RARE",
+        "artist": "Denman Rooke",
+        "flavorText": "A righteous sovereign makes for a blessed realm.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/02f0be1b-554e-4b61-b495-6e2a7369cdb1.jpg?1783928885",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "The game starts with no monarch. Once an effect makes one player the monarch, the game will have exactly one monarch from that point forward. As a player becomes the monarch, the current monarch (if any) ceases being the monarch."
+            },
+            {
+                "date": "2020-11-10",
+                "text": "If the monarch leaves the game during another player's turn, that player becomes the monarch. If the monarch leaves the game during their turn, the next player in turn order becomes the monarch."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Elvish Doomsayer
 {
     "name": "Elvish Doomsayer",

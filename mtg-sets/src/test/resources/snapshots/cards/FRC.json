@@ -75,3 +75,95 @@
         "BLACK"
     ]
 }
+
+// Niv-Mizzet, Ghost Counsel
+{
+    "name": "Niv-Mizzet, Ghost Counsel",
+    "manaCost": "{2}{W}{W}{B}{B}",
+    "typeLine": "Legendary Creature — Spirit Dragon",
+    "oracleText": "Flying\nWhenever you gain life, you may pay that much life. If you do, draw that many cards.\n{T}: Each opponent loses 1 life and you gain 1 life.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Niv-Mizzet, Ghost Counsel:1",
+                "trigger": "LifeGainEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayDynamicLife",
+                            "amount": {
+                                "type": "ContextProperty",
+                                "key": "TRIGGER_LIFE_GAINED"
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "ContextProperty",
+                            "key": "TRIGGER_LIFE_GAINED"
+                        }
+                    }
+                },
+                "descriptionOverride": "Whenever you gain life, you may pay that much life. If you do, draw that many cards."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Niv-Mizzet, Ghost Counsel:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{T}: Each opponent loses 1 life and you gain 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "RARE",
+        "artist": "Brian Valeza",
+        "flavorText": "Devourer of the Obzedat, tithe-drinker, and necroparun eternal.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0ad0e168-ac5c-4e1b-83f2-0488067a58d7.jpg?1789644348",
+        "rulings": [
+            {
+                "date": "2026-08-21",
+                "text": "If more than one creature you control with lifelink deals combat damage at the same time, Niv-Mizzet's triggered ability will trigger once for each of those creatures."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}

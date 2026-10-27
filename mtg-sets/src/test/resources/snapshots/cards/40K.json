@@ -1,3 +1,80 @@
+// Celestine, the Living Saint
+{
+    "name": "Celestine, the Living Saint",
+    "manaCost": "{4}{W}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "Flying, lifelink\nHealing Tears — At the beginning of your end step, return target creature card with mana value X or less from your graveyard to the battlefield, where X is the amount of life you gained this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Celestine, the Living Saint:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "ManaValueAtMostDynamic",
+                                    "amount": {
+                                        "type": "TurnTracking",
+                                        "player": "You",
+                                        "tracker": "LIFE_GAINED"
+                                    }
+                                }
+                            ],
+                            "controllerPredicate": "OwnedByYou"
+                        },
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Healing Tears — At the beginning of your end step, return target creature card with mana value X or less from your graveyard to the battlefield, where X is the amount of life you gained this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "rarity": "RARE",
+        "artist": "Irina Nordsol",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a099cbd2-e92a-433a-bc51-0aa2f8fc6857.jpg?1783920947",
+        "rulings": [
+            {
+                "date": "2022-10-07",
+                "text": "Celestine's triggered ability looks at the total amount of life you gained to determine X, regardless of whether or not you also lost any life. For example, if you gained 3 life this turn, X is 3, even if you also lost some amount of life in the same turn."
+            },
+            {
+                "date": "2022-10-07",
+                "text": "The target creature card is chosen as the triggered ability is put on the stack. Gaining life after that point won't let you choose a target with a higher mana value."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Commissar Severina Raine
 {
     "name": "Commissar Severina Raine",

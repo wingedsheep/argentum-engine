@@ -2961,6 +2961,77 @@
     ]
 }
 
+// Herald of War
+{
+    "name": "Herald of War",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nWhenever this creature attacks, put a +1/+1 counter on it.\nAngel spells and Human spells you cast cost {1} less to cast for each +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Herald of War:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "Angel|Human"
+                },
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "Self",
+                            "numericProperty": {
+                                "type": "CounterCount",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/7/77e92bbb-c22d-4879-9437-b87a3ff70a2d.jpg?1783940731",
+        "rulings": [
+            {
+                "date": "2012-05-01",
+                "text": "The cost reduction is based on the total number of +1/+1 counters on Herald of War, not just the ones put on it by its own ability."
+            },
+            {
+                "date": "2012-05-01",
+                "text": "A creature spell that's both an Angel and a Human will cost {1} less to cast for each +1/+1 counter on Herald of War."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Hound of Griselbrand
 {
     "name": "Hound of Griselbrand",

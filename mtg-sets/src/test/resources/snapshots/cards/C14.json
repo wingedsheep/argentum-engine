@@ -1,3 +1,88 @@
+// Angelic Field Marshal
+{
+    "name": "Angelic Field Marshal",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nLieutenant — As long as you control your commander, this creature gets +2/+2 and creatures you control have vigilance.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "CompositeStaticAbility",
+                    "abilities": [
+                        {
+                            "type": "ModifyStats",
+                            "powerBonus": 2,
+                            "toughnessBonus": 2,
+                            "filter": {
+                                "baseFilter": "permanent",
+                                "scope": "Self"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "VIGILANCE",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        }
+                    ]
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsPermanent"
+                        ],
+                        "statePredicates": [
+                            "IsCommander"
+                        ],
+                        "controllerPredicate": "OwnedByYou"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "RARE",
+        "artist": "Scott Murphy",
+        "flavorText": "Her presence on the battlefield can transform an unruly mob into a disciplined army.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4e8185b9-f559-47e8-ae90-d62396b4aa6b.jpg?1783938874",
+        "rulings": [
+            {
+                "date": "2014-11-07",
+                "text": "Lieutenant abilities apply only if your commander is on the battlefield and under your control."
+            },
+            {
+                "date": "2014-11-07",
+                "text": "Lieutenant abilities refer only to whether you control your commander, not any other player’s commander."
+            },
+            {
+                "date": "2014-11-07",
+                "text": "If you gain control of a creature with a lieutenant ability owned by another player, that ability will check to see if you control your commander and will apply if you do. It won’t check whether its owner controls their commander."
+            },
+            {
+                "date": "2014-11-07",
+                "text": "If you lose control of your commander, lieutenant abilities of creatures you control will immediately stop applying. If this causes a creature’s toughness to become less than or equal to the amount of damage marked on it, the creature will be destroyed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Commander's Sphere
 {
     "name": "Commander's Sphere",

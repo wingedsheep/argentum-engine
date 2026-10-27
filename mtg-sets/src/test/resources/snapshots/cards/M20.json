@@ -469,6 +469,83 @@
     "colorIdentityOverride": []
 }
 
+// Bishop of Wings
+{
+    "name": "Bishop of Wings",
+    "manaCost": "{W}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Whenever an Angel you control enters, you gain 4 life.\nWhenever an Angel you control dies, create a 1/1 white Spirit creature token with flying.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bishop of Wings:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Angel ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            },
+            {
+                "id": "Bishop of Wings:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Angel ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/7/9/79b17be6-2ee7-4f3b-88df-f298bb058f46.jpg?1783932857"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "RARE",
+        "artist": "Matt Stewart",
+        "flavorText": "\"Within every angel is a spirit of light that will fight as long as there is darkness.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca42da05-330d-4050-a580-dc00f6faff24.jpg?1783933032",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "If Bishop of Wings dies at the same time as one or more Angels you control, its last ability triggers for each of those Angels."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "If an effect (such as that of Arcane Adaptation) causes Bishop of Wings to be an Angel, its first ability triggers as it enters the battlefield and its last ability triggers as it dies."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Bloodthirsty Aerialist
 {
     "name": "Bloodthirsty Aerialist",
