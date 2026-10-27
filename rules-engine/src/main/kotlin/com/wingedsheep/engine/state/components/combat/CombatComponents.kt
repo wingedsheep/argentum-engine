@@ -116,6 +116,8 @@ data object AttackedThisCombatComponent : Component
  * [attackedPlayerIds] are the players this creature was declared attacking directly this turn,
  * unioned across combats — a planeswalker or battle defender adds nobody. Backs
  * [com.wingedsheep.sdk.scripting.conditions.SourceAttackedPlayerThisTurn] (Angel of Destiny).
+ * When the creature leaves the battlefield the component is re-attached to the card as last known
+ * information (CR 608.2h) for abilities that outlive it, and dropped on its next zone change.
  */
 @Serializable
 data class TimesAttackedThisTurnComponent(

@@ -18,6 +18,8 @@ class AngelOfDestinyScenarioTest : ScenarioTestBase() {
 
     private fun angelAttacks(attackWith: Map<String, Int>, startingLife: Int) = scenario()
         .withPlayers("Player1", "Player2")
+        .withCardInHand(1, "Murder")
+        .withLandsOnBattlefield(1, "Swamp", 3)
         .withCardOnBattlefield(1, "Angel of Destiny", summoningSickness = false)
         .withCardOnBattlefield(1, "Grizzly Bears", summoningSickness = false)
         .withLifeTotal(1, startingLife)
@@ -39,14 +41,28 @@ class AngelOfDestinyScenarioTest : ScenarioTestBase() {
             withClue("the damaged player gains back what they were dealt") { game.getLifeTotal(2) shouldBe 20 }
         }
 
-        test("at your end step with 15+ life over your starting total, the player it attacked loses") {
-            val game = angelAttacks(mapOf("Angel of Destiny" to 2), startingLife = 33)
+        test("at your end step with exactly 15 life over your starting total, the player it attacked loses") {
+            val game = angelAttacks(mapOf("Angel of Destiny" to 2), startingLife = 31)
             game.passUntilPhase(Phase.ENDING, Step.END)
             game.resolveStack()
 
-            withClue("33 + 2 + 2 = 37 ≥ 20 + 15") { game.getLifeTotal(1) shouldBe 37 }
+            withClue("31 + 2 + 2 = 35 = 20 + 15") { game.getLifeTotal(1) shouldBe 35 }
             game.state.getEntity(game.player2Id)?.has<PlayerLostComponent>() shouldBe true
             game.state.gameOver shouldBe true
+        }
+
+        test("the attacked player still loses when the Angel is destroyed with its trigger on the stack") {
+            val game = angelAttacks(mapOf("Angel of Destiny" to 2), startingLife = 31)
+            game.passUntilPhase(Phase.ENDING, Step.END)
+            game.state.stack.size shouldBe 1
+
+            game.castSpell(1, "Murder", game.findPermanent("Angel of Destiny")).error shouldBe null
+            game.resolveStack()
+
+            withClue("the Angel is gone") { game.isInGraveyard(1, "Angel of Destiny") shouldBe true }
+            withClue("the ability uses the Angel's last known attack record (CR 608.2h)") {
+                game.state.getEntity(game.player2Id)?.has<PlayerLostComponent>() shouldBe true
+            }
         }
 
         test("nobody loses when the Angel itself didn't attack") {
@@ -58,12 +74,12 @@ class AngelOfDestinyScenarioTest : ScenarioTestBase() {
             game.state.gameOver shouldBe false
         }
 
-        test("nobody loses below the life threshold") {
-            val game = angelAttacks(mapOf("Angel of Destiny" to 2), startingLife = 20)
+        test("nobody loses one life below the threshold") {
+            val game = angelAttacks(mapOf("Angel of Destiny" to 2), startingLife = 30)
             game.passUntilPhase(Phase.ENDING, Step.END)
             game.resolveStack()
 
-            game.getLifeTotal(1) shouldBe 24
+            withClue("30 + 2 + 2 = 34, one short") { game.getLifeTotal(1) shouldBe 34 }
             game.state.gameOver shouldBe false
         }
     }

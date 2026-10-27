@@ -858,6 +858,10 @@ class ZoneTransitionService(
             // "target player dealt damage by this creature this turn", The Fallen's upkeep trigger.
             val preStripDamageMemory = newState.getEntity(entityId)
                 ?.get<com.wingedsheep.engine.state.components.battlefield.DealtDamageToThisGameComponent>()
+            // Likewise whom it attacked this turn — Angel of Destiny's end-step trigger still makes
+            // the players it attacked lose if the Angel is removed in response.
+            val preStripAttackRecord = newState.getEntity(entityId)
+                ?.get<com.wingedsheep.engine.state.components.combat.TimesAttackedThisTurnComponent>()
 
             // Revert permanent-level copy effects (Clone / Mockingbird / "becomes a copy of").
             // Per CR 400.7, a card that changes zones becomes a new object — its copy effect
@@ -920,6 +924,9 @@ class ZoneTransitionService(
             if (preStripDamageMemory != null && actualDestZone != Zone.BATTLEFIELD) {
                 newState = newState.updateEntity(entityId) { c -> c.with(preStripDamageMemory) }
             }
+            if (preStripAttackRecord != null && actualDestZone != Zone.BATTLEFIELD) {
+                newState = newState.updateEntity(entityId) { c -> c.with(preStripAttackRecord) }
+            }
         } else {
             // Any further zone change makes a new object (CR 400.7): information about the old
             // battlefield incarnation must not survive it. No-op when the component is absent.
@@ -930,6 +937,7 @@ class ZoneTransitionService(
             newState = newState.updateEntity(entityId) { c ->
                 c.without<LastKnownPermanentComponent>()
                     .without<com.wingedsheep.engine.state.components.battlefield.DealtDamageToThisGameComponent>()
+                    .without<com.wingedsheep.engine.state.components.combat.TimesAttackedThisTurnComponent>()
                     .without<CountersComponent>()
             }
         }

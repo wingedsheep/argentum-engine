@@ -48,8 +48,9 @@ data class SourceDealtDamageToPlayerThisTurn(
 /**
  * Condition: the effect's source — a creature — was declared attacking [player] this turn
  * (CR 508.1). Only a player chosen directly as the defender counts: attacking a planeswalker or
- * battle doesn't attack its controller or protector. The record is kept on the creature as the
- * current object and survives it leaving combat, but not a zone change (CR 400.7).
+ * battle doesn't attack its controller or protector. The record belongs to the creature as the
+ * current object and survives it leaving combat; a returned creature has attacked nobody
+ * (CR 400.7), while an ability that outlives the creature reads its last known record (CR 608.2h).
  *
  * Inside `ForEachPlayer(Player.Each)`, `SourceAttackedPlayerThisTurn(Player.You)` asks the
  * question of each player in turn — "each player this creature attacked this turn loses the

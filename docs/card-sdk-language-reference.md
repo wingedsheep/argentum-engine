@@ -15534,7 +15534,8 @@ that works in both resolution and static-ability (projection) contexts.
   directly this turn (CR 508.1); attacking that player's planeswalker or a battle they protect
   doesn't count. Reads the `attackedPlayerIds` on the creature's own `TimesAttackedThisTurnComponent`
   (unioned across combats, scoped to the current object and turn), so it survives the creature
-  leaving combat but not a zone change. Inside `ForEachPlayer(Player.Each, ...)`, `Player.You` is
+  leaving combat; an ability that outlives the creature reads its last known record (CR 608.2h),
+  and a creature that returned to the battlefield has attacked nobody. Inside `ForEachPlayer(Player.Each, ...)`, `Player.You` is
   the iterated player — Angel of Destiny's "each player this creature attacked this turn loses
   the game" is `ForEachPlayer(Player.Each, If(SourceAttackedPlayerThisTurn(Player.You), LoseGame()))`.
 - `SourceAttackedThisCombat` / `SourceBlockedThisCombat` — source was declared as an attacker /
