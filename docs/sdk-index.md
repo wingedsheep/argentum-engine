@@ -196,6 +196,7 @@ Families:
 - `CardPredicate.HasCycling` — Matches a card with a cycling ability — plain cycling or any typecycling variant (typecycling is a variant of cycling, CR 702.29e).
 - `CardPredicate.HasExactlyColors(count: Int)` — Exactly count colors (CR 105.2).
 - `CardPredicate.HasKeyword(keyword: Keyword)`
+- `CardPredicate.HasKicker` — Matches a card with a kicker ability — kicker, multikicker (a kicker variant, CR 702.33c) or "kicker A and/or B".
 - `CardPredicate.HasNoAbilities` — Matches a card whose Oracle rules-text box is empty.
 - `CardPredicate.HasNonManaActivatedAbility` — Matches a permanent that has at least one intrinsic activated ability that isn't a mana ability (and isn't a loyalty ability).
 - `CardPredicate.HasSubtype(subtype: Subtype)`

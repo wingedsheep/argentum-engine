@@ -543,6 +543,13 @@ data class CardDefinition(
     val hasCycling: Boolean
         get() = keywordAbilities.any { it is com.wingedsheep.sdk.scripting.KeywordAbility.Cycling }
 
+    /**
+     * Does this card have a kicker ability — kicker or multikicker (CR 702.33)? Printed abilities
+     * only. Backs `CardPredicate.HasKicker` via `CardComponent.hasKicker`.
+     */
+    val hasKicker: Boolean
+        get() = keywordAbilities.any { it is com.wingedsheep.sdk.scripting.KeywordAbility.OptionalAdditionalCost && it.isKicker }
+
     /** Static abilities (continuous effects) on this card */
     val staticAbilities get() = script.staticAbilities
 

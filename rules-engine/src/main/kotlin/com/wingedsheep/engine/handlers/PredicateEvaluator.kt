@@ -458,6 +458,7 @@ class PredicateEvaluator(
             is CardPredicate.DoesNotShareLandTypeWithPermanentYouControl,
             CardPredicate.HasActivatedAbility,
             CardPredicate.HasCycling,
+            CardPredicate.HasKicker,
             CardPredicate.CouldProduceColorlessMana,
             CardPredicate.HasAdventure,
             is CardPredicate.HasAnyOfSubtypes,
@@ -913,6 +914,7 @@ class PredicateEvaluator(
             CardPredicate.HasNonManaActivatedAbility -> card.hasNonManaActivatedAbility
             CardPredicate.HasActivatedAbility -> card.hasActivatedAbility
             CardPredicate.HasCycling -> card.hasCycling
+            CardPredicate.HasKicker -> card.hasKicker
             // Reads the land's mana abilities off its definition (Naga Vitalist); fails closed with no registry.
             CardPredicate.CouldProduceColorlessMana -> cardRegistry?.let {
                 com.wingedsheep.engine.mechanics.mana.LandManaColorInspector
@@ -2887,6 +2889,7 @@ class PredicateEvaluator(
             CardPredicate.HasNonManaActivatedAbility -> false
             CardPredicate.HasActivatedAbility -> false
             CardPredicate.HasCycling -> false
+            CardPredicate.HasKicker -> false
             CardPredicate.CouldProduceColorlessMana -> false
 
             // Stack-relative targeting predicate — historical cast records have no

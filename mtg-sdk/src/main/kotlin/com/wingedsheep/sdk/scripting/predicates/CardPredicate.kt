@@ -1398,6 +1398,19 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     }
 
     /**
+     * Matches a card with a kicker ability — kicker, multikicker (a kicker variant, CR 702.33c) or
+     * "kicker [A] and/or [B]". Not Offspring, Bargain, Squad or a flash-timing unlock, which ride the
+     * same optional-additional-cost rail but are not kicker. Backed by the precomputed
+     * `CardComponent.hasKicker` flag stamped from the card's printed keyword abilities. Used by
+     * Murasa Sproutling: "return target card with a kicker ability from your graveyard to your hand."
+     */
+    @SerialName("HasKicker")
+    @Serializable
+    data object HasKicker : CardPredicate {
+        override val description: String = "with a kicker ability"
+    }
+
+    /**
      * Matches a land one of whose mana abilities could produce colorless mana ({C}) — Wastes, an
      * Eldrazi Temple, a land granted "{T}: Add {C}". Like [com.wingedsheep.sdk.scripting.values.ManaColorSet.LandsCouldProduce]
      * it reads the abilities' effects, not their costs or whether the land is tapped (Reflecting

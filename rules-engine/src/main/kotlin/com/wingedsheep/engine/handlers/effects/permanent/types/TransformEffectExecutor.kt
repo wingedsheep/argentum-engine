@@ -500,6 +500,7 @@ internal fun buildCardComponentForDfcFace(
     hasNonManaActivatedAbility = face.hasNonManaActivatedAbility,
     hasActivatedAbility = face.hasActivatedAbility,
     hasCycling = face.hasCycling,
+    hasKicker = face.hasKicker,
     manaValueOverride = manaValueOverride,
 )
 

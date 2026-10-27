@@ -6685,6 +6685,11 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   typecycling (CR 702.29e). Read off the card's printed keyword abilities (stamped as
   `CardComponent.hasCycling`), so it works in any zone — "target card with a cycling ability from your
   graveyard" (Rooting Moloch).
+- `.withKicker()` — `CardPredicate.HasKicker`: a card with a kicker ability — kicker, multikicker or
+  "kicker [A] and/or [B]" (CR 702.33), but not Offspring, Bargain, Squad, Replicate or a flash-timing
+  unlock (`KeywordAbility.OptionalAdditionalCost.isKicker`). Stamped as `CardComponent.hasKicker` from
+  the printed keyword abilities, so it works in any zone — "target card with a kicker ability from your
+  graveyard" (Murasa Sproutling), "a card with a kicker ability from among them" (Coralhelm Chronicler).
 - `.couldProduceColorlessMana()` — `CardPredicate.CouldProduceColorlessMana`: a land one of whose mana
   abilities (intrinsic, printed or granted) adds `{C}` — Wastes, an Eldrazi Temple. Like
   `ManaColorSet.LandsCouldProduce` it ignores costs and tapped state, a land that lost all abilities

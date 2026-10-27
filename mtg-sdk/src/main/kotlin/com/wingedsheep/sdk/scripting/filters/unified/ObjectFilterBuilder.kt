@@ -151,6 +151,7 @@ interface ObjectFilterBuilder<out Self> {
 
     /** Restrict to cards with a cycling ability, typecycling included ("card with a cycling ability"). */
     fun withCycling() = withCardPredicate(CardPredicate.HasCycling)
+    fun withKicker() = withCardPredicate(CardPredicate.HasKicker)
 
     /** Restrict to lands that could produce colorless mana ("a land you control could produce {C}"). */
     fun couldProduceColorlessMana() = withCardPredicate(CardPredicate.CouldProduceColorlessMana)

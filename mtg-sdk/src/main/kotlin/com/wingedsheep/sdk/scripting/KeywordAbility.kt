@@ -485,6 +485,14 @@ sealed interface KeywordAbility {
         }
 
         /**
+         * Is this a kicker ability (kicker or multikicker, CR 702.33) — as opposed to another
+         * mechanic on this rail (Offspring, Bargain, Squad, Replicate, a flash-timing unlock)?
+         * Read by "a card with a kicker ability" (`CardPredicate.HasKicker`).
+         */
+        val isKicker: Boolean
+            get() = declaredSlot == ChoiceSlot.KICKED && keyword == null && !grantsFlashTiming
+
+        /**
          * The mana half of this cost paid [times] times over — each payment repeats the symbols
          * (CR 702.56a "pay [cost] any number of times"). Null when this cost has no mana half.
          */

@@ -102,6 +102,7 @@ CardPredicate.HasColor — CardPredicate
 CardPredicate.HasCycling — CardPredicate
 CardPredicate.HasExactlyColors — CardPredicate
 CardPredicate.HasKeyword — CardPredicate
+CardPredicate.HasKicker — CardPredicate
 CardPredicate.HasNoAbilities — CardPredicate
 CardPredicate.HasNonManaActivatedAbility — CardPredicate
 CardPredicate.HasSubtype — CardPredicate

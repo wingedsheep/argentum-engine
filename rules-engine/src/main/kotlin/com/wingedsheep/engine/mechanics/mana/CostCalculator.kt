@@ -1892,6 +1892,7 @@ class CostCalculator(
             CardPredicate.HasNonManaActivatedAbility -> cardDef.hasNonManaActivatedAbility
             CardPredicate.HasActivatedAbility -> cardDef.hasActivatedAbility
             CardPredicate.HasCycling -> cardDef.hasCycling
+            CardPredicate.HasKicker -> cardDef.hasKicker
 
             is CardPredicate.HasColor -> predicate.color in spellColors
             is CardPredicate.NotColor -> predicate.color !in spellColors

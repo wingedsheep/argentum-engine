@@ -65,6 +65,11 @@ data class CardComponent(
      */
     val hasCycling: Boolean = false,
     /**
+     * Precomputed from the card definition: does this card have a kicker ability (kicker or
+     * multikicker)? Read by `CardPredicate.HasKicker` (Murasa Sproutling). Printed abilities only.
+     */
+    val hasKicker: Boolean = false,
+    /**
      * The set this card was *originally printed* in (the canonical [CardDefinition.setCode], not the
      * specific printing the player owns). Read by `CardPredicate.OriginallyPrintedInSet` to model
      * "permanent with a name originally printed in [set]" (Golgothian Sylex, ARN City in a Bottle).

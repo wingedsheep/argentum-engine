@@ -1207,6 +1207,7 @@ class CastZoneResolver(
                 // --- Intrinsic activated abilities (precomputed flags) ---
                 is CardPredicate.HasActivatedAbility -> card.hasActivatedAbility
                 is CardPredicate.HasCycling -> card.hasCycling
+                is CardPredicate.HasKicker -> card.hasKicker
                 is CardPredicate.HasNonManaActivatedAbility -> card.hasNonManaActivatedAbility
                 // --- Combinators ---
                 is CardPredicate.Or -> predicate.predicates.any { matchesCardPredicate(card, it, state, grantingSourceId, colors, subtypes) }
