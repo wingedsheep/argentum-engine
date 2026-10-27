@@ -55,7 +55,9 @@ class PutOntoBattlefieldAsAuraExecutor(
         }
 
         val controllerId = context.controllerId
-        val entry = AuraEntry(effect.enchant, effect.grantedStaticAbilities, effect.grantedAbilities)
+        val entry = AuraEntry(
+            effect.enchant, effect.grantedStaticAbilities, effect.grantedAbilities, effect.losesOtherAbilities
+        )
         val host = if (cardId in context.entryAuraHosts) {
             context.entryAuraHosts[cardId]
         } else {

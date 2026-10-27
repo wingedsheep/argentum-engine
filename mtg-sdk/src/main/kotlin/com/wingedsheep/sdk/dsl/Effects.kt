@@ -1918,7 +1918,8 @@ object Effects {
     /**
      * "Return it to the battlefield. It's an Aura enchantment with enchant [enchant] and \"…\", and
      * it loses all other abilities" — the card enters already an Aura, its controller choosing what it
-     * enchants as it enters (Harold and Bob, First Numens; Bronzehide Lion). See
+     * enchants as it enters (Harold and Bob, First Numens; Bronzehide Lion). Pass
+     * `losesOtherAbilities = false` when the text doesn't strip them (Old-Growth Troll). See
      * [PutOntoBattlefieldAsAuraEffect].
      */
     fun PutOntoBattlefieldAsAura(
@@ -1927,7 +1928,10 @@ object Effects {
         grantedAbilities: List<com.wingedsheep.sdk.scripting.ActivatedAbility> = emptyList(),
         target: EffectTarget = EffectTarget.Self,
         fromZone: Zone? = Zone.GRAVEYARD,
-    ): Effect = PutOntoBattlefieldAsAuraEffect(enchant, grantedStaticAbilities, grantedAbilities, target, fromZone)
+        losesOtherAbilities: Boolean = true,
+    ): Effect = PutOntoBattlefieldAsAuraEffect(
+        enchant, grantedStaticAbilities, grantedAbilities, target, fromZone, losesOtherAbilities
+    )
 
     /**
      * "Return this card to the battlefield under your control as a non-Aura enchantment. It loses

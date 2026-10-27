@@ -12638,6 +12638,132 @@
     ]
 }
 
+// Old-Growth Troll
+{
+    "name": "Old-Growth Troll",
+    "manaCost": "{G}{G}{G}",
+    "typeLine": "Creature — Troll Warrior",
+    "oracleText": "Trample\nWhen Old-Growth Troll dies, if it was a creature, return it to the battlefield. It's an Aura enchantment with enchant Forest you control and \"Enchanted Forest has '{T}: Add {G}{G}' and '{1}, {T}, Sacrifice this land: Create a tapped 4/4 green Troll Warrior creature token with trample.'\"",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Old-Growth Troll:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "PutOntoBattlefieldAsAura",
+                    "enchant": {
+                        "cardPredicates": [
+                            "IsLand",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Forest"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "grantedStaticAbilities": [
+                        {
+                            "type": "GrantActivatedAbility",
+                            "ability": {
+                                "id": "Old-Growth Troll:1",
+                                "cost": "CostTap",
+                                "effect": {
+                                    "type": "AddMana",
+                                    "color": "GREEN",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                "timing": "ManaAbility",
+                                "isManaAbility": true,
+                                "descriptionOverride": "{T}: Add {G}{G}."
+                            }
+                        },
+                        {
+                            "type": "GrantActivatedAbility",
+                            "ability": {
+                                "id": "Old-Growth Troll:2",
+                                "cost": {
+                                    "type": "CostComposite",
+                                    "costs": [
+                                        {
+                                            "type": "CostAtomWrapper",
+                                            "atom": {
+                                                "type": "AtomMana",
+                                                "cost": "{1}"
+                                            }
+                                        },
+                                        "CostTap",
+                                        "CostSacrificeSelf"
+                                    ]
+                                },
+                                "effect": {
+                                    "type": "CreateToken",
+                                    "power": 4,
+                                    "toughness": 4,
+                                    "colors": [
+                                        "GREEN"
+                                    ],
+                                    "creatureTypes": [
+                                        "Troll",
+                                        "Warrior"
+                                    ],
+                                    "keywords": [
+                                        "TRAMPLE"
+                                    ],
+                                    "tapped": true
+                                },
+                                "descriptionOverride": "{1}, {T}, Sacrifice this land: Create a tapped 4/4 green Troll Warrior creature token with trample."
+                            }
+                        }
+                    ],
+                    "losesOtherAbilities": false
+                },
+                "interveningIf": {
+                    "type": "TriggeringEntityWas",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "rarity": "RARE",
+        "artist": "Jesper Ejsing",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b759b0f6-342c-4bba-89f1-8451835d8c45.jpg?1783928208",
+        "rulings": [
+            {
+                "date": "2021-02-05",
+                "text": "If you control but don't own Old-Growth Troll, you (not its owner) will return it to the battlefield when it dies. You'll choose which Forest you control it will enchant as it returns to the battlefield."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If there's nothing for Old-Growth Troll to legally enchant, it remains in its owner's graveyard."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a token is a copy of Old-Growth Troll, it won't return from its owner's graveyard."
+            },
+            {
+                "date": "2021-02-05",
+                "text": "If a nontoken permanent that's a copy of Old-Growth Troll dies while it is a creature, it will return to the battlefield as an Aura with both its own normal abilities and the two new abilities granted by old-Growth Troll. The resulting permanent will also retain its name, colors, and supertypes, but it will be an Aura enchantment with no other types or subtypes."
+            }
+        ]
+    }
+}
+
 // Open the Omenpaths
 {
     "name": "Open the Omenpaths",

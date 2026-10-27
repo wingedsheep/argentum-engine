@@ -547,6 +547,9 @@ data class ReturnSelfToBattlefieldAttachedEffect(
  * @property grantedAbilities Activated abilities it has as that Aura (Bronzehide Lion's
  *   "{G}{W}: Enchanted creature gains indestructible until end of turn").
  * @property fromZone The zone the card must still be in; a card that has left it doesn't move.
+ * @property losesOtherAbilities Whether it loses its printed abilities as that Aura (Harold and Bob,
+ *   Bronzehide Lion). `false` when the Oracle text doesn't say so — Old-Growth Troll keeps trample and
+ *   its own dies trigger; only its types change.
  */
 @SerialName("PutOntoBattlefieldAsAura")
 @Serializable
@@ -556,13 +559,14 @@ data class PutOntoBattlefieldAsAuraEffect(
     val grantedAbilities: List<com.wingedsheep.sdk.scripting.ActivatedAbility> = emptyList(),
     val target: EffectTarget = EffectTarget.Self,
     val fromZone: Zone? = Zone.GRAVEYARD,
+    val losesOtherAbilities: Boolean = true,
 ) : Effect {
     override val description: String = buildString {
         append("Return ${target.description} to the battlefield. It's an Aura enchantment with enchant ")
         append(enchant.description)
         val gained = grantedStaticAbilities.map { it.description } + grantedAbilities.map { it.description }
         if (gained.isNotEmpty()) append(" and ${gained.joinToString(" and ") { "\"$it\"" }}")
-        append(", and it loses all other abilities")
+        if (losesOtherAbilities) append(", and it loses all other abilities")
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
@@ -589,7 +593,7 @@ data class PutOntoBattlefieldAsAuraEffect(
  * [com.wingedsheep.sdk.scripting.ChoiceSlot.PLAYER] choice, so the granted abilities can name
  * "that player" as [Player.ChosenPlayer].
  *
- * No neighbour takes this: [PutOntoBattlefieldAsAuraEffect] makes a card an Aura and strips every
+ * No neighbour takes this: [PutOntoBattlefieldAsAuraEffect] makes a card an Aura and (by default) strips every
  * other ability, the opposite direction on both axes; [MoveToZoneEffect] moves an Aura card with
  * its printed type line, so it would need a host and die to CR 704.5m without one.
  *

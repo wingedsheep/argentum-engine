@@ -2049,10 +2049,11 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   A single-faced card told to enter transformed doesn't move at all (standing ruling), so it is a
   quiet no-op. Radiant Grace: `ReturnSelfToBattlefieldAttached(target = cursed, transformed = true)`.
 - `PutOntoBattlefieldAsAura(enchant, grantedStaticAbilities = [], grantedAbilities = [], target = Self,
-  fromZone = GRAVEYARD)` — "return it to the battlefield. It's an Aura enchantment with enchant *X* and
+  fromZone = GRAVEYARD, losesOtherAbilities = true)` — "return it to the battlefield. It's an Aura enchantment with enchant *X* and
   \"…\", and it loses all other abilities." The card enters under the effect controller's control already
   that Aura: layer 4 makes it Enchantment — Aura (supertypes, name and colors stay), layer 6 strips its
-  printed abilities, and it has exactly `enchant` (with "you" = the Aura's controller) plus the granted
+  printed abilities (`losesOtherAbilities = false` keeps them when the text doesn't say "loses all other
+  abilities" — Old-Growth Troll keeps trample and its dies trigger), and it has exactly `enchant` (with "you" = the Aura's controller) plus the granted
   static/activated abilities for as long as it stays on the battlefield. It is never a creature there, so
   "a creature entered" observers miss it. Its controller chooses the host as it enters among the permanents
   `enchant` admits (CR 303.4f — not targeted; protection from the Aura's new characteristics excludes a

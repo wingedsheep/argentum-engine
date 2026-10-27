@@ -32,6 +32,7 @@ data class AuraEntry(
     val enchant: GameObjectFilter,
     val grantedStaticAbilities: List<StaticAbility> = emptyList(),
     val grantedAbilities: List<ActivatedAbility> = emptyList(),
+    val losesOtherAbilities: Boolean = true,
 ) {
     /**
      * The card as the Aura it will be — Enchantment — Aura, keeping its supertypes — for questions
@@ -49,7 +50,8 @@ data class AuraEntry(
      * Make the arrived [entityId] this Aura for as long as it stays on the battlefield: layer 4
      * sets its card types and subtypes (CR 205.1a — the new types replace the old; supertypes, name and
      * colors are untouched), layer
-     * 6 removes its abilities, and it has [enchant] as its whole enchant ability plus the granted
+     * 6 removes its abilities (unless [losesOtherAbilities] is false — then its printed abilities stay
+     * and only its types change), and it has [enchant] as its whole enchant ability plus the granted
      * abilities. The printed statics and replacement effects the entry just registered are dropped
      * outright — this object never has them — so they can't ride the self-sourced ability removal's
      * exemption. The grants are recorded after the removal (a later timestamp), so they survive it.
@@ -57,15 +59,16 @@ data class AuraEntry(
     fun apply(state: GameState, entityId: EntityId, controllerId: EntityId): GameState {
         val context = EffectContext(sourceId = entityId, controllerId = controllerId)
         var newState = state.updateEntity(entityId) {
-            it.without<ContinuousEffectSourceComponent>()
-                .without<ReplacementEffectSourceComponent>()
-                .with(GainedEnchantRestrictionComponent(filter = enchant))
+            val restricted = it.with(GainedEnchantRestrictionComponent(filter = enchant))
+            if (losesOtherAbilities) {
+                restricted.without<ContinuousEffectSourceComponent>().without<ReplacementEffectSourceComponent>()
+            } else restricted
         }
         val affected = setOf(entityId)
-        val conversion = listOf(
+        val conversion = listOfNotNull(
             Layer.TYPE to SerializableModification.SetCardTypes(setOf(CardType.ENCHANTMENT.name)),
             Layer.TYPE to SerializableModification.SetAllSubtypes(setOf("Aura")),
-            Layer.ABILITY to SerializableModification.RemoveAllAbilities,
+            (Layer.ABILITY to SerializableModification.RemoveAllAbilities).takeIf { losesOtherAbilities },
         ).map { (layer, modification) ->
             val (id, withId) = newState.newEntity()
             newState = withId
