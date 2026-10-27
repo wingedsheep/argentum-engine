@@ -1,3 +1,106 @@
+// Charismatic Conqueror
+{
+    "name": "Charismatic Conqueror",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Vampire Soldier",
+    "oracleText": "Vigilance\nWhenever an artifact or creature an opponent controls enters untapped, they may tap that permanent. If they don't, you create a 1/1 white Vampire creature token with lifelink.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Charismatic Conqueror:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature|artifact untapped ctrl:opponent",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "TriggeringEntity",
+                            "filter": {
+                                "statePredicates": [
+                                    "IsUntapped",
+                                    "IsOnBattlefield"
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.MayDecide",
+                            "prompt": "Tap that permanent? If you don't, your opponent creates a 1/1 Vampire with lifelink."
+                        },
+                        "then": {
+                            "type": "TapUntap",
+                            "target": "TriggeringEntity"
+                        },
+                        "otherwise": {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "WHITE"
+                            ],
+                            "creatureTypes": [
+                                "Vampire"
+                            ],
+                            "keywords": [
+                                "LIFELINK"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/0/4/0484390e-1167-4407-84de-7ddc726e8926.jpg?1783913608"
+                        },
+                        "decisionMaker": "ControllerOfTriggeringEntity"
+                    },
+                    "otherwise": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "WHITE"
+                        ],
+                        "creatureTypes": [
+                            "Vampire"
+                        ],
+                        "keywords": [
+                            "LIFELINK"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/0/4/0484390e-1167-4407-84de-7ddc726e8926.jpg?1783913608"
+                    }
+                },
+                "descriptionOverride": "Whenever an artifact or creature an opponent controls enters untapped, they may tap that permanent. If they don't, you create a 1/1 white Vampire creature token with lifelink."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "RARE",
+        "artist": "Bram Sels",
+        "flavorText": "\"There's a whole world under the surface, waiting for the light of our salvation.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/599c934d-bfff-43ce-a545-6e3cde124515.jpg?1783913915",
+        "rulings": [
+            {
+                "date": "2023-11-10",
+                "text": "If the permanent is tapped as the ability resolves, the opponent can't choose to tap it, so you'll create a Vampire token. Similarly, if it's no longer on the battlefield as the ability resolves, they can't choose to tap it, and you'll create a Vampire token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Chimil, the Inner Sun
 {
     "name": "Chimil, the Inner Sun",

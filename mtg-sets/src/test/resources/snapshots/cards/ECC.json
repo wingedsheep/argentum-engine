@@ -1,1 +1,57 @@
-
+// Springleaf Parade
+{
+    "name": "Springleaf Parade",
+    "manaCost": "{X}{G}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, create X 1/1 colorless Shapeshifter creature tokens with changeling. (They're every creature type.)\nCreature tokens you control have \"{T}: Add one mana of any color.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Springleaf Parade:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": "XValue",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Shapeshifter"
+                    ],
+                    "keywords": [
+                        "CHANGELING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/c/2/c2963ce1-f9d8-437a-9489-e0913a8b8d26.jpg?1783904328"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Springleaf Parade:2",
+                    "cost": "CostTap",
+                    "effect": "AddManaOfChoice",
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                },
+                "filter": {
+                    "baseFilter": "creature token ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "RARE",
+        "artist": "Cory Godbey",
+        "flavorText": "\"Come into the light, strange one. All are welcome to bask in Eirdu's glow.\"\n—Kithkin rite-leader",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/44265489-645a-43b0-bc1f-726905b06876.jpg?1783904601"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}

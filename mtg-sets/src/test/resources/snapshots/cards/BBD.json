@@ -1,3 +1,76 @@
+// Archfiend of Despair
+{
+    "name": "Archfiend of Despair",
+    "manaCost": "{6}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Flying\nYour opponents can't gain life.\nAt the beginning of each end step, each opponent loses life equal to the life that player lost this turn. (Damage causes loss of life.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Archfiend of Despair:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "TurnTracking",
+                            "player": "You",
+                            "tracker": "LIFE_LOST_AMOUNT"
+                        },
+                        "target": "Controller"
+                    }
+                },
+                "descriptionOverride": "At the beginning of each end step, each opponent loses life equal to the life that player lost this turn."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventLifeGain",
+                "appliesTo": {
+                    "type": "LifeGainEvent",
+                    "player": "EachOpponent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "MYTHIC",
+        "artist": "Josh Hass",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11d8b7ac-fb65-4496-9d9f-184fa8ad8012.jpg?1783934864",
+        "rulings": [
+            {
+                "date": "2018-06-08",
+                "text": "Archfiend of Despair's last ability counts only how much life was lost. It doesn't care whether a player also gained life."
+            },
+            {
+                "date": "2018-06-08",
+                "text": "The amount of life to lose is determined only as Archfiend of Despair's triggered ability resolves. For example, if you control two of them and an opponent lost 3 life earlier in the turn, the first ability to resolve would have that player lose 3 life, and the second would have that player lose 6 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Bountiful Promenade
 {
     "name": "Bountiful Promenade",

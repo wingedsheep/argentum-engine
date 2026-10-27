@@ -1,3 +1,94 @@
+// Archfiend of Depravity
+{
+    "name": "Archfiend of Depravity",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Flying\nAt the beginning of each opponent's end step, that player chooses up to two creatures they control, then sacrifices the rest.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Archfiend of Depravity:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "ControlledPermanents",
+                                "player": "TriggeringPlayer",
+                                "filter": "creature"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "chooser": "TriggeringPlayer",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "Choose up to two creatures you control to keep; the rest are sacrificed.",
+                            "selectedLabel": "Keep",
+                            "remainderLabel": "Sacrifice",
+                            "useTargetingUI": true,
+                            "alwaysPrompt": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Sacrifice"
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of each opponent's end step, that player chooses up to two creatures they control, then sacrifices the rest."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "flavorText": "\"Why would I kill you all? Who then would be left to worship me?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/22e343b5-37d6-44f6-be24-66313f18c246.jpg?1783938701",
+        "rulings": [
+            {
+                "date": "2014-11-24",
+                "text": "The opponent may choose to spare one or no creatures. If the player doesn't choose any creatures, they will sacrifice all creatures they control."
+            },
+            {
+                "date": "2014-11-24",
+                "text": "The opponent chooses which creatures to spare, if any, as the ability resolves. This choice doesn't target the creatures."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Atarka, World Render
 {
     "name": "Atarka, World Render",

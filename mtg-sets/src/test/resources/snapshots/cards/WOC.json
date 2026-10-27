@@ -1,1 +1,173 @@
+// Alela, Cunning Conqueror
+{
+    "name": "Alela, Cunning Conqueror",
+    "manaCost": "{2}{U}{B}",
+    "typeLine": "Legendary Creature — Faerie Warlock",
+    "oracleText": "Flying\nWhenever you cast your first spell during each opponent's turn, create a 1/1 black Faerie Rogue creature token with flying.\nWhenever one or more Faeries you control deal combat damage to a player, goad target creature that player controls.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Alela, Cunning Conqueror:1",
+                "trigger": {
+                    "type": "NthSpellCastEvent",
+                    "nthSpell": 1,
+                    "player": "You"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Faerie",
+                        "Rogue"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/6/d680c3f1-a3c0-4f38-8958-2402612c8dd1.jpg?1783914993"
+                },
+                "triggerRestriction": "IsOpponentsTurn",
+                "descriptionOverride": "Whenever you cast your first spell during each opponent's turn, create a 1/1 black Faerie Rogue creature token with flying."
+            },
+            {
+                "id": "Alela, Cunning Conqueror:2",
+                "trigger": {
+                    "type": "OneOrMoreDealCombatDamageToPlayerEvent",
+                    "sourceFilter": "creature Faerie"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Goad",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControlledByReferencedPlayer",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "TriggeringPlayer"
+                                }
+                            }
+                        }
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever one or more Faeries you control deal combat damage to a player, goad target creature that player controls."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "MYTHIC",
+        "artist": "Livia Prima",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/79ba5c35-6e5c-406a-b95f-844d5ec296ab.jpg?1783914990",
+        "rulings": [
+            {
+                "date": "2023-09-01",
+                "text": "Normally, combat damage is dealt all at the same time. In that case, Alela, Cunning Conqueror's last ability triggers once for each player that Faeries you control dealt combat damage to, regardless of how many creatures were dealing that damage. If any of those Faeries have double strike or first strike, the ability will trigger once for each player dealt damage in each combat damage step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
 
+// Tegwyll, Duke of Splendor
+{
+    "name": "Tegwyll, Duke of Splendor",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Legendary Creature — Faerie Noble",
+    "oracleText": "Flying, deathtouch\nOther Faeries you control get +1/+1.\nWhenever another Faerie you control dies, you draw a card and you lose 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tegwyll, Duke of Splendor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Faerie ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Faerie ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "MYTHIC",
+        "artist": "Ekaterina Burmak",
+        "flavorText": "He weaves glamours as easily as breathing, his otherworldly beauty entrancing fae and mortal alike.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/03fab911-7bd4-45fa-ba07-cd0e51b0cd95.jpg?1783914991",
+        "rulings": [
+            {
+                "date": "2023-09-01",
+                "text": "If Tegwyll, Duke of Splendor dies at the same time as one or more other Faeries you control, Tegwyll's ability triggers for each of those other Faeries."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}

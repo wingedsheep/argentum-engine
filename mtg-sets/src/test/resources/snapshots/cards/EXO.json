@@ -520,6 +520,74 @@
     ]
 }
 
+// Reconnaissance
+{
+    "name": "Reconnaissance",
+    "manaCost": "{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "{0}: Remove target attacking creature you control from combat and untap it. (If you activate during end of combat, the creature will untap after it deals combat damage.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Reconnaissance:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{0}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RemoveFromCombat",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "tap": false
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature attacking ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Remove target attacking creature you control from combat and untap it."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "UNCOMMON",
+        "artist": "Val Mayerik",
+        "flavorText": "War favors the informed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a16012d8-703c-4385-8769-13e3caba3fc6.jpg?1783946529",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "Does not undo any effects which triggered on declaration of attackers or blockers."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Robe of Mirrors
 {
     "name": "Robe of Mirrors",

@@ -1,1 +1,44 @@
-
+// Vernal Fen
+{
+    "name": "Vernal Fen",
+    "manaCost": "",
+    "typeLine": "Land — Swamp Forest",
+    "oracleText": "({T}: Add {B} or {G}.)\nThis land enters tapped unless you control two or more basic lands.",
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersTapped",
+                "unlessCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "basicland"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "RARE",
+        "artist": "Titus Lunter",
+        "flavorText": "\"New things need room to grow. We prune time so the future can flourish.\"\n—Antioxa, Drix elder",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/bac98f27-ef3e-45e0-87cb-0fb4325ae734.jpg?1783906060",
+        "rulings": [
+            {
+                "date": "2025-07-25",
+                "text": "Unlike some other dual lands, Vernal Fen has two basic land types. It's not basic, so effects that search for basic lands can't find it, but it does have the appropriate land types for effects that care about them."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}

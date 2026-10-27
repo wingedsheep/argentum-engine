@@ -1,3 +1,99 @@
+// Ainok Strike Leader
+{
+    "name": "Ainok Strike Leader",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Dog Warrior",
+    "oracleText": "Whenever you attack with this creature and/or your commander, for each opponent, create a 1/1 red Goblin creature token that's tapped and attacking that player.\nSacrifice this creature: Creature tokens you control gain indestructible until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ainok Strike Leader:1",
+                "trigger": {
+                    "type": "YouAttackEvent",
+                    "attackerFilter": {
+                        "anyOf": [
+                            {
+                                "statePredicates": [
+                                    "IsSource"
+                                ]
+                            },
+                            {
+                                "statePredicates": [
+                                    "IsCommander"
+                                ],
+                                "controllerPredicate": "OwnedByYou"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "RED"
+                        ],
+                        "creatureTypes": [
+                            "Goblin"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e265ca24-96c0-4654-a8f3-bbffe288970a.jpg?1783906784",
+                        "controller": {
+                            "type": "PlayerRef",
+                            "player": "ControllerOfSource"
+                        },
+                        "tapped": true,
+                        "attacking": true,
+                        "attackedPlayer": "Controller"
+                    }
+                },
+                "descriptionOverride": "Whenever you attack with this creature and/or your commander, for each opponent, create a 1/1 red Goblin creature token that's tapped and attacking that player."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Ainok Strike Leader:2",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature token ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "INDESTRUCTIBLE",
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Creature tokens you control gain indestructible until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "rarity": "RARE",
+        "artist": "Alexander Mokhov",
+        "flavorText": "When dalkovans need protecting, all respond.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/cabd77a6-0913-4522-891d-c8a412a536c2.jpg?1783907186"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Colossal Grave-Reaver
 {
     "name": "Colossal Grave-Reaver",

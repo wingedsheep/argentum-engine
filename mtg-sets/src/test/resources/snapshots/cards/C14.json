@@ -203,6 +203,82 @@
     ]
 }
 
+// Fell the Mighty
+{
+    "name": "Fell the Mighty",
+    "manaCost": "{4}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy all creatures with power greater than target creature's power.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerGreaterThanEntity",
+                                    "reference": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "storeAs": "destroyAll_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "destroyAll_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "RARE",
+        "artist": "Raymond Swanland",
+        "flavorText": "\"They had it coming.\"\n—Squire Imalia, savior of Thiswick",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d4e999d3-c2d7-47dc-81ad-a2baf6cc4757.jpg?1783938873",
+        "rulings": [
+            {
+                "date": "2014-11-07",
+                "text": "Use the power of the target creature as Fell the Mighty resolves to determine which creatures are destroyed. Fell the Mighty doesn't target any of those creatures, so a creature with hexproof or protection from white will be destroyed if its power is high enough."
+            },
+            {
+                "date": "2014-11-07",
+                "text": "Fell the Mighty won't destroy the target creature."
+            },
+            {
+                "date": "2014-11-07",
+                "text": "If the target creature is an illegal target when Fell the Mighty tries to resolve, Fell the Mighty won't resolve and none of its effects will happen. No creatures will be destroyed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Intellectual Offering
 {
     "name": "Intellectual Offering",
