@@ -21,8 +21,8 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *
  * The target is chosen as the trigger goes on the stack; the "may" choices happen on resolution.
  * "If that land is a Plains" reads the triggering land at resolution (Koth, the Geomancer's
- * `EntityMatches(TriggeringEntity, …)` — projected while it is on the battlefield, last-known once it
- * has left). With a Plains the controller is first offered the battlefield; declining that falls back
+ * `EntityMatches(TriggeringEntity, …)`, matched against projected state while it is on the
+ * battlefield). With a Plains the controller is first offered the battlefield; declining that falls back
  * to the ordinary "you may return it to your hand", so all three outcomes (battlefield, hand,
  * nothing) stay reachable. Without a Plains only the hand return is offered.
  */
