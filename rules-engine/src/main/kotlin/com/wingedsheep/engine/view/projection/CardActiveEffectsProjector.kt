@@ -966,6 +966,7 @@ internal class CardActiveEffectsProjector(
         }
         for (granted in state.grantedTriggeredAbilities) {
             if (granted.entityId != entityId) continue
+            if (!com.wingedsheep.engine.mechanics.durations.GrantDurationGate.triggeredGrantLive(state, granted)) continue
             grant("granted_trig_${granted.ability.id.value}", granted.ability.description)
         }
         for (granted in state.grantedStateTriggeredAbilities) {

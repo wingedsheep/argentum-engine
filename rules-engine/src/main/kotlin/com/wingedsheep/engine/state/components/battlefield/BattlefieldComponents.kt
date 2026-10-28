@@ -354,6 +354,24 @@ data object SuspendedComponent : Component
 data object ParadigmComponent : Component
 
 /**
+ * Cipher (CR 702.99b): this exiled card is encoded on [creatureId]. [cardObject] is the card's own
+ * object as it entered exile, so the encoding ends the moment the card leaves exile — even if it
+ * later comes back to exile under the same entity id, it is a new object (CR 400.7) and the stale
+ * marker no longer matches. The creature leaving the battlefield ends it through the grant store:
+ * its granted cipher trigger is dropped with the creature's other object grants.
+ *
+ * Written by the spell-resolution path when a cipher spell finishes resolving with a chosen
+ * creature ([com.wingedsheep.engine.state.components.stack.CipherEncodeChoiceComponent]); read by
+ * [com.wingedsheep.engine.mechanics.durations.GrantDurationGate] for
+ * [com.wingedsheep.sdk.scripting.Duration.WhileSourceEncodedOnAffected].
+ */
+@Serializable
+data class EncodedOnComponent(
+    val creatureId: EntityId,
+    val cardObject: com.wingedsheep.engine.state.ObjectRef
+) : Component
+
+/**
  * Records the mana colors spent to cast this permanent.
  * Used by mana-spent-gated trigger conditions (e.g., "if {W}{W} was spent to cast it").
  * Stripped when the permanent leaves the battlefield.

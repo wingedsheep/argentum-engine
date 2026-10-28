@@ -1153,6 +1153,18 @@ class ConditionEvaluator(
                 )
             } ?: false
         }
+        // An engine-pinned object (cipher's encoded card: "if it's still in exile, copy it") — read
+        // like a target: projected characteristics on the battlefield, printed ones elsewhere.
+        is EffectTarget.SpecificEntity -> {
+            val context = when (ctx) {
+                is Resolution -> ctx.effectContext
+                is Projection -> ctx.controllerId?.let { EffectContext(controllerId = it, sourceId = ctx.sourceId) }
+            }
+            context != null && predicates.matches(
+                state, ctx.projectedStateFor(state), entity.entityId, condition.filter,
+                PredicateContext.fromEffectContext(context)
+            )
+        }
         is EffectTarget.LinkedExiledCard ->
             evaluateLinkedExiledCardFilterMatch(state, condition.filter, entity.index, ctx)
         // The object a ForEach loop is visiting ("…if it's a creature, …"), read like a target:
@@ -1187,7 +1199,6 @@ class ConditionEvaluator(
         is EffectTarget.PlayerRef,
         is EffectTarget.RingBearer,
         is EffectTarget.SacrificedAsCost,
-        is EffectTarget.SpecificEntity,
         is EffectTarget.TappedAsCost,
         is EffectTarget.ExiledAsCost,
         EffectTarget.TargetController,

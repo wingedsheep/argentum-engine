@@ -85,9 +85,7 @@ class TriggerAbilityResolver(
         // re-added counter resurrecting the grant lives in EndedDurationExpiryCheck.
         val grantedAbilities = buildList {
             for (grant in state.grantedTriggeredAbilities) {
-                if (grant.entityId == entityId &&
-                    GrantDurationGate.holds(state, grant.entityId, grant.sourceId, grant.duration)
-                ) {
+                if (grant.entityId == entityId && GrantDurationGate.triggeredGrantLive(state, grant)) {
                     add(grant.ability)
                 }
             }
@@ -302,9 +300,7 @@ class TriggerAbilityResolver(
         // Same per-read "for as long as …" gate as the other lookup path above.
         val grantedAbilities = buildList {
             for (grant in state.grantedTriggeredAbilities) {
-                if (grant.entityId == entityId &&
-                    GrantDurationGate.holds(state, grant.entityId, grant.sourceId, grant.duration)
-                ) {
+                if (grant.entityId == entityId && GrantDurationGate.triggeredGrantLive(state, grant)) {
                     add(grant.ability)
                 }
             }

@@ -45,6 +45,7 @@ class StackExecutors(
         GrantKeywordToSpellExecutor(),
         MarkSpellExileWithCountersExecutor(),
         MarkSpellPlotOnResolveExecutor(),
+        EncodeOnCreatureExecutor(),
         ReturnSpellToOwnersHandExecutor(),
         ReturnSpellOrPermanentToOwnersHandExecutor(zones, cardRegistry, targetFinder = targetFinder),
         DestroySourceOfTargetedAbilityExecutor(zones),

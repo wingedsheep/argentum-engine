@@ -5258,7 +5258,7 @@ class TriggerDetector(
             grant.ability.takeIf {
                 grant.entityId == entityId &&
                     com.wingedsheep.engine.mechanics.durations.GrantDurationGate
-                        .holds(state, grant.entityId, grant.sourceId, grant.duration)
+                        .triggeredGrantLive(state, grant)
             }
         }
 

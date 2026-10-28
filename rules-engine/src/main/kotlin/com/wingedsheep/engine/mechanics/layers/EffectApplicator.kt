@@ -489,6 +489,8 @@ internal class EffectApplicator(
                     values.staticAbilitySourceIds.clear()
                     values.manaAbilityLifeTax = 0
                     values.lostAllAbilities = true
+                    values.lostAllAbilitiesTimestamp =
+                        maxOf(values.lostAllAbilitiesTimestamp ?: effect.timestamp, effect.timestamp)
                     values.hasExileOnDeathAbility = false
                 }
                 is Modification.GrantExileOnDeathAbility -> {

@@ -721,6 +721,9 @@ class CleanupPhaseManager(
                 // Event-bounded ("until this card is cast from exile"): never a turn boundary. Only
                 // the activated-ability grant store reads the ending event today (SpellCaster).
                 is Duration.UntilSourceCastFromExile -> true
+                // Cipher's encoding (CR 702.99c) is never a turn boundary; only the triggered-ability
+                // grant store uses it, gated and latched by GrantDurationGate.
+                is Duration.WhileSourceEncodedOnAffected -> true
                 is Duration.WhileSourceOnBattlefield -> {
                     // Keep if source is still on battlefield
                     val sourceId = floatingEffect.sourceId

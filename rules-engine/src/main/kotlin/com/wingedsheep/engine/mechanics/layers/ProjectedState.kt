@@ -96,6 +96,13 @@ data class ProjectedValues(
     /** Extra life every mana ability of this permanent costs to activate (Thran Portal). */
     val manaAbilityLifeTax: Int = 0,
     val lostAllAbilities: Boolean = false,
+    /**
+     * The latest timestamp among the "loses all abilities" effects applied to this object, or null
+     * when none applied. Lets a grant that records its own layer-6 timestamp
+     * ([com.wingedsheep.engine.event.GrantedTriggeredAbility.timestamp]) tell an earlier removal,
+     * which it survives, from a later one, which strips it (CR 613.7).
+     */
+    val lostAllAbilitiesTimestamp: Long? = null,
     /** See [Modification.GrantExileOnDeathAbility]. */
     val hasExileOnDeathAbility: Boolean = false,
     /**
@@ -407,6 +414,14 @@ class ProjectedState(
     fun hasLostAllAbilities(entityId: EntityId): Boolean =
         projectedValues[entityId]?.lostAllAbilities == true
 
+    /**
+     * Whether an ability-adding effect with layer-6 [timestamp] is undone by a "loses all
+     * abilities" effect on [entityId] — one with a later timestamp (CR 613.7). See
+     * [ProjectedValues.lostAllAbilitiesTimestamp].
+     */
+    fun lostAllAbilitiesAfter(entityId: EntityId, timestamp: Long): Boolean =
+        projectedValues[entityId]?.lostAllAbilitiesTimestamp?.let { it > timestamp } == true
+
     /** See [Modification.GrantExileOnDeathAbility]. */
     fun hasExileOnDeathAbility(entityId: EntityId): Boolean =
         projectedValues[entityId]?.hasExileOnDeathAbility == true
@@ -467,6 +482,7 @@ internal fun buildIntermediateProjectedState(
             additionalBlockCount = v.additionalBlockCount,
             manaAbilityLifeTax = v.manaAbilityLifeTax,
             lostAllAbilities = v.lostAllAbilities,
+            lostAllAbilitiesTimestamp = v.lostAllAbilitiesTimestamp,
             hasExileOnDeathAbility = v.hasExileOnDeathAbility,
             name = v.name
         )

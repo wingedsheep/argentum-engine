@@ -621,6 +621,7 @@ Families:
 - `Duration.WhileAffectedTapped` — Effect lasts for as long as each *affected* permanent remains tapped (CR 611.2b "for as long as it remains tapped") — the affected-object mirror of WhileSourceTapped: the gate watches the permanent…
 - `Duration.WhileControlledByController` — Effect lasts for as long as the effect's controller controls the affected object — it ends the moment that object's controller becomes a different player ("for as long as you control it").
 - `Duration.WhileSourceAttachedToAffected` — Effect lasts for as long as the effect's source (an Aura/Equipment) remains attached to the affected permanent (CR 611.2b "for as long as …").
+- `Duration.WhileSourceEncodedOnAffected` — Effect lasts for as long as the effect's source *card* stays encoded on the affected creature (cipher, CR 702.99c): the card remains in exile as the same object and the creature remains on the batt…
 - `Duration.WhileSourceOnBattlefield(sourceDescription: String)` — Effect lasts while the source permanent is on the battlefield.
 - `Duration.WhileSourceTapped(sourceDescription: String)` — Effect lasts while the source permanent remains tapped.
 - `Duration.WhileSourceTappedAndAffectedPowerAtMostSource(sourceDescription: String)` — Effect lasts while the source permanent remains tapped AND each affected entity's projected power stays less than or equal to the source's projected power.
@@ -848,6 +849,7 @@ Families:
 - `EmitScriedEventEffect(gatherCollection: String, player: Player, bottomCollection: String)` — Emit a `ScriedEvent` after a scry pipeline finishes resolving.
 - `EmitSurveiledEventEffect(gatherCollection: String)` — Emit a `SurveiledEvent` after a surveil pipeline finishes resolving — the surveil twin of EmitScriedEventEffect.
 - `EnchantPutOntoBattlefieldEffect(from: String, filter: GameObjectFilter)` — "This Aura loses its enchant ability and gains 'enchant filter put onto the battlefield with this Aura.' … attach this Aura to it." — the reanimation-Aura idiom (Animate Dead, Dance of the Dead, Ne…
+- `EncodeOnCreatureEffect(from: String)` — Cipher's encoding step (CR 702.99a): "you may exile this card encoded on a creature you control".
 - `EndTheTurnEffect` — End the turn (CR 724.1).
 - `EnterTappedEffect` — "This permanent enters tapped" — the rider of an as-enters replacement, run inside com.wingedsheep.sdk.scripting.OnEnterRun: the reveal lands' "if you don't, this land enters tapped" (Auntie's Hove…
 - `ExchangeControlEffect(target1: EffectTarget, target2: EffectTarget)` — Exchange control of two target creatures.

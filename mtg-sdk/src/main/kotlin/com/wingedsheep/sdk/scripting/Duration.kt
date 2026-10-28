@@ -163,6 +163,21 @@ sealed interface Duration {
     }
 
     /**
+     * Effect lasts for as long as the effect's source *card* stays encoded on the affected
+     * creature (cipher, CR 702.99c): the card remains in exile as the same object and the creature
+     * remains on the battlefield. A control change, or the creature ceasing to be a creature, does
+     * not end it. The source is the exiled cipher card; the affected object is the creature.
+     *
+     * Engine-made only — the cipher resolution grants [com.wingedsheep.sdk.scripting.Cipher
+     * .encodedCardTrigger] with it; no card authors it.
+     */
+    @SerialName("WhileSourceEncodedOnAffected")
+    @Serializable
+    data object WhileSourceEncodedOnAffected : Duration {
+        override val description = "for as long as the card stays encoded on it"
+    }
+
+    /**
      * Effect lasts for as long as the effect's source (an Aura/Equipment) remains attached to the
      * affected permanent (CR 611.2b "for as long as …"). The effect drops the instant the source
      * leaves the battlefield, becomes unattached, or re-attaches to a different permanent. The

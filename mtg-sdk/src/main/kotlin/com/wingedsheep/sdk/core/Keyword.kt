@@ -1020,6 +1020,16 @@ enum class Keyword(val displayName: String) {
     REBOUND("Rebound"),
 
     /**
+     * Cipher (CR 702.99). A spell ability plus a static ability: as the spell resolves, just after
+     * its other effects, its controller may exile the card encoded on a creature they control; for
+     * as long as it stays encoded, that creature has "Whenever this creature deals combat damage to
+     * a player, you may copy the encoded card and you may cast the copy without paying its mana
+     * cost." Read by the spell-resolution path (`NonPermanentSpellResolver`), which appends
+     * [com.wingedsheep.sdk.scripting.Cipher.encodeStep] to a resolving cipher card's effect.
+     */
+    CIPHER("Cipher"),
+
+    /**
      * Teamwork N (CR 702.194, Marvel Super Heroes). A static ability that functions while the
      * spell is on the stack: "As an additional cost to cast this spell, you may tap any number of
      * creatures you control with total power N or more" (CR 702.194a). A spell whose controller

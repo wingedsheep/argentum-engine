@@ -957,6 +957,8 @@ internal data class MutableProjectedValues(
     var additionalBlockCount: Int = 0,
     var manaAbilityLifeTax: Int = 0,
     var lostAllAbilities: Boolean = false,
+    /** See [com.wingedsheep.engine.mechanics.layers.ProjectedValues.lostAllAbilitiesTimestamp]. */
+    var lostAllAbilitiesTimestamp: Long? = null,
     var hasExileOnDeathAbility: Boolean = false,
     /** See [com.wingedsheep.engine.mechanics.layers.ProjectedValues.basicLandTypesSetByEffect]. */
     var basicLandTypesSetByEffect: Boolean = false,

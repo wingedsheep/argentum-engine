@@ -23,6 +23,7 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.AfterResolveDestinationComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.CopyOfComponent
+import com.wingedsheep.engine.state.components.stack.CipherEncodeChoiceComponent
 import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.engine.state.components.stack.*
@@ -113,6 +114,7 @@ internal class NonPermanentSpellResolver(
 
         val resolvedCardDef = cardComponent?.let { cardRegistry.getCard(it.name) }
         val spellEffect = resolvingSpellEffect(state, spellId, spellComponent, cardComponent, resolvedCardDef)
+            ?.let { withCipherEncodeStep(state, spellId, resolvedCardDef, it) }
         // Splice (CR 702.47): the spliced cards' text is a tail that runs after the main spell's own
         // effects (CR 702.47b). Its targets were appended to the end of the flat list at cast time, so
         // the same tail is peeled off here — the main spell must see only its own targets, or an effect
@@ -401,6 +403,7 @@ internal class NonPermanentSpellResolver(
             }
         }
 
+        val cipherCreatureId = newState.getEntity(spellId)?.get<CipherEncodeChoiceComponent>()?.creatureId
         val destination = decideDestination(state, newState, spellId, spellComponent, cardDef, resolvedScript)
         val intendedDestination = destination.intendedZone
 
@@ -422,6 +425,7 @@ internal class NonPermanentSpellResolver(
                 .without<com.wingedsheep.engine.state.components.identity.PlayWithCostReductionComponent>()
                 .without<com.wingedsheep.engine.state.components.identity.PlayWithFixedAlternativeManaCostComponent>()
                 .without<AfterResolveDestinationComponent>()
+                .without<CipherEncodeChoiceComponent>()
         }
         newState = newState.removeMayPlayPermissionsForCard(spellId)
         newState = newState.addToZone(destZoneKey, spellId)
@@ -441,6 +445,11 @@ internal class NonPermanentSpellResolver(
         newState = applyAfterResolveAndRedirectRiders(
             newState, spellId, cardComponent, ownerId, destinationZone, destination, redirect, events
         )
+        // Cipher (CR 702.99a): the card went from the stack straight to exile — encode it there.
+        // A redirect that sent it anywhere else leaves nothing encoded.
+        if (cipherCreatureId != null && destinationZone == Zone.EXILE) {
+            newState = encodeOnCreature(newState, spellId, cipherCreatureId, cardComponent?.name ?: "Unknown")
+        }
 
         events.add(
             ZoneChangeEvent(
@@ -480,6 +489,11 @@ internal class NonPermanentSpellResolver(
         cardDef: com.wingedsheep.sdk.model.CardDefinition?,
         resolvedScript: com.wingedsheep.sdk.model.CardScript?
     ): SpellDestination {
+        // Cipher (CR 702.99a): the spell's own last instruction exiles the card. That is not a
+        // replacement of "put it into its owner's graveyard", so the graveyard riders below
+        // (rebound, an AfterResolveDestination rider) have nothing to replace, and flashback's
+        // "exile it instead" agrees with it.
+        val cipherExile = newState.getEntity(spellId)?.has<CipherEncodeChoiceComponent>() == true
         val selfExile = resolvedScript?.selfExileOnResolve == true
         // A graveyard cast paid with flashback or beam me up (the recorded cost — see
         // StackExitRider), or one with flashback (printed or granted — Archmage's Newt) or Harmonize
@@ -492,6 +506,7 @@ internal class NonPermanentSpellResolver(
             ) != null ||
                 HarmonizeGrants.effectiveHarmonize(state, spellId, cardDef) != null)
         val exileAfterResolveComp = newState.getEntity(spellId)?.get<AfterResolveDestinationComponent>()
+            ?.takeUnless { cipherExile }
         // Adventure face (CR 715.3d): when an Adventure resolves, exile it instead of putting
         // it in its owner's graveyard, and grant the caster permission to cast it as the
         // creature spell while it remains exiled.
@@ -507,7 +522,7 @@ internal class NonPermanentSpellResolver(
         val selfShuffleIntoLibrary = resolvedScript?.selfShuffleIntoLibraryOnResolve == true
         // Rebound (CR 702.88): a spell cast from hand that has rebound (printed or granted) exiles
         // on resolution instead of going to the graveyard, and arms a next-upkeep free recast.
-        val reboundExile = spellComponent.castFromZone == Zone.HAND &&
+        val reboundExile = !cipherExile && spellComponent.castFromZone == Zone.HAND &&
             spellHasRebound(newState, spellId, cardDef)
         // Not a plain priority order, because the underlying replacements aren't totally ordered:
         // the rider loses to the printed self-shuffle clause, the self-shuffle clause loses to
@@ -523,6 +538,7 @@ internal class NonPermanentSpellResolver(
         // Countered and fizzled spells really are put into a graveyard, and those paths don't read
         // the self-shuffle flag at all, so every clause here applies to them as usual.
         val intendedDestination = when {
+            cipherExile -> Zone.EXILE
             // The rider is the most specific instruction on this one spell, so it outranks the
             // card-intrinsic exile reasons below rather than being OR'd into them — it is the only
             // one that can send the card somewhere other than exile (Kylox's Voltstrider — "put it
@@ -674,6 +690,61 @@ internal class NonPermanentSpellResolver(
             events.addAll(extraEvents)
         }
         return newState
+    }
+
+    /**
+     * Cipher (CR 702.99a): a resolving cipher spell represented by a card runs
+     * [com.wingedsheep.sdk.scripting.Cipher.encodeStep] just after its other effects. A copy of a
+     * cipher spell has the keyword too, but isn't represented by a card, so it encodes nothing.
+     */
+    private fun withCipherEncodeStep(
+        state: GameState,
+        spellId: EntityId,
+        cardDef: com.wingedsheep.sdk.model.CardDefinition?,
+        spellEffect: Effect
+    ): Effect {
+        if (cardDef?.keywords?.contains(com.wingedsheep.sdk.core.Keyword.CIPHER) != true) return spellEffect
+        if (state.getEntity(spellId)?.has<CopyOfComponent>() == true) return spellEffect
+        return com.wingedsheep.sdk.scripting.effects.CompositeEffect(
+            listOf(spellEffect, com.wingedsheep.sdk.scripting.Cipher.encodeStep)
+        )
+    }
+
+    /**
+     * Encode the just-exiled cipher card on [creatureId] (CR 702.99b): mark the card with the
+     * creature and its own exile object, and grant the creature the cipher trigger for as long as
+     * that holds (CR 702.99c). The grant carries a fresh timestamp — it is the effect of the card's
+     * static ability, which starts now — so a "loses all abilities" effect from later strips it and
+     * one from earlier doesn't (CR 613.7). Nothing is encoded if the creature has left the
+     * battlefield in the meantime.
+     */
+    private fun encodeOnCreature(
+        state: GameState,
+        cardId: EntityId,
+        creatureId: EntityId,
+        cardName: String
+    ): GameState {
+        if (creatureId !in state.getBattlefield()) return state
+        val cardObject = state.objectRef(cardId) ?: return state
+        // Stamp with the current timestamp, then tick, so an effect created later sorts after
+        // this one (the LayerTimestamps convention).
+        return state
+            .updateEntity(cardId) {
+                it.with(
+                    com.wingedsheep.engine.state.components.battlefield.EncodedOnComponent(creatureId, cardObject)
+                )
+            }
+            .copy(
+                grantedTriggeredAbilities = state.grantedTriggeredAbilities +
+                    com.wingedsheep.engine.event.GrantedTriggeredAbility(
+                        entityId = creatureId,
+                        ability = com.wingedsheep.sdk.scripting.Cipher.encodedCardTrigger(cardId, cardName),
+                        duration = com.wingedsheep.sdk.scripting.Duration.WhileSourceEncodedOnAffected,
+                        sourceId = cardId,
+                        timestamp = state.timestamp
+                    )
+            )
+            .tick()
     }
 
     /**

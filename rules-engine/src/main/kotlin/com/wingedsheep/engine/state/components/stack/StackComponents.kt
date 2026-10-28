@@ -770,3 +770,13 @@ data class CastThisWayEntryRiderComponent(
     /** The grant's filters; the permanent enters tapped when it matches every one as it enters. */
     val entersTapped: List<com.wingedsheep.sdk.scripting.GameObjectFilter> = emptyList(),
 ) : Component
+
+/**
+ * Cipher (CR 702.99a): the resolving spell's controller chose to exile it encoded on [creatureId].
+ * Stamped by [com.wingedsheep.engine.handlers.effects.stack.EncodeOnCreatureExecutor] as the last
+ * step of the spell's resolution; `NonPermanentSpellResolver` reads it as the spell leaves the stack
+ * — the card goes straight to exile, never the graveyard — and writes the encoding
+ * ([com.wingedsheep.engine.state.components.battlefield.EncodedOnComponent]) once it lands there.
+ */
+@Serializable
+data class CipherEncodeChoiceComponent(val creatureId: EntityId) : Component

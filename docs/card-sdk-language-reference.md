@@ -13372,6 +13372,23 @@ copy of it (CR 707.10e). The activated-ability analogue of the spell-level `cant
 > `Triggers.you.casts(GameObjectFilter.Instant, requires = setOf(SpellCastPredicate.CastFromZone(Zone.HAND)))`
 > → `GrantKeywordToSpellEffect(Keyword.REBOUND, EffectTarget.TriggeringEntity)`.
 
+> **Cipher** (`Keyword.CIPHER`, CR 702.99). "Then you may exile this spell card encoded on a creature
+> you control. Whenever that creature deals combat damage to a player, its controller may cast a copy
+> of the encoded card without paying its mana cost." A plain `keywords(Keyword.CIPHER)` on the instant
+> or sorcery (**Whispering Madness**) — nothing else to wire. As a cipher spell represented by a card
+> resolves, `NonPermanentSpellResolver` appends `Cipher.encodeStep` after its other effects: gather the
+> creatures you control, choose up to one on the battlefield (no targeting), and the SDK-internal
+> `EncodeOnCreatureEffect(from)` records the pick. The card then leaves the stack straight to exile
+> (never the graveyard — rebound and graveyard riders have nothing to replace), carries
+> `EncodedOnComponent(creature, its exile object)`, and the creature gets `Cipher.encodedCardTrigger`
+> in the triggered-ability grant store with `Duration.WhileSourceEncodedOnAffected` — live while the
+> card is the same object in exile and the creature is on the battlefield (CR 702.99c; a control
+> change keeps it, and the new controller casts the copy). The grant records its layer-6 timestamp,
+> so a *later* "loses all abilities" silences the trigger and an earlier one doesn't. The trigger is
+> `If(EntityMatches(SpecificEntity(card), Any.currentlyIn(EXILE)), May(CopyCardIntoCollection →
+> CastFromCollectionWithoutPayingCost))`, Paradigm's copy-and-cast pipeline; the cast copy isn't
+> represented by a card, so it never encodes. Each encoded card is its own trigger.
+
 > **Umbra armor** (`Keyword.UMBRA_ARMOR`, CR 702.89; printed as "totem armor" before 2023). "If
 > enchanted permanent would be destroyed, instead remove all damage marked on it and destroy this
 > Aura." A plain `keywords(Keyword.UMBRA_ARMOR)` on the **Aura** — nothing else to wire. It is read
@@ -15155,7 +15172,9 @@ helper over it:
 
 The entity role fixes *when* the condition can be answered: `Self` and the enchanted/equipped
 attachment roles evaluate in both resolution and static-ability projection; `ContextTarget`,
-`TriggeringEntity`, and `DiscardedAsCost` are resolution-only (false under projection). Use `Conditions.EntityMatches`
+`TriggeringEntity`, and `DiscardedAsCost` are resolution-only (false under projection).
+`EffectTarget.SpecificEntity` (an engine-pinned object, e.g. cipher's encoded card) is matched
+wherever the object is — projected on the battlefield, printed elsewhere; no card authors it. Use `Conditions.EntityMatches`
 directly only for a role the helpers don't name (e.g. the equipped creature). It is deliberately
 *not* a player check (`TargetIsPlayer`) nor a numeric/tracker check (`Compare`). Any other
 `EffectTarget` role is rejected by the `CardLinter` at card load (§21) — the evaluator can't

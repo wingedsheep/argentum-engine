@@ -708,6 +708,8 @@ val engineSerializersModule = SerializersModule {
         subclass(PreparedSpellCopyComponent::class)
         subclass(SuspendedComponent::class)
         subclass(ParadigmComponent::class)
+        subclass(com.wingedsheep.engine.state.components.battlefield.EncodedOnComponent::class)
+        subclass(com.wingedsheep.engine.state.components.stack.CipherEncodeChoiceComponent::class)
         subclass(CastRecordComponent::class)
         subclass(CastChoicesComponent::class)
 
