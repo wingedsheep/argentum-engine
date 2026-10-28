@@ -65,3 +65,87 @@
         "RED"
     ]
 }
+
+// Pumpkin Bombs
+{
+    "name": "Pumpkin Bombs",
+    "manaCost": "{1}{R}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}, Discard two cards: Draw three cards, then put a fuse counter on this artifact. It deals damage equal to the number of fuse counters on it to target opponent. They gain control of this artifact.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Pumpkin Bombs:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomDiscard",
+                                "count": 2
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "FUSE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "Self",
+                                "numericProperty": {
+                                    "type": "CounterCount",
+                                    "counterType": "FUSE"
+                                }
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GiveControlToTargetPlayer",
+                            "permanent": "Self",
+                            "newController": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "RARE",
+        "artist": "Dan Dos Santos",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6e9a83b6-2881-4ba3-96d4-0fd89110837d.jpg?1783905367"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}

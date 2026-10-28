@@ -192,6 +192,12 @@ value class CounterType(val name: String) {
         val BLIGHT = CounterType("BLIGHT")
         val COIN = CounterType("COIN")
         val FLOOD = CounterType("FLOOD")
+
+        /**
+         * Fuse counter (SPM — Pumpkin Bombs). A pure tally: the artifact deals damage equal to the
+         * number of fuse counters on it, so the bomb hits harder each time it changes hands.
+         */
+        val FUSE = CounterType("FUSE")
         val CHORUS = CounterType("CHORUS")
         val DREAM = CounterType("DREAM")
         val QUEST = CounterType("QUEST")
@@ -940,6 +946,7 @@ value class CounterType(val name: String) {
             BLIGHT,
             COIN,
             FLOOD,
+            FUSE,
             CHORUS,
             DREAM,
             QUEST,
