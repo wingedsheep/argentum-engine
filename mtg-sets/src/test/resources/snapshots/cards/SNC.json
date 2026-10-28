@@ -15801,8 +15801,7 @@
                         "ChosenBySource"
                     ]
                 },
-                "includeManaAbilities": true,
-                "includeLoyaltyAbilities": false,
+                "abilities": "NON_LOYALTY",
                 "spendAsThoughAnyColor": true
             }
         ],

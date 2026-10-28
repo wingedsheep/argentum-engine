@@ -11145,7 +11145,7 @@
                     ],
                     "controllerPredicate": "ControlledByYou"
                 },
-                "includeManaAbilities": true
+                "abilities": "ALL"
             }
         ]
     },

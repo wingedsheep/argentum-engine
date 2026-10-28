@@ -11790,18 +11790,21 @@ staticAbility {
   permanent matching it (projected, reference player = this ability's controller); a graveyard card's
   enters trigger is untouched. Elesh Norn, Mother of Machines → `SuppressEntersTriggers(GameObjectFilter.Permanent,
   abilitiesOf = GameObjectFilter.Permanent.opponentControls())`.
-- `GainActivatedAbilitiesOfPermanents(grantedTo, sourceFilter, includeManaAbilities = false, includeLoyaltyAbilities = true, spendAsThoughAnyColor = false)` —
+- `GainActivatedAbilitiesOfPermanents(grantedTo, sourceFilter, abilities = CopiedAbilities.NON_MANA, spendAsThoughAnyColor = false)` —
   permanents matching `grantedTo` (a `GroupFilter`; use `GroupFilter.source()` for "this permanent")
-  gain copies of the activated abilities of every permanent matching `sourceFilter`. The copy uses
-  the gaining permanent as its source (CR 113.2), so a copied `SacrificeSelf`/`{T}` refers to the
-  gainer. The dynamic, copy-from-other-permanents sibling of `GrantActivatedAbility`. Mana abilities
-  are excluded unless `includeManaAbilities = true`; loyalty abilities are copied unless
-  `includeLoyaltyAbilities = false` ("except for loyalty abilities"). `spendAsThoughAnyColor = true` is "you may spend
+  gain copies of the activated abilities of every permanent matching `sourceFilter` (never their own).
+  The copy uses the gaining permanent as its source (CR 113.7), so a copied `SacrificeSelf`/`{T}` refers
+  to the gainer. The dynamic, copy-from-other-permanents sibling of `GrantActivatedAbility`. `abilities`
+  is the printed clause: `ALL` ("all activated abilities"), `NON_MANA` ("… except mana abilities"),
+  `NON_LOYALTY` ("… except for loyalty abilities"), or `LOYALTY` ("all loyalty abilities"). A copied
+  loyalty ability is the gainer's own: it pays loyalty off the gainer and shares its
+  one-loyalty-ability-per-turn limit (CR 606.3). `spendAsThoughAnyColor = true` is "you may spend
   mana as though it were mana of any color to activate those abilities": each copy's colored pips accept any mana
   (`{C}` stays strict), scoped to the copies so abilities other sources grant the gainer aren't relaxed. (Sharkey, Tyrant of the Shire — "Sharkey has all
   activated abilities of lands your opponents control except mana abilities"; Scheming Fence —
-  `sourceFilter = GameObjectFilter.ChosenBySource`, `includeManaAbilities = true`,
-  `includeLoyaltyAbilities = false`, `spendAsThoughAnyColor = true`.)
+  `sourceFilter = GameObjectFilter.ChosenBySource`, `abilities = CopiedAbilities.NON_LOYALTY`,
+  `spendAsThoughAnyColor = true`; Nicol Bolas, Dragon-God — `sourceFilter = GameObjectFilter.Planeswalker`,
+  `abilities = CopiedAbilities.LOYALTY`.)
 - `SpendManaAsColor(fromColor, toColor, players = Player.You)` — the controller may spend mana of one color as though it were
   another for **any** mana payment (Sunglasses of Urza: `WHITE` → `RED`). `fromColor = null` is "mana" of every
   type — each color **and colorless** — and `toColor = null` is "mana of any color", so

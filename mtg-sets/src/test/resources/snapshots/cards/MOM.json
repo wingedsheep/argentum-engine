@@ -4769,7 +4769,7 @@
                     "scope": "Self"
                 },
                 "sourceFilter": "creature ctrl:opponent",
-                "includeManaAbilities": true,
+                "abilities": "ALL",
                 "spendAsThoughAnyColor": true
             }
         ]

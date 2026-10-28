@@ -99,7 +99,7 @@ class GatherCardsExecutor(
                     ?: return EffectResult.error(state, "Could not resolve player for GatherCards")
                 val allCards = playerIds.flatMap { playerId ->
                     if (source.zone == Zone.SIDEBOARD && state.isPlayerControlledByEffect(playerId)) emptyList()
-                    else state.getZone(ZoneKey(playerId, source.zone))
+                    else zoneCards(state, playerId, source.zone)
                 }
                 val filtered = if (source.filter != GameObjectFilter.Any) {
                     filterRead = allCards
@@ -128,7 +128,7 @@ class GatherCardsExecutor(
                 val allCards = playerIds.flatMap { playerId ->
                     source.zones.flatMap { zone ->
                         if (zone == Zone.SIDEBOARD && state.isPlayerControlledByEffect(playerId)) emptyList()
-                        else state.getZone(ZoneKey(playerId, zone)).map { it to zone }
+                        else zoneCards(state, playerId, zone).map { it to zone }
                     }
                 }
                 if (source.filter != GameObjectFilter.Any) {
@@ -561,6 +561,15 @@ class GatherCardsExecutor(
         is CardSource.FromMultipleZones -> source.zones.any { it == Zone.LIBRARY }
         else -> false
     }
+
+    /**
+     * A player's cards in [zone]. The battlefield is nobody's zone: its "cards" of a player are the
+     * permanents that player controls (projected — a stolen permanent counts for its controller),
+     * matching how [CardSource.FromZone] / [CardSource.FromMultipleZones] describe it.
+     */
+    private fun zoneCards(state: GameState, playerId: EntityId, zone: Zone): List<EntityId> =
+        if (zone == Zone.BATTLEFIELD) state.controlledBattlefield(playerId)
+        else state.getZone(ZoneKey(playerId, zone))
 
     private fun resolvePlayer(player: Player, context: EffectContext, state: GameState): com.wingedsheep.sdk.model.EntityId? =
         TargetResolutionUtils.resolvePlayerRef(player, context, state) ?: context.controllerId

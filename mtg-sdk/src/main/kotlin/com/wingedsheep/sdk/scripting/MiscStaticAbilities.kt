@@ -1111,6 +1111,34 @@ data class PreventActivatedAbilities(
 }
 
 /**
+ * Which activated abilities a [GainActivatedAbilitiesOfPermanents] copies off its donors — the
+ * printed clause after "has all … abilities of": every one, all but mana abilities (CR 605), all
+ * but loyalty abilities (CR 606), or only the loyalty abilities.
+ */
+@Serializable
+enum class CopiedAbilities {
+    /** "all activated abilities" — Marvin, Murderous Mimic; Drana and Linvala. */
+    ALL,
+
+    /** "all activated abilities … except mana abilities" — Sharkey, Tyrant of the Shire. */
+    NON_MANA,
+
+    /** "all activated abilities … except for loyalty abilities" — Scheming Fence. */
+    NON_LOYALTY,
+
+    /** "all loyalty abilities" — Nicol Bolas, Dragon-God. */
+    LOYALTY;
+
+    /** Whether an ability of this mana/loyalty shape is among the copied ones. */
+    fun includes(isManaAbility: Boolean, isLoyaltyAbility: Boolean): Boolean = when (this) {
+        ALL -> true
+        NON_MANA -> !isManaAbility
+        NON_LOYALTY -> !isLoyaltyAbility
+        LOYALTY -> isLoyaltyAbility
+    }
+}
+
+/**
  * Permanents matching [grantedTo] gain copies of the activated abilities of every permanent
  * matching [sourceFilter] (CR 113.7; the copy uses the gaining permanent as its source, so
  * "this permanent" / `SacrificeSelf` / `{T}` in a copied ability refer to the gainer).
@@ -1119,7 +1147,10 @@ data class PreventActivatedAbilities(
  * opponents control except mana abilities") and is the dynamic, copy-from-other-permanents
  * sibling of [GrantActivatedAbility] (which grants one fixed authored ability). For Sharkey:
  * `grantedTo = GroupFilter.source()`, `sourceFilter = GameObjectFilter.Land.opponentControls()`,
- * `includeManaAbilities = false`.
+ * `abilities = CopiedAbilities.NON_MANA`. Nicol Bolas, Dragon-God ("has all loyalty abilities of
+ * all other planeswalkers on the battlefield") is `sourceFilter = GameObjectFilter.Planeswalker`,
+ * `abilities = CopiedAbilities.LOYALTY` — a copied loyalty ability is the gainer's own (CR 606.3:
+ * it shares the gainer's one-loyalty-ability-per-turn limit and pays loyalty off the gainer).
  *
  * The engine recomputes the gained set continuously from projected state, so the gainer's
  * abilities track opponents' lands entering/leaving the battlefield. Both the legal-action
@@ -1130,11 +1161,9 @@ data class PreventActivatedAbilities(
  *   permanent", or a battlefield-scoped filter for a group).
  * @property sourceFilter Which permanents' printed activated abilities are copied (matched via
  *   projected state).
- * @property includeManaAbilities When false (default), mana abilities are not copied — the
- *   "except mana abilities" clause. Set true to copy every activated ability.
- * @property includeLoyaltyAbilities When false, loyalty abilities (CR 606) are not copied — the
- *   "except for loyalty abilities" clause of Scheming Fence. Defaults to true: "all activated
- *   abilities" includes them.
+ * @property abilities Which of the donors' activated abilities are copied — the printed
+ *   "except mana abilities" / "except for loyalty abilities" / "all loyalty abilities" clause.
+ *   Defaults to [CopiedAbilities.NON_MANA].
  * @property spendAsThoughAnyColor When true, "you may spend mana as though it were mana of any color
  *   to activate those abilities" (Drana and Linvala, Scheming Fence): the copies' colored, hybrid and
  *   Phyrexian requirements accept any mana, while a `{C}` pip still demands colorless mana. Scoped to
@@ -1146,14 +1175,17 @@ data class PreventActivatedAbilities(
 data class GainActivatedAbilitiesOfPermanents(
     val grantedTo: GroupFilter,
     val sourceFilter: GameObjectFilter,
-    val includeManaAbilities: Boolean = false,
-    val includeLoyaltyAbilities: Boolean = true,
+    val abilities: CopiedAbilities = CopiedAbilities.NON_MANA,
     val spendAsThoughAnyColor: Boolean = false
 ) : StaticAbility {
     override val description: String =
-        "${grantedTo.description} ${if (grantedTo.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self) "has" else "have"} all activated abilities of ${sourceFilter.description}" +
-            listOfNotNull("mana".takeIf { !includeManaAbilities }, "loyalty".takeIf { !includeLoyaltyAbilities })
-                .takeIf { it.isNotEmpty() }?.joinToString(" or ", prefix = " except ", postfix = " abilities").orEmpty() +
+        "${grantedTo.description} ${if (grantedTo.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self) "has" else "have"} all " +
+            "${if (abilities == CopiedAbilities.LOYALTY) "loyalty" else "activated"} abilities of ${sourceFilter.description}" +
+            when (abilities) {
+                CopiedAbilities.NON_MANA -> " except mana abilities"
+                CopiedAbilities.NON_LOYALTY -> " except loyalty abilities"
+                CopiedAbilities.ALL, CopiedAbilities.LOYALTY -> ""
+            } +
             if (spendAsThoughAnyColor) ". You may spend mana as though it were mana of any color to activate those abilities" else ""
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newGrantedTo = grantedTo.applyTextReplacement(replacer)

@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersWithChoice
+import com.wingedsheep.sdk.scripting.CopiedAbilities
 import com.wingedsheep.sdk.scripting.GainActivatedAbilitiesOfPermanents
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
@@ -45,8 +46,7 @@ val SchemingFence = card("Scheming Fence") {
         ability = GainActivatedAbilitiesOfPermanents(
             grantedTo = GroupFilter.source(),
             sourceFilter = GameObjectFilter.ChosenBySource,
-            includeManaAbilities = true,
-            includeLoyaltyAbilities = false,
+            abilities = CopiedAbilities.NON_LOYALTY,
             spendAsThoughAnyColor = true
         )
     }

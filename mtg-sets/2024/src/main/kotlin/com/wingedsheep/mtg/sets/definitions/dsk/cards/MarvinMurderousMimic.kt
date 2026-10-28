@@ -2,6 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.dsk.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.CopiedAbilities
 import com.wingedsheep.sdk.scripting.GainActivatedAbilitiesOfPermanents
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -17,7 +18,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
  *
  * Modeled with [GainActivatedAbilitiesOfPermanents]: `grantedTo = GroupFilter.source()` (Marvin
  * himself gains the abilities), `sourceFilter = creatures you control not named "Marvin,
- * Murderous Mimic"`, and `includeManaAbilities = true` because the oracle text says *all*
+ * Murderous Mimic"`, and `abilities = CopiedAbilities.ALL` because the oracle text says *all*
  * activated abilities (no "except mana abilities" clause, unlike Sharkey). The engine recomputes
  * the gained set continuously from projected state, so the abilities track your other creatures
  * entering/leaving and copies/tokens named Marvin are correctly excluded by the name predicate.
@@ -34,7 +35,7 @@ val MarvinMurderousMimic = card("Marvin, Murderous Mimic") {
         ability = GainActivatedAbilitiesOfPermanents(
             grantedTo = GroupFilter.source(),
             sourceFilter = GameObjectFilter.Creature.youControl().notNamed("Marvin, Murderous Mimic"),
-            includeManaAbilities = true
+            abilities = CopiedAbilities.ALL
         )
     }
 

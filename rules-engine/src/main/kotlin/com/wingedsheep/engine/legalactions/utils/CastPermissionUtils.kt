@@ -1726,8 +1726,8 @@ class CastPermissionUtils(
      * Resolve [com.wingedsheep.sdk.scripting.GainActivatedAbilitiesOfPermanents] grants for
      * [entityId]: for every battlefield permanent bearing this static whose `grantedTo` filter
      * matches [entityId], copy the printed activated abilities of every permanent matching its
-     * `sourceFilter` (dropping mana abilities unless `includeManaAbilities`, and loyalty abilities
-     * when `includeLoyaltyAbilities` is off; with `spendAsThoughAnyColor`, each copy's colored mana
+     * `sourceFilter` (only the kinds its `abilities` names — all, non-mana, non-loyalty, or only
+     * loyalty abilities; with `spendAsThoughAnyColor`, each copy's colored mana
      * requirements are relaxed so any mana pays them — `{C}` stays strict). The granter is the
      * permanent bearing the static (e.g., Sharkey), so a copied ability's `SacrificeSelf` / `{T}`
      * refers to the gainer — CR 113.7 (the source of an ability is the object that generated it).
@@ -1784,8 +1784,7 @@ class CastPermissionUtils(
                     val sourceClassLevel = sourceEntity.get<com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent>()?.currentLevel
                     for (copied in com.wingedsheep.engine.state.components.identity.ownActivatedAbilities(sourceCard, sourceDef, sourceClassLevel)) {
                         if (copied.activateFromZone != com.wingedsheep.sdk.core.Zone.BATTLEFIELD) continue
-                        if (!gain.includeManaAbilities && copied.isManaAbility) continue
-                        if (!gain.includeLoyaltyAbilities && copied.isPlaneswalkerAbility) continue
+                        if (!gain.abilities.includes(copied.isManaAbility, copied.isPlaneswalkerAbility)) continue
                         // "You may spend mana as though it were mana of any color to activate those
                         // abilities" reaches only these copies, not other abilities of the gainer.
                         val granted = if (gain.spendAsThoughAnyColor) {

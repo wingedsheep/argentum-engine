@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.ActivatedAbility
+import com.wingedsheep.sdk.scripting.CopiedAbilities
 import com.wingedsheep.sdk.scripting.GainActivatedAbilitiesOfPermanents
 import com.wingedsheep.sdk.scripting.GrantActivatedAbility
 import com.wingedsheep.sdk.scripting.AbilityId
@@ -39,7 +40,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  * `EntersWithChoice(CREATURE_ON_BATTLEFIELD, permanentFilter = …)`, the Scheming Fence shape:
  *  - the pool is the filter's (nonland permanents of either player), never the entering object;
  *  - `PreventActivatedAbilities(chosenBySource())` locks only the chosen permanent's abilities;
- *  - `GainActivatedAbilitiesOfPermanents(…, includeLoyaltyAbilities = false)` copies its
+ *  - `GainActivatedAbilitiesOfPermanents(…, abilities = CopiedAbilities.NON_LOYALTY)` copies its
  *    activated abilities except loyalty abilities (CR 606), with the gainer as their source;
  *  - its `spendAsThoughAnyColor` lets any mana pay a copied colored pip, but a `{C}` pip still needs
  *    colorless mana (colorless is a type, not a color — CR 106.1a/b), and an ability another source
@@ -71,8 +72,7 @@ class ChosenPermanentAbilityTheftTest : FunSpec({
             ability = GainActivatedAbilitiesOfPermanents(
                 grantedTo = GroupFilter.source(),
                 sourceFilter = GameObjectFilter.ChosenBySource,
-                includeManaAbilities = true,
-                includeLoyaltyAbilities = false,
+                abilities = CopiedAbilities.NON_LOYALTY,
                 spendAsThoughAnyColor = true
             )
         }

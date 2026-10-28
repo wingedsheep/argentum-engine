@@ -3,6 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.mom.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.CopiedAbilities
 import com.wingedsheep.sdk.scripting.GainActivatedAbilitiesOfPermanents
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
@@ -50,7 +51,7 @@ val DranaAndLinvala = card("Drana and Linvala") {
         ability = GainActivatedAbilitiesOfPermanents(
             grantedTo = GroupFilter.source(),
             sourceFilter = GameObjectFilter.Creature.opponentControls(),
-            includeManaAbilities = true,
+            abilities = CopiedAbilities.ALL,
             spendAsThoughAnyColor = true
         )
     }
