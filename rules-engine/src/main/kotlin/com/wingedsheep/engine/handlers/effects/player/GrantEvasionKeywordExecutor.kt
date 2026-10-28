@@ -17,6 +17,7 @@ import com.wingedsheep.sdk.scripting.effects.protectionDescription
 import com.wingedsheep.engine.state.components.player.PlayerShroudComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.ProtectionScope
 import com.wingedsheep.sdk.scripting.effects.GrantEvasionKeywordEffect
 import kotlin.reflect.KClass
 
@@ -53,6 +54,11 @@ class GrantEvasionKeywordExecutor : EffectExecutor<GrantEvasionKeywordEffect> {
                 else -> PlayerEffectRemoval.EndOfTurn
             }
             if (effect.from != null) {
+                // An ability kind is a property of the targeting ability, not of its source, and the
+                // player-side reading only sees the source — reject rather than badge an inert grant.
+                if (effect.from == ProtectionScope.ActivatedAbilities || effect.from == ProtectionScope.TriggeredAbilities) {
+                    return EffectResult.error(state, "A player can't gain hexproof from ${effect.from!!.protectionDescription()}")
+                }
                 val grant = PlayerHexproofFromComponent.Grant(effect.from!!, removeOn)
                 val newState = state.updateEntity(targetId) { container ->
                     val existing = container.get<PlayerHexproofFromComponent>()?.grants.orEmpty()

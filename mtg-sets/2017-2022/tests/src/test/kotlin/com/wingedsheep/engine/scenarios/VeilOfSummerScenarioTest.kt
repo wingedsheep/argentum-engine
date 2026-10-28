@@ -1,6 +1,10 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.core.PassPriority
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.PlayerHexproofFromComponent
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -81,6 +85,38 @@ class VeilOfSummerScenarioTest : ScenarioTestBase() {
                 withClue("a red spell doesn't satisfy \"a blue or black spell\"") {
                     game.handSize(1) shouldBe 0
                 }
+            }
+
+            test("spells you control can't be countered this turn") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Veil of Summer")
+                    .withCardInHand(1, "Lightning Bolt")
+                    .withLandsOnBattlefield(1, "Forest", 1)
+                    .withLandsOnBattlefield(1, "Mountain", 1)
+                    .withCardInHand(2, "Counterspell")
+                    .withLandsOnBattlefield(2, "Island", 2)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Veil of Summer").error shouldBe null
+                game.resolveStack()
+
+                game.castSpellTargetingPlayer(1, "Lightning Bolt", 2).error shouldBe null
+                game.execute(PassPriority(game.player1Id))
+                val bolt = game.state.stack.first { game.state.getEntity(it)?.get<CardComponent>()?.name == "Lightning Bolt" }
+                val counterspell = game.state.getHand(game.player2Id)
+                    .first { game.state.getEntity(it)?.get<CardComponent>()?.name == "Counterspell" }
+                withClue("Counterspell may still target the spell (Veil's third ruling)") {
+                    game.execute(CastSpell(game.player2Id, counterspell, listOf(ChosenTarget.Spell(bolt)))).error shouldBe null
+                }
+                game.resolveStack()
+
+                withClue("the Bolt isn't countered and still deals its damage") {
+                    game.getLifeTotal(2) shouldBe 17
+                }
+                game.isInGraveyard(2, "Counterspell") shouldBe true
             }
         }
     }
