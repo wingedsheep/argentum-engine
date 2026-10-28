@@ -884,6 +884,96 @@
     ]
 }
 
+// Echo of Eons
+{
+    "name": "Echo of Eons",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each player shuffles their hand and graveyard into their library, then draws seven cards.\nFlashback {2}{U} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{2}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromMultipleZones",
+                                    "zones": [
+                                        "Hand",
+                                        "Graveyard"
+                                    ]
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Shuffled"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 7
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "MYTHIC",
+        "artist": "Terese Nielsen",
+        "flavorText": "The present is a matter of perspective.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff590af2-2d6c-4f16-a9b8-1a6dab6e9ad5.jpg?1783933147",
+        "rulings": [
+            {
+                "date": "2019-06-14",
+                "text": "Echo of Eons won't be put into your graveyard until after it's finished resolving, which means it won't be shuffled into your library as part of its own effect."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "A spell cast using flashback will always be exiled afterward, whether it resolves, is countered, or leaves the stack in some other way."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Eyekite
 {
     "name": "Eyekite",

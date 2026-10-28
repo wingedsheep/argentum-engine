@@ -1460,6 +1460,69 @@
     ]
 }
 
+// Phyrexian Tyranny
+{
+    "name": "Phyrexian Tyranny",
+    "manaCost": "{U}{B}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a player draws a card, that player loses 2 life unless they pay {2}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Phyrexian Tyranny:1",
+                "trigger": {
+                    "type": "DrawEvent",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{2}"
+                        }
+                    },
+                    "suffer": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "TriggeringPlayer"
+                        }
+                    },
+                    "player": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "flavorText": "\"He is Yawgmoth's reward to me. I shall kill him a hundred times a day.\"\n—Crovax, to Ertai",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e8440ca8-73ca-462b-a735-f6fb3d0de603.jpg?1783945604",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "If more than one card is drawn at a time, this triggers for each card drawn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Pygmy Kavu
 {
     "name": "Pygmy Kavu",

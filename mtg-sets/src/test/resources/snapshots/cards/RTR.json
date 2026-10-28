@@ -1857,6 +1857,96 @@
     ]
 }
 
+// Electrickery
+{
+    "name": "Electrickery",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Electrickery deals 1 damage to target creature you don't control.\nOverload {1}{R} (You may cast this spell for its overload cost. If you do, change \"target\" in its text to \"each.\")",
+    "keywords": [
+        "OVERLOAD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Overload",
+            "cost": "{1}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 1
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
+                },
+                "id": "t0"
+            }
+        ],
+        "overloadSpellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": {
+                            "type": "ControllerNot",
+                            "predicate": "ControlledByYou"
+                        }
+                    }
+                }
+            },
+            "body": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "artist": "Greg Staples",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5ed81ee8-d5e4-4127-876e-9bff81f9c726.jpg?1783940356",
+        "rulings": [
+            {
+                "date": "2024-01-12",
+                "text": "Because a spell with overload doesn't target when its overload cost is paid, it may affect permanents with hexproof or with protection from the appropriate color."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "Note that if the spell with overload is dealing damage, protection from that spell's color will still prevent that damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Explosive Impact
 {
     "name": "Explosive Impact",

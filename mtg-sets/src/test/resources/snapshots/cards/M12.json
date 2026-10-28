@@ -296,6 +296,61 @@
     "colorIdentityOverride": []
 }
 
+// Circle of Flame
+{
+    "name": "Circle of Flame",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature without flying attacks you or a planeswalker you control, this enchantment deals 1 damage to that creature.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Circle of Flame:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotKeyword",
+                                "keyword": "FLYING"
+                            }
+                        ],
+                        "statePredicates": [
+                            "IsAttackingYouOrYourPlaneswalkers"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "TriggeringEntity"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "UNCOMMON",
+        "artist": "Jaime Jones",
+        "flavorText": "\"Which do you think is a better deterrent: a moat of water or one of fire?\"\n—Chandra Nalaar",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/419b1813-9760-47b9-b6f3-e501586cfe4d.jpg?1783941072",
+        "rulings": [
+            {
+                "date": "2014-07-18",
+                "text": "Circle of Flame's ability triggers only if a creature without flying is declared as an attacker during the declare attackers step. If a creature with flying attacks you or a planeswalker you control and then loses flying, or if a creature without flying is put onto the battlefield attacking you or a planeswalker you control, the ability won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Dark Favor
 {
     "name": "Dark Favor",

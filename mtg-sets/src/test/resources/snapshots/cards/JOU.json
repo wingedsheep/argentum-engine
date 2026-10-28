@@ -768,6 +768,54 @@
     "colorIdentityOverride": []
 }
 
+// Master of the Feast
+{
+    "name": "Master of the Feast",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Enchantment Creature — Demon",
+    "oracleText": "Flying\nAt the beginning of your upkeep, each opponent draws a card.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Master of the Feast:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "RARE",
+        "artist": "Chris Rahn",
+        "flavorText": "Any pleasure, when taken to excess, becomes torment. It's a formula that demons have perfected.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d528f7a3-0a7b-42e3-8e4f-f1eeab02e23a.jpg?1783939433"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Nyx Weaver
 {
     "name": "Nyx Weaver",

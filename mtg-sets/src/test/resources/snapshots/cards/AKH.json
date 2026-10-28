@@ -211,6 +211,42 @@
     ]
 }
 
+// Blazing Volley
+{
+    "name": "Blazing Volley",
+    "manaCost": "{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Blazing Volley deals 1 damage to each creature your opponents control.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                }
+            },
+            "body": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "artist": "Zezhou Chen",
+        "flavorText": "The arrows fell like fiery rain, and for a moment, the sky itself seemed to burn.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba450179-4591-4e8a-b6ca-66cbef1817f2.jpg?1783936495"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Blighted Bat
 {
     "name": "Blighted Bat",

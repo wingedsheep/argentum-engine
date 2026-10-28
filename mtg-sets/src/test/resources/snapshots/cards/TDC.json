@@ -1286,6 +1286,119 @@
     ]
 }
 
+// Will of the Mardu
+{
+    "name": "Will of the Mardu",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one. If you control a commander as you cast this spell, you may choose both instead.\n• Create a number of 1/1 red Warrior creature tokens equal to the number of creatures target player controls.\n• Will of the Mardu deals damage to target creature equal to the number of creatures you control.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "AggregateBattlefield",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "creature"
+                        },
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "RED"
+                        ],
+                        "creatureTypes": [
+                            "Warrior"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7edc0515-a130-45a7-aa09-0e23bba41587.jpg?1783906783"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Create a 1/1 red Warrior token for each creature target player controls"
+                },
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "creature"
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Deal damage to target creature equal to the number of creatures you control"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1,
+            "dynamicChooseCount": {
+                "type": "Conditional",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsPermanent"
+                        ],
+                        "statePredicates": [
+                            "IsCommander"
+                        ]
+                    }
+                },
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "RARE",
+        "artist": "Tuan Duong Chu",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/6/26f6b519-20ff-4255-926d-5caee6c572d8.jpg?1783907183",
+        "rulings": [
+            {
+                "date": "2025-04-04",
+                "text": "The commander you control doesn't have to be your commander."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "Whether or not you control a commander is determined only once, as you choose the modes for this spell. If you somehow lose control of that commander before you finish casting the spell (perhaps because you sacrifice it to activate a mana ability), it won't change the number of modes chosen."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Will of the Sultai
 {
     "name": "Will of the Sultai",

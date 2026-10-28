@@ -1193,6 +1193,52 @@
     ]
 }
 
+// Font of Mythos
+{
+    "name": "Font of Mythos",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "At the beginning of each player's draw step, that player draws two additional cards.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Font of Mythos:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "DRAW",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "RARE",
+        "artist": "Dave Allsop",
+        "flavorText": "Those who drink from Malfegor's cup are tainted with hunger and stained with lies.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c198caf8-27ab-4300-841b-507e1b0ce9b3.jpg?1783942462",
+        "rulings": [
+            {
+                "date": "2013-04-15",
+                "text": "The triggered ability is put onto the stack after you have already drawn your card for the turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Fusion Elemental
 {
     "name": "Fusion Elemental",

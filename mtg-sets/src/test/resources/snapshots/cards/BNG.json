@@ -469,6 +469,51 @@
     ]
 }
 
+// Scouring Sands
+{
+    "name": "Scouring Sands",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Scouring Sands deals 1 damage to each creature your opponents control. Scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                {
+                    "type": "Scry",
+                    "count": 1
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "artist": "Jonas De Ro",
+        "flavorText": "When Purphoros cleans the ashes from his forge, entire cities vanish.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/273f25fc-9c9f-4b73-a28b-1461d8fcd443.jpg?1783939539"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Stratus Walk
 {
     "name": "Stratus Walk",

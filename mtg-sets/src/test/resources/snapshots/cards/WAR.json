@@ -5335,6 +5335,126 @@
     ]
 }
 
+// Ral, Storm Conduit
+{
+    "name": "Ral, Storm Conduit",
+    "manaCost": "{2}{U}{R}",
+    "typeLine": "Legendary Planeswalker — Ral",
+    "oracleText": "Whenever you cast or copy an instant or sorcery spell, Ral deals 1 damage to target opponent or planeswalker.\n+2: Scry 1.\n−2: When you next cast an instant or sorcery spell this turn, copy that spell. You may choose new targets for the copy.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ral, Storm Conduit:1",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "SpellCastEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "SpellCopiedEvent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponentOrPlaneswalker",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you cast or copy an instant or sorcery spell, Ral deals 1 damage to target opponent or planeswalker."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Ral, Storm Conduit:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Ral, Storm Conduit:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": "CopyNextSpellCast",
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "When you next cast an instant or sorcery spell this turn, copy that spell. You may choose new targets for the copy."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "211",
+        "rarity": "RARE",
+        "artist": "Wesley Burt",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/678ce3bf-152d-45ca-87ae-ad46c921328b.jpg?1783933390",
+        "rulings": [
+            {
+                "date": "2019-05-03",
+                "text": "If an effect copies a spell multiple times, as Finale of Promise may, Ral's first ability triggers that many times."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "If the spell that's copied is modal (that is, it says \"Choose one —\" or the like), the copy created by Ral's last ability will have the same mode or modes. You can't choose different ones."
+            },
+            {
+                "date": "2019-05-03",
+                "text": "The copies that Ral's last ability creates are created on the stack, so they're not \"cast.\" Abilities that trigger when a player casts a spell won't trigger."
+            },
+            {
+                "date": "2019-06-14",
+                "text": "If an effect copies a card rather than a spell (such as that of God-Eternal Kefnet), this doesn't cause Ral's first ability to trigger. That ability will trigger if you cast the copy, however."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Rally of Wings
 {
     "name": "Rally of Wings",

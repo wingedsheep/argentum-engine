@@ -4675,6 +4675,74 @@
     ]
 }
 
+// Shivan Gorge
+{
+    "name": "Shivan Gorge",
+    "manaCost": "",
+    "typeLine": "Legendary Land",
+    "oracleText": "{T}: Add {C}.\n{2}{R}, {T}: Shivan Gorge deals 1 damage to each opponent.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Shivan Gorge:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Shivan Gorge:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{R}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "326",
+        "rarity": "RARE",
+        "artist": "John Matson",
+        "flavorText": "Both forge and pyre.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/1531eb8c-af8a-45c6-9058-3337c44e609f.jpg?1783946297",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "The damage has no color. It is not red."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Shivan Hellkite
 {
     "name": "Shivan Hellkite",

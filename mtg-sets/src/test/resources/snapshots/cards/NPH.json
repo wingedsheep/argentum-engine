@@ -547,6 +547,57 @@
     ]
 }
 
+// Gut Shot
+{
+    "name": "Gut Shot",
+    "manaCost": "{R/P}",
+    "typeLine": "Instant",
+    "oracleText": "Gut Shot deals 1 damage to any target.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 1
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Staples",
+        "flavorText": "\"Down here, we have a more pointed version of the scriptures.\"\n—Urabrask's enforcer",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a54a2a30-b96a-49c7-9151-1f4b0d4a4413.jpg?1783941308",
+        "rulings": [
+            {
+                "date": "2011-06-01",
+                "text": "A card with Phyrexian mana symbols in its mana cost is each color that appears in that mana cost, regardless of how that cost may have been paid."
+            },
+            {
+                "date": "2011-06-01",
+                "text": "To calculate the mana value of a card with Phyrexian mana symbols in its cost, count each Phyrexian mana symbol as 1."
+            },
+            {
+                "date": "2011-06-01",
+                "text": "If you're at 1 life or less, you can't pay 2 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Jin-Gitaxias, Core Augur
 {
     "name": "Jin-Gitaxias, Core Augur",

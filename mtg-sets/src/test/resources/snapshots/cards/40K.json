@@ -168,3 +168,102 @@
         "BLACK"
     ]
 }
+
+// Exalted Flamer of Tzeentch
+{
+    "name": "Exalted Flamer of Tzeentch",
+    "manaCost": "{2}{U}{R}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Sorcerous Inspiration — At the beginning of your upkeep, return an instant or sorcery card at random from your graveyard to your hand.\nFire of Tzeentch — Whenever you cast an instant or sorcery spell, this creature deals 1 damage to each opponent.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Exalted Flamer of Tzeentch:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "instant|sorcery"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "Random",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Sorcerous Inspiration — At the beginning of your upkeep, return an instant or sorcery card at random from your graveyard to your hand."
+            },
+            {
+                "id": "Exalted Flamer of Tzeentch:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                "descriptionOverride": "Fire of Tzeentch — Whenever you cast an instant or sorcery spell, this creature deals 1 damage to each opponent."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "rarity": "RARE",
+        "artist": "Alexey Kruglov",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/47ebc3bc-113f-437c-b60a-9597939d91ea.jpg?1783920852"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
