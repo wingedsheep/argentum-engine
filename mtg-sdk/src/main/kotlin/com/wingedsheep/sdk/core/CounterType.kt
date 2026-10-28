@@ -194,7 +194,7 @@ value class CounterType(val name: String) {
         val FLOOD = CounterType("FLOOD")
 
         /**
-         * Fuse counter (SPM — Pumpkin Bombs). A pure tally: the artifact deals damage equal to the
+         * Fuse counter (SPE — Pumpkin Bombs). A pure tally: the artifact deals damage equal to the
          * number of fuse counters on it, so the bomb hits harder each time it changes hands.
          */
         val FUSE = CounterType("FUSE")
