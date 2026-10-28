@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.OrderObjectsDecision
 import com.wingedsheep.engine.core.OrderedResponse
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -100,6 +101,11 @@ class RelentlessDeadScenarioTest : ScenarioTestBase() {
                 withClue("paying {1} (the Ghoul's mana value) returns the targeted Zombie") {
                     game.isOnBattlefield("Diregraf Ghoul") shouldBe true
                     game.isInGraveyard(1, "Diregraf Ghoul") shouldBe false
+                }
+                withClue("{B} plus the Ghoul's {1} taps both Swamps — the X payment isn't free") {
+                    game.findAllPermanents("Swamp").forEach { swamp ->
+                        game.state.getEntity(swamp)?.has<TappedComponent>() shouldBe true
+                    }
                 }
                 game.isInGraveyard(1, "Grizzly Bears") shouldBe true
             }

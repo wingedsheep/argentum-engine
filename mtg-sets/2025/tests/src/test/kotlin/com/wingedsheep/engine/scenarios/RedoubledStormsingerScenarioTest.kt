@@ -19,7 +19,8 @@ import io.kotest.matchers.shouldBe
  * that entered this turn, create a tapped and attacking token that's a copy of that token. At the
  * beginning of the next end step, sacrifice those tokens."
  *
- * Covers the per-token copy (only tokens that entered this turn, each copied once — the fresh
+ * Covers the per-token copy (only tokens that entered this turn — two Soldiers from an earlier
+ * turn stay uncopied — each copied once — the fresh
  * copies aren't re-iterated), the copies entering tapped and attacking, and the delayed sacrifice
  * removing exactly the copies.
  */
@@ -42,21 +43,32 @@ class RedoubledStormsingerScenarioTest : FunSpec({
         val stormsinger = driver.putCreatureOnBattlefield(attacker, "Redoubled Stormsinger")
         driver.removeSummoningSickness(stormsinger)
 
+        fun raiseTheAlarm() {
+            val alarm = driver.putCardInHand(attacker, "Raise the Alarm")
+            driver.giveMana(attacker, Color.WHITE, 2)
+            driver.castSpell(attacker, alarm)
+            driver.bothPass()
+        }
+
+        // Two Soldiers made on an earlier turn: still creature tokens, but they didn't enter this turn.
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
-        val alarm = driver.putCardInHand(attacker, "Raise the Alarm")
-        driver.giveMana(attacker, Color.WHITE, 2)
-        driver.castSpell(attacker, alarm)
-        driver.bothPass()
+        raiseTheAlarm()
+        val oldTokens = driver.soldierTokens(attacker)
+        oldTokens.size shouldBe 2
+
+        driver.passPriorityUntil(Step.END)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN, attacker)
+        raiseTheAlarm()
 
         val originals = driver.soldierTokens(attacker)
-        originals.size shouldBe 2
+        originals.size shouldBe 4
 
         driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
         driver.declareAttackers(attacker, listOf(stormsinger), defender)
         driver.bothPass() // resolve the attack trigger
 
         val copies = driver.soldierTokens(attacker) - originals.toSet()
-        withClue("One copy per token that entered this turn, and no copies of the copies") {
+        withClue("One copy per token that entered this turn (not the earlier-turn ones), and no copies of the copies") {
             copies.size shouldBe 2
         }
         copies.forEach { copy ->
