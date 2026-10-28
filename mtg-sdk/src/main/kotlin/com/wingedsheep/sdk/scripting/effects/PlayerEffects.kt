@@ -6,6 +6,8 @@ import com.wingedsheep.sdk.core.TurnPart
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.GrantHexproofFromToGroup
+import com.wingedsheep.sdk.scripting.ProtectionScope
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -1002,19 +1004,38 @@ data object GameIsDrawEffect : Effect {
  * [com.wingedsheep.sdk.dsl.Effects.GrantShroud] / [com.wingedsheep.sdk.dsl.Effects.GrantHexproof]
  * facades rather than constructing it directly.
  *
+ * [from] narrows hexproof to "hexproof from [quality]" (CR 702.11d) — Veil of Summer's "You and
+ * permanents you control gain hexproof from blue and from black". A permanent gets the same
+ * projected `HEXPROOF_FROM_*` keywords a printed hexproof-from carries; a player gets the scopes on
+ * a player component the targeting rules read against each spell's or ability's source, opponents
+ * only. Null is full hexproof (or shroud), the old behaviour.
+ *
  * @param keyword The protection keyword to grant — [Keyword.SHROUD] or [Keyword.HEXPROOF].
  * @param target The entity to grant the keyword to (player, creature, or planeswalker).
  * @param duration How long the grant lasts.
+ * @param from The quality the hexproof is from; null for full hexproof. Only with [Keyword.HEXPROOF].
  */
 @SerialName("GrantEvasionKeyword")
 @Serializable
 data class GrantEvasionKeywordEffect(
     val keyword: Keyword,
     val target: EffectTarget = EffectTarget.Controller,
-    val duration: Duration = Duration.EndOfTurn
+    val duration: Duration = Duration.EndOfTurn,
+    val from: ProtectionScope? = null
 ) : Effect {
-    override val description: String =
-        "${target.description.replaceFirstChar { it.uppercase() }} gains ${keyword.displayName.lowercase()} ${duration.description}"
+    init {
+        if (from != null) {
+            require(keyword == Keyword.HEXPROOF) { "GrantEvasionKeyword.from only narrows hexproof, not $keyword" }
+            require(GrantHexproofFromToGroup.isSupported(from)) { "GrantEvasionKeyword has no hexproof keyword for $from" }
+        }
+    }
+
+    override val description: String = buildString {
+        val verb = if (target == EffectTarget.Controller) "gain" else "gains"
+        append("${target.description.replaceFirstChar { it.uppercase() }} $verb ${keyword.displayName.lowercase()}")
+        if (from != null) append(" from ${from.protectionDescription()}")
+        append(" ${duration.description}")
+    }
 }
 
 /**
@@ -1175,7 +1196,7 @@ data class GrantSpellsCantBeCounteredEffect(
     val duration: Duration = Duration.EndOfTurn
 ) : Effect {
     override val description: String =
-        "${spellFilter.description} spells ${target.description} cast${if (duration == Duration.Permanent) "" else " ${duration.description}"} can't be countered"
+        "${if (spellFilter == GameObjectFilter.Any) "" else "${spellFilter.description} "}spells ${target.description} cast${if (duration == Duration.Permanent) "" else " ${duration.description}"} can't be countered"
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newFilter = spellFilter.applyTextReplacement(replacer)

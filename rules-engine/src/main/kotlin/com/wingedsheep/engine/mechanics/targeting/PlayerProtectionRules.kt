@@ -5,6 +5,7 @@ import com.wingedsheep.engine.mechanics.ControllerGrants
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.GrantsControllerProtectionComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.player.PlayerHexproofFromComponent
 import com.wingedsheep.engine.state.components.player.PlayerProtectionComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ProtectionScope
@@ -54,6 +55,32 @@ object PlayerProtectionRules {
                 } == true
         }
     }
+
+    /**
+     * True if [playerId] has "hexproof from [quality]" (CR 702.11d, [PlayerHexproofFromComponent])
+     * against the source [sourceId] controlled by [casterId] — Veil of Summer. Hexproof never
+     * stops the player's own spells and abilities, and an unknown source matches no quality.
+     */
+    fun hasHexproofFromSource(state: GameState, playerId: EntityId, sourceId: EntityId?, casterId: EntityId?): Boolean {
+        val grants = state.getEntity(playerId)?.get<PlayerHexproofFromComponent>()?.grants ?: return false
+        if (casterId == null || casterId == playerId || sourceId == null) return false
+        return grants.any { scopeMatchesSource(state, playerId, it.scope, sourceId, casterId) }
+    }
+
+    /**
+     * Whether [sourceId] (controlled by [casterId]) can't target [playerId] for a source-dependent
+     * reason: protection (CR 702.16) or hexproof from a quality (CR 702.11d). Full hexproof and
+     * shroud don't depend on the source and are checked separately. Targeting reads this; damage
+     * and attachment read [isProtectedFromSource], since hexproof only stops targeting.
+     */
+    fun blocksTargeting(
+        state: GameState,
+        playerId: EntityId,
+        sourceId: EntityId?,
+        casterId: EntityId?,
+        predicateEvaluator: PredicateEvaluator
+    ): Boolean = isProtectedFromSource(state, playerId, sourceId, casterId, predicateEvaluator) ||
+        hasHexproofFromSource(state, playerId, sourceId, casterId)
 
     private fun scopeMatchesSource(
         state: GameState,

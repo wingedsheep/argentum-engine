@@ -858,6 +858,27 @@ data class PlayerHexproofComponent(
 ) : Component
 
 /**
+ * "Hexproof from [quality]" on a player (CR 702.11d) — Veil of Summer's "You … gain hexproof from
+ * blue and from black until end of turn". The player can't be the target of spells or abilities
+ * their opponents control whose source matches any granted scope; unlike full hexproof
+ * ([PlayerHexproofComponent]) every other source may still target them. Read by
+ * [com.wingedsheep.engine.mechanics.targeting.PlayerProtectionRules.hasHexproofFromSource].
+ *
+ * Each grant keeps its own [Grant.removeOn], so an end-of-turn grant layered over a lasting one
+ * still expires on time.
+ */
+@Serializable
+data class PlayerHexproofFromComponent(
+    val grants: List<Grant> = emptyList()
+) : Component {
+    @Serializable
+    data class Grant(
+        val scope: com.wingedsheep.sdk.scripting.ProtectionScope,
+        val removeOn: PlayerEffectRemoval = PlayerEffectRemoval.EndOfTurn
+    )
+}
+
+/**
  * Marks a player as having protection from each quality in [scopes] (CR 702.16).
  *
  * Player-level protection (The One Ring's "you gain protection from everything until

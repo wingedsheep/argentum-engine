@@ -107,6 +107,7 @@ import com.wingedsheep.engine.state.components.player.OpponentCreaturesExiledThi
 import com.wingedsheep.engine.state.components.player.PlayerEffectRemoval
 import com.wingedsheep.engine.state.components.player.MayCastCreaturesFromGraveyardWithForageComponent
 import com.wingedsheep.engine.state.components.player.PlayerHexproofComponent
+import com.wingedsheep.engine.state.components.player.PlayerHexproofFromComponent
 import com.wingedsheep.engine.state.components.player.PlayerShroudComponent
 import com.wingedsheep.engine.state.components.player.SpellsCantBeCounteredComponent
 import com.wingedsheep.engine.state.components.player.PlayerTurnHijackedComponent
@@ -857,6 +858,12 @@ class CleanupPhaseManager(
                 val hexproof = result.get<PlayerHexproofComponent>()
                 if (hexproof?.removeOn == PlayerEffectRemoval.EndOfTurn) {
                     result = result.without<PlayerHexproofComponent>()
+                }
+                val hexproofFrom = result.get<PlayerHexproofFromComponent>()
+                if (hexproofFrom != null && hexproofFrom.grants.any { it.removeOn == PlayerEffectRemoval.EndOfTurn }) {
+                    val lasting = hexproofFrom.grants.filter { it.removeOn != PlayerEffectRemoval.EndOfTurn }
+                    result = if (lasting.isEmpty()) result.without<PlayerHexproofFromComponent>()
+                        else result.with(PlayerHexproofFromComponent(lasting))
                 }
                 val protection = result.get<PlayerProtectionComponent>()
                 if (protection?.removeOn == PlayerEffectRemoval.EndOfTurn) {

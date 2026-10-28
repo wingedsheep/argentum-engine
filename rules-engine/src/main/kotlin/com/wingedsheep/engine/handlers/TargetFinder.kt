@@ -155,7 +155,7 @@ class TargetFinder(
         val zoneLocks by lazy(LazyThreadSafetyMode.NONE) { UntargetableByRules.zoneLocks(state) }
         return candidates.filter { id ->
             if (id in state.turnOrder) {
-                !PlayerProtectionRules.isProtectedFromSource(
+                !PlayerProtectionRules.blocksTargeting(
                     state, id, sourceId, controllerId, predicateEvaluator = predicateEvaluator
                 )
             } else {

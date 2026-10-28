@@ -18,6 +18,8 @@ import com.wingedsheep.engine.state.components.battlefield.*
 import com.wingedsheep.engine.state.components.combat.MustAttackPlayerComponent
 import com.wingedsheep.engine.state.components.identity.*
 import com.wingedsheep.engine.state.components.player.*
+import com.wingedsheep.sdk.scripting.ProtectionScope
+import com.wingedsheep.sdk.scripting.effects.protectionDescription
 import com.wingedsheep.engine.view.ClientEffectProgress
 import com.wingedsheep.engine.view.ClientPlayerEffect
 import com.wingedsheep.sdk.core.Step
@@ -535,6 +537,24 @@ internal class PlayerActiveEffectsProjector(
                     effectId = "player_hexproof",
                     name = "Hexproof",
                     description = "You have hexproof (you can't be the target of spells or abilities your opponents control)",
+                    icon = "shield"
+                )
+            )
+        }
+        // Hexproof from a quality (Veil of Summer) — badged separately, since full hexproof above
+        // already covers every source when both are present.
+        container.get<PlayerHexproofFromComponent>()?.grants?.takeIf { it.isNotEmpty() }?.let { grants ->
+            // "from blue and from black" (CR 702.11f): a color set reads as one quality per color.
+            val qualities = grants.flatMap { grant ->
+                (grant.scope as? ProtectionScope.Colors)?.colors?.map { it.name.lowercase() }
+                    ?: listOf(grant.scope.protectionDescription())
+            }.distinct()
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "player_hexproof_from",
+                    name = "Hexproof from " + qualities.joinToString(" and from "),
+                    description = "Spells and abilities your opponents control from " +
+                        qualities.joinToString(" or ") + " sources can't target you",
                     icon = "shield"
                 )
             )

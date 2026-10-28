@@ -554,13 +554,13 @@ class TargetEnumerationUtils(
 
     /**
      * True if [playerId] is protected from a source [sourceId] controlled by [casterId]
-     * (CR 702.16) — so the source can't legally target that player (The One Ring).
-     * Delegates to the shared [PlayerProtectionRules] used by the targeting validator and
-     * damage executor.
+     * (CR 702.16, The One Ring) or has hexproof from its quality (CR 702.11d, Veil of Summer) —
+     * so the source can't legally target that player. Delegates to the shared
+     * [PlayerProtectionRules] used by the targeting validator.
      */
     fun playerHasProtectionFrom(state: GameState, playerId: EntityId, sourceId: EntityId?, casterId: EntityId): Boolean =
         com.wingedsheep.engine.mechanics.targeting.PlayerProtectionRules
-            .isProtectedFromSource(state, playerId, sourceId, casterId, predicateEvaluator = predicateEvaluator)
+            .blocksTargeting(state, playerId, sourceId, casterId, predicateEvaluator = predicateEvaluator)
 
     companion object {
         /**

@@ -2074,6 +2074,19 @@ object Effects {
         GrantEvasionKeywordEffect(Keyword.HEXPROOF, target, duration)
 
     /**
+     * Grant "hexproof from [from]" (CR 702.11d) to a target player or permanent — Veil of
+     * Summer's "You … gain hexproof from blue and from black until end of turn"
+     * (`ProtectionScope.Colors(setOf(Color.BLUE, Color.BLACK))`). A player can't be targeted by
+     * matching spells or abilities from matching sources their opponents control; a permanent
+     * gains the projected `HEXPROOF_FROM_*` keywords a printed hexproof-from carries.
+     */
+    fun GrantHexproofFrom(
+        from: ProtectionScope,
+        target: EffectTarget = EffectTarget.Controller,
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = GrantEvasionKeywordEffect(Keyword.HEXPROOF, target, duration, from)
+
+    /**
      * Grant shroud to a target (player or permanent) until end of turn.
      * For players: adds PlayerShroudComponent.
      * For permanents: creates a floating effect granting the Shroud keyword.

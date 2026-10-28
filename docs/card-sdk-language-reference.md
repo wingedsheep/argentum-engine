@@ -2349,6 +2349,17 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   Both are facades lowering onto the player-aware `GrantEvasionKeywordEffect(keyword, target, duration)`:
   for player targets it attaches the matching player protection component; for permanents it grants the
   keyword via a Layer-6 floating effect (like `GrantKeyword`).
+- `GrantHexproofFrom(from, target = Controller, duration = EndOfTurn)` — temporary "hexproof from
+  [quality]" (CR 702.11d) on a player or permanent: the `from: ProtectionScope?` axis of
+  `GrantEvasionKeywordEffect` (null = full hexproof; only with `HEXPROOF`; any scope
+  `GrantHexproofFromToGroup.isSupported` accepts). A permanent gains the same projected `HEXPROOF_FROM_*`
+  keywords a printed hexproof-from carries. A player gets a `PlayerHexproofFromComponent` grant (each grant
+  expires on its own duration) that `PlayerProtectionRules.blocksTargeting` reads against the spell's or
+  ability's source, opponents only — so the player's own spells still target them, a non-matching source
+  still can, and a spell whose player target gains it in response fizzles. Shows as a "Hexproof from …"
+  player badge. **Veil of Summer** — "You and permanents you control gain hexproof from blue and from black
+  until end of turn" — is `GrantHexproofFrom(ProtectionScope.Colors(setOf(BLUE, BLACK)))` then
+  `ForEachInGroup(Filters.Group.permanentsYouControl, GrantHexproofFrom(scope, EffectTarget.IterationEntity))`.
 - `GrantExileOnLeave(target)` — "if it would leave, exile instead".
 - `BecomeBlocking(blocker, attacker)` — establish a block immediately during resolution. Both operands
   are independent symbolic entity references; a noncreature, departed object, nonattacker, attacking

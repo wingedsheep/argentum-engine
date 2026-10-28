@@ -825,6 +825,7 @@ val engineSerializersModule = SerializersModule {
         subclass(PlayerNoMaximumHandSizeComponent::class)
         subclass(PlayerMaximumHandSizeReductionComponent::class)
         subclass(PlayerHexproofComponent::class)
+        subclass(PlayerHexproofFromComponent::class)
         subclass(PlayerProtectionComponent::class)
         subclass(PlayerCantPlayFromHandComponent::class)
         subclass(PlayerShroudComponent::class)

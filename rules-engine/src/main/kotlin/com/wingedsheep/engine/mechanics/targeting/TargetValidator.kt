@@ -495,12 +495,15 @@ class TargetValidator(
         }
         if (error != null) return error
 
-        // Check player-level protection, e.g. The One Ring's "protection from everything" (Rule 702.16).
-        // A protected player can't be the target of a source matching one of its protection scopes.
-        if (target is ChosenTarget.Player &&
-            PlayerProtectionRules.isProtectedFromSource(state, target.playerId, sourceId, casterId, predicateEvaluator = predicateEvaluator)
-        ) {
-            return "Target player has protection from this source"
+        // Check player-level protection, e.g. The One Ring's "protection from everything" (Rule 702.16),
+        // and "hexproof from [quality]" (Veil of Summer, Rule 702.11d): both depend on the source.
+        if (target is ChosenTarget.Player) {
+            if (PlayerProtectionRules.isProtectedFromSource(state, target.playerId, sourceId, casterId, predicateEvaluator = predicateEvaluator)) {
+                return "Target player has protection from this source"
+            }
+            if (PlayerProtectionRules.hasHexproofFromSource(state, target.playerId, sourceId, casterId)) {
+                return "Target player has hexproof from this source"
+            }
         }
 
         // Check hexproof and shroud on permanent targets (Rule 702.11, 702.18)

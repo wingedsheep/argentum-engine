@@ -11,6 +11,9 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.PlayerEffectRemoval
 import com.wingedsheep.engine.state.components.player.PlayerHexproofComponent
+import com.wingedsheep.engine.state.components.player.PlayerHexproofFromComponent
+import com.wingedsheep.engine.mechanics.targeting.HexproofFromRules
+import com.wingedsheep.sdk.scripting.effects.protectionDescription
 import com.wingedsheep.engine.state.components.player.PlayerShroudComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.Duration
@@ -25,6 +28,8 @@ import kotlin.reflect.KClass
  *   keyword via the projection layer), with removal timing derived from the duration.
  * - For permanent targets: creates a Layer-6 floating effect granting the keyword — identical
  *   to what `GrantKeyword` produces.
+ * - With `from` ("hexproof from [quality]", CR 702.11d): a player gets a
+ *   [PlayerHexproofFromComponent] grant; a permanent gets the `HEXPROOF_FROM_*` keywords.
  *
  * Unifies the former `GrantShroudEffect` / `GrantHexproofEffect` pair (SDK effect-atom audit,
  * backlog/2026-06-26 roadmap item #4).
@@ -47,6 +52,14 @@ class GrantEvasionKeywordExecutor : EffectExecutor<GrantEvasionKeywordEffect> {
                 is Duration.Permanent -> PlayerEffectRemoval.Permanent
                 else -> PlayerEffectRemoval.EndOfTurn
             }
+            if (effect.from != null) {
+                val grant = PlayerHexproofFromComponent.Grant(effect.from!!, removeOn)
+                val newState = state.updateEntity(targetId) { container ->
+                    val existing = container.get<PlayerHexproofFromComponent>()?.grants.orEmpty()
+                    container.with(PlayerHexproofFromComponent(existing + grant))
+                }
+                return EffectResult.success(newState)
+            }
             // Each branch calls `with` on its concrete type: `with` is keyed by its reified type
             // parameter, so a `when` that widened both components to `Component` stored them under
             // the `Component` key, where neither `ControllerHexproof` nor `ControllerShroud` (nor
@@ -68,20 +81,26 @@ class GrantEvasionKeywordExecutor : EffectExecutor<GrantEvasionKeywordEffect> {
         val cardComponent = targetContainer.get<CardComponent>()
             ?: return EffectResult.error(state, "Target is not a card")
 
-        val newState = state.addFloatingEffect(
-            layer = Layer.ABILITY,
-            modification = SerializableModification.GrantKeyword(effect.keyword.name),
-            affectedEntities = setOf(targetId),
-            duration = effect.duration,
-            context = context
-        )
+        // "Hexproof from [quality]" projects the same HEXPROOF_FROM_* keywords a printed one does,
+        // so targeting reads a granted quality exactly as it reads a printed one.
+        val keywords = effect.from?.let { HexproofFromRules.keywordsFor(it) } ?: setOf(effect.keyword.name)
+        val newState = keywords.fold(state) { acc, keyword ->
+            acc.addFloatingEffect(
+                layer = Layer.ABILITY,
+                modification = SerializableModification.GrantKeyword(keyword),
+                affectedEntities = setOf(targetId),
+                duration = effect.duration,
+                context = context
+            )
+        }
 
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name } ?: "Unknown"
         val events = listOf(
             KeywordGrantedEvent(
                 targetId = targetId,
                 targetName = cardComponent.name,
-                keyword = effect.keyword.displayName,
+                keyword = effect.from?.let { "${effect.keyword.displayName} from ${it.protectionDescription()}" }
+                    ?: effect.keyword.displayName,
                 sourceName = sourceName
             )
         )

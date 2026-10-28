@@ -3549,6 +3549,106 @@
     ]
 }
 
+// Veil of Summer
+{
+    "name": "Veil of Summer",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Draw a card if an opponent has cast a blue or black spell this turn. Spells you control can't be countered this turn. You and permanents you control gain hexproof from blue and from black until end of turn. (You and they can't be the targets of blue or black spells or abilities your opponents control.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "SpellsCastThisTurn",
+                                "player": "EachOpponent",
+                                "filter": "blue|black"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                {
+                    "type": "GrantSpellsCantBeCountered",
+                    "spellFilter": {}
+                },
+                {
+                    "type": "GrantEvasionKeyword",
+                    "keyword": "HEXPROOF",
+                    "from": {
+                        "type": "ProtectionScope.Colors",
+                        "colors": [
+                            "BLUE",
+                            "BLACK"
+                        ]
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "permanent ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantEvasionKeyword",
+                        "keyword": "HEXPROOF",
+                        "target": "IterationEntity",
+                        "from": {
+                            "type": "ProtectionScope.Colors",
+                            "colors": [
+                                "BLUE",
+                                "BLACK"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "rarity": "UNCOMMON",
+        "artist": "Lake Hurwitz",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aa686c34-1c11-469f-93c2-f9891aea521f.jpg?1783932955",
+        "rulings": [
+            {
+                "date": "2019-07-12",
+                "text": "If your opponents have cast more than one blue or black spell, you still draw only one card as Veil of Summer resolves."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "Veil of Summer has no effect until it resolves. It can be countered."
+            },
+            {
+                "date": "2019-07-12",
+                "text": "A spell or ability that counters spells can still target your spells after Veil of Summer resolves. When that spell or ability resolves, your spell won't be countered, but any additional effects of the countering spell or ability will still happen."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Vilis, Broker of Blood
 {
     "name": "Vilis, Broker of Blood",
