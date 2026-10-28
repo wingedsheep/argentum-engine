@@ -10,7 +10,10 @@ import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimes
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.ChoiceType
+import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.engine.state.components.battlefield.chosenCreatureRef
 import com.wingedsheep.sdk.scripting.PutOntoBattlefieldThen
 import com.wingedsheep.sdk.scripting.references.Player
 
@@ -29,6 +32,38 @@ import com.wingedsheep.sdk.scripting.references.Player
  * actions, trigger detection and priority, as part of the same replacement.
  */
 object EntryRiderReplacements {
+
+    /**
+     * Queue the [EntersWithChoice.then] of the entering permanent's own as-enters creature choice
+     * — "As Deadpool enters, you may exchange his text box and another creature's" — when a
+     * creature was chosen. The pick was made before the permanent entered and is already on it;
+     * what it does with the pick is the rest of that replacement, so it runs from the same queue
+     * as [queue]'s riders: before state-based actions and trigger detection, so the entry's
+     * "when this enters" abilities see the result. [definition] is the card the permanent entered
+     * as (a copy answers the copied card's question). The two seams that record the pick call
+     * this once the permanent is on the battlefield: permanent-spell resolution and the zone
+     * transition for effect-moved permanents.
+     */
+    fun queueOwnChoiceRiders(
+        state: GameState,
+        enteringEntityId: EntityId,
+        controllerId: EntityId,
+        definition: com.wingedsheep.sdk.model.CardDefinition?,
+    ): GameState {
+        val container = state.getEntity(enteringEntityId) ?: return state
+        if (container.chosenCreatureRef() == null) return state
+        val riders = definition?.script?.replacementEffects.orEmpty()
+            .filterIsInstance<EntersWithChoice>()
+            .filter { it.choiceType == ChoiceType.CREATURE_ON_BATTLEFIELD }
+            .mapNotNull { choice ->
+                choice.then?.let {
+                    PendingReplacementRider(effect = it, hostId = enteringEntityId,
+                        controllerId = controllerId, subjectId = enteringEntityId)
+                }
+            }
+        if (riders.isEmpty()) return state
+        return state.copy(pendingReplacementRiders = state.pendingReplacementRiders + riders)
+    }
 
     /**
      * Queue the rider of every [PutOntoBattlefieldThen] on the battlefield that applies to

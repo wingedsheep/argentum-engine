@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.types
 
+import com.wingedsheep.engine.state.components.identity.withTextBoxExchangeSuspended
 import com.wingedsheep.engine.core.CardEntityFactory
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.TransformedEvent
@@ -230,6 +231,16 @@ internal fun setDfcFace(
     entityId: EntityId,
     nextFace: DoubleFacedComponent.Face,
     manaValueOverride: Int? = null,
+): GameState? = state.withTextBoxExchangeSuspended(entityId, cardRegistry) { s ->
+    setOwnDfcFace(s, cardRegistry, entityId, nextFace, manaValueOverride)?.let { it to Unit }
+}?.first
+
+private fun setOwnDfcFace(
+    state: GameState,
+    cardRegistry: CardRegistry,
+    entityId: EntityId,
+    nextFace: DoubleFacedComponent.Face,
+    manaValueOverride: Int?,
 ): GameState? {
     val container = state.getEntity(entityId) ?: return null
     val dfc = container.get<DoubleFacedComponent>() ?: return null

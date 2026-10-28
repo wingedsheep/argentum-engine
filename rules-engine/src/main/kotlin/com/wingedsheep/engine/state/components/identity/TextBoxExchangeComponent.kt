@@ -2,6 +2,8 @@ package com.wingedsheep.engine.state.components.identity
 
 import com.wingedsheep.engine.handlers.effects.copy.withCopyIdentity
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.state.Component
 import com.wingedsheep.engine.state.ComponentContainer
 import kotlinx.serialization.Serializable
@@ -74,4 +76,20 @@ fun ComponentContainer.exchangeRulesTextFor(donor: CardComponent, registry: Card
 fun ComponentContainer.revertTextBoxExchange(registry: CardRegistry): ComponentContainer {
     val exchange = get<TextBoxExchangeComponent>() ?: return this
     return without<TextBoxExchangeComponent>().withCopyIdentity(exchange.ownCard, registry)
+}
+
+/**
+ * Run [change] — a flip or a transform, which rebuild the permanent's identity from its own card —
+ * on [entityId] with its own text, then lay the exchanged text back over the result. The text-changing
+ * effect keeps applying to the same object whichever face is up (CR 613.1c sits above the face
+ * chosen in layer 1). [change] returning null (nothing to do) leaves the state untouched.
+ */
+fun <R> GameState.withTextBoxExchangeSuspended(
+    entityId: EntityId,
+    registry: CardRegistry,
+    change: (GameState) -> Pair<GameState, R>?,
+): Pair<GameState, R>? {
+    val exchange = getEntity(entityId)?.get<TextBoxExchangeComponent>() ?: return change(this)
+    val (changed, result) = change(updateEntity(entityId) { it.revertTextBoxExchange(registry) }) ?: return null
+    return changed.updateEntity(entityId) { it.exchangeRulesTextFor(exchange.textOf, registry) } to result
 }

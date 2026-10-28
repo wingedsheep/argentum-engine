@@ -2869,18 +2869,32 @@ data class EntersWithChoice(
      * the permanent enters either way and only the pick may be empty.
      */
     val mayChooseNothing: Boolean = false,
+    /**
+     * What the permanent then does with the chosen permanent as it enters — the rest of the same
+     * replacement. It runs once the permanent is on the battlefield, before state-based actions,
+     * trigger detection and priority, so the entry's "when this enters" abilities see its result
+     * (CR 614.12). It runs with the entering permanent as source and its controller as "you", the
+     * pick read back through [com.wingedsheep.sdk.scripting.targets.EffectTarget.ChosenCreature];
+     * skipped when nothing was chosen (a declined [mayChooseNothing] pick, or no candidate). Only
+     * [ChoiceType.CREATURE_ON_BATTLEFIELD] honours it. Deadpool, Trading Card: `then =
+     * Effects.ExchangeTextBoxes(EffectTarget.Self, EffectTarget.ChosenCreature)`. Null — the
+     * default — just records the pick for other abilities to read.
+     */
+    val then: Effect? = null,
     override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
         filter = GameObjectFilter.Any,
         to = Zone.BATTLEFIELD
     )
 ) : ReplacementEffect {
     init {
-        require(choiceType == ChoiceType.CREATURE_ON_BATTLEFIELD || (permanentFilter == null && !mayChooseNothing)) {
-            "permanentFilter and mayChooseNothing apply only to ChoiceType.CREATURE_ON_BATTLEFIELD"
+        require(choiceType == ChoiceType.CREATURE_ON_BATTLEFIELD || (permanentFilter == null && !mayChooseNothing && then == null)) {
+            "permanentFilter, mayChooseNothing and then apply only to ChoiceType.CREATURE_ON_BATTLEFIELD"
         }
     }
 
-    override val description: String = when (choiceType) {
+    override val description: String = choiceDescription() + (then?.let { ". ${it.description}" } ?: "")
+
+    private fun choiceDescription(): String = when (choiceType) {
         ChoiceType.COLOR -> {
             val otherThan = if (excludedColors.isEmpty()) "" else
                 " other than " + excludedColors.sortedBy { it.ordinal }.joinToString(" or ") { it.displayName.lowercase() }
@@ -2942,8 +2956,9 @@ data class EntersWithChoice(
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
         val newAppliesTo = appliesTo.applyTextReplacement(replacer)
         val newFilter = permanentFilter?.applyTextReplacement(replacer)
-        return if (newAppliesTo !== appliesTo || newFilter !== permanentFilter)
-            copy(appliesTo = newAppliesTo, permanentFilter = newFilter) else this
+        val newThen = then?.applyTextReplacement(replacer)
+        return if (newAppliesTo !== appliesTo || newFilter !== permanentFilter || newThen !== then)
+            copy(appliesTo = newAppliesTo, permanentFilter = newFilter, then = newThen) else this
     }
 }
 

@@ -196,6 +196,14 @@ internal class PermanentEntry(
         newState = scheduleBlitzSacrifice(newState, spellId, spellComponent, cardComponent, controllerId)
         newState = enterPreparedIfKeyworded(newState, spellId, spellComponent, cardDef, controllerId)
         newState = grantEntryKeywords(newState, spellId, spellComponent, controllerId)
+        // The rest of an as-enters creature choice ("…, you may exchange his text box and another
+        // creature's"), read off the card it entered as: a replacement rider, run before trigger
+        // detection. A face-down entry has no abilities (CR 708.2).
+        if (!spellComponent.castFaceDown) {
+            newState = com.wingedsheep.engine.handlers.effects.EntryRiderReplacements.queueOwnChoiceRiders(
+                newState, spellId, controllerId,
+                newState.getEntity(spellId)?.get<CardComponent>()?.let { cardRegistry.getCard(it.cardDefinitionId) })
+        }
 
         // Entry precedes the counters placed on that battlefield object.
         counterEvents.add(0, ZoneChangeEvent(

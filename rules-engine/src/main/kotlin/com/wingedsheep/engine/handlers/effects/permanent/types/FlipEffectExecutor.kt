@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.types
 
+import com.wingedsheep.engine.state.components.identity.withTextBoxExchangeSuspended
 import com.wingedsheep.engine.handlers.effects.copy.withCopyIdentity
 import com.wingedsheep.engine.handlers.effects.copy.withRestoredFlipSide
 import com.wingedsheep.engine.core.EffectResult
@@ -50,6 +51,14 @@ class FlipEffectExecutor(
  * nothing to flip (not a flip card, not on the battlefield, already flipped).
  */
 internal fun flipPermanent(
+    state: GameState,
+    cardRegistry: CardRegistry,
+    entityId: EntityId
+): Pair<GameState, FlippedEvent>? = state.withTextBoxExchangeSuspended(entityId, cardRegistry) {
+    flipOwnText(it, cardRegistry, entityId)
+}
+
+private fun flipOwnText(
     state: GameState,
     cardRegistry: CardRegistry,
     entityId: EntityId

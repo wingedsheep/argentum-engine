@@ -484,7 +484,7 @@ internal class CardProjector(
             state, entityId, frame.zoneKey, spellOnStack, cardDef, cardComponent,
             frame.viewingPlayerId, frame.isSpectator
         )
-        val faces = facesProjector.project(state, entityId, frame.zoneKey, container, cardComponent, cardDef)
+        val faces = facesProjector.project(state, entityId, frame.zoneKey, container, cardComponent, printedDef)
 
         // Build active effects from floating effects
         val cardEffects = activeEffects.project(state, entityId, frame.projectedState) +

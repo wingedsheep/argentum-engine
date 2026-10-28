@@ -207,16 +207,18 @@ data class BecomeCopyOfLinkedExileEffect(
  * the previous rules text of the other. A layer 3 text-changing effect (CR 613.1c) — names, mana
  * costs, type lines, colors and power/toughness stay where they were; only the abilities move.
  *
- * Both objects must be on the battlefield as the exchange happens; if either isn't, nothing is
- * exchanged (CR 701.12a). The exchange locks in: either permanent leaving the battlefield later
+ * Both objects must be face-up permanents on the battlefield as the exchange happens; if either isn't,
+ * nothing is exchanged (CR 701.12a for one that's gone; a face-down side is an engine limit — offer
+ * only face-up creatures). The exchange locks in: either permanent leaving the battlefield later
  * leaves the other's new text alone, and a permanent that leaves takes back its own printed text
  * (CR 400.7). Granted abilities (layer 6) aren't rules text and stay on the permanent they were
  * granted to. Text-changing effects aren't copiable values (CR 707.2), so a copy of an exchanged
  * permanent copies its printed text.
  *
  * The exchange lasts indefinitely — "As Deadpool enters, you may exchange his text box and another
- * creature's" (Deadpool, Trading Card) runs it from an
- * [com.wingedsheep.sdk.scripting.OnEnterRun] pipeline with [second] the chosen creature. A
+ * creature's" (Deadpool, Trading Card) runs it as the
+ * [com.wingedsheep.sdk.scripting.EntersWithChoice.then] of its as-enters creature choice, with
+ * [second] = [EffectTarget.ChosenCreature]. A
  * duration-bounded exchange ("for as long as this enchantment remains on the battlefield") would
  * need a duration axis; no card asks for one yet.
  *

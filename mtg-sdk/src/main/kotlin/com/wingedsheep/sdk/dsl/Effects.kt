@@ -4497,8 +4497,8 @@ object Effects {
     /**
      * Exchange the text boxes of two permanents (CR 701.12h) — each one's rules text becomes the
      * other's. Indefinite. "As Deadpool enters, you may exchange his text box and another
-     * creature's" is an `OnEnterRun` pipeline: `chooseUpTo(1, gather(creatures, excludeSelf))`, then
-     * `ExchangeTextBoxes(EffectTarget.Self, chosen.asTarget(0))`.
+     * creature's" is the `then` of an `EntersWithChoice(CREATURE_ON_BATTLEFIELD, …)`:
+     * `ExchangeTextBoxes(EffectTarget.Self, EffectTarget.ChosenCreature)`.
      */
     fun ExchangeTextBoxes(
         first: EffectTarget,

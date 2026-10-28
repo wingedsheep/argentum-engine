@@ -17,9 +17,12 @@ import kotlin.reflect.KClass
  * other's previous rules text, read off both before either changes.
  *
  * Nothing is exchanged (CR 701.12a) unless both sides resolve to two different permanents on the
- * battlefield — a declined or empty choice, a side that left first. A face-down side isn't
- * exchanged either: its text is defined by its face-down status, which this engine keeps outside
- * the [CardComponent] the exchange rewrites.
+ * battlefield — a declined or empty choice, a side that left first.
+ *
+ * Not supported: a face-down side. By the rules (CR 708.2a) it has no text to give and would take
+ * the other's, but face-down status here hides the [CardComponent] the exchange rewrites, so the
+ * exchange is refused rather than half-done. Cards offering the choice filter face-down
+ * permanents out (`GameObjectFilter.faceUp()`), so no player picks one and sees nothing happen.
  */
 class ExchangeTextBoxesExecutor(private val cardRegistry: CardRegistry) : EffectExecutor<ExchangeTextBoxesEffect> {
 
@@ -30,8 +33,8 @@ class ExchangeTextBoxesExecutor(private val cardRegistry: CardRegistry) : Effect
         effect: ExchangeTextBoxesEffect,
         context: EffectContext
     ): EffectResult {
-        val firstId = context.resolveTarget(effect.first) ?: return EffectResult.success(state)
-        val secondId = context.resolveTarget(effect.second) ?: return EffectResult.success(state)
+        val firstId = context.resolveTarget(effect.first, state) ?: return EffectResult.success(state)
+        val secondId = context.resolveTarget(effect.second, state) ?: return EffectResult.success(state)
         if (firstId == secondId) return EffectResult.success(state)
         val battlefield = state.getBattlefield()
         if (firstId !in battlefield || secondId !in battlefield) return EffectResult.success(state)

@@ -7,7 +7,8 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.OnEnterRun
+import com.wingedsheep.sdk.scripting.ChoiceType
+import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -18,8 +19,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * At the beginning of your upkeep, you lose 3 life.
  * {3}, Sacrifice this creature: Each other player draws a card.
  *
- * The exchange is part of the entry (an [OnEnterRun] replacement), so it happens before any
- * "when this enters" trigger is checked: choosing nothing keeps Deadpool's own text. Once
+ * The creature is chosen as Deadpool enters ([EntersWithChoice]) and the exchange is the rest of
+ * that replacement, so it happens before any "when this enters" trigger is checked — a donor's
+ * enter ability triggers for Deadpool. Choosing nothing keeps Deadpool's own text. Once
  * exchanged, the other creature carries the upkeep life loss and the sacrifice ability, and
  * Deadpool has that creature's abilities — until either leaves the battlefield.
  */
@@ -32,18 +34,13 @@ val DeadpoolTradingCard = card("Deadpool, Trading Card") {
         "At the beginning of your upkeep, you lose 3 life.\n" +
         "{3}, Sacrifice this creature: Each other player draws a card."
 
+    // Face-down creatures aren't offered: the engine can't exchange text with one yet.
     replacementEffect(
-        OnEnterRun(
-            Effects.Pipeline {
-                val creatures = gather(GameObjectFilter.Creature, excludeSelf = true)
-                val chosen = chooseUpTo(
-                    1,
-                    from = creatures,
-                    useTargetingUI = true,
-                    prompt = "You may exchange Deadpool's text box with another creature's",
-                )
-                run(Effects.ExchangeTextBoxes(EffectTarget.Self, chosen.asTarget(0)))
-            }
+        EntersWithChoice(
+            ChoiceType.CREATURE_ON_BATTLEFIELD,
+            permanentFilter = GameObjectFilter.Creature.faceUp(),
+            mayChooseNothing = true,
+            then = Effects.ExchangeTextBoxes(EffectTarget.Self, EffectTarget.ChosenCreature),
         )
     )
 

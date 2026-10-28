@@ -1053,6 +1053,10 @@ class ZoneTransitionService(
                 // BattlefieldEntry.place because the read must happen *after* applyBattlefieldEntry
                 // wires the controller — only then does projection see the right controller.
                 newState = PermanentEntryTracker.record(newState, destControllerId, entityId, options.simultaneousEntryGroup)
+                if (!options.faceDown && options.entryChoices.isNotEmpty()) {
+                    newState = EntryRiderReplacements.queueOwnChoiceRiders(newState, entityId, destControllerId,
+                        newState.getEntity(entityId)?.get<CardComponent>()?.let { cardRegistry.getCard(it.cardDefinitionId) })
+                }
                 // Handle Saga entering the battlefield (Rule 714.3a)
                 val (sagaState, sagaEvents) = ZoneMovementUtils.applySagaEntryIfNeeded(newState, entityId, predicateEvaluator, entryCounterTotals)
                 newState = sagaState
