@@ -72,13 +72,23 @@ class ReturnNotedExileTappedWithAurasExecutor(private val zones: ZoneTransitionS
         val creatureOwner = ownerOf(state, creatureId)
             ?: return EffectResult.success(clearBookkeeping(state, sourceId))
 
+        // "If this would enter, you may [pay] instead" (EntersOnlyIfPaid) — asked before anything
+        // moves, of the creature and of every Aura returning with it.
+        val auraEntrants = linked.filter { it != creatureId && inExile(it) }
+            .mapNotNull { id -> ownerOf(state, id)?.let { id to it } }
+        com.wingedsheep.engine.handlers.effects.EffectEntryPayments.prepare(
+            state, effect, context, mapOf(creatureId to creatureOwner) + auraEntrants,
+            zones.cardRegistry, zones.predicateEvaluator
+        )?.let { return it }
+
         val events = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
         var newState = state
 
         // 1. Return the creature tapped, under its owner's control, via the canonical pipeline.
         val creatureReturn = zones.moveToZone(
             newState, creatureId, Zone.BATTLEFIELD,
-            options = ZoneEntryOptions(controllerId = creatureOwner, tapped = true)
+            options = ZoneEntryOptions(controllerId = creatureOwner, tapped = true,
+                paidToEnter = com.wingedsheep.engine.handlers.effects.EffectEntryPayments.paid(context, creatureId))
         )
         newState = creatureReturn.state
         events.addAll(creatureReturn.events)
@@ -111,7 +121,8 @@ class ReturnNotedExileTappedWithAurasExecutor(private val zones: ZoneTransitionS
 
                 val auraReturn = zones.moveToZone(
                     newState, auraId, Zone.BATTLEFIELD,
-                    options = ZoneEntryOptions(controllerId = auraOwner)
+                    options = ZoneEntryOptions(controllerId = auraOwner,
+                        paidToEnter = com.wingedsheep.engine.handlers.effects.EffectEntryPayments.paid(context, auraId))
                 )
                 newState = auraReturn.state
                 events.addAll(auraReturn.events)

@@ -79,6 +79,13 @@ class PutOntoBattlefieldAttachedToChosenExecutor(
 
         val controllerId = context.controllerId
 
+        // "If this would enter, you may [pay] instead" (EntersOnlyIfPaid) — asked before the host
+        // is chosen; the answer rides to the host-choice resumer.
+        com.wingedsheep.engine.handlers.effects.EffectEntryPayments.prepare(
+            state, effect, context, mapOf(cardId to controllerId), cardRegistry, zones.predicateEvaluator
+        )?.let { return it }
+        val paidToEnter = com.wingedsheep.engine.handlers.effects.EffectEntryPayments.paid(context, cardId)
+
         // Hosts that match the effect's host filter (e.g. "a creature you control").
         val hostRequirement = TargetObject(filter = TargetFilter(baseFilter = effect.hostFilter))
         var legalHosts = targetFinder.findLegalTargets(
@@ -123,7 +130,7 @@ class PutOntoBattlefieldAttachedToChosenExecutor(
                     ?: return EffectResult.success(state)
                 val transition = zones.moveToZone(
                     state, cardId, Zone.BATTLEFIELD,
-                    ZoneEntryOptions(controllerId = controllerId),
+                    ZoneEntryOptions(controllerId = controllerId, paidToEnter = paidToEnter),
                     fromZone
                 )
                 EffectResult.success(transition.state, transition.events)
@@ -166,7 +173,8 @@ class PutOntoBattlefieldAttachedToChosenExecutor(
 
         val continuation = PutOntoBattlefieldAttachedToChosenContinuation(
             cardId = cardId,
-            controllerId = controllerId
+            controllerId = controllerId,
+            paidToEnter = paidToEnter,
         )
 
         return EffectResult.from(state.suspendForDecision(decision, continuation, emptyList()))

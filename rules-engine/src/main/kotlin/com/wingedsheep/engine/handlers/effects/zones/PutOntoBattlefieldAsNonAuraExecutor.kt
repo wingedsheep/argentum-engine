@@ -46,12 +46,17 @@ class PutOntoBattlefieldAsNonAuraExecutor(
             return EffectResult.success(state)
         }
 
+        // "If this would enter, you may [pay] instead" (EntersOnlyIfPaid) — asked before the move.
+        com.wingedsheep.engine.handlers.effects.EffectEntryPayments.prepare(
+            state, effect, context, mapOf(cardId to context.controllerId), cardRegistry, zones.predicateEvaluator
+        )?.let { return it }
         val chosenPlayer = effect.chosenPlayer?.let { TargetResolutionUtils.resolvePlayerTarget(it, context, state) }
         val moved = zones.moveToZone(
             state, cardId, Zone.BATTLEFIELD,
             ZoneEntryOptions(
                 controllerId = context.controllerId,
                 asNonAura = NonAuraEntry(effect.grantedTriggeredAbilities),
+                paidToEnter = com.wingedsheep.engine.handlers.effects.EffectEntryPayments.paid(context, cardId),
                 entryChoices = chosenPlayer?.let { mapOf(ChoiceSlot.PLAYER to ChoiceValue.EntityChoice(it)) }
                     ?: emptyMap(),
             ),

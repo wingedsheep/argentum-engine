@@ -413,14 +413,20 @@ class ZoneTransitionService(
         }
 
         // "If this would enter, you may [pay] instead. If you don't, put it into its owner's
-        // graveyard" (EntersOnlyIfPaid). The mover asked and paid before the move; a card that
-        // arrives unpaid never enters and goes to the graveyard — through this same service, so a
-        // graveyard replacement (Rest in Peace) still applies to it. A face-down entry has no
-        // abilities (CR 708.2) and a battlefield-to-battlefield move is not an entry.
+        // graveyard" (EntersOnlyIfPaid). Every mover that can meet it asks before the move and
+        // passes the answer (EntryPayment); a card arriving here unpaid was declined or couldn't
+        // pay, so it never enters and goes to the graveyard — through this same service, so a
+        // graveyard replacement (Rest in Peace) still applies. A card already in the graveyard
+        // stays put: it never left, so no replacement can exile it. Read off the card as it would
+        // enter (CR 614.12), copy included. A face-down entry has no abilities (CR 708.2) and a
+        // battlefield-to-battlefield move is not an entry.
         if (actualDestZone == Zone.BATTLEFIELD && fromZone != Zone.BATTLEFIELD &&
             !options.paidToEnter && !options.faceDown &&
-            EntryPayment.costOf(cardRegistry.getCard(cardComponent.cardDefinitionId)) != null
+            EntryPayment.enteringCost(state, entityId, options.entryCopy, cardRegistry, predicateEvaluator) != null
         ) {
+            if (fromZone == Zone.GRAVEYARD) {
+                return ZoneTransitionResult(state, emptyList(), redirectResult, actualDestination = Zone.GRAVEYARD)
+            }
             return moveToZone(state, entityId, Zone.GRAVEYARD, ZoneEntryOptions(), currentZoneKey)
         }
 

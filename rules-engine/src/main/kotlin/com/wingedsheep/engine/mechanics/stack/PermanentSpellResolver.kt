@@ -3,6 +3,7 @@ package com.wingedsheep.engine.mechanics.stack
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
+import com.wingedsheep.engine.handlers.effects.copy.withCopyIdentity
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.registry.CardRegistry
@@ -44,29 +45,12 @@ internal class PermanentSpellResolver(
         state: GameState,
         spellId: EntityId,
         spellComponent: SpellOnStackComponent,
-        cardComponent: CardComponent?,
-        entryPaid: Boolean = false,
+        cardComponent: CardComponent?
     ): ExecutionResult {
         val controllerId = spellComponent.casterId
         val ownerId = cardComponent?.ownerId ?: controllerId
 
         val cardDef = cardComponent?.cardDefinitionId?.let { cardRegistry.getCard(it) }
-        // "If this would enter, you may [pay] instead. If you don't, put it into its owner's
-        // graveyard" (EntersOnlyIfPaid) — asked first: it decides whether the permanent enters at
-        // all, so nothing else about its entry is asked of a card that won't. Unaffordable, it goes
-        // straight to the graveyard.
-        val entryCost = com.wingedsheep.engine.handlers.effects.EntryPayment.costOf(cardDef)
-        if (entryCost != null && !entryPaid && cardComponent != null && !spellComponent.castFaceDown) {
-            if (!com.wingedsheep.engine.handlers.effects.EntryPayment.canPay(
-                    state, controllerId, entryCost, spellId, cardRegistry, predicateEvaluator)
-            ) {
-                return putIntoGraveyardInsteadOfEntering(state, spellId, ownerId)
-            }
-            return com.wingedsheep.engine.handlers.effects.EntryPayment.ask(
-                state, controllerId, spellId, cardComponent.name, entryCost, predicateEvaluator,
-                EntersOnlyIfPaidSpellContinuation(spellId, controllerId, entryCost),
-            )
-        }
         // A granted "they enter as copies of the chosen creature" (Mystic Reflection) is a copy
         // effect too: install it and skip the spell's own copy choice — in either order the
         // permanent would end up a copy of the bound object. Grants copying different objects are
@@ -105,7 +89,7 @@ internal class PermanentSpellResolver(
         if (!paid) {
             return putIntoGraveyardInsteadOfEntering(state, spellId, cardComponent?.ownerId ?: spellComponent.casterId)
         }
-        return resolvePermanentSpell(state, spellId, spellComponent, cardComponent, entryPaid = true)
+        return resolveRemainingEntry(state, spellId, spellComponent, cardComponent, entryPaid = true)
     }
 
     /**
@@ -122,9 +106,18 @@ internal class PermanentSpellResolver(
         // The resolving spell has already been taken off the stack (SpellResolver does that before
         // a permanent spell's entry), so it only needs its stack-only components stripped and a
         // place in its new zone — what [StackExitRider.moveOffStack] does for a spell still there.
-        val name = container.get<CardComponent>()?.name ?: "Unknown"
         val offStack = if (spellId in state.stack) state.removeFromStack(spellId) else state
         var newState = com.wingedsheep.engine.mechanics.CastCharacteristics.end(offStack, spellId)
+        // A spell that took on a copied identity as it would enter (a Clone copying Mox Diamond)
+        // is its printed card again once it goes elsewhere (CR 400.7).
+        val copyOf = container.get<com.wingedsheep.engine.state.components.identity.CopyOfComponent>()
+        copyOf?.originalCardComponent?.let { original ->
+            newState = newState.updateEntity(spellId) { c ->
+                c.withCopyIdentity(original, cardRegistry)
+                    .without<com.wingedsheep.engine.state.components.identity.CopyOfComponent>()
+            }
+        }
+        val name = newState.getEntity(spellId)?.get<CardComponent>()?.name ?: "Unknown"
         newState = newState.updateEntity(spellId) { c ->
             c.without<SpellOnStackComponent>()
                 .without<com.wingedsheep.engine.state.components.identity.TextReplacementComponent>()
@@ -194,11 +187,30 @@ internal class PermanentSpellResolver(
         state: GameState,
         spellId: EntityId,
         spellComponent: SpellOnStackComponent,
-        cardComponent: CardComponent?
+        cardComponent: CardComponent?,
+        entryPaid: Boolean = false,
     ): ExecutionResult {
         val controllerId = spellComponent.casterId
         val ownerId = cardComponent?.ownerId ?: controllerId
         val cardDef = cardComponent?.cardDefinitionId?.let { cardRegistry.getCard(it) }
+        // "If this would enter, you may [pay] instead. If you don't, put it into its owner's
+        // graveyard" (EntersOnlyIfPaid). Asked of the permanent as it would exist on the battlefield
+        // (CR 614.12) — after any entry copy, so a Clone copying Mox Diamond pays and a Mox Diamond
+        // entering as a copy of something else doesn't — and before every other as-enters question,
+        // since it decides whether the permanent enters at all. Unaffordable, it goes straight to
+        // the graveyard.
+        val entryCost = com.wingedsheep.engine.handlers.effects.EntryPayment.costOf(cardDef)
+        if (entryCost != null && !entryPaid && cardComponent != null && !spellComponent.castFaceDown) {
+            if (!com.wingedsheep.engine.handlers.effects.EntryPayment.canPay(
+                    state, controllerId, entryCost, spellId, cardRegistry, predicateEvaluator)
+            ) {
+                return putIntoGraveyardInsteadOfEntering(state, spellId, ownerId)
+            }
+            return com.wingedsheep.engine.handlers.effects.EntryPayment.ask(
+                state, controllerId, spellId, cardComponent.name, entryCost, predicateEvaluator,
+                EntersOnlyIfPaidSpellContinuation(spellId, controllerId, entryCost),
+            )
+        }
         if (cardDef != null && !spellComponent.castFaceDown) {
             pauseForFirstEntersWithChoice(state, spellId, cardComponent, cardDef, controllerId, ownerId)
                 ?.let { return it }

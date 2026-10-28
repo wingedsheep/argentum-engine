@@ -42,6 +42,10 @@ class ReturnSameNamedFromGraveyardExecutor(private val zones: ZoneTransitionServ
             state.getEntity(id)?.get<CardComponent>()?.name == targetName
         }
         if (toReturn.isEmpty()) return EffectResult.success(state)
+        // "If this would enter, you may [pay] instead" (EntersOnlyIfPaid) — asked before anything moves.
+        com.wingedsheep.engine.handlers.effects.EffectEntryPayments.prepare(
+            state, effect, context, toReturn.associateWith { controllerId }, zones.cardRegistry, zones.predicateEvaluator
+        )?.let { return it }
 
         var newState = state
         val events = mutableListOf<GameEvent>()
@@ -50,7 +54,8 @@ class ReturnSameNamedFromGraveyardExecutor(private val zones: ZoneTransitionServ
                 newState,
                 id,
                 Zone.BATTLEFIELD,
-                ZoneEntryOptions(controllerId = controllerId, tapped = true),
+                ZoneEntryOptions(controllerId = controllerId, tapped = true,
+                    paidToEnter = com.wingedsheep.engine.handlers.effects.EffectEntryPayments.paid(context, id)),
                 graveyardKey
             )
             newState = result.state

@@ -159,16 +159,14 @@ class MoveToZoneEffectExecutor(
             return EffectResult.success(state)
         }
 
-        // "If this would enter, you may [pay] instead" (EntersOnlyIfPaid) — asked first, since it
-        // decides whether the card enters at all.
-        if (effect.destination == Zone.BATTLEFIELD && effect.faceDown == null) {
-            com.wingedsheep.engine.handlers.effects.EffectEntryPayments.prepare(
-                state, effect, context, mapOf(targetId to controllerId), cardRegistry, zones.predicateEvaluator
-            )?.let { return it }
-        }
-
         if (effect.destination == Zone.BATTLEFIELD && effect.faceDown == null) {
             com.wingedsheep.engine.handlers.effects.copy.EffectCopyEntry.prepare(
+                state, effect, context, mapOf(targetId to controllerId), cardRegistry, zones.predicateEvaluator
+            )?.let { return it }
+            // "If this would enter, you may [pay] instead" (EntersOnlyIfPaid) — asked once the entry
+            // copy is settled (CR 614.12: of the card as it would exist on the battlefield), and
+            // before anything else, since it decides whether the card enters at all.
+            com.wingedsheep.engine.handlers.effects.EffectEntryPayments.prepare(
                 state, effect, context, mapOf(targetId to controllerId), cardRegistry, zones.predicateEvaluator
             )?.let { return it }
         }

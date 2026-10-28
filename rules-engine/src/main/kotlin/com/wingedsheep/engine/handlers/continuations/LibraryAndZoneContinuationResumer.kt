@@ -437,7 +437,8 @@ class LibraryAndZoneContinuationResumer(
             targetFinder = services.targetFinder
         )
         val (newState, events) = executor.moveAuraToBattlefield(
-            state, continuation.cardId, hostId, continuation.controllerId
+            state, continuation.cardId, hostId, continuation.controllerId,
+            paidToEnter = continuation.paidToEnter,
         )
 
         return checkForMore(newState, events)

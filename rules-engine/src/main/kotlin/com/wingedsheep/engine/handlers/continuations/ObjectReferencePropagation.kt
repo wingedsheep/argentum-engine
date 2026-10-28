@@ -18,6 +18,7 @@ internal fun AnswerContinuation.objectReferences(): ObjectReferenceEnvironment? 
         is PlayLandReplay, null -> null
     }
     is EffectEntryChoiceContinuation -> context.objectReferences
+    is EffectEntryPaymentContinuation -> context.objectReferences
     is EffectDiscardDestinationContinuation -> context.objectReferences
     is EffectDiscardOrderContinuation -> context.objectReferences
     is CounterUnlessPaysContinuation -> objectReferences
@@ -146,6 +147,7 @@ internal fun AnswerContinuation.withObjectReferences(refs: ObjectReferenceEnviro
         is PlayLandReplay, null -> replay
     })
     is EffectEntryChoiceContinuation -> copy(context = context.copy(objectReferences = refs))
+    is EffectEntryPaymentContinuation -> copy(context = context.copy(objectReferences = refs))
     is EffectDiscardDestinationContinuation -> copy(context = context.copy(objectReferences = refs))
     is EffectDiscardOrderContinuation -> copy(context = context.copy(objectReferences = refs))
     is CounterUnlessPaysContinuation -> copy(objectReferences = refs)

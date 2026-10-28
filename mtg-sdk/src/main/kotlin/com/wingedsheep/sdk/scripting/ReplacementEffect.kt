@@ -644,20 +644,20 @@ data class OnEnterRun(
 }
 
 /**
- * "If this would enter the battlefield, you may [cost] instead. If you do, put it onto the
- * battlefield. If you don't, put it into its owner's graveyard." — a self-replacement on the
- * card's own entry (Mox Diamond: discard a land card).
+ * Pay-or-graveyard self-replacement on this card's own entry (Mox Diamond).
  *
- * Unpaid, the card **never enters**: it goes from wherever it was (the stack, a hand, a library…)
- * to its owner's graveyard, so no "enters" trigger, no leaves-the-battlefield trigger and no
- * as-enters choice ever happens. Paid, the cost is paid first and the card then enters through the
- * normal entry path. When the controller can't pay, it simply goes to the graveyard.
+ * Printed as "If this would enter, you may [cost] instead. If you do, put it onto the battlefield.
+ * If you don't, put it into its owner's graveyard." Unpaid, the card **never enters**: it goes from
+ * wherever it was (the stack, a hand, exile, a library) to its owner's graveyard — or stays in the
+ * graveyard it was being returned from — so no enters or leaves trigger and no as-enters choice
+ * happens. Paid, the cost is paid first and the card then enters normally. With nothing to pay
+ * with, nothing is asked and it goes to the graveyard. The payment is always optional ("you may").
  *
- * Applies to a permanent spell resolving and to an effect putting the card onto the battlefield
- * (reanimation, "put onto the battlefield" from hand or library). A card put there by a move that
- * offers no payment goes to the graveyard — the unpaid outcome, never a free entry. **Not wired
- * for a land being *played*** (that path bypasses the zone-transition service): a land carrying
- * this (Lake of the Dead, Lotus Vale) needs that path first.
+ * Read off the card as it would exist on the battlefield (CR 614.12), so a permanent entering as a
+ * copy of Mox Diamond is asked too. Asked on every entry path that can meet it — a resolving spell,
+ * an effect putting it onto the battlefield, a duration return ("until this leaves the
+ * battlefield") — except a land being *played*, an open gap no printed card with this replacement
+ * reaches today.
  *
  * Not [OnEnterRun]: that runs *after* the permanent is already on the battlefield, so "if you
  * don't" could only make it leave again — firing enters and leaves triggers that never happen.
@@ -665,7 +665,7 @@ data class OnEnterRun(
  * *whether*, and only in life.
  *
  * @param cost what the controller may pay instead of the plain entry, from the shared [PayCost]
- *   vocabulary (`Costs.pay.Discard(GameObjectFilter.Land)`, `Costs.pay.Sacrifice(…)`).
+ *   vocabulary (`Costs.pay.Discard(GameObjectFilter.Land)`).
  */
 @SerialName("EntersOnlyIfPaid")
 @Serializable

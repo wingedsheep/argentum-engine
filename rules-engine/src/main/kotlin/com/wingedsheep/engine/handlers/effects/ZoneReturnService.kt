@@ -30,6 +30,24 @@ object ZoneReturnService {
             if (container.has<TokenComponent>()) continue
             val owner = container.get<CardComponent>()?.ownerId ?: continue
             val origin = newState.logicalZone(id)
+            // A card that asks a question as it would enter ("you may discard a land card instead",
+            // EntersOnlyIfPaid) can't be asked here — a zone transition can't pause — so its return
+            // is queued as a replacement rider: the single-card move it runs asks, pauses and
+            // replays at the next boundary, before anything else happens (no trigger, no SBA).
+            if (entry.previousZone == Zone.BATTLEFIELD && EntryPayment.enteringCost(
+                    newState, id, null, zones.cardRegistry, zones.predicateEvaluator) != null
+            ) {
+                newState = newState.copy(pendingReplacementRiders = newState.pendingReplacementRiders +
+                    com.wingedsheep.engine.replacement.PendingReplacementRider(
+                        effect = com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect(
+                            target = com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity,
+                            destination = Zone.BATTLEFIELD,
+                            fromZone = origin?.zoneType,
+                        ),
+                        hostId = id, controllerId = owner, subjectId = id,
+                    ))
+                continue
+            }
             val result = zones.moveToZone(
                 newState, id, entry.previousZone, ZoneEntryOptions(controllerId = owner)
             )

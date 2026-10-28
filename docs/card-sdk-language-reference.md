@@ -18514,21 +18514,29 @@ The priority groups are (CR 616.1a–f):
 - `ReplacementEffect.IfYouDoBranchEffect(...)` — branch on "if you do" replacement.
 - `EntersOnlyIfPaid(cost: PayCost)` — "If this would enter, you may [cost] instead. If you do, put it
   onto the battlefield. If you don't, put it into its owner's graveyard." A self-replacement on the
-  card's own entry (an "instead" replacement, CR 614.1a), with the cost from the shared `Costs.pay` vocabulary. **Mox Diamond**:
+  card's own entry (an "instead" replacement, CR 614.1a), with the cost from the shared `Costs.pay`
+  vocabulary and always optional. **Mox Diamond**:
   `replacementEffect(EntersOnlyIfPaid(Costs.pay.Discard(GameObjectFilter.Land)))`. Asked *before* the
   card moves: a cost with objects to pick is a card selection where picking nothing declines, any
   other cost a yes/no; with nothing to pay with, nothing is asked. Unpaid, the card **never enters**
-  — it goes to its owner's graveyard straight from where it was (the stack, a hand, a graveyard),
-  so no enters/leaves trigger fires and it is not countered (a resolving spell still resolves).
-  Wired for a permanent spell resolving (asked first, before any other as-enters question) and for an
-  effect putting the card onto the battlefield (`MoveToZoneEffectExecutor` and
-  `MoveCollectionExecutor`, both prepare-then-replay like `EntersWithChoice`). Any other move onto the
-  battlefield goes through `ZoneTransitionService.moveToZone`, which sends an unpaid entrant to the
-  graveyard — so a path that never asks yields the unpaid outcome, never a free entry. **Not wired
-  for a land being played** (`PlayLandHandler` bypasses the zone transition): a land carrying it —
-  Lake of the Dead, Heart of Yavimaya, Lotus Vale — needs that path first. Not `OnEnterRun` (runs
-  after the permanent is already on the battlefield, so "if you don't" could only make it leave) and
-  not `EntersTapped.payLifeCost` (pays to change *how* it enters, never *whether*).
+  — it goes to its owner's graveyard straight from where it was (the stack, a hand, exile), or stays
+  in the graveyard it was being returned from, so no enters/leaves trigger fires and a resolving
+  spell is not countered. Read off the card as it would exist on the battlefield (CR 614.12): a
+  Sculpting Steel or Phyrexian Metamorph entering as a copy of Mox Diamond is asked too, and goes to
+  the graveyard as its printed card when it declines.
+  **Paths that ask:** a permanent spell resolving (first as-enters question once any entry copy is
+  settled); an effect putting the card onto the battlefield — `MoveToZoneEffectExecutor`,
+  `MoveCollectionExecutor`, put-as-Aura / put-as-non-Aura, return-same-named, return-noted-exile and
+  put-attached-to-chosen, all prepare-then-replay like `EntersWithChoice`; and a duration return
+  ("until this leaves the battlefield", `ZoneReturnService`), which can't pause inside a zone
+  transition and so queues the return as a replacement rider that runs the single-card move at the
+  next boundary. **Open gaps:** a land being *played* (`PlayLandHandler` bypasses the zone transition
+  and doesn't ask); a Leyline-style opening-hand start; a meld or a "return it transformed" entry. A
+  card carrying this that arrives through one of those goes to its owner's graveyard unasked
+  (`ZoneTransitionService` treats it as unpaid) — no printed card with this replacement can reach
+  them today, and each needs its own ask before one can. Not `OnEnterRun` (runs after the permanent
+  is already on the battlefield, so "if you don't" could only make it leave) and not
+  `EntersTapped.payLifeCost` (pays to change *how* it enters, never *whether*).
 - `OnEnterRun(effect)` — generic "as ~ enters the battlefield, run [effect]". The wrapped effect
   executes via the normal effect-executor pipeline at entry time (so `EffectTarget.Self` resolves to
   the entering permanent) and may pause for player input. Compose with atomic pausable effects like

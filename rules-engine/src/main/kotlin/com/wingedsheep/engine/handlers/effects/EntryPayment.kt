@@ -24,26 +24,54 @@ import com.wingedsheep.sdk.scripting.costs.PayCost
 
 /**
  * [EntersOnlyIfPaid] — "if this would enter, you may [cost] instead; if you don't, put it into its
- * owner's graveyard" — asked *before* the card moves, on every entry path that offers it: a permanent
- * spell resolving ([com.wingedsheep.engine.mechanics.stack.PermanentSpellResolver]) and an effect
- * putting it onto the battlefield ([EffectEntryPayments]).
+ * owner's graveyard" — asked *before* the card moves, on every entry path that can meet it:
+ *
+ *  - a permanent spell resolving ([com.wingedsheep.engine.mechanics.stack.PermanentSpellResolver]),
+ *    asked once any entry copy is settled;
+ *  - an effect putting the card onto the battlefield ([EffectEntryPayments]): single and collection
+ *    moves, put-as-non-Aura, return-same-named, return-noted-exile and put-attached-to-chosen;
+ *  - a duration return ("until this leaves the battlefield", [ZoneReturnService]), which can't pause
+ *    inside a zone transition and so queues the return as a replacement rider that runs the
+ *    single-move effect path at the next boundary.
  *
  * The cost is the shared [PayCost] vocabulary, priced and paid by [CostPaymentService] — only the
- * question is built here, because its wording has to name what declining costs ("…or it goes to the
+ * question is built here, because its wording has to name what declining costs ("…it goes to the
  * graveyard"), which a pay-or-suffer prompt can't say about a card that isn't on the battlefield.
- * A cost with objects to pick (discard a land card, sacrifice a Swamp) is a card selection where
- * picking nothing declines; any other cost is a yes/no.
+ * A cost with objects to pick (discard a land card) is a card selection where picking nothing
+ * declines; any other cost is a yes/no.
  *
- * The other half of the rule lives in [ZoneTransitionService.moveToZone]: a card carrying the
- * replacement that reaches the battlefield without [ZoneEntryOptions.paidToEnter] goes to its
- * owner's graveyard instead. So a move that never asks can only ever produce the unpaid outcome,
- * never a free entry.
+ * [ZoneTransitionService.moveToZone] holds the other half: a card carrying the replacement that
+ * reaches the battlefield without [ZoneEntryOptions.paidToEnter] goes to its owner's graveyard
+ * instead. **Open gaps**, where that fallback is reached unasked: a land being *played*
+ * (`PlayLandHandler` bypasses the zone transition), a Leyline-style opening-hand start, and a meld or
+ * "return it transformed" entry. No printed card with this replacement can reach them today.
  */
 object EntryPayment {
 
     /** The cost [cardDef]'s own [EntersOnlyIfPaid] asks for, or null when it has none. */
     fun costOf(cardDef: CardDefinition?): PayCost? =
         cardDef?.script?.replacementEffects?.filterIsInstance<EntersOnlyIfPaid>()?.firstOrNull()?.cost
+
+    /**
+     * The cost [entityId] asks for as it would exist on the battlefield (CR 614.12): the copied card's
+     * when it enters as a copy — a granted entry copy (Mystic Reflection) or [entryCopy] — else its own.
+     */
+    fun enteringCost(
+        state: GameState,
+        entityId: EntityId,
+        entryCopy: com.wingedsheep.engine.handlers.effects.copy.EntryCopyChoice?,
+        cardRegistry: CardRegistry,
+        predicateEvaluator: PredicateEvaluator,
+    ): PayCost? {
+        val choice = com.wingedsheep.engine.handlers.effects.copy.GrantedEntryCopy
+            .find(state, entityId, predicateEvaluator)?.chosen(entryCopy) ?: entryCopy
+        val card = choice?.takeIf { it.copiedCard != null }
+            ?.let { com.wingedsheep.engine.handlers.effects.copy.EffectCopyEntry.apply(state, entityId, it) }
+            ?.getEntity(entityId)?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
+            ?: state.getEntity(entityId)?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
+            ?: return null
+        return costOf(cardRegistry.getCard(card.cardDefinitionId))
+    }
 
     /** Whether [payerId] can pay [cost] for [sourceId] right now (CR 118.3). */
     fun canPay(
@@ -185,7 +213,8 @@ object EffectEntryPayments {
             if (id in state.getBattlefield()) continue
             if (answered.entryChoices[id]?.paidToEnter != null) continue
             val card = state.getEntity(id)?.get<com.wingedsheep.engine.state.components.identity.CardComponent>() ?: continue
-            val cost = EntryPayment.costOf(registry.getCard(card.cardDefinitionId)) ?: continue
+            val cost = EntryPayment.enteringCost(state, id, answered.entryCopies[id], registry, predicateEvaluator)
+                ?: continue
             if (!EntryPayment.canPay(state, controller, cost, id, registry, predicateEvaluator)) {
                 answered = recorded(answered, id, paid = false)
                 continue

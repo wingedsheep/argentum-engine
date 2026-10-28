@@ -217,6 +217,131 @@ class EntersOnlyIfPaidScenarioTest : ScenarioTestBase() {
             }
         }
 
+        context("returned by a duration ending — \"until this leaves the battlefield\"") {
+            fun banished() = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardInHand(1, "Banishing Light")
+                .withCardInHand(1, "Disenchant")
+                .withLandsOnBattlefield(1, "Plains", 5)
+                .withCardOnBattlefield(2, "Mox Diamond")
+                .withCardInHand(2, "Forest")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            fun TestGame.banishThenFreeMox() {
+                val mox = findPermanent("Mox Diamond")!!
+                castSpell(1, "Banishing Light").error shouldBe null
+                resolveStack()
+                selectTargets(listOf(mox)).error shouldBe null
+                resolveStack()
+                isInExile(2, "Mox Diamond") shouldBe true
+                castSpell(1, "Disenchant", findPermanent("Banishing Light")!!).error shouldBe null
+                resolveStack()
+            }
+
+            test("its owner is asked as it returns, and paying puts it back") {
+                val game = banished()
+                game.banishThenFreeMox()
+
+                val prompt = game.paymentPrompt()
+                withClue("the Mox's owner pays, not the player who freed it") {
+                    prompt.playerId shouldBe game.player2Id
+                }
+                game.selectCards(game.findCardsInHand(2, "Forest")).error shouldBe null
+                game.resolveStack()
+
+                game.isOnBattlefield("Mox Diamond") shouldBe true
+                game.isInGraveyard(2, "Forest") shouldBe true
+            }
+
+            test("declining puts it into its owner's graveyard from exile") {
+                val game = banished()
+                game.banishThenFreeMox()
+
+                game.paymentPrompt()
+                game.selectCards(emptyList()).error shouldBe null
+                game.resolveStack()
+
+                game.isOnBattlefield("Mox Diamond") shouldBe false
+                game.isInGraveyard(2, "Mox Diamond") shouldBe true
+                game.isInHand(2, "Forest") shouldBe true
+            }
+        }
+
+        context("a copy of it asks too (CR 614.12)") {
+            fun steel() = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(1, "Mox Diamond")
+                .withCardInHand(1, "Sculpting Steel")
+                .withCardInHand(1, "Forest")
+                .withLandsOnBattlefield(1, "Island", 3)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            fun TestGame.castSteelCopyingMox(): EntityId {
+                val steel = findCardsInHand(1, "Sculpting Steel").single()
+                castSpell(1, "Sculpting Steel").error shouldBe null
+                resolveStack()
+                selectCards(listOf(findPermanent("Mox Diamond")!!)).error shouldBe null
+                return steel
+            }
+
+            test("Sculpting Steel entering as a copy of Mox Diamond discards a land to enter") {
+                val game = steel()
+                val steel = game.castSteelCopyingMox()
+
+                val prompt = game.paymentPrompt()
+                prompt.options shouldContainExactlyInAnyOrder game.findCardsInHand(1, "Forest")
+                game.selectCards(prompt.options).error shouldBe null
+                game.resolveStack()
+
+                game.findPermanents("Mox Diamond").size shouldBe 2
+                game.state.getBattlefield().contains(steel) shouldBe true
+                game.isInGraveyard(1, "Forest") shouldBe true
+            }
+
+            test("declining puts the copy into the graveyard as its printed card") {
+                val game = steel()
+                game.castSteelCopyingMox()
+
+                game.paymentPrompt()
+                game.selectCards(emptyList()).error shouldBe null
+                game.resolveStack()
+
+                game.findPermanents("Mox Diamond").size shouldBe 1
+                withClue("off the stack it is Sculpting Steel again (CR 400.7)") {
+                    game.isInGraveyard(1, "Sculpting Steel") shouldBe true
+                }
+                game.isInHand(1, "Forest") shouldBe true
+            }
+        }
+
+        test("a declined reanimation under Rest in Peace leaves it in the graveyard, not exile") {
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardInHand(1, "Refurbish")
+                .withCardInHand(1, "Forest")
+                .withCardInGraveyard(1, "Mox Diamond")
+                .withCardOnBattlefield(1, "Rest in Peace")
+                .withLandsOnBattlefield(1, "Plains", 4)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            val mox = game.graveyardCard(1, "Mox Diamond")
+            game.castSpellTargetingGraveyardCard(1, "Refurbish", listOf(mox)).error shouldBe null
+            game.resolveStack()
+
+            game.selectCards(emptyList()).error shouldBe null
+            game.resolveStack()
+
+            withClue("it never left the graveyard, so nothing replaced a move into it") {
+                game.isInGraveyard(1, "Mox Diamond") shouldBe true
+                game.isInExile(1, "Mox Diamond") shouldBe false
+            }
+        }
+
         test("the card's own text names the replacement") {
             val text = cardRegistry.getCard("Mox Diamond")!!.script.replacementEffects.single().description
             text shouldBe "If this permanent would enter, you may discard a land instead. If you do, " +

@@ -148,12 +148,12 @@ class MoveCollectionExecutor(
                     is CardDestination.ToZoneExiledFrom -> context.controllerId
                 }
             }
-            // "If this would enter, you may [pay] instead" (EntersOnlyIfPaid) — asked first, since
-            // it decides whether each card enters at all.
-            com.wingedsheep.engine.handlers.effects.EffectEntryPayments.prepare(
+            com.wingedsheep.engine.handlers.effects.copy.EffectCopyEntry.prepare(
                 state, effect, context, entrants, cardRegistry, predicateEvaluator
             )?.let { return it }
-            com.wingedsheep.engine.handlers.effects.copy.EffectCopyEntry.prepare(
+            // "If this would enter, you may [pay] instead" (EntersOnlyIfPaid) — asked once each entry
+            // copy is settled (CR 614.12), since it decides whether each card enters at all.
+            com.wingedsheep.engine.handlers.effects.EffectEntryPayments.prepare(
                 state, effect, context, entrants, cardRegistry, predicateEvaluator
             )?.let { return it }
             if (targetFinder != null) {
@@ -907,7 +907,8 @@ class MoveCollectionExecutor(
         destPlayerId: EntityId,
         entryCounterType: com.wingedsheep.sdk.core.CounterType? = null,
         context: EffectContext? = null,
-        replacementSourceState: GameState? = null
+        replacementSourceState: GameState? = null,
+        paidToEnter: Boolean = false,
     ): Pair<GameState, List<GameEvent>> {
         val transition = zones.moveToZone(state, auraId, Zone.BATTLEFIELD,
             com.wingedsheep.engine.handlers.effects.ZoneEntryOptions(
@@ -916,7 +917,7 @@ class MoveCollectionExecutor(
                 entryCounterReplacementState = replacementSourceState,
                 entryChoices = context?.entryChoices?.get(auraId)?.values.orEmpty(),
                 grantedRiotModes = context?.entryChoices?.get(auraId)?.riotModes.orEmpty(),
-                paidToEnter = com.wingedsheep.engine.handlers.effects.EffectEntryPayments.paid(context, auraId),
+                paidToEnter = paidToEnter || com.wingedsheep.engine.handlers.effects.EffectEntryPayments.paid(context, auraId),
                 lookBackGrants = context?.lookBackGrants?.get(auraId)))
         if (transition.actualDestination != Zone.BATTLEFIELD || entryCounterType != null) return transition.state to transition.events
         val (entered, counterEvents) = EntersWithReplacements.applyOnEntry(

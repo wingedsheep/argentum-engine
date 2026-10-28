@@ -240,7 +240,9 @@ data class MoveCollectionAuraTargetContinuation(
 @Serializable
 data class PutOntoBattlefieldAttachedToChosenContinuation(
     val cardId: EntityId,
-    val controllerId: EntityId
+    val controllerId: EntityId,
+    /** The card's EntersOnlyIfPaid cost was paid before the host was chosen. */
+    val paidToEnter: Boolean = false,
 ) : AnswerContinuation
 
 /**
