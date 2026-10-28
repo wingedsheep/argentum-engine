@@ -229,8 +229,8 @@ multi-paragraph entry down the same way when you touch it.
   card to the battlefield through the standard zone-change pipeline before the first turn begins, a "no" leaves it
   in hand. The three axes cover the printed variations:
   - `onlyIf` — offered only while this `Condition` holds, read once as the walk begins with the card's owner as
-    controller. The starting player is the active player then, so "and you're not the starting player" is
-    `Conditions.IsNotYourTurn`.
+    controller. The starting player is the active player while the game starts (CR 101.4e), so "and you're
+    not the starting player" is `Conditions.IsNotYourTurn`.
   - `counters` — counters it begins the game with, applied as part of its entry ("with a luck counter on it").
   - `then` — the "if you do" rider, run once it is on the battlefield (source = the card, controller = its
     owner), after any as-enters choice the card makes; a question it asks pauses the walk, which resumes after.

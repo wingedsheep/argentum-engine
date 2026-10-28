@@ -20,8 +20,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * your hand.
  * {T}: Add {C}. If Gemstone Caverns has a luck counter on it, instead add one mana of any color.
  *
- * The opening-hand action is asked before the first turn, while the starting player is the active
- * player — so "you're not the starting player" is `Conditions.IsNotYourTurn` at that moment.
+ * "You're not the starting player" is `Conditions.IsNotYourTurn` — see `BeginOnBattlefield.onlyIf`.
  */
 val GemstoneCaverns = card("Gemstone Caverns") {
     typeLine = "Legendary Land"

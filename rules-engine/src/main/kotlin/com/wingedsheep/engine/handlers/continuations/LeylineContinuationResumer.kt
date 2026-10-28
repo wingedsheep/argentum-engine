@@ -152,7 +152,7 @@ class LeylineContinuationResumer(
         }
 
         pauseForEntersWithChoice(
-            parked, continuation.playerId, continuation.leylineCardId, transition.events, events
+            parked, continuation.playerId, continuation.leylineCardId, transition.events
         )?.let { return it }
         return checkForMore(parked, allEvents)
     }
@@ -169,8 +169,9 @@ class LeylineContinuationResumer(
      * entry [ZoneChangeEvent]. The settle boundary runs trigger detection over a paused resume's
      * events, so carrying it would fire every enters-the-battlefield trigger twice.
      *
-     * A [LeylinePhaseContinuation] is parked beneath the choice so the walk over the remaining
-     * leylines resumes once the choice (and any chained choice) resolves.
+     * The caller ([beginOnBattlefield]) has already parked the rest of the walk beneath [state]'s
+     * top — the card's rider, then [LeylinePhaseContinuation] — so it resumes once the choice (and
+     * any chained choice) resolves.
      *
      * @return the paused result, or `null` when the card has no as-enters choice (or it can't be
      *   presented) and the walk should simply continue.
@@ -179,8 +180,7 @@ class LeylineContinuationResumer(
         state: GameState,
         playerId: EntityId,
         leylineCardId: EntityId,
-        transitionEvents: List<GameEvent>,
-        priorEvents: List<GameEvent>
+        transitionEvents: List<GameEvent>
     ): ExecutionResult? {
         val cardComponent = state.getEntity(leylineCardId)?.get<CardComponent>() ?: return null
         val cardDef = services.cardRegistry.getCard(cardComponent.cardDefinitionId) ?: return null
@@ -198,7 +198,7 @@ class LeylineContinuationResumer(
             fromZone = Zone.HAND,
             entryOldObject = transitionEvents.filterIsInstance<ZoneChangeEvent>().firstOrNull { it.entityId == leylineCardId }?.oldObject,
             entryNewObject = transitionEvents.filterIsInstance<ZoneChangeEvent>().firstOrNull { it.entityId == leylineCardId }?.newObject,
-            carryEvents = priorEvents + transitionEvents.filterNot {
+            carryEvents = transitionEvents.filterNot {
                 it is ZoneChangeEvent && it.entityId == leylineCardId
             },
             cardNameOptions = if (firstChoice.choiceType == ChoiceType.CARD_NAME) {

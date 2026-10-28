@@ -12,6 +12,7 @@ import com.wingedsheep.mtg.sets.definitions.tsp.cards.GemstoneCaverns
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.assertions.withClue
@@ -29,15 +30,21 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  */
 class GemstoneCavernsScenarioTest : FunSpec({
 
+    val genericOne = card("Test Generic One") {
+        manaCost = "{1}"
+        typeLine = "Artifact"
+    }
+
     fun driver(): GameTestDriver = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(GemstoneCaverns))
+        registerCards(TestCards.all + listOf(GemstoneCaverns, genericOne))
     }
 
     fun GameTestDriver.moveToOpeningHand(playerId: EntityId, name: String) {
         var s = state
         val library = ZoneKey(playerId, Zone.LIBRARY)
         val hand = ZoneKey(playerId, Zone.HAND)
-        val wanted = s.getLibrary(playerId).first { s.getEntity(it)?.get<CardComponent>()?.name == name }
+        // The shuffle may already have dealt it into the opening hand.
+        val wanted = s.getLibrary(playerId).firstOrNull { s.getEntity(it)?.get<CardComponent>()?.name == name } ?: return
         val outgoing = s.getHand(playerId).first { s.getEntity(it)?.get<CardComponent>()?.name != name }
         s = s.removeFromZone(library, wanted).addToZone(hand, wanted)
         s = s.removeFromZone(hand, outgoing).addToZone(library, outgoing)
@@ -82,6 +89,10 @@ class GemstoneCavernsScenarioTest : FunSpec({
         val goblin = d.putCardInHand(player, "Goblin Guide")
         withClue("{C} can't pay {R}") {
             d.castSpell(player, goblin).error shouldNotBe null
+        }
+        val generic = d.putCardInHand(player, "Test Generic One")
+        withClue("…but it does pay a generic cost") {
+            d.castSpell(player, generic).error shouldBe null
         }
     }
 })

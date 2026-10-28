@@ -22,9 +22,7 @@ import com.wingedsheep.sdk.scripting.effects.Effect
  * )
  * ```
  *
- * @param onlyIf Offered only while this holds, evaluated before the first turn with the card's owner
- *   as controller. The active player then is the starting player, so `Conditions.IsNotYourTurn`
- *   reads "you're not the starting player".
+ * @param onlyIf Offered only while this holds — see [BeginOnBattlefield.onlyIf].
  * @param counters Counters the card begins the game with, applied as part of its entry.
  * @param then The "if you do" rider, run once the card is on the battlefield (source = the card,
  *   controller = its owner).

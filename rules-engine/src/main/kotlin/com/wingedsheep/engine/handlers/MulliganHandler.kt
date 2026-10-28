@@ -35,7 +35,7 @@ class MulliganHandler(
      */
     private val cardRegistry: CardRegistry? = null,
     /**
-     * Runs the remaining instructions of an ability that restarted the game (CR 727.4) before the
+     * Runs the remaining instructions of an ability that restarted the game (CR 726.4) before the
      * new game's first turn — see [beginFirstTurn].
      */
     private val effectExecutor: ((GameState, Effect, EffectContext) -> EffectResult)? = null,
@@ -447,7 +447,7 @@ class MulliganHandler(
     /**
      * The pre-game procedure is over: start the first turn. In a restarted game, the ability that
      * restarted it first finishes resolving and its remaining instructions are followed — Karn
-     * Liberated puts the cards it left in exile onto the battlefield (CR 727.4). Nobody has priority
+     * Liberated puts the cards it left in exile onto the battlefield (CR 726.4). Nobody has priority
      * while they run, and whatever they trigger goes on the stack the first time a player would
      * receive priority, in the first upkeep.
      *
