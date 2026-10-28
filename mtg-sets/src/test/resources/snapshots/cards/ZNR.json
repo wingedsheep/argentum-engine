@@ -299,6 +299,179 @@
     "layout": "MODAL_DFC"
 }
 
+// Akiri, Fearless Voyager
+{
+    "name": "Akiri, Fearless Voyager",
+    "manaCost": "{1}{R}{W}",
+    "typeLine": "Legendary Creature — Kor Warrior",
+    "oracleText": "Whenever you attack a player with one or more equipped creatures, draw a card.\n{W}: You may unattach an Equipment from a creature you control. If you do, tap that creature and it gains indestructible until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Akiri, Fearless Voyager:1",
+                "trigger": {
+                    "type": "YouAttackEvent",
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsEquipped"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "attackedPlayer": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Akiri, Fearless Voyager:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{W}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        "IsEquipped"
+                                    ],
+                                    "controllerPredicate": "ControlledByYou"
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "You may choose a creature you control to unattach an Equipment from",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "selected1",
+                            "ifNotEmpty": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "AttachedToTarget",
+                                            "host": {
+                                                "type": "PipelineTarget",
+                                                "collectionName": "selected1"
+                                            },
+                                            "filter": "artifact Equipment"
+                                        },
+                                        "storeAs": "gathered3"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "gathered3",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "selected4",
+                                        "prompt": "Choose an Equipment to unattach",
+                                        "useTargetingUI": true
+                                    },
+                                    {
+                                        "type": "UnattachEquipment",
+                                        "target": {
+                                            "type": "PipelineTarget",
+                                            "collectionName": "selected4"
+                                        }
+                                    },
+                                    {
+                                        "type": "TapUntap",
+                                        "target": {
+                                            "type": "PipelineTarget",
+                                            "collectionName": "selected1"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "INDESTRUCTIBLE",
+                                        "target": {
+                                            "type": "PipelineTarget",
+                                            "collectionName": "selected1"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "220",
+        "rarity": "RARE",
+        "artist": "Ekaterina Burmak",
+        "flavorText": "\"No angel bars our ascent. Emeria waits above!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/69e42511-f653-4a6f-a5d4-50e21dfc8077.jpg?1783929324",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Akiri's first ability has you draw just one card per player you attack with an equipped creature, no matter how many equipped creatures you attack them with beyond the first and no matter how many Equipment that creature's carrying beyond the first."
+            },
+            {
+                "date": "2023-07-28",
+                "text": "Equipped creatures attacking a planeswalker or battle won't cause Akiri's first ability to trigger."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "You choose which Equipment to unattach as Akiri's second ability resolves. Unattaching an Equipment from a creature won't affect other Equipment attached to that creature. No player can take actions between the time you unattach that Equipment and the time that the creature becomes tapped and gains indestructible."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If the creature is already tapped, it just gains indestructible until end of turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Akoum Hellhound
 {
     "name": "Akoum Hellhound",
@@ -2940,6 +3113,149 @@
     ]
 }
 
+// Coveted Prize
+{
+    "name": "Coveted Prize",
+    "manaCost": "{4}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "This spell costs {1} less to cast for each creature in your party. (Your party consists of up to one each of Cleric, Rogue, Warrior, and Wizard.)\nSearch your library for a card, put it into your hand, then shuffle. If you have a full party, you may cast a spell with mana value 4 or less from your hand without paying its mana cost.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library"
+                    },
+                    "storeAs": "searchable",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found",
+                    "prompt": "Search your library for a card to put into your hand",
+                    "selectedLabel": "Put into your hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent",
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": "PartySize",
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "gathered0",
+                                "filter": "nonland mv<=4",
+                                "storeMatching": "matching1"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "matching1",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected2",
+                                "selectedLabel": "Cast without paying its mana cost"
+                            },
+                            {
+                                "type": "CastFromCollectionWithoutPayingCost",
+                                "from": "selected2"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": "PartySize"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "95",
+        "rarity": "RARE",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5afbc5d3-318f-4545-88d6-fc81e5466238.jpg?1783929381",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "If you have a full party and wish to cast a spell with Coveted Prize's effect, you do so as part of the resolution of Coveted Prize after searching for a card. You can't wait to cast it later in the turn. Timing permissions based on a card's type are ignored."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "The card you search for may be the one you cast."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If you cast a card \"without paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs. If the card has any mandatory additional costs, you must pay those to cast the card."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If the card has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If a spell has a cost reduction based on the number of creatures in your party, no player may attempt to change that number after you begin to cast the spell but before you pay the cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Cragcrown Pathway
 {
     "name": "Cragcrown Pathway",
@@ -4736,6 +5052,106 @@
     ]
 }
 
+// Grakmaw, Skyclave Ravager
+{
+    "name": "Grakmaw, Skyclave Ravager",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Legendary Creature — Hydra Horror",
+    "oracleText": "Grakmaw enters with three +1/+1 counters on it.\nWhenever another creature you control dies, if it had a +1/+1 counter on it, put a +1/+1 counter on Grakmaw.\nWhen Grakmaw dies, create an X/X black and green Hydra creature token, where X is the number of +1/+1 counters on Grakmaw.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Grakmaw, Skyclave Ravager:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "ContextProperty",
+                        "key": "LAST_KNOWN_PLUS_ONE_COUNTER_COUNT"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            {
+                "id": "Grakmaw, Skyclave Ravager:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [
+                        "BLACK",
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Hydra"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2ad0395-190d-4779-81b7-2832dc257828.jpg?1783929498",
+                    "dynamicPower": {
+                        "type": "ContextProperty",
+                        "key": "LAST_KNOWN_PLUS_ONE_COUNTER_COUNT"
+                    },
+                    "dynamicToughness": {
+                        "type": "ContextProperty",
+                        "key": "LAST_KNOWN_PLUS_ONE_COUNTER_COUNT"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 3,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "RARE",
+        "artist": "Filip Burburan",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bd227384-e0e3-40ce-98bb-8b7cf1900ad7.jpg?1783929324",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Grakmaw's second ability puts just one +1/+1 counter on it, no matter how many counters the dying creature had."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If a creature with a +1/+1 counter on it dies after receiving too many -1/-1 counters, it dies at the same time that the counters are removed, and Grakmaw's second ability triggers. Similarly, if Grakmaw dies after receiving too many -1/-1 counters, use the number of +1/+1 counters it had prior to receiving the -1/-1 counters to determine the value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Grotag Bug-Catcher
 {
     "name": "Grotag Bug-Catcher",
@@ -6220,6 +6636,73 @@
     ]
 }
 
+// Kaza, Roil Chaser
+{
+    "name": "Kaza, Roil Chaser",
+    "manaCost": "{U}{R}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "Flying, haste\n{T}: The next instant or sorcery spell you cast this turn costs {X} less to cast, where X is the number of Wizards you control as this ability resolves.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "HASTE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kaza, Roil Chaser:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "ModifySpellCosts",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    },
+                    "amount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Battlefield",
+                        "filter": "Wizard"
+                    },
+                    "nextSpellOnly": true
+                },
+                "descriptionOverride": "The next instant or sorcery spell you cast this turn costs {X} less to cast, where X is the number of Wizards you control as this ability resolves."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "225",
+        "rarity": "RARE",
+        "artist": "Ekaterina Burmak",
+        "flavorText": "\"What sort of life is that, huddling in the familiar and safe? No thanks. Put me right in the center of the action.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/af6bc333-79c0-4de8-9874-80f2254f9ad2.jpg?1783929323",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions (such as that of Kaza's activated ability). The mana value of the spell is determined only by its mana cost, no matter what the total cost to cast the spell was."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Kaza's cost reduction can reduce only generic mana in a spell's cost. It can't reduce colored mana requirements."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Kazandu Mammoth
 {
     "name": "Kazandu Mammoth",
@@ -6819,6 +7302,159 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Linvala, Shield of Sea Gate
+{
+    "name": "Linvala, Shield of Sea Gate",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Legendary Creature — Angel Wizard",
+    "oracleText": "Flying\nAt the beginning of combat on your turn, if you have a full party, choose target nonland permanent an opponent controls. Until your next turn, it can't attack or block, and its activated abilities can't be activated.\nSacrifice Linvala: Choose hexproof or indestructible. Creatures you control gain that ability until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Linvala, Shield of Sea Gate:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CantAttack",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "CantBlockTargetCreatures",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        },
+                        {
+                            "type": "GrantStaticAbility",
+                            "ability": {
+                                "type": "PreventActivatedAbilities",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsPermanent"
+                                    ],
+                                    "statePredicates": [
+                                        "IsSource"
+                                    ]
+                                }
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "UntilYourNextTurn"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "nonland permanent ctrl:opponent"
+                    },
+                    "id": "t0"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": "PartySize",
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Linvala, Shield of Sea Gate:2",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Creatures you control gain hexproof",
+                            "effect": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "HEXPROOF",
+                                    "target": "IterationEntity"
+                                }
+                            }
+                        },
+                        {
+                            "label": "Creatures you control gain indestructible",
+                            "effect": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "INDESTRUCTIBLE",
+                                    "target": "IterationEntity"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Sacrifice Linvala: Choose hexproof or indestructible. Creatures you control gain that ability until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "226",
+        "rarity": "RARE",
+        "artist": "Wayne Reynolds",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/49b66956-82e1-402f-9088-2201bdc0d4b8.jpg?1783929323",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Linvala's middle ability won't trigger at all if you don't have a full party as your combat phase begins. It won't affect the target if you don't have a full party as it resolves. The number of creatures in your party may change between these times, however."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "The nonland permanent remains affected until your next turn even if the number of creatures in your party changes or Linvala leaves the battlefield."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "No abilities of the affected permanent can be activated, including mana abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
     ]
 }
 
@@ -9031,6 +9667,191 @@
     ]
 }
 
+// Nahiri, Heir of the Ancients
+{
+    "name": "Nahiri, Heir of the Ancients",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Legendary Planeswalker — Nahiri",
+    "oracleText": "+1: Create a 1/1 white Kor Warrior creature token. You may attach an Equipment you control to it.\n−2: Look at the top six cards of your library. You may reveal a Warrior or Equipment card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.\n−3: Nahiri deals damage to target creature or planeswalker equal to twice the number of Equipment you control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nahiri, Heir of the Ancients:1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "WHITE"
+                            ],
+                            "creatureTypes": [
+                                "Kor",
+                                "Warrior"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/1/3/13412797-f831-49fe-adf3-369cdfacdbd5.jpg?1783929500"
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "artifact Equipment",
+                                "player": "You"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected2",
+                            "prompt": "You may choose an Equipment you control to attach to the Kor Warrior token",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "selected2"
+                            },
+                            "body": {
+                                "type": "AttachTargetEquipmentToCreature",
+                                "equipmentTarget": "IterationEntity",
+                                "creatureTarget": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "createdTokens"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Nahiri, Heir of the Ancients:2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 6
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "Warrior|Equipment",
+                            "storeSelected": "selected1",
+                            "storeRemainder": "remainder1",
+                            "prompt": "You may reveal a Warrior or Equipment card to put into your hand.",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "remainder1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "Nahiri, Heir of the Ancients:3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -3
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "permanent Equipment"
+                        },
+                        "multiplier": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetCreatureOrPlaneswalker",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "MYTHIC",
+        "artist": "Anna Steinbauer",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/408be425-b8a6-4c03-b2a6-7ff7bd6555e0.jpg?1783929322",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "You create a Kor Warrior token and attach an Equipment to it if you wish all while Nahiri's first ability is resolving. Nothing can happen in between, and no player may choose to take actions."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Needleverge Pathway
 {
     "name": "Needleverge Pathway",
@@ -9912,6 +10733,101 @@
     "layout": "MODAL_DFC"
 }
 
+// Orah, Skyclave Hierophant
+{
+    "name": "Orah, Skyclave Hierophant",
+    "manaCost": "{2}{W}{B}",
+    "typeLine": "Legendary Creature — Kor Cleric",
+    "oracleText": "Lifelink\nWhenever Orah or another Cleric you control dies, return target Cleric card with lesser mana value from your graveyard to the battlefield.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Orah, Skyclave Hierophant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Cleric ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "HasSubtype",
+                                    "subtype": "Cleric"
+                                },
+                                {
+                                    "type": "ManaValueAtMostDynamic",
+                                    "amount": {
+                                        "type": "Subtract",
+                                        "left": {
+                                            "type": "EntityProperty",
+                                            "entity": "TriggeringEntity",
+                                            "numericProperty": "ManaValue"
+                                        },
+                                        "right": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    }
+                                }
+                            ],
+                            "controllerPredicate": "OwnedByYou"
+                        },
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever Orah or another Cleric you control dies, return target Cleric card with lesser mana value from your graveyard to the battlefield."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "233",
+        "rarity": "RARE",
+        "artist": "Heonhwa",
+        "flavorText": "\"The Skyclaves are our inheritance.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/2336c8bf-fcad-41f9-9041-80b8aa3cd79a.jpg?1783929321",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "If another Cleric you control dies at the same time as Orah, Orah's ability triggers for that Cleric in addition to triggering for itself."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If a creature on the battlefield or a creature card in a graveyard has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Orah's ability can target a Cleric card that was put into your graveyard at the same time as the Cleric whose death caused the ability to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
+    ]
+}
+
 // Oran-Rief Ooze
 {
     "name": "Oran-Rief Ooze",
@@ -10427,6 +11343,112 @@
         "imageUri": "https://cards.scryfall.io/normal/front/5/9/5929c89b-8c61-47f5-a8ec-b64bf41e9d5b.jpg?1783929354"
     },
     "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Ravager's Mace
+{
+    "name": "Ravager's Mace",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "When this Equipment enters, attach it to target creature you control.\nEquipped creature gets +1/+0 for each creature in your party and has menace. (Your party consists of up to one each of Cleric, Rogue, Warrior, and Wizard.)\nEquip {2}{B}{R}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ravager's Mace:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Ravager's Mace:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{B}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                },
+                "powerBonus": "PartySize",
+                "toughnessBonus": {
+                    "type": "Fixed",
+                    "amount": 0
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "MENACE"
+            }
+        ]
+    },
+    "equipCost": "{2}{B}{R}",
+    "metadata": {
+        "collectorNumber": "235",
+        "rarity": "UNCOMMON",
+        "artist": "Antonio José Manzanedo",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/af484140-57d6-4505-9960-5e7b0306cc9b.jpg?1783929320",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Attaching an Equipment with its enters-the-battlefield triggered ability isn't the same as using its equip ability. You don't pay mana for the attachment, and if the Equipment enters at a time you couldn't cast a sorcery, you can still attach it to a creature you control."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If the target creature becomes an illegal target, the Equipment remains on the battlefield unattached."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If a creature has more than one party creature type, and there are multiple ways to count that creature that could result in a different number of creatures in your party, the highest such number is used. For example, if you control a Cleric and a Cleric Wizard, the number of creatures in your party is two."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
         "RED"
     ]
 }
@@ -14093,6 +15115,69 @@
     ]
 }
 
+// Spoils of Adventure
+{
+    "name": "Spoils of Adventure",
+    "manaCost": "{4}{W}{U}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {1} less to cast for each creature in your party. (Your party consists of up to one each of Cleric, Rogue, Warrior, and Wizard.)\nYou gain 3 life and draw three cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            ]
+        },
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": "PartySize"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "rarity": "UNCOMMON",
+        "artist": "Zezhou Chen",
+        "flavorText": "Survival itself is no small reward.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9b3b1ef0-a653-4adb-8112-82d4822446b4.jpg?1783929318",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions. The mana value of the spell is determined only by its mana cost, no matter what the total cost to cast the spell was."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If a spell has a cost reduction based on the number of creatures in your party, no player may attempt to change that number after you begin to cast the spell but before you pay the cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Springmantle Cleric
 {
     "name": "Springmantle Cleric",
@@ -14480,6 +15565,61 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Synchronized Spellcraft
+{
+    "name": "Synchronized Spellcraft",
+    "manaCost": "{4}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Synchronized Spellcraft deals 4 damage to target creature and X damage to that creature's controller, where X is the number of creatures in your party. (Your party consists of up to one each of Cleric, Rogue, Warrior, and Wizard.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": "PartySize",
+                    "target": "TargetController"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "artist": "Svetlin Velinov",
+        "flavorText": "\"Ready? One... two...\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d87f4637-1ad3-4d61-98ff-98c0b0be46a1.jpg?1783929348",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "If the target creature is an illegal target by the time Synchronized Spellcraft tries to resolve, the spell doesn't resolve. No player is dealt damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -15333,6 +16473,57 @@
     ]
 }
 
+// Thundering Sparkmage
+{
+    "name": "Thundering Sparkmage",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When this creature enters, it deals X damage to target creature or planeswalker, where X is the number of creatures in your party. (Your party consists of up to one each of Cleric, Rogue, Warrior, and Wizard.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thundering Sparkmage:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": "PartySize",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetCreatureOrPlaneswalker",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "rarity": "UNCOMMON",
+        "artist": "Billy Christian",
+        "flavorText": "\"Stay away from my friends!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a9e6de80-3516-426b-8a1b-bda45f8c0cac.jpg?1783929347",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "If an ability of a creature counts the number of creatures in your party, that number is counted as the ability resolves. If that creature is still on the battlefield when the ability resolves, it'll be counted if appropriate."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Thwart the Grave
 {
     "name": "Thwart the Grave",
@@ -15641,6 +16832,86 @@
         "GREEN"
     ],
     "layout": "MODAL_DFC"
+}
+
+// Umara Mystic
+{
+    "name": "Umara Mystic",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Creature — Merfolk Wizard",
+    "oracleText": "Flying\nWhenever you cast an instant, sorcery, or Wizard spell, this creature gets +2/+0 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Umara Mystic:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    },
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Wizard"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you cast an instant, sorcery, or Wizard spell, this creature gets +2/+0 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "238",
+        "rarity": "UNCOMMON",
+        "artist": "Bryan Sola",
+        "flavorText": "\"We tolerate the North Hada thieves' den, but cutthroats who wander downriver earn a skymanta ride out to sea.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fb979cfc-3e5b-42c9-b78d-584c274ed912.jpg?1783929318",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "An ability that triggers when a player casts a spell resolves before the spell that caused it to trigger, but after targets have been chosen for that spell (if it has any targets). The ability resolves even if that spell is countered."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "A Wizard spell is one with the creature type Wizard. Spells that are Wizard-themed (such as Relic Amulet) aren't Wizard spells."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
 }
 
 // Umara Wizard
@@ -16218,6 +17489,89 @@
     ]
 }
 
+// Verazol, the Split Current
+{
+    "name": "Verazol, the Split Current",
+    "manaCost": "{X}{G}{U}",
+    "typeLine": "Legendary Creature — Serpent",
+    "oracleText": "Verazol enters with a +1/+1 counter on it for each mana spent to cast it.\nWhenever you cast a kicked spell, you may remove two +1/+1 counters from Verazol. If you do, copy that spell. You may choose new targets for the copy. (A copy of a permanent spell becomes a token.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Verazol, the Split Current:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellWasKicked"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "RemoveCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": "Self"
+                        }
+                    },
+                    "then": {
+                        "type": "CopyTargetSpell",
+                        "target": "TriggeringEntity"
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": "TotalManaSpent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "239",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/752a2aa9-40ed-4c64-b945-bc6fec606b7b.jpg?1783929318",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "The amount of mana you spent to cast Verazol is usually equal to its mana value, normally 2 plus the value chosen for X. However, you also include any additional costs you pay, including the \"commander tax\" in a Commander game."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If Verazol enters the battlefield without being cast, then no mana was spent to cast it. It enters the battlefield without any +1/+1 counters. If no other effects are increasing its toughness at that time, it will be put into its owner's graveyard as a state-based action."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "You can't remove more than two counters as Verazol's last ability resolves to copy the spell more than once. You can't remove just one counter from it if it has only one. If Verazol leaves the battlefield while its last ability is on the stack, you can't remove two +1/+1 counters from it at all."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "A copy is created even if the spell that caused Verazol's last ability to trigger has been countered by the time that ability resolves. The copy resolves before the original spell."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "You can't choose to pay any additional costs for the copy. However, effects based on any additional costs that were paid for the original spell are copied as though those same costs were paid for the copy too. Most notably, the copy is also kicked."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Vine Gecko
 {
     "name": "Vine Gecko",
@@ -16352,6 +17706,283 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Yasharn, Implacable Earth
+{
+    "name": "Yasharn, Implacable Earth",
+    "manaCost": "{2}{G}{W}",
+    "typeLine": "Legendary Creature — Elemental Boar",
+    "oracleText": "When Yasharn enters, search your library for a basic Forest card and a basic Plains card, reveal those cards, put them into your hand, then shuffle.\nPlayers can't pay life or sacrifice nonland permanents to cast spells or activate abilities.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Yasharn, Implacable Earth:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "Or",
+                                            "predicates": [
+                                                {
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsBasicLand",
+                                                        {
+                                                            "type": "HasSubtype",
+                                                            "subtype": "Forest"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsBasicLand",
+                                                        {
+                                                            "type": "HasSubtype",
+                                                            "subtype": "Plains"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Search your library for a basic Forest card and a basic Plains card to put into your hand",
+                            "selectedLabel": "Put into your hand",
+                            "restrictions": [
+                                "OnePerBasicLandType"
+                            ]
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            "PlayersCantPayLifeForCosts",
+            {
+                "type": "CantBeSacrificed",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "scope": "CASTING_AND_ACTIVATION_COSTS"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "240",
+        "rarity": "RARE",
+        "artist": "G-host Lee",
+        "flavorText": "In its hoofprints, barren dust becomes fertile ground.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/12878fbd-dbe5-44bc-9f34-38fd374ec10a.jpg?1783929317",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Yasharn's first ability can find just one basic Forest or one basic Plains card if you don't have both in your library or if you don't wish to find both."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If a spell or activated ability has a cost that requires a player to pay life (such as the activated ability granted by Lithoform Blight) or sacrifice a permanent (such as Kazuul's Fury or Spare Supplies), that spell or ability can't be cast or activated."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Other things may still cause players to pay life or sacrifice creatures, such as a resolving spell or ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
+// Zareth San, the Trickster
+{
+    "name": "Zareth San, the Trickster",
+    "manaCost": "{3}{U}{B}",
+    "typeLine": "Legendary Creature — Merfolk Rogue",
+    "oracleText": "Flash\n{2}{U}{B}, Return an unblocked attacking Rogue you control to its owner's hand: Put this card from your hand onto the battlefield tapped and attacking.\nWhenever Zareth San deals combat damage to a player, you may put target permanent card from that player's graveyard onto the battlefield under your control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Zareth San, the Trickster:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Battlefield",
+                        "controllerOverride": "Controller"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent own:triggering-player",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Zareth San, the Trickster:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{U}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomReturnToHand",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "HasSubtype",
+                                            "subtype": "Rogue"
+                                        }
+                                    ],
+                                    "statePredicates": [
+                                        "IsAttacking",
+                                        "IsUnblocked"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "Entity",
+                                "entity": "Self"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "TappedAndAttacking"
+                            },
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "InZone",
+                                        "zone": "Hand"
+                                    }
+                                ]
+                            },
+                            "attackDefender": "CONTROLLER_CHOOSES"
+                        }
+                    ]
+                },
+                "activateFromZone": "Hand",
+                "descriptionOverride": "{2}{U}{B}, Return an unblocked attacking Rogue you control to its owner's hand: Put this card from your hand onto the battlefield tapped and attacking."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "242",
+        "rarity": "RARE",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9cfe4fbe-277f-410c-9eee-f7617f4cb850.jpg?1783929318",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Before blockers are declared, attacking Rogues are neither blocked nor unblocked, so you can't pay the cost to activate Zareth San's second ability."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If Zareth San leaves your hand before its second ability resolves, the ability does nothing as it resolves. Zareth San remains in its new zone and the Rogue you returned remains in its owner's hand."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "You choose which player or planeswalker Zareth San is attacking. It doesn't have to be attacking the same player or planeswalker that the returned Rogue was attacking."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Although Zareth San is attacking, it was never declared as an attacking creature (for purposes of abilities that trigger whenever a creature attacks, for example)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
