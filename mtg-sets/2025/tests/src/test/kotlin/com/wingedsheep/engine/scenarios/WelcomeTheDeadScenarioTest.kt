@@ -31,7 +31,8 @@ class WelcomeTheDeadScenarioTest : ScenarioTestBase() {
         fun TestGame.castWelcomeDiscarding(cardName: String) {
             castSpell(1, "Welcome the Dead").error shouldBe null
             resolveStack()
-            if (hasPendingDecision()) selectCards(listOf(findCardsInHand(1, cardName).first()))
+            withClue("the spell asks which card to discard") { hasPendingDecision() shouldBe true }
+            selectCards(listOf(findCardsInHand(1, cardName).first())).error shouldBe null
         }
 
         fun TestGame.zombieDruids() = findPermanents("Zombie Druid")

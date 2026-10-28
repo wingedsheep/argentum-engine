@@ -155,6 +155,8 @@ class CardsPutIntoGraveyardThisTurnTrackerTest : FunSpec({
         driver.count() shouldBe 4
 
         driver.passPriorityUntil(Step.UPKEEP, opponent)
+        // Now the opponent is active: You is the opponent, EachOpponent the original player.
+        fromHand() shouldBe 0
         fromHand(Player.EachOpponent) shouldBe 0
         fromLibrary(Player.EachOpponent) shouldBe 0
     }

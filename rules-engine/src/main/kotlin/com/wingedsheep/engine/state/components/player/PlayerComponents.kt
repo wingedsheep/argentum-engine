@@ -17,6 +17,7 @@ import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.effects.ManaSpellRider
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.engine.mechanics.mana.consume
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -1888,8 +1889,12 @@ data class CreatureCardsPutIntoGraveyardThisTurnComponent(val count: Int = 0) : 
  *
  * Backs `TurnTracker.CARDS_PUT_INTO_GRAVEYARD_FROM_LIBRARY` (Cruel Calculations) and
  * `TurnTracker.CARDS_PUT_INTO_GRAVEYARD_FROM_HAND` (Welcome the Dead sums the two).
+ *
+ * Keeps the serial name of the library-only counter it replaced, so a game saved mid-turn before
+ * the rename still loads (its old `count` is dropped as an unknown key; at most one turn's tally).
  */
 @Serializable
+@SerialName("com.wingedsheep.engine.state.components.player.CardsPutIntoGraveyardFromLibraryThisTurnComponent")
 data class CardsPutIntoGraveyardByOriginThisTurnComponent(val counts: Map<Zone, Int> = emptyMap()) : Component {
     fun count(zone: Zone): Int = counts[zone] ?: 0
 
