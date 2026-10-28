@@ -571,6 +571,8 @@ export function TargetingOverlay() {
   const isDiscard = targetingState.isDiscardSelection
   const isReveal = targetingState.isRevealSelection
   const isBehold = targetingState.isBeholdSelection
+  // A cost paid from hand ("exile a green card from your hand") is a card pick, not a permanent.
+  const isHandPick = targetingState.targetZone === 'Hand'
 
   // Split the server's valid targets by how the player can physically reach them: a graveyard or
   // exile pile isn't individually clickable on the board, so those cards need the cross-zone
@@ -685,7 +687,7 @@ export function TargetingOverlay() {
     ? isBehold ? 'Card selected' : isDiscard ? 'Card selected' : isReveal ? 'Card selected' : isTapPermanent ? 'Permanents selected' : isBounce ? 'Creature selected' : isSacrifice ? 'Selected' : 'Maximum targets selected'
     : hasEnoughTargets
       ? 'Click Confirm or select more'
-      : isBehold ? `Click a highlighted card on the battlefield or in your hand` : isDiscard ? 'Click a card in your hand' : isReveal ? 'Click a card in your hand' : isTapPermanent ? 'Click a highlighted permanent' : isBounce ? 'Click a highlighted permanent to return' : isSacrifice ? 'Click a highlighted permanent you control' : 'Click a highlighted target'
+      : isBehold ? `Click a highlighted card on the battlefield or in your hand` : isDiscard ? 'Click a card in your hand' : isReveal ? 'Click a card in your hand' : isTapPermanent ? 'Click a highlighted permanent' : isBounce ? 'Click a highlighted permanent to return' : isHandPick ? 'Click a highlighted card in your hand' : isSacrifice ? 'Click a highlighted permanent you control' : 'Click a highlighted target'
   // On a mixed union the board is only half the answer — say so, since the other half lives
   // behind the button below and there is nothing on the board to hint at it.
   const hintText = isMixedZoneTargeting && !hasMaxTargets
