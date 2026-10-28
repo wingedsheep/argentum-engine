@@ -113,27 +113,33 @@ class ChandrasIncineratorScenarioTest : FunSpec({
         d.castSpell(me, incinerator).error shouldNotBe null
     }
 
-    test("a source you control dealing noncombat damage to an opponent deals that much to a creature they control") {
-        val d = driver()
+    test("a source you control dealing noncombat damage to an opponent deals that much to a creature that player controls") {
+        val d = GameTestDriver().apply {
+            registerCards(TestCards.all + ChandrasIncinerator)
+            initMultiplayer(List(3) { Deck.of("Mountain" to 60) })
+            passPriorityUntil(Step.PRECOMBAT_MAIN)
+        }
         val me = d.activePlayer!!
-        val opp = d.getOpponent(me)
+        val (damaged, other) = d.state.turnOrder.filter { it != me }
         d.putCreatureOnBattlefield(me, ChandrasIncinerator.name)
         val myBears = d.putCreatureOnBattlefield(me, "Grizzly Bears")
-        val oppBears = d.putCreatureOnBattlefield(opp, "Grizzly Bears")
+        val damagedBears = d.putCreatureOnBattlefield(damaged, "Grizzly Bears")
+        val otherBears = d.putCreatureOnBattlefield(other, "Grizzly Bears")
 
         val bolt = d.putCardInHand(me, "Lightning Bolt")
         d.giveMana(me, Color.RED, 1)
-        d.castSpell(me, bolt, listOf(opp)).error shouldBe null
-        d.resolveStack()
-        d.getLifeTotal(opp) shouldBe 17
+        d.castSpell(me, bolt, listOf(damaged)).error shouldBe null
+        while (!d.isPaused && d.state.stack.isNotEmpty()) d.passPriority(d.state.priorityPlayerId!!)
+        d.getLifeTotal(damaged) shouldBe 17
 
         // "That player controls": only the damaged opponent's creature is a legal target.
-        val decision = d.pendingDecision as ChooseTargetsDecision
-        decision.legalTargets.values.flatten().contains(myBears) shouldBe false
-        d.submitTargetSelection(me, listOf(oppBears)).error shouldBe null
-        d.resolveStack()
-        d.getGraveyard(opp).contains(oppBears) shouldBe true
-        d.getGraveyard(me).contains(myBears) shouldBe false
+        val legal = (d.pendingDecision as ChooseTargetsDecision).legalTargets.values.flatten()
+        legal.contains(damagedBears) shouldBe true
+        legal.contains(otherBears) shouldBe false
+        legal.contains(myBears) shouldBe false
+        d.submitTargetSelection(me, listOf(damagedBears)).error shouldBe null
+        while (!d.isPaused && d.state.stack.isNotEmpty()) d.passPriority(d.state.priorityPlayerId!!)
+        d.getGraveyard(damaged).contains(damagedBears) shouldBe true
     }
 
     test("noncombat damage to a creature doesn't trigger it") {
