@@ -4842,6 +4842,56 @@
     ]
 }
 
+// Viridian Revel
+{
+    "name": "Viridian Revel",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever an artifact is put into an opponent's graveyard from the battlefield, you may draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Viridian Revel:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "artifact own:opponent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "descriptionOverride": "Whenever an artifact is put into an opponent's graveyard from the battlefield, you may draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "UNCOMMON",
+        "artist": "rk post",
+        "flavorText": "\"Let them have their revel. Soon those who won't submit will be turned. Those who won't be turned will die.\"\n—Vorinclex, Voice of Hunger",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d7f565e-0fb8-40c8-9540-213d35af846a.jpg?1783941715",
+        "rulings": [
+            {
+                "date": "2011-01-01",
+                "text": "It doesn't matter who controlled the artifact while it was on the battlefield, only whose graveyard it was put into."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Vulshok Heartstoker
 {
     "name": "Vulshok Heartstoker",

@@ -2031,6 +2031,47 @@
     ]
 }
 
+// Silence
+{
+    "name": "Silence",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Your opponents can't cast spells this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "CantCastSpells",
+            "target": {
+                "type": "PlayerRef",
+                "player": "EachOpponent"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "RARE",
+        "artist": "Wayne Reynolds",
+        "flavorText": "\"All the wizardry in the world has to pass through one small and easily sealed door.\"\n—Ajani Goldmane",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/1559d660-8a9d-422b-95d3-710a046583dd.jpg?1783942397",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "Silence won't affect spells that your opponents cast before you cast Silence, including any spells that are still on the stack. Silence also won't stop your opponents from casting spells after you cast Silence but before Silence resolves."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "The only thing Silence stops is casting spells. Your opponents can still activate abilities, including abilities of cards in their hands (like cycling). Their triggered abilities work as normal, they can still play lands, and so on."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "A player who can't cast a spell can't suspend a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Silvercoat Lion
 {
     "name": "Silvercoat Lion",

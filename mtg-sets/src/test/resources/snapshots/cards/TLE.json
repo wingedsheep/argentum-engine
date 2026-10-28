@@ -926,6 +926,96 @@
     ]
 }
 
+// The Cabbage Merchant
+{
+    "name": "The Cabbage Merchant",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Human Citizen",
+    "oracleText": "Whenever an opponent casts a noncreature spell, create a Food token. (It's an artifact with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")\nWhenever a creature deals combat damage to you, sacrifice a Food token.\nTap two untapped Foods you control: Add one mana of any color.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "The Cabbage Merchant:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    },
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Food"
+                },
+                "descriptionOverride": "Whenever an opponent casts a noncreature spell, create a Food token."
+            },
+            {
+                "id": "The Cabbage Merchant:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "You"
+                    },
+                    "sourceFilter": "creature"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "artifact Food token",
+                    "target": "Controller"
+                },
+                "descriptionOverride": "Whenever a creature deals combat damage to you, sacrifice a Food token."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "The Cabbage Merchant:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "count": 2,
+                        "filter": "artifact Food"
+                    }
+                },
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "Add one mana of any color."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "rarity": "RARE",
+        "artist": "Patrick Gañas",
+        "flavorText": "\"My cabbages...\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2fea0356-6684-4730-9eb4-0262856bc1f9.jpg?1783904816",
+        "rulings": [
+            {
+                "date": "2025-10-02",
+                "text": "If an effect refers to a Food, it means any Food artifact, not just a Food artifact token. You can't sacrifice a Food to pay multiple costs."
+            },
+            {
+                "date": "2025-10-02",
+                "text": "Food sacrificed due to The Cabbage Merchant's second triggered ability is not being sacrificed to the Food's own ability, so you will not gain any life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Toph, Earthbending Master
 {
     "name": "Toph, Earthbending Master",

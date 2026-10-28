@@ -748,6 +748,51 @@
     ]
 }
 
+// Mental Misstep
+{
+    "name": "Mental Misstep",
+    "manaCost": "{U/P}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell with mana value 1.",
+    "script": {
+        "spellEffect": "Counter",
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "mv=1",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "rarity": "UNCOMMON",
+        "artist": "Erica Yang",
+        "flavorText": "\"Your first mistake was thinking I would let you live long enough to make a second.\"\n—Sarnvax, Gitaxian sective",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/61e9c6df-1c84-4eab-9076-a4feb6347c10.jpg?1783941319",
+        "rulings": [
+            {
+                "date": "2011-06-01",
+                "text": "Each Phyrexian mana symbol in a spell's mana cost contributes 1 to that spell's mana value. For example, Mental Misstep's mana value is 1, regardless of how its cost was paid."
+            },
+            {
+                "date": "2011-06-01",
+                "text": "If you're at 1 life or less, you can't pay 2 life."
+            },
+            {
+                "date": "2011-06-01",
+                "text": "If a spell has {X} in its mana cost, X is considered to be the value chosen for it while that spell is on the stack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Mindcrank
 {
     "name": "Mindcrank",

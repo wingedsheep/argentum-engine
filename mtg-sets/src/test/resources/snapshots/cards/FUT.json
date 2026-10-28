@@ -503,6 +503,80 @@
     ]
 }
 
+// Pact of Negation
+{
+    "name": "Pact of Negation",
+    "manaCost": "{0}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell.\nAt the beginning of your next upkeep, pay {3}{U}{U}. If you don't, you lose the game.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                "Counter",
+                {
+                    "type": "CreateDelayedTrigger",
+                    "step": "UPKEEP",
+                    "effect": {
+                        "type": "PayOrSuffer",
+                        "cost": {
+                            "type": "PayAtom",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{U}{U}"
+                            }
+                        },
+                        "suffer": "LoseGame",
+                        "consequenceDescription": "lose the game"
+                    },
+                    "timing": "NextTurn",
+                    "fireOnPlayer": {
+                        "type": "PlayerRef",
+                        "player": "You"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "rarity": "RARE",
+        "artist": "Jason Chan",
+        "flavorText": "Those who expect betrayal at every turn are seldom disappointed.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cca467a2-a2b3-4bdf-9d60-62979f675347.jpg?1783943120",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "If Pact of Negation is countered or otherwise doesn't resolve (perhaps because its target became illegal), the delayed triggered ability that threatens you with a game loss won't trigger at the beginning of your next upkeep."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "If Pact of Negation resolves with a legal target but fails to counter that spell (most likely because that spell can't be countered), the delayed triggered ability will still trigger at the beginning of your next upkeep and you will have to pay. Or else."
+            },
+            {
+                "date": "2013-06-07",
+                "text": "Although originally printed with a characteristic-defining ability that defined its color, this card now has a color indicator. This color indicator can't be affected by text-changing effects (such as the one created by Crystal Spray), although color-changing effects can still overwrite it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ],
+    "colorIndicator": [
+        "BLUE"
+    ]
+}
+
 // Rites of Flourishing
 {
     "name": "Rites of Flourishing",

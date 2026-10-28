@@ -3154,6 +3154,76 @@
     ]
 }
 
+// Manglehorn
+{
+    "name": "Manglehorn",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "When this creature enters, you may destroy target artifact.\nArtifacts your opponents control enter tapped.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Manglehorn:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, you may destroy target artifact."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PermanentsEnterTapped",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "artifact ctrl:opponent",
+                    "to": "Battlefield"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "rarity": "UNCOMMON",
+        "artist": "Lius Lasahido",
+        "flavorText": "\"Rely too much on your weapons and watch your dreams shatter in your hands.\"\n—Rhonas, god of strength",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0aa3a844-97e6-4f5d-a36f-56fea4e06932.jpg?1783936473",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "If an artifact enters the battlefield under an opponent's control at the same time that Manglehorn enters the battlefield under your control, that artifact won't enter tapped."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Manticore of the Gauntlet
 {
     "name": "Manticore of the Gauntlet",
