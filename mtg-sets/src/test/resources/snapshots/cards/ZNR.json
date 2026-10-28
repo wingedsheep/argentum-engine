@@ -331,6 +331,85 @@
     ]
 }
 
+// Anticognition
+{
+    "name": "Anticognition",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target creature or planeswalker spell unless its controller pays {2}. If an opponent has eight or more cards in their graveyard, instead counter that spell, then scry 2.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Graveyard"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    "Counter",
+                    {
+                        "type": "Scry",
+                        "count": 2
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "Counter",
+                "condition": {
+                    "type": "CounterCondition.UnlessPaysMana",
+                    "cost": "{2}"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"I think not.\"\n—Flekon the Mindcensor",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/db99b872-77c7-4471-9c44-a36d4ff5d33f.jpg?1783929404",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Anticognition will counter the spell and let you scry 2 if any opponent has eight or more cards in their graveyard, not just that spell's controller."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Anticognition can target a spell that can't be countered. You'll still scry 2 if an opponent has eight or more cards in their graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Archon of Emeria
 {
     "name": "Archon of Emeria",
@@ -1221,6 +1300,91 @@
     ]
 }
 
+// Charix, the Raging Isle
+{
+    "name": "Charix, the Raging Isle",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Legendary Creature — Leviathan Crab",
+    "oracleText": "Spells your opponents cast that target Charix cost {2} more to cast.\n{3}: Charix gets +X/-X until end of turn, where X is the number of Islands you control.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 17
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Charix, the Raging Isle:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "land Island"
+                    },
+                    "toughnessModifier": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "land Island"
+                        },
+                        "multiplier": -1
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "{3}: Charix gets +X/-X until end of turn, where X is the number of Islands you control."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "OpponentsCastTargeting",
+                    "targetFilter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "modification": {
+                    "type": "IncreaseGeneric",
+                    "amount": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "RARE",
+        "artist": "Viktor Titov",
+        "flavorText": "Zendikar's seas are deeper than anyone can fathom.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e83a6804-1e3c-428c-af5e-1d56ba11c108.jpg?1783929402",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases (such as that of Charix), then apply any cost reductions. The mana value of the spell is determined only by its mana cost, no matter what the total cost to cast the spell was."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "An opponent's spell that targets Charix more than once costs only {2} more to cast."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Each time you activate Charix's last ability, the value of X for that instance of the ability is determined only as that ability resolves. Once that happens, the size of the power-and-toughness change for that instance of the ability won't change later in the turn, even if the number of Islands you control does change."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Chilling Trap
 {
     "name": "Chilling Trap",
@@ -1353,6 +1517,59 @@
         "BLUE"
     ],
     "layout": "MODAL_DFC"
+}
+
+// Cleric of Chill Depths
+{
+    "name": "Cleric of Chill Depths",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Merfolk Cleric",
+    "oracleText": "Whenever this creature blocks a creature, that creature doesn't untap during its controller's next untap step.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cleric of Chill Depths:1",
+                "trigger": {
+                    "type": "BlockEvent",
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DOESNT_UNTAP",
+                    "target": "TriggeringEntity",
+                    "duration": "UntilAfterAffectedControllersNextUntap"
+                },
+                "descriptionOverride": "Whenever this creature blocks a creature, that creature doesn't untap during its controller's next untap step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "artist": "Livia Prima",
+        "flavorText": "\"Before my people turned to false gods, we built a glittering city beneath the northern sea ice. The magic of ancient Benthidrix lives in me!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b4ea262c-ea32-4aca-b96b-58f556a8dffc.jpg?1783929400",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "The blocked creature doesn't untap even if Cleric of Chill Depths leaves the battlefield before that creature's controller's next upkeep."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If the blocked creature is untapped (most likely because it has vigilance), the ability doesn't tap it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Cliffhaven Kitesail
@@ -2761,6 +2978,49 @@
     ]
 }
 
+// Field Research
+{
+    "name": "Field Research",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Kicker {2}{U} (You may pay an additional {2}{U} as you cast this spell.)\nDraw two cards. If this spell was kicked, draw three cards instead.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{2}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": "WasKicked"
+            },
+            "then": {
+                "type": "DrawCards",
+                "count": {
+                    "type": "Fixed",
+                    "amount": 3
+                }
+            },
+            "otherwise": {
+                "type": "DrawCards",
+                "count": {
+                    "type": "Fixed",
+                    "amount": 2
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "58",
+        "artist": "PINDURSKI",
+        "flavorText": "\"In the field, speed-reading is a survival skill.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a48c3a2f-678b-4e70-a53f-258457d88d29.jpg?1783929398"
+    }
+}
+
 // Fissure Wizard
 {
     "name": "Fissure Wizard",
@@ -2978,6 +3238,102 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Glasspool Mimic
+{
+    "name": "Glasspool Mimic",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Shapeshifter Rogue",
+    "oracleText": "You may have this creature enter as a copy of a creature you control, except it's a Shapeshifter Rogue in addition to its other types.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersAsCopy",
+                "copyFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ],
+                    "controllerPredicate": "ControlledByYou"
+                },
+                "exceptions": {
+                    "conditional": [
+                        {
+                            "cardType": "CREATURE",
+                            "exceptions": {
+                                "addedSubtypes": [
+                                    "Shapeshifter",
+                                    "Rogue"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Glasspool Shore",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "This land enters tapped.\n{T}: Add {U}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Glasspool Shore:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "BLUE"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                "EntersTapped"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "60",
+            "rarity": "RARE",
+            "artist": "Johan Grenier",
+            "flavorText": "\"Past and possibility come together in the vastness of infinite reflection.\"\n—Ashen Wal, Akoum Expeditionary House",
+            "imageUri": "https://cards.scryfall.io/normal/back/5/a/5adcb500-8c77-4925-8e2c-1243502827d1.jpg?1783929404"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "rarity": "RARE",
+        "artist": "Johan Grenier",
+        "flavorText": "\"When I touched the Glasspool, I tasted infinite possibility.\"\n—Ashen Wal, Akoum Expeditionary House",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/a/5adcb500-8c77-4925-8e2c-1243502827d1.jpg?1783929404",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "If Glasspool Mimic isn't a creature, most likely because it copied a creature that was only temporarily a creature, it won't be a Shapeshifter Rogue, even if it becomes a creature later."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If another creature becomes a copy of Glasspool Mimic, that creature is also a Shapeshifter Rogue."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If Glasspool Mimic somehow enters the battlefield at the same time as another creature, it can't become a copy of that creature. You may choose only a creature that's already on the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ],
+    "layout": "MODAL_DFC"
 }
 
 // Gnarlid Colony
@@ -3220,6 +3576,150 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Inscription of Insight
+{
+    "name": "Inscription of Insight",
+    "manaCost": "{3}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Kicker {2}{U}{U}\nChoose one. If this spell was kicked, choose any number instead.\n• Return up to two target creatures to their owners' hands.\n• Scry 2, then draw two cards.\n• Target player creates an X/X blue Illusion creature token, where X is the number of cards in their hand.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{2}{U}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.TargetsOf",
+                            "group": "t0"
+                        },
+                        "body": {
+                            "type": "MoveToZone",
+                            "target": "IterationEntity",
+                            "destination": "Hand"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "count": 2,
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Return up to two target creatures to their owners' hands"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "Scry",
+                                "count": 2
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Scry 2, then draw two cards"
+                },
+                {
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 0,
+                        "toughness": 0,
+                        "colors": [
+                            "BLUE"
+                        ],
+                        "creatureTypes": [
+                            "Illusion"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/2/3/2300635e-7771-4676-a5a5-29a9d8f49f1a.jpg?1783929499",
+                        "controller": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "dynamicPower": {
+                            "type": "Count",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "zone": "Hand"
+                        },
+                        "dynamicToughness": {
+                            "type": "Count",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "zone": "Hand"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Target player creates an X/X blue Illusion creature token, where X is the number of cards in their hand"
+                }
+            ],
+            "chooseCount": 3,
+            "minChooseCount": 1,
+            "dynamicChooseCount": {
+                "type": "Conditional",
+                "condition": "WasKicked",
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 3
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/281cdb1c-21ae-4430-8e0f-c993f52ba891.jpg?1783929397",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "If more than one mode is chosen, perform them in the order written. Nothing can happen in between, however, and no player may choose to take actions."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "The value of X is determined only as you perform the third mode while Inscription of Insight is resolving. Once that happens, the value of X won't change even if the number of cards in the player's hand changes."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If you kick Inscription of Insight, you can't choose any one mode more than once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4667,6 +5167,179 @@
     ]
 }
 
+// Master of Winds
+{
+    "name": "Master of Winds",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Sphinx Wizard",
+    "oracleText": "Flying\nWhen this creature enters, draw two cards, then discard a card.\nWhenever you cast an instant, sorcery, or Wizard spell, you may have this creature's base power and toughness become 4/1 or 1/4 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Master of Winds:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, draw two cards, then discard a card."
+            },
+            {
+                "id": "Master of Winds:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    },
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Wizard"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Become 4/1 until end of turn",
+                            "effect": {
+                                "type": "SetBaseStats",
+                                "target": "Self",
+                                "power": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "toughness": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "duration": "EndOfTurn"
+                            }
+                        },
+                        {
+                            "label": "Become 1/4 until end of turn",
+                            "effect": {
+                                "type": "SetBaseStats",
+                                "target": "Self",
+                                "power": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughness": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "duration": "EndOfTurn"
+                            }
+                        },
+                        {
+                            "label": "Don't change",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": []
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you cast an instant, sorcery, or Wizard spell, you may have this creature's base power and toughness become 4/1 or 1/4 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "RARE",
+        "artist": "Yigit Koroglu",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0caaf92a-3d9d-4c52-acff-cf960ec55e47.jpg?1783929392",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "You don't choose a power and toughness for Master of Winds as its ability triggers. Rather, as it resolves, you choose whether to have Master of Winds become 4/1, become 1/4, or not change its power and toughness."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "The ability of Master of Winds overwrites any previous effects that set its power and/or toughness to specific values. Other effects that set these characteristics to specific values that start to apply after the ability resolves will overwrite that part of the effect."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Effects that modify the power or toughness of Master of Winds without setting it will apply to its new base power and toughness no matter when they started to take effect. The same is true for counters that change its power and toughness."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "A Wizard spell is one with the creature type Wizard. Spells that are Wizard-themed (such as Relic Amulet) aren't Wizard spells."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Maul of the Skyclaves
 {
     "name": "Maul of the Skyclaves",
@@ -4752,6 +5425,156 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Merfolk Falconer
+{
+    "name": "Merfolk Falconer",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Merfolk Wizard",
+    "oracleText": "Flying\nWhenever you cast a kicked spell, scry 2.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Merfolk Falconer:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellWasKicked"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Scry",
+                    "count": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "UNCOMMON",
+        "artist": "Brian Valeza",
+        "flavorText": "\"For generations, we have bred and trained falcons for expeditions into Emeria. Now more sky ruins open themselves to those with the means to reach the heights!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/c/acb0d55a-9d6a-443d-aa82-5cea93188fd2.jpg?1783929392"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Merfolk Windrobber
+{
+    "name": "Merfolk Windrobber",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Merfolk Rogue",
+    "oracleText": "Flying\nWhenever this creature deals combat damage to a player, that player mills a card. (They put the top card of their library into their graveyard.)\nSacrifice this creature: Draw a card. Activate only if an opponent has eight or more cards in their graveyard.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Merfolk Windrobber:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": "TriggeringPlayer",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "TriggeringPlayer"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Merfolk Windrobber:2",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "GreatestAmongPlayers",
+                                "players": "EachOpponent",
+                                "inner": {
+                                    "type": "Count",
+                                    "player": "You",
+                                    "zone": "Graveyard"
+                                }
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 8
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "UNCOMMON",
+        "artist": "Colin Boyer",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/112077b8-1514-4320-a70f-b23f3c7ce18a.jpg?1783929392",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "An ability that offers a bonus if an opponent has eight or more cards in their graveyard won't provide additional benefits if more than one opponent has eight or more cards in their graveyard. There are also no additional benefits no matter how many cards are in an opponent's graveyard, as long as there are at least eight."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -6151,6 +6974,64 @@
     ]
 }
 
+// Risen Riptide
+{
+    "name": "Risen Riptide",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Whenever you cast a kicked spell, this creature has base power and toughness 5/5 until end of turn.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Risen Riptide:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellWasKicked"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "SetBaseStats",
+                    "target": "Self",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "duration": "EndOfTurn"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "artist": "Zezhou Chen",
+        "flavorText": "\"Most days the sea is my friend. But only most days.\"\n—Jori En, expedition leader",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6455009-030c-4a33-a60b-80863d8f8aaf.jpg?1783929391",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Risen Riptide's ability overwrites any previous effects that set its power and/or toughness to specific values. Other effects that set these characteristics to specific values that start to apply after the ability resolves will overwrite that part of the effect."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Effects that modify Risen Riptide's power or toughness without setting it will apply to its new base power and toughness no matter when they started to take effect. The same is true for counters that change the creature's power or toughness."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Riverglide Pathway
 {
     "name": "Riverglide Pathway",
@@ -6278,6 +7159,81 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Roost of Drakes
+{
+    "name": "Roost of Drakes",
+    "manaCost": "{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Kicker {2}{U} (You may pay an additional {2}{U} as you cast this spell.)\nWhen this enchantment enters, if it was kicked, create a 2/2 blue Drake creature token with flying.\nWhenever you cast a kicked spell, create a 2/2 blue Drake creature token with flying.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{2}{U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Roost of Drakes:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Drake"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                },
+                "interveningIf": "WasKicked",
+                "descriptionOverride": "When this enchantment enters, if it was kicked, create a 2/2 blue Drake creature token with flying."
+            },
+            {
+                "id": "Roost of Drakes:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellWasKicked"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Drake"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ]
+                },
+                "descriptionOverride": "Whenever you cast a kicked spell, create a 2/2 blue Drake creature token with flying."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "UNCOMMON",
+        "artist": "Bayard Wu",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba1240d4-dbd0-483b-934a-5f7c505fad42.jpg?1783929393"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -6734,6 +7690,183 @@
     ]
 }
 
+// Sea Gate Stormcaller
+{
+    "name": "Sea Gate Stormcaller",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Kicker {4}{U}\nWhen this creature enters, copy the next instant or sorcery spell with mana value 2 or less you cast this turn when you cast it. If this creature was kicked, copy that spell twice instead. You may choose new targets for the copies.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{4}{U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Sea Gate Stormcaller:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "WasKicked"
+                    },
+                    "then": {
+                        "type": "CopyNextSpellCast",
+                        "copies": 2,
+                        "spellFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        "IsInstant",
+                                        "IsSorcery"
+                                    ]
+                                },
+                                {
+                                    "type": "ManaValueAtMost",
+                                    "max": 2
+                                }
+                            ]
+                        }
+                    },
+                    "otherwise": {
+                        "type": "CopyNextSpellCast",
+                        "spellFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        "IsInstant",
+                                        "IsSorcery"
+                                    ]
+                                },
+                                {
+                                    "type": "ManaValueAtMost",
+                                    "max": 2
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "rarity": "MYTHIC",
+        "artist": "Anna Steinbauer",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e14e677-9bfa-4bcc-9772-8e7758d7538a.jpg?1783929387",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Sea Gate Stormcaller's delayed triggered ability will copy any instant or sorcery spell, not just one with targets."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "A copy is created even if Sea Gate Stormcaller leaves the battlefield before its delayed triggered ability is created."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "A copy is created even if the spell that caused Sea Gate Stormcaller's delayed triggered ability to trigger has been countered by the time that ability resolves. The copy resolves before the original spell."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "You can't choose to pay any additional costs for the copy. However, effects based on any additional costs that were paid for the original spell are copied as though those same costs were paid for the copy too. Notably, if the spell you copy was kicked, the copy or copies will also be kicked."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "For spells with {X} in their mana costs, use the value chosen for X to determine the spell's mana value. If it's copied, the copy has the same value of X."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Seafloor Stalker
+{
+    "name": "Seafloor Stalker",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Merfolk Rogue",
+    "oracleText": "{4}{U}: This creature gets +1/+0 until end of turn and can't be blocked this turn. This ability costs {1} less to activate for each creature in your party. (Your party consists of up to one each of Cleric, Rogue, Warrior, and Wizard.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Seafloor Stalker:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "CANT_BE_BLOCKED",
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{4}{U}: This creature gets +1/+0 until end of turn and can't be blocked this turn. This ability costs {1} less to activate for each creature in your party.",
+                "genericCostReduction": "PartySize"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "artist": "Cristi Balanescu",
+        "flavorText": "\"Sunken ruins? My specialty.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/985e9696-6c76-4241-97fc-f166fe2420ce.jpg?1783929387",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Once you declare that you're activating Seafloor Stalker's ability, no player can take actions to try and change the number of creatures in your party and change the activation cost."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Once a creature has blocked Seafloor Stalker, activating its ability won't cause it to become unblocked or remove that blocking creature from combat."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "You can activate Seafloor Stalker's ability more than once, even if it already can't be blocked this turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Sejiri Shelter
 {
     "name": "Sejiri Shelter",
@@ -6805,6 +7938,74 @@
         "WHITE"
     ],
     "layout": "MODAL_DFC"
+}
+
+// Shell Shield
+{
+    "name": "Shell Shield",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Kicker {1} (You may pay an additional {1} as you cast this spell.)\nTarget creature you control gets +0/+3 until end of turn. If this spell was kicked, that creature also gains hexproof until end of turn. (It can't be the target of spells or abilities your opponents control.)",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{1}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "WasKicked"
+                    },
+                    "then": {
+                        "type": "GrantKeyword",
+                        "keyword": "HEXPROOF",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "artist": "Wisnu Tan",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3daede39-8eef-4272-a483-312dbd2dd30f.jpg?1783929386"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Shepherd of Heroes
@@ -7253,6 +8454,45 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Skyclave Squid
+{
+    "name": "Skyclave Squid",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Squid",
+    "oracleText": "Defender\nLandfall — Whenever a land you control enters, this creature can attack this turn as though it didn't have defender.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skyclave Squid:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": "CanAttackDespiteDefenderThisTurn",
+                "descriptionOverride": "Landfall — Whenever a land you control enters, this creature can attack this turn as though it didn't have defender."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "artist": "Livia Prima",
+        "flavorText": "An ancient sea monster dragged the Murasa Skyclave under the waves, then smaller sea monsters moved in.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/581ed049-7b5b-47d9-96af-f737631a221f.jpg?1783929385"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
