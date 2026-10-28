@@ -1544,6 +1544,108 @@
     "layout": "MODAL_DFC"
 }
 
+// Blackbloom Rogue
+{
+    "name": "Blackbloom Rogue",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nThis creature gets +3/+0 as long as an opponent has eight or more cards in their graveyard.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 3,
+                    "toughnessBonus": 0,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Graveyard"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Blackbloom Bog",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "This land enters tapped.\n{T}: Add {B}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Blackbloom Bog:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "BLACK"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                "EntersTapped"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "91",
+            "rarity": "UNCOMMON",
+            "artist": "Jesper Ejsing",
+            "flavorText": "\"The Raimunza River flows along the branches of jaddi trees for miles before plunging down to feed Blackbloom Lake.\"\n—Exena, expedition rogue",
+            "imageUri": "https://cards.scryfall.io/normal/back/3/2/32779721-b021-4bd4-95d1-4a19b78d9faa.jpg?1783929390"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Ejsing",
+        "flavorText": "\"If you ever want to get back up, do what I say.\"\n—Exena, expedition rogue",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/32779721-b021-4bd4-95d1-4a19b78d9faa.jpg?1783929390",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "An ability that offers a bonus if an opponent has eight or more cards in their graveyard won't provide additional benefits if more than one opponent has eight or more cards in their graveyard. There are also no additional benefits no matter how many cards are in an opponent's graveyard, as long as there are at least eight."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "In a multiplayer game, once an opponent leaves the game, they won't be considered for such an effect, no matter how many cards they had in their graveyard before leaving the game."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ],
+    "layout": "MODAL_DFC"
+}
+
 // Blood Beckoning
 {
     "name": "Blood Beckoning",
@@ -2715,6 +2817,73 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Cleric of Life's Bond
+{
+    "name": "Cleric of Life's Bond",
+    "manaCost": "{W}{B}",
+    "typeLine": "Creature — Vampire Cleric",
+    "oracleText": "Whenever another Cleric you control enters, you gain 1 life.\nWhenever you gain life for the first time each turn, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cleric of Life's Bond:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Cleric ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            {
+                "id": "Cleric of Life's Bond:2",
+                "trigger": {
+                    "type": "LifeGainEvent",
+                    "firstTimeEachTurn": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "UNCOMMON",
+        "artist": "Andrey Kuzinskiy",
+        "flavorText": "\"No gods. Only each other.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/953db280-6999-4b91-bc40-c6e7f7dd13ef.jpg?1783929324",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "An ability that triggers whenever you gain life \"for the first time each turn\" won't trigger if you gain life during a turn before the permanent with that ability is on the battlefield, even if you gain life again later in the turn."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "In a Two-Headed Giant game, life gained by your teammate won't cause the ability to trigger, even though it caused your team's life total to increase."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 
@@ -3999,6 +4168,56 @@
         "WHITE"
     ],
     "layout": "MODAL_DFC"
+}
+
+// Expedition Champion
+{
+    "name": "Expedition Champion",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "This creature gets +2/+0 as long as you control another Warrior.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 0,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Warrior",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "artist": "Bram Sels",
+        "flavorText": "Warriors are combat specialists who bring their deadly skills to bear against the many foes that adventurers face in the course of their journeys.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/30084dc1-f501-4b7c-972d-1a3b9137083a.jpg?1783929361",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Expedition Champion gets just +2/+0, no matter how many other Warriors you control beyond the first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Expedition Diviner
@@ -7815,6 +8034,78 @@
     ]
 }
 
+// Lullmage's Familiar
+{
+    "name": "Lullmage's Familiar",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "{T}: Add {G} or {U}.\nWhenever you cast a kicked spell, you gain 2 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lullmage's Familiar:3",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "requires": [
+                        "SpellWasKicked"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Lullmage's Familiar:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Lullmage's Familiar:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "227",
+        "rarity": "UNCOMMON",
+        "artist": "Gabor Szikszai",
+        "flavorText": "\"They store energy in special gastric organs ... but I guess you'd probably rather have me clear the path than ramble about guts.\"\n—Fahar, expedition wizard",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b31a81e8-df0e-4540-93c1-c30c31ea9be9.jpg?1783929324",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "The last ability of Lullmage's Familiar triggers when you cast a kicked spell even if you didn't spend mana from its first ability to cast that spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Luminarch Aspirant
 {
     "name": "Luminarch Aspirant",
@@ -9392,6 +9683,109 @@
     ]
 }
 
+// Murasa Rootgrazer
+{
+    "name": "Murasa Rootgrazer",
+    "manaCost": "{G}{W}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "Vigilance\n{T}: You may put a basic land card from your hand onto the battlefield.\n{T}: Return target basic land you control to its owner's hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Murasa Rootgrazer:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "filter": "basicland"
+                                },
+                                "storeAs": "put_candidates"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "put_candidates",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "putting"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "putting",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "id": "Murasa Rootgrazer:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "basicland ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "229",
+        "rarity": "UNCOMMON",
+        "artist": "Mathias Kollros",
+        "flavorText": "Few other creatures so closely embody Murasa's rapid cycles of growth.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e70b3b78-9bdc-449b-82a9-c2fc3dd7f120.jpg?1783929322",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Murasa Rootgrazer's middle ability doesn't count as playing a land. It can put a land card onto the battlefield even if you've already played your land for the turn."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Once Murasa Rootgrazer has attacked, you can activate either of its activated abilities. Doing so doesn't remove it from combat. It remains an attacking creature and will deal and receive combat damage as normal."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Murasa Sproutling
 {
     "name": "Murasa Sproutling",
@@ -9913,6 +10307,52 @@
     "layout": "MODAL_DFC"
 }
 
+// Nighthawk Scavenger
+{
+    "name": "Nighthawk Scavenger",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Vampire Rogue",
+    "oracleText": "Flying, deathtouch, lifelink\nNighthawk Scavenger's power is equal to 1 plus the number of card types among cards in your opponents' graveyards.",
+    "creatureStats": {
+        "power": {
+            "type": "DynamicWithOffset",
+            "source": {
+                "type": "AggregateZone",
+                "player": "EachOpponent",
+                "zone": "Graveyard",
+                "aggregation": "DISTINCT_TYPES"
+            },
+            "offset": 1
+        },
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "DEATHTOUCH",
+        "LIFELINK"
+    ],
+    "metadata": {
+        "collectorNumber": "115",
+        "rarity": "RARE",
+        "artist": "Heonhwa",
+        "flavorText": "Under Drana's leadership, vampires are finding new strength in unity.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb348f07-1d48-4877-8a56-60655d64a3f7.jpg?1783929373",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "The ability that defines Nighthawk Scavenger's power applies in all zones, not just the battlefield."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Nighthawk Scavenger counts card types, not cards. If the only card in your opponents' graveyards is a single artifact creature card, Nighthawk Scavenger will be 3/3. If the only cards in those graveyards are ten artifact cards and ten creature cards, Nighthawk Scavenger will still be 3/3."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Nimana Skitter-Sneak
 {
     "name": "Nimana Skitter-Sneak",
@@ -10060,6 +10500,161 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Nimble Trapfinder
+{
+    "name": "Nimble Trapfinder",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "This creature can't be blocked if you had another Cleric, Rogue, Warrior, or Wizard enter the battlefield under your control this turn.\nAt the beginning of combat on your turn, if you have a full party, creatures you control gain \"Whenever this creature deals combat damage to a player, draw a card\" until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nimble Trapfinder:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantTriggeredAbility",
+                        "ability": {
+                            "id": "Nimble Trapfinder:1",
+                            "trigger": {
+                                "type": "DealsDamageEvent",
+                                "damageType": "DamageCombat",
+                                "recipient": {
+                                    "type": "RecipientPlayer",
+                                    "player": "Any"
+                                }
+                            },
+                            "effect": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "descriptionOverride": "Whenever this creature deals combat damage to a player, draw a card."
+                        },
+                        "target": "IterationEntity"
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": "PartySize",
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "CantBeBlocked",
+                "condition": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "All",
+                            "conditions": [
+                                {
+                                    "type": "Not",
+                                    "condition": {
+                                        "type": "EntityMatches",
+                                        "entity": "Self",
+                                        "filter": {
+                                            "statePredicates": [
+                                                {
+                                                    "type": "EnteredThisTurn",
+                                                    "underYourControl": true
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "SubtypeEnteredUnderControlThisTurn",
+                                        "player": "You",
+                                        "subtypes": [
+                                            "Cleric",
+                                            "Rogue",
+                                            "Warrior",
+                                            "Wizard"
+                                        ]
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Compare",
+                            "left": {
+                                "type": "SubtypeEnteredUnderControlThisTurn",
+                                "player": "You",
+                                "subtypes": [
+                                    "Cleric",
+                                    "Rogue",
+                                    "Warrior",
+                                    "Wizard"
+                                ]
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "rarity": "RARE",
+        "artist": "Caio Monteiro",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1ee1a550-b7e7-48e0-bd96-a41986dbd879.jpg?1783929391",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Nimble Trapfinder's first ability checks only whether a permanent entered the battlefield under your control earlier in the turn and had one of the party creature types as it entered. It doesn't apply if an entering object gained the type later in the turn. It does apply if the entering object left your control since. It doesn't matter whether Nimble Trapfinder was under your control as that object entered."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Nimble Trapfinder's second ability affects only creatures you control at the time it resolves. Creatures you begin to control later in the turn won't get the triggered ability."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "After Nimble Trapfinder's second ability has resolved, creatures you control keep the triggered ability for the turn even if you no longer have a full party later in the turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -14493,6 +15088,78 @@
     ]
 }
 
+// Skyclave Plunder
+{
+    "name": "Skyclave Plunder",
+    "manaCost": "{4}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top X cards of your library, where X is three plus the number of creatures in your party. Put three of those cards into your hand and the rest on the bottom of your library in a random order. (Your party consists of up to one each of Cleric, Rogue, Warrior, and Wizard.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Add",
+                            "left": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "right": "PartySize"
+                        }
+                    },
+                    "storeAs": "looked"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "looked",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    "storeSelected": "kept",
+                    "storeRemainder": "rest",
+                    "selectedLabel": "Put in hand",
+                    "remainderLabel": "Put on bottom"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "kept",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "Random"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "UNCOMMON",
+        "artist": "YW Tang",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/f/3ff05312-787e-4e5e-a0d5-8f3fb576fc49.jpg?1783929386"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Skyclave Relic
 {
     "name": "Skyclave Relic",
@@ -14553,6 +15220,164 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Skyclave Sentinel
+{
+    "name": "Skyclave Sentinel",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Gargoyle",
+    "oracleText": "Kicker {4} (You may pay an additional {4} as you cast this spell.)\nFlying, defender\nIf this creature was kicked, it enters with two +1/+1 counters on it.\nAs long as this creature has a +1/+1 counter on it, it can attack as though it didn't have defender.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "DEFENDER"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{4}"
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanAttackDespiteDefender",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "PLUS_ONE_PLUS_ONE"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 2,
+                "selfOnly": true,
+                "condition": "WasKicked"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "253",
+        "artist": "Joseph Meehan",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fac8809a-77cd-4090-8a89-12121a8da676.jpg?1783929309"
+    },
+    "colorIdentityOverride": []
+}
+
+// Skyclave Shade
+{
+    "name": "Skyclave Shade",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Shade",
+    "oracleText": "Kicker {2}{B}\nThis creature can't block.\nIf this creature was kicked, it enters with two +1/+1 counters on it.\nLandfall — Whenever a land you control enters, if this card is in your graveyard and it's your turn, you may cast it from your graveyard this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{2}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Skyclave Shade:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": {
+                                    "statePredicates": [
+                                        "IsSource"
+                                    ]
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "gathered0"
+                        }
+                    ]
+                },
+                "activeZones": [
+                    "Graveyard"
+                ],
+                "interveningIf": {
+                    "type": "All",
+                    "conditions": [
+                        {
+                            "type": "SourceInZone",
+                            "zones": [
+                                "Graveyard"
+                            ]
+                        },
+                        "IsYourTurn"
+                    ]
+                },
+                "descriptionOverride": "Landfall — Whenever a land you control enters, if this card is in your graveyard and it's your turn, you may cast it from your graveyard this turn."
+            }
+        ],
+        "staticAbilities": [
+            "CantBlock"
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 2,
+                "selfOnly": true,
+                "condition": "WasKicked"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "rarity": "RARE",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50bbc0e7-48ce-41e2-a014-1f2eb0427550.jpg?1783929367",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "You must follow the normal timing permissions and restrictions for Skyclave Shade when casting it with the permission of its landfall ability. You must pay its mana cost (or, if another effect allows, an alternative cost). You may pay its kicker cost when casting it this way."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "After you cast Skyclave Shade from your graveyard, it's considered a new object, and the permission from its landfall ability won't apply to it again even if it returns to your graveyard later in the turn. You'll need to have another land enter the battlefield under your control after it has returned to your graveyard to cast it again."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Skyclave Shade's landfall ability triggers only if it's in your graveyard immediately after the land enters the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Skyclave Shadowcat
@@ -14737,6 +15562,129 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Soaring Thought-Thief
+{
+    "name": "Soaring Thought-Thief",
+    "manaCost": "{U}{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Flash\nFlying\nAs long as an opponent has eight or more cards in their graveyard, Rogues you control get +1/+0.\nWhenever one or more Rogues you control attack, each opponent mills two cards.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Soaring Thought-Thief:1",
+                "trigger": {
+                    "type": "YouAttackEvent",
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Rogue"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "player": "EachOpponent",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "EachOpponent"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever one or more Rogues you control attack, each opponent mills two cards."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 0,
+                    "filter": {
+                        "baseFilter": "creature Rogue ctrl:you"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "GreatestAmongPlayers",
+                        "players": "EachOpponent",
+                        "inner": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Graveyard"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "236",
+        "rarity": "UNCOMMON",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0d73c9c4-8955-499f-8f87-6500b35b4977.jpg?1783929318",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Soaring Thought-Thief's third ability applies to itself as well as other Rogues you control."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Soaring Thought-Thief's fourth ability causes each opponent to mill two cards, not just those being attacked by Rogues you control."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "An ability that offers a bonus if an opponent has eight or more cards in their graveyard won't provide additional benefits if more than one opponent has eight or more cards in their graveyard. There are also no additional benefits no matter how many cards are in an opponent's graveyard, as long as there are at least eight."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "In a multiplayer game, once an opponent leaves the game, they won't be considered for such an effect, no matter how many cards they had in their graveyard before leaving the game."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -15620,6 +16568,129 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Taborax, Hope's Demise
+{
+    "name": "Taborax, Hope's Demise",
+    "manaCost": "{2}{B}",
+    "typeLine": "Legendary Creature — Demon Cleric",
+    "oracleText": "Flying\nTaborax has lifelink as long as it has five or more +1/+1 counters on it.\nWhenever another nontoken creature you control dies, put a +1/+1 counter on Taborax. If that creature was a Cleric, you may draw a card. If you do, you lose 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Taborax, Hope's Demise:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "TriggeringEntityWas",
+                                    "filter": "creature Cleric"
+                                }
+                            },
+                            "then": {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "DrawCards",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        {
+                                            "type": "LoseLife",
+                                            "amount": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            },
+                                            "target": "Controller"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever another nontoken creature you control dies, put a +1/+1 counter on Taborax. If that creature was a Cleric, you may draw a card. If you do, you lose 1 life."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "PLUS_ONE_PLUS_ONE"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "rarity": "RARE",
+        "artist": "G-host Lee",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/331bf97d-f447-4c68-bfc7-2bb593106d66.jpg?1783929365",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "If Taborax is dealt lethal damage at the same time as one or more nontoken creatures you control die or are dealt lethal damage, it won't receive a counter from its ability in time to save it."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If another nontoken Cleric dies at the same time as Taborax, you won't put a +1/+1 counter on anything, but you may draw a card as its last ability resolves. You still lose 1 life if you do."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -17572,6 +18643,80 @@
     ]
 }
 
+// Veteran Adventurer
+{
+    "name": "Veteran Adventurer",
+    "manaCost": "{5}{G}",
+    "typeLine": "Creature — Human",
+    "oracleText": "Veteran Adventurer is also a Cleric, Rogue, Warrior, and Wizard.\nThis spell costs {1} less to cast for each creature in your party.\nVigilance",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantSubtype",
+                "subtype": "Cleric"
+            },
+            {
+                "type": "GrantSubtype",
+                "subtype": "Rogue"
+            },
+            {
+                "type": "GrantSubtype",
+                "subtype": "Warrior"
+            },
+            {
+                "type": "GrantSubtype",
+                "subtype": "Wizard"
+            },
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "Dynamic",
+                        "amount": "PartySize"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "UNCOMMON",
+        "artist": "Jakub Kasper",
+        "flavorText": "\"How can I be of assistance?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/5/e524ddf0-9a2f-4c1c-ae72-4b5b48f55645.jpg?1783929326",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "The ability that adds creature types to Veteran Adventurer applies in all zones, not just the battlefield."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "To determine \"the number of creatures in your party,\" check whether you control a Cleric, whether you control a Rogue, whether you control a Warrior, and whether you control a Wizard. The number is the total number of those checks to which you answered yes. Each creature you control can be counted for only one of those checks."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If a creature has more than one party creature type, and there are multiple ways to count that creature that could result in a different number of creatures in your party, the highest such number is used. For example, if you control a Cleric and a Cleric Wizard, the number of creatures in your party is two. You can't choose to have it be just one by counting the Cleric Wizard first as a Cleric."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Several cards have a cost reduction based on the number of creatures in your party. To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions. The mana value of the spell is determined only by its mana cost, no matter what the total cost to cast the spell was."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Vine Gecko
 {
     "name": "Vine Gecko",
@@ -17706,6 +18851,128 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Windrider Wizard
+{
+    "name": "Windrider Wizard",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Flying\nWhenever you cast an instant, sorcery, or Wizard spell, you may draw a card. If you do, discard a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Windrider Wizard:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    },
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Wizard"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever you cast an instant, sorcery, or Wizard spell, you may draw a card. If you do, discard a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "flavorText": "\"It's an ideal method for exploring sky ruins. The drakes sniff me briefly but then lose interest.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c790a86d-db91-4a87-aa3a-3f9fc4d4b662.jpg?1783929384",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "You draw a card and discard a card while Windrider Wizard's last ability is resolving. No player may take actions between those events, and nothing can happen."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "An ability that triggers when a player casts a spell resolves before the spell that caused it to trigger, but after targets have been chosen for that spell (if it has any targets). The ability resolves even if that spell is countered."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "A Wizard spell is one with the creature type Wizard. Spells that are Wizard-themed (such as Relic Amulet) aren't Wizard spells."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -18144,4 +19411,107 @@
         "BLACK"
     ],
     "layout": "MODAL_DFC"
+}
+
+// Zulaport Duelist
+{
+    "name": "Zulaport Duelist",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Flash\nWhen this creature enters, up to one target creature gets -2/-0 until end of turn. Its controller mills two cards. (They put the top two cards of their library into their graveyard.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Zulaport Duelist:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": -2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": {
+                                    "type": "ControllerOf",
+                                    "targetDescription": "target creature"
+                                }
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "TopOfLibrary",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 2
+                                            },
+                                            "isMill": true
+                                        },
+                                        "storeAs": "milled"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "milled",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "artist": "Bryan Sola",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b4c7268-60c6-4038-8ce9-d9d51bed4577.jpg?1783929384",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "If the target creature is an illegal target by the time Zulaport Duelist's ability tries to resolve, the ability doesn't resolve. No player mills two cards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
