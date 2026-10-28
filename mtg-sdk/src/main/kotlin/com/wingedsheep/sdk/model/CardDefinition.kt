@@ -336,6 +336,18 @@ data class CardDefinition(
         }
 
     /**
+     * The card's type line with its [selfDefinedSubtypes] folded in — the object's actual types in
+     * every zone. Read this, not the printed [typeLine], wherever a card off the battlefield is
+     * judged by its subtypes (a spell being cast against "Wizard spells cost {1} less", a card in a
+     * graveyard). Identical to [typeLine] for every card without such a CDA.
+     */
+    val characteristicTypeLine: TypeLine
+        get() = selfDefinedSubtypes.let { cda ->
+            if (cda.isEmpty() || typeLine.subtypes.containsAll(cda)) typeLine
+            else typeLine.copy(subtypes = typeLine.subtypes + cda)
+        }
+
+    /**
      * Color identity per CR 903.4: the colors of any mana symbols in the card's mana cost or
      * rules text, plus any colors defined by characteristic-defining abilities or color
      * indicators. Used by Commander/Brawl deck-construction to determine which cards may share

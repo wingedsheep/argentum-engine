@@ -1620,7 +1620,7 @@ class CostCalculator(
             is CardPredicate.IsInstant -> cardDef.typeLine.isInstant
             is CardPredicate.IsSorcery -> cardDef.typeLine.isSorcery
             is CardPredicate.IsPermanent -> cardDef.typeLine.isPermanent
-            is CardPredicate.HasSubtype -> predicate.subtype in cardDef.typeLine.subtypes
+            is CardPredicate.HasSubtype -> predicate.subtype in cardDef.characteristicTypeLine.subtypes
             is CardPredicate.Or -> predicate.predicates.any { matchesGraveyardPredicate(cardDef, it) }
             is CardPredicate.And -> predicate.predicates.all { matchesGraveyardPredicate(cardDef, it) }
             is CardPredicate.Not -> !matchesGraveyardPredicate(cardDef, predicate.predicate)
@@ -1870,7 +1870,7 @@ class CostCalculator(
         manaValue: Int = cardDef.manaCost.cmc,
         spellColors: Set<Color> = cardDef.colors,
     ): Boolean {
-        val typeLine = cardDef.typeLine
+        val typeLine = cardDef.characteristicTypeLine
         return when (predicate) {
             CardPredicate.IsCreature -> typeLine.isCreature
             CardPredicate.IsLand -> typeLine.isLand
@@ -1996,7 +1996,7 @@ class CostCalculator(
 
             CardPredicate.SharesCreatureTypeWithSource -> {
                 if (sourceEntityId == null) return true
-                val spellSubtypes = cardDef.typeLine.subtypes
+                val spellSubtypes = cardDef.characteristicTypeLine.subtypes
                 if (spellSubtypes.isEmpty()) return false
                 val sourceSubtypes = if (projectedState != null) {
                     projectedState.getSubtypes(sourceEntityId)
@@ -2019,7 +2019,7 @@ class CostCalculator(
                 val chosenType = state.getEntity(sourceEntityId)
                     ?.chosenSubtype()
                     ?: return false
-                val spellSubtypes = cardDef.typeLine.subtypes.map { it.value }
+                val spellSubtypes = cardDef.characteristicTypeLine.subtypes.map { it.value }
                 spellSubtypes.any { it.equals(chosenType, ignoreCase = true) } ||
                     (com.wingedsheep.sdk.core.Keyword.CHANGELING in cardDef.keywords &&
                         chosenType in Subtype.ALL_CREATURE_TYPES)

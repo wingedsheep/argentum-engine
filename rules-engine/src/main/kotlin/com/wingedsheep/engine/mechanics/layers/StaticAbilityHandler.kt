@@ -304,8 +304,9 @@ class StaticAbilityHandler(
         // A printed "[this] is also a [subtype]" is a CDA already folded into the entity's own type
         // line ([CardDefinition.selfDefinedSubtypes], CR 604.3), so it isn't projected again as a
         // timestamped layer-4 effect — CDAs apply before every other effect in their layer.
+        val foldedCdas = cardDefinition.selfDefinedSubtypes
         val allStaticAbilities = RoomFaceStatics.activeStaticAbilities(container, cardDefinition)
-            .filterNot { it is GrantSubtype && it.filter == GroupFilter.source() } +
+            .filterNot { it is GrantSubtype && it.filter == GroupFilter.source() && com.wingedsheep.sdk.core.Subtype(it.subtype) in foldedCdas } +
             container.get<CardComponent>()?.copyStaticAbilities.orEmpty() +
             printedBandsWithOther(cardDefinition)
 

@@ -125,11 +125,11 @@ object CardEntityFactory {
         // "[This] is also a Cleric, Rogue, Warrior, and Wizard" (Tajuru Paragon) is a CDA (CR 604.3):
         // it defines the card's subtypes in every zone, so it rides the entity's own type line —
         // read by every in-hand / graveyard / stack subtype check — rather than a layer-4 effect.
-        val selfSubtypes = cardDef.selfDefinedSubtypes
-        if (selfSubtypes.isNotEmpty()) {
+        if (cardDef.selfDefinedSubtypes.isNotEmpty()) {
             val card = result.get<CardComponent>()!!
-            if (!card.typeLine.subtypes.containsAll(selfSubtypes)) {
-                result = result.with(card.copy(typeLine = card.typeLine.copy(subtypes = card.typeLine.subtypes + selfSubtypes)))
+            if (!card.typeLine.subtypes.containsAll(cardDef.selfDefinedSubtypes)) {
+                result = result.with(card.copy(typeLine = card.typeLine.copy(
+                    subtypes = card.typeLine.subtypes + cardDef.selfDefinedSubtypes)))
             }
         }
 

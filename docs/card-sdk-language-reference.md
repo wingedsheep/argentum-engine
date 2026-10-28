@@ -10510,7 +10510,8 @@ staticAbility {
   (as `colors` derives devoid), and the engine folds them into the entity's own type line wherever the card is —
   so a hand, graveyard, library or stack check ("Wizard card", "Cleric spell") sees them — rather than projecting
   them as a timestamped layer-4 effect (CDAs apply first in their layer, CR 613.3, so a later "becomes a Frog"
-  still overwrites them). `CardDefinition.typeLine` stays as printed. One static per subtype: Tajuru Paragon is
+  still overwrites them). `CardDefinition.typeLine` stays as printed; `CardDefinition.characteristicTypeLine` is the
+  folded one, read by cast-time and cost checks that judge a spell from its definition. One static per subtype: Tajuru Paragon is
   `GrantSubtype("Cleric")`, `…("Rogue")`, `…("Warrior")`, `…("Wizard")` on a `Creature — Elf`, a full party by
   itself. Wrapped in a condition, or granted by another object, it is an ordinary layer-4 effect. (Tajuru Paragon)
 - `HasCreatureTypesOf(source, retainedTypes = emptySet(), filter = GroupFilter.source())` — Layer 4

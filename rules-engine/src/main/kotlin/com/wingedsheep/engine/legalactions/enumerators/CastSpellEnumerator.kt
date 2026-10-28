@@ -2083,7 +2083,7 @@ class CastSpellEnumerator(
             if (context.cantCastSpell(cardId)) continue
 
             val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
-            val spellSubtypes = cardDef.typeLine.subtypes.map { it.value }
+            val spellSubtypes = cardDef.characteristicTypeLine.subtypes.map { it.value }
             if (spellSubtypes.isEmpty()) continue
 
             // Splice grants no timing permission of its own — the spell is cast at its normal timing.

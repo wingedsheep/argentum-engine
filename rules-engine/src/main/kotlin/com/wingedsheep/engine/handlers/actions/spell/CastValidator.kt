@@ -939,7 +939,7 @@ internal class CastValidator(
         val sourceColors = state.projectedState.offBattlefieldColors(action.cardId)
             ?.mapNotNullTo(linkedSetOf()) { name -> com.wingedsheep.sdk.core.Color.entries.firstOrNull { it.name == name } }
             ?: (transformedFace ?: cardDef).colors
-        val sourceSubtypes = (transformedFace ?: cardDef).typeLine.subtypes.map { it.value }.toSet()
+        val sourceSubtypes = (transformedFace ?: cardDef).characteristicTypeLine.subtypes.map { it.value }.toSet()
         // A choose-N modal cast that sends its targets per mode already says which mode each target
         // belongs to, and those slices are what the stack records. Bind each slice against its own
         // mode — inferring a split of the union could hand one mode's target to another mode's
@@ -1154,8 +1154,8 @@ internal class CastValidator(
         val castFace = action.faceIndex?.let { cardDef?.cardFaces?.getOrNull(it) }
         val spellSubtypes = when {
             castFace != null -> castFace.typeLine.subtypes.map { it.value }
-            transformedFace != null -> transformedFace.typeLine.subtypes.map { it.value }
-            cardDef != null -> cardDef.typeLine.subtypes.map { it.value }
+            transformedFace != null -> transformedFace.characteristicTypeLine.subtypes.map { it.value }
+            cardDef != null -> cardDef.characteristicTypeLine.subtypes.map { it.value }
             else -> cardComponent.typeLine.subtypes.map { it.value }
         }
 

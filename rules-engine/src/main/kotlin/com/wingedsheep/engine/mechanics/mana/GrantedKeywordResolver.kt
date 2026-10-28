@@ -209,8 +209,8 @@ class GrantedKeywordResolver(
             CardPredicate.IsNonenchantment -> !cardDef.typeLine.isEnchantment
             CardPredicate.IsNonartifact -> !cardDef.typeLine.isArtifact
             CardPredicate.IsToken, CardPredicate.IsNontoken -> true
-            is CardPredicate.HasSubtype -> cardDef.typeLine.subtypes.any { it == predicate.subtype }
-            is CardPredicate.HasAnyOfSubtypes -> cardDef.typeLine.subtypes.any { predicate.subtypes.contains(it) }
+            is CardPredicate.HasSubtype -> cardDef.characteristicTypeLine.subtypes.any { it == predicate.subtype }
+            is CardPredicate.HasAnyOfSubtypes -> cardDef.characteristicTypeLine.subtypes.any { predicate.subtypes.contains(it) }
             is CardPredicate.HasColor -> colors.contains(predicate.color)
             CardPredicate.IsColorless -> colors.isEmpty()
             CardPredicate.IsDoubleFaced -> cardDef.isDoubleFaced
