@@ -67,13 +67,13 @@ class BeginOnBattlefieldTest : FunSpec({
         registerCards(TestCards.all + listOf(caverns, chooser, leyline))
     }
 
-    /** Swap every library copy of [name] into [playerId]'s hand, sending as many hand cards back. */
+    /** Swap every library copy of [name] into [playerId]'s hand, sending as many Islands back. */
     fun GameTestDriver.moveToOpeningHand(playerId: EntityId, name: String) {
         var s = state
         val library = ZoneKey(playerId, Zone.LIBRARY)
         val hand = ZoneKey(playerId, Zone.HAND)
         val wanted = s.getLibrary(playerId).filter { s.getEntity(it)?.get<CardComponent>()?.name == name }
-        val outgoing = s.getHand(playerId).filter { s.getEntity(it)?.get<CardComponent>()?.name != name }
+        val outgoing = s.getHand(playerId).filter { s.getEntity(it)?.get<CardComponent>()?.name == "Island" }
             .take(wanted.size)
         for (id in wanted) s = s.removeFromZone(library, id).addToZone(hand, id)
         for (id in outgoing) s = s.removeFromZone(hand, id).addToZone(library, id)
@@ -173,14 +173,24 @@ class BeginOnBattlefieldTest : FunSpec({
         d.moveToOpeningHand(d.player2, "Test Leyline")
         d.keepBoth()
 
-        val first = d.answerYesNo(true)
-        first.prompt shouldBe "Begin the game with Test Caverns on the battlefield?"
-        val exile = d.exileFromHandPrompt()
-        val island = exile.options.first { d.state.getEntity(it)?.get<CardComponent>()?.name == "Island" }
-        d.submitCardSelection(d.player2, listOf(island)).error shouldBe null
-
-        d.answerYesNo(true).prompt shouldBe "Begin the game with Test Leyline on the battlefield?"
+        // The walk asks in hand order; whichever comes first, the Caverns' exile question must not
+        // end it — the other card is still offered afterwards.
+        val asked = mutableListOf<String>()
+        repeat(2) {
+            val offer = d.answerYesNo(true)
+            asked += offer.prompt
+            if (offer.prompt == "Begin the game with Test Caverns on the battlefield?") {
+                val exile = d.exileFromHandPrompt()
+                val island = exile.options.first { d.state.getEntity(it)?.get<CardComponent>()?.name == "Island" }
+                d.submitCardSelection(d.player2, listOf(island)).error shouldBe null
+            }
+        }
+        asked.toSet() shouldBe setOf(
+            "Begin the game with Test Caverns on the battlefield?",
+            "Begin the game with Test Leyline on the battlefield?",
+        )
         d.pendingDecision shouldBe null
+        d.state.getZone(ZoneKey(d.player2, Zone.EXILE)).size shouldBe 1
         d.named(ZoneKey(d.player2, Zone.BATTLEFIELD)).toSet() shouldBe setOf("Test Caverns", "Test Leyline")
         d.state.step shouldBe Step.UPKEEP
     }

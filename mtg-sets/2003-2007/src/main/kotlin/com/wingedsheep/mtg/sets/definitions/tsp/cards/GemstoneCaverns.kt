@@ -45,6 +45,7 @@ val GemstoneCaverns = card("Gemstone Caverns") {
         )
         manaAbility = true
         timing = TimingRule.ManaAbility
+        description = "{T}: Add {C}. If Gemstone Caverns has a luck counter on it, instead add one mana of any color."
     }
 
     metadata {

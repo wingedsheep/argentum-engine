@@ -2044,7 +2044,8 @@
                     }
                 },
                 "timing": "ManaAbility",
-                "isManaAbility": true
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {C}. If Gemstone Caverns has a luck counter on it, instead add one mana of any color."
             }
         ],
         "beginOnBattlefield": {
