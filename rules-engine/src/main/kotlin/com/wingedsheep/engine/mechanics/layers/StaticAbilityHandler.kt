@@ -742,14 +742,14 @@ class StaticAbilityHandler(
                 modification = Modification.GrantStaticAbility(ability),
                 affectsFilter = AffectsFilter.Self,
             )
-            // Read at cleanup from the holder's projected statics (MaximumHandSize), so the
-            // printed, resolved-effect and GrantStaticAbility routes all meet in Layer 6.
             // Read at the counter-placement chokepoint from the holder's projected statics
             // (ReplacementEffectUtils.applyCounterPlacementModifiers).
             is com.wingedsheep.sdk.scripting.MaxCounters -> ContinuousEffectData(
                 modification = Modification.GrantStaticAbility(ability),
                 affectsFilter = AffectsFilter.Self,
             )
+            // Read at cleanup from the holder's projected statics (MaximumHandSize), so the
+            // printed, resolved-effect and GrantStaticAbility routes all meet in Layer 6.
             is NoMaximumHandSize, is com.wingedsheep.sdk.scripting.ModifyMaximumHandSize -> ContinuousEffectData(
                 modification = Modification.GrantStaticAbility(ability),
                 affectsFilter = AffectsFilter.Self,
