@@ -63,42 +63,21 @@
         ],
         "replacementEffects": [
             {
-                "type": "OnEnterRunEffect",
-                "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "BattlefieldMatching",
-                                "filter": "creature",
-                                "excludeSelf": true
-                            },
-                            "storeAs": "gathered0"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "gathered0",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "selected1",
-                            "prompt": "You may exchange Deadpool's text box with another creature's",
-                            "useTargetingUI": true
-                        },
-                        {
-                            "type": "ExchangeTextBoxes",
-                            "first": "Self",
-                            "second": {
-                                "type": "PipelineTarget",
-                                "collectionName": "selected1"
-                            }
-                        }
+                "type": "EntersWithChoice",
+                "choiceType": "CREATURE_ON_BATTLEFIELD",
+                "permanentFilter": {
+                    "cardPredicates": [
+                        "IsCreature"
+                    ],
+                    "statePredicates": [
+                        "IsFaceUp"
                     ]
+                },
+                "mayChooseNothing": true,
+                "then": {
+                    "type": "ExchangeTextBoxes",
+                    "first": "Self",
+                    "second": "ChosenCreature"
                 }
             }
         ]
