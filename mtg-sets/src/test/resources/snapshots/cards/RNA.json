@@ -3020,6 +3020,67 @@
     ]
 }
 
+// Lavinia, Azorius Renegade
+{
+    "name": "Lavinia, Azorius Renegade",
+    "manaCost": "{W}{U}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Each opponent can't cast noncreature spells with mana value greater than the number of lands that player controls.\nWhenever an opponent casts a spell, if no mana was spent to cast it, counter that spell.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Lavinia, Azorius Renegade:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Counter",
+                    "targetSource": "CounterTargetSource.TriggeringEntity"
+                },
+                "interveningIf": "TriggeringSpellCastWithoutPayingMana"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "PlayersCantCastSpells",
+                "spellFilter": {
+                    "cardPredicates": [
+                        "IsNoncreature",
+                        {
+                            "type": "Not",
+                            "predicate": {
+                                "type": "ManaValueAtMostDynamic",
+                                "amount": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "land"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "rarity": "RARE",
+        "artist": "Steven Belledin",
+        "flavorText": "\"I told Jace that Ravnica would fall apart if he didn't take his responsibilities seriously. I didn't want to be right.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c497d496-1232-4614-93b0-9864fa93c29f.jpg?1783933643"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Light Up the Stage
 {
     "name": "Light Up the Stage",

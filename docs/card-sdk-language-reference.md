@@ -12072,7 +12072,13 @@ staticAbility {
   projected state. Examples: Voice of Victory = `PlayersCantCastSpells(Player.EachOpponent, condition
   = IsYourTurn)`; Grand Abolisher's cast clause = `PlayersCantCastSpells(Player.EachOpponent, condition
   = IsYourTurn)`; Void Winnower = `PlayersCantCastSpells(Player.EachOpponent, spellFilter =
-  GameObjectFilter(cardPredicates = listOf(CardPredicate.ManaValueIsEven)))`. `conditionFromCaster =
+  GameObjectFilter(cardPredicates = listOf(CardPredicate.ManaValueIsEven)))`. The `spellFilter` is
+  matched with the *casting player* as "you" (the granting permanent stays the source), so a dynamic
+  cap in it is caster-relative: Lavinia, Azorius Renegade ("can't cast noncreature spells with mana
+  value greater than the number of lands that player controls") = `PlayersCantCastSpells(Player.EachOpponent,
+  GameObjectFilter.Noncreature.withCardPredicate(CardPredicate.Not(CardPredicate.ManaValueAtMostDynamic(
+  DynamicAmounts.landsYouControl()))))` counts the caster's lands, and an {X} spell's chosen X counts.
+  `conditionFromCaster =
   true` evaluates `condition` from the *casting player's* seat instead, for timing relative to each
   restricted player: Dosan the Falling Leaf = `PlayersCantCastSpells(Player.Each, condition =
   IsNotYourTurn, conditionFromCaster = true)` ("Players can cast spells only during their own turns"
