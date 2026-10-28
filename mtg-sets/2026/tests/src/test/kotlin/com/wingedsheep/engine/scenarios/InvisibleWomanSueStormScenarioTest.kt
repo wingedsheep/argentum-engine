@@ -133,10 +133,8 @@ class InvisibleWomanSueStormScenarioTest : ScenarioTestBase() {
              * This proves the *guarded* placement path only: `Test Rallying Call` is
              * `ForEachInGroup` + `AddCounters`, so it runs through `AddCountersExecutor`, which
              * checks `ProjectedState.canReceiveCounters` before emitting. That check is
-             * per-executor, not central — `AddCountersToCollectionExecutor` and
-             * `DistributeCountersAmongTargetsExecutor` don't make it, and a no-op placement from
-             * those would enter the batch. See the KDoc on
-             * `TriggerDetector.detectCountersPlacedBatchTriggers`.
+             * shared with AddCountersToCollectionExecutor. This scenario still proves the
+             * ForEachInGroup path only; other independent counter emitters are not certified here.
              */
             test("a Hero that can't have counters put on it is not in the batch") {
                 val game = scenario()

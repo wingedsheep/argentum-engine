@@ -1,15 +1,11 @@
 package com.wingedsheep.engine.handlers.effects.permanent.counters
 
-import com.wingedsheep.engine.core.CountersAddedEvent
+import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
-import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.battlefield.CountersComponent
-import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.scripting.effects.AddCountersToCollectionEffect
 import kotlin.reflect.KClass
 
@@ -20,6 +16,8 @@ import kotlin.reflect.KClass
 class AddCountersToCollectionExecutor(
     private val amountEvaluator: DynamicAmountEvaluator
 ) : EffectExecutor<AddCountersToCollectionEffect> {
+
+    private val placement = AddCountersExecutor(amountEvaluator.predicates)
 
     override val effectType: KClass<AddCountersToCollectionEffect> = AddCountersToCollectionEffect::class
 
@@ -33,34 +31,21 @@ class AddCountersToCollectionExecutor(
 
         if (entityIds.isEmpty()) return EffectResult.success(state)
 
-        val counterType = effect.counterType
-
         // A dynamic [amount] overrides the static [count] — evaluated once at resolution.
         val baseCount = effect.amount?.let { amountEvaluator.evaluate(state, it, context) }
             ?: effect.count
         if (baseCount <= 0) return EffectResult.success(state)
 
         var currentState = state
-        val events = mutableListOf<CountersAddedEvent>()
+        val events = mutableListOf<GameEvent>()
 
         for (entityId in entityIds) {
             if (currentState.getEntity(entityId) == null) continue
 
-            val current = currentState.getEntity(entityId)?.get<CountersComponent>() ?: CountersComponent()
-            val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
-                currentState, entityId, counterType, baseCount, placerId = context.controllerId,
-                predicateEvaluator = amountEvaluator.predicates, byEffect = true
-            )
-
-            val firstThisTurn = DamageUtils.isFirstCounterThisTurn(currentState, entityId)
-            val firstOfTypeThisTurn = DamageUtils.isFirstCounterOfTypeThisTurn(currentState, entityId, counterType)
-            currentState = currentState.updateEntity(entityId) { container ->
-                container.with(current.withAdded(counterType, modifiedCount))
-            }
-            currentState = DamageUtils.markCounterPlacedOnCreature(currentState, context.controllerId, entityId, counterType)
-
-            val entityName = currentState.getEntity(entityId)?.get<CardComponent>()?.name ?: ""
-            events.add(CountersAddedEvent(entityId, effect.counterType, modifiedCount, entityName, firstThisTurn, firstOfTypeThisTurn = firstOfTypeThisTurn, placedBy = context.controllerId))
+            // Reuse prohibition, replacement/cap, event and placement-history handling.
+            val result = placement.placeOn(currentState, entityId, effect.counterType, baseCount, context)
+            currentState = result.state
+            events.addAll(result.events)
         }
 
         return EffectResult.success(currentState, events)
