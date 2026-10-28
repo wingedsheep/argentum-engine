@@ -565,6 +565,106 @@
     "colorIdentityOverride": []
 }
 
+// Surly Badgersaur
+{
+    "name": "Surly Badgersaur",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Badger Dinosaur",
+    "oracleText": "Whenever you discard a creature card, put a +1/+1 counter on this creature.\nWhenever you discard a land card, create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")\nWhenever you discard a noncreature, nonland card, this creature fights up to one target creature you don't control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Surly Badgersaur:1",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "cardFilter": "creature"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you discard a creature card, put a +1/+1 counter on this creature."
+            },
+            {
+                "id": "Surly Badgersaur:2",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "cardFilter": "land"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                },
+                "descriptionOverride": "Whenever you discard a land card, create a Treasure token."
+            },
+            {
+                "id": "Surly Badgersaur:3",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "cardFilter": "noncreature nonland"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Fight",
+                    "target1": "Self",
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControllerNot",
+                                "predicate": "ControlledByYou"
+                            }
+                        }
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you discard a noncreature, nonland card, this creature fights up to one target creature you don't control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "rarity": "RARE",
+        "artist": "Izzy",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7ba507e2-fe5e-4947-aada-20184aa09700.jpg?1783931211",
+        "rulings": [
+            {
+                "date": "2020-04-17",
+                "text": "Surly Badgersaur's abilities are triggered abilities, not activated abilities. They don't allow you to discard a card whenever you want; rather, you need some other way of discarding a card, such as a cycling ability."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If you discard a card as a cost to cast a spell or activate an ability, Surly Badgersaur's triggered ability resolves before that spell or ability but after you've chosen targets for it. If you discard a card while a spell or ability is resolving, that spell or ability finishes resolving before Surly Badgersaur's triggered ability does."
+            },
+            {
+                "date": "2020-04-17",
+                "text": "If the target creature is an illegal target when Surly Badgersaur's last ability tries to resolve, the ability doesn't resolve. If it's a legal target but Surly Badgersaur is no longer on the battlefield when the ability resolves, the target creature won't deal or be dealt damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Twinning Staff
 {
     "name": "Twinning Staff",

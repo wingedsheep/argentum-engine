@@ -768,6 +768,104 @@
     "colorIdentityOverride": []
 }
 
+// Nyx Weaver
+{
+    "name": "Nyx Weaver",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Enchantment Creature — Spider",
+    "oracleText": "Reach\nAt the beginning of your upkeep, mill two cards. (Put the top two cards of your library into your graveyard.)\n{1}{B}{G}, Exile this creature: Return target card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nyx Weaver:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Nyx Weaver:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}{G}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "rarity": "UNCOMMON",
+        "artist": "Jack Wang",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e8553cc-8f61-4022-97c9-e31183b65059.jpg?1783939403"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Oreskos Swiftclaw
 {
     "name": "Oreskos Swiftclaw",

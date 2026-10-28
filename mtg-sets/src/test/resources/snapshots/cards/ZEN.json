@@ -1036,6 +1036,68 @@
     ]
 }
 
+// Crypt of Agadeem
+{
+    "name": "Crypt of Agadeem",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped.\n{T}: Add {B}.\n{2}, {T}: Add {B} for each black creature card in your graveyard.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Crypt of Agadeem:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Crypt of Agadeem:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK",
+                    "amount": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "creature black"
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "RARE",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/672869d6-5314-422e-92f6-6a328fe0c6f6.jpg?1783942125"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Day of Judgment
 {
     "name": "Day of Judgment",

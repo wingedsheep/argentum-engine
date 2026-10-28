@@ -2519,6 +2519,65 @@
     ]
 }
 
+// Gleaming Overseer
+{
+    "name": "Gleaming Overseer",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Creature — Zombie Wizard",
+    "oracleText": "When this creature enters, amass Zombies 1. (Put a +1/+1 counter on an Army you control. It's also a Zombie. If you don't control an Army, create a 0/0 black Zombie Army creature token first.)\nZombie tokens you control have hexproof and menace.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gleaming Overseer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Amass",
+                    "subtype": "Zombie"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HEXPROOF",
+                "filter": {
+                    "baseFilter": "Zombie token ctrl:you"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "MENACE",
+                "filter": {
+                    "baseFilter": "Zombie token ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "rarity": "UNCOMMON",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b4604b4-df53-485c-a604-4d823b33d8ba.jpg?1783933397",
+        "rulings": [
+            {
+                "date": "2023-06-16",
+                "text": "Some cards that cause you to amass Zombies also provide bonuses to \"Zombie tokens.\" These affect any token that happens to be a Zombie, not just a Zombie Army you've amassed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Goblin Assailant
 {
     "name": "Goblin Assailant",

@@ -10,7 +10,7 @@
 
 ## Creatures (27)
 
-- [ ] 1 Archfiend of Ifnir
+- [x] 1 Archfiend of Ifnir
 - [ ] 1 Carnifex Demon
 - [ ] 1 Channeler Initiate
 - [ ] 1 Devoted Druid

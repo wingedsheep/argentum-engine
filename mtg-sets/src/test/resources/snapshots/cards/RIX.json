@@ -2362,6 +2362,98 @@
     ]
 }
 
+// Nezahal, Primal Tide
+{
+    "name": "Nezahal, Primal Tide",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Legendary Creature — Elder Dinosaur",
+    "oracleText": "This spell can't be countered.\nYou have no maximum hand size.\nWhenever an opponent casts a noncreature spell, draw a card.\nDiscard three cards: Exile Nezahal. Return it to the battlefield tapped under its owner's control at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nezahal, Primal Tide:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    },
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Nezahal, Primal Tide:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomDiscard",
+                        "count": 3
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "step": "END",
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": "Self",
+                                "destination": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Discard three cards: Exile Nezahal. Return it to the battlefield tapped under its owner's control at the beginning of the next end step."
+            }
+        ],
+        "staticAbilities": [
+            "NoMaximumHandSize"
+        ],
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "RARE",
+        "artist": "Sam Burley",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/8/48eba418-94ab-46a3-958c-4d5058fc2bcd.jpg?1783935322",
+        "rulings": [
+            {
+                "date": "2018-01-19",
+                "text": "Nezahal's triggered ability resolves before the noncreature spell that caused it to trigger."
+            },
+            {
+                "date": "2018-01-19",
+                "text": "After Nezahal returns to the battlefield, it will be a new object with no connection to the creature that was exiled. It won't be in combat or have any additional abilities it may have had when it was exiled. Any +1/+1 counters on it or Auras attached to it are removed, and any Equipment will no longer be attached."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Oathsworn Vampire
 {
     "name": "Oathsworn Vampire",

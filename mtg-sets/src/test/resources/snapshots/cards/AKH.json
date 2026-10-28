@@ -90,6 +90,75 @@
     ]
 }
 
+// Archfiend of Ifnir
+{
+    "name": "Archfiend of Ifnir",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Flying\nWhenever you cycle or discard another card, put a -1/-1 counter on each creature your opponents control.\nCycling {2} ({2}, Discard this card: Draw a card.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Archfiend of Ifnir:1",
+                "trigger": "DiscardEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "MINUS_ONE_MINUS_ONE",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                },
+                "descriptionOverride": "Whenever you cycle or discard another card, put a -1/-1 counter on each creature your opponents control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "RARE",
+        "artist": "Seb McKinnon",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/33176679-d571-47a1-ae05-bed9b748491d.jpg?1783936512",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "An ability that triggers whenever you \"cycle or discard\" a card triggers only once if you cycle a card. The ability \"Whenever you discard a card\" is functionally identical to this ability; cycling is mentioned for clarity."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If a player discards a card during their cleanup step due to having too many cards in hand, any appropriate abilities that trigger on discarding that card trigger. If this happens, those triggered abilities are put onto the stack and players receive priority in that cleanup step to cast spells or activate abilities (normally, no players may take actions during a cleanup step). Another cleanup step is created following that one."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "Some cards have an ability that triggers whenever you cycle any card. These triggered abilities resolve before you draw from the cycling ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Baleful Ammit
 {
     "name": "Baleful Ammit",

@@ -340,6 +340,90 @@
     ]
 }
 
+// Floral Evoker
+{
+    "name": "Floral Evoker",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Snake Druid",
+    "oracleText": "Landfall — Whenever a land you control enters, put a +1/+1 counter on this creature.\n{G}, Discard a creature card: Return target land card from your graveyard to the battlefield tapped.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Floral Evoker:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Floral Evoker:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{G}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomDiscard",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Battlefield",
+                    "placement": "Tapped"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "RARE",
+        "artist": "Monztre",
+        "flavorText": "\"Death is a natural thing. It replenishes the land's energy and nourishes the growth of all life.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/4452f54b-1b44-4ccf-be99-7d3c2614d89a.jpg?1783907165"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Jaws of Defeat
 {
     "name": "Jaws of Defeat",
@@ -415,6 +499,86 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Steward of the Harvest
+{
+    "name": "Steward of the Harvest",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Human Druid",
+    "oracleText": "When this creature enters, exile up to three target land cards from your graveyard.\nCreatures you control have all activated abilities of all land cards exiled with this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Steward of the Harvest:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Exile",
+                        "linkToSource": true
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 3,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "land own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "HasAllActivatedAbilitiesOfCards",
+                "donors": "LinkedExile",
+                "cardFilter": "land",
+                "receivedBy": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "RARE",
+        "artist": "Marie Magny",
+        "flavorText": "\"Sleep, and return your energy to the lifepool. Sleep, and enrich the land for the next harvest.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6e6ddbf5-e282-48ae-ba86-d15589d96e36.jpg?1783907166",
+        "rulings": [
+            {
+                "date": "2025-04-04",
+                "text": "Creatures you control gain only activated abilities of the exiled land cards. They don't gain triggered abilities, static abilities, or keyword abilities that aren't activated abilities."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "If an activated ability of a land card exiled with Steward of the Harvest references the card it's printed on by name, treat the version of that ability on each creature you control as though it referenced the creature that has it by name instead."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "Land cards with one or more basic land types have the intrinsic activated ability \"{T}: Add [mana symbol],\" even if the text box doesn't actually contain that text or the card has no text box."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -744,6 +908,142 @@
     "colorIdentityOverride": [
         "GREEN",
         "BLUE",
+        "RED"
+    ]
+}
+
+// Will of the Jeskai
+{
+    "name": "Will of the Jeskai",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one. If you control a commander as you cast this spell, you may choose both instead.\n• Each player may discard their hand and draw five cards.\n• Each instant and sorcery card in your graveyard gains flashback until end of turn. The flashback cost is equal to its mana cost.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Players",
+                            "players": "Each"
+                        },
+                        "body": {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "discardedHand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discardedHand",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    },
+                                    {
+                                        "type": "DrawCards",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 5
+                                        }
+                                    }
+                                ]
+                            },
+                            "decisionMaker": "Controller"
+                        }
+                    },
+                    "description": "Each player may discard their hand and draw five cards"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Graveyard",
+                                    "filter": "instant|sorcery"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Collection",
+                                    "collection": "gathered0"
+                                },
+                                "body": {
+                                    "type": "GrantFlashback",
+                                    "target": "IterationEntity"
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Each instant and sorcery card in your graveyard gains flashback until end of turn. The flashback cost is equal to its mana cost"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1,
+            "dynamicChooseCount": {
+                "type": "Conditional",
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsPermanent"
+                        ],
+                        "statePredicates": [
+                            "IsCommander"
+                        ]
+                    }
+                },
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "rarity": "RARE",
+        "artist": "Jessica Fong",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d05bac1f-d455-4528-93b2-a94c29b5dc2c.jpg?1783907169",
+        "rulings": [
+            {
+                "date": "2025-04-04",
+                "text": "A player may discard their hand even if their hand contains zero cards."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "The commander you control doesn't have to be your commander."
+            },
+            {
+                "date": "2025-04-04",
+                "text": "Whether or not you control a commander is determined only once, as you choose the modes for this spell. If you somehow lose control of that commander before you finish casting the spell (perhaps because you sacrifice it to activate a mana ability), it won't change the number of modes chosen."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
         "RED"
     ]
 }

@@ -1,0 +1,67 @@
+// Green Goblin, Nemesis
+{
+    "name": "Green Goblin, Nemesis",
+    "manaCost": "{2}{B}{R}",
+    "typeLine": "Legendary Creature — Goblin Human Villain",
+    "oracleText": "Flying\nWhenever you discard a nonland card, put a +1/+1 counter on target Goblin you control.\nWhenever you discard a land card, create a tapped Treasure token.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Green Goblin, Nemesis:1",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "cardFilter": "nonland"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent Goblin ctrl:you"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you discard a nonland card, put a +1/+1 counter on target Goblin you control."
+            },
+            {
+                "id": "Green Goblin, Nemesis:2",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "cardFilter": "land"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure",
+                    "tapped": true
+                },
+                "descriptionOverride": "Whenever you discard a land card, create a tapped Treasure token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "RARE",
+        "artist": "Dan Dos Santos",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b2860277-5b9e-444a-81f9-58e23355a722.jpg?1783905367"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}

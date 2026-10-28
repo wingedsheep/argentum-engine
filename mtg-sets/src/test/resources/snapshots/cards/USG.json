@@ -5246,6 +5246,60 @@
     ]
 }
 
+// Tolarian Winds
+{
+    "name": "Tolarian Winds",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Discard all the cards in your hand, then draw that many cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Discard"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "VariableReference",
+                        "variableName": "gathered0_count"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "artist": "Lawrence Snelly",
+        "flavorText": "Afterward, Tolaria's winds were like the whispers of lost wizards, calling for life.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c29399d-0a59-4dcb-9bd4-f31eea3f39f9.jpg?1783946353",
+        "rulings": [
+            {
+                "date": "2004-10-04",
+                "text": "It counts how many cards you discard. Since this card will not be in your hand at that time, this card is not counted."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Treetop Rangers
 {
     "name": "Treetop Rangers",

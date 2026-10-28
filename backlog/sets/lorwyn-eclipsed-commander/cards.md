@@ -2,7 +2,7 @@
 
 **Set Size:** 153 cards
 **Release Date:** January 23, 2026
-**Implemented:** 8 / 153
+**Implemented:** 9 / 153
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 4     | 0    |
@@ -21,7 +21,7 @@
 - [ ] Abundant Growth
 - [ ] Ancient Ziggurat
 - [ ] Arcane Signet
-- [ ] Archfiend of Ifnir
+- [x] Archfiend of Ifnir
 - [ ] Ashling, the Limitless
 - [ ] Assassin's Trophy
 - [ ] Auntie Ool, Cursewretch
