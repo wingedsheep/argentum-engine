@@ -77,11 +77,13 @@ internal class JevActions(
         val payment = costs.map { cost(it, x.takeIf { action is CastSpell }) }.reduceOrNull(::combine)
         val manaPayment = manaPayment(info)
         val alternative = alternative(info)
-        val damage = if (info.requiresDamageDistribution && info.totalDamageToDistribute != null) {
+        // A total that reads a mana-paid {X} (Shatterskull Smashing) is priced per X by the server.
+        val divisionTotal = info.totalDamageByX?.get(x ?: 0) ?: info.totalDamageToDistribute
+        val damage = if (info.requiresDamageDistribution && divisionTotal != null) {
             // A division scoped to one requirement (Magma Opus) is among that requirement's targets only.
             val divided = info.distributionTargetGroup?.let { targetGroups.getOrNull(it).orEmpty() } ?: targets
             if (info.distributionTargetGroup != null && divided.size < 2) null
-            else JevDecisions(q, label).distribute("Divide damage", divided.map(::targetId), info.totalDamageToDistribute!!, info.minDamagePerTarget ?: 1)
+            else JevDecisions(q, label).distribute("Divide damage", divided.map(::targetId), divisionTotal, info.minDamagePerTarget ?: 1)
         } else null
         val groupCounts = targetGroups.map { it.size }.takeIf { modal == null && info.distributionTargetGroup != null }
         return when (action) {

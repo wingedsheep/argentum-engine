@@ -1228,6 +1228,12 @@ export interface LegalActionInfo {
   readonly requiresDamageDistribution?: boolean
   /** Total damage to distribute for DividedDamageEffect spells */
   readonly totalDamageToDistribute?: number
+  /**
+   * The division's total for each X the caster may announce, keyed by X — present only when the
+   * total reads a mana-paid {X} (Shatterskull Smashing). The client looks up the chosen X; when set,
+   * `totalDamageToDistribute` is not used.
+   */
+  readonly totalDamageByX?: Readonly<Record<number, number>>
   /** Minimum damage per target (usually 1 per MTG rules) */
   readonly minDamagePerTarget?: number
   /** What the division divides when it isn't damage — "+1/+1 counter" (Ajani, Sleeper Agent's −3). Absent means damage. */

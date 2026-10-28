@@ -212,6 +212,14 @@ data class LegalAction(
     // Damage distribution
     val requiresDamageDistribution: Boolean = false,
     val totalDamageToDistribute: Int? = null,
+    /**
+     * The division's total for each X the caster may announce, keyed by X — present only when the
+     * total reads a mana-paid `{X}` (Shatterskull Smashing: "X damage divided … If X is 6 or more,
+     * … twice X damage divided … instead"). X is announced before targets and the division
+     * (CR 601.2b, 601.2d), so the client looks the total up for the X it chose; the prices are the
+     * server's. When set, [totalDamageToDistribute] is the X-less reading and is not used.
+     */
+    val totalDamageByX: Map<Int, Int>? = null,
     val minDamagePerTarget: Int? = null,
     /** What the division divides when it isn't damage — "+1/+1 counter" for a counter division. Null means damage. */
     val distributionUnit: String? = null,

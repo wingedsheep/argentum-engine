@@ -186,6 +186,8 @@ data class LegalActionInfo(
     val minimumManaCostString: String? = null,
     val requiresDamageDistribution: Boolean = false,
     val totalDamageToDistribute: Int? = null,
+    /** The division's total per announced X, when it reads a mana-paid {X} (see `LegalAction.totalDamageByX`). */
+    val totalDamageByX: Map<Int, Int>? = null,
     val minDamagePerTarget: Int? = null,
     /** What the division divides when it isn't damage — "+1/+1 counter". Null means damage. */
     val distributionUnit: String? = null,

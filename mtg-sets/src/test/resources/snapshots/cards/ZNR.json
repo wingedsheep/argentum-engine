@@ -9992,6 +9992,111 @@
     ]
 }
 
+// Shatterskull Smashing
+{
+    "name": "Shatterskull Smashing",
+    "manaCost": "{X}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Shatterskull Smashing deals X damage divided as you choose among up to two target creatures and/or planeswalkers. If X is 6 or more, Shatterskull Smashing deals twice X damage divided as you choose among them instead.",
+    "script": {
+        "spellEffect": {
+            "type": "DividedDamage",
+            "totalDamage": 0,
+            "minTargets": 0,
+            "maxTargets": 2,
+            "dynamicTotal": {
+                "type": "Conditional",
+                "condition": {
+                    "type": "Compare",
+                    "left": "XValue",
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
+                },
+                "ifTrue": {
+                    "type": "Multiply",
+                    "amount": "XValue",
+                    "multiplier": 2
+                },
+                "ifFalse": "XValue"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature|planeswalker"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Shatterskull, the Hammer Pass",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "As this land enters, you may pay 3 life. If you don't, it enters tapped.\n{T}: Add {R}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Shatterskull, the Hammer Pass:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "RED"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                {
+                    "type": "EntersTapped",
+                    "payLifeCost": 3
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "161",
+            "rarity": "MYTHIC",
+            "artist": "Adam Paquette",
+            "flavorText": "\"The safest way across the Skyfangs is to fly. Shatterskull Pass is a pretty distant second.\"\n—Samila, Murasa Expeditionary House",
+            "imageUri": "https://cards.scryfall.io/normal/back/b/c/bc7239ea-f8aa-4a6f-87bd-c35359635673.jpg?1783929355"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "rarity": "MYTHIC",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc7239ea-f8aa-4a6f-87bd-c35359635673.jpg?1783929355",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "You divide the damage as you cast Shatterskull Smashing, not as it resolves. If you choose two targets, each target must be assigned at least 1 damage."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If X is 6 or more, you divide twice X damage; you don't assign X damage and then double that damage."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If one of the targets becomes illegal for Shatterskull Smashing, the original division of damage still applies to the still-legal target, but the damage that would have been dealt to the illegal target isn't dealt at all."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ],
+    "layout": "MODAL_DFC"
+}
+
 // Shell Shield
 {
     "name": "Shell Shield",

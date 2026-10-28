@@ -1657,6 +1657,17 @@ uses `Patterns.Exile.impulse()`; playing the card follows ordinary costs and tim
   the sacrificed permanent against the announced X (an unannounced X is 0) and the division against
   the X-derived total.
 
+  **A total that reads a mana-paid `{X}`** (Shatterskull Smashing: "X damage divided as you choose
+  among up to two target creatures and/or planeswalkers. If X is 6 or more, … twice X damage divided
+  … instead") is a `dynamicTotal` over `DynamicAmounts.xValue()` — here one amount,
+  `DynamicAmounts.conditional(Conditions.CompareAmounts(xValue(), GTE, 6), xValue() * 2, xValue())`,
+  since the ruling divides twice X rather than doubling each share. X is announced before targets
+  and the division (CR 601.2b, 601.2d), so the cast offer carries `totalDamageByX` — the total for
+  every X from `minX` to `maxAffordableX` — and the client divides the entry for the X it chose,
+  capping the divided targets at what that total covers (X = 1 can't be split between two). The
+  validator checks the split against the announced X. A total that doesn't move with X (Meteor
+  Swarm's 8) gets no table.
+
   **Always cap the target count at the total.** Each chosen target must be assigned at least 1 damage
   (CR 601.2d), so a requirement that lets the player pick more targets than there is damage leaves them
   with no legal division to submit. Pass `dynamicMaxCount` alongside `unlimited` — a

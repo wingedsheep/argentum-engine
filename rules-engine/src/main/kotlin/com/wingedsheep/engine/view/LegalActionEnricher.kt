@@ -143,6 +143,7 @@ class LegalActionEnricher(
             minimumManaCostString = minimumManaCostString(action),
             requiresDamageDistribution = action.requiresDamageDistribution,
             totalDamageToDistribute = action.totalDamageToDistribute,
+            totalDamageByX = action.totalDamageByX,
             minDamagePerTarget = action.minDamagePerTarget,
             distributionUnit = action.distributionUnit,
             distributionTargetGroup = action.distributionTargetGroup,

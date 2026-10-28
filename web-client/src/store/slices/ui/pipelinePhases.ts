@@ -1247,10 +1247,16 @@ export function enterPhase(
       // XValue server-side), the static `count` field is just a placeholder (often
       // its default of 1). After the user picks X via the cast-time xSelection
       // phase, the chosen X *replaces* the placeholder as the max — not min(static, X).
-      const resolveMaxByX = (staticMax: number, constrained: boolean | undefined): number => {
-        if (!constrained) return staticMax
-        if (chosenX == null) return staticMax
-        return chosenX
+      // A division whose total the server priced per X (Shatterskull Smashing: "X damage divided
+      // … among up to two targets") can only reach as many targets as that total covers at the
+      // server's per-target floor — X = 1 can't be split between two creatures.
+      const divisionTotal =
+        actionInfo.totalDamageByX && chosenX != null ? actionInfo.totalDamageByX[chosenX] : undefined
+      const divisionCap =
+        divisionTotal != null ? Math.floor(divisionTotal / (actionInfo.minDamagePerTarget ?? 1)) : Infinity
+      const resolveMaxByX = (staticMax: number, constrained: boolean | undefined, divided = true): number => {
+        const max = !constrained || chosenX == null ? staticMax : chosenX
+        return divided ? Math.min(max, divisionCap) : max
       }
       // "X target creatures" (as opposed to "up to X") is exact: the server flags it, and the
       // chosen X becomes the minimum as well as the maximum.
@@ -1265,7 +1271,11 @@ export function enterPhase(
 
       if (actionInfo.targetRequirements && actionInfo.targetRequirements.length > 0) {
         const firstReq = actionInfo.targetRequirements[0]!
-        const maxTargets = resolveMaxByX(firstReq.maxTargets, firstReq.xConstrainsCount)
+        const maxTargets = resolveMaxByX(
+          firstReq.maxTargets,
+          firstReq.xConstrainsCount,
+          (actionInfo.distributionTargetGroup ?? 0) === 0,
+        )
         store.startTargeting({
           action,
           validTargets: applyXFilters(firstReq.validTargets, firstReq.xConstrainsManaValue, firstReq.xConstrainsPower, firstReq.xConstrainsManaValueExactly),

@@ -13,6 +13,8 @@ import com.wingedsheep.mtg.sets.definitions.dom.cards.StrongholdConfessor
 import com.wingedsheep.mtg.sets.definitions.mat.cards.UndercityUpheaval
 import com.wingedsheep.mtg.sets.definitions.mom.cards.StormTheSeedcore
 import com.wingedsheep.mtg.sets.definitions.mom.cards.WickedSlumber
+import com.wingedsheep.mtg.sets.definitions.afr.cards.MeteorSwarm
+import com.wingedsheep.mtg.sets.definitions.znr.cards.ShatterskullSmashing
 import com.wingedsheep.mtg.sets.definitions.ktk.cards.TormentingVoice
 import com.wingedsheep.mtg.sets.definitions.ecl.cards.BrigidsCommand
 import com.wingedsheep.mtg.sets.definitions.ecl.cards.MorningtidesLight
@@ -385,6 +387,36 @@ class CastSpellEnumeratorTest : FunSpec({
         cast.totalDamageToDistribute shouldBe 4
         cast.minDamagePerTarget shouldBe 1
         cast.requiresTargets shouldBe true
+    }
+
+    test("a division total that reads a mana-paid X is priced for every announceable X") {
+        // Shatterskull Smashing {X}{R}{R}: X damage divided …; twice X if X is 6 or more.
+        val driver = setupP1(
+            hand = listOf("Shatterskull Smashing"),
+            battlefield = List(9) { "Mountain" } + "Grizzly Bears",
+            extraSetCards = listOf(ShatterskullSmashing)
+        )
+
+        val cast = driver.enumerateFor(driver.player1).castActionsFor("Shatterskull Smashing")
+            .single { (it.action as CastSpell).faceIndex == null }
+
+        cast.requiresDamageDistribution shouldBe true
+        cast.maxAffordableX shouldBe 7
+        cast.totalDamageByX shouldBe mapOf(0 to 0, 1 to 1, 2 to 2, 3 to 3, 4 to 4, 5 to 5, 6 to 12, 7 to 14)
+    }
+
+    test("a division total that doesn't move with X gets no per-X table") {
+        // Meteor Swarm {X}{R}{R}{R}: 8 damage divided among X targets.
+        val driver = setupP1(
+            hand = listOf("Meteor Swarm"),
+            battlefield = List(5) { "Mountain" } + "Grizzly Bears",
+            extraSetCards = listOf(MeteorSwarm)
+        )
+
+        val cast = driver.enumerateFor(driver.player1).castActionsFor("Meteor Swarm").first()
+
+        cast.totalDamageToDistribute shouldBe 8
+        cast.totalDamageByX shouldBe null
     }
 
     // -------------------------------------------------------------------------

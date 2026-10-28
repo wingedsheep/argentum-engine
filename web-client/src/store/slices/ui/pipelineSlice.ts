@@ -280,10 +280,16 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
       result.type === 'targeting'
         ? targetsOfGroup(result.selectedTargets, result.targetGroupCounts, actionInfo.distributionTargetGroup)
         : []
+    // A total that reads a mana-paid {X} (Shatterskull Smashing) is priced by the server per X;
+    // look up the X the xSelection phase already put on the action.
+    const chosenX = mergedAction.type === 'CastSpell' ? mergedAction.xValue : undefined
+    const totalToDivide = actionInfo.totalDamageByX
+      ? actionInfo.totalDamageByX[chosenX ?? 0]
+      : actionInfo.totalDamageToDistribute
     if (
       result.type === 'targeting' &&
       actionInfo.requiresDamageDistribution &&
-      actionInfo.totalDamageToDistribute &&
+      totalToDivide &&
       dividedTargets.length > 1
     ) {
       // Spells read "Cast <name>", activated abilities "Activate <name>: …" — strip either verb so
@@ -310,7 +316,7 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
         action: mergedAction as CastSpellAction | ActivateAbilityAction,
         cardName,
         targetIds: [...dividedTargets],
-        totalDamage: actionInfo.totalDamageToDistribute,
+        totalDamage: totalToDivide,
         minPerTarget,
         ...(actionInfo.distributionUnit ? { unit: actionInfo.distributionUnit } : {}),
         distribution: initialDistribution,
