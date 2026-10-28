@@ -178,6 +178,9 @@ class CipherMechanicTest : FunSpec({
 
         d.resolveFromTrinket(Effects.ReturnToHand(EffectTarget.SpecificEntity(spell)), bear)
         d.getHand(me).contains(spell).shouldBeTrue()
+        d.state.grantedTriggeredAbilities.none {
+            it.entityId == bear && GrantDurationGate.triggeredGrantLive(d.state, it)
+        }.shouldBeTrue()
 
         d.attackUnblocked(bear, me, opp)
         d.pendingDecision shouldBe null

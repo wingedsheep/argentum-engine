@@ -15173,8 +15173,9 @@ helper over it:
 The entity role fixes *when* the condition can be answered: `Self` and the enchanted/equipped
 attachment roles evaluate in both resolution and static-ability projection; `ContextTarget`,
 `TriggeringEntity`, and `DiscardedAsCost` are resolution-only (false under projection).
-`EffectTarget.SpecificEntity` (an engine-pinned object, e.g. cipher's encoded card) is matched
-wherever the object is — projected on the battlefield, printed elsewhere; no card authors it. Use `Conditions.EntityMatches`
+The evaluator also answers `EffectTarget.SpecificEntity` (an engine-pinned object, e.g. cipher's
+encoded card) wherever the object is — projected on the battlefield, printed elsewhere. Only
+engine-synthesized abilities use it; the `CardLinter` still rejects it on a card. Use `Conditions.EntityMatches`
 directly only for a role the helpers don't name (e.g. the equipped creature). It is deliberately
 *not* a player check (`TargetIsPlayer`) nor a numeric/tracker check (`Compare`). Any other
 `EffectTarget` role is rejected by the `CardLinter` at card load (§21) — the evaluator can't

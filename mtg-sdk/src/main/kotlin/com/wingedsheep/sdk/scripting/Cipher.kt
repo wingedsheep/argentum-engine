@@ -31,7 +31,8 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  *  - **Encoding** — [encodeStep], which the engine appends to a resolving card's effect when the
  *    card has [com.wingedsheep.sdk.core.Keyword.CIPHER]: the controller picks up to one creature
  *    they control as the spell resolves (no targeting — the rulings), after the spell's other
- *    effects, and [EncodeOnCreatureEffect] moves the card from the stack to exile.
+ *    effects, and [EncodeOnCreatureEffect] records the pick; the spell then leaves the stack straight
+ *    to exile, encoded.
  *  - **The granted trigger** — [encodedCardTrigger], granted by the engine to the chosen creature
  *    for as long as the card stays encoded on it (CR 702.99c: the card stays exiled and the
  *    creature stays on the battlefield; a control change or the creature ceasing to be a creature
