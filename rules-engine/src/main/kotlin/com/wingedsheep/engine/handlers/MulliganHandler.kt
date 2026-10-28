@@ -35,10 +35,16 @@ class MulliganHandler(
      */
     private val cardRegistry: CardRegistry? = null,
     /**
-     * Runs the remaining instructions of an ability that restarted the game (CR 727.4) before the
+     * Runs the remaining instructions of an ability that restarted the game (CR 726.4) before the
      * new game's first turn — see [beginFirstTurn].
      */
-    private val effectExecutor: ((GameState, Effect, EffectContext) -> EffectResult)? = null
+    private val effectExecutor: ((GameState, Effect, EffectContext) -> EffectResult)? = null,
+    /**
+     * Evaluates a begin-on-battlefield action's [com.wingedsheep.sdk.model.BeginOnBattlefield.onlyIf]
+     * ("and you're not the starting player") when the opening hands are scanned. Without it a
+     * conditional action is never offered.
+     */
+    private val conditionEvaluator: ConditionEvaluator? = null
 ) {
 
     /**
@@ -328,8 +334,8 @@ class MulliganHandler(
 
     /**
      * Populate each player's [MulliganStateComponent.pendingLeylineCardIds] by scanning
-     * their opening hand for cards with an opening-hand action (CR 103.6): either
-     * [com.wingedsheep.sdk.model.CardScript.mayStartOnBattlefield] or a
+     * their opening hand for cards with an opening-hand action (CR 103.6): either a
+     * [com.wingedsheep.sdk.model.CardScript.beginOnBattlefield] whose `onlyIf` holds now, or a
      * [com.wingedsheep.sdk.model.CardScript.openingHandReveal] payoff. Idempotent — sets `leylinePhaseStarted = true` so re-entry into the mulligan
      * completion path doesn't re-scan.
      *
@@ -347,7 +353,9 @@ class MulliganHandler(
             val leylineCardIds = hand.filter { cardId ->
                 val cardComponent = newState.getEntity(cardId)?.get<CardComponent>() ?: return@filter false
                 val cardDef = registry.getCard(cardComponent.cardDefinitionId) ?: return@filter false
-                cardDef.script.mayStartOnBattlefield || cardDef.script.openingHandReveal != null
+                val start = cardDef.script.beginOnBattlefield
+                if (start != null) beginOnBattlefieldOffered(newState, start, playerId, cardId)
+                else cardDef.script.openingHandReveal != null
             }
 
             val updatedMullState = mullState.copy(
@@ -359,6 +367,21 @@ class MulliganHandler(
             }
         }
         return newState
+    }
+
+    /**
+     * Whether [start]'s condition lets [playerId] take the action with [cardId]. It is read once,
+     * when the walk begins — before the first turn, with the starting player active.
+     */
+    private fun beginOnBattlefieldOffered(
+        state: GameState,
+        start: com.wingedsheep.sdk.model.BeginOnBattlefield,
+        playerId: EntityId,
+        cardId: EntityId
+    ): Boolean {
+        val condition = start.onlyIf ?: return true
+        val evaluator = conditionEvaluator ?: return false
+        return evaluator.evaluate(state, condition, EffectContext(sourceId = cardId, controllerId = playerId))
     }
 
     /**
@@ -424,7 +447,7 @@ class MulliganHandler(
     /**
      * The pre-game procedure is over: start the first turn. In a restarted game, the ability that
      * restarted it first finishes resolving and its remaining instructions are followed — Karn
-     * Liberated puts the cards it left in exile onto the battlefield (CR 727.4). Nobody has priority
+     * Liberated puts the cards it left in exile onto the battlefield (CR 726.4). Nobody has priority
      * while they run, and whatever they trigger goes on the stack the first time a player would
      * receive priority, in the first upkeep.
      *
@@ -493,7 +516,7 @@ class MulliganHandler(
         val script = cardRegistry?.getCard(card.cardDefinitionId)?.script
         // A card offers the reveal (CR 103.6b) only when it has no begin-on-battlefield action;
         // no printed card carries both.
-        val isReveal = script != null && !script.mayStartOnBattlefield && script.openingHandReveal != null
+        val isReveal = script != null && script.beginOnBattlefield == null && script.openingHandReveal != null
         val question = { decisionId: String -> YesNoDecision(
             id = decisionId,
             playerId = playerId,
@@ -508,8 +531,9 @@ class MulliganHandler(
             ),
             yesText = if (isReveal) "Reveal" else "Yes",
             noText = if (isReveal) "Don't reveal" else "No",
-            hint = if (isReveal) card.oracleText.lineSequence().firstOrNull()
-                else "Leyline — If this card is in your opening hand, you may begin the game with it on the battlefield."
+            // The card's own opening-hand line, which names any condition, counter or rider it adds.
+            hint = card.oracleText.lineSequence().firstOrNull()?.takeIf { it.isNotBlank() }
+                ?: "If this card is in your opening hand, you may begin the game with it on the battlefield."
         ) }
         val continuation = LeylineDecisionContinuation(
             playerId = playerId,

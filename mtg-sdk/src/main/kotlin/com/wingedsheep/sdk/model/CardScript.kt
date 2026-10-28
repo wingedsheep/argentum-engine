@@ -402,21 +402,22 @@ data class CardScript(
     val xMaximum: DynamicAmount? = null,
 
     /**
-     * Leyline mechanic. "If this card is in your opening hand, you may begin the game
-     * with it on the battlefield." After all mulligans and bottoming resolve, the engine
-     * walks each player in turn order (starting with the active player) and presents a
-     * yes/no choice per Leyline card still in that player's opening hand. A "yes" puts the
-     * card onto the battlefield under its owner's control through the standard zone-change
-     * pipeline before the first turn begins; a "no" leaves it in hand.
+     * "If this card is in your opening hand, you may begin the game with it on the battlefield"
+     * (CR 103.6a), with any condition, entry counters and "if you do" rider it prints. After all
+     * mulligans and bottoming resolve, the engine walks each player in turn order (starting with
+     * the active player) and presents a yes/no choice per such card still in that player's opening
+     * hand whose [BeginOnBattlefield.onlyIf] holds. A "yes" puts the card onto the battlefield under
+     * its owner's control through the standard zone-change pipeline before the first turn begins,
+     * then runs [BeginOnBattlefield.then]; a "no" leaves it in hand. `null` for every other card.
      *
      * Wired via the `mayBeginGameOnBattlefield()` DSL helper on [com.wingedsheep.sdk.dsl.CardBuilder].
      */
-    val mayStartOnBattlefield: Boolean = false,
+    val beginOnBattlefield: BeginOnBattlefield? = null,
 
     /**
      * "You may reveal this card from your opening hand. If you do, …" (CR 103.6b). When non-null
      * the card carries that opening-hand action: in the same post-mulligan walk as
-     * [mayStartOnBattlefield], its owner is asked whether to reveal it, and a "yes" reveals the card
+     * [beginOnBattlefield], its owner is asked whether to reveal it, and a "yes" reveals the card
      * and runs this effect with the card as source and its owner as controller. The payoff is
      * almost always a delayed trigger (CR 603.7a — created "as a result of a static ability that
      * allows a player to take an action"), e.g. Devourer of Destiny's

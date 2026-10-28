@@ -16,7 +16,7 @@ import com.wingedsheep.sdk.scripting.RedirectZoneChange
  * If a card would be put into an opponent's graveyard from anywhere, exile it instead.
  *
  * The opening-hand clause is the shared `mayBeginGameOnBattlefield()` DSL helper (sets the
- * `mayStartOnBattlefield` flag that drives the pre-game yes/no prompt). The static clause is the reusable [RedirectZoneChange] graveyard ->
+ * `beginOnBattlefield` action that drives the pre-game yes/no prompt). The static clause is the reusable [RedirectZoneChange] graveyard ->
  * exile replacement (Rest in Peace / Stone of Erech share the type) scoped to an *opponent's*
  * graveyard via `GameObjectFilter.Any.ownedByOpponent()` — the engine evaluates owner != source
  * controller (ZoneMovementUtils `ControllerPredicate.OwnedByOpponent`), so cards headed to the

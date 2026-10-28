@@ -2006,6 +2006,98 @@
     ]
 }
 
+// Gemstone Caverns
+{
+    "name": "Gemstone Caverns",
+    "manaCost": "",
+    "typeLine": "Legendary Land",
+    "oracleText": "If this card is in your opening hand and you're not the starting player, you may begin the game with Gemstone Caverns on the battlefield with a luck counter on it. If you do, exile a card from your hand.\n{T}: Add {C}. If Gemstone Caverns has a luck counter on it, instead add one mana of any color.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Gemstone Caverns:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "HasCounter",
+                                        "counterType": "LUCK"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "then": "AddManaOfChoice",
+                    "otherwise": {
+                        "type": "AddColorlessMana",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {C}. If Gemstone Caverns has a luck counter on it, instead add one mana of any color."
+            }
+        ],
+        "beginOnBattlefield": {
+            "onlyIf": "IsNotYourTurn",
+            "counters": {
+                "LUCK": 1
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Hand"
+                        },
+                        "storeAs": "hand"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "hand",
+                        "selection": {
+                            "type": "ChooseExactly",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "storeSelected": "exiled",
+                        "prompt": "Choose a card to exile"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "exiled",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Exile"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "274",
+        "rarity": "RARE",
+        "artist": "Martina Pilcerova",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/94d74254-4750-4fb3-9e53-473a5f98b315.jpg?1783943194"
+    },
+    "colorIdentityOverride": []
+}
+
 // Grapeshot
 {
     "name": "Grapeshot",

@@ -198,6 +198,12 @@ value class CounterType(val name: String) {
          * number of fuse counters on it, so the bomb hits harder each time it changes hands.
          */
         val FUSE = CounterType("FUSE")
+
+        /**
+         * Luck counter (TSP — Gemstone Caverns). A marker: the land begins the game with one when put
+         * onto the battlefield from an opening hand, and taps for any color while it has one.
+         */
+        val LUCK = CounterType("LUCK")
         val CHORUS = CounterType("CHORUS")
         val DREAM = CounterType("DREAM")
         val QUEST = CounterType("QUEST")
@@ -947,6 +953,7 @@ value class CounterType(val name: String) {
             COIN,
             FLOOD,
             FUSE,
+            LUCK,
             CHORUS,
             DREAM,
             QUEST,

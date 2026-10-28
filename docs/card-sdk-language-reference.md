@@ -221,12 +221,21 @@ multi-paragraph entry down the same way when you touch it.
 - `replacementEffect { ... }` — "instead/if … would" replacement.
 - `keywords(...)` / `keywordAbility(...)` / `keywordAbilities(...)` — add keyword abilities.
 - `spell { ... }` — define the spell payload for instants/sorceries and Adventure / Omen faces.
-- `mayBeginGameOnBattlefield()` — the "If this card is in your opening hand, you may begin the game with it on
-  the battlefield" ability (CR 103.6a). Reusable across the Leyline enchantment cycles and non-"Leyline of X"
-  cards alike (e.g. Leyline Axe). Sets `CardScript.mayStartOnBattlefield = true`. After all mulligans and
-  bottoming resolve, the engine walks each player in turn order from the active player and presents a yes/no
-  decision per such card in their opening hand; a "yes" routes the card to the battlefield through the standard
-  zone-change pipeline before the first turn begins, a "no" leaves it in hand.
+- `mayBeginGameOnBattlefield(onlyIf = null, counters = emptyMap(), then = null)` — the "If this card is in your
+  opening hand, you may begin the game with it on the battlefield" ability (CR 103.6a). Reusable across the Leyline
+  enchantment cycles and non-"Leyline of X" cards alike (e.g. Leyline Axe). Sets `CardScript.beginOnBattlefield`
+  (a `BeginOnBattlefield`). After all mulligans and bottoming resolve, the engine walks each player in turn order
+  from the active player and presents a yes/no decision per such card in their opening hand; a "yes" routes the
+  card to the battlefield through the standard zone-change pipeline before the first turn begins, a "no" leaves it
+  in hand. The three axes cover the printed variations:
+  - `onlyIf` — offered only while this `Condition` holds, read once as the walk begins with the card's owner as
+    controller. The starting player is the active player while the game starts (CR 101.4e), so "and you're
+    not the starting player" is `Conditions.IsNotYourTurn`.
+  - `counters` — counters it begins the game with, applied as part of its entry ("with a luck counter on it").
+  - `then` — the "if you do" rider, run once it is on the battlefield (source = the card, controller = its
+    owner), after any as-enters choice the card makes; a question it asks pauses the walk, which resumes after.
+  **Gemstone Caverns**: `mayBeginGameOnBattlefield(onlyIf = Conditions.IsNotYourTurn, counters =
+  mapOf(CounterType.LUCK to 1), then = Patterns.Hand.exileFromHand(1, EffectTarget.Controller))`.
 - `revealFromOpeningHand(effect)` — "You may reveal this card from your opening hand. If you do, …" (CR 103.6b).
   Sets `CardScript.openingHandReveal`. Offered in the same post-mulligan walk as `mayBeginGameOnBattlefield()`
   (starting player first, then each other player in turn order; one yes/no per card). A "yes" emits a
@@ -2557,7 +2566,7 @@ wrappers: Word of Command composes it inside `WithManaAbilitySources` and
   Add a new one as a `CounterType` constant (listed in `CounterType.KNOWN`) plus the client's passive-counter
   wiring (`PASSIVE_COUNTER_TYPES`, `passiveCounterBadgeStyle`, `counterManaClass`, `CounterTypeDisplayNames`);
   keep it out of `StateProjector.KEYWORD_COUNTER_MAP` since it grants no keyword. Recent examples:
-  `CounterType.LANDMARK` (Treasure Map — three flip it into Treasure Cove), `CounterType.FUSE` (Pumpkin Bombs — damage equal to its fuse counters, which stay on as it changes hands), `CounterType.DREAD` (Grasping Shadows —
+  `CounterType.LANDMARK` (Treasure Map — three flip it into Treasure Cove), `CounterType.FUSE` (Pumpkin Bombs — damage equal to its fuse counters, which stay on as it changes hands), `CounterType.LUCK` (Gemstone Caverns — begins the game with one and taps for any color while it has it), `CounterType.DREAD` (Grasping Shadows —
   three flip it into Shadows' Lair), `CounterType.BORE` (Brass's Tunnel-Grinder — three flip it into Tecutlan),
   `CounterType.REVIVAL` (Nine-Lives Familiar — a "lives left" counter: it enters with eight if you cast it and its
   dies trigger reads the last-known count to come back with one fewer),

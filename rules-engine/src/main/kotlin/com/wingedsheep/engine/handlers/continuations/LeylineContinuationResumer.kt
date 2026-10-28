@@ -3,22 +3,26 @@ package com.wingedsheep.engine.handlers.continuations
 import com.wingedsheep.engine.core.BeginFirstTurnContinuation
 import com.wingedsheep.engine.core.CardsRevealedEvent
 import com.wingedsheep.engine.core.DecisionResponse
+import com.wingedsheep.engine.core.EffectProgram
 import com.wingedsheep.engine.core.EngineServices
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.LeylineDecisionContinuation
 import com.wingedsheep.engine.core.LeylinePhaseContinuation
 import com.wingedsheep.engine.core.Outcome
+import com.wingedsheep.engine.core.ProgramOrigin
 import com.wingedsheep.engine.core.YesNoResponse
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
+import com.wingedsheep.engine.handlers.effects.SuppliedEntryCounter
 import com.wingedsheep.engine.handlers.effects.ZoneEntryOptions
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.MulliganStateComponent
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.model.BeginOnBattlefield
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CardNamePool
 import com.wingedsheep.sdk.scripting.ChoiceType
@@ -36,7 +40,9 @@ import com.wingedsheep.sdk.scripting.effects.Effect
  *     [com.wingedsheep.engine.handlers.effects.PermanentEntryTracker], ETB replacements
  *     from other on-battlefield permanents, ZoneChangeEvent emission) fires, then pauses for the
  *     card's own [EntersWithChoice] replacement if it has one (Leyline of Transformation:
- *     "As this enchantment enters, choose a creature type").
+ *     "As this enchantment enters, choose a creature type"), entering with any printed counters and
+ *     then running the card's "if you do" rider (Gemstone Caverns: a luck counter, then "exile a
+ *     card from your hand").
  *  3. Looks for the next leyline decision via [com.wingedsheep.engine.handlers.MulliganHandler.getNextLeylineChoice].
  *     If one exists, pauses with the next [com.wingedsheep.engine.core.YesNoDecision]; otherwise
  *     advances from UNTAP into the first turn via `turnManager.advanceStep`, the same call the
@@ -96,25 +102,59 @@ class LeylineContinuationResumer(
         }
 
         if (response.choice) {
-            // Route the card to the battlefield through the standard zone-change pipeline.
-            // Owner == controller for leyline starts; the card must already exist with its
-            // CardComponent + OwnerComponent set (it does — it was instantiated at init).
-            val transition = services.zones.moveToZone(
-                state = newState,
-                entityId = continuation.leylineCardId,
-                destinationZone = Zone.BATTLEFIELD,
-                options = ZoneEntryOptions(controllerId = continuation.playerId)
-            )
-            newState = transition.state
-            events.addAll(transition.events)
-
-            val entersChoicePause = pauseForEntersWithChoice(
-                newState, continuation.playerId, continuation.leylineCardId, transition.events
-            )
-            if (entersChoicePause != null) return entersChoicePause
+            return beginOnBattlefield(newState, continuation, events, checkForMore)
         }
 
         return continueLeylinePhase(newState, events, checkForMore)
+    }
+
+    /**
+     * "Yes" to a begin-on-battlefield action (CR 103.6a): route the card from hand to the battlefield
+     * through the standard zone-change pipeline, with any [BeginOnBattlefield.counters] as part of
+     * its entry. Owner == controller for these starts; the card already exists with its
+     * CardComponent + OwnerComponent (it was instantiated at init).
+     *
+     * The rest of the walk is queued as frames rather than run inline, so that a pause anywhere
+     * resumes it in order: [LeylinePhaseContinuation] at the bottom, the card's "if you do" rider
+     * ([BeginOnBattlefield.then], an [EffectProgram] with the card as source and its owner as
+     * controller) above it, and the card's own as-enters choice, if it has one, on top — the choice
+     * is part of the entry, so it is made before the rider runs. With no choice, the frames are
+     * drained at once.
+     */
+    private fun beginOnBattlefield(
+        state: GameState,
+        continuation: LeylineDecisionContinuation,
+        events: List<GameEvent>,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        val start = beginOnBattlefieldOf(state, continuation.leylineCardId)
+        val transition = services.zones.moveToZone(
+            state = state,
+            entityId = continuation.leylineCardId,
+            destinationZone = Zone.BATTLEFIELD,
+            options = ZoneEntryOptions(
+                controllerId = continuation.playerId,
+                entryCounters = start?.counters.orEmpty().map { (type, count) ->
+                    SuppliedEntryCounter(counterType = type, count = count)
+                },
+                entryCounterSourceId = continuation.leylineCardId,
+                entryCounterEffectControllerId = continuation.playerId,
+            )
+        )
+        val allEvents = events + transition.events
+
+        var parked = transition.state.pushContinuation(LeylinePhaseContinuation)
+        start?.then?.let { rider ->
+            val context = EffectContext(sourceId = continuation.leylineCardId, controllerId = continuation.playerId)
+            parked = parked.pushContinuation(
+                EffectProgram.queued(listOf(rider), context, ProgramOrigin.BuiltBy("BeginOnBattlefield", null))
+            )
+        }
+
+        pauseForEntersWithChoice(
+            parked, continuation.playerId, continuation.leylineCardId, transition.events
+        )?.let { return it }
+        return checkForMore(parked, allEvents)
     }
 
     /**
@@ -129,8 +169,9 @@ class LeylineContinuationResumer(
      * entry [ZoneChangeEvent]. The settle boundary runs trigger detection over a paused resume's
      * events, so carrying it would fire every enters-the-battlefield trigger twice.
      *
-     * A [LeylinePhaseContinuation] is parked beneath the choice so the walk over the remaining
-     * leylines resumes once the choice (and any chained choice) resolves.
+     * The caller ([beginOnBattlefield]) has already parked the rest of the walk beneath [state]'s
+     * top — the card's rider, then [LeylinePhaseContinuation] — so it resumes once the choice (and
+     * any chained choice) resolves.
      *
      * @return the paused result, or `null` when the card has no as-enters choice (or it can't be
      *   presented) and the walk should simply continue.
@@ -148,11 +189,8 @@ class LeylineContinuationResumer(
             .sortedBy { it.choiceType.ordinal }
             .firstOrNull() ?: return null
 
-        val parkedState = state.pushContinuation(
-            LeylinePhaseContinuation
-        )
         return PermanentEntryReplacements.pauseForEntersWithChoice(
-            state = parkedState,
+            state = state,
             entityId = leylineCardId,
             controllerId = playerId,
             cardComponent = cardComponent,
@@ -173,7 +211,12 @@ class LeylineContinuationResumer(
     private fun openingHandRevealOf(state: GameState, cardId: EntityId): Effect? {
         val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return null
         val script = services.cardRegistry.getCard(cardComponent.cardDefinitionId)?.script ?: return null
-        return script.openingHandReveal?.takeUnless { script.mayStartOnBattlefield }
+        return script.openingHandReveal?.takeUnless { script.beginOnBattlefield != null }
+    }
+
+    private fun beginOnBattlefieldOf(state: GameState, cardId: EntityId): BeginOnBattlefield? {
+        val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return null
+        return services.cardRegistry.getCard(cardComponent.cardDefinitionId)?.script?.beginOnBattlefield
     }
 
     /**
