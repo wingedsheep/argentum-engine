@@ -3983,6 +3983,112 @@
     ]
 }
 
+// Drana, the Last Bloodchief
+{
+    "name": "Drana, the Last Bloodchief",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Legendary Creature — Vampire Cleric",
+    "oracleText": "Flying\nWhenever Drana attacks, defending player chooses a nonlegendary creature card in your graveyard. You return that card to the battlefield with an additional +1/+1 counter on it. The creature is a Vampire in addition to its other types.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Drana, the Last Bloodchief:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "DefendingPlayer",
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsNonlegendary"
+                                ]
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Choose a nonlegendary creature card for the attacking player to return to the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "storeMovedAs": "moved2",
+                            "addCounterType": "PLUS_ONE_PLUS_ONE"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "moved2"
+                            },
+                            "body": {
+                                "type": "AddCreatureType",
+                                "subtype": "Vampire",
+                                "target": "IterationEntity"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Drana attacks, defending player chooses a nonlegendary creature card in your graveyard. You return that card to the battlefield with an additional +1/+1 counter on it. The creature is a Vampire in addition to its other types."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "98",
+        "rarity": "MYTHIC",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5cd4154e-7681-444b-a0f2-33e887791ba7.jpg?1783929379",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "If Drana attacks a planeswalker, that planeswalker's controller is the defending player."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "The defending player chooses a card and you put it onto the battlefield all while Drana's ability is resolving. No player may take actions in between those events."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Because all attackers are declared at the same time, the returned creature can't attack during the same combat it returns, even if it has haste."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "The returned creature remains a Vampire in addition to its other types even after Drana leaves the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Dreadwurm
 {
     "name": "Dreadwurm",
@@ -7524,6 +7630,87 @@
     ]
 }
 
+// Leyline Tyrant
+{
+    "name": "Leyline Tyrant",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nYou don't lose unspent red mana as steps and phases end.\nWhen this creature dies, you may pay any amount of {R}. When you do, it deals that much damage to any target.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Leyline Tyrant:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "PayManaCostRepeatedly",
+                        "cost": "{R}"
+                    },
+                    "reflexiveEffect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "VariableReference",
+                            "variableName": "times_paid"
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "AnyTarget",
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "You may pay any amount of {R}. When you do, Leyline Tyrant deals that much damage to any target."
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "RetainUnspentColoredMana",
+                "color": "RED"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/847ae75b-1c0f-4d0a-9933-9a302c88dc27.jpg?1783929358",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "You can keep unspent red mana indefinitely while Leyline Tyrant is on the battlefield. Other types of mana will continue to be lost as normal as each step and phase ends."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Once Leyline Tyrant leaves the battlefield, you have until the end of the current step or phase to spend your unspent red mana before it is lost as normal."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Leyline Tyrant's last ability goes on the stack without a target. While that ability is resolving, you may pay any amount of red mana, including from the unspent mana you have. If you do, a second ability triggers and you pick one target to be dealt that much damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Linvala, Shield of Sea Gate
 {
     "name": "Linvala, Shield of Sea Gate",
@@ -9660,6 +9847,85 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Moss-Pit Skeleton
+{
+    "name": "Moss-Pit Skeleton",
+    "manaCost": "{B}{G}",
+    "typeLine": "Creature — Plant Skeleton",
+    "oracleText": "Kicker {3} (You may pay an additional {3} as you cast this spell.)\nIf this creature was kicked, it enters with three +1/+1 counters on it.\nWhenever one or more +1/+1 counters are put on a creature you control, if this card is in your graveyard, you may put this card on top of your library.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{3}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Moss-Pit Skeleton:1",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "filter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Library",
+                        "placement": "Top",
+                        "fromZone": "Graveyard"
+                    }
+                },
+                "activeZones": [
+                    "Graveyard"
+                ],
+                "interveningIf": {
+                    "type": "SourceInZone",
+                    "zones": [
+                        "Graveyard"
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 3,
+                "selfOnly": true,
+                "condition": "WasKicked"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "rarity": "UNCOMMON",
+        "artist": "Bryan Sola",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/95a445dc-3aea-4281-a145-0ab3a28ec6c6.jpg?1783929323",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Moss-Pit Skeleton's last ability triggers if a creature enters the battlefield under your control with +1/+1 counters on it, as well as when +1/+1 counters are put on a creature you already control."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Moss-Pit Skeleton's last ability triggers only if it's already in your graveyard as +1/+1 counters are put onto a creature you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
     ]
 }
 
@@ -13610,6 +13876,111 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Scourge of the Skyclaves
+{
+    "name": "Scourge of the Skyclaves",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Kicker {4}{B}\nWhen you cast this spell, if it was kicked, each player loses half their life, rounded up.\nScourge of the Skyclaves's power and toughness are each equal to 20 minus the highest life total among players.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "Subtract",
+                "left": {
+                    "type": "Fixed",
+                    "amount": 20
+                },
+                "right": {
+                    "type": "GreatestAmongPlayers",
+                    "inner": {
+                        "type": "LifeTotal",
+                        "player": "You"
+                    }
+                }
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "Subtract",
+                "left": {
+                    "type": "Fixed",
+                    "amount": 20
+                },
+                "right": {
+                    "type": "GreatestAmongPlayers",
+                    "inner": {
+                        "type": "LifeTotal",
+                        "player": "You"
+                    }
+                }
+            }
+        }
+    },
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{4}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Scourge of the Skyclaves:1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Divide",
+                            "numerator": {
+                                "type": "LifeTotal",
+                                "player": "You"
+                            },
+                            "denominator": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        "target": "Controller"
+                    }
+                },
+                "interveningIf": "WasKicked",
+                "descriptionOverride": "When you cast this spell, if it was kicked, each player loses half their life, rounded up."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4dea7bcc-3ff8-40b0-8264-0cd678d6ff31.jpg?1783929370",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "An ability that triggers when a player casts a spell resolves before the spell that caused it to trigger. It resolves even if that spell is countered. Notably, Scourge of the Skyclaves may have its toughness change from less than 0 to greater than 0 as a result of its triggered ability before it resolves and enters the battlefield."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "The ability that defines Scourge of the Skyclaves's power and toughness applies in all zones, not just the battlefield."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If the highest life total among players is greater than 20, Scourge of the Skyclaves has negative power and toughness equal to the difference."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
