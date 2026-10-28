@@ -5,7 +5,8 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
-import com.wingedsheep.engine.state.components.identity.faceUpCardDefinition
+import com.wingedsheep.engine.mechanics.layers.ProjectedState
+import com.wingedsheep.engine.state.components.battlefield.controlledActiveStaticAbilities
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
@@ -62,24 +63,19 @@ object CyclingGrants {
         cardId: EntityId,
         playerId: EntityId,
         cardRegistry: CardRegistry,
-        predicateEvaluator: PredicateEvaluator
+        predicateEvaluator: PredicateEvaluator,
+        projected: ProjectedState = state.projectedState
     ): List<Pair<EntityId, GrantCyclingToCardsInHand>> {
         // Granted cycling reaches only the granter's controller's hand.
         if (cardId !in state.getZone(ZoneKey(playerId, Zone.HAND))) return emptyList()
-        val projected = state.projectedState
         val context = PredicateContext(controllerId = playerId)
-        val result = mutableListOf<Pair<EntityId, GrantCyclingToCardsInHand>>()
-        for (sourceId in state.controlledBattlefield(playerId)) {
-            if (projected.hasLostAllAbilities(sourceId)) continue
-            val def = state.getEntity(sourceId)?.faceUpCardDefinition(cardRegistry) ?: continue
-            for (ability in def.script.staticAbilities) {
-                if (ability !is GrantCyclingToCardsInHand) continue
-                if (predicateEvaluator.matches(state, projected, cardId, ability.filter, context)) {
-                    result += sourceId to ability
-                }
-            }
-        }
-        return result
+        // Live statics only: a granter that lost its abilities or is face down grants nothing, a Class
+        // level's grant counts once reached, and a `staticAbility { condition = … }` grant only while
+        // its condition holds.
+        return state.controlledActiveStaticAbilities(playerId, cardRegistry, predicateEvaluator.conditions)
+            .mapNotNull { (sourceId, ability) -> (ability as? GrantCyclingToCardsInHand)?.let { sourceId to it } }
+            .filter { (_, grant) -> predicateEvaluator.matches(state, projected, cardId, grant.filter, context) }
+            .toList()
     }
 
     /** The option a submitted `CycleCard` names: its printed cycling when [grantedBy] is null. */

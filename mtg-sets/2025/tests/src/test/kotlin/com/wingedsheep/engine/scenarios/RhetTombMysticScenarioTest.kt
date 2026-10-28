@@ -6,6 +6,7 @@ import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -19,8 +20,9 @@ import io.kotest.matchers.shouldNotBe
  *
  * Covers `GrantCyclingToCardsInHand`: a creature card in the controller's hand cycles for {1}{U}
  * (paid, discarded, a card drawn); noncreature cards and the opponent's hand gain nothing; a card
- * with printed cycling keeps it and gets the granted cost as a second option; and the grant ends
- * when the Mystic leaves.
+ * with printed cycling keeps it and gets the granted cost as a second option; equal grants collapse
+ * into one option; the grant counts as an activated ability of the card in hand; and it ends when
+ * the Mystic leaves or loses its abilities.
  */
 class RhetTombMysticScenarioTest : ScenarioTestBase() {
 
@@ -102,6 +104,54 @@ class RhetTombMysticScenarioTest : ScenarioTestBase() {
                 val bears = game.findCardsInHand(2, "Grizzly Bears").single()
                 game.getLegalActions(2).filter { it.action is CycleCard }.shouldBeEmpty()
                 game.execute(CycleCard(game.player2Id, bears, grantedBy = mystic)).error shouldNotBe null
+            }
+
+            test("two Mystics grant the same cost once") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Rhet-Tomb Mystic", summoningSickness = false)
+                    .withCardOnBattlefield(1, "Rhet-Tomb Mystic", summoningSickness = false)
+                    .withLandsOnBattlefield(1, "Island", 2)
+                    .withCardInHand(1, "Grizzly Bears")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val bears = game.findCardsInHand(1, "Grizzly Bears").single()
+                game.cycleActions(bears).map { it.manaCostString } shouldBe listOf("{1}{U}")
+            }
+
+            test("a Mystic that has lost all abilities grants nothing") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Rhet-Tomb Mystic", summoningSickness = false)
+                    .withCardAttachedTo(2, "Lignify", "Rhet-Tomb Mystic")
+                    .withLandsOnBattlefield(1, "Island", 2)
+                    .withCardInHand(1, "Grizzly Bears")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val bears = game.findCardsInHand(1, "Grizzly Bears").single()
+                game.cycleActions(bears).shouldBeEmpty()
+            }
+
+            test("the granted cycling is an activated ability of the card in hand (CR 702.29a)") {
+                fun hasActivatedAbility(withMystic: Boolean): Boolean {
+                    val game = scenario()
+                        .withPlayers("Player", "Opponent")
+                        .apply { if (withMystic) withCardOnBattlefield(1, "Rhet-Tomb Mystic") }
+                        .withCardInHand(1, "Grizzly Bears")
+                        .withActivePlayer(1)
+                        .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                        .build()
+                    val bears = game.findCardsInHand(1, "Grizzly Bears").single()
+                    return services.predicateEvaluator.matchesStatePredicate(
+                        game.state, bears, StatePredicate.HasActivatedAbilities(1, false)
+                    )
+                }
+                hasActivatedAbility(withMystic = true) shouldBe true
+                hasActivatedAbility(withMystic = false) shouldBe false
             }
 
             test("the grant ends when Rhet-Tomb Mystic leaves the battlefield") {

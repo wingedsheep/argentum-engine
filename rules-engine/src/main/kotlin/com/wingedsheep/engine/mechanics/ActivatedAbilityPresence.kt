@@ -80,7 +80,7 @@ object ActivatedAbilityPresence {
         // Cycling granted to a card in its owner's hand (Rhet-Tomb Mystic) — one ability per grant.
         val owner = card.ownerId
         if (!onBattlefield && owner != null) {
-            total += CyclingGrants.grants(state, entityId, owner, registry, predicates).size
+            total += CyclingGrants.grants(state, entityId, owner, registry, predicates, projected).size
         }
         // Crew read off projected keywords covers both printed (gone with lost abilities) and granted.
         if (onBattlefield) total += CrewRequirement.count(state, projected, registry, entityId)
