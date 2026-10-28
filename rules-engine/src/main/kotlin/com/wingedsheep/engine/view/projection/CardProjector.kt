@@ -25,6 +25,7 @@ import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComp
 import com.wingedsheep.engine.state.permissions.hasMayPlayFor
 import com.wingedsheep.engine.view.ClientCard
 import com.wingedsheep.engine.view.ClientBestow
+import com.wingedsheep.engine.view.ClientEvoke
 import com.wingedsheep.engine.view.ClientImpending
 import com.wingedsheep.engine.view.ClientRuling
 import com.wingedsheep.engine.view.Visibility
@@ -663,8 +664,7 @@ internal class CardProjector(
             evoke = cardDef?.keywordAbilities
                 ?.filterIsInstance<KeywordAbility.Evoke>()
                 ?.firstOrNull()
-                ?.cost
-                ?.toString(),
+                ?.let { ClientEvoke(it.cost.toString(), it.additionalCost?.description) },
             bestow = cardDef?.keywordAbilities
                 ?.filterIsInstance<KeywordAbility.Bestow>()
                 ?.firstOrNull()

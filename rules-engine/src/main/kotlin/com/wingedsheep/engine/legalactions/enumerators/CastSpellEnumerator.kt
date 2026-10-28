@@ -481,7 +481,10 @@ class CastSpellEnumerator(
             val evokeAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Evoke>().firstOrNull()
             val canAffordEvoke = if (evokeAbility != null) {
                 val evokeMana = context.costCalculator.calculateMinPossibleCost(state, cardDef, playerId, cardId, baseCost = evokeAbility.cost)
-                context.manaSolver.canPay(state, playerId, evokeMana, precomputedSources = cachedSources)
+                context.manaSolver.canPay(state, playerId, evokeMana, precomputedSources = cachedSources) &&
+                    evokeAbility.additionalCost.let { cost ->
+                        cost == null || canPayAdditionalCostForAlternative(context, state, playerId, cardId, cost)
+                    }
             } else false
 
             // Check impending cost (alternative cost from Impending keyword)
@@ -819,11 +822,19 @@ class CastSpellEnumerator(
                     context.manaSolver.solve(state, playerId, evokeMana, precomputedSources = cachedSources)
                         ?.sources?.map { it.entityId }
                 }
+                val evokeExtra = evokeAbility.additionalCost
                 SelfAltCostResult(
                     manaCostString = evokeMana.toString(),
                     manaCostByTargetCount = evokeManaPricing.byCountStrings(),
                     autoTapPreview = evokePreview,
-                    additionalCostInfo = null
+                    additionalCostInfo = evokeExtra?.let { additionalCostInfoForAlternative(context, state, playerId, cardId, it) },
+                    // A purely non-mana evoke cost names the cost ("exile a green card from your
+                    // hand") rather than a meaningless "{0}".
+                    label = when {
+                        evokeExtra == null -> evokeMana.toString()
+                        evokeMana.cmc == 0 && !evokeMana.hasX -> evokeExtra.description.replaceFirstChar { it.lowercaseChar() }
+                        else -> "$evokeMana, ${evokeExtra.description.replaceFirstChar { it.lowercaseChar() }}"
+                    },
                 )
             } else null
 
@@ -1171,10 +1182,11 @@ class CastSpellEnumerator(
                         if (evokeCostResult != null) {
                             result.add(LegalAction(
                                 actionType = "CastWithAlternativeCost",
-                                description = "Evoke ${cardComponent.name} (${evokeCostResult.manaCostString})",
+                                description = "Evoke ${cardComponent.name} (${evokeCostResult.label})",
                                 action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), useAlternativeCost = true, alternativeCostType = AlternativeCostType.EVOKE),
                                 manaCostString = evokeCostResult.manaCostString,
                                 manaCostByTargetCount = evokeCostResult.manaCostByTargetCount,
+                                additionalCostInfo = evokeCostResult.additionalCostInfo,
                                 autoTapPreview = evokeCostResult.autoTapPreview
                             ))
                         }
@@ -1310,7 +1322,7 @@ class CastSpellEnumerator(
                         if (evokeCostResult != null) {
                             result.add(LegalAction(
                                 actionType = "CastWithAlternativeCost",
-                                description = "Evoke ${cardComponent.name} (${evokeCostResult.manaCostString})",
+                                description = "Evoke ${cardComponent.name} (${evokeCostResult.label})",
                                 action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.EVOKE),
                                 validTargets = firstReqInfo.validTargets,
                                 requiresTargets = true,
@@ -1325,6 +1337,7 @@ class CastSpellEnumerator(
                                 xConstrainsTargetCountExactly = firstReqInfo.xConstrainsCountExactly,
                                 manaCostString = evokeCostResult.manaCostString,
                                 manaCostByTargetCount = evokeCostResult.manaCostByTargetCount,
+                                additionalCostInfo = evokeCostResult.additionalCostInfo,
                                 autoTapPreview = evokeCostResult.autoTapPreview
                             ))
                         }
@@ -1447,10 +1460,11 @@ class CastSpellEnumerator(
                 if (evokeCostResult != null) {
                     result.add(LegalAction(
                         actionType = "CastWithAlternativeCost",
-                        description = "Evoke ${cardComponent.name} (${evokeCostResult.manaCostString})",
+                        description = "Evoke ${cardComponent.name} (${evokeCostResult.label})",
                         action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.EVOKE),
                         manaCostString = evokeCostResult.manaCostString,
                         manaCostByTargetCount = evokeCostResult.manaCostByTargetCount,
+                        additionalCostInfo = evokeCostResult.additionalCostInfo,
                         autoTapPreview = evokeCostResult.autoTapPreview
                     ))
                 }

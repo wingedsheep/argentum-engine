@@ -809,10 +809,10 @@ data class ClientCard(
      * the evoke cast option alongside the normal cast — graying out whichever the player can't
      * currently pay for. Null for cards without evoke.
      *
-     * A bare cost string rather than a DTO of its own: evoke carries no second value the way
-     * [ClientImpending] carries its time-counter count.
+     * Carries the non-mana half of the evoke cost too ("Exile a green card from your hand",
+     * Endurance), the way [ClientBestow] does, so a purely non-mana evoke never reads as "{0}".
      */
-    val evoke: String? = null,
+    val evoke: ClientEvoke? = null,
 
     /** Bestow price, including any nonmana payment, shown alongside the ordinary creature cast. */
     val bestow: ClientBestow? = null,
@@ -1311,6 +1311,13 @@ sealed interface ClientChosenTarget {
     @kotlinx.serialization.SerialName("Card")
     data class Card(val cardId: EntityId) : ClientChosenTarget
 }
+
+/** Printed evoke price; legal actions determine whether it can currently be paid. */
+@Serializable
+data class ClientEvoke(
+    val cost: String,
+    val additionalCostDescription: String? = null
+)
 
 /** Printed bestow price; legal actions determine whether it can currently be paid. */
 @Serializable

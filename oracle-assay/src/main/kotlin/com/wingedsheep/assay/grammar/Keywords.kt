@@ -443,7 +443,9 @@ object Keywords {
         costKeyword("foretell", { KeywordAbility.foretell(it.toString()) }) { (it as? KeywordAbility.Foretell)?.cost },
         costKeyword("plot", { KeywordAbility.plot(it.toString()) }) { (it as? KeywordAbility.Plot)?.cost },
         costKeyword("disturb", { KeywordAbility.disturb(it.toString()) }) { (it as? KeywordAbility.Disturb)?.cost },
-        costKeyword("evoke", { KeywordAbility.evoke(it.toString()) }) { (it as? KeywordAbility.Evoke)?.cost },
+        costKeyword("evoke", { KeywordAbility.evoke(it.toString()) }) {
+            (it as? KeywordAbility.Evoke)?.takeIf { it.additionalCost == null }?.cost
+        },
         costKeyword("emerge", { KeywordAbility.emerge(it.toString()) }) { (it as? KeywordAbility.Emerge)?.cost },
         costKeyword("miracle", { KeywordAbility.miracle(it.toString()) }) { (it as? KeywordAbility.Miracle)?.cost },
         costKeyword("dash", { KeywordAbility.dash(it.toString()) }) { (it as? KeywordAbility.Dash)?.cost },

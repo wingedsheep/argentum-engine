@@ -39,14 +39,14 @@ class EvokeClientViewTest : ScenarioTestBase() {
     init {
         test("an evoke card in hand exposes its evoke cost") {
             withClue("Mulldrifter has Evoke {2}{U} against a printed {4}{U}") {
-                clientCardInHand("Mulldrifter").evoke shouldBe "{2}{U}"
+                clientCardInHand("Mulldrifter").evoke?.cost shouldBe "{2}{U}"
             }
         }
 
         test("a single-pip evoke cost survives the round-trip verbatim") {
             // Ingot Chewer's {R} against a printed {4}{R} — the widest gap the menu has to show as
             // two prices side by side.
-            clientCardInHand("Ingot Chewer").evoke shouldBe "{R}"
+            clientCardInHand("Ingot Chewer").evoke?.cost shouldBe "{R}"
         }
 
         test("a card without evoke exposes no evoke option") {

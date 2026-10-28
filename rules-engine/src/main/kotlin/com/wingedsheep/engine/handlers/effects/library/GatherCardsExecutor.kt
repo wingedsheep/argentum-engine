@@ -600,6 +600,10 @@ class GatherCardsExecutor(
         is Player.EachStartingWithYou -> state.turnOrderStartingWith(context.controllerId)
         is Player.EachOpponent -> state.turnOrder.filter { it != context.controllerId }
         is Player.EachOtherPlayer -> state.getOtherPlayers(context.controllerId)
+        // "Up to one target player" with no player chosen names nobody (Endurance) — never fall
+        // back to the controller, whose own zone the effect would otherwise sweep.
+        Player.TargetPlayer, Player.TargetOpponent, is Player.ContextPlayer ->
+            listOfNotNull(TargetResolutionUtils.resolvePlayerRef(player, context, state))
         else -> resolvePlayer(player, context, state)?.let { listOf(it) }
     }
 

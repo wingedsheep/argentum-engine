@@ -332,7 +332,7 @@ describe('playLadderOptions', () => {
 })
 
 describe('buildActionOptions — keyword alternative costs (evoke, impending)', () => {
-  const mulldrifter = card('{4}{U}', { name: 'Mulldrifter', evoke: '{2}{U}' } as Partial<ClientCard>)
+  const mulldrifter = card('{4}{U}', { name: 'Mulldrifter', evoke: { cost: '{2}{U}' } } as Partial<ClientCard>)
 
   it('offers the evoke price next to the printed one when only evoke is affordable', () => {
     // The server enumerates only the casts it can pay for, so an unaffordable hard cast arrives as
@@ -375,6 +375,17 @@ describe('buildActionOptions — keyword alternative costs (evoke, impending)', 
     ])
     expect(options.map((o) => o.key)).toEqual(['cast', 'evoke'])
     expect(options.every((o) => o.isAvailable && o.action !== null)).toBe(true)
+  })
+
+  it('names a non-mana evoke cost in the hint instead of letting {0} stand alone (Endurance)', () => {
+    const endurance = card('{1}{G}{G}', {
+      name: 'Endurance',
+      evoke: { cost: '', additionalCostDescription: 'Exile a green card from your hand' },
+    } as Partial<ClientCard>)
+    const options = buildActionOptions(endurance, [action({ manaCostString: '{1}{G}{G}' })])
+    expect(options.map((o) => o.key)).toEqual(['cast', 'evoke'])
+    expect(options[1]).toMatchObject({ label: 'Evoke Endurance', manaCost: '{0}', isAvailable: false })
+    expect(options[1]!.hint).toBe('exile a green card from your hand — sacrificed as it enters')
   })
 
   it('still pairs impending with the printed cost, keeping its time-counter glyph', () => {

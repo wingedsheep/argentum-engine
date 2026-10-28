@@ -186,7 +186,8 @@ multi-paragraph entry down the same way when you touch it.
 - `warp: String?` — Warp alt-cost; exiles at end of turn.
 - `dash: String?` — Dash alt-cost (CR 702.109); gains haste and returns to owner's hand at the
   beginning of the next end step.
-- `evoke: String?` — Evoke alt-cost; sacrifices on ETB.
+- `evoke: String?` — Evoke alt-cost; sacrifices on ETB. An evoke cost with a non-mana part goes
+  through `keywordAbility(KeywordAbility.Evoke(cost, additionalCost))` instead (see below).
 - `selfAlternativeCost: SelfAlternativeCost?` — generic alternative-cost slot.
 - `castTimeCreatureTypeChoice: CastTimeCreatureTypeSource?` — forces a creature-type choice at cast time. No card uses it
   today: "up to N target creature cards of the creature type of your choice" (Aphetto Dredging) is spelled as
@@ -1029,7 +1030,15 @@ counts a hybrid Phyrexian pip paid with life like any other Phyrexian pip.
   preview), validation, auto/explicit/pool payment and the mana window all run inside the same
   restricted view (`ManaSourceRestrictedPayment`); mana it can't touch stays in the pool. Keep the
   filter to type-line predicates. Omit (null) for mana from any source.
-- `evoke` — pay evoke cost; creature is sacrificed at ETB.
+- `evoke` — pay evoke cost; creature is sacrificed at ETB. `KeywordAbility.Evoke(cost,
+  additionalCost = null)` carries an optional non-mana part, paid alongside the mana only when evoke
+  is the alternative cost chosen (`CastAdditionalCosts.owedAdditionalCosts`), like the bundled costs
+  of warp, blitz and bestow. "Evoke—Exile a green card from your hand" (**Endurance**) is
+  `Evoke(ManaCost.ZERO, Costs.additional.ExileCards(1, Any.withColor(GREEN), CostZone.HAND))`: the
+  enumerator offers evoke only when that part is payable, carries its picker as the action's
+  `additionalCostInfo`, and labels it by the cost ("Evoke Endurance (exile a green card from your
+  hand)") rather than "{0}"; `ClientCard.evoke` is `{ cost, additionalCostDescription }`. The
+  card is on the stack while costs are paid, so it can't exile itself.
 - `keywordAbility(KeywordAbility.bestow(cost, additionalCost = null))` — cast as an Aura for the
   bestow price, or normally as a creature. See the parameterized keyword entry below.
 - `keywordAbility(KeywordAbility.mutate(cost))` — cast for the mutate cost onto a non-Human creature

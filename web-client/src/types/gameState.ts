@@ -657,8 +657,13 @@ export interface ClientCard {
    * for Mulldrifter. Same job as `impending`: the action menu offers the evoke cast next to the
    * normal cast in both directions, graying out whichever the player can't pay for, so a card you
    * can only afford to evoke never casts itself the moment you drag it out.
+   * `additionalCostDescription` is the non-mana half ("Exile a green card from your hand",
+   * Endurance), with `cost` "" when that half is the whole evoke cost.
    */
-  readonly evoke?: string | null
+  readonly evoke?: {
+    readonly cost: string
+    readonly additionalCostDescription?: string | null
+  } | null
 
   /** Printed bestow price; enabled options come exclusively from server legal actions. */
   readonly bestow?: {

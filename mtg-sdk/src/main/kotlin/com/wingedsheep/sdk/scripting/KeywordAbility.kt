@@ -1208,19 +1208,28 @@ sealed interface KeywordAbility {
     // =========================================================================
 
     /**
-     * Evoke with a mana cost.
+     * Evoke (CR 702.74).
      * "Evoke {R/W}{R/W}" - You may cast this spell for its evoke cost.
      * If you do, it's sacrificed when it enters the battlefield.
      *
      * Evoke is an alternative cost. When cast for evoke, the creature enters
      * the battlefield normally (ETB triggers fire), then a separate "sacrifice self"
      * delayed trigger goes on the stack. Players can respond between ETB and sacrifice.
+     *
+     * [additionalCost] is the non-mana part of the evoke cost, paid alongside [cost] like the
+     * bundled costs of [Warp], [Blitz] and [Bestow]. "Evoke—Exile a green card from your hand"
+     * (Endurance) is `Evoke(ManaCost.ZERO, Costs.additional.ExileCards(1, green, HAND))`: the
+     * whole evoke cost is the exile, so a {0} mana half is never shown.
      */
     @SerialName("Evoke")
     @Serializable
-    data class Evoke(val cost: ManaCost) : KeywordAbility {
+    data class Evoke(val cost: ManaCost, val additionalCost: AdditionalCost? = null) : KeywordAbility {
         override val keyword: Keyword = Keyword.EVOKE
-        override val description: String = "Evoke $cost"
+        override val description: String = when {
+            additionalCost == null -> "Evoke $cost"
+            cost.cmc == 0 && !cost.hasX -> "Evoke—${additionalCost.description}"
+            else -> "Evoke—$cost, ${additionalCost.description}"
+        }
     }
 
     // =========================================================================

@@ -1596,6 +1596,97 @@
     ]
 }
 
+// Endurance
+{
+    "name": "Endurance",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Creature — Elemental Incarnation",
+    "oracleText": "Flash\nReach\nWhen this creature enters, up to one target player puts all the cards from their graveyard on the bottom of their library in a random order.\nEvoke—Exile a green card from your hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLASH",
+        "REACH",
+        "EVOKE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Evoke",
+            "cost": "",
+            "additionalCost": {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomExileFrom",
+                    "zone": "Hand",
+                    "filter": "green"
+                }
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Endurance:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "player": "TargetPlayer"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "optional": true,
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature enters, up to one target player puts all the cards from their graveyard on the bottom of their library in a random order."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "rarity": "MYTHIC",
+        "artist": "Anastasia Ovchinnikova",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb0e0404-4846-4891-acfa-bd0951ecf9c6.jpg?1783926831",
+        "rulings": [
+            {
+                "date": "2021-06-18",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying (such as an evoke cost), add any cost increases, then apply any cost reductions. The mana value of the spell is determined by only its mana cost, no matter what the total cost to cast that spell was."
+            },
+            {
+                "date": "2021-06-18",
+                "text": "If you pay the evoke cost, you can have the creature's own triggered ability resolve before the evoke triggered ability. You can cast spells after that ability resolves but before you have to sacrifice the creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Esper Sentinel
 {
     "name": "Esper Sentinel",

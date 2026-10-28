@@ -1341,7 +1341,7 @@ Families:
 - `KeywordAbility.Dredge(amount: Int)` — Optional draw replacement from the graveyard (Comprehensive Rules 702.52).
 - `KeywordAbility.Emerge(cost: ManaCost, from: GameObjectFilter?)` — Emerge cost (CR 702.119, Eldritch Moon).
 - `KeywordAbility.Escape(cost: ManaCost, additionalCost: AdditionalCost?)` — Escape (CR 702.138, Theros Beyond Death).
-- `KeywordAbility.Evoke(cost: ManaCost)` — Evoke with a mana cost.
+- `KeywordAbility.Evoke(cost: ManaCost, additionalCost: AdditionalCost?)` — Evoke (CR 702.74).
 - `KeywordAbility.Flashback(cost: ManaCost, additionalCost: AdditionalCost?, condition: Condition?, minimumXValue: Int)` — Flashback with a mana cost and an optional additional cost.
 - `KeywordAbility.Foretell(cost: ManaCost)` — Foretell (CR 702.143, Kaldheim).
 - `KeywordAbility.Gift(kind: GiftKind)` — Gift a kind (CR 702.174, Bloomburrow).

@@ -386,11 +386,15 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
     ) : CostAtom {
         override val selectionCount: Int get() = count
         override val description: String get() {
+            // A colour-only filter describes itself as "green"; off the battlefield it's a card.
+            val noun = filter.description.let {
+                if (zone != Zone.BATTLEFIELD && !CARD_NOUN.containsMatchIn(it)) "$it card" else it
+            }
             val what = when {
-                excludeSelf && count == 1 -> "another ${filter.description}"
+                excludeSelf && count == 1 -> "another $noun"
                 // "Exile five other cards from your graveyard" (escape, CR 702.138).
-                excludeSelf -> quantify(count, "other ${filter.description}")
-                else -> quantify(count, filter.description)
+                excludeSelf -> quantify(count, "other $noun")
+                else -> quantify(count, noun)
             } + if (distinctNames) " with different names" else ""
             return when {
                 anyPlayersZone && singleZone -> "exile $what from a single ${zone.name.lowercase()}"
@@ -1074,3 +1078,6 @@ sealed interface CardMeasure {
         override val unitLabel: String get() = "card types"
     }
 }
+
+/** Whether an exile-cost filter description already names its head noun ("creature card"). */
+private val CARD_NOUN = Regex("""\bcards?\b""")

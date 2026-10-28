@@ -90,7 +90,7 @@ const mulldrifter = {
   name: 'Mulldrifter',
   manaCost: '{4}{U}',
   cardTypes: [],
-  evoke: '{2}{U}',
+  evoke: { cost: '{2}{U}' },
 } as unknown as ClientCard
 
 /** A card with impending (CR 702.176) — the same shape, with a time-counter count attached. */
