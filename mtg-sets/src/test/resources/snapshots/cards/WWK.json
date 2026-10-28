@@ -1176,6 +1176,62 @@
     ]
 }
 
+// Nature's Claim
+{
+    "name": "Nature's Claim",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target artifact or enchantment. Its controller gains 4 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": "TargetController"
+                },
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|enchantment"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "artist": "Daarken",
+        "flavorText": "\"On this plane, the use of magic can provoke a ferocious reprisal from nature. Whoever the Eldrazi were, their relics left Zendikar forever enraged.\"\n—Jace Beleren",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/64ae5a91-ac54-4222-832e-d7a740a3f7cb.jpg?1783942043",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "If the target artifact or enchantment is an illegal target by the time Nature's Claim tries to resolve, the spell doesn't resolve. No player gains 4 life. If the target is legal but not destroyed (most likely because it has indestructible), its controller does gain 4 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Pilgrim's Eye
 {
     "name": "Pilgrim's Eye",

@@ -60,6 +60,86 @@
     ]
 }
 
+// Bane of Progress
+{
+    "name": "Bane of Progress",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "When this creature enters, destroy all artifacts and enchantments. Put a +1/+1 counter on this creature for each permanent destroyed this way.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bane of Progress:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "BattlefieldMatching",
+                                        "filter": "artifact|enchantment"
+                                    },
+                                    "storeAs": "destroyAll_gathered"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "destroyAll_gathered",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Destroy",
+                                    "storeMovedAs": "stored0"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "amount": {
+                                "type": "VariableReference",
+                                "variableName": "stored0_count"
+                            },
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "RARE",
+        "artist": "Lars Grant-West",
+        "flavorText": "It sees shaped stone and carved wood as mutilations.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cb9b492f-a404-400f-be70-8b4901d2d82b.jpg?1783939663",
+        "rulings": [
+            {
+                "date": "2013-10-17",
+                "text": "Bane of Progress's ability destroys all artifacts and enchantments, including those you control."
+            },
+            {
+                "date": "2013-10-17",
+                "text": "If an artifact or enchantment isn't destroyed (perhaps because it has indestructible or it regenerated), it won't count toward the number of +1/+1 counters put on Bane of Progress. However, if an artifact or enchantment is destroyed but doesn't go to its owner's graveyard due to a replacement effect (like the one Rest in Peace creates), it will count."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Derevi, Empyrial Tactician
 {
     "name": "Derevi, Empyrial Tactician",

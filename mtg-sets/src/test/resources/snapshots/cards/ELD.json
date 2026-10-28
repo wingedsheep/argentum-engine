@@ -550,6 +550,91 @@
     ]
 }
 
+// Cauldron Familiar
+{
+    "name": "Cauldron Familiar",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "When this creature enters, each opponent loses 1 life and you gain 1 life.\nSacrifice a Food: Return this card from your graveyard to the battlefield.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Cauldron Familiar:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Cauldron Familiar:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "Food"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
+                },
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "UNCOMMON",
+        "artist": "Milivoj Ćeran",
+        "flavorText": "Every day the cat returns to kill the same mouse, which sinks again into the cauldron's brew.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/a/9a539a23-8383-4525-82dd-acfe1d219fe9.jpg?1783932642",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "You can't activate Cauldron Familiar's last ability unless it's in your graveyard."
+            },
+            {
+                "date": "2019-10-04",
+                "text": "In a Two-Headed Giant game, Cauldron Familiar's first ability causes the opposing team to lose 1 life twice, and you gain 1 life once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Charming Prince
 {
     "name": "Charming Prince",
@@ -3020,6 +3105,69 @@
     ]
 }
 
+// Savvy Hunter
+{
+    "name": "Savvy Hunter",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Creature — Human Warrior",
+    "oracleText": "Whenever this creature attacks or blocks, create a Food token. (It's an artifact with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")\nSacrifice two Foods: Draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Savvy Hunter:1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Food"
+                }
+            },
+            {
+                "id": "Savvy Hunter:2",
+                "trigger": "BlockEvent",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Food"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Savvy Hunter:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "Food",
+                        "count": 2
+                    }
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Dos Santos",
+        "flavorText": "None of the other villagers dare venture into the wilds, so she feeds the whole hamlet herself.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/15c98441-2b31-4e48-a399-f36dffcfa41d.jpg?1783932594"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Scorching Dragonfire
 {
     "name": "Scorching Dragonfire",
@@ -4557,6 +4705,76 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Witch's Oven
+{
+    "name": "Witch's Oven",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}, Sacrifice a creature: Create a Food token. If the sacrificed creature's toughness was 4 or greater, create two Food tokens instead. (They're artifacts with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Witch's Oven:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "SacrificedAsCost",
+                                "numericProperty": "Toughness"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 4
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "CreatePredefinedToken",
+                        "tokenType": "Food",
+                        "count": 2
+                    },
+                    "otherwise": {
+                        "type": "CreatePredefinedToken",
+                        "tokenType": "Food"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "rarity": "UNCOMMON",
+        "artist": "Alexander Forssberg",
+        "flavorText": "The wafting smells are both scrumptious and suspicious.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/04ef8493-d986-45f8-a718-617b028f7ad4.jpg?1783932580",
+        "rulings": [
+            {
+                "date": "2019-10-04",
+                "text": "No player may take actions between the time you announce you're activating Witch's Oven's ability and the time you sacrifice a creature. Notably, they can't try to remove or shrink the creature you'd like to bake."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Wolf's Quarry

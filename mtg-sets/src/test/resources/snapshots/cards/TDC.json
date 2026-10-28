@@ -1,3 +1,67 @@
+// Afterlife from the Loam
+{
+    "name": "Afterlife from the Loam",
+    "manaCost": "{5}{B}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Delve (Each card you exile from your graveyard while casting this spell pays for {1}.)\nFor each player, choose up to one target creature card in that player's graveyard. Put those cards onto the battlefield under your control. They're Zombies in addition to their other types.",
+    "keywords": [
+        "DELVE"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    },
+                    "storeMovedAs": "moved1"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Collection",
+                        "collection": "moved1"
+                    },
+                    "body": {
+                        "type": "AddCreatureType",
+                        "subtype": "Zombie",
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature",
+                    "zone": "Graveyard"
+                },
+                "id": "t0",
+                "ownerDistribution": "UP_TO_ONE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "rarity": "RARE",
+        "artist": "Johann Bodin",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/9361b548-a8d9-4e57-98cf-0c464742e1c9.jpg?1783907179"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Ainok Strike Leader
 {
     "name": "Ainok Strike Leader",

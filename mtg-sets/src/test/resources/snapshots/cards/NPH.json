@@ -359,6 +359,58 @@
     }
 }
 
+// Elesh Norn, Grand Cenobite
+{
+    "name": "Elesh Norn, Grand Cenobite",
+    "manaCost": "{5}{W}{W}",
+    "typeLine": "Legendary Creature — Phyrexian Praetor",
+    "oracleText": "Vigilance\nOther creatures you control get +2/+2.\nCreatures your opponents control get -2/-2.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 7
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2,
+                "filter": {
+                    "baseFilter": "creature ctrl:you",
+                    "excludeSelf": true
+                }
+            },
+            {
+                "type": "ModifyStats",
+                "powerBonus": -2,
+                "toughnessBonus": -2,
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "rarity": "MYTHIC",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"The Gitaxians whisper among themselves of other worlds. If they exist, we must bring Phyrexia's magnificence to them.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b66390d6-1649-4bfa-92d3-77664650d552.jpg?1783941327",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "If a second Elesh Norn, Grand Cenobite comes under your control, you'll put one into its owner's graveyard due to the \"legend rule\" at the same time that any of your opponents' creatures getting -4/-4 are put into their owner's graveyard for having 0 or less toughness."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Flameborn Viron
 {
     "name": "Flameborn Viron",

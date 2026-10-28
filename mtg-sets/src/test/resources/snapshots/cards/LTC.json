@@ -697,6 +697,94 @@
     ]
 }
 
+// Rapacious Guest
+{
+    "name": "Rapacious Guest",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Halfling Citizen",
+    "oracleText": "Menace\nWhenever one or more creatures you control deal combat damage to a player, create a Food token.\nWhenever you sacrifice a Food, put a +1/+1 counter on this creature.\nWhen this creature leaves the battlefield, target opponent loses life equal to its power.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rapacious Guest:1",
+                "trigger": {
+                    "type": "OneOrMoreDealCombatDamageToPlayerEvent",
+                    "sourceFilter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Food"
+                }
+            },
+            {
+                "id": "Rapacious Guest:2",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "artifact Food",
+                    "perPermanent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Rapacious Guest:3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "RARE",
+        "artist": "Bartłomiej Gaweł",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff9dfba4-07d2-4407-a441-88acc7284d43.jpg?1783916032",
+        "rulings": [
+            {
+                "date": "2023-06-16",
+                "text": "Rapacious Guest's third ability triggers whenever you sacrifice a Food for any reason, not just to activate a Food's activated ability."
+            },
+            {
+                "date": "2023-06-16",
+                "text": "To determine the amount of life the target opponent loses from Rapacious Guest's last ability, use Rapacious Guest's power as it last existed on the battlefield, not its power in the graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Relic of Sauron
 {
     "name": "Relic of Sauron",
