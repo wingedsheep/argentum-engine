@@ -5375,6 +5375,60 @@
     ]
 }
 
+// Rabid Bite
+{
+    "name": "Rabid Bite",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature you control deals damage equal to its power to target creature you don't control.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "EntityProperty",
+                "entity": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "numericProperty": "Power"
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t1"
+            },
+            "damageSource": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "t1"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "artist": "Karl Kopinski",
+        "flavorText": "\"You should have seen the look on *both* their faces.\"\n—Morkamp, Lambholt innkeeper",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2f573622-877b-4d21-adfc-40a32b7c2e6d.jpg?1783937725"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ravenous Bloodseeker
 {
     "name": "Ravenous Bloodseeker",

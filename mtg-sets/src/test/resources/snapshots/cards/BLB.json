@@ -14298,60 +14298,6 @@
     ]
 }
 
-// Rabid Bite
-{
-    "name": "Rabid Bite",
-    "manaCost": "{1}{G}",
-    "typeLine": "Sorcery",
-    "oracleText": "Target creature you control deals damage equal to its power to target creature you don't control.",
-    "script": {
-        "spellEffect": {
-            "type": "DealDamage",
-            "amount": {
-                "type": "EntityProperty",
-                "entity": {
-                    "type": "BoundVariable",
-                    "name": "t0"
-                },
-                "numericProperty": "Power"
-            },
-            "target": {
-                "type": "BoundVariable",
-                "name": "t1"
-            },
-            "damageSource": {
-                "type": "BoundVariable",
-                "name": "t0"
-            }
-        },
-        "targetRequirements": [
-            {
-                "type": "TargetObject",
-                "filter": {
-                    "baseFilter": "creature ctrl:you"
-                },
-                "id": "t0"
-            },
-            {
-                "type": "TargetObject",
-                "filter": {
-                    "baseFilter": "creature ctrl:opponent"
-                },
-                "id": "t1"
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "394",
-        "artist": "John Thacker",
-        "imageUri": "https://cards.scryfall.io/normal/front/5/3/53a73200-b798-4bfd-a431-8b94e17b70be.jpg?1721428112",
-        "inBooster": false
-    },
-    "colorIdentityOverride": [
-        "GREEN"
-    ]
-}
-
 // Rabid Gnaw
 {
     "name": "Rabid Gnaw",

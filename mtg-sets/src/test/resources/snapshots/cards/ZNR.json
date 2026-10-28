@@ -187,6 +187,118 @@
     ]
 }
 
+// Agadeem's Awakening
+{
+    "name": "Agadeem's Awakening",
+    "manaCost": "{X}{B}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return from your graveyard to the battlefield any number of target creature cards that each have a different mana value X or less.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "unlimited": true,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "CompareNumericProperty",
+                                "property": "MANA_VALUE",
+                                "operator": "LTE",
+                                "amount": "XValue"
+                            }
+                        ],
+                        "controllerPredicate": "OwnedByYou"
+                    },
+                    "zone": "Graveyard"
+                },
+                "id": "t0",
+                "differentNumericProperty": "MANA_VALUE"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Agadeem, the Undercrypt",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "As this land enters, you may pay 3 life. If you don't, it enters tapped.\n{T}: Add {B}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Agadeem, the Undercrypt:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "BLACK"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                {
+                    "type": "EntersTapped",
+                    "payLifeCost": 3
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "90",
+            "rarity": "MYTHIC",
+            "artist": "Dmitry Burmak",
+            "flavorText": "\"Here below the hedron fields, souls and secrets lie entombed.\"\n—Vivias, Witch Vessel",
+            "imageUri": "https://cards.scryfall.io/normal/back/6/7/67f4c93b-080c-4196-b095-6a120a221988.jpg?1783929388"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "rarity": "MYTHIC",
+        "artist": "Dmitry Burmak",
+        "flavorText": "\"Now is the death-hour, just before dawn. Wake, sleepers, and haunt the living!\"\n—Vivias, Witch Vessel",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/67f4c93b-080c-4196-b095-6a120a221988.jpg?1783929388",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "For example, if X is 3, you may target up to four creature cards: one with mana value 3, one with mana value 2, one with mana value 1, and one with mana value 0."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If X is 0 for Agadeem's Awakening, you can target one creature card with mana value 0."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If a card in a player's graveyard has {X} in its mana cost, X is considered to be 0 for that card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ],
+    "layout": "MODAL_DFC"
+}
+
 // Akoum Hellhound
 {
     "name": "Akoum Hellhound",
@@ -1182,6 +1294,81 @@
             }
         ]
     }
+}
+
+// Beyeen Veil
+{
+    "name": "Beyeen Veil",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Creatures your opponents control get -2/-0 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                }
+            },
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": -2
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 0
+                },
+                "target": "IterationEntity"
+            }
+        }
+    },
+    "backFace": {
+        "name": "Beyeen Coast",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "This land enters tapped.\n{T}: Add {U}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Beyeen Coast:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "BLUE"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                "EntersTapped"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "46",
+            "rarity": "UNCOMMON",
+            "artist": "YW Tang",
+            "flavorText": "\"Stay close to my light. You don't want to get lost on the rocks.\"\n—Jejenar, Silundi lullmage",
+            "imageUri": "https://cards.scryfall.io/normal/back/5/f/5f411f08-45dd-4d73-8894-daf51c175150.jpg?1783929412"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "UNCOMMON",
+        "artist": "YW Tang",
+        "flavorText": "\"All you minnows in the murk, come to my light.\"\n—Jejenar, Silundi lullmage",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f411f08-45dd-4d73-8894-daf51c175150.jpg?1783929412"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ],
+    "layout": "MODAL_DFC"
 }
 
 // Blood Beckoning
@@ -4747,6 +4934,119 @@
     ]
 }
 
+// Hagra Mauling
+{
+    "name": "Hagra Mauling",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {1} less to cast if an opponent controls no basic lands.\nDestroy target creature.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                },
+                "gating": {
+                    "type": "OnlyIf",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "LeastAmongPlayers",
+                            "players": "EachOpponent",
+                            "inner": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Battlefield",
+                                "filter": "basicland"
+                            }
+                        },
+                        "operator": "EQ",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 0
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Hagra Broodpit",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "This land enters tapped.\n{T}: Add {B}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Hagra Broodpit:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "BLACK"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                "EntersTapped"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "106",
+            "rarity": "RARE",
+            "artist": "Victor Adame Minguez",
+            "flavorText": "\"I think we somehow got turned around.\"\n—Doros, expedition guide",
+            "imageUri": "https://cards.scryfall.io/normal/back/7/c/7c04c734-354d-4925-8161-7052110951df.jpg?1783929380"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "RARE",
+        "artist": "Victor Adame Minguez",
+        "flavorText": "\"Din, turn around! Now!\"\n—Doros, expedition guide",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c04c734-354d-4925-8161-7052110951df.jpg?1783929380",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Hagra Mauling's first ability reduces the cost by only {1}, even if you have two opponents with no basic lands. It reduces the cost even if some opponents control basic lands, as long as one controls no basic lands."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "The opponent who controls no basic lands doesn't have to be the controller of the target creature for Hagra Mauling's cost to be reduced."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ],
+    "layout": "MODAL_DFC"
+}
+
 // Highborn Vampire
 {
     "name": "Highborn Vampire",
@@ -5111,6 +5411,168 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Inscription of Ruin
+{
+    "name": "Inscription of Ruin",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Kicker {2}{B}{B}\nChoose one. If this spell was kicked, choose any number instead.\n• Target opponent discards two cards.\n• Return target creature card with mana value 2 or less from your graveyard to the battlefield.\n• Destroy target creature with mana value 3 or less.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{2}{B}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                "chooser": "TargetPlayer",
+                                "storeSelected": "discarded",
+                                "prompt": "Choose 2 cards to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetOpponent",
+                            "id": "t0"
+                        }
+                    ],
+                    "description": "Target opponent discards two cards"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Battlefield",
+                        "fromZone": "Graveyard"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature mv<=2 own:you",
+                                "zone": "Graveyard"
+                            },
+                            "id": "t1"
+                        }
+                    ],
+                    "description": "Return target creature card with mana value 2 or less from your graveyard to the battlefield"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t2"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature mv<=3"
+                            },
+                            "id": "t2"
+                        }
+                    ],
+                    "description": "Destroy target creature with mana value 3 or less"
+                }
+            ],
+            "chooseCount": 3,
+            "minChooseCount": 1,
+            "dynamicChooseCount": {
+                "type": "Conditional",
+                "condition": "WasKicked",
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 3
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/93612079-0b8d-489d-9ae1-3593414a8cee.jpg?1783929375",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "If more than one mode is chosen, perform them in the order written. Nothing can happen in between, however, and no player may choose to take actions. Any abilities that trigger will be put onto the stack after the spell has finished resolving."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If any targets become illegal, the other targets will still be affected as appropriate."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If a card in a player's graveyard or a creature on the battlefield has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Because targets are chosen as you cast a spell, you can't have Inscription of Ruin return a creature card and then destroy that creature."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "If you kick Inscription of Ruin, you can't choose any one mode more than once."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -9582,6 +10044,125 @@
     ]
 }
 
+// Pelakka Predation
+{
+    "name": "Pelakka Predation",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent reveals their hand. You choose a card from it with mana value 3 or greater. That player discards that card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "mv>=3",
+                    "storeSelected": "selected2",
+                    "prompt": "Choose a card with mana value 3 or greater to discard",
+                    "showAllCards": true,
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Pelakka Caverns",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "This land enters tapped.\n{T}: Add {B}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Pelakka Caverns:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "BLACK"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                "EntersTapped"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "120",
+            "rarity": "UNCOMMON",
+            "artist": "Jokubas Uogintas",
+            "flavorText": "\"As a child, I was afraid of the dark. Now, I'm afraid of the things I know are lurking in the dark, waiting to bite my head off.\"\n—Sneeflebrix, expedition rogue",
+            "imageUri": "https://cards.scryfall.io/normal/back/e/6/e63f8b20-f45b-4293-9aac-cdc021939be6.jpg?1783929374"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "rarity": "UNCOMMON",
+        "artist": "Jokubas Uogintas",
+        "flavorText": "\"I knew we shouldn't have come this way.\"\n—Sneeflebrix, expedition rogue",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/6/e63f8b20-f45b-4293-9aac-cdc021939be6.jpg?1783929374",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "If a card in a player's hand has {X} in its mana cost, X is considered to be 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ],
+    "layout": "MODAL_DFC"
+}
+
 // Phylath, World Sculptor
 {
     "name": "Phylath, World Sculptor",
@@ -11594,6 +12175,90 @@
     "colorIdentityOverride": []
 }
 
+// Sea Gate Restoration
+{
+    "name": "Sea Gate Restoration",
+    "manaCost": "{4}{U}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw cards equal to the number of cards in your hand plus one. You have no maximum hand size for the rest of the game.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Add",
+                        "left": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Hand"
+                        },
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "RemoveMaximumHandSize"
+            ]
+        }
+    },
+    "backFace": {
+        "name": "Sea Gate, Reborn",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "As this land enters, you may pay 3 life. If you don't, it enters tapped.\n{T}: Add {U}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Sea Gate, Reborn:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "BLUE"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                {
+                    "type": "EntersTapped",
+                    "payLifeCost": 3
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "76",
+            "rarity": "MYTHIC",
+            "artist": "Adam Paquette",
+            "flavorText": "\"We carry on the legacy of those who defended our world by continuing to unearth its secrets.\"\n—Tazri",
+            "imageUri": "https://cards.scryfall.io/normal/back/1/9/193071fe-180b-4d35-ba78-9c16675c29fc.jpg?1783929396"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "rarity": "MYTHIC",
+        "artist": "Adam Paquette",
+        "flavorText": "\"We have much to remember ... and much we can never forget.\"\n—Tazri",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/193071fe-180b-4d35-ba78-9c16675c29fc.jpg?1783929396",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "If you have no cards in hand as Sea Gate Restoration resolves, you draw one card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ],
+    "layout": "MODAL_DFC"
+}
+
 // Sea Gate Stormcaller
 {
     "name": "Sea Gate Stormcaller",
@@ -11933,6 +12598,71 @@
     ]
 }
 
+// Shadows' Verdict
+{
+    "name": "Shadows' Verdict",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile all creatures and planeswalkers with mana value 3 or less from the battlefield and all creature and planeswalker cards with mana value 3 or less from all graveyards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "creature|planeswalker mv<=3"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "player": "Each",
+                        "filter": "creature|planeswalker mv<=3"
+                    },
+                    "storeAs": "gathered2"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "RARE",
+        "artist": "Lius Lasahido",
+        "flavorText": "The shadows of death fall over everyone in the end.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/52470883-b44d-415b-9324-8074e66f79ae.jpg?1783929366",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "If a permanent on the battlefield or a card in a graveyard has {X} in its mana cost, X is considered to be 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Shatterskull Charger
 {
     "name": "Shatterskull Charger",
@@ -12258,6 +12988,167 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Silundi Vision
+{
+    "name": "Silundi Vision",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Look at the top six cards of your library. You may reveal an instant or sorcery card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 6
+                        }
+                    },
+                    "storeAs": "looked"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "looked",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "instant|sorcery",
+                    "storeSelected": "kept",
+                    "storeRemainder": "rest",
+                    "prompt": "You may reveal an instant or sorcery card from among them and put it into your hand",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "kept",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "Random"
+                }
+            ]
+        }
+    },
+    "backFace": {
+        "name": "Silundi Isle",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "This land enters tapped.\n{T}: Add {U}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Silundi Isle:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "BLUE"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                "EntersTapped"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "80",
+            "rarity": "UNCOMMON",
+            "artist": "Randy Vargas",
+            "flavorText": "\"From the hedron fields of Agadeem to the Faduun of Jwar Isle, the islands of the Silundi Sea offer one mystery after another.\"\n—Jori En, expedition leader",
+            "imageUri": "https://cards.scryfall.io/normal/back/1/1/11568cdf-6148-494c-8b98-f5ca5797d775.jpg?1783929393"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "flavorText": "\"Feel the current? Rough waters lie ahead.\"\n—Jori En, expedition leader",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11568cdf-6148-494c-8b98-f5ca5797d775.jpg?1783929393"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ],
+    "layout": "MODAL_DFC"
+}
+
+// Sizzling Barrage
+{
+    "name": "Sizzling Barrage",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Sizzling Barrage deals 4 damage to target creature that blocked this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 4
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "BlockedThisTurn"
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "artist": "Johann Bodin",
+        "flavorText": "\"A thousand sparks can burn through your defenses just as quickly as one massive blaze.\"\n—Attikar, Akoum elementalist",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1bf5843a-a01f-4d1c-b8fe-c586d5160f6e.jpg?1783929350",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "Sizzling Barrage can target a creature that's currently blocking or one that blocked earlier in the turn and is no longer blocking."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "Destroying a blocking creature doesn't cause the creature it was blocking to become unblocked."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -12825,6 +13716,170 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Song-Mad Treachery
+{
+    "name": "Song-Mad Treachery",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Gain control of target creature until end of turn. Untap that creature. It gains haste until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "EndOfTurn"
+                },
+                {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Song-Mad Ruins",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "This land enters tapped.\n{T}: Add {R}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Song-Mad Ruins:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "RED"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                "EntersTapped"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "165",
+            "rarity": "UNCOMMON",
+            "artist": "Zoltan Boros",
+            "flavorText": "\"They call it the Singing City, but those eerie sounds aren't music. They worm their way into your brain until rational thought is impossible.\"\n—Yavotz, Sea Gate Expeditionary House",
+            "imageUri": "https://cards.scryfall.io/normal/back/7/8/782ca27f-9f18-476c-b582-89c06fb2e322.jpg?1783929353"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "UNCOMMON",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"I'm not proud of the things I did. But all I could think about at the time was how to make the noise stop.\"\n—Yavotz, Sea Gate Expeditionary House",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/782ca27f-9f18-476c-b582-89c06fb2e322.jpg?1783929353"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ],
+    "layout": "MODAL_DFC"
+}
+
+// Soul Shatter
+{
+    "name": "Soul Shatter",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Each opponent sacrifices a creature or planeswalker with the greatest mana value among creatures and planeswalkers they control.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Players",
+                "players": "EachOpponent"
+            },
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "ControlledPermanents",
+                            "filter": "creature|planeswalker"
+                        },
+                        "storeAs": "gathered0"
+                    },
+                    {
+                        "type": "FilterCollection",
+                        "from": "gathered0",
+                        "collectionFilter": "GreatestManaValue",
+                        "storeMatching": "matching1"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "matching1",
+                        "selection": {
+                            "type": "ChooseExactly",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "storeSelected": "selected2",
+                        "prompt": "Choose a creature or planeswalker with the greatest mana value to sacrifice",
+                        "useTargetingUI": true
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "selected2",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Graveyard"
+                        },
+                        "moveType": "Sacrifice"
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "RARE",
+        "artist": "Wylie Beckert",
+        "flavorText": "The Kargan tribes share legends of the victory their ancestors won over the Akoum Skyclave, and its horrendous cost.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2c2fb07b-0f70-403b-be8b-b5217f12e671.jpg?1783929366",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "As Soul Shatter resolves, first the opponent whose turn it is (or the next opponent in turn order, if it's your turn) chooses a creature or planeswalker they control with the highest mana value among that player's creatures and planeswalkers, then each other opponent in turn order does the same, knowing the choices made before them. Then all of the chosen permanents are sacrificed at the same time."
+            }
+        ]
+    }
 }
 
 // Spare Supplies
@@ -14588,6 +15643,109 @@
     "layout": "MODAL_DFC"
 }
 
+// Umara Wizard
+{
+    "name": "Umara Wizard",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Merfolk Wizard",
+    "oracleText": "Whenever you cast an instant, sorcery, or Wizard spell, this creature gains flying until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Umara Wizard:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    },
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Wizard"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you cast an instant, sorcery, or Wizard spell, this creature gains flying until end of turn."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Umara Skyfalls",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "This land enters tapped.\n{T}: Add {U}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Umara Skyfalls:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "BLUE"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                "EntersTapped"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "86",
+            "rarity": "UNCOMMON",
+            "artist": "Jesper Ejsing",
+            "flavorText": "\"The source of the Umara River sits high above Oran-Rief, ever weeping on the jungle below.\"\n—Ko Dari, expedition wizard",
+            "imageUri": "https://cards.scryfall.io/normal/back/8/9/890eee8d-a339-4143-adfa-1b17ec10c099.jpg?1783929391"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Ejsing",
+        "flavorText": "\"You see a waterfall. I see a way up.\"\n—Ko Dari, expedition wizard",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/890eee8d-a339-4143-adfa-1b17ec10c099.jpg?1783929391",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "An ability that triggers when a player casts a spell resolves before the spell that caused it to trigger, but after targets have been chosen for that spell (if it has any targets). The ability resolves even if that spell is countered."
+            },
+            {
+                "date": "2020-09-25",
+                "text": "A Wizard spell is one with the creature type Wizard. Spells that are Wizard-themed (such as Relic Amulet) aren't Wizard spells."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ],
+    "layout": "MODAL_DFC"
+}
+
 // Utility Knife
 {
     "name": "Utility Knife",
@@ -14663,6 +15821,105 @@
         "flavorText": "\"Hold on a second, I have just the thing.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e5c781d-cd89-4671-8fbe-fae82c33357b.jpg"
     }
+}
+
+// Valakut Awakening
+{
+    "name": "Valakut Awakening",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Put any number of cards from your hand on the bottom of your library, then draw that many cards plus one.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": "ChooseAnyNumber",
+                    "storeSelected": "selected1"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "ControllerChooses"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Add",
+                        "left": {
+                            "type": "DistinctEntitiesInCollections",
+                            "collections": [
+                                "selected1"
+                            ]
+                        },
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "backFace": {
+        "name": "Valakut Stoneforge",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "This land enters tapped.\n{T}: Add {R}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Valakut Stoneforge:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "RED"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                "EntersTapped"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "174",
+            "rarity": "RARE",
+            "artist": "Campbell White",
+            "flavorText": "\"I can hear the echo of their hammers, long stilled.\"\n—Tars Olan, stoneforge mystic",
+            "imageUri": "https://cards.scryfall.io/normal/back/2/2/228e551e-023a-4c9a-8f32-58dae6ffdf7f.jpg?1783929350"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "rarity": "RARE",
+        "artist": "Campbell White",
+        "flavorText": "\"My ancestors reshaped the world to their vision. I have a few ideas of my own.\"\n—Tars Olan, stoneforge mystic",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/228e551e-023a-4c9a-8f32-58dae6ffdf7f.jpg?1783929350"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ],
+    "layout": "MODAL_DFC"
 }
 
 // Valakut Exploration
@@ -15096,4 +16353,87 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Zof Consumption
+{
+    "name": "Zof Consumption",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each opponent loses 4 life and you gain 4 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            ]
+        }
+    },
+    "backFace": {
+        "name": "Zof Bloodbog",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "This land enters tapped.\n{T}: Add {B}.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Zof Bloodbog:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "BLACK"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ],
+            "replacementEffects": [
+                "EntersTapped"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "132",
+            "rarity": "UNCOMMON",
+            "artist": "Izzy",
+            "flavorText": "\"Look at this place. What more evidence do you require that existence is bleak and meaningless?\"\n—Voshk, oblivion priest",
+            "imageUri": "https://cards.scryfall.io/normal/back/9/8/98496d5b-1519-4f0c-8b46-0a43be643dfb.jpg?1783929369"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "UNCOMMON",
+        "artist": "Izzy",
+        "flavorText": "\"Annihilation surrounds us. Our call is to embrace its ceaseless hunger.\"\n—Voshk, oblivion priest",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/98496d5b-1519-4f0c-8b46-0a43be643dfb.jpg?1783929369",
+        "rulings": [
+            {
+                "date": "2020-09-25",
+                "text": "In a Two-Headed Giant game, Zof Consumption causes the opposing team to lose 8 life and you to gain 4 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ],
+    "layout": "MODAL_DFC"
 }

@@ -1,4 +1,4 @@
-package com.wingedsheep.mtg.sets.definitions.blb.cards
+package com.wingedsheep.mtg.sets.definitions.soi.cards
 
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
@@ -31,9 +31,9 @@ val RabidBite = card("Rabid Bite") {
 
     metadata {
         rarity = Rarity.COMMON
-        collectorNumber = "394"
-        artist = "John Thacker"
-        imageUri = "https://cards.scryfall.io/normal/front/5/3/53a73200-b798-4bfd-a431-8b94e17b70be.jpg?1721428112"
-        inBooster = false
+        collectorNumber = "223"
+        artist = "Karl Kopinski"
+        flavorText = "\"You should have seen the look on *both* their faces.\"\n—Morkamp, Lambholt innkeeper"
+        imageUri = "https://cards.scryfall.io/normal/front/2/f/2f573622-877b-4d21-adfc-40a32b7c2e6d.jpg?1783937725"
     }
 }
