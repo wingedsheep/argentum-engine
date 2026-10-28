@@ -10398,7 +10398,7 @@
                 "modifier": 1
             }
         ],
-        "mayStartOnBattlefield": true
+        "beginOnBattlefield": {}
     },
     "metadata": {
         "collectorNumber": "18",
@@ -10424,7 +10424,7 @@
                 "cost": "{W}{U}{B}{R}{G}"
             }
         ],
-        "mayStartOnBattlefield": true
+        "beginOnBattlefield": {}
     },
     "metadata": {
         "collectorNumber": "188",
@@ -10479,7 +10479,7 @@
                 "triggerRestriction": "TriggeringSpellHasSingleTarget"
             }
         ],
-        "mayStartOnBattlefield": true
+        "beginOnBattlefield": {}
     },
     "metadata": {
         "collectorNumber": "143",
@@ -10533,7 +10533,7 @@
                 "choiceType": "CREATURE_TYPE"
             }
         ],
-        "mayStartOnBattlefield": true
+        "beginOnBattlefield": {}
     },
     "metadata": {
         "collectorNumber": "63",

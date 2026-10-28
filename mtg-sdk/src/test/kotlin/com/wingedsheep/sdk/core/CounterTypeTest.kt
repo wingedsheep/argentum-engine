@@ -149,7 +149,7 @@ class CounterTypeTest : DescribeSpec({
             CounterType.SHADOW to "shadow",
             CounterType.STASH to "stash",
             CounterType.CROAK to "croak", CounterType.BLIGHT to "blight", CounterType.COIN to "coin",
-            CounterType.FLOOD to "flood", CounterType.FUSE to "fuse", CounterType.CHORUS to "chorus", CounterType.DREAM to "dream",
+            CounterType.FLOOD to "flood", CounterType.FUSE to "fuse", CounterType.LUCK to "luck", CounterType.CHORUS to "chorus", CounterType.DREAM to "dream",
             CounterType.QUEST to "quest", CounterType.GROWTH to "growth", CounterType.TIME to "time",
             CounterType.FEATHER to "feather", CounterType.HOURGLASS to "hourglass",
             CounterType.SPORE to "spore", CounterType.DECAYED to "decayed", CounterType.HOPE to "hope",

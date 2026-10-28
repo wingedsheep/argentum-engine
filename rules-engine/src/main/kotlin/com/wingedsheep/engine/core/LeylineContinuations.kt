@@ -39,10 +39,11 @@ data class LeylineDecisionContinuation(
 /**
  * Resume the opening-hand leyline walk after something *else* paused in the middle of it.
  *
- * Only one thing does: a leyline that answers "yes" and then has its own "as this enters,
- * choose …" replacement (Leyline of Transformation's creature type). That choice pauses with an
- * [EntersWithChoiceOnBattlefieldContinuation] of its own, so the walk over the remaining leylines
- * has to be parked underneath it. This frame is that park: it carries no decision of its own and
+ * A card that answers "yes" can pause it twice over: its own "as this enters, choose …"
+ * replacement (Leyline of Transformation's creature type) pauses with an
+ * [EntersWithChoiceOnBattlefieldContinuation], and its "if you do" rider (Gemstone Caverns'
+ * "exile a card from your hand") may ask a question of its own, so the walk over the remaining
+ * cards is parked underneath both. This frame is that park: it carries no decision of its own and
  * is auto-resumed (see `LeylineContinuationResumer`) once the choice above it finishes, asking the
  * next player's yes/no or advancing into turn 1.
  *

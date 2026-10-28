@@ -386,11 +386,11 @@ class CardBuilder(private val name: String) {
     var layout: CardLayout = CardLayout.NORMAL
 
     /**
-     * Leyline marker. When true, the card carries the "If this card is in your opening
-     * hand, you may begin the game with it on the battlefield" ability. Set via the
-     * [leyline] DSL helper rather than by hand.
+     * The "If this card is in your opening hand, you may begin the game with it on the
+     * battlefield" action (CR 103.6a). Set via the [mayBeginGameOnBattlefield] DSL helper rather
+     * than by hand.
      */
-    var mayStartOnBattlefield: Boolean = false
+    var beginOnBattlefield: BeginOnBattlefield? = null
 
     /**
      * Opening-hand reveal payoff ("You may reveal this card from your opening hand. If you do, …").
@@ -993,7 +993,7 @@ class CardBuilder(private val name: String) {
             selfAlternativeCost = selfAlternativeCost,
             xManaRestriction = spellBuilder?.xManaRestriction ?: emptySet(),
             xMaximum = spellBuilder?.xMaximum,
-            mayStartOnBattlefield = mayStartOnBattlefield,
+            beginOnBattlefield = beginOnBattlefield,
             openingHandReveal = openingHandReveal,
             castTimeCaptures = spellBuilder?.castTimeCaptures ?: emptyList()
         )

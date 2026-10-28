@@ -5868,7 +5868,7 @@
                 "keyword": "TRAMPLE"
             }
         ],
-        "mayStartOnBattlefield": true
+        "beginOnBattlefield": {}
     },
     "equipCost": "{3}",
     "metadata": {

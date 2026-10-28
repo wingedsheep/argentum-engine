@@ -134,7 +134,7 @@ class EngineServices(
     val grantedKeywordResolver = GrantedKeywordResolver(cardRegistry)
     val alternativePaymentHandler = AlternativePaymentHandler(grantedKeywordResolver)
     val costHandler = CostHandler(zones)
-    val mulliganHandler = MulliganHandler(cardRegistry, effectExecutorRegistry::execute)
+    val mulliganHandler = MulliganHandler(cardRegistry, effectExecutorRegistry::execute, conditionEvaluator)
     val castPermissionUtils = CastPermissionUtils(cardRegistry, predicateEvaluator, conditionEvaluator)
     val legalityKernel = LegalityKernel(cardRegistry, conditionEvaluator)
     /**
