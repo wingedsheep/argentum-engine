@@ -12159,7 +12159,10 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   `AdditionalManaOnSourceTap`, sharing its filter convention (the filter is evaluated from the static's own
   projected controller, so `.youControl()` is the printed "**If you** tap …" — only a permanent's controller
   can activate its mana abilities). (**Virtue of Strength** = `GameObjectFilter.BasicLand.youControl()`,
-  `multiplier = 3`.) Three narrowings, all from the printed rulings: (1) **`{T}` is required** — you are
+  `multiplier = 3`; **Nyxbloom Ancient** = `GameObjectFilter.Permanent.youControl()`, `multiplier = 3`.) Every
+  shape of mana the tapped permanent's ability makes scales: fixed/choice/dynamic amounts, both branches of a
+  conditional mana ability (`Effects.If` — Raucous Audience), and "one mana of each color among …"
+  (`AddOneManaOfEachColorAmong`, Bloom Tender — run that many times). Three narrowings, all from the printed rulings: (1) **`{T}` is required** — you are
   "tapping a permanent for mana" only when the mana ability's cost carries the tap symbol, so a tapless mana
   ability (Ashnod's Altar) is untouched; (2) **only the ability's own output scales** — a bonus from a
   *separate* triggered mana ability (`AdditionalManaOnTap` / `AdditionalManaOnSourceTap`: Fertile Ground,

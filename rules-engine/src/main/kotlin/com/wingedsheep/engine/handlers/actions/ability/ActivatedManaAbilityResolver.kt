@@ -37,6 +37,7 @@ import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.GatedEffect
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.effects.AddOneManaOfEachColorAmongEffect
 import com.wingedsheep.engine.mechanics.mana.BorrowedManaAbilities
@@ -511,37 +512,54 @@ internal class ActivatedManaAbilityResolver(
 
     /**
      * Adds [restriction] to the mana [effect] produces, keeping any restriction it already carries
-     * (both then apply). Recurses into a [CompositeEffect] like [multiplyManaProduced].
+     * (both then apply).
      */
-    private fun restrictManaProduced(effect: Effect, restriction: ManaRestriction): Effect = when (effect) {
-        is AddManaEffect -> effect.copy(restriction = BorrowedManaAbilities.combine(effect.restriction, restriction))
-        is AddColorlessManaEffect ->
-            effect.copy(restriction = BorrowedManaAbilities.combine(effect.restriction, restriction))
-        is AddManaOfChoiceEffect ->
-            effect.copy(restriction = BorrowedManaAbilities.combine(effect.restriction, restriction))
-        is AddDynamicManaEffect ->
-            effect.copy(restriction = BorrowedManaAbilities.combine(effect.restriction, restriction))
-        is AddOneManaOfEachColorAmongEffect ->
-            effect.copy(restriction = BorrowedManaAbilities.combine(effect.restriction, restriction))
-        is CompositeEffect -> effect.copy(effects = effect.effects.map { restrictManaProduced(it, restriction) })
-        else -> effect
+    private fun restrictManaProduced(effect: Effect, restriction: ManaRestriction): Effect = mapManaProduced(effect) {
+        when (it) {
+            is AddManaEffect -> it.copy(restriction = BorrowedManaAbilities.combine(it.restriction, restriction))
+            is AddColorlessManaEffect ->
+                it.copy(restriction = BorrowedManaAbilities.combine(it.restriction, restriction))
+            is AddManaOfChoiceEffect ->
+                it.copy(restriction = BorrowedManaAbilities.combine(it.restriction, restriction))
+            is AddDynamicManaEffect ->
+                it.copy(restriction = BorrowedManaAbilities.combine(it.restriction, restriction))
+            is AddOneManaOfEachColorAmongEffect ->
+                it.copy(restriction = BorrowedManaAbilities.combine(it.restriction, restriction))
+            else -> it
+        }
     }
 
     /**
      * Scales the mana [effect] produces by [multiplier], leaving everything else about it — color,
-     * restriction, riders, expiry — untouched. Recurses into a [CompositeEffect] so a mana ability
-     * bundled with a side effect (pain, a counter) scales its mana half only.
+     * restriction, riders, expiry — untouched.
      *
-     * [AddOneManaOfEachColorAmongEffect] has no amount to scale (it is "one of each colour among
-     * …"), so it is deliberately left alone rather than silently mis-scaled.
+     * [AddOneManaOfEachColorAmongEffect] ("for each color among …, add one mana of that color",
+     * Bloom Tender) has no amount to scale, so it runs [multiplier] times instead: the colors it
+     * reads can't change between runs, so N runs are exactly "N times as much of that mana".
      */
-    private fun multiplyManaProduced(effect: Effect, multiplier: Int): Effect = when (effect) {
-        is AddManaEffect -> effect.copy(amount = DynamicAmount.Multiply(effect.amount, multiplier))
-        is AddColorlessManaEffect -> effect.copy(amount = DynamicAmount.Multiply(effect.amount, multiplier))
-        is AddManaOfChoiceEffect -> effect.copy(amount = DynamicAmount.Multiply(effect.amount, multiplier))
-        is AddDynamicManaEffect ->
-            effect.copy(amountSource = DynamicAmount.Multiply(effect.amountSource, multiplier))
-        is CompositeEffect -> effect.copy(effects = effect.effects.map { multiplyManaProduced(it, multiplier) })
-        else -> effect
+    private fun multiplyManaProduced(effect: Effect, multiplier: Int): Effect = mapManaProduced(effect) {
+        when (it) {
+            is AddManaEffect -> it.copy(amount = DynamicAmount.Multiply(it.amount, multiplier))
+            is AddColorlessManaEffect -> it.copy(amount = DynamicAmount.Multiply(it.amount, multiplier))
+            is AddManaOfChoiceEffect -> it.copy(amount = DynamicAmount.Multiply(it.amount, multiplier))
+            is AddDynamicManaEffect -> it.copy(amountSource = DynamicAmount.Multiply(it.amountSource, multiplier))
+            is AddOneManaOfEachColorAmongEffect -> CompositeEffect(List(multiplier) { _ -> it })
+            else -> it
+        }
+    }
+
+    /**
+     * Rewrites every mana-producing leaf of a mana ability's [effect] with [transform]. Recurses
+     * into a [CompositeEffect] (a mana ability bundled with a side effect — pain, a counter — has
+     * only its mana half rewritten) and into both branches of a [GatedEffect] (a conditional mana
+     * ability, Raucous Audience: whichever branch resolves is the mana the permanent produced).
+     */
+    private fun mapManaProduced(effect: Effect, transform: (Effect) -> Effect): Effect = when (effect) {
+        is CompositeEffect -> effect.copy(effects = effect.effects.map { mapManaProduced(it, transform) })
+        is GatedEffect -> effect.copy(
+            then = mapManaProduced(effect.then, transform),
+            otherwise = effect.otherwise?.let { mapManaProduced(it, transform) },
+        )
+        else -> transform(effect)
     }
 }

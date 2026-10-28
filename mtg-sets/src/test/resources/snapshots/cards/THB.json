@@ -2555,6 +2555,40 @@
     "colorIdentityOverride": []
 }
 
+// Nyxbloom Ancient
+{
+    "name": "Nyxbloom Ancient",
+    "manaCost": "{4}{G}{G}{G}",
+    "typeLine": "Enchantment Creature — Elemental",
+    "oracleText": "Trample\nIf you tap a permanent for mana, it produces three times as much of that mana instead.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MultiplyManaOnSourceTap",
+                "sourceFilter": "permanent ctrl:you",
+                "multiplier": 3
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "rarity": "MYTHIC",
+        "artist": "Filip Burburan",
+        "flavorText": "Ancient yet ever-young, it is wise and subtle—and cruel and reckless as the spring itself.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a391da36-0b40-46ea-b771-50d2b920207e.jpg?1783931531"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Nyxborn Brute
 {
     "name": "Nyxborn Brute",

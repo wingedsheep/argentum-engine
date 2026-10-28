@@ -527,7 +527,10 @@ data class ReplaceLandManaColor(
  * `.youControl()` reads as "you, the controller of this static, control the tapped permanent".
  * Since only a permanent's controller can activate its mana abilities, that is exactly the
  * "**If you** tap a basic land for mana" wording of **Virtue of Strength**
- * (`MultiplyManaOnSourceTap(GameObjectFilter.BasicLand.youControl(), multiplier = 3)`).
+ * (`MultiplyManaOnSourceTap(GameObjectFilter.BasicLand.youControl(), multiplier = 3)`) and the
+ * "**If you** tap a permanent for mana" of **Nyxbloom Ancient** (`GameObjectFilter.Permanent.youControl()`).
+ * Every shape of mana the tapped permanent's ability makes is scaled — a conditional ability's
+ * resolving branch and "one mana of each color among …" included.
  *
  * Unlike [AdditionalManaOnSourceTap] this is a **replacement effect on the mana ability's own
  * output** (CR 614), not a triggered mana ability, which has three consequences worth stating:
