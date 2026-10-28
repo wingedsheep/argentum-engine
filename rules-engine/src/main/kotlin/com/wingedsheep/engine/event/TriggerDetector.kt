@@ -60,6 +60,7 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.engine.core.LifeChangeReason
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
@@ -1464,7 +1465,7 @@ class TriggerDetector(
     private fun withObserverLookBack(
         state: GameState,
         live: List<TriggerIndex.IndexedEntity>,
-        observers: Map<EntityId, List<com.wingedsheep.sdk.scripting.AbilityId>>,
+        observers: Map<EntityId, List<AbilityId>>,
     ): List<TriggerIndex.IndexedEntity> {
         val result = live.mapTo(ArrayList(live.size + observers.size)) { entry ->
             val frozen = observers[entry.entityId] ?: return@mapTo entry

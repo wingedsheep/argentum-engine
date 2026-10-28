@@ -10,6 +10,8 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.grantedTriggeredAbility
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.LoseAllAbilities
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
@@ -57,10 +59,15 @@ class ObserverConditionalGrantLookBackTest : FunSpec({
         typeLine = "Sorcery"
         spell { effect = Effects.DestroyAll(GameObjectFilter.Creature) }
     }
+    val artifactSuppressor = card("Artifact Suppressor") {
+        manaCost = "{3}"
+        typeLine = "Enchantment"
+        staticAbility { ability = LoseAllAbilities(GroupFilter.AllArtifacts) }
+    }
 
-    fun setup(vararg permanents: String): Pair<GameTestDriver, com.wingedsheep.sdk.model.EntityId> {
+    fun setup(vararg permanents: String): Pair<GameTestDriver, EntityId> {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(clericVial, graveWatcher, freeWrath))
+        driver.registerCards(TestCards.all + listOf(clericVial, graveWatcher, freeWrath, artifactSuppressor))
         driver.initMirrorMatch(deck = Deck.of("Mountain" to 40), startingLife = 20)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         val player = driver.activePlayer!!
@@ -73,7 +80,7 @@ class ObserverConditionalGrantLookBackTest : FunSpec({
         while (state.stack.isNotEmpty() && guard++ < 20) bothPass()
     }
 
-    fun GameTestDriver.bolt(player: com.wingedsheep.sdk.model.EntityId, victim: com.wingedsheep.sdk.model.EntityId) {
+    fun GameTestDriver.bolt(player: EntityId, victim: EntityId) {
         giveMana(player, Color.RED, 1)
         castSpell(player, putCardInHand(player, "Lightning Bolt"), listOf(victim)).error shouldBe null
         resolveAll()
@@ -130,5 +137,14 @@ class ObserverConditionalGrantLookBackTest : FunSpec({
 
         driver.bolt(player, second)
         driver.getLifeTotal(player) shouldBe 21
+    }
+
+    test("a source that had lost all its abilities has no grant to look back to") {
+        val (driver, player) = setup("Cleric Vial", "Artifact Suppressor")
+        val cleric = driver.putCreatureOnBattlefield(player, "Test Cleric")
+
+        driver.bolt(player, cleric)
+
+        driver.getLifeTotal(player) shouldBe 20
     }
 })

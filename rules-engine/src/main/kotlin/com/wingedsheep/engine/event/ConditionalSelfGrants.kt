@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
@@ -32,7 +33,7 @@ internal object ConditionalSelfGrants {
     /** The conditional self-granted triggered abilities of [entityId] whose condition holds in [state]. */
     fun active(
         state: GameState,
-        entityId: com.wingedsheep.sdk.model.EntityId,
+        entityId: EntityId,
         cardRegistry: CardRegistry,
         conditionEvaluator: ConditionEvaluator,
     ): List<TriggeredAbility> {
@@ -54,7 +55,7 @@ internal object ConditionalSelfGrants {
     /** [active], reduced to the ability ids a snapshot can carry. */
     fun activeIds(
         state: GameState,
-        entityId: com.wingedsheep.sdk.model.EntityId,
+        entityId: EntityId,
         cardRegistry: CardRegistry,
         conditionEvaluator: ConditionEvaluator,
     ): List<AbilityId> = active(state, entityId, cardRegistry, conditionEvaluator).map { it.id }
@@ -83,10 +84,11 @@ internal object ConditionalSelfGrants {
         state: GameState,
         cardRegistry: CardRegistry,
         conditionEvaluator: ConditionEvaluator,
-    ): Map<com.wingedsheep.sdk.model.EntityId, List<AbilityId>> = buildMap {
+    ): Map<EntityId, List<AbilityId>> = buildMap {
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
-            if (container.has<FaceDownComponent>()) continue
+            // A face-down permanent, or one that lost all its abilities, has no grant to look back to.
+            if (container.has<FaceDownComponent>() || state.projectedState.hasLostAllAbilities(entityId)) continue
             val card = container.get<CardComponent>() ?: continue
             val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
             val classLevel = container.get<ClassLevelComponent>()?.currentLevel
