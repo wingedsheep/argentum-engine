@@ -88,7 +88,9 @@ internal class JevActions(
         val groupCounts = targetGroups.map { it.size }.takeIf { modal == null && info.distributionTargetGroup != null }
         return when (action) {
             is CastSpell -> action.copy(targets = targets.ifEmpty { action.targets }, xValue = x ?: action.xValue,
-                additionalCostPayment = payment ?: action.additionalCostPayment, paymentStrategy = manaPayment,
+                // The engine pre-fills the named opponent of an "an opponent gains life" cost per cast.
+                additionalCostPayment = payment?.copy(lifeGainRecipient = action.additionalCostPayment?.lifeGainRecipient)
+                    ?: action.additionalCostPayment, paymentStrategy = manaPayment,
                 alternativePayment = alternative.takeUnless { it.isEmpty } ?: action.alternativePayment, damageDistribution = damage,
                 targetGroupCounts = groupCounts ?: action.targetGroupCounts,
                 chosenModes = if (modal == null) action.chosenModes else modes.map { it.index },

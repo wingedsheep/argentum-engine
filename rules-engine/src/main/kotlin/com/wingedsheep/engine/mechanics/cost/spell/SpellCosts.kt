@@ -51,6 +51,7 @@ object SpellCosts {
         put(AdditionalCost.PayLifePerTarget::class, PayLifePerTargetCostKind)
         put(AdditionalCost.PayXLife::class, PayXLifeCostKind)
         put(AdditionalCost.PayLifeEqualToManaValueOfSpell::class, PayLifeEqualToManaValueCostKind)
+        put(AdditionalCost.OthersGainLife::class, OthersGainLifeCostKind)
         put(AdditionalCost.ExileVariableCards::class, ExileVariableCardsCostKind)
         put(AdditionalCost.AnyNumberForCostReduction::class, AnyNumberForCostReductionCostKind)
         put(AdditionalCost.Forage::class, ForageCostKind)

@@ -1165,6 +1165,16 @@ cast action advertises the first selection cost as `additionalCostInfo` and the 
   mana cost is waived — `GrantMayCastFromLinkedExile(withoutPayingManaCost = true, additionalCost =
   Costs.additional.PayLifeEqualToManaValueOfSpell)` — so the only cost paid is the life. The amount is
   read from the cast card's mana value, checked at cast time (CR 119.4 — must have at least that much life).
+- `Costs.additional.OthersGainLife(amount, eachOtherPlayer = false)` — "you may have **an opponent**
+  gain N life" (Invigorate) / "… have **each other player** gain N life" (Reverent Silence): other
+  players gain life as the non-mana half of a `selfAlternativeCost` (`manaCost = {0}`, usually with a
+  `Conditions.YouControl(<basic land type>)` gate). The caster names the opponent while casting: with
+  one eligible opponent the cast is offered as is, with several the enumerator offers one cast per
+  opponent, pre-filling `AdditionalCostPayment.lifeGainRecipient`. A player who *can't* gain life
+  (Erebos, Gríma) can't be named, nor can "each other player" be paid while any of them can't; one
+  whose gain is only *replaced* (Sulfuric Vortex, `PreventLifeGain(replacesOnly = true)`) still can,
+  and the gain is then replaced like any other (Invigorate ruling, 2020-08-07). The gain goes through
+  the shared life-gain primitive, so gain modifiers and "whenever a player gains life" triggers see it.
 - `Costs.additional.OrPay(cost, alternativeManaCost)` — **cost-vs-mana**: "as an additional cost
   to cast this spell, \<pay this cost\> **or** pay {mana}". One `AdditionalCost.OrPay` covers the
   whole "do X or pay {N}" family, parameterized by the `AdditionalCost` on the non-mana leg; the
@@ -19184,7 +19194,7 @@ not update an existing copy.
   Applied by `LifePaymentService`, the engine choke point every life payment funnels through — cost
   atoms, additional casting costs, ward and Phyrexian-style payments, pain-cost mana abilities and the
   `PayLife` / `PayDynamicLife` resolution effects alike.
-- `PreventLifeGain(appliesTo)` — life gain matching the event is fully prevented (Sulfuric Vortex, Erebos).
+- `PreventLifeGain(appliesTo, replacesOnly = false)` — life gain matching the event is fully prevented (Erebos, Gríma Wormtongue: "can't gain life"). Set `replacesOnly = true` for the "gains no life instead" replacement wording (Sulfuric Vortex): it stops every gain the same way, but a player under it may still be named to gain life to pay a cost (`Costs.additional.OthersGainLife`).
   The `LifeGainEvent.player` scope can be `You` / `EachOpponent` / `Each` (resolved relative to the
   source's controller) or `EnchantedPlayer` for an "enchant player" Aura whose locked player is its
   attachment target (Grievous Wound). For a *source-independent, rest-of-game* lock on a specific player

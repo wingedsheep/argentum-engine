@@ -783,6 +783,13 @@ object Costs {
         /** Pay [amount] life. */
         fun PayLife(amount: Int): AdditionalCost = AdditionalCost.Atom(CostAtom.PayLife(amount))
 
+        /**
+         * Have an opponent of your choice gain [amount] life (Invigorate), or with [eachOtherPlayer]
+         * every other player (Reverent Silence) — the non-mana half of a [SelfAlternativeCost].
+         */
+        fun OthersGainLife(amount: Int, eachOtherPlayer: Boolean = false): AdditionalCost =
+            AdditionalCost.OthersGainLife(amount, eachOtherPlayer)
+
         /** Pay [amountPerTarget] life for each target chosen by this spell (Phyrexian Purge). */
         fun PayLifePerTarget(amountPerTarget: Int): AdditionalCost =
             AdditionalCost.PayLifePerTarget(amountPerTarget)

@@ -87,6 +87,11 @@ export interface AdditionalCostPayment {
   /** X chosen for `AdditionalCost.PayXLife` (e.g., Vicious Rivalry). */
   readonly payXLifeAmount?: number
   /**
+   * The opponent named to gain life for an "an opponent gains N life" alternative cost
+   * (`AdditionalCost.OthersGainLife`, Invigorate). Pre-filled by the server on each per-opponent cast.
+   */
+  readonly lifeGainRecipient?: EntityId
+  /**
    * Permanents chosen for a variable-count permanent cost — the payer decides how many
    * (`CostAtom.VariablePermanents`). Carries the creatures tapped to pay a Teamwork N cost
    * (CR 702.194a).

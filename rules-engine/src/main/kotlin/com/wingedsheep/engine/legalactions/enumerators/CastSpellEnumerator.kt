@@ -44,6 +44,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCost
+import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.KeywordAbility
@@ -807,7 +808,12 @@ class CastSpellEnumerator(
                     manaCostByTargetCount = selfAltEffectivePricing.byCountStrings(),
                     autoTapPreview = selfAltPreview,
                     additionalCostInfo = addlCostInfo,
+                    // A free alternative whose non-mana half has no picker to show it ("pay 4 life",
+                    // "have an opponent gain 3 life") names that half instead of reading "{0}".
                     label = selfAltCost.manaSources?.let { "$selfAltEffective, ${it.description} mana only" }
+                        ?: selfAltCost.additionalCosts
+                            .takeIf { it.isNotEmpty() && addlCostInfo == null && selfAltEffective.cmc == 0 && !selfAltEffective.hasX }
+                            ?.joinToString(", ") { it.description.replaceFirstChar { c -> c.lowercaseChar() } }
                         ?: selfAltEffective.toString(),
                 )
             } else null
@@ -1520,7 +1526,7 @@ class CastSpellEnumerator(
         // --- Casualty ---
         enumerateCasualty(context, hand, result)
 
-        return expandGiftPromise(
+        return expandLifeGainRecipient(context, expandGiftPromise(
             context,
             applyImproviseMetadata(
                 context,
@@ -1529,7 +1535,51 @@ class CastSpellEnumerator(
                     priceDivisionByX(context, expandSacrificeDefinedX(context, expandChoiceAdditionalCosts(context, result)))
                 )
             )
-        )
+        ))
+    }
+
+    /**
+     * Post-process: a card's own alternative cost "have **an opponent** gain N life" (Invigorate)
+     * makes the caster name the opponent while casting (CR 601.2b). With one opponent who can gain
+     * life the cast stands as it is and the handler pays that opponent; with several, each
+     * self-alternative cast is *replaced* by one twin per such opponent, pre-filling
+     * [AdditionalCostPayment.lifeGainRecipient] — the gift pattern, so the pick needs no new client
+     * prompt. Replaced rather than kept so no cast reaches the handler without a recipient.
+     */
+    private fun expandLifeGainRecipient(
+        context: EnumerationContext,
+        actions: List<LegalAction>
+    ): List<LegalAction> {
+        val state = context.state
+        val out = mutableListOf<LegalAction>()
+        for (la in actions) {
+            val cs = la.action as? CastSpell
+            val cost = cs?.takeIf { it.useAlternativeCost && it.alternativeCostType == AlternativeCostType.SELF_ALTERNATIVE }
+                ?.let { state.getEntity(it.cardId)?.get<CardComponent>()?.name }
+                ?.let { context.cardRegistry.getCard(it) }
+                ?.script?.selfAlternativeCost?.additionalCosts
+                ?.firstNotNullOfOrNull { (it as? AdditionalCost.OthersGainLife)?.takeIf { c -> !c.eachOtherPlayer } }
+            val opponents = cost?.let {
+                com.wingedsheep.engine.mechanics.cost.spell.OthersGainLifeCostKind.eligibleOpponents(state, cs.playerId)
+            }
+            if (cs == null || opponents == null || opponents.size < 2 || cs.additionalCostPayment?.lifeGainRecipient != null) {
+                out.add(la)
+                continue
+            }
+            for (opponentId in opponents) {
+                val opponentName = state.getEntity(opponentId)
+                    ?.get<com.wingedsheep.engine.state.components.identity.PlayerComponent>()?.name ?: "opponent"
+                val payment = (cs.additionalCostPayment ?: AdditionalCostPayment.NONE).copy(lifeGainRecipient = opponentId)
+                out.add(la.copy(
+                    description = la.description.replace(
+                        cost.description.replaceFirstChar { it.lowercaseChar() },
+                        "have $opponentName gain ${cost.amount} life"
+                    ),
+                    action = cs.copy(additionalCostPayment = payment)
+                ))
+            }
+        }
+        return out
     }
 
     /**

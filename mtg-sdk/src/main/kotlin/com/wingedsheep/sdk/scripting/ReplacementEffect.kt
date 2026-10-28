@@ -2008,13 +2008,21 @@ data class ReplaceLifeGainWith(
 }
 
 /**
- * Prevent life gain.
- * Example: Erebos, Sulfuric Vortex
+ * Prevent life gain — "players can't gain life" (Erebos, Gríma Wormtongue) or "if a player would gain
+ * life, that player gains no life instead" (Sulfuric Vortex).
+ *
+ * Both stop every gain alike. They differ only where a player *chooses* to gain life: a player who
+ * can't gain life can't be named to gain it to pay a cost, while one whose gain is merely replaced
+ * still can (Invigorate ruling, 2020-08-07).
+ *
+ * @property replacesOnly True for the "gains no life instead" replacement wording (Sulfuric Vortex);
+ *           false (the default) for a "can't gain life" prohibition
  */
 @SerialName("PreventLifeGain")
 @Serializable
 data class PreventLifeGain(
-    override val appliesTo: EventPattern = EventPattern.LifeGainEvent()
+    override val appliesTo: EventPattern = EventPattern.LifeGainEvent(),
+    val replacesOnly: Boolean = false
 ) : ReplacementEffect {
     override val description: String =
         "If ${appliesTo.description}, that player gains no life instead"

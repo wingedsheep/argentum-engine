@@ -278,6 +278,31 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
     }
 
     /**
+     * Have other players gain life as the cost — "rather than pay this spell's mana cost, you may
+     * have **an opponent** gain 3 life" (Invigorate) or "… have **each other player** gain 6 life"
+     * (Reverent Silence). Only ever printed as the non-mana half of a [SelfAlternativeCost].
+     *
+     * With [eachOtherPlayer] false the caster names one opponent while casting (CR 601.2b); the
+     * engine offers one cast per opponent who could gain life, and the pick travels in
+     * [AdditionalCostPayment.lifeGainRecipient]. A player who *can't* gain life can't be made to gain
+     * it to pay, but one whose gain would be *replaced* (Sulfuric Vortex) still can — the cost's
+     * action is then replaced like any other life gain (Invigorate ruling, 2020-08-07).
+     *
+     * @property amount Life each recipient gains
+     * @property eachOtherPlayer Every other player gains [amount], rather than one opponent of the
+     *           caster's choice
+     */
+    @SerialName("OthersGainLife")
+    @Serializable
+    data class OthersGainLife(
+        val amount: Int,
+        val eachOtherPlayer: Boolean = false
+    ) : AdditionalCost {
+        override val description: String =
+            if (eachOtherPlayer) "Have each other player gain $amount life" else "Have an opponent gain $amount life"
+    }
+
+    /**
      * Pay life equal to the mana value of the spell being cast. Auto-paid (no player choice).
      * Used as the substitute cost in "pay life equal to its mana value rather than pay its
      * mana cost" permissions — Valgavoth, Terror Eater (paired with a play-from-exile grant
@@ -622,7 +647,14 @@ data class AdditionalCostPayment(
      * counters of `counterType` from `entityId`. The engine validates that the sum
      * matches the cost's totalCount and that each creature has enough of each type.
      */
-    val distributedCounterRemovals: List<DistributedCounterRemoval> = emptyList()
+    val distributedCounterRemovals: List<DistributedCounterRemoval> = emptyList(),
+
+    /**
+     * The opponent the caster named to gain life for an [AdditionalCost.OthersGainLife] "an
+     * opponent gains N life" cost. Pre-filled on each per-opponent cast the engine offers; `null`
+     * is accepted only when exactly one opponent could gain the life.
+     */
+    val lifeGainRecipient: EntityId? = null
 ) {
     /** Check if any costs were paid */
     val isEmpty: Boolean
@@ -639,7 +671,8 @@ data class AdditionalCostPayment(
                 blightTargets.isEmpty() &&
                 blightAmount == 0 &&
                 payXLifeAmount == 0 &&
-                distributedCounterRemovals.isEmpty()
+                distributedCounterRemovals.isEmpty() &&
+                lifeGainRecipient == null
 
     companion object {
         val NONE = AdditionalCostPayment()

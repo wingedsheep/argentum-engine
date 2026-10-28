@@ -6889,7 +6889,8 @@
                 "appliesTo": {
                     "type": "LifeGainEvent",
                     "player": "Each"
-                }
+                },
+                "replacesOnly": true
             }
         ]
     },

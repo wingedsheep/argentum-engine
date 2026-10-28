@@ -21,7 +21,7 @@ val SulfuricVortex = card("Sulfuric Vortex") {
         effect = Effects.DealDamage(2, EffectTarget.PlayerRef(Player.TriggeringPlayer))
     }
 
-    replacementEffect(PreventLifeGain(appliesTo = EventPattern.LifeGainEvent(player = Player.Each)))
+    replacementEffect(PreventLifeGain(appliesTo = EventPattern.LifeGainEvent(player = Player.Each), replacesOnly = true))
 
     metadata {
         rarity = Rarity.RARE

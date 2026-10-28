@@ -782,3 +782,78 @@ internal object CompositeCostKind : SpellCostKind<AdditionalCost.Composite> {
     override fun canPay(state: GameState, payerId: EntityId, cost: AdditionalCost.Composite, costHandler: CostHandler) =
         cost.steps.all { SpellCosts.canPay(state, it, payerId, costHandler) }
 }
+
+/**
+ * "Have an opponent gain N life" / "have each other player gain N life" (Invigorate, Reverent
+ * Silence) — the non-mana half of a pitch-style alternative cost. A player who can't gain life can't
+ * be made to gain it to pay; one whose gain would be replaced (Sulfuric Vortex) still can, and the
+ * gain is then replaced as usual (Invigorate ruling, 2020-08-07). The life is gained through the same
+ * primitive every gain uses, so gain modifiers and replacements apply.
+ */
+internal object OthersGainLifeCostKind : SpellCostKind<AdditionalCost.OthersGainLife> {
+
+    /**
+     * The opponents the caster may name for an "an opponent gains life" cost — the ones who can gain
+     * life. The enumerator offers one cast per entry.
+     */
+    fun eligibleOpponents(state: GameState, payerId: EntityId): List<EntityId> =
+        state.getOpponents(payerId).filter { it in state.activePlayers && !DamageUtils.isLifeGainPrevented(state, it, prohibitionsOnly = true) }
+
+    private fun otherPlayers(state: GameState, payerId: EntityId): List<EntityId> =
+        state.activePlayers.filter { it != payerId }
+
+    private fun payable(state: GameState, payerId: EntityId, cost: AdditionalCost.OthersGainLife): Boolean =
+        if (cost.eachOtherPlayer) {
+            otherPlayers(state, payerId).let { others ->
+                others.isNotEmpty() && others.none { DamageUtils.isLifeGainPrevented(state, it, prohibitionsOnly = true) }
+            }
+        } else {
+            eligibleOpponents(state, payerId).isNotEmpty()
+        }
+
+    /** Who gains the life, or null when the submitted cast doesn't name a legal recipient. */
+    private fun recipients(
+        state: GameState,
+        payerId: EntityId,
+        cost: AdditionalCost.OthersGainLife,
+        payment: AdditionalCostPayment?,
+    ): List<EntityId>? {
+        if (cost.eachOtherPlayer) return otherPlayers(state, payerId)
+        val eligible = eligibleOpponents(state, payerId)
+        val named = payment?.lifeGainRecipient ?: return eligible.singleOrNull()?.let(::listOf)
+        return if (named in eligible) listOf(named) else null
+    }
+
+    override fun canPay(state: GameState, payerId: EntityId, cost: AdditionalCost.OthersGainLife, costHandler: CostHandler) =
+        payable(state, payerId, cost)
+
+    override fun enumerate(env: SpellCostEnumeration, cost: AdditionalCost.OthersGainLife, offer: SpellCostOffer) =
+        payable(env.state, env.playerId, cost)
+
+    // No object is selected, so the alternative-cost rails' candidate count says nothing; payability
+    // is whether the life can be gained at all.
+    override fun canPayFrom(env: SpellCostEnumeration, cost: AdditionalCost.OthersGainLife, candidates: List<EntityId>) =
+        payable(env.state, env.playerId, cost)
+
+    override fun validate(check: SpellCostCheck, cost: AdditionalCost.OthersGainLife): String? {
+        if (!payable(check.state, check.playerId, cost)) return "No player can gain the life to pay this cost"
+        return if (recipients(check.state, check.playerId, cost, check.payment) == null) {
+            "Choose an opponent who can gain life to pay this cost"
+        } else null
+    }
+
+    override fun paysUnprompted(cost: AdditionalCost.OthersGainLife) = true
+
+    override fun pay(ledger: SpellCostLedger, cost: AdditionalCost.OthersGainLife): String? {
+        val players = recipients(ledger.state, ledger.playerId, cost, ledger.action.additionalCostPayment)
+            ?: return "Choose an opponent who can gain life to pay this cost"
+        for (playerId in players) {
+            val (gained, event) = DamageUtils.gainLife(
+                ledger.state, playerId, cost.amount, predicateEvaluator = ledger.costHandler.predicateEvaluator
+            )
+            ledger.state = gained
+            event?.let { ledger.events.add(it) }
+        }
+        return null
+    }
+}

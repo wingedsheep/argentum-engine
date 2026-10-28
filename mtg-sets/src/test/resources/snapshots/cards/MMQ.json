@@ -3131,6 +3131,63 @@
     ]
 }
 
+// Invigorate
+{
+    "name": "Invigorate",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "If you control a Forest, rather than pay this spell's mana cost, you may have an opponent gain 3 life.\nTarget creature gets +4/+4 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ModifyStats",
+            "powerModifier": {
+                "type": "Fixed",
+                "amount": 4
+            },
+            "toughnessModifier": {
+                "type": "Fixed",
+                "amount": 4
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "selfAlternativeCost": {
+            "manaCost": "{0}",
+            "additionalCosts": [
+                {
+                    "type": "OthersGainLife",
+                    "amount": 3
+                }
+            ],
+            "condition": {
+                "type": "Exists",
+                "player": "You",
+                "zone": "Battlefield",
+                "filter": "land Forest"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "254",
+        "artist": "Dan Frazier",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/406b343c-90b5-4a4d-91c3-2fddcc9a0e05.jpg?1783945923"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Iron Lance
 {
     "name": "Iron Lance",
